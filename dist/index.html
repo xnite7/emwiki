@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<link href="./css2.css" rel="stylesheet">
+		<meta charset="UTF-8">
+		<title>Epic Wiki</title>
+
+
+  <link href="https://fonts.cdnfonts.com/css/zekton" rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/highway-gothic" rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/comic-neue-angular" rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/roman-antique" rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/accanthis-adf-std" rel="stylesheet">
+                
+  <link href="https://fonts.googleapis.com/css2?family=Oxanium&family=Patrick+Hand&family=Denk+One&family=Marhey:wght@700&family=Rubik+Wet+Paint&family=Irish+Grover&family=Poppins:wght@700&family=Rye&family=Eater&family=Bangers&family=Inconsolata:wght@900&family=Roboto+Mono:wght@700&family=Sedgwick+Ave+Display&family=Rubik+Marker+Hatch&family=Sarpanch:wght@700&family=Kalam&family=Are+You+Serious&family=Akronim&family=Kings&family=Permanent+Marker&family=Caesar+Dressing&family=Michroma&family=Titillium+Web&family=Grenze+Gotisch:wght@100..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Bungee+Shade&family=Frijole&family=Audiowide&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Lobster&family=Fredoka:wght@300..700&family=Codystar:wght@300;400&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Michroma&family=Jura&family=Special+Elite&family=Noto+Serif+HK:wght@200..900&family=Faster+One&family=Nosifer&family=Silkscreen&family=Finger+Paint&family=Merriweather&family=Luckiest+Guy&family=Bungee+Inline&family=Creepster&family=Indie+Flower&family=Pacifico&family=Cairo&family=Fondamento&family=Balthazar&family=Arimo:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+   <link rel="shortcut icon" href="data:image/x-icon;base64,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Mf8ZCjH/GQox/xgKMP8YCjD/GAkv/xEXJ/9HtM7/WeD//1je/v9Y3v7/WeH//ylod/8AAADZAAAA8jSDlv9a4///Ucvo/zqTqP86kab/OZKl/zmSpf85kqX/OZKl/zmSpf85kqX/OZKl/zmSpf85kqX/OZKl/zmSpf85kqX/OZKl/zmSpf85kqX/OZKl/zmSpf85kaT/P6C2/1bY9/9Y3v7/WN7+/1je/v9a4v//NIOW/wAAAPIBAgL9OZCl/1ni//9Z4P//WuP//1rj//9a4///WuP//1rj//9a4///WuP//1ri//9a4v//WuL//1ri//9a4v//WuP//1rj//9a4///WuP//1rj//9a4///WuP//1rj//9a4v//WN/+/1je/v9Y3v7/WN7+/1ri//85kKX/AQIC/QECAv05kKX/WuL//1LQ7v9NyOX/Tcjl/03I5f9NyOX/Tcjl/03I5f9Rzuz/WN39/1je/v9Y3v7/WN7+/1je/v9T0e//S8Pf/0vD3/9Lw9//S8Pf/0vD3/9Lw9//S8Pf/0zE4f9V1vX/WN7+/1je/v9Y3v7/WuL//zmQpf8BAgL9AAAA8jSEl/9T0/H/J1Jc/zlNUv88UVb/PFFW/zxRVv88UVb/O09U/ydLVP9PyOX/Wd///1je/v9Y3v7/V9z8/yxndf83R0v/QlRY/0FTV/9BU1f/QVNX/0FTV/9CVFj/MUJG/ziLnv9Z4f//WN7+/1je/v9a4v//NIOW/wAAAPIAAADZKmt6/0W0z/9RW13/6OXl/+zq6v/s6ur/7Orq/+zq6v/s6en/X2Vm/0Gpwv9Z4f//WN7+/1jf//9S0vD/MlFY/9LPz//y8fH/8O/v//Dv7//w7+//8O/v//Py8v+zsLD/LmZz/1jf//9Y3v7/WN7+/1nh//8paHf/AAAA2QAAAK0bRU//PqO7/2Jpav/+/v7///////////////////////////9rcHH/PaK6/1nh//9Y3v7/WN///1DN6/84Ulj/5uXk/////////////////////////////////8fExP8vYm7/V939/1je/v9Y3v7/Vtn4/xpCS/8AAACtAAAAbQwdIvs4k6n/VWBj//n5+f///////////9PT0/95eXn/mpqa/05ZXP9Fs83/WeD//1je/v9Y3v7/VNb1/zBVXv/U0tH/////////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" />
+
+
+		<link rel="stylesheet" href="./style.css">
+		<script src="CCapture.all.min.js"></script>
+		<script src="stats.min.js"></script>
+		<script src="./script.js"></script>
+
+	
+	
+	</head>
+	<body id="body"style="  background-size: cover;
+    background-position-x: center;
+    background-repeat: no-repeat;
+    background-image: url(https://pbs.twimg.com/media/EyEoHIpWEAMBiEu.jpg:large);">
+		<link href='https://fonts.googleapis.com/css?family=Source Sans Pro'
+			rel='stylesheet'>
+		<header>
+			
+			<div class="logo-container">
+				<a href="index.html">
+					<div class="glow"></div>
+					<img src="https://i.imgur.com/QgWIUWf.png"
+						style="max-width: 400px; width: -webkit-fill-available;">
+				</a>
+				<div class="rotate">
+					<div class="angle">
+						<div class="size">
+							<div class="position">
+								<div class="pulse">
+									<img src="https://i.imgur.com/DQZSDMM.png" class="particle">
+									<div class="flash"></div>
+
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="angle">
+						<div class="size">
+							<div class="position">
+								<div class="pulse">
+									<img src="https://i.imgur.com/DQZSDMM.png" class="particle">
+									<div class="flash"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="angle">
+						<div class="size">
+							<div class="position">
+								<div class="pulse">
+									<img src="https://i.imgur.com/DQZSDMM.png" class="particle">
+									<div class="flash"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="angle">
+						<div class="size">
+							<div class="position">
+								<div class="pulse">
+									<img src="https://i.imgur.com/DQZSDMM.png" class="particle">
+									<div class="flash"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="angle">
+						<div class="size">
+							<div class="position">
+								<div class="pulse">
+									<img src="https://i.imgur.com/DQZSDMM.png" class="particle">
+									<div class="flash"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</header>
+
+		<main>
+    <nav>
+                <a href="gears.html"><img src="https://i.imgur.com/AYUbTJv.png" style="max-width: -webkit-fill-available;" draggable="false" display="none" onmousedown="return false"></a>
+        <a href="deaths.html"><img src="https://i.imgur.com/fADZwOh.png" style="max-width: -webkit-fill-available;" draggable="false" display="none" onmousedown="return false"></a>
+        <a href="titles.html"><img src="https://i.imgur.com/ZOP8l9g.png" style="max-width: -webkit-fill-available;" draggable="false" display="none" onmousedown="return false"></a>
+        <a href="pets.html"><img src="https://i.imgur.com/GHXB0nC.png" style="max-width: -webkit-fill-available;" draggable="false" display="none" onmousedown="return false"></a>
+        <a href="effects.html"><img src="https://i.imgur.com/l90cgxf.png" style="max-width: -webkit-fill-available;" draggable="false" display="none" onmousedown="return false"></a>
+		<a href="chests.html" style="margin-left: 30px;"><img src="https://i.imgur.com/XwkWVJJ.png" style="max-width: -webkit-fill-available;"draggable="false" display="none" onmousedown="return false"></a>
+		<a href="scammers.html" style="margin-left: 30px;"><img src="https://i.imgur.com/SK5csOS.png" style="max-width: -webkit-fill-available;"draggable="false" display="none" onmousedown="return false"></a>
+	</nav>
+
+			<section class="welcome">
+				<h2>Welcome to Epic Minigames NASDAQ!</h2>
+				<p>Epic minigame kinda frequently updated prices list!</p>
+			</section>
+			
+			<section class="catalog">
+				<h2>🎲 Random items</h2>
+				<p id="zd" style="display: none;">0</p>
+				<div class="catalog-grid" id="ctlg" style="display: flex;
+															gap: 1.5rem;
+															padding: 1rem;
+															justify-content: center;
+															flex-wrap: wrap;">
+
+				</div>
+			</section>
+			<section id="leaderboard" style="display: none;">
+				<h2>🏆 Team</h2>
+				<ol>
+					<li>xnite</li>
+					<li></li>
+					<li></li>
+				</ol>
+			</section>
+			<section id="join">
+				<h2>👥 Join us</h2>
+				<p style="font-size: large;">Join our <a class="discord" href="https://discord.com/invite/tg">Discord server</a> to get the latest updates and news about the game!</p>
+
+			</section>
+		</main>
+		<script src="./ccp.js"></script>
+		<footer>
+			<div class="text" contenteditable="false">@xnite</div>
+			<svg id="svg" width="0" height="0" xmlns="http://www.w3.org/2000/svg">
+				<defs>
+					<filter id="f1" x="0" y="0">
+						<feturbulence id="turbulence" type="turbulence" basefrequency="0.5"
+							numoctaves="1" result="turbulence" seed="0" />
+						<fedisplacementmap id="displacement" in2="turbulence" in="SourceGraphic"
+							scale="30" xchannelselector="R" ychannelselector="G" />
+						<fedropshadow dx="2" dy="2" stddeviation="1" flood-color="#799df1"
+							flood-opacity="0.7" />
+						<fedropshadow dx="-2" dy="-2" stddeviation="1" flood-color="#60c1ec"
+							flood-opacity="0.7" />
+						<fedropshadow dx="2" dy="-2" stddeviation="1" flood-color="#7bd9de"
+							flood-opacity="0.7" />
+						<fedropshadow dx="-2" dy="2" stddeviation="1" flood-color="#83f52c"
+							flood-opacity="0.7" />
+					</filter>
+				</defs>
+			</svg>
+			
+		</footer>
+		
+	</body>
+</html>
+
+
+
+  
+<div id="product-modal" class="modal" style="display: none;">
+	<div id="modal-content" class="modal-content expand" data-tilt="" data-tilt-max="10" data-tilt-speed="500" data-tilt-perspective="1800" data-tilt-glare="" data-tilt-max-glare="0.1" data-tilt-scale="1.03" data-tilt-reset="true" style="will-change: transform; background-color: rgb(91, 254, 106); position: relative; top: 0px; left: 0px; transform: perspective(1800px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1);">
+		<div class="inner-border-overlay"><h3 id="modal-prc" class="modal-prc" data-tilt-transform-element="">500</h3></div>
+		<h3 id="modal-title" class="modal-title" data-tilt-transform-element="">Ancient Firecracker</h3>
+		<div class="content-area p-4 sm:p-5 lg:p-7" data-tilt-transform-element="" style="align-items: normal;padding: 100px 22px 51px 22px;">
+        <div class="gradient-overlay"></div>
+		<img id="modal-image" class="modal-image" src="https://cdn.nookazon.com/128x128/epicminigames/gear/880550698.png" alt="Product Image" style="height: -webkit-fill-available;align-self: center; padding-bottom: 30px;max-height: 420px;" data-tilt-transform-element="" data-tilt-glare="true">
+		<p id="modal-description" data-tilt-transform-element="" style="white-space: pre-wrap; z-index: 34;margin-bottom: 15px;width: 317px;align-self: anchor-center;font-size: 18px;background: -webkit-linear-gradient(#fff, #999999);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;">This is a detailed description of Ancient Firecracker.</p>
+		<div class="price" id="popo"style="
+		display: flex;
+		flex-wrap: nowrap;
+		height: 30px;
+		flex-direction: row;
+		align-content: center;
+		justify-content: center;
+		align-items: center;
+		"><img src="" id="modal-price-value" data-tilt-transform-element="" style="position: relative;
+        height: 37px; right: 13px; z-index: 34;"><p style="
+            right: 6px;	
+			white-space: pre-wrap;
+            z-index: 222;
+			position: relative;
+			font-family: BuilderSans;
+			font-size: 32px;
+            font-weight: 400;
+			">0</p></div>
+	  
+			<button class="tour-button" data-tilt-transform-element="" style="display: none;">
+                Take the tour
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5l7 7-7 7"></path>
+                    <path d="M5 12h14"></path>
+                </svg>
+            </button>
+		</div>
+		<span class="close-btn" id="close-modal"></span>
+	  
+	<div class="js-tilt-glare" style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; overflow: hidden; pointer-events: none; border-radius: inherit;"><div class="js-tilt-glare-inner" style="position: absolute; top: 50%; left: 50%; pointer-events: none; background-image: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgb(255, 255, 255) 100%); transform: rotate(180deg) translate(-50%, -50%); transform-origin: 0% 0%; opacity: 0; width: 1388px; height: 1388px;"></div></div><div class="js-tilt-glare"><div class="js-tilt-glare-inner"></div></div></div>
+  </div>
+ 
+</body>
+</html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+
+<script>
+	VanillaTilt.init(document.querySelectorAll("[data-tilt]"), {
+	});
+</script>
