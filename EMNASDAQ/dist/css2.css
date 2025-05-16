@@ -1,0 +1,32 @@
+@font-face {
+  font-family: BuilderSans;
+  font-weight: 100;
+  src: url("./fonts/BuilderSans-Thin-100.woff2") format('woff2');
+}
+
+@font-face {
+  font-family: BuilderSans;
+  font-weight: 300;
+  src: url("./fonts/BuilderSans-Light-300.woff2") format('woff2');
+}
+
+@font-face {
+  font-family: BuilderSans;
+  font-weight: 400;
+  src: url("./fonts/BuilderSans-Regular-400.woff2") format('woff2');
+}
+@font-face {
+  font-family: BuilderSans;
+  font-weight: 500;
+  src: url("./fonts/BuilderSans-Medium-500.woff2") format('woff2');
+}
+@font-face {
+  font-family: BuilderSans;
+  font-weight: 700;
+  src: url("./fonts/BuilderSans-Bold-700.woff2") format('woff2');
+}
+@font-face {
+  font-family: BuilderSans;
+  font-weight: 800;
+  src: url("./fonts/BuilderSans-ExtraBold-800.woff2") format('woff2');
+} 

@@ -1,0 +1,3 @@
+make script to loop through every item in list and put its pic code in a text
+python program to download every code given to it and renaming the file to the name
+pyhthon program to add all the image links to imgur and get the links -> json img

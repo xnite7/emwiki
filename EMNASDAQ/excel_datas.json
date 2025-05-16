@@ -1,0 +1,2124 @@
+{
+    "data": [
+        {
+            "name": "1st Place Trophy",
+            "from": "#1 Position on Seasonal LBs",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "2018 Fireworks",
+            "from": "Code (Dec. 2017)",
+            "price/code/rarity": "[EXPIRED] \"2018\""
+        },
+        {
+            "name": "2019 Fireworks",
+            "from": "Code (Dec. 2018)",
+            "price/code/rarity": "[EXPIRED] \"newyear2019\""
+        },
+        {
+            "name": "2025 Fireworks",
+            "from": "Gamenight (Jan. 2025)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "2nd Place Trophy",
+            "from": "#2 Position on Seasonal LBs",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "3rd Place Trophy",
+            "from": "#3 Position on Seasonal LBs",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "4-String Roblocaster",
+            "from": "Weekly Star Shop (Season 4)",
+            "price/code/rarity": "20 Stars"
+        },
+        {
+            "name": "4th of July Fireworks",
+            "from": "Bundle (4th of July 2024)",
+            "price/code/rarity": "199 Robux"
+        },
+        {
+            "name": "8-Bit Ninja Stars",
+            "from": "Item Crate (15m Playtime Rewards)",
+            "price/code/rarity": "3.85%"
+        },
+        {
+            "name": "8-Bit Staff",
+            "from": "Weekly Star Shop (Season 1)",
+            "price/code/rarity": "5 Stars"
+        },
+        {
+            "name": "A Very Special Monster",
+            "from": "Coin Shop (Halloween 2016 - 2021)\nHalloween Shop (2022)\nCoin Shop (Halloween 2023 - 2024)",
+            "price/code/rarity": "670 Coins\n18 Pumpkins\n670 Coins"
+        },
+        {
+            "name": "AFK Sign",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "900 Coins"
+        },
+        {
+            "name": "Air Wizard's Staff",
+            "from": "Art Contest (Winter 2023)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Alpaca Plushie",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "980 Coins"
+        },
+        {
+            "name": "Ancient Firecracker",
+            "from": "Daily Missions",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Annoying Elf",
+            "from": "Seasonal Star Shop (Season 7)\nSeasonal Star Shop (Season 11)",
+            "price/code/rarity": "15 Stars\n15 Stars"
+        },
+        {
+            "name": "Anti Award",
+            "from": "Top 10 Seasonal (Season 10)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Anubis Staff",
+            "from": "Premium Chest",
+            "price/code/rarity": "99 Robux"
+        },
+        {
+            "name": "Apple Pie",
+            "from": "Coin Shop",
+            "price/code/rarity": "420 Coins"
+        },
+        {
+            "name": "April Showers",
+            "from": "Coin Shop",
+            "price/code/rarity": "2500 Coins"
+        },
+        {
+            "name": "Atmoblaster 777",
+            "from": "Steel Chest (Daily Rewards)",
+            "price/code/rarity": "3.92%"
+        },
+        {
+            "name": "Bacon Frying Pan",
+            "from": "Typical Chest ",
+            "price/code/rarity": "250 Coins"
+        },
+        {
+            "name": "Bacon Launcher",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "1.66%"
+        },
+        {
+            "name": "Badblox Hatchling",
+            "from": "Bundle (Easter 2023)",
+            "price/code/rarity": "299 Robux"
+        },
+        {
+            "name": "Bag O' Christmas Seeds",
+            "from": "Bundle (Christmas 2024)",
+            "price/code/rarity": "299 Robux"
+        },
+        {
+            "name": "Bag O' Noobs",
+            "from": "Epic Chest",
+            "price/code/rarity": "500 Tokens"
+        },
+        {
+            "name": "Balloon Sword",
+            "from": "Epic Party Reward (Premium)",
+            "price/code/rarity": "Rank 22"
+        },
+        {
+            "name": "Banana Peel",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "0.33%"
+        },
+        {
+            "name": "Bandit Dog",
+            "from": "Typical Chest",
+            "price/code/rarity": "250 Coins"
+        },
+        {
+            "name": "BANG!",
+            "from": "Coin Shop",
+            "price/code/rarity": "450 Coins"
+        },
+        {
+            "name": "Banjo",
+            "from": "Secret Item (Daily Rewards)",
+            "price/code/rarity": "12.50%"
+        },
+        {
+            "name": "Baseball Bat",
+            "from": "Sports Bag (Summer 2024)",
+            "price/code/rarity": "25 Visors"
+        },
+        {
+            "name": "Basketball",
+            "from": "Daily Missions",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Bauble Detector",
+            "from": "Quest (Christmas 2024)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Bauble Staff",
+            "from": "Snowman's Quest (Christmas 2023)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Beach Ball",
+            "from": "Sports Bag (Summer 2024)",
+            "price/code/rarity": "50 Visors"
+        },
+        {
+            "name": "Beach Gun",
+            "from": "Weekly Star Shop (Season 2)",
+            "price/code/rarity": "20 Stars"
+        },
+        {
+            "name": "Beach Staff",
+            "from": "Quest (Summer 2024)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Beast Claws",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "1.66%"
+        },
+        {
+            "name": "Beehive",
+            "from": "Epic Party Reward (Premium)",
+            "price/code/rarity": "Rank 13"
+        },
+        {
+            "name": "Berry Sweet Boba",
+            "from": "Bundle (Valentine's 2025)",
+            "price/code/rarity": "299 Robux"
+        },
+        {
+            "name": "Big Flower",
+            "from": "Coin Shop (2023-Present)",
+            "price/code/rarity": "485 Coins"
+        },
+        {
+            "name": "Big Pink Daisy",
+            "from": "Gamenight (Aug. 2023)\nGamenight (Mar. 2024)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Big Rainbow Wand",
+            "from": "Original Owners of the Rainbow Wand\nArt Contest (Spring 2023)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Big Stick",
+            "from": "Typical Chest",
+            "price/code/rarity": "250 Coins"
+        },
+        {
+            "name": "Bighead Potion",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "390 Coins"
+        },
+        {
+            "name": "Binoculars",
+            "from": "Coin Shop (2025-Present)",
+            "price/code/rarity": "730 Coins"
+        },
+        {
+            "name": "Bloxiade",
+            "from": "Coin Shop",
+            "price/code/rarity": "100 Coins"
+        },
+        {
+            "name": "Bloxilicious Bubble Gum",
+            "from": "Coin Shop",
+            "price/code/rarity": "320 Coins"
+        },
+        {
+            "name": "Bloxxy Radar",
+            "from": "Coin Shop",
+            "price/code/rarity": "270 Coins"
+        },
+        {
+            "name": "Blue Throwing Barrel",
+            "from": "VIP Gamepass (Old)",
+            "price/code/rarity": "499 Robux"
+        },
+        {
+            "name": "Blueberry Pie",
+            "from": "Gamenight (Nov. 2023)\nGamenight (Apr. 2025)\nWeekly Rotation",
+            "price/code/rarity": "--\n--\n775 Coins"
+        },
+        {
+            "name": "Boba Tea",
+            "from": "Gamenight (Jun., Jul., Aug., Oct. 2023)\nGamenight (Nov., Dec. 2023)\nGamenight (Mar., Jun. 2024)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Bobo the Picnic Bear",
+            "from": "Visors LB (Summer 2024)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Bongos",
+            "from": "Steel Chest (Daily Rewards)",
+            "price/code/rarity": "3.92%"
+        },
+        {
+            "name": "Bonk Bat",
+            "from": "VIP Gamepass",
+            "price/code/rarity": "499 Robux"
+        },
+        {
+            "name": "Boomerang",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "1.66%"
+        },
+        {
+            "name": "Bouquet of Pain Throwing Stars",
+            "from": "Mystery Bag (Daily Rewards)",
+            "price/code/rarity": "5%"
+        },
+        {
+            "name": "Boxing Glove Launcher",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "1.16%"
+        },
+        {
+            "name": "Breath of Fire",
+            "from": "Steel Chest (Daily Rewards)",
+            "price/code/rarity": "3.92%"
+        },
+        {
+            "name": "Breath of Ice",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "0.83%"
+        },
+        {
+            "name": "Brighteye's Sparkling Shillelagh",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "1.16%"
+        },
+        {
+            "name": "Bucket",
+            "from": "Code (Jan. 2017)\nGamenight (Feb. 2022)",
+            "price/code/rarity": "[EXPIRED] \"\"spade\""
+        },
+        {
+            "name": "--\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "Bug Net",
+            "from": "Coin Shop",
+            "price/code/rarity": "580 Coins"
+        },
+        {
+            "name": "Bugle",
+            "from": "Coin Shop",
+            "price/code/rarity": "660 Coins"
+        },
+        {
+            "name": "Bunch of Balloons",
+            "from": "Coin Shop",
+            "price/code/rarity": "640 Coins"
+        },
+        {
+            "name": "Bundle of TNT",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "1.66%"
+        },
+        {
+            "name": "Cake",
+            "from": "Coin Shop",
+            "price/code/rarity": "300 Coins"
+        },
+        {
+            "name": "Caltrops",
+            "from": "Item Crate (15m Playtime Rewards)",
+            "price/code/rarity": "3.85%"
+        },
+        {
+            "name": "Carnagecopia",
+            "from": "Weekly Star Shop (Season 6)\nWeekly Star Shop (Season 10)",
+            "price/code/rarity": "30 Stars\n30 Stars"
+        },
+        {
+            "name": "Carrot Slingshot",
+            "from": "Bundle (Easter 2024)",
+            "price/code/rarity": "299 Robux"
+        },
+        {
+            "name": "Ceramic Potion",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "1.66%"
+        },
+        {
+            "name": "Chameleon Potion",
+            "from": "Coin Shop",
+            "price/code/rarity": "1500 Coins"
+        },
+        {
+            "name": "Chepi the Mushroom Cat",
+            "from": "Gamenight (Oct. 2024)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Cherry Pie",
+            "from": "Daily Missions",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Chick Horde",
+            "from": "Bunny's Quest (Easter 2024-2025)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Chicken Gun",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "1550 Coins"
+        },
+        {
+            "name": "Chimp Friend",
+            "from": "Coin Shop",
+            "price/code/rarity": "330 Coins"
+        },
+        {
+            "name": "Chocolate Bunny",
+            "from": "Code (Apr. 2017)\nEgg Shop (Easter 2023)\nCoin Shop (Easter 2024-2025)",
+            "price/code/rarity": "[EXPIRED] \"\"hop\""
+        },
+        {
+            "name": "2 Eggs",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "60 Coins\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "Chocolate Gelt",
+            "from": "Code (Sep. 2015)\nGamenight (Dec. 2023)",
+            "price/code/rarity": "[EXPIRED] \"\"tastymoney\""
+        },
+        {
+            "name": "--\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "Chocolate Milk",
+            "from": "Coin Shop",
+            "price/code/rarity": "70 Coins"
+        },
+        {
+            "name": "Christmas Cookie",
+            "from": "Code (Dec. 2016)\nCoin Shop (Christmas 2017-2024)",
+            "price/code/rarity": "[EXPIRED] \"\"munch\""
+        },
+        {
+            "name": "80 Coins\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "Christmas Tree Launcher",
+            "from": "Advent Calendar (Christmas 2023)",
+            "price/code/rarity": "Day 11 (Dec. 24th)"
+        },
+        {
+            "name": "Christmas Tree Lights",
+            "from": "Advent Calendar (Christmas 2023)",
+            "price/code/rarity": "Day 3 (Dec. 16th)"
+        },
+        {
+            "name": "Christmas Tree Topper",
+            "from": "Code (Dec. 2018)\nGamenight (???)",
+            "price/code/rarity": "[EXPIRED] \"\"topped\""
+        },
+        {
+            "name": "--\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "Clown Bomb",
+            "from": "Coin Shop",
+            "price/code/rarity": "1200 Coins"
+        },
+        {
+            "name": "Clown Gun",
+            "from": "Coin Shop (2B Update)",
+            "price/code/rarity": "7500 Coins"
+        },
+        {
+            "name": "Compass",
+            "from": "Coin Shop",
+            "price/code/rarity": "180 Coins"
+        },
+        {
+            "name": "Confetti Cannon",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "1800 Coins"
+        },
+        {
+            "name": "Cowbell",
+            "from": "Coin Shop",
+            "price/code/rarity": "620 Coins"
+        },
+        {
+            "name": "Crab Horde",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "1300 Coins"
+        },
+        {
+            "name": "Crossbow",
+            "from": "Weekly Star Shop (Season 2)",
+            "price/code/rarity": "5 Stars"
+        },
+        {
+            "name": "Crowbar",
+            "from": "Seasonal Star Shop (Season 4)",
+            "price/code/rarity": "10 Stars"
+        },
+        {
+            "name": "Cupcake Launcher",
+            "from": "Token Shop",
+            "price/code/rarity": "330 Tokens"
+        },
+        {
+            "name": "Cursed Fire Flame Thrower",
+            "from": "Secret Item (1hr Playtime rewards)",
+            "price/code/rarity": "3.85%"
+        },
+        {
+            "name": "Cursed Mummy Friend",
+            "from": "Coin Shop (Halloween 2016 - 2021)\nHalloween Shop (2022)\nCoin Shop (Halloween 2023-2024)",
+            "price/code/rarity": "390 Coins\n12 Pumpkins\n390 Coins"
+        },
+        {
+            "name": "Cymbals",
+            "from": "Daily Missions",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Dance Grenade",
+            "from": "Gamenight (May 2021)\nGamenight (Jul., Aug., Dec. 2023)\nGamenight (Mar. 2024)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Dance Potion",
+            "from": "Coin Shop",
+            "price/code/rarity": "2000 Coins"
+        },
+        {
+            "name": "Decoy Deploy",
+            "from": "Epic Chest",
+            "price/code/rarity": "500 Tokens"
+        },
+        {
+            "name": "Didgeridoo",
+            "from": "Coin Shop",
+            "price/code/rarity": "1100 Coins"
+        },
+        {
+            "name": "Director's Clap Board",
+            "from": "Weekly Star Shop (Season 5)\nWeekly Star Shop (Season 9)",
+            "price/code/rarity": "5 Stars\n5 Stars"
+        },
+        {
+            "name": "Disco Potion",
+            "from": "Epic Party Reward (Premium)",
+            "price/code/rarity": "Rank 26"
+        },
+        {
+            "name": "Discus",
+            "from": "Mystery Bag (Daily Rewards)",
+            "price/code/rarity": "5%"
+        },
+        {
+            "name": "Disguise Watch",
+            "from": "Coin Shop",
+            "price/code/rarity": "1400 Coins"
+        },
+        {
+            "name": "Dollie Duck",
+            "from": "Opals LB (Easter 2025)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Double Cheezburger",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "425 Coins"
+        },
+        {
+            "name": "Dozens of Dinosaurs",
+            "from": "Legendary Chest (Daily Rewards)",
+            "price/code/rarity": "3.64%"
+        },
+        {
+            "name": "Dragon Plushie",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "910 Coins"
+        },
+        {
+            "name": "Dragonshead Cannon",
+            "from": "Coin Shop",
+            "price/code/rarity": "3200 Coins"
+        },
+        {
+            "name": "Drone",
+            "from": "Coin Shop",
+            "price/code/rarity": "3800 Coins"
+        },
+        {
+            "name": "Earth Horn",
+            "from": "Weekly Star Shop (Season 8)\nWeekly Star Shop (Season 12)",
+            "price/code/rarity": "30 Stars\n30 Stars"
+        },
+        {
+            "name": "Earth's Might Staff",
+            "from": "Rare Secret Item (Daily Rewards)",
+            "price/code/rarity": "14.29%"
+        },
+        {
+            "name": "Easter Gachapon",
+            "from": "Gamenight (Apr. 2025)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Egg Beater",
+            "from": "Gamenight (Apr. 2023)\nGamenight (Mar. 2024)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Egg Cannon",
+            "from": "Bundle (Easter 2025)",
+            "price/code/rarity": "299 Robux"
+        },
+        {
+            "name": "Egg Hammer",
+            "from": "Bunny's Quest (Easter 2024-2025)",
+            "price/code/rarity": "30 Eggs in Collection Contention"
+        },
+        {
+            "name": "Egg Locater",
+            "from": "Bunny's Quest (Easter 2024-2025)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Eggshot",
+            "from": "Egg Shop (Easter 2023)\nCoin Shop (Easter 2024-2025)",
+            "price/code/rarity": "15 Eggs\n450 Coins"
+        },
+        {
+            "name": "Eggstaff",
+            "from": "Egg Shop (Easter 2023)\nCoin Shop (Easter 2024-2025)",
+            "price/code/rarity": "32 Eggs\n960 Coins"
+        },
+        {
+            "name": "Electric Blue",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "0.83%"
+        },
+        {
+            "name": "Electronic Illumination Device",
+            "from": "Weekly Star Shop (Season 3)",
+            "price/code/rarity": "5 Stars"
+        },
+        {
+            "name": "Epic Award",
+            "from": "Top 10 Seasonal (Season 2)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Epic Duck Award",
+            "from": "Top 10 Seasonal (Season 12)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Epic Popper",
+            "from": "Arctic's Quest (2B Update)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "EPIC Stamper",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "780 Coins"
+        },
+        {
+            "name": "Epicsauce",
+            "from": "Coin Shop",
+            "price/code/rarity": "570 Coins"
+        },
+        {
+            "name": "Epiczza",
+            "from": "Coin Shop (2B Update)",
+            "price/code/rarity": "1350 Coins"
+        },
+        {
+            "name": "Exploding Heart",
+            "from": "Coin Shop (Valentines 2024)",
+            "price/code/rarity": "500 Coins"
+        },
+        {
+            "name": "Face Off Potion",
+            "from": "Coin Shop",
+            "price/code/rarity": "310 Coins"
+        },
+        {
+            "name": "Fake C4",
+            "from": "Coin Shop",
+            "price/code/rarity": "2400 Coins"
+        },
+        {
+            "name": "Festive Penguin",
+            "from": "Baubles LB (Christmas 2023)\nBaubles LB (Christmas 2024)",
+            "price/code/rarity": "--\n--"
+        },
+        {
+            "name": "Festive Plungers",
+            "from": "Flaming Present Drop (Christmas 2023)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Festive Teddy",
+            "from": "Baubles LB (Christmas 2022)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Fire Breath Potion",
+            "from": "Weekly Star Shop (Season 3)",
+            "price/code/rarity": "20 Stars"
+        },
+        {
+            "name": "Fire Extinguisher",
+            "from": "Coin Shop",
+            "price/code/rarity": "2200 Coins"
+        },
+        {
+            "name": "Fireworks",
+            "from": "Gamenight",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Flashbang",
+            "from": "Epic Chest",
+            "price/code/rarity": "500 Tokens"
+        },
+        {
+            "name": "Flashlight",
+            "from": "Weekly Star Shop (Season 3)",
+            "price/code/rarity": "5 Stars"
+        },
+        {
+            "name": "Flower Crossbow",
+            "from": "Star Progression (Season 8)\nStar Progression (Season 12)",
+            "price/code/rarity": "50 Stars\n50 Stars"
+        },
+        {
+            "name": "Flower Feet",
+            "from": "Coin Shop",
+            "price/code/rarity": "700 Coins"
+        },
+        {
+            "name": "Flowersplosian",
+            "from": "Code (Oct. 2024)",
+            "price/code/rarity": "[EXPIRED] \"lobby3\""
+        },
+        {
+            "name": "Fluffy Bunny",
+            "from": "Eggs LB (Easter 2023)\nEggs LB (Easter 2024)",
+            "price/code/rarity": "--\n--"
+        },
+        {
+            "name": "Flute",
+            "from": "Coin Shop",
+            "price/code/rarity": "360 Coins"
+        },
+        {
+            "name": "Foam Finger",
+            "from": "Coin Shop",
+            "price/code/rarity": "120 Coins"
+        },
+        {
+            "name": "Fortune Cookie",
+            "from": "Code (Sep. 2016)\nGamenight (Sep. 2023)",
+            "price/code/rarity": "[EXPIRED] \"\"fortunate\""
+        },
+        {
+            "name": "--\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "Fortune Telling Eight Ball",
+            "from": "Daily Missions",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Frisbee",
+            "from": "Item Crate (15m Playtime Rewards)",
+            "price/code/rarity": "3.85%"
+        },
+        {
+            "name": "Frost Potion",
+            "from": "Coin Shop (Christmas 2017-???)\nCoin Shop (???-Present)",
+            "price/code/rarity": "940 Coins\n1000 Coins"
+        },
+        {
+            "name": "Frosted Santa",
+            "from": "Festive Shop (Christmas 2022)\nEndless Sack (Christmas 2023)\nGift Globe (Christmas 2024)",
+            "price/code/rarity": "30 Baubles\n??? Baubles\n30 Baubles"
+        },
+        {
+            "name": "Frosty the Snowfriend",
+            "from": "Coin Shop (Christmas 2017-2024)",
+            "price/code/rarity": "500 Coins"
+        },
+        {
+            "name": "Frying Pan",
+            "from": "Weekly Star Shop (Season 5)\nWeekly Star Shop (Season 9)",
+            "price/code/rarity": "5 Stars\n5 Stars"
+        },
+        {
+            "name": "Game Studio Executive Briefcase",
+            "from": "Premium Chest",
+            "price/code/rarity": "99 Robux"
+        },
+        {
+            "name": "Geolocator",
+            "from": "Code (Jul. 2018)\nGamenight (Nov. 2022)",
+            "price/code/rarity": "[EXPIRED] \"\"located\""
+        },
+        {
+            "name": "--\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "Ghost Bag",
+            "from": "Coin Shop (Halloween 2016 - 2021)\nHalloween Shop (2022)\nCoin Shop (Halloween 2023-2024)",
+            "price/code/rarity": "120 Coins\n6 Pumpkins\n120 Coins"
+        },
+        {
+            "name": "Ghost Potion",
+            "from": "Weekly Star Shop (Season 6)\nWeekly Star Shop (Season 10)",
+            "price/code/rarity": "60 Stars\n60 Stars"
+        },
+        {
+            "name": "Giant Ninja Star",
+            "from": "Typical Chest",
+            "price/code/rarity": "250 Coins"
+        },
+        {
+            "name": "Giga Award",
+            "from": "Top 10 Seasonal (Season 5)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Goala Cola",
+            "from": "Sports Bag (Summer 2024)",
+            "price/code/rarity": "150 Visors"
+        },
+        {
+            "name": "Goblet",
+            "from": "Coin Shop",
+            "price/code/rarity": "50 Coins"
+        },
+        {
+            "name": "Gravity Gun",
+            "from": "Rare Secret Item (Daily Rewards)",
+            "price/code/rarity": "14.29%"
+        },
+        {
+            "name": "Green Balloon",
+            "from": "Item Crate (15m Playtime Rewards)",
+            "price/code/rarity": "3.85%"
+        },
+        {
+            "name": "Green Epicsauce",
+            "from": "Daily Missions",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Gridiron Guitar",
+            "from": "Secret Item (1hr Playtime rewards)",
+            "price/code/rarity": "3.85%"
+        },
+        {
+            "name": "Guitarmy",
+            "from": "Plus Token Shop",
+            "price/code/rarity": "90 Tokens"
+        },
+        {
+            "name": "Halloween Sparkler",
+            "from": "Coin Shop (Halloween 2019 - 2021)\nHalloween Shop (2022)\nCoin Shop (Halloween 2023-2024)",
+            "price/code/rarity": "480 Coins\n12 Pumpkins\n480 Coins"
+        },
+        {
+            "name": "Ham Bone",
+            "from": "Seasonal Star Shop (Season 6)\nSeasonal Star Shop (Season 10)",
+            "price/code/rarity": "15 Stars\n15 Stars"
+        },
+        {
+            "name": "Hand Cannon",
+            "from": "Secret Item (Daily Rewards)",
+            "price/code/rarity": "12.50%"
+        },
+        {
+            "name": "Haunted Pizza",
+            "from": "Coin Shop (Halloween 2017 - 2021)\nHalloween Shop (2022)\nCoin Shop (Halloween 2023-2024)",
+            "price/code/rarity": "200 Coins\n9 Pumpkins\n200 Coins"
+        },
+        {
+            "name": "Heart Balloon",
+            "from": "Code (Feb. 2020)\nGamenight (Apr., May, Jun., Aug., 2023)",
+            "price/code/rarity": "[EXPIRED] \"\"valentines2020\""
+        },
+        {
+            "name": "--\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "Hedgehog Friend",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "525 Coins"
+        },
+        {
+            "name": "Helen The Hiphipapotamus",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "1.16%"
+        },
+        {
+            "name": "Helper Cannon",
+            "from": "Elusive Bag (Daily Rewards)",
+            "price/code/rarity": "3.45%"
+        },
+        {
+            "name": "Holiday Ham",
+            "from": "Code (Oct. 2015)",
+            "price/code/rarity": "[EXPIRED] \"freshmeat\""
+        },
+        {
+            "name": "Hot Chocolate",
+            "from": "Coin Shop (Christmas 2016-2019)\nCoin Shop (Christmas 2021-2024)",
+            "price/code/rarity": "280 Coins\n280 Coins"
+        },
+        {
+            "name": "Hot Dog",
+            "from": "Coin Shop",
+            "price/code/rarity": "90 Coins"
+        },
+        {
+            "name": "Hypnocannon",
+            "from": "Token Shop",
+            "price/code/rarity": "560 Tokens"
+        },
+        {
+            "name": "Ice Cream",
+            "from": "Code (Apr. 2016)\nCoin Shop (???-Present)",
+            "price/code/rarity": "[EXPIRED] \"\"scream\""
+        },
+        {
+            "name": "230 Coins\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "Ice Staff",
+            "from": "Elusive Bag (Daily Rewards)",
+            "price/code/rarity": "3.45%"
+        },
+        {
+            "name": "Icicle Cannon",
+            "from": "Token Shop",
+            "price/code/rarity": "110 Tokens"
+        },
+        {
+            "name": "iLift Three",
+            "from": "Premium Chest",
+            "price/code/rarity": "99 Robux"
+        },
+        {
+            "name": "Inflatable Saxophone",
+            "from": "Typical Chest",
+            "price/code/rarity": "250 Coins"
+        },
+        {
+            "name": "Ink Launcher",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Instant Campfire",
+            "from": "Elusive Bag (Daily Rewards)",
+            "price/code/rarity": "1.03%"
+        },
+        {
+            "name": "Instant Snowman",
+            "from": "Bundle (Christmas 2022)",
+            "price/code/rarity": "299 Robux"
+        },
+        {
+            "name": "Item of Sentiment",
+            "from": "Coin Shop",
+            "price/code/rarity": "1337 Coins"
+        },
+        {
+            "name": "Jack Frost",
+            "from": "Weekly Star Shop (Season 7)\nWeekly Star Shop (Season 11)",
+            "price/code/rarity": "5 Stars"
+        },
+        {
+            "name": "Jingle Bell Launcher",
+            "from": "Bundle (Christmas 2023)",
+            "price/code/rarity": "299 Robux"
+        },
+        {
+            "name": "Jingle Bells",
+            "from": "Coin Shop (Christmas 2016)\nCode (Dec. 2017)\nCoin Shop (Christmas 2018-2024)",
+            "price/code/rarity": "370 Coins\n[EXPIRED] \"\"jingle\""
+        },
+        {
+            "name": "370 Coins\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "Killer Whale Launcher",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "1050 Coins"
+        },
+        {
+            "name": "Kittypult",
+            "from": "Legendary Chest (Daily Rewards)",
+            "price/code/rarity": "3.64%"
+        },
+        {
+            "name": "Korblox Deathspeaker's Spell Book",
+            "from": "Star Progression (Season 4)",
+            "price/code/rarity": "200 Stars"
+        },
+        {
+            "name": "Korblox Mage Staff",
+            "from": "Elusive Bag (Daily Rewards)",
+            "price/code/rarity": "2.41%"
+        },
+        {
+            "name": "Korblox Tripmine",
+            "from": "Secret Item (1hr Playtime rewards)",
+            "price/code/rarity": "3.85%"
+        },
+        {
+            "name": "Kunai",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "1.66%"
+        },
+        {
+            "name": "Laser Finger Pointers",
+            "from": "Coin Shop",
+            "price/code/rarity": "2300 Coins"
+        },
+        {
+            "name": "Latke",
+            "from": "Coin Shop (Christmas 2017-???)\nCoin Shop (???-2024)",
+            "price/code/rarity": "150 Coins\n150 Coins"
+        },
+        {
+            "name": "Leafstorm Wand",
+            "from": "#1 Baubles LB (Christmas 2023)\nArt Contest (Autumn 2023)\nArt Contest (Autumn 2024)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Liberty Torch",
+            "from": "Gamenight (May 2021)\nGamenight (Apr., Jun., Jul. 2023)\nWeekly Rotation",
+            "price/code/rarity": "--\n--\n1650 Coins"
+        },
+        {
+            "name": "Lightblox Jar",
+            "from": "Coin Shop",
+            "price/code/rarity": "350 Coins"
+        },
+        {
+            "name": "Lightning Wand",
+            "from": "Weekly Star Shop (Season 5)",
+            "price/code/rarity": "15 Stars"
+        },
+        {
+            "name": "Limb Stretching Spell",
+            "from": "Elusive Bag (Daily Rewards)",
+            "price/code/rarity": "3.45%"
+        },
+        {
+            "name": "Lollipop Cat",
+            "from": "Gamenight (Oct., Nov. 2023)\nGamenight (Oct. 2024)",
+            "price/code/rarity": "--\n--"
+        },
+        {
+            "name": "Love Hurts Ray Gun",
+            "from": "Bundle (Valentine's 2024)",
+            "price/code/rarity": "299 Robux"
+        },
+        {
+            "name": "Lucky Harp",
+            "from": "Code (Mar. 2023)",
+            "price/code/rarity": "[EXPIRED] \"musicalleprechaun\""
+        },
+        {
+            "name": "Magic Dragon",
+            "from": "Code (Jul. 2016)\nCoin Shop (???-Present)",
+            "price/code/rarity": "[EXPIRED] \"\"kadragon\""
+        },
+        {
+            "name": "880 Coins\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "Magical Horseshoe",
+            "from": "Coin Shop",
+            "price/code/rarity": "950 Coins"
+        },
+        {
+            "name": "Magical Umbrella",
+            "from": "Daily Missions",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Maraca",
+            "from": "Code (Oct. 2017)\nGamenight (Jul. 2022)",
+            "price/code/rarity": "[EXPIRED] \"\"shake\""
+        },
+        {
+            "name": "--\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "Marching Drum",
+            "from": "Coin Shop",
+            "price/code/rarity": "2800 Coins"
+        },
+        {
+            "name": "Mariachi Guitar",
+            "from": "Epic Party Reward (Premium)",
+            "price/code/rarity": "Rank 8"
+        },
+        {
+            "name": "Marshmallow Chirp",
+            "from": "Coin Shop",
+            "price/code/rarity": "130 Coins"
+        },
+        {
+            "name": "Mega Mallet",
+            "from": "Premium Chest",
+            "price/code/rarity": "99 Robux"
+        },
+        {
+            "name": "Megagavel",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "4900 Coins"
+        },
+        {
+            "name": "Megaphone",
+            "from": "Steel Chest (Daily Rewards)",
+            "price/code/rarity": "3.92%"
+        },
+        {
+            "name": "Menacing Mage Energy Ball",
+            "from": "Premium Chest",
+            "price/code/rarity": "99 Robux"
+        },
+        {
+            "name": "Metal Detector",
+            "from": "Coin Shop (2023-Present)",
+            "price/code/rarity": "950 Coins"
+        },
+        {
+            "name": "Metal Guitar",
+            "from": "Coin Shop",
+            "price/code/rarity": "2900 Coins"
+        },
+        {
+            "name": "Meteor Staff",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "0.50%"
+        },
+        {
+            "name": "Microphone",
+            "from": "Seasonal Star Shop (Season 2)",
+            "price/code/rarity": "40 Stars"
+        },
+        {
+            "name": "Misfortune Cookie",
+            "from": "Code (Oct. 2016)\nCoin Shop (Halloween 2018 - 2021)\nHalloween Shop (2022)\nCoin Shop (Halloween 2023-2024)",
+            "price/code/rarity": "[EXPIRED] \"\"misfortunate\"\" \n13 Coins\n2 Pumpkins\n13 Coins"
+        },
+        {
+            "name": "Moneybag",
+            "from": "Coin Shop",
+            "price/code/rarity": "10000 Coins"
+        },
+        {
+            "name": "Monster Friend",
+            "from": "Coin Shop (Halloween 2016 - 2021)\nHalloween Shop (2022)\nCoin Shop (Halloween 2023-2024)",
+            "price/code/rarity": "440 Coins\n15 Pumpkins\n440 Coins"
+        },
+        {
+            "name": "Monster Mash",
+            "from": "Coin Shop",
+            "price/code/rarity": "1700 Coins"
+        },
+        {
+            "name": "Moonwalk Potion",
+            "from": "Coin Shop",
+            "price/code/rarity": "1600 Coins"
+        },
+        {
+            "name": "Necromancer Staff",
+            "from": "Weekly Star Shop (Season 1)\nWeekly Star Shop (Season 5)",
+            "price/code/rarity": "40 Stars\n60 Stars"
+        },
+        {
+            "name": "Neon Laser Launcher",
+            "from": "Weekly Star Shop (Season 5)\nWeekly Star Shop (Season 9)",
+            "price/code/rarity": "30 Stars\n30 Stars"
+        },
+        {
+            "name": "Neon Throwing Stars",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "1.66%"
+        },
+        {
+            "name": "Noise Maker",
+            "from": "Coin Shop",
+            "price/code/rarity": "400 Coins"
+        },
+        {
+            "name": "Noob Hot Chocolate",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "360 Coins"
+        },
+        {
+            "name": "Noob Pop",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "500 Coins"
+        },
+        {
+            "name": "NoobTube",
+            "from": "Plus Token Shop",
+            "price/code/rarity": "470 Tokens"
+        },
+        {
+            "name": "Nunchucks",
+            "from": "Typical Chest ",
+            "price/code/rarity": "250 Coins"
+        },
+        {
+            "name": "Opulent Award",
+            "from": "Top 10 Seasonal (Season 7)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Ostentatious Award",
+            "from": "Top 10 Seasonal (Season 11)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Otherworldly Sceptre",
+            "from": "Old Man Quests",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Overseer Teddy",
+            "from": "Seasonal Star Shop (Season 3)",
+            "price/code/rarity": "40 Stars"
+        },
+        {
+            "name": "Paint Grenade",
+            "from": "Star Progression (Season 5)\nStar Progression (Season 9)",
+            "price/code/rarity": "50 Stars\n50 Stars"
+        },
+        {
+            "name": "Panda Friend",
+            "from": "Coin Shop",
+            "price/code/rarity": "380 Coins"
+        },
+        {
+            "name": "Party Blaster Paint Gun",
+            "from": "Epic Chest",
+            "price/code/rarity": "500 Tokens"
+        },
+        {
+            "name": "Party Horn",
+            "from": "Coin Shop (2B Update)",
+            "price/code/rarity": "750 Coins"
+        },
+        {
+            "name": "PE Whistle",
+            "from": "Epic Chest",
+            "price/code/rarity": "500 Tokens"
+        },
+        {
+            "name": "Personal Fighter Jets",
+            "from": "Premium Chest",
+            "price/code/rarity": "99 Robux"
+        },
+        {
+            "name": "Pest Hammer",
+            "from": "Old Man Quests",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Piggybank",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "670 Coins"
+        },
+        {
+            "name": "Pinata Bat",
+            "from": "Arctic's Quest (2B Update)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Pink Coconut Drink",
+            "from": "Gamenight (Jun. 2024)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Pirate Hook",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "1.66%"
+        },
+        {
+            "name": "Pirate Juice",
+            "from": "Coin Shop",
+            "price/code/rarity": "140 Coins"
+        },
+        {
+            "name": "Pizza",
+            "from": "Coin Shop",
+            "price/code/rarity": "200 Coins"
+        },
+        {
+            "name": "Plunger Launcher",
+            "from": "Secret Item (2B Update)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Poison Picnic",
+            "from": "Mystery Bag (Daily Rewards)",
+            "price/code/rarity": "5%"
+        },
+        {
+            "name": "Police Badge",
+            "from": "Weekly Star Shop (Season 5)\nWeekly Star Shop (Season 9)",
+            "price/code/rarity": "5 Stars\n5 Stars"
+        },
+        {
+            "name": "Pom-Poms",
+            "from": "Typical Chest",
+            "price/code/rarity": "250 Coins"
+        },
+        {
+            "name": "Pool Noodle",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "1.00%"
+        },
+        {
+            "name": "Powerful Paintbrush",
+            "from": "Premium Chest",
+            "price/code/rarity": "99 Robux"
+        },
+        {
+            "name": "Present Basket",
+            "from": "Code (Dec. 2024)",
+            "price/code/rarity": "[EXPIRED] \"epicchristmas\""
+        },
+        {
+            "name": "Prime Award",
+            "from": "Top 10 Seasonal (Season 6)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Princess Mischief's Wand",
+            "from": "Legendary Chest (Daily Rewards)",
+            "price/code/rarity": "3.64%"
+        },
+        {
+            "name": "Prodigious Award",
+            "from": "Top 10 Seasonal (Season 3)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Protest Sign: Blame John",
+            "from": "Weekly Star Shop (Season 4)",
+            "price/code/rarity": "10 Stars"
+        },
+        {
+            "name": "Protest Sign: Egg Hunt Nao",
+            "from": "Egg Shop (Easter 2023)\nCoin Shop (Easter 2024-2025)",
+            "price/code/rarity": "9 Eggs\n270 Coins"
+        },
+        {
+            "name": "Protest Sign: Eggs Are For Eating",
+            "from": "Egg Shop (Easter 2023)\nCoin Shop (Easter 2024-2025)",
+            "price/code/rarity": "3 Eggs\n90 Coins"
+        },
+        {
+            "name": "Protest Sign: Noobs",
+            "from": "Coin Shop",
+            "price/code/rarity": "590 Coins"
+        },
+        {
+            "name": "Protest Sign: Save the Noobs",
+            "from": "Typical Chest",
+            "price/code/rarity": "250 Coins"
+        },
+        {
+            "name": "Protest Sign: Touch Grass",
+            "from": "Weekly Star Shop (Season 5)",
+            "price/code/rarity": "5 Stars"
+        },
+        {
+            "name": "Protest: More Gear Nao",
+            "from": "Mystery Bag (Daily Rewards)",
+            "price/code/rarity": "5%"
+        },
+        {
+            "name": "Protest: Pro Fake Mustache",
+            "from": "Item Crate",
+            "price/code/rarity": "Playtime Rewards"
+        },
+        {
+            "name": "Pumpkin Bucket",
+            "from": "Coin Shop (Halloween 2016 - 2021)\nHalloween Shop (2022)\nCoin Shop (Halloween 2023-2024)",
+            "price/code/rarity": "50 Coins\n5 Pumpkins\n50 Coins"
+        },
+        {
+            "name": "Pumpkin Gun",
+            "from": "Purple Soul (Halloween 2023-2024)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Pumpkin Staff",
+            "from": "Bundle (Halloween 2023)",
+            "price/code/rarity": "299 Robux"
+        },
+        {
+            "name": "Punk Wrist Cuff",
+            "from": "Epic Party Reward (Premium)",
+            "price/code/rarity": "Rank 1"
+        },
+        {
+            "name": "R-80",
+            "from": "Daily Missions",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Ra'k Guitar",
+            "from": "Typical Chest",
+            "price/code/rarity": "250 Coins"
+        },
+        {
+            "name": "RAIG Table",
+            "from": "Star Progression (Season 3)",
+            "price/code/rarity": "50 Stars"
+        },
+        {
+            "name": "Rainbow Fireworks",
+            "from": "Typical Chest",
+            "price/code/rarity": "250 Coins"
+        },
+        {
+            "name": "Rainbow Wand",
+            "from": "#1 Eggs LB (Easter 2023)\nArt Contest (Spring 2023)\nGamenight (Apr., Jun. 2023)\n#1 Eggs LB (Easter 2024)\nGamenight (Mar. 2024)",
+            "price/code/rarity": "--\n--\n--"
+        },
+        {
+            "name": "Rat Plague Summoner",
+            "from": "Legendary Chest (Daily Rewards)",
+            "price/code/rarity": "3.64%"
+        },
+        {
+            "name": "RC Tank",
+            "from": "Legendary Chest (Daily Rewards)",
+            "price/code/rarity": "3.64%"
+        },
+        {
+            "name": "Red Balloon",
+            "from": "Seasonal Star Shop (Season 5)\nSeasonal Star Shop (Season 9)",
+            "price/code/rarity": "5 Stars\n5 Stars"
+        },
+        {
+            "name": "Red Foam Finger",
+            "from": "Coin Shop (Christmas 2017-2019)\nCoin Shop (Christmas 2021-2024)",
+            "price/code/rarity": "120 Coins\n120 Coins"
+        },
+        {
+            "name": "Red Pirate Juice",
+            "from": "Coin Shop (Christmas 2016-2019)\nCoin Shop (Christmas 2021-2024)",
+            "price/code/rarity": "140 Coins\n140 Coins"
+        },
+        {
+            "name": "Red Stratobloxxer",
+            "from": "Coin Shop",
+            "price/code/rarity": "750 Coins"
+        },
+        {
+            "name": "RedBLOX",
+            "from": "Daily Missions",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Retro Candy",
+            "from": "Item Crate (15m Playtime Rewards)",
+            "price/code/rarity": "3.85%"
+        },
+        {
+            "name": "Riot Shield and Billy Club Set",
+            "from": "Secret Item (1hr Playtime rewards)",
+            "price/code/rarity": "3.85%"
+        },
+        {
+            "name": "ROBAR eXtreme Chocolate Crunch",
+            "from": "Weekly Star Shop (Season 4)",
+            "price/code/rarity": "20 Stars"
+        },
+        {
+            "name": "Roblox Snowglobe",
+            "from": "Coin Shop (Christmas 2016-2024)",
+            "price/code/rarity": "50 Coins"
+        },
+        {
+            "name": "Robo Companion",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "600 Coins"
+        },
+        {
+            "name": "Roboarm",
+            "from": "Steel Chest (Daily Rewards)",
+            "price/code/rarity": "3.92%"
+        },
+        {
+            "name": "Rock It Guitar",
+            "from": "Starter Pack",
+            "price/code/rarity": "99 Robux"
+        },
+        {
+            "name": "Rolling Pin",
+            "from": "Daily Missions",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Roman Candle",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "1.66%"
+        },
+        {
+            "name": "RoVacuum",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "1.16%"
+        },
+        {
+            "name": "Sakura Parasol",
+            "from": "Gamenight (Feb., Apr., Jul., Aug. 2023)\nGamenight (Mar. 2024)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Santa",
+            "from": "Coin Shop",
+            "price/code/rarity": "200 Coins"
+        },
+        {
+            "name": "Saxophone",
+            "from": "Daily Missions",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "School's Out Launcher",
+            "from": "Secret Item (1hr Playtime rewards)",
+            "price/code/rarity": "3.85%"
+        },
+        {
+            "name": "Science Project: Potato",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "1550 Coins"
+        },
+        {
+            "name": "Science Project: Volcano",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "1550 Coins"
+        },
+        {
+            "name": "Scrumptious Award",
+            "from": "Top 10 Seasonal (Season 9)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Sea Sorcerer Staff",
+            "from": "Premium Chest",
+            "price/code/rarity": "99 Robux"
+        },
+        {
+            "name": "Selfie Stick",
+            "from": "Typical Chest",
+            "price/code/rarity": "250 Coins"
+        },
+        {
+            "name": "Seranok's Golden Chalice of Fame",
+            "from": "Legendary Chest (Daily Rewards)",
+            "price/code/rarity": "3.64%"
+        },
+        {
+            "name": "Shade Potion",
+            "from": "Black Soul (Halloween 2023-2024)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Shark Launcher",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "650 Coins"
+        },
+        {
+            "name": "Shrunken Head",
+            "from": "Mystery Bag (Daily Rewards)",
+            "price/code/rarity": "5%"
+        },
+        {
+            "name": "Shuriken",
+            "from": "Code (Oct. 2020)\nWeekly Rotation",
+            "price/code/rarity": "[EXPIRED] \"\"ninjastar\""
+        },
+        {
+            "name": "490 Coins\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "Sign: This is Epic",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "900 Coins"
+        },
+        {
+            "name": "Sign: This is NOT Epic",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "900 Coins"
+        },
+        {
+            "name": "Silly Guitar",
+            "from": "Coin Shop",
+            "price/code/rarity": "2700 Coins"
+        },
+        {
+            "name": "Simmering Star Wand",
+            "from": "Art Contest (Summer 2023)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Skele-tar",
+            "from": "Star Progression (Season 6)\nStar Progression (Season 10)",
+            "price/code/rarity": "150 Stars\n150 Stars"
+        },
+        {
+            "name": "Skelefriend",
+            "from": "Weekly Star Shop (Season 2)",
+            "price/code/rarity": "10 Stars"
+        },
+        {
+            "name": "Skeleton Foam Finger",
+            "from": "Coin Shop (Halloween 2019 - 2021)\nHalloween Shop (2022)\nCoin Shop (Halloween 2023-2024)",
+            "price/code/rarity": "120 Coins\n6 Pumpkins\n120 Coins"
+        },
+        {
+            "name": "Skull Gun",
+            "from": "Weekly Star Shop (Season 5)",
+            "price/code/rarity": "30 Stars"
+        },
+        {
+            "name": "Slateskin Potion",
+            "from": "Weekly Star Shop (Season 3)",
+            "price/code/rarity": "10 Stars"
+        },
+        {
+            "name": "Slingshot",
+            "from": "Coin Shop",
+            "price/code/rarity": "680 Coins"
+        },
+        {
+            "name": "Slurpee",
+            "from": "Code (May 2019)\nGamenight (Aug. 2023)\nGamenight (Jul. 2024)\nGamenight (Jan. 2025)\nWeekly Rotation",
+            "price/code/rarity": "[EXPIRED] \"\"slurp\""
+        },
+        {
+            "name": "--",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "--",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "--",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "333 Coins\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "Slush Cannon",
+            "from": "Snowman's Quest (Christmas 2023)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Slushie",
+            "from": "Typical Chest",
+            "price/code/rarity": "250 Coins"
+        },
+        {
+            "name": "Smashing Drum",
+            "from": "Steel Chest (Daily Rewards)",
+            "price/code/rarity": "1.96%"
+        },
+        {
+            "name": "Smore",
+            "from": "Code (Sep. 2015)\nCoin Shop (???-Present)",
+            "price/code/rarity": "[EXPIRED] \"\"eroms\""
+        },
+        {
+            "name": "150 Coins\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "Snowball",
+            "from": "Coin Shop",
+            "price/code/rarity": "200 Coins"
+        },
+        {
+            "name": "Snowball Cannon",
+            "from": "Quest (Christmas 2024)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Snowball Launcher",
+            "from": "Star Progression (Season 7)\nStar Progression (Season 11)",
+            "price/code/rarity": "150 Stars"
+        },
+        {
+            "name": "Snowman Gun",
+            "from": "Endless Sack (Christmas 2023)\nGift Globe (Christmas 2024)",
+            "price/code/rarity": "??? Baubles\n240 Baubles"
+        },
+        {
+            "name": "Sonic Boom Tuba",
+            "from": "Rare Secret Item (Daily Rewards)",
+            "price/code/rarity": "14.29%"
+        },
+        {
+            "name": "Soul Lantern",
+            "from": "Witch's Quest (Halloween 2023)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Space Sandwich",
+            "from": "Coin Shop",
+            "price/code/rarity": "280 Coins"
+        },
+        {
+            "name": "Sparkler",
+            "from": "Coin Shop (Christmas 2017)\nCoin Shop (2018-Present)",
+            "price/code/rarity": "480 Coins\n480 Coins"
+        },
+        {
+            "name": "Speech Bubble",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "840 Coins"
+        },
+        {
+            "name": "Spell Book of Ice Cold Revenge",
+            "from": "Weekly Star Shop (Season 7)\nWeekly Star Shop (Season 11)",
+            "price/code/rarity": "60 Stars\n60 Stars"
+        },
+        {
+            "name": "Spider Flinger",
+            "from": "Witch's Quest (Halloween 2023)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Spinning Robot Helmet",
+            "from": "Coin Shop",
+            "price/code/rarity": "340 Coins"
+        },
+        {
+            "name": "Spook Launcher",
+            "from": "Bundle (Halloween 2024)",
+            "price/code/rarity": "299 Robux"
+        },
+        {
+            "name": "Spooky Guitar",
+            "from": "Code (Oct. 2019)\nGamenight (Sep. 2023)",
+            "price/code/rarity": "[EXPIRED] \"\"scarytunes\""
+        },
+        {
+            "name": "--\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "Spray Paint",
+            "from": "Coin Shop (2018-2023)\nPremium Chest",
+            "price/code/rarity": "99 Robux\n99 Robux"
+        },
+        {
+            "name": "Squid Launcher",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "600 Coins"
+        },
+        {
+            "name": "Staff of Double DIsasters",
+            "from": "Legendary Chest (Daily Rewards)",
+            "price/code/rarity": "3.64%"
+        },
+        {
+            "name": "Staff of Neverending Frost",
+            "from": "Weekly Star Shop (Season 7)\nWeekly Star Shop (Season 11)",
+            "price/code/rarity": "30 Stars\n30 Stars"
+        },
+        {
+            "name": "Staff of Sparks",
+            "from": "Star Progression (Season 4)",
+            "price/code/rarity": "1800 Coins"
+        },
+        {
+            "name": "Staff of the Woodlands",
+            "from": "Coin Shop",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "Starblox Latte",
+            "from": "Coin Shop",
+            "price/code/rarity": "80 Coins"
+        },
+        {
+            "name": "Stardust Mooncaster",
+            "from": "Gamenight (May, Jun., Aug., Sep. 2023)\nGamenight (Jan. 2025)",
+            "price/code/rarity": "--\n--"
+        },
+        {
+            "name": "Starfish",
+            "from": "Typical Chest",
+            "price/code/rarity": "250 Coins"
+        },
+        {
+            "name": "Starfish Shuriken",
+            "from": "Token Shop",
+            "price/code/rarity": "20 Tokens"
+        },
+        {
+            "name": "Steampunk Zapper",
+            "from": "Premium Chest",
+            "price/code/rarity": "99 Robux"
+        },
+        {
+            "name": "Stitch Bunny",
+            "from": "Gamenight (Oct. 2023)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Stop Hitting Yourself",
+            "from": "Coin Shop",
+            "price/code/rarity": "3500 Coins"
+        },
+        {
+            "name": "Stupendous Award",
+            "from": "Top 10 Seasonal (Season 4)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Subspace Debonair Disguise",
+            "from": "Epic Chest",
+            "price/code/rarity": "500 Tokens"
+        },
+        {
+            "name": "Summer Fireworks",
+            "from": "Gamenight (Jun., Aug. 2023)\nGamenight (Jun. 2024)",
+            "price/code/rarity": "--\n--"
+        },
+        {
+            "name": "Super Slash Cat Claws",
+            "from": "Secret Item (Daily Rewards)",
+            "price/code/rarity": "12.50%"
+        },
+        {
+            "name": "Super-G LS33 Disruptor",
+            "from": "Secret Item (1hr Playtime rewards)",
+            "price/code/rarity": "3.85%"
+        },
+        {
+            "name": "Taco",
+            "from": "Coin Shop",
+            "price/code/rarity": "101 Coins"
+        },
+        {
+            "name": "Tambourine",
+            "from": "Daily Missions",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Teddy Bloxpin",
+            "from": "Coin Shop",
+            "price/code/rarity": "160 Coins"
+        },
+        {
+            "name": "Tee Shirt Cannon",
+            "from": "Epic Chest",
+            "price/code/rarity": "500 Tokens"
+        },
+        {
+            "name": "Tennis Racket",
+            "from": "Typical Chest",
+            "price/code/rarity": "250 Coins"
+        },
+        {
+            "name": "The Awe Star",
+            "from": "Secret Item (1hr Playtime rewards)",
+            "price/code/rarity": "3.85%"
+        },
+        {
+            "name": "The Celebrator",
+            "from": "Arctic's Quest (2B Update)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "The Christmas Creep",
+            "from": "Coin Shop (Christmas 2017-2024)",
+            "price/code/rarity": "300 Coins"
+        },
+        {
+            "name": "The Fiery Sun",
+            "from": "Weekly Star Shop (Season 5)\nWeekly Star Shop (Season 9)",
+            "price/code/rarity": "30 Stars\n30 Stars"
+        },
+        {
+            "name": "The Midas Glove",
+            "from": "Token Shop",
+            "price/code/rarity": "1000 Tokens"
+        },
+        {
+            "name": "Throwing Barrel",
+            "from": "Coin Shop",
+            "price/code/rarity": "2600 Coins"
+        },
+        {
+            "name": "Throwing Bolts",
+            "from": "Premium Chest",
+            "price/code/rarity": "99 Robux"
+        },
+        {
+            "name": "Throwing Spork",
+            "from": "Coin Shop",
+            "price/code/rarity": "800 Coins"
+        },
+        {
+            "name": "Ticket Launcher",
+            "from": "Typical Chest",
+            "price/code/rarity": "250 Coins"
+        },
+        {
+            "name": "Tiger Friend",
+            "from": "Token Shop",
+            "price/code/rarity": "230 Token"
+        },
+        {
+            "name": "Tiger Warrior Club",
+            "from": "Typical Chest",
+            "price/code/rarity": "250 Coins"
+        },
+        {
+            "name": "Tom's Beans",
+            "from": "Coin Shop",
+            "price/code/rarity": "220 Coins"
+        },
+        {
+            "name": "TOMATOES!",
+            "from": "Weekly Rotation",
+            "price/code/rarity": "1250 Coins"
+        },
+        {
+            "name": "Top Secret Briefcase",
+            "from": "Secret Item (1hr Playtime rewards)",
+            "price/code/rarity": "3.85%"
+        },
+        {
+            "name": "Torch",
+            "from": "Coin Shop",
+            "price/code/rarity": "250 Coins"
+        },
+        {
+            "name": "Touchdown Football",
+            "from": "Sports Bag (Summer 2024)",
+            "price/code/rarity": "50 Visors"
+        },
+        {
+            "name": "Trowel",
+            "from": "Map Building",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Turkey Leg",
+            "from": "Code (Sep. 2015)\nGamenight (Nov. 2023)",
+            "price/code/rarity": "[EXPIRED] \"\"gobblegobble\""
+        },
+        {
+            "name": "--\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "TypicalToype",
+            "from": "Toy Code Item",
+            "price/code/rarity": "Series 3: \"TypicalType\""
+        },
+        {
+            "name": "Uber Award",
+            "from": "Top 10 Seasonal (Season 8)",
+            "price/code/rarity": "--"
+        },
+        {
+            "name": "Ultra-Flat Spray Paint",
+            "from": "Daily Missions (2018-2022)\nUnobtainable",
+            "price/code/rarity": "--\n--"
+        },
+        {
+            "name": "Valentine's Throwing Stars",
+            "from": "Coin Shop (Valentine's 2025)",
+            "price/code/rarity": "300 Coins"
+        },
+        {
+            "name": "Victrola",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "0.66%"
+        },
+        {
+            "name": "Vine Staff",
+            "from": "Weekly Star Shop (Season 8)\nWeekly Star Shop (Season 12)",
+            "price/code/rarity": "60 Stars\n60 Stars"
+        },
+        {
+            "name": "Waffle",
+            "from": "Coin Shop",
+            "price/code/rarity": "240 Coins"
+        },
+        {
+            "name": "War Rocks",
+            "from": "Item Crate (15m Playtime Rewards)",
+            "price/code/rarity": "3.85%"
+        },
+        {
+            "name": "Watermelon",
+            "from": "Code (Sep. 2015)\nCoin Shop (???-Present)",
+            "price/code/rarity": "[EXPIRED] \"\"nomtermelon\""
+        },
+        {
+            "name": "130 Coins\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "Whoopee Cushion",
+            "from": "Coin Shop",
+            "price/code/rarity": "460 Coins"
+        },
+        {
+            "name": "Wild West Sarsaparilla",
+            "from": "Secret Item (1hr Playtime rewards)",
+            "price/code/rarity": "3.85%"
+        },
+        {
+            "name": "Winsome Wizard Wand",
+            "from": "Lucky Chest (30m Playtime Rewards)",
+            "price/code/rarity": "1.66%"
+        },
+        {
+            "name": "Winter Snowfall",
+            "from": "Coin Shop (Christmas 2017-2024)",
+            "price/code/rarity": "2500 Coins"
+        },
+        {
+            "name": "Witches Brew",
+            "from": "Coin Shop",
+            "price/code/rarity": "240 Coins"
+        },
+        {
+            "name": "Wooden Sword",
+            "from": "Coin Shop",
+            "price/code/rarity": "550 Coins"
+        },
+        {
+            "name": "Yellow Card",
+            "from": "Epic Party Reward (Free)",
+            "price/code/rarity": "Rank 13"
+        },
+        {
+            "name": "Yellow Snowball",
+            "from": "Item Crate (15m Playtime Rewards)",
+            "price/code/rarity": "3.85%"
+        },
+        {
+            "name": "Zee's Cotton Candy",
+            "from": "Art Contest (Winter 2022)\nGamenight (Dec. 2022)\nGamenight (Mar. 2024)",
+            "price/code/rarity": "--\n--\n--"
+        },
+        {
+            "name": "Zombie Protest Sign",
+            "from": "Code (Oct. 2015)\nCode (Oct. 2017)\nCoin Shop (Halloween 2018 - 2021)\nHalloween Shop (2022)\nCoin Shop (Halloween 2023-2024)",
+            "price/code/rarity": "[EXPIRED] \"\"zombieprotest\""
+        },
+        {
+            "name": "[EXPIRED] \"\"brains\"\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "260 Coins",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "10 Pumpkins",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "260 Coins\"",
+            "from": "",
+            "price/code/rarity": ""
+        },
+        {
+            "name": "Zombie STOPing Axe",
+            "from": "Secret Item (1hr Playtime rewards)",
+            "price/code/rarity": "3.85%"
+        }
+    ]
+}
