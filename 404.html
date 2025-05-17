@@ -13,11 +13,16 @@
         body{
             background: black;
             overflow-x: hidden;
+            pointer-events: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            position: absolute;
         }
 
         h1 {
-
-            place-self: anchor-center;
+            -webkit-transform-origin-y: top;
+            position-area: top;
             margin: 78px 0;
             background: -webkit-linear-gradient(top, #55557f, #b7b7b7, #000000) text;
             -webkit-background-clip: text;
@@ -25,7 +30,6 @@
             font-family: system-ui;
             font-size: 11vw;
             -webkit-text-fill-color: transparent;
-
         }
     </style>
 <h1>Error 404</h1>
