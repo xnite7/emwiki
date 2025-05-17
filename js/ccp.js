@@ -129,7 +129,7 @@ function onResize( event ) {
 function restart() {
 
 	w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-  h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+  h = window.innerHeight/2 || document.documentElement.clientHeight || document.body.clientHeight;
 
   canvas.width = w;
   canvas.height = h;
