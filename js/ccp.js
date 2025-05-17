@@ -15,7 +15,7 @@ const capturer = new CCapture( { format: 'png', framerate: 60, verbose: true } )
 //---
 
 let w = 980;
-let h = 420;
+let h = 100;
 
 //---
 
