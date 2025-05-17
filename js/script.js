@@ -408,7 +408,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             } else if (children[1].textContent.includes("Coins")) {
               children[1].textContent = children[1].textContent.replace(" Coins", "");
-              children[0].src = "../imgs/Coins.webp";
+              children[0].src = "../imgs/Coin.webp";
 
             } else if (children[1].textContent.includes("Stars")) {
               children[1].textContent = children[1].textContent.replace(" Stars", "");
