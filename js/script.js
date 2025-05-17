@@ -408,7 +408,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             } else if (children[1].textContent.includes("Coins")) {
               children[1].textContent = children[1].textContent.replace(" Coins", "");
-              children[0].src = "https://static.wikia.nocookie.net/epic-minigames/images/6/6d/Coin.png/revision/latest?cb=20220321100050";
+              children[0].src = "../imgs/Coins.webp";
 
             } else if (children[1].textContent.includes("Stars")) {
               children[1].textContent = children[1].textContent.replace(" Stars", "");
