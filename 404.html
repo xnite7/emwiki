@@ -28,6 +28,25 @@
             position: absolute;
             place-self: anchor-center;
             margin-bottom: auto;
+
+            .text {
+                font-family: "Courier Prime";
+                font-size: 6rem;
+                filter: url(#f1);
+                color: rgba(255, 255, 255, 0.8);
+                ::selection {
+                    color: #111;
+                    background: rgba(#83f52c, 0.8);
+                }
+                ::-moz-selection {
+                    color: #111;
+                    background: rgba(#83f52c, 0.8);
+                }
+                ::-webkit-selection {
+                    color: #111;
+                    background: rgba(#83f52c, 0.8);
+                }
+            }
         }
     </style>
 <h1>Error 404</h1>
