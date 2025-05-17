@@ -1,24 +1,4 @@
-function gearstab() {
-  window.location.href="gears.html";
-}
-function cheststab() {
-  window.location.href="chests.html";
-}
-function petstab() {
-  window.location.href="pets.html";
-}
-function effectstab() {
-  window.location.href="effects.html";
-}
-function deathstab() {
-  window.location.href="deaths.html";
-}
-function titlestab() {
-  window.location.href="titles.html";
-}
-function scammerstab() {
-  window.location.href="scammers.html";
-}
+
 
 function filterItems() {
   const searchValue = document.getElementById('search-bar').value.toLowerCase();
@@ -78,7 +58,7 @@ fetch('https://api.github.com/gists/82f0b2c26f32c95ae00cf42cf99323e3')
         const avatarUrl = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=100x100&format=Png&isCircular=false`;
 
         try {
-          const response = await fetch(proxyUrl + avatarUrl);
+          const response = await fetch(avatarUrl);
           const data = await response.json();
           const imageUrl = data.data[0]?.imageUrl || null;
 
