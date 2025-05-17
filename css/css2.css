@@ -5,6 +5,13 @@
 }
 
 @font-face {
+    font-family: 'Bunny Flowers';
+    font-style: normal;
+    font-weight: normal;
+    src: url("../fonts/Bunny Flowers-Regular.woff") format('woff');
+}
+
+@font-face {
   font-family: BuilderSans;
   font-weight: 300;
   src: url("../fonts/BuilderSans-Light-300.woff2") format('woff2');
