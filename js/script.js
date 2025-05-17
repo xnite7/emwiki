@@ -12,23 +12,23 @@ fetch('https://api.github.com/gists/7fcec01fdc989745bdd556e60de728fa')
     let color;
     console.log(page)
 
-    if (page === 'gears.html') {
+    if (page === 'gears') {
       document.body.style.backgroundColor = "#24be31";
       color = "rgb(91, 254, 106)";
       arr = arr.gears;
-    } else if (page === 'deaths.html') {
+    } else if (page === 'deaths') {
       document.body.style.backgroundColor = "#be4324";
       color = "rgb(255, 122, 94)";
       arr = arr.deaths;
-    } else if (page === 'titles.html') {
+    } else if (page === 'titles') {
       document.body.style.backgroundColor = "#7724c0";
       color = "rgb(201, 96, 254)";
       arr = arr.titles;
-    } else if (page === 'pets.html') {
+    } else if (page === 'pets') {
       document.body.style.backgroundColor = "#2723c1";
       color = "rgb(55, 122, 250)";
       arr = arr.pets;
-    } else if (page === 'effects.html') {
+    } else if (page === 'effects') {
       document.body.style.backgroundColor = "#c08223";
       color = "rgb(255, 177, 53)";
       arr = arr.effects;
