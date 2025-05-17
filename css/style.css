@@ -259,12 +259,19 @@ input {
 }
 
 footer {
-    background: #707070;
+    background: linear-gradient(180deg, #717171, #515151);
     text-align: center;
     padding: 0 0 0rem 0;
     margin-top: 38px;
     box-shadow: 0 0 1em 0px #0000004a;
-    border-radius: 50px 50px 0 0;
+    border-radius: 30px 30px 0 0;
+}
+
+footer p {
+    padding: 27px 0;
+    margin-bottom: 0;
+    color: #ffffffb0;
+    font-family: 'Finger Paint';
 }
 
 canvas{
