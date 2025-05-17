@@ -10,7 +10,7 @@ fetch('https://api.github.com/gists/7fcec01fdc989745bdd556e60de728fa')
     const page = window.location.pathname.split('/').pop(); // Get the current file name
     let arr = JSON.parse(data.files["auto.Json"].content); // Parse the JSON content
     let color;
-    
+    console.log(page)
 
     if (page === 'gears.html') {
       document.body.style.backgroundColor = "#24be31";
