@@ -25,7 +25,7 @@ header h1 {
   font-size: 2.5rem;
 }
 
-nav {height: 88px;display: flex;gap: 4px;align-items: flex-end;justify-content: center;  -webkit-user-select: none; /* Safari */
+nav {height: 88px;display: flex;gap: 0.5vw;align-items: flex-end;justify-content: center;  -webkit-user-select: none; /* Safari */
   -ms-user-select: none; /* IE 10 and IE 11 */
   user-select: none; /* Standard syntax */}
 
@@ -52,7 +52,7 @@ nav a:hover img {
 nav a {
   display: flex;
   max-width: 100px;
-  width: 12vw;
+  width: 8vw;
   max-height: inherit;
   padding: 0.35rem;
   border-radius: 35% 35% 0 0;
@@ -80,9 +80,11 @@ nav a:nth-child(5) {
 }
 nav a:nth-child(6) {
   background: linear-gradient(345deg, #238099, #71cbff);
+  margin-left: 4.5vw;
 }
 nav a:nth-child(7) {
   background: linear-gradient(345deg, black, #717171);
+  margin-left: 4.5vw;
 }
 nav a:nth-child(7):hover > img {
   content:url("https://i.imgur.com/5liRRie.png");
