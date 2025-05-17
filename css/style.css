@@ -25,7 +25,13 @@ header h1 {
   font-size: 2.5rem;
 }
 
-nav {height: 88px;display: flex;gap: 0.5vw;align-items: flex-end;justify-content: center;  -webkit-user-select: none; /* Safari */
+nav {
+  height: 11vw;
+  display: flex;
+  gap: 0.5vw;
+  align-items: flex-end;
+  justify-content: center;
+  -webkit-user-select: none; /* Safari */
   -ms-user-select: none; /* IE 10 and IE 11 */
   user-select: none; /* Standard syntax */}
 
