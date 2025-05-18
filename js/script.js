@@ -68,7 +68,7 @@ fetch('https://api.github.com/gists/7fcec01fdc989745bdd556e60de728fa')
     const page = window.location.pathname.split('/').pop(); // Get the current file name
     let arr = JSON.parse(data.files["auto.Json"].content); // Parse the JSON content
     let color;
-    console.log(page)
+
 
     if (page === 'gears') {
       document.body.style.backgroundColor = "#24be31";
@@ -616,8 +616,6 @@ document.addEventListener("DOMContentLoaded", () => {
           }
       if (item.childNodes[1]) {
         let fontsize = parseInt(window.getComputedStyle(item.childNodes[1]).fontSize, 10);
-        console.log(item.childNodes[1].offsetWidth, item.offsetWidth, fontsize);
-        console.log(item.childNodes[1]);
 
         while (item.childNodes[1].offsetWidth > 150 && fontsize > 14) {
           fontsize -= 2;
@@ -644,8 +642,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const scrollToTop = () => {
 
     const c = document.documentElement.scrollTop || document.body.scrollTop;
-    console.log(c);
-    
+
 
     if (c > 6) {
       window.requestAnimationFrame(scrollToTop);
