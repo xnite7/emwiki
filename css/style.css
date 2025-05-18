@@ -1101,3 +1101,75 @@ html {
 
 
 
+.cloud, .cloud2, .cloud3, .cloud4 {
+  -webkit-animation: cloud 4.5s linear 2s infinite alternate;
+  animation: cloud 8s ease 2s infinite alternate;
+  position: absolute;
+      pointer-events: none;
+}
+
+.cloud2{
+	top: 52%; left: 31%;
+  animation-duration: 6s;
+}
+
+.cloud3{
+	top: 22%; left: 71%;
+  animation-duration: 7s;
+}
+
+.cloud4{
+	top: 92%; left: 11%;
+  animation-duration: 10s;
+}
+
+.logo5{
+  animation: logo 6s ease 0s infinite alternate;
+}
+.logo6{
+  animation: logo 7s ease 0s infinite alternate;
+}
+.logo4{
+  animation: logo1 12s ease 0s infinite alternate;
+}
+@keyframes logo1 {
+  0% {
+    transform: translateY(0px) rotate(10deg);
+    opacity: 0.5;
+
+  }
+  100% {
+
+    transform: translateY(-15px) rotate(35deg);
+    opacity: 1;
+
+  }
+}
+
+@keyframes logo {
+  0% {
+    transform: translateY(0px);
+    opacity: 0.5;
+
+  }
+  100% {
+
+    transform: translateY(-15px);
+    opacity: 1;
+
+  }
+}
+
+@keyframes cloud {
+  0% {
+    transform: translateY(0px);
+    opacity: 0;
+
+  }
+  100% {
+
+    transform: translateY(-15px);
+    opacity: 0.8;
+
+  }
+}
