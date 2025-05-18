@@ -1,3 +1,57 @@
+ let intro = document.querySelector('.intro')
+  let logo = document.querySelector('.logo-header')
+    
+  let logo3 = document.querySelector('.logo3')
+  let logoSpan = document.querySelectorAll('.logo')
+var d = Math.random();
+  if (d > 0.9){
+    logo3.src="https://i.imgur.com/o7IJiwl.png"
+  }else{
+    logo3.src="https://i.imgur.com/XRmpB1c.png"
+  }
+
+window.addEventListener('DOMContentLoaded', ()=>{
+
+let header = document.querySelector('.headersheet')
+
+  setTimeout(() => {
+
+        logoSpan.forEach((span, idx) =>{
+            setTimeout(()=>{
+              span.classList.add('active')
+              logo3.classList.add('active')
+            }, (idx + 1) * 400)
+        });
+
+        setTimeout(() => {
+          logoSpan.forEach((span, idx) =>{
+
+
+              setTimeout(()=>{
+                span.classList.remove('active')
+                span.classList.add('fade')
+                logo3.classList.remove('active')
+                logo3.classList.add('fade')
+
+              }, (idx + 1) * 50)
+            })
+        },2000)
+
+        setTimeout(()=>{
+            logo.style.scale = "2"
+            intro.style.backdropFilter = 'blur(0px)'
+            intro.style.filter = 'opacity(0)'
+        }, 2000)
+        setTimeout(()=>{
+            intro.style.top = "-100vh"
+            header.style.opacity = "1"
+        }, 2500)
+    })
+})
+
+
+
+
 fetch('https://api.github.com/gists/7fcec01fdc989745bdd556e60de728fa')
 
   .then(results => {
