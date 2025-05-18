@@ -1,19 +1,23 @@
- 
+ let imgg;
 if (document.querySelector('.intro')) {
 let intro = document.querySelector('.intro')
   let logo = document.querySelector('.logo-header')
     
   let logo3 = document.querySelector('.logo3')
+  
   let logoSpan = document.querySelectorAll('.logo')
 var d = Math.random();
   if (d > 0.9){
     logo3.src="https://i.imgur.com/o7IJiwl.png"
+imgg="https://i.imgur.com/o7IJiwl.png"
   }else{
     logo3.src="https://i.imgur.com/XRmpB1c.png"
+imgg="https://i.imgur.com/XRmpB1c.png"
   }
 
 window.addEventListener('DOMContentLoaded', ()=>{
-
+let logo4 = document.querySelector('.logo4')
+logo4.src= imgg
 let header = document.querySelector('.headersheet')
 
   setTimeout(() => {
@@ -69,24 +73,23 @@ fetch('https://api.github.com/gists/7fcec01fdc989745bdd556e60de728fa')
     let arr = JSON.parse(data.files["auto.Json"].content); // Parse the JSON content
     let color;
 
-
-    if (page === 'gears') {
+    if (page.includes("gears")) {
       document.body.style.backgroundColor = "#24be31";
       color = "rgb(91, 254, 106)";
       arr = arr.gears;
-    } else if (page === 'deaths') {
+    } else if (page.includes("deaths")) {
       document.body.style.backgroundColor = "#be4324";
       color = "rgb(255, 122, 94)";
       arr = arr.deaths;
-    } else if (page === 'titles') {
+    } else if (page.includes("titles")) {
       document.body.style.backgroundColor = "#7724c0";
       color = "rgb(201, 96, 254)";
       arr = arr.titles;
-    } else if (page === 'pets') {
+    } else if (page.includes("pets")) {
       document.body.style.backgroundColor = "#2723c1";
       color = "rgb(55, 122, 250)";
       arr = arr.pets;
-    } else if (page === 'effects') {
+    } else if (page.includes("effects")) {
       document.body.style.backgroundColor = "#c08223";
       color = "rgb(255, 177, 53)";
       arr = arr.effects;
