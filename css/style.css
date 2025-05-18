@@ -9,6 +9,15 @@ body {
   transition: all 0.4s ease;
 
 }
+#preloadedImages
+{
+    width: 0px;
+    height: 0px;
+    display: inline;
+    background-image: url("https://i.imgur.com/5liRRie.png");
+    background-image: url("https://i.imgur.com/XRmpB1c.png");
+
+}
 .intro {
   position: fixed;
   z-index: 127;
@@ -150,7 +159,8 @@ nav {
   justify-content: center;
   -webkit-user-select: none; /* Safari */
   -ms-user-select: none; /* IE 10 and IE 11 */
-  user-select: none; /* Standard syntax */}
+  user-select: none; /* Standard syntax */
+}
 
 #search-bar {
   font-size: 16px;

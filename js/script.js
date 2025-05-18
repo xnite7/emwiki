@@ -1,4 +1,6 @@
- let intro = document.querySelector('.intro')
+ 
+if (document.querySelector('.intro')) {
+let intro = document.querySelector('.intro')
   let logo = document.querySelector('.logo-header')
     
   let logo3 = document.querySelector('.logo3')
@@ -49,6 +51,8 @@ let header = document.querySelector('.headersheet')
     })
 })
 
+}
+ 
 
 
 
