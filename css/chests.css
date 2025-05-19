@@ -1166,4 +1166,8 @@ html {
       font-size: 5rem;
   }
 
+  .tooltip {
+ display: none;
+}
+
 }
