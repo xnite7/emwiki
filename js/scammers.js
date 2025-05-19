@@ -43,14 +43,12 @@ fetch('https://api.github.com/gists/82f0b2c26f32c95ae00cf42cf99323e3')
       var id = discordMatch ? discordMatch[1].trim() : "N/A";
       console.log(id)
 
-      const token = 'p'
+
       // You might want to store this in an environment variable or something
       if (id != "N/A") {
         const proxyUrl = 'https://corsproxy.io/?';
         const response = await fetch(proxyUrl+`https://discord.com/api/v9/users/${id}`, {
-          headers: {
-            Authorization: `Bot ${token}`
-      }})
+})
         const data = await response.json();
         console.log(data)
         }
