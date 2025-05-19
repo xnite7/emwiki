@@ -237,7 +237,9 @@ nav button:hover img {
   nav {
     height: auto;
   }
-
+  nav a:hover {
+      transform: translateZ(0px) translateY(0px);
+  }
   nav a {
     display: flex;
     max-width: 100px;
