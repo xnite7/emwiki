@@ -60,7 +60,7 @@ let header = document.querySelector('.headersheet')
 
 
 
-fetch('https://api.github.com/gists/7fcec01fdc989745bdd556e60de728fa')
+fetch('https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91')
 
   .then(results => {
 
@@ -70,7 +70,7 @@ fetch('https://api.github.com/gists/7fcec01fdc989745bdd556e60de728fa')
     
     // Determine the current page and select the appropriate data
     const page = window.location.pathname.split('/').pop(); // Get the current file name
-    let arr = JSON.parse(data.files["auto.Json"].content); // Parse the JSON content
+    let arr = JSON.parse(data.files["auto.json"].content); // Parse the JSON content
     let color;
 
     if (page.includes("gears")) {
