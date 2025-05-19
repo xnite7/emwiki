@@ -129,56 +129,96 @@ nav button:hover img {
 }
 
 .scammer-block {
-    width: 44vw;
-    background: linear-gradient(45deg, #2c2c2c, #2c2c2c, #080808);
-    border: 18px solid #141414;
-    padding: 10px;
-    margin: 10px 0;
-    height: 482px;
-    border-radius: 45px;
-    display: block;
+  width: 100%;
+  max-width: 900px;
+  background: linear-gradient(45deg, #2c2c2c, #080808);
+  border: 18px solid #141414;
+  border-radius: 30px;
+  margin: 20px auto;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
-.scammerimg {
-  width: 27%;
-  float: left;
-  filter: blur(0px);
-  padding-left: 27px;
-  margin: 50px 0 50px 0;
+.scammer-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
-.gradient {
-  position: absolute;
-  background: linear-gradient(0deg, #2c2c2c, transparent, transparent);
-  z-index: 99;
-  width: 27%;
-  height: 73%;
-  top: 75px;
-  padding-left: 35px;
+.scammer-img {
+  width: 150px;
+  height: 150px;
+  border-radius: 20px;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
-.scammer-block h2 {
-    justify-self: center;
-    font-size: 600%;
-    font-family: 'BuilderSans';
-    background: -webkit-linear-gradient(#ffffff, #c7c7c78f);
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin: 45px 0 0 0;
-    font-weight: 700;
-    width: 60%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.scammer-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 200px;
 }
-.scammer-block p {
-    margin: 0;
-    font-size: xx-large;
-    font-family: 'BuilderSans';
-    justify-self: center;
+
+.scammer-info h2 {
+  font-size: 2rem;
+  font-family: 'BuilderSans', sans-serif;
+  background: -webkit-linear-gradient(#ffffff, #c7c7c78f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scammer-info p {
+  font-size: 1.2rem;
+  font-family: 'BuilderSans', sans-serif;
+  color: #56697b;
+  margin: 0;
+}
+
+.tour-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 15px;
+  background-color: #1e1e1e;
+  color: #ffffff;
+  border: 1px solid #333;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.tour-button:hover {
+  background-color: #333;
+}
+
+/* Mobile-friendly adjustments */
+@media (max-width: 600px) {
+  .scammer-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .scammer-img {
     width: 100%;
-    color: #56697b;
+    height: auto;
+  }
+
+  .scammer-info h2 {
+    font-size: 1.5rem;
+    white-space: normal;
+  }
 }
+
 
 nav a > img {
   transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
