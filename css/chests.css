@@ -258,32 +258,32 @@ nav a {
   align-items: stretch;
 }
 
-nav a:nth-child(1) {
+nav#gearstab {
   background: linear-gradient(145deg, #47fd4e, #1de9c4);
 }
-nav a:nth-child(2) {
+nav#deathstab {
   background: linear-gradient(145deg, #ff4848, #ff6f1a);
 }
-nav a:nth-child(3) {
+nav#petstab {
   background: linear-gradient(145deg, #f347fd, #a215fa);
 }
-nav a:nth-child(4) {
+nav#titlestab {
   background: linear-gradient(145deg, #4facff, #4915fa);
 }
-nav a:nth-child(5) {
+nav#effectstab {
   background: linear-gradient(145deg, #fdf147, #fa9415);
 }
-nav a:nth-child(6) {
+nav#cheststab {
   background: linear-gradient(345deg, #238099, #71cbff);
 }
-nav a:nth-child(7) {
+nav#scammerstab {
   background: linear-gradient(345deg, black, #717171);
 }
-nav a:nth-child(7):hover > img {
+nav#scammerstab:hover > img {
   content:url("https://i.imgur.com/5liRRie.png");
 }
 
-nav a:nth-child(7) > img {
+nav#scammerstab > img {
   content:url("https://i.imgur.com/SK5csOS.png");
 }
 
@@ -292,14 +292,14 @@ nav a:hover {
   transform: translateZ(40px) translateY(0px);
 }
 
-nav a:nth-child(1):hover {
+nav#gearstab:hover {
 
   background: linear-gradient(145deg, #84fe80, #46faff);
   box-shadow: inset 2px 2px 5px rgba(160, 110, 0, 0.5), inset -2px -2px 5px rgba(255, 245, 200, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
 
 }
 
-nav a:nth-child(2):hover {
+nav#deathstab:hover {
 
   background: linear-gradient(145deg, #ff5252, #ff7f34);
   box-shadow: inset 2px 2px 5px rgba(160, 110, 0, 0.5), inset -2px -2px 5px rgba(255, 245, 200, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
@@ -307,35 +307,35 @@ nav a:nth-child(2):hover {
 
 }
 
-nav a:nth-child(3):hover {
+nav#petstab:hover {
 
   background: linear-gradient(145deg, #f762ff, #a137e7);
   box-shadow: inset 2px 2px 5px rgba(160, 110, 0, 0.5), inset -2px -2px 5px rgba(255, 245, 200, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
 
 }
 
-nav a:nth-child(4):hover {
+nav#titlestab:hover {
 
   background: linear-gradient(145deg, #7dd4ff, #0055e5);
   box-shadow: inset 2px 2px 5px rgba(160, 110, 0, 0.5), inset -2px -2px 5px rgba(255, 245, 200, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
 
 }
 
-nav a:nth-child(5):hover {
+nav#effectstab:hover {
 
   background: linear-gradient(145deg, #fcff38, #ffb724);
   box-shadow: inset 2px 2px 5px rgba(160, 110, 0, 0.5), inset -2px -2px 5px rgba(255, 245, 200, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
 
 }
 
-nav a:nth-child(6):hover {
+nav#cheststab:hover {
 
   background: linear-gradient(345deg, #3e9db8, #94d8ff);
   box-shadow: inset 2px 2px 5px rgba(160, 110, 0, 0.5), inset -2px -2px 5px rgba(255, 245, 200, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
 
 }
 
-nav a:nth-child(7):hover {
+nav#scammerstab:hover {
   background: linear-gradient(145deg, #6d4949, #e44d4d);
   box-shadow: inset 2px 2px 5px rgba(160, 110, 0, 0.5), inset -2px -2px 5px rgba(255, 245, 200, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
   

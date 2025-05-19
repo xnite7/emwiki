@@ -462,49 +462,48 @@ div.logo-container {
 
 
 #pets {
- background-color: rgb(55, 123, 250);
+  background-color: rgb(55, 123, 250);
 }
 
 #pets:hover {
   background-color: rgb(93, 149, 255);
- }
+}
 
- #effects {
+#effects {
   background-color: rgb(255 177 53);
- }
- 
- #effects:hover {
-   background-color: rgb(255, 194, 96);
-  }
+}
 
-  #gears {
-    background-color: rgb(91, 254, 106);
-   }
-   
-   #gears:hover {
-     background-color: rgb(122, 255, 135);
-    }
+#effects:hover {
+  background-color: rgb(255, 194, 96);
+}
 
-    #deaths {
-      background-color: rgb(255, 122, 94);
-     }
-     
-     #deaths:hover {
-       background-color: rgb(255, 140, 117);
-      }
+#gears {
+  background-color: rgb(91, 254, 106);
+}
 
-      #titles {
-        background-color: rgb(201, 96, 254);
-       }
-       
-       #titles:hover {
-         background-color: rgb(211, 123, 255);
-        }
+#gears:hover {
+  background-color: rgb(122, 255, 135);
+}
 
+#deaths {
+  background-color: rgb(255, 122, 94);
+}
 
-      #titles div {
-            bottom: -73px;
-       }
+#deaths:hover {
+  background-color: rgb(255, 140, 117);
+}
+
+#titles {
+  background-color: rgb(201, 96, 254);
+}
+
+#titles:hover {
+  background-color: rgb(211, 123, 255);
+}
+
+#titles div {
+  bottom: -73px;
+}
 
 .discord {
     background: #5386ff;
