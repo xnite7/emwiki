@@ -1,38 +1,15 @@
 export async function onRequest(context) {
-  const url = new URL(context.request.url);
-  const userId = url.searchParams.get("userId");
+  const { searchParams } = new URL(context.request.url);
+  const userId = searchParams.get('userId');
 
-  if (!userId || !/^\d+$/.test(userId)) {
-    return new Response("Invalid userId", { status: 400 });
+  if (!userId) {
+    return new Response("Missing userId", { status: 400 });
   }
 
-  const avatarUrl = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=100x100&format=Png&isCircular=false`;
-  const userUrl = `https://users.roblox.com/v1/users/${userId}`;
+  const res = await fetch(`https://users.roblox.com/v1/users/${userId}`);
+  const data = await res.json();
 
-  try {
-    const [avatarRes, userRes] = await Promise.all([
-      fetch(avatarUrl),
-      fetch(userUrl)
-    ]);
-
-    if (!avatarRes.ok || !userRes.ok) {
-      return new Response("Failed to fetch Roblox data", { status: 500 });
-    }
-
-    const avatarData = await avatarRes.json();
-    const userData = await userRes.json();
-
-    return new Response(JSON.stringify({
-      avatar: avatarData.data?.[0]?.imageUrl || null,
-      displayName: userData.displayName || null,
-      name: userData.name || null
-    }), {
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
-      }
-    });
-  } catch (err) {
-    return new Response("Server error", { status: 500 });
-  }
+  return new Response(JSON.stringify(data), {
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
