@@ -9,22 +9,7 @@ function filterItems() {
   });
 }
 
-async function fetchWithRetry(url, retries = 3, delay = 10000) {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      return await response.json();
-    } catch (error) {
-      if (i < retries - 1) {
-        console.warn(`Retrying (${i + 1}/${retries}) after error:`, error.message);
-        await new Promise(res => setTimeout(res, delay));
-      } else {
-        throw error;
-      }
-    }
-  }
-}
+
 
 function createScammerBlock(scammer, container) {
   const discordMatch = scammer.Content.match(/discord user: \*\*(.*)/);
@@ -38,9 +23,11 @@ function createScammerBlock(scammer, container) {
   const userIdMatch = robloxProfile.match(/users\/(\d+)\/profile/);
   if (!userIdMatch) return;
 
-  const userId = userIdMatch[1];
-  const avatarUrl = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=100x100&format=Png&isCircular=false`;
-  const usernames = `https://users.roblox.com/v1/users/${userId}`;
+    const userId = userIdMatch[1]; // Replace with real user ID
+    const response = fetch(`https://emwikirr.pages.dev/api/roblox-proxy?userId=${userId}`);
+    const data = response.json();
+    console.log(data.avatar, data.displayName, data.name, userId);
+
 
   const block = document.createElement('section');
   block.className = 'scammer-block';
@@ -54,8 +41,7 @@ function createScammerBlock(scammer, container) {
     `;
 
     try {
-      const data = await fetchWithRetry(avatarUrl);
-      const data2 = await fetchWithRetry(usernames);
+
 
       const imageUrl = data.data[0]?.imageUrl || 'imgs/plr.jpg';
       robloxUser = data2.displayName || robloxUser;
