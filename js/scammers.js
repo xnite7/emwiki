@@ -32,13 +32,32 @@ fetch('https://api.github.com/gists/82f0b2c26f32c95ae00cf42cf99323e3')
 
     // Loop through each scammer and create a block for their message
     scammers.forEach(async (scammer) => {
-      const block = document.createElement('section');
-      block.className = 'scammer-block';
+
 
       // Extract the "display", "roblox user", and "roblox profile" using regex
+      const discordMatch = scammer.Content.match(/\*\*<:pinkdot:.*?> discord user: \*\*(.*)/);
       const displayMatch = scammer.Content.match(/\*\*<:pinkdot:.*?> display: \*\*(.*)/);
       const robloxUserMatch = scammer.Content.match(/\*\*<:pinkdot:.*?> roblox user: \*\*(.*)/);
       const robloxProfileMatch = scammer.Content.match(/\*\*roblox profile:\*\* (https:\/\/www\.roblox\.com\/users\/\d+\/profile)/);
+
+      var id = discordMatch ? discordMatch[1].trim() : "N/A";
+      console.log(id)
+
+      const token = 'ODkxOTIxODg4NTc2NjcxNzY0.Gn6iKn.GEpGa8Zm-d4bQ1nnpMIfGUEJgYBpk7WU71Dc8k'
+      // You might want to store this in an environment variable or something
+      if (id != "N/A") {
+        const proxyUrl = 'https://corsproxy.io/?';
+        const response = await fetch(proxyUrl+`https://discord.com/api/v9/users/${id}`, {
+          headers: {
+            Authorization: `Bot ${token}`
+      }})
+        const data = await response.json();
+        console.log(data)
+        }
+      
+      
+
+
 
       const display = displayMatch ? displayMatch[1].trim() : "N/A";
       const robloxUser = robloxUserMatch ? robloxUserMatch[1].trim() : "N/A";
@@ -50,6 +69,9 @@ fetch('https://api.github.com/gists/82f0b2c26f32c95ae00cf42cf99323e3')
         console.error("Invalid Roblox profile URL:", robloxProfile);
         return;
       }
+      const block = document.createElement('section');
+      block.className = 'scammer-block';
+
       const userId = userIdMatch ? userIdMatch[1] : null;
 
       // Fetch the avatar image using a proxy
@@ -58,16 +80,16 @@ fetch('https://api.github.com/gists/82f0b2c26f32c95ae00cf42cf99323e3')
         const avatarUrl = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=100x100&format=Png&isCircular=false`;
 
         try {
-          const response = await fetch(avatarUrl);
+          const response = await fetch(proxyUrl+avatarUrl);
           const data = await response.json();
-          const imageUrl = data.data[0]?.imageUrl || null;
+          const imageUrl = data.data[0]?.imageUrl || './imgs/plr.jpg';
 
           if (imageUrl) {
             block.innerHTML += `<img style="width: 245px;
-    float: left;
-    filter: blur(0px);
-    padding-left: 27px;
-    margin: 50px 0 50px 0;" src="${imageUrl}" alt="Avatar of ${robloxUser}" /><div class="gradient" style="position: absolute;
+        float: left;
+        filter: blur(0px);
+        padding-left: 27px;
+        margin: 50px 0 50px 0;" src="${imageUrl}" alt="Avatar of ${robloxUser}" /><div class="gradient" style="position: absolute;
               background: linear-gradient(0deg, #2c2c2c, transparent, transparent);
               z-index: 99;
               width: 241px;
@@ -76,7 +98,20 @@ fetch('https://api.github.com/gists/82f0b2c26f32c95ae00cf42cf99323e3')
               padding-left: 35px;"></div>`;
           }
         } catch (error) {
-          console.error("Failed to fetch avatar image:", error);
+          //console.error("Failed to fetch avatar image:", error);
+          if (imageUrl) {
+            block.innerHTML += `<img style="width: 245px;
+            float: left;
+            filter: blur(0px);
+            padding-left: 27px;
+            margin: 50px 0 50px 0;" src="${'../imgs/plr.jpg'}" alt="Could not Load avatar" /><div class="gradient" style="position: absolute;
+              background: linear-gradient(0deg, #2c2c2c, transparent, transparent);
+              z-index: 99;
+              width: 241px;
+              height: 231px;
+              top: 75px;
+              padding-left: 35px;"></div>`;
+          }
         }
       }
 
