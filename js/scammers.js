@@ -17,7 +17,7 @@ async function createScammerBlock(scammer, container) {
   const robloxProfileMatch = scammer.Content.match(/roblox profile:\s*\*\*\s*(https:\/\/www\.roblox\.com\/users\/\d+\/profile)/);
 
   const discordid = discordMatch ? discordMatch[1].trim() : "N/A";
-  console.log(discordid)
+  console.log(discordid[1])
   let robloxUser = robloxUserMatch ? robloxUserMatch[1].trim() : "N/A";
   const robloxProfile = robloxProfileMatch ? robloxProfileMatch[1].trim() : "#";
   const userIdMatch = robloxProfile.match(/users\/(\d+)\/profile/);
@@ -36,11 +36,12 @@ async function createScammerBlock(scammer, container) {
     `;
 
     try {
-      const response = await fetch(`https://emwikirr.pages.dev/api/roblox-proxy?userId=${userId}&discordId=${discordid}`);
+      const response = await fetch(`https://emwikirr.pages.dev/api/roblox-proxy?userId=${userId}&discordId=${discordid[1]}`);
       const data = await response.json();
 
       const imageUrl = data.avatar || 'imgs/plr.jpg';
       robloxUser = data.displayName || robloxUser;
+      discordDisplay = data.discordDisplayName
 
       block.innerHTML = `
         <img style="width: 245px; float: left; filter: blur(0px); padding-left: 27px; margin: 50px 0 50px 0;" src="${imageUrl}" alt="Avatar of ${robloxUser}" />
