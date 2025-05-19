@@ -1,3 +1,4 @@
+// Filter function
 function filterItems() {
   const searchValue = document.getElementById('search-bar').value.toLowerCase();
   const items = document.querySelectorAll('.grid .scammer-block');
@@ -9,13 +10,11 @@ function filterItems() {
   });
 }
 
-
-
-function createScammerBlock(scammer, container) {
-  const discordMatch = scammer.Content.match(/discord user: \*\*(.*)/);
+// Create scammer block
+async function createScammerBlock(scammer, container) {
   const displayMatch = scammer.Content.match(/display:\s*\*\*\s*(.*)/);
   const robloxUserMatch = scammer.Content.match(/roblox user:\s*\*\*\s*(.*)/);
-  const robloxProfileMatch = scammer.Content.match(/roblox profile:\s*\*\*\s*(https:\/\/www\.roblox\.com\/users\/\d+\/profile)/);
+  const robloxProfileMatch = scammer.Content.match(/roblox profile:\s*\*\*\s*(https:\/\/www\\.roblox\\.com\/users\/\d+\/profile)/);
 
   const discordDisplay = displayMatch ? displayMatch[1].trim() : "N/A";
   let robloxUser = robloxUserMatch ? robloxUserMatch[1].trim() : "N/A";
@@ -23,12 +22,7 @@ function createScammerBlock(scammer, container) {
   const userIdMatch = robloxProfile.match(/users\/(\d+)\/profile/);
   if (!userIdMatch) return;
 
-    const userId = userIdMatch[1]; // Replace with real user ID
-    const response = fetch(`https://emwikirr.pages.dev/api/roblox-proxy?userId=${userId}`);
-    const data = response.json();
-    console.log(data.avatar, data.displayName, data.name, userId);
-
-
+  const userId = userIdMatch[1];
   const block = document.createElement('section');
   block.className = 'scammer-block';
 
@@ -41,10 +35,10 @@ function createScammerBlock(scammer, container) {
     `;
 
     try {
-
-
-      const imageUrl = data.data[0]?.imageUrl || 'imgs/plr.jpg';
-      robloxUser = data2.displayName || robloxUser;
+      const response = await fetch(`https://emwikirr.pages.dev/api/roblox-proxy?userId=${userId}`);
+      const data = await response.json();
+      const imageUrl = data.avatar || 'imgs/plr.jpg';
+      robloxUser = data.displayName || robloxUser;
 
       block.innerHTML = `
         <img style="width: 245px; float: left; filter: blur(0px); padding-left: 27px; margin: 50px 0 50px 0;" src="${imageUrl}" alt="Avatar of ${robloxUser}" />
@@ -66,7 +60,7 @@ function createScammerBlock(scammer, container) {
           ⚠️ Unable to load user data. Try again later.
         </div>
         <div style="text-align: center;">
-          <button onclick="loadUserData()" style="background: #444; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer;">
+          <button onclick="(${loadUserData.toString()})()" style="background: #444; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer;">
             🔄 Retry
           </button>
         </div>
@@ -74,10 +68,11 @@ function createScammerBlock(scammer, container) {
     }
   }
 
-  loadUserData();
+  await loadUserData();
   container.appendChild(block);
 }
 
+// Fetch scammers JSON
 fetch('https://api.github.com/gists/82f0b2c26f32c95ae00cf42cf99323e3')
   .then(results => results.json())
   .then(data => {

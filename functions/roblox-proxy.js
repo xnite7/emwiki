@@ -3,7 +3,7 @@ export async function onRequest(context) {
   const userId = url.searchParams.get("userId");
 
   if (!userId || !/^\d+$/.test(userId)) {
-    return new Response("Missing or invalid userId", { status: 400 });
+    return new Response("Invalid userId", { status: 400 });
   }
 
   const avatarUrl = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=100x100&format=Png&isCircular=false`;
@@ -16,7 +16,7 @@ export async function onRequest(context) {
     ]);
 
     if (!avatarRes.ok || !userRes.ok) {
-      return new Response("Failed to fetch Roblox API", { status: 500 });
+      return new Response("Failed to fetch Roblox data", { status: 500 });
     }
 
     const avatarData = await avatarRes.json();
@@ -27,9 +27,11 @@ export async function onRequest(context) {
       displayName: userData.displayName || null,
       name: userData.name || null
     }), {
-      headers: { "Content-Type": "application/json" }
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
     });
-
   } catch (err) {
     return new Response("Server error", { status: 500 });
   }
