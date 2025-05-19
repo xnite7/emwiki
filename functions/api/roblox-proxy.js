@@ -13,7 +13,7 @@ export async function onRequestGet({ request, env }) {
   let robloxData = null;
   let discordDisplayName = null;
 
-  // Roblox user info
+  // Attempt to get Roblox user info if userId is present
   if (userId) {
     try {
       const [userRes, thumbRes] = await Promise.all([
@@ -32,12 +32,12 @@ export async function onRequestGet({ request, env }) {
           avatar: imageUrl
         };
       }
-    } catch (e) {
-      // Log or ignore Roblox error
+    } catch {
+      // Any error: leave robloxData as null
     }
   }
 
-  // Discord user info
+  // Attempt to get Discord username if discordId is provided
   if (discordId) {
     try {
       const discordRes = await fetch(`https://discord.com/api/v10/users/${discordId}`, {
@@ -49,9 +49,13 @@ export async function onRequestGet({ request, env }) {
       if (discordRes.ok) {
         const discordData = await discordRes.json();
         discordDisplayName = discordData.global_name || `${discordData.username}#${discordData.discriminator}`;
+      } else {
+        // Invalid Discord ID (e.g., 404): just set to null
+        discordDisplayName = null;
       }
-    } catch (e) {
-      // Log or ignore Discord error
+    } catch {
+      // Network or other fetch error: set to null
+      discordDisplayName = null;
     }
   }
 

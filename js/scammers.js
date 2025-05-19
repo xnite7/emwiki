@@ -41,14 +41,14 @@ async function createScammerBlock(scammer, container) {
 
       const imageUrl = data.avatar || 'imgs/plr.jpg';
       robloxUser = data.displayName || robloxUser;
-      discordDisplay = data.discordDisplayName
+      discordDisplay = data.discordDisplayName;
 
         
-        const baseSize = 9
+        const baseSize = 9;
         if (robloxUser.textLength >= baseSize) {
           robloxUser.textLength = baseSize - 2
-        }
-        const fontSize = baseSize - robloxUser.textLength
+        };
+        const fontSize = baseSize - robloxUser.textLength;
 
 
       block.innerHTML = `
