@@ -149,8 +149,7 @@ nav button:hover img {
 
 .scammer-img {
   width: 150px;
-  height: 150px;
-  border-radius: 20px;
+  height: auto;
   object-fit: cover;
   flex-shrink: 0;
 }
@@ -195,6 +194,7 @@ nav button:hover img {
   text-decoration: none;
   font-weight: bold;
   transition: background 0.2s;
+ margin-bottom: 38px;
 }
 
 .tour-button:hover {
@@ -203,19 +203,32 @@ nav button:hover img {
 
 /* Mobile-friendly adjustments */
 @media (max-width: 600px) {
+  .scammer-block {
+      max-width: 1376px;
+  }
+
   .scammer-content {
     flex-direction: column;
     align-items: flex-start;
   }
 
   .scammer-img {
-    width: 100%;
-    height: auto;
+    width: 300px;
+
   }
 
   .scammer-info h2 {
-    font-size: 1.5rem;
-    white-space: normal;
+    font-size: 6.1rem;
+  }
+
+  .scammer-info p {
+    font-size: 3.9rem;
+  }
+
+  .tour-button {
+    padding: 0.75rem 1.75rem;
+    width: 485px;
+    font-size: 39px;
   }
 }
 
