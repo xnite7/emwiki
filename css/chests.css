@@ -258,32 +258,32 @@ nav a {
   align-items: stretch;
 }
 
-nav#gearstab {
+nav #gearstab {
   background: linear-gradient(145deg, #47fd4e, #1de9c4);
 }
-nav#deathstab {
+nav #deathstab {
   background: linear-gradient(145deg, #ff4848, #ff6f1a);
 }
-nav#petstab {
+nav #petstab {
   background: linear-gradient(145deg, #f347fd, #a215fa);
 }
-nav#titlestab {
+nav #titlestab {
   background: linear-gradient(145deg, #4facff, #4915fa);
 }
-nav#effectstab {
+nav #effectstab {
   background: linear-gradient(145deg, #fdf147, #fa9415);
 }
-nav#cheststab {
+nav #cheststab {
   background: linear-gradient(345deg, #238099, #71cbff);
 }
-nav#scammerstab {
+nav #scammerstab {
   background: linear-gradient(345deg, black, #717171);
 }
-nav#scammerstab:hover > img {
+nav #scammerstab:hover > img {
   content:url("https://i.imgur.com/5liRRie.png");
 }
 
-nav#scammerstab > img {
+nav #scammerstab > img {
   content:url("https://i.imgur.com/SK5csOS.png");
 }
 
@@ -292,14 +292,14 @@ nav a:hover {
   transform: translateZ(40px) translateY(0px);
 }
 
-nav#gearstab:hover {
+nav #gearstab:hover {
 
   background: linear-gradient(145deg, #84fe80, #46faff);
   box-shadow: inset 2px 2px 5px rgba(160, 110, 0, 0.5), inset -2px -2px 5px rgba(255, 245, 200, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
 
 }
 
-nav#deathstab:hover {
+nav #deathstab:hover {
 
   background: linear-gradient(145deg, #ff5252, #ff7f34);
   box-shadow: inset 2px 2px 5px rgba(160, 110, 0, 0.5), inset -2px -2px 5px rgba(255, 245, 200, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
@@ -307,35 +307,35 @@ nav#deathstab:hover {
 
 }
 
-nav#petstab:hover {
+nav #petstab:hover {
 
   background: linear-gradient(145deg, #f762ff, #a137e7);
   box-shadow: inset 2px 2px 5px rgba(160, 110, 0, 0.5), inset -2px -2px 5px rgba(255, 245, 200, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
 
 }
 
-nav#titlestab:hover {
+nav #titlestab:hover {
 
   background: linear-gradient(145deg, #7dd4ff, #0055e5);
   box-shadow: inset 2px 2px 5px rgba(160, 110, 0, 0.5), inset -2px -2px 5px rgba(255, 245, 200, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
 
 }
 
-nav#effectstab:hover {
+nav #effectstab:hover {
 
   background: linear-gradient(145deg, #fcff38, #ffb724);
   box-shadow: inset 2px 2px 5px rgba(160, 110, 0, 0.5), inset -2px -2px 5px rgba(255, 245, 200, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
 
 }
 
-nav#cheststab:hover {
+nav #cheststab:hover {
 
   background: linear-gradient(345deg, #3e9db8, #94d8ff);
   box-shadow: inset 2px 2px 5px rgba(160, 110, 0, 0.5), inset -2px -2px 5px rgba(255, 245, 200, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
 
 }
 
-nav#scammerstab:hover {
+nav #scammerstab:hover {
   background: linear-gradient(145deg, #6d4949, #e44d4d);
   box-shadow: inset 2px 2px 5px rgba(160, 110, 0, 0.5), inset -2px -2px 5px rgba(255, 245, 200, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
   
@@ -983,16 +983,37 @@ html {
       0 0 0 rgba(0,0,0,0);
   transform: translateZ(40px) translateY(0px);
 }
-
-
-
+#grid{
+    margin: 42px;
+    zoom: 0.7;
+    display: flex;
+    justify-content: space-around;
+    flex-direction: column;
+}
+.catalog{
+  background: linear-gradient(180deg, #141414, transparent);
+  margin-bottom:53px;
+  padding-bottom: 19px;
+}
 
 /* Mobile-friendly adjustments */
 @media (max-width: 600px) {
 
-  nav {
-    height: auto;
+  #grid{
+    zoom: 0.27;
   }
+
+  section.catalog{
+    margin-bottom: 0px;
+  }
+
+ nav {
+    height: auto;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 20px;
+}
   nav a:hover {
       transform: translateZ(0px) translateY(0px);
   }
@@ -1010,11 +1031,7 @@ html {
     align-items: stretch;
 }
 
-  .catalog p {
-    font-size: 2.4rem;
-    color: #ffffff;
-    margin-bottom: 35px;
-  }
+  
   .scammer-block {
       max-width: 1376px;
   }
@@ -1027,27 +1044,33 @@ html {
   .scammer-img {
     width: 195px;
     place-self: center;
-  }
-
-  .scammer-info h2 {
-    font-size: 6.1rem;
-  }
-
-  .scammer-info p {
-    font-size: 3.9rem;
-  }
-
-    .tour-button {
-        padding: 1.75rem 1.75rem;
-        width: 370px;
-        margin-top: 21px;
-        font-size: 29px;
     }
-
+    
+    .scammer-info h2 {
+      font-size: 6.1rem;
+    }
+    
+    .scammer-info p {
+      font-size: 3.9rem;
+    }
+    
+    .tour-button {
+      padding: 1.75rem 1.75rem;
+      width: 370px;
+      margin-top: 21px;
+      font-size: 29px;
+    }
+    
     .catalog h2 {
-    margin-top: 17px;
-    text-shadow: 2px 3px 9px #00000066;
-    font-size: 4rem;
-    margin-bottom: 0rem;
+      margin-top: 17px;
+      text-shadow: 2px 3px 9px #00000066;
+      font-size: 3rem;
+      margin-bottom: 0rem;
+    }
+    
+    .catalog p {
+      font-size: 2rem;
+      color: #ffffff;
+      margin-bottom: 35px;
     }
 }
