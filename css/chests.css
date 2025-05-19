@@ -129,35 +129,38 @@ nav button:hover img {
 }
 
 .scammer-block {
-    padding: 10px;
-    margin: 21px 0;
-    width: 778px;
-    height: 336px;
-    align-self: center;
+    width: 44vw;
     background: linear-gradient(45deg, #2c2c2c, #2c2c2c, #080808);
     border: 18px solid #141414;
     padding: 10px;
     margin: 10px 0;
+    height: 482px;
     border-radius: 45px;
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: column;
-        justify-content: center;
-
+    display: block;
 }
 
 .scammer-block h2 {
-    font-size: 3.3em;
+    justify-self: center;
+    font-size: 515%;
     font-family: 'BuilderSans';
     background: -webkit-linear-gradient(#ffffff, #c7c7c78f);
     background-clip: text;
     -webkit-text-fill-color: transparent;
     margin: 45px 0 0 0;
     font-weight: 700;
-    width: 486px;
+    width: 60%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.scammer-block p{
+    margin: 0;
+    font-size: xx-large;
+    font-family: 'BuilderSans';
+    justify-self: center;
+    width: 56%;
+    color: #56697b;
 }
 
 nav a > img {
