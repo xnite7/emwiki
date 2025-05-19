@@ -142,6 +142,7 @@ nav button:hover img {
     display: flex;
     flex-wrap: wrap;
     flex-direction: column;
+        justify-content: center;
 
 }
 
@@ -894,7 +895,7 @@ html {
     gap: 0.75rem;
     letter-spacing: 0.025em;
     margin-top: 3rem;
-    margin-bottom: 35px;
+    margin-bottom: 0;
 }
 .discord {
     background: #5386ff;
