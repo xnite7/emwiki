@@ -160,6 +160,7 @@ nav button:hover img {
   flex-direction: column;
   gap: 10px;
   min-width: 200px;
+  align-self: center;
 }
 
 .scammer-info h2 {
@@ -214,7 +215,7 @@ nav button:hover img {
 
   .scammer-img {
     width: 300px;
-
+        place-self: center;
   }
 
   .scammer-info h2 {
@@ -478,7 +479,7 @@ div.logo-container {
 }
 
 .catalog p {
-  font: 600 1.25rem;
+    font-size: 1.5rem;
   color: #ffffff;
 
 }
