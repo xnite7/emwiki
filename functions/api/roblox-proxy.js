@@ -1,27 +1,44 @@
-export async function onRequest(context) {
-  const { searchParams } = new URL(context.request.url);
-  const userId = searchParams.get("userId");
+export async function onRequestGet({ request }) {
+  const url = new URL(request.url);
+  const userId = url.searchParams.get("userId");
 
   if (!userId) {
-    return new Response("Missing userId", { status: 400 });
+    return new Response(JSON.stringify({ error: "Missing userId" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   try {
-    const avatarResponse = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=100x100&format=Png&isCircular=false`);
-    const userResponse = await fetch(`https://users.roblox.com/v1/users/${userId}`);
+    const [userRes, thumbRes] = await Promise.all([
+      fetch(`https://users.roblox.com/v1/users/${userId}`),
+      fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=100x100&format=Png&isCircular=false`)
+    ]);
 
-    const avatarData = await avatarResponse.json();
-    const userData = await userResponse.json();
+    if (!userRes.ok || !thumbRes.ok) {
+      return new Response(JSON.stringify({ error: "User not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const userData = await userRes.json();
+    const thumbData = await thumbRes.json();
+
+    const imageUrl = thumbData.data?.[0]?.imageUrl;
 
     return new Response(JSON.stringify({
-      avatar: avatarData,
+      name: userData.name,
       displayName: userData.displayName,
-      name: userData.name
+      avatar: imageUrl
     }), {
-      headers: { 'Content-Type': 'application/json' }
+      headers: { "Content-Type": "application/json" },
     });
 
   } catch (e) {
-    return new Response("Error fetching data", { status: 500 });
+    return new Response(JSON.stringify({ error: "Server error", details: e.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
