@@ -1,0 +1,5 @@
+# Ensure API functions work
+/api/*  /api/:splat  200
+
+# Fallback to index.html for SPA routes like /about, /scammers, etc.
+/*      /index.html  200
