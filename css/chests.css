@@ -233,6 +233,30 @@ nav button:hover img {
 
 /* Mobile-friendly adjustments */
 @media (max-width: 600px) {
+
+  nav {
+    height: auto;
+  }
+
+  nav a {
+    display: flex;
+    max-width: 100px;
+    width: 18vw;
+    max-height: inherit;
+    padding: 0.35rem;
+    border-radius: 100%;
+    transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    box-shadow: inset 2px 2px 4px rgba(160, 110, 0, 0.6), inset -2px -2px 4px rgba(255, 245, 200, 0.5), 0 1px 2px rgba(0, 0, 0, 0.1);
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+}
+
+  .catalog p {
+    font-size: 2.4rem;
+    color: #ffffff;
+    margin-bottom: 35px;
+  }
   .scammer-block {
       max-width: 1376px;
   }
@@ -243,8 +267,8 @@ nav button:hover img {
   }
 
   .scammer-img {
-    width: 300px;
-        place-self: center;
+    width: 195px;
+    place-self: center;
   }
 
   .scammer-info h2 {
@@ -255,11 +279,19 @@ nav button:hover img {
     font-size: 3.9rem;
   }
 
-  .tour-button {
-    padding: 0.75rem 1.75rem;
-    width: 485px;
-    font-size: 39px;
-  }
+    .tour-button {
+        padding: 1.75rem 1.75rem;
+        width: 370px;
+        margin-top: 21px;
+        font-size: 29px;
+    }
+
+    .catalog h2 {
+    margin-top: 17px;
+    text-shadow: 2px 3px 9px #00000066;
+    font-size: 4rem;
+    margin-bottom: 0rem;
+    }
 }
 
 
