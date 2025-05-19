@@ -131,25 +131,32 @@ nav button:hover img {
 .scammer-block {
     padding: 10px;
     margin: 21px 0;
-    width: 840px;
+    width: 778px;
+    height: 336px;
     align-self: center;
     background: linear-gradient(45deg, #2c2c2c, #2c2c2c, #080808);
     border: 18px solid #141414;
     padding: 10px;
     margin: 10px 0;
     border-radius: 45px;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
 
 }
 
 .scammer-block h2 {
-    font-size: 70px;
+    font-size: 3.3em;
     font-family: 'BuilderSans';
     background: -webkit-linear-gradient(#ffffff, #c7c7c78f);
-    -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     margin: 45px 0 0 0;
     font-weight: 700;
+    width: 486px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 nav a > img {
