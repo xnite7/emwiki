@@ -43,7 +43,7 @@ fetch('https://api.github.com/gists/82f0b2c26f32c95ae00cf42cf99323e3')
       var id = discordMatch ? discordMatch[1].trim() : "N/A";
       console.log(id)
 
-      const token = 'ODkxOTIxODg4NTc2NjcxNzY0.Gn6iKn.GEpGa8Zm-d4bQ1nnpMIfGUEJgYBpk7WU71Dc8k'
+      const token = 'p'
       // You might want to store this in an environment variable or something
       if (id != "N/A") {
         const proxyUrl = 'https://corsproxy.io/?';
