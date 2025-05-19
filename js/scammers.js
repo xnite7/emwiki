@@ -12,7 +12,7 @@ function filterItems() {
 
 // Create scammer block
 async function createScammerBlock(scammer, container) {
-  const discordMatch = scammer.Content.match(/discord user: \*\*(.*)/);
+  const discordMatch = scammer.Content.match(/discord user:\s*\*\*\s*(.*)/);
   const robloxUserMatch = scammer.Content.match(/roblox user:\s*\*\*\s*(.*)/);
   const robloxProfileMatch = scammer.Content.match(/roblox profile:\s*\*\*\s*(https:\/\/www\.roblox\.com\/users\/\d+\/profile)/);
 
