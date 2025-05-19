@@ -43,10 +43,18 @@ async function createScammerBlock(scammer, container) {
       robloxUser = data.displayName || robloxUser;
       discordDisplay = data.discordDisplayName
 
+        
+        const baseSize = 9
+        if (robloxUser.textLength >= baseSize) {
+          robloxUser.textLength = baseSize - 2
+        }
+        const fontSize = baseSize - robloxUser.textLength
+
+
       block.innerHTML = `
         <img style="width: 245px; float: left; filter: blur(0px); padding-left: 27px; margin: 50px 0 50px 0;" src="${imageUrl}" alt="Avatar of ${robloxUser}" />
         <div class="gradient" style="position: absolute; background: linear-gradient(0deg, #2c2c2c, transparent, transparent); z-index: 99; width: 241px; height: 231px; top: 75px; padding-left: 35px;"></div>
-        <h2>${robloxUser}</h2>
+        <h2 style="font-size:${fontSize}vw">${robloxUser}</h2>
         <p style="margin: 0; font-size: xx-large; font-family: 'BuilderSans'; color: #56697b;"><strong>Discord User:</strong> ${discordDisplay}</p>
         <a href="${robloxProfile}" class="tour-button" style="text-decoration-line: blink;">
           View Roblox Profile
