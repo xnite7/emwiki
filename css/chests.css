@@ -139,9 +139,27 @@ nav button:hover img {
     display: block;
 }
 
+.scammerimg {
+  width: 27%;
+  float: left;
+  filter: blur(0px);
+  padding-left: 27px;
+  margin: 50px 0 50px 0;
+}
+
+.gradient {
+  position: absolute;
+  background: linear-gradient(0deg, #2c2c2c, transparent, transparent);
+  z-index: 99;
+  width: 27%;
+  height: 73%;
+  top: 75px;
+  padding-left: 35px;
+}
+
 .scammer-block h2 {
     justify-self: center;
-    font-size: 515%;
+    font-size: 600%;
     font-family: 'BuilderSans';
     background: -webkit-linear-gradient(#ffffff, #c7c7c78f);
     background-clip: text;
@@ -153,13 +171,12 @@ nav button:hover img {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
-.scammer-block p{
+.scammer-block p {
     margin: 0;
     font-size: xx-large;
     font-family: 'BuilderSans';
     justify-self: center;
-    width: 56%;
+    width: 100%;
     color: #56697b;
 }
 
@@ -868,7 +885,6 @@ html {
     background: rgba(#83f52c, 0.8);
   }
 }
-
 
 
 

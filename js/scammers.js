@@ -45,8 +45,8 @@ async function createScammerBlock(scammer, container) {
 
 
       block.innerHTML = `
-        <img style="width: 245px; float: left; filter: blur(0px); padding-left: 27px; margin: 50px 0 50px 0;" src="${imageUrl}" alt="Avatar of ${robloxUser}" />
-        <div class="gradient" style="position: absolute; background: linear-gradient(0deg, #2c2c2c, transparent, transparent); z-index: 99; width: 241px; height: 231px; top: 75px; padding-left: 35px;"></div>
+        <img class="scammerimg" src="${imageUrl}" alt="Avatar of ${robloxUser}" />
+        <div class="gradient"></div>
         <h2>${robloxUser}</h2>
         <p><strong>Discord User:</strong> ${discordDisplay}</p>
         <a href="${robloxProfile}" class="tour-button" style="text-decoration-line: blink;">
