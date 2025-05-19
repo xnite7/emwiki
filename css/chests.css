@@ -148,7 +148,7 @@ nav button:hover img {
 }
 
 .scammer-img {
-  width: 150px;
+  width: 200px;
   height: auto;
   object-fit: cover;
   flex-shrink: 0;
@@ -164,23 +164,52 @@ nav button:hover img {
 }
 
 .scammer-info h2 {
-  font-size: 2rem;
-  font-family: 'BuilderSans', sans-serif;
-  background: -webkit-linear-gradient(#ffffff, #c7c7c78f);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin: 0;
-  font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+    font-size: 3.5rem;
+    font-family: 'BuilderSans', sans-serif;
+    background: -webkit-linear-gradient(#ffffff, #c7c7c78f);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .scammer-info p {
-  font-size: 1.2rem;
-  font-family: 'BuilderSans', sans-serif;
-  color: #56697b;
-  margin: 0;
+    font-size: 1.9rem;
+    font-family: 'BuilderSans', sans-serif;
+    color: #56697b;
+    margin: 0;
+}
+
+.tour-button {
+    position: relative;
+    z-index: 20;
+    background: linear-gradient(145deg, #7695a5, #4f646b);
+    color: #ddcfcf;
+    font-weight: 600;
+    font-family: 'BuilderSans';
+    padding: 0.75rem 1.75rem;
+    border-radius: 9999px;
+    text-align: center;
+    width: 269px;
+    font-size: 22px;
+    margin-left: auto;
+    margin-right: auto;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: inset 2px 2px 4px rgba(160, 110, 0, 0.6), inset -2px -2px 4px rgba(255, 245, 200, 0.5), 0 1px 2px rgba(0, 0, 0, 0.1);
+    transform: translateZ(40px);
+    will-change: transform, box-shadow, background;
+    display: flex
+;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    letter-spacing: 0.025em;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
 }
 
 .tour-button {
@@ -942,34 +971,7 @@ html {
 
 
 
-.tour-button {
-    position: relative;
-    z-index: 20;
-    background: linear-gradient(145deg, #7695a5, #4f646b);
-    color: #ddcfcf;
-    font-weight: 600;
-    font-family: 'BuilderSans';
-    padding: 0.75rem 1.75rem;
-    border-radius: 9999px;
-    text-align: center;
-    width: 269px;
-    font-size: 22px;
-    margin-left: auto;
-    margin-right: auto;
-    transition: all 0.3s ease;
-    border: none;
-    box-shadow: inset 2px 2px 4px rgba(160, 110, 0, 0.6), inset -2px -2px 4px rgba(255, 245, 200, 0.5), 0 1px 2px rgba(0, 0, 0, 0.1);
-    transform: translateZ(40px);
-    will-change: transform, box-shadow, background;
-    display: flex
-;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    letter-spacing: 0.025em;
-    margin-top: 3rem;
-    margin-bottom: 0;
-}
+
 .discord {
     background: #5386ff;
     padding: 0.34em 0.6em;
