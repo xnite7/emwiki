@@ -104,6 +104,9 @@ header {
   /* IE 10 and IE 11 */
   user-select: none;
   /* Standard syntax */
+      display: grid;
+    justify-content: center;
+    align-items: center;
 }
 
 header h1 {
@@ -965,12 +968,12 @@ div .psp {
 
 html {
   @media screen and (max-width: 600px) {
-
+overflow-x: hidden;
     font-size: 12px;
   }
 
   @media screen and (max-width: 500px) {
-
+        overflow-x: hidden;
 
     font-size: 8px;
   }
@@ -1085,7 +1088,7 @@ html {
   }
 
   nav a:hover {
-    transform: translateZ(0px) translateY(0px);
+    transform: translateZ(0px) translateY(10px);
   }
 
   nav a {
@@ -1101,6 +1104,10 @@ html {
     flex-wrap: nowrap;
     align-items: stretch;
   }
+  nav a:hover img {
+    padding:10px;
+    margin-bottom: 0px;
+}
 
 
   .scammer-block {
