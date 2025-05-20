@@ -280,11 +280,11 @@ nav #deathstab {
   background: linear-gradient(145deg, #ff4848, #ff6f1a);
 }
 
-nav #petstab {
+nav #titlestab {
   background: linear-gradient(145deg, #f347fd, #a215fa);
 }
 
-nav #titlestab {
+nav #petstab {
   background: linear-gradient(145deg, #4facff, #4915fa);
 }
 
@@ -328,14 +328,14 @@ nav #deathstab:hover {
 
 }
 
-nav #petstab:hover {
+nav #titlestab:hover {
 
   background: linear-gradient(145deg, #f762ff, #a137e7);
   box-shadow: inset 2px 2px 5px rgba(160, 110, 0, 0.5), inset -2px -2px 5px rgba(255, 245, 200, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
 
 }
 
-nav #titlestab:hover {
+nav #petstabtab:hover {
 
   background: linear-gradient(145deg, #7dd4ff, #0055e5);
   box-shadow: inset 2px 2px 5px rgba(160, 110, 0, 0.5), inset -2px -2px 5px rgba(255, 245, 200, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);

@@ -1,62 +1,64 @@
- let imgg;
+let imgg;
 if (document.querySelector('.intro')) {
-let intro = document.querySelector('.intro')
-  let logo = document.querySelector('.logo-header')
-    
-  let logo3 = document.querySelector('.logo3')
-  
-  let logoSpan = document.querySelectorAll('.logo')
-var d = Math.random();
-  if (d > 0.9){
-    logo3.src="https://i.imgur.com/o7IJiwl.png"
-imgg="https://i.imgur.com/o7IJiwl.png"
-  }else{
-    logo3.src="https://i.imgur.com/XRmpB1c.png"
-imgg="https://i.imgur.com/XRmpB1c.png"
+  let intro = document.querySelector('.intro');
+  let logo = document.querySelector('.logo-header');
+  let logo3 = document.querySelector('.logo3');
+
+  let logoSpan = document.querySelectorAll('.logo');
+  var d = Math.random();
+  if (d > 0.9) {
+    logo3.src = "https://i.imgur.com/o7IJiwl.png"
+    imgg = "https://i.imgur.com/o7IJiwl.png"
+  } else {
+    logo3.src = "https://i.imgur.com/XRmpB1c.png"
+    imgg = "https://i.imgur.com/XRmpB1c.png"
   }
 
-window.addEventListener('DOMContentLoaded', ()=>{
-let logo4 = document.querySelector('.logo4')
-logo4.src= imgg
-let header = document.querySelector('.headersheet')
+  window.addEventListener('DOMContentLoaded', () => {
+    let logo4 = document.querySelector('.logo4')
+    logo4.src = imgg
+    let header = document.querySelector('.headersheet')
 
-  setTimeout(() => {
+    setTimeout(() => {
 
-        logoSpan.forEach((span, idx) =>{
-            setTimeout(()=>{
-              span.classList.add('active')
-              logo3.classList.add('active')
-            }, (idx + 1) * 400)
-        });
-
+      logoSpan.forEach((span, idx) => {
         setTimeout(() => {
-          logoSpan.forEach((span, idx) =>{
+          span.classList.add('active')
+          logo3.classList.add('active')
+        }, (idx + 1) * 400)
+      });
+
+      setTimeout(() => {
+        logoSpan.forEach((span, idx) => {
 
 
-              setTimeout(()=>{
-                span.classList.remove('active')
-                span.classList.add('fade')
-                logo3.classList.remove('active')
-                logo3.classList.add('fade')
+          setTimeout(() => {
+            span.classList.remove('active')
+            span.classList.add('fade')
+            logo3.classList.remove('active')
+            logo3.classList.add('fade')
 
-              }, (idx + 1) * 50)
-            })
-        },2000)
+          }, (idx + 1) * 20)
+        })
+      }, 2000)
 
-        setTimeout(()=>{
-            logo.style.scale = "2"
-            intro.style.backdropFilter = 'blur(0px)'
-            intro.style.filter = 'opacity(0)'
-        }, 2000)
-        setTimeout(()=>{
-            intro.style.top = "-100vh"
-            header.style.opacity = "1"
-        }, 2500)
+      setTimeout(() => {
+        logo.style.scale = "2"
+        intro.style.backdropFilter = 'blur(0px)'
+        intro.style.filter = 'opacity(0)'
+      }, 2000)
+      setTimeout(() => {
+        intro.style.top = "-100vh"
+        header.style.opacity = "1"
+        let main = document.querySelector("main");
+        main.style.scale = "1"
+        main.style.filter = 'opacity(1)'
+        
+      }, 2500)
     })
-})
-
+  })
 }
- 
+
 
 
 
@@ -64,10 +66,10 @@ fetch('https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91')
 
   .then(results => {
 
-      return results.json();
+    return results.json();
   })
   .then(data => {
-    
+
     // Determine the current page and select the appropriate data
     const page = window.location.pathname.split('/').pop(); // Get the current file name
     let arr = JSON.parse(data.files["auto.json"].content); // Parse the JSON content
@@ -102,7 +104,7 @@ fetch('https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91')
 
 
     showInfo(arr, color); // Pass the color to the showInfo function
-    
+
   })
   .catch(error => console.error('Error fetching data:', error));
 
@@ -112,7 +114,7 @@ function createNewItem(item, color) {
   // Create a new item element
   const newItem = document.createElement("div");
   newItem.classList.add("item");
-  newItem.style.display = "block";
+  newItem.style.display = "flex";
   // Create and set the image element
   const img = document.createElement("img");
   img.src = item.img;
@@ -120,7 +122,7 @@ function createNewItem(item, color) {
   img.setAttribute('draggable', false);
 
   newItem.appendChild(img);
-  
+
   // Create and set the name element
   const name = document.createElement("div");
   name.id = "h3";
@@ -129,13 +131,13 @@ function createNewItem(item, color) {
   // Adjust font size based on name length
 
 
-    if (color == "rgb(55, 122, 250)"){
+  if (color == "rgb(55, 122, 250)") {
     newItem.id = "pets";
-  } else if (color == "rgb(255, 177, 53)"){
+  } else if (color == "rgb(255, 177, 53)") {
     newItem.id = "effects";
-  } else if (color == "rgb(255, 122, 94)"){
+  } else if (color == "rgb(255, 122, 94)") {
     newItem.id = "deaths";
-  } else if (color == "rgb(201, 96, 254)"){
+  } else if (color == "rgb(201, 96, 254)") {
     newItem.id = "titles";
     img.style.display = "none";
     newItem.style.display = "flex";
@@ -160,7 +162,7 @@ function createNewItem(item, color) {
       name.style.whiteSpace = "nowrap";
 
       let clone = name.cloneNode(true);
-      
+
       clone.style.position = "absolute";
       clone.style.textShadow = "none";
       clone.style.fontSize = "1em";
@@ -187,7 +189,7 @@ function createNewItem(item, color) {
     }
 
     if (item.rotate) {
-      name.style.transform = "rotate("+item.rotate+"deg)";
+      name.style.transform = "rotate(" + item.rotate + "deg)";
     }
 
     if (item.tradable == false) {
@@ -198,62 +200,57 @@ function createNewItem(item, color) {
 
 
 
-  } else if (color == "rgb(91, 254, 106)"){
+  } else if (color == "rgb(91, 254, 106)") {
     newItem.id = "gears";
   }
 
 
-    if (item.style3) {
-      name.remove();
-      newItem.innerHTML = item.style3; 
-      
-      
-    }else {
-      newItem.appendChild(name);
-    }
-  
+  if (item.style3) {
+    name.remove();
+    newItem.innerHTML = item.style3;
 
-  
+
+  } else {
+    newItem.appendChild(name);
+  }
+
+
+
 
   // Create and set the price element
   const price = document.createElement("p");
   price.innerHTML = `<img src=\"https://i.imgur.com/iZGLVYo.png\" draggable="false">${item.price || 0}`;
   newItem.appendChild(price);
   // if item.tradae is false, add the untradable icon and hide price
-  
+
   if (item.tradable == false) {
     const untradable = document.createElement("img");
-    
+
     untradable.src = "https://i.imgur.com/WLjbELh.png";
     untradable.style.width = "33px";
     untradable.style.height = "auto";
-    untradable.style.position = "relative";
-    untradable.style.top = "-21px";
-    untradable.style.right = "-72px";
-    if (color == "rgb(201, 96, 254)"){
-      untradable.style.right = "-38%";
-      untradable.style.top = "29%";
-      
-    }
-    untradable.style.zIndex = "1";
+    untradable.style.position = "absolute";
+    untradable.style.marginLeft = "126px";
+    untradable.style.paddingTop = "136px";
+
     untradable.setAttribute('draggable', false);
     newItem.appendChild(untradable);
     price.style.display = "none"; // Hide the price element
   }
 
 
-    // Create and set the from element
-    const from = document.createElement("div");
-    from.innerText = item.from;
-    from.id = "from";
-    from.style.display = "none"; // Hide the element
-    newItem.appendChild(from);
-    // Create and set the rarity element
-    const prcdra = document.createElement("div");
-    prcdra.innerText = item["price/code/rarity"];
-    prcdra.id = "pricecoderarity";
-    prcdra.style.display = "none"; // Hide the element
-    newItem.appendChild(prcdra);
+  // Create and set the from element
+  const from = document.createElement("div");
+  from.innerText = item.from;
+  from.id = "from";
+  from.style.display = "none"; // Hide the element
+  newItem.appendChild(from);
+  // Create and set the rarity element
+  const prcdra = document.createElement("div");
+  prcdra.innerText = item["price/code/rarity"];
+  prcdra.id = "pricecoderarity";
+  prcdra.style.display = "none"; // Hide the element
+  newItem.appendChild(prcdra);
 
   // Append the new item to the catalog
   catalog.appendChild(newItem);
@@ -307,7 +304,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-  
+
   template = document.getElementById("itom");
   const catalog = document.getElementById("ctlg"); // Parent container for items
   const modal = document.getElementById("product-modal");
@@ -323,11 +320,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-      
-      
 
 
-  
+
+
+
   document.addEventListener("keydown", (event) => {
     if (event.key === "ArrowRight") {
       const currentItem = document.querySelector(".item.showing"); // Find the currently showing item
@@ -370,7 +367,7 @@ document.addEventListener("DOMContentLoaded", () => {
       let prcdra = item.querySelector("#pricecoderarity").textContent;
       const price = item.querySelector("p img").nextSibling.textContent.trim();
       let Omega = '\u{000A}';
-      
+
 
       modalContent.style.backgroundColor = item.style.backgroundColor;
       modalTitle.textContent = title;
@@ -387,13 +384,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const elementsToRemove = modalImage.parentElement.querySelectorAll(".font");
       elementsToRemove.forEach((element) => element.remove());
 
-      if (item.id == "pets"){
+      if (item.id == "pets") {
         modalContent.style.backgroundColor = "rgb(39, 102, 221)";
-      } else if (item.id == "effects"){
+      } else if (item.id == "effects") {
         modalContent.style.backgroundColor = "rgb(243, 164, 37)";
-      } else if (item.id == "deaths"){
+      } else if (item.id == "deaths") {
         modalContent.style.backgroundColor = "rgb(221, 89, 62)";
-      } else if (item.id == "titles"){
+      } else if (item.id == "titles") {
         modalContent.style.backgroundColor = "rgb(154, 45, 209)";
         modalTitle.style.display = "none";
         modalImage.style.display = "none";
@@ -402,30 +399,30 @@ document.addEventListener("DOMContentLoaded", () => {
         clone.style.zoom = "1.7";
         clone.style.zIndex = "22";
         clone.style['margin'] = "90px 0";
-        
+
         if (clone.children.length > 0) {
           clone.childNodes[1].style.height = "100%";
           clone.childNodes[1].style['align-content'] = "center";
-        clone.childNodes[1].style.width = "100%";
-        clone.childNodes[1].style.bottom = "108px";
-        clone.childNodes[1].style.top = "0";
-        clone.childNodes[1].style.right = "0";
+          clone.childNodes[1].style.width = "100%";
+          clone.childNodes[1].style.bottom = "108px";
+          clone.childNodes[1].style.top = "0";
+          clone.childNodes[1].style.right = "0";
         }
 
         clone.classList.add('font');
         clone.style['align-content'] = "center";
         modalImage.parentElement.insertBefore(clone, modalImage);
 
-      } else if (item.id == "gears"){
+      } else if (item.id == "gears") {
         modalContent.style.backgroundColor = "rgb(55, 205, 68)";
       }
 
       //if prcdra has multiple lines, split them and duplicate the modalPrice
-      
+
       let splitted = prcdra.split("<br>");
 
 
-      modalPrice.src="";
+      modalPrice.src = "";
       modalPrice.nextSibling.textContent = splitted[0]
       modalPrice.nextSibling.style.color = "rgb(255 255 255)";
       modalPrice.nextSibling.style.fontSize = "32px"
@@ -434,112 +431,112 @@ document.addEventListener("DOMContentLoaded", () => {
       modalPrice.nextSibling.style['text-stroke'] = "";
       modalPrice.nextSibling.style['text-shadow'] = ""
       let elements = popo.parentElement.querySelectorAll(".price")
-      elements.forEach((element,index) => {
+      elements.forEach((element, index) => {
+        if (index > 0) {
+          //remove lines
+          element.remove();
+        }
+      });
+
+      if (splitted.length > 0) {
+        splitted.forEach((line, index) => {
           if (index > 0) {
-            //remove lines
-            element.remove();
+            let newPrice = popo.cloneNode(true);
+
+
+
+
+            popo.parentElement.appendChild(newPrice);
+
+            popo.childNodes[1].textContent = line; // Set the text content to the current line
+
           }
         });
+      }
 
-        if (splitted.length > 0) {
-          splitted.forEach((line, index) => {
-            if (index > 0) {
-              let newPrice = popo.cloneNode(true);
+      const prices = popo.parentElement.querySelectorAll(".price");
 
-        
+      prices.forEach((price) => {
+        const children = price.children; // Use a separate variable for clarity
+        if (children.length > 1) { // Ensure there are at least two children
+          if (children[1].textContent.includes("Robux")) {
+            children[1].textContent = children[1].textContent.replace(" Robux", "");
+            children[0].src = "https://i.imgur.com/cf8ZvY7.png";
+            children[1].style.fontWeight = 700;
 
+          } else if (children[1].textContent.includes("Coins")) {
+            children[1].textContent = children[1].textContent.replace(" Coins", "");
+            children[0].src = "../imgs/Coin.webp";
 
-              popo.parentElement.appendChild(newPrice);
-        
-              popo.childNodes[1].textContent = line; // Set the text content to the current line
-             
-            }
-          });
+          } else if (children[1].textContent.includes("Stars")) {
+            children[1].textContent = children[1].textContent.replace(" Stars", "");
+            children[0].src = "https://i.imgur.com/WKeX5AS.png";
+          } else if (children[1].textContent.includes("Visors")) {
+            children[1].textContent = children[1].textContent.replace(" Visors", "");
+            children[0].src = "https://i.imgur.com/7IoLZCN.png";
+          } else if (children[1].textContent.includes("Pumpkins")) {
+            children[1].textContent = children[1].textContent.replace(" Pumpkins", "");
+            children[0].src = "https://i.imgur.com/bHRBTrU.png";
+          } else if (children[1].textContent.includes("Eggs")) {
+            children[1].textContent = children[1].textContent.replace(" Eggs", "");
+            children[0].src = "https://i.imgur.com/qMxjgQy.png";
+          } else if (children[1].textContent.includes("Baubles")) {
+            children[1].textContent = children[1].textContent.replace(" Baubles", "");
+            children[0].src = "https://i.imgur.com/wwMMAvr.png";
+
+          } else if (children[1].textContent.includes("Tokens") || children[1].textContent.includes("Token")) {
+            children[1].textContent = children[1].textContent.replace(" Tokens", "");
+            children[1].textContent = children[1].textContent.replace(" Token", "");
+            children[0].src = "https://i.imgur.com/Cy9r140.png";
+            children[1].style.color = "rgb(255 255 255)";
+            children[1].style['-webkit-text-stroke'] = "1px rgb(255, 83, 219)";
+            children[1].style['text-stroke'] = "1px rgb(255, 83, 219)";
+            children[1].style.fontWeight = 500;
+          } else if (children[1].textContent.includes("%")) {
+            children[1].style.color = "rgb(193 68 255)";
+            children[1].style.fontWeight = 500;
+            children[1].style['text-shadow'] = "0 0 6px rgb(199 0 255)";
+          } else if (children[1].textContent.includes("[EXPIRED]")) {
+            children[1].style.fontSize = "23px"
+            children[1].style.color = "rgb(161 17 17)";
+          } else if (children[1].textContent.includes("[ACTIVE]")) {
+            children[1].style.fontSize = "23px"
+            children[1].style.color = "rgb(251 255 68)";
+          } else if (children[1].textContent.includes("Unobtainable")) {
+            children[0].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Red_x.svg/600px-Red_x.svg.png";
+            children[1].style.color = "rgb(255 44 44)";
+          }
+          if (children[1].textContent == "") {
+            price.style.display = "none";
+          } else {
+            price.style.display = "flex";
+          }
         }
+      });
 
-        const prices = popo.parentElement.querySelectorAll(".price");
-
+      if (prices.length > 1) { // Ensure there are at least two children
         prices.forEach((price) => {
-          const children = price.children; // Use a separate variable for clarity
-          if (children.length > 1) { // Ensure there are at least two children
-            if (children[1].textContent.includes("Robux")) {
-              children[1].textContent = children[1].textContent.replace(" Robux", "");
-              children[0].src = "https://i.imgur.com/cf8ZvY7.png";
-              children[1].style.fontWeight = 700;
 
-            } else if (children[1].textContent.includes("Coins")) {
-              children[1].textContent = children[1].textContent.replace(" Coins", "");
-              children[0].src = "../imgs/Coin.webp";
-
-            } else if (children[1].textContent.includes("Stars")) {
-              children[1].textContent = children[1].textContent.replace(" Stars", "");
-              children[0].src = "https://i.imgur.com/WKeX5AS.png";
-            } else if (children[1].textContent.includes("Visors")) {
-              children[1].textContent = children[1].textContent.replace(" Visors", "");
-              children[0].src = "https://i.imgur.com/7IoLZCN.png";
-            } else if (children[1].textContent.includes("Pumpkins")) {
-              children[1].textContent = children[1].textContent.replace(" Pumpkins", "");
-              children[0].src = "https://i.imgur.com/bHRBTrU.png";
-            } else if (children[1].textContent.includes("Eggs")) {
-              children[1].textContent = children[1].textContent.replace(" Eggs", "");
-              children[0].src = "https://i.imgur.com/qMxjgQy.png";
-            } else if (children[1].textContent.includes("Baubles")) {
-              children[1].textContent = children[1].textContent.replace(" Baubles", "");
-              children[0].src = "https://i.imgur.com/wwMMAvr.png";
-
-            } else if (children[1].textContent.includes("Tokens") || children[1].textContent.includes("Token")) {
-              children[1].textContent = children[1].textContent.replace(" Tokens", "");
-              children[1].textContent = children[1].textContent.replace(" Token", "");
-              children[0].src = "https://i.imgur.com/Cy9r140.png";
-              children[1].style.color = "rgb(255 255 255)";
-              children[1].style['-webkit-text-stroke'] = "1px rgb(255, 83, 219)";
-              children[1].style['text-stroke'] = "1px rgb(255, 83, 219)";
-              children[1].style.fontWeight = 500;
-            } else if (children[1].textContent.includes("%")) {
-              children[1].style.color = "rgb(193 68 255)";
-              children[1].style.fontWeight = 500;
-              children[1].style['text-shadow'] = "0 0 6px rgb(199 0 255)";
-            } else if (children[1].textContent.includes("[EXPIRED]")) {
-              children[1].style.fontSize = "23px"
-              children[1].style.color = "rgb(161 17 17)";
-            } else if (children[1].textContent.includes("[ACTIVE]")) {
-              children[1].style.fontSize = "23px"
-              children[1].style.color = "rgb(251 255 68)";
-            } else if (children[1].textContent.includes("Unobtainable")) {
-              children[0].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Red_x.svg/600px-Red_x.svg.png";
-              children[1].style.color = "rgb(255 44 44)";
-            }
-            if (children[1].textContent == "") {
+          for (let i = 0; i < prices.length; i++) {
+            if (prices[i].childNodes[1].textContent == price.childNodes[1].textContent) {
+              if (prices[i].style.display == "none" || price.style.display == "none") {
+                return;
+              }
+              if (prices[i] == price) {
+                return;
+              }
               price.style.display = "none";
             } else {
+
               price.style.display = "flex";
             }
           }
         });
+      }
 
-        if (prices.length > 1) { // Ensure there are at least two children
-          prices.forEach((price) => {
-
-            for (let i = 0; i < prices.length; i++) {
-              if (prices[i].childNodes[1].textContent == price.childNodes[1].textContent) {
-                if (prices[i].style.display == "none" || price.style.display == "none") {
-                  return;
-                }
-                if (prices[i] == price) {
-                  return;
-                }
-                price.style.display = "none";
-              } else {
-                
-                price.style.display = "flex";
-              }
-            }
-          });
-        }
-      
       modalPrc.innerHTML = `<img src="https://i.imgur.com/iZGLVYo.png" style="height: 37px;">${price || 0}`; // Set the price
 
-          // Show the modal
+      // Show the modal
       modal.style.display = "flex";
       modal.classList.add("show");
 
@@ -582,26 +579,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  
+
   resize_to_fit();
 
   function resize_to_fit() {
     const items = document.querySelectorAll('.catalog-grid .item'); // Define items here
-  
+
     const observer = new MutationObserver((mutations, obs) => {
       const items = document.querySelectorAll('.catalog-grid .item'); // Move query inside the function
       if (items.length > 0) { // Check if items are generated
         obs.disconnect(); // Stop observing
         items.forEach(item => {
-          if (item.id != "titles"){
+          if (item.id != "titles") {
             return;
           }
-          if (item.id != "titles"){
+          if (item.id != "titles") {
             return;
           }
           if (item.childNodes[1]) {
             let fontsize = parseInt(window.getComputedStyle(item.childNodes[1]).fontSize, 10);
-  
+
             while (item.childNodes[1].offsetWidth > 150 && fontsize > 14) {
               fontsize -= 2;
               item.childNodes[1].style.fontSize = `${fontsize}px`;
@@ -610,13 +607,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     });
-  
+
     observer.observe(document.querySelector('.catalog-grid'), { childList: true, subtree: true });
-  
+
     items.forEach(item => {
-                if (item.id != "titles"){
-            return;
-          }
+      if (item.id != "titles") {
+        return;
+      }
       if (item.childNodes[1]) {
         let fontsize = parseInt(window.getComputedStyle(item.childNodes[1]).fontSize, 10);
 
@@ -625,39 +622,14 @@ document.addEventListener("DOMContentLoaded", () => {
           item.childNodes[1].style.fontSize = `${fontsize}px`;
         }
       }
-  
+
       // Decrease the font size
 
     });
   }
-  
-
-  const scrollToTopButton = document.getElementById('js-top');
-  window.addEventListener("scroll", (event) => {
-    let y = window.scrollY;
-    if (y > 200) {
-      scrollToTopButton.className = "top-link show";
-    } else {
-      scrollToTopButton.className = "top-link hide";
-    }
-  });
-
-  const scrollToTop = () => {
-
-    const c = document.documentElement.scrollTop || document.body.scrollTop;
 
 
-    if (c > 6) {
-      window.requestAnimationFrame(scrollToTop);
 
-      window.scrollTo(0, c - c / 10);
-    }
-  };
-
-  scrollToTopButton.onclick = function(e) {
-    e.preventDefault();
-    scrollToTop();
-  }
 
 });
 
@@ -667,19 +639,19 @@ function filterItems() {
   const items = document.querySelectorAll('.catalog-grid .item');
 
 
-  
+
   items.forEach(item => {
-    let display = "block";
-    if (item.id == "titles"){
+    let display = "flex";
+    if (item.id == "titles") {
 
       display = "flex";
     }
-      const itemText = item.querySelector('#h3').textContent.toLowerCase();
-      if (itemText.includes(searchValue)) {
-          item.style.display = display;
-      } else {
-          item.style.display = 'none';
-      }
+    const itemText = item.querySelector('#h3').textContent.toLowerCase();
+    if (itemText.includes(searchValue)) {
+      item.style.display = display;
+    } else {
+      item.style.display = 'none';
+    }
   });
 }
 
