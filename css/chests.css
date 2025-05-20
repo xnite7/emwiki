@@ -1088,7 +1088,7 @@ overflow-x: hidden;
   }
 
   nav a:hover {
-    transform: translateZ(0px) translateY(10px);
+    transform: none;
   }
 
   nav a {
@@ -1104,11 +1104,14 @@ overflow-x: hidden;
     flex-wrap: nowrap;
     align-items: stretch;
   }
+  nav a:active img {
+    padding:10px;
+    margin-bottom: 0px;
+}
   nav a:hover img {
     padding:10px;
     margin-bottom: 0px;
 }
-
 
   .scammer-block {
     max-width: 1376px;
