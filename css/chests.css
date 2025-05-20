@@ -54,9 +54,7 @@ body {
   position: relative;
   height: 180px;
   scale: 0.72;
-  place-self: center;
-  transform: translate(-50%, -50%);
-  position-area: center;
+  transform: translate(-112%, -50%);
   color: #ffffff;
   transition: ease-in-out 0.5s;
 }
@@ -97,7 +95,6 @@ body {
 header {
   background: linear-gradient(0deg, rgba(57, 150, 196, 0) 7%, rgba(16, 73, 102, 0.77) 55%, rgba(0, 0, 0, 1) 100%);
   padding: 2.2rem;
-  text-align: center;
   -webkit-user-select: none;
   /* Safari */
   -ms-user-select: none;
@@ -105,8 +102,6 @@ header {
   user-select: none;
   /* Standard syntax */
       display: grid;
-    justify-content: center;
-    align-items: center;
 }
 
 header h1 {
@@ -1083,7 +1078,6 @@ overflow-x: hidden;
     height: auto;
     gap: 16px;
     flex-wrap: wrap;
-    justify-content: center;
     margin-bottom: 20px;
   }
 
@@ -1155,15 +1149,23 @@ overflow-x: hidden;
     margin-bottom: 35px;
   }
 
-
+.logo4 {
+    width: 135px;
+    transform: rotate(25deg);
+    left: 372px;
+    transition: ease-in-out 1s;
+    position: absolute;
+    bottom: -44px;
+}
   .logo5 {
-    left: 0px;
-    font: 200 170px Bunny Flowers;
+        left: 92px;
+        bottom: -72px;
+        font: 200 176px Bunny Flowers;
   }
 
   .logo6 {
-    left: 0px;
-    font: 200 170px Bunny Flowers;
+        left: 208px;
+        font: 200 74px Bunny Flowers;
   }
 
   div .psp {
