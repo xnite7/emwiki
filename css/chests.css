@@ -1165,8 +1165,7 @@ overflow-x: hidden;
 
   div .psp {
     float: none;
-    justify-self: center;
-    margin-bottom: 30px;
+    margin: 30px auto;
   }
 
   div .psp p {
@@ -1174,7 +1173,7 @@ overflow-x: hidden;
   }
 
   .tooltip {
- display: none;
-}
+     display: none;
+  }
 
 }
