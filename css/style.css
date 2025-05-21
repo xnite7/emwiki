@@ -500,6 +500,7 @@ footer p {
   transition: transform 0.25s cubic-bezier(.7, .38, .24, 1.27);
   transform: scale(0.9);
   z-index: 1;
+      position: relative;
 }
 
 .logo-container:hover {
@@ -1319,8 +1320,12 @@ html {
 
 .cloud2 {
   top: 52%;
-  left: 31%;
+
   animation-duration: 6s;
+
+  left: 22%;
+
+    z-index: 2222;
 }
 
 .cloud3 {
