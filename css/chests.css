@@ -648,7 +648,31 @@ div.logo-container {
 
 }
 
+.logo5 {
+  animation: logo 6s ease 0s infinite alternate;
+}
 
+.logo6 {
+  animation: logo 7s ease 0s infinite alternate;
+}
+
+.logo4 {
+  animation: logo1 12s ease 0s infinite alternate;
+}
+@keyframes logo {
+  0% {
+    transform: translateY(0px);
+    opacity: 0.5;
+
+  }
+
+  100% {
+
+    transform: translateY(-15px);
+    opacity: 1;
+
+  }
+}
 
 .glow {
   position: absolute;
