@@ -64,7 +64,9 @@ window.addEventListener('DOMContentLoaded', () => {
           star[c].style.clip = "rect(0px, 5px, 5px, 0px)";
           const col = colour === "random" ? newColour() : colour;
           star[c].childNodes[0].style.backgroundColor = col;
+          star[c].childNodes[0].style['box-shadow'] = `0 0 1px black`;
           star[c].childNodes[1].style.backgroundColor = col;
+          star[c].childNodes[1].style['box-shadow'] = `0 0 1px black`;
           star[c].style.visibility = "visible";
           starv[c] = 50;
           break;
@@ -127,7 +129,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Sparkle toggle logic
   const toggleButton = document.createElement("button");
-  toggleButton.textContent = "Toggle Sparkles";
+  toggleButton.textContent = "✦";
   toggleButton.style.position = "fixed";
   toggleButton.style.bottom = "10px";
   toggleButton.style.right = "10px";
