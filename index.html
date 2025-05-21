@@ -251,6 +251,11 @@
 					messagesDiv.scrollTop = messagesDiv.scrollHeight;
 					});
 
+					socket.send(JSON.stringify({
+					type: "set_username",
+					username: yourChosenUsername
+					}));
+
 					input.addEventListener("keypress", (e) => {
 					if (e.key === "Enter") {
 						const message = input.value.trim();
