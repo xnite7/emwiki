@@ -117,7 +117,7 @@ body {
   left: -196px;
   z-index: 123;
   font: 200 224px Bunny Flowers;
-  transition: ease-in-out 0.5s;
+
   left: -196px;
   text-shadow: -4px -4px 0 #000, 0 -4px 0 #000, 4px -4px 0 #000, 4px 0 0 #000, 4px 4px 0 #000, 0 4px 0 #000, -4px 4px 0 #000, -4px 0 0 #000;
 }
@@ -131,7 +131,6 @@ body {
   left: -35px;
   z-index: 123;
   font: 200 51px Bunny Flowers;
-  transition: ease-in-out 0.5s;
   text-shadow: -3px -3px 0 #000, 0 -3px 0 #000, 3px -3px 0 #000, 3px 0 0 #000, 3px 3px 0 #000, 0 3px 0 #000, -3px 3px 0 #000, -3px 0 0 #000;
 }
 
@@ -139,7 +138,7 @@ body {
 .logo#two.active {
   bottom: -70px;
   opacity: 1;
-  transition: ease-in-out 0.5s;
+  transition: all 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 }
 
 .logo#two.fade {
@@ -154,7 +153,7 @@ body {
 .logo.active {
   bottom: -70px;
   opacity: 1;
-  transition: ease-in-out 0.5s;
+  transition: all 0.9s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 }
 
 main {
@@ -185,7 +184,7 @@ main {
   width: 135px;
   transform: rotate(21deg);
   left: 136px;
-  transition: 1s;
+  transition: all 0.9s cubic-bezier(0.18, 0.89, 0.32, 1.28);
   filter: opacity(1);
   position: absolute;
   bottom: 0px;
@@ -1501,5 +1500,9 @@ html {
 
   .tooltip {
     display: none;
+  }
+
+  .logo-header{
+        scale: 0.6;
   }
 }

@@ -390,10 +390,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // Use event delegation to handle clicks on dynamically created items
   catalog.addEventListener("click", (event) => {
 
+    
     const item = event.target.closest(".item"); // Check if the clicked element is an item
     if (item) {
       // Populate modal with item details
       const title = item.querySelector("#h3").textContent;
+      modalContent.style.pointerEvents = "none";
       const imageSrc = item.querySelector("img").src;
       let from = item.querySelector("#from").textContent;
       let prcdra = item.querySelector("#pricecoderarity").textContent;
@@ -594,7 +596,9 @@ document.addEventListener("DOMContentLoaded", () => {
         modalContent.style.width = "";
         modalContent.style.height = "";
         modalContent.classList.add("expand");
+        modalContent.style.pointerEvents = "all";
       }, 10); // Small delay to ensure the transition starts
+      
     }
   });
 
@@ -602,6 +606,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Reverse the animation
     modalContent.classList.remove("expand");
     modal.classList.remove("show");
+     modalContent.style.pointerEvents = "none";
   });
 
   // Close modal when clicking outside the modal content
@@ -609,6 +614,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (event.target === modal) {
       modalContent.classList.remove("expand");
       modal.classList.remove("show");
+       modalContent.style.pointerEvents = "none";
+    }
+  });
+
+  window.addEventListener("touchend", (event) => {
+    if (event.target === modal) {
+      modalContent.classList.remove("expand");
+      modal.classList.remove("show");
+       modalContent.style.pointerEvents = "none";
     }
   });
 
