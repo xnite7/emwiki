@@ -240,7 +240,7 @@
 					const input = document.getElementById("chatInput");
 
 					// 🔄 Replace with your deployed Worker URL
-					const socket = new WebSocket("wss://cf-chat-backend.xnite7.workers.dev");
+					const socket = new WebSocket("wss://cf-chat-backend.xnite7.workers.dev/chat");
 
 					socket.addEventListener("open", () => {
 					messagesDiv.innerHTML += `<div><em>Connected to chat.</em></div>`;
