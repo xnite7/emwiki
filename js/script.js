@@ -137,6 +137,7 @@ function createNewItem(item, color) {
   }
   // Create and set the image element
   const img = document.createElement("img");
+  img.setAttribute("id", "img");
   if (item.img) {
     img.src = item.img;
   }
@@ -399,7 +400,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Populate modal with item details
       const title = item.querySelector("#h3").textContent;
       modalContent.style.pointerEvents = "none";
-      const imageSrc = item.querySelector("img").src;
+      const imageSrc = item.querySelector("#img").src;
       let from = item.querySelector("#from").textContent;
       let prcdra = item.querySelector("#pricecoderarity").textContent;
       const price = item.querySelector("p img").nextSibling.textContent.trim();
