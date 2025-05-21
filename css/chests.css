@@ -187,6 +187,7 @@ nav button:hover img {
   font-family: 'BuilderSans', sans-serif;
   background: -webkit-linear-gradient(#ffffff, #c7c7c78f);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0;
   font-weight: 700;

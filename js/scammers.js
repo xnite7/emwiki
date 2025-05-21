@@ -64,7 +64,7 @@ async function createScammerBlock(scammer, container) {
     } catch (error) {
       console.error("Failed to fetch avatar or user data after retries:", error);
       block.innerHTML = `
-        <div style="color: #ff5555; font-weight: bold; margin: 20px; text-align: center;">
+        <div style="font-size: 200%;color: #ff5555; font-weight: bold; margin: 20px; text-align: center;">
           ⚠️ Unable to load user data. Try again later.
         </div>
         <div style="text-align: center;">
