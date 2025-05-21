@@ -557,11 +557,9 @@ document.addEventListener("DOMContentLoaded", () => {
             children[1].textContent = children[1].textContent.replace(" Robux", "");
             children[0].src = "https://i.imgur.com/cf8ZvY7.png";
             children[1].style.fontWeight = 700;
-
           } else if (children[1].textContent.includes("Coins")) {
             children[1].textContent = children[1].textContent.replace(" Coins", "");
             children[0].src = "../imgs/Coin.webp";
-
           } else if (children[1].textContent.includes("Stars")) {
             children[1].textContent = children[1].textContent.replace(" Stars", "");
             children[0].src = "https://i.imgur.com/WKeX5AS.png";
@@ -577,7 +575,6 @@ document.addEventListener("DOMContentLoaded", () => {
           } else if (children[1].textContent.includes("Baubles")) {
             children[1].textContent = children[1].textContent.replace(" Baubles", "");
             children[0].src = "https://i.imgur.com/wwMMAvr.png";
-
           } else if (children[1].textContent.includes("Tokens") || children[1].textContent.includes("Token")) {
             children[1].textContent = children[1].textContent.replace(" Tokens", "");
             children[1].textContent = children[1].textContent.replace(" Token", "");
@@ -604,6 +601,11 @@ document.addEventListener("DOMContentLoaded", () => {
             price.style.display = "none";
           } else {
             price.style.display = "flex";
+          }
+          if (children[0].src == "") {
+            children[0].style.display = "none";
+          } else {
+            children[0].style.display = "flex";
           }
         }
       });
