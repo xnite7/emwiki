@@ -11,8 +11,13 @@ body {
 
 }
 
-
-
+#preloadedImages {
+  width: 0px;
+  height: 0px;
+  display: inline;
+  background-image: url("https://i.imgur.com/5liRRie.png");
+  background-image: url("https://i.imgur.com/XRmpB1c.png");
+}
 
 
 
@@ -49,7 +54,6 @@ body {
   text-shadow: -3px -3px 0 #000, 0 -3px 0 #000, 3px -3px 0 #000, 3px 0 0 #000, 3px 3px 0 #000, 0 3px 0 #000, -3px 3px 0 #000, -3px 0 0 #000;
   font-size: 51px;
 }
-
 .logo-header2 {
   position: relative;
   height: 180px;
@@ -67,14 +71,14 @@ body {
 
 
 
+
 .logo-header {
-  position: absolute;
-  /* top: 48%; */
-  transform: translate(-50%, -50%);
-  position-area: center;
+  position: relative;
   color: #ffffff;
   transition: ease-in-out 0.5s;
+  display: block;
 }
+
 
 
 .logo2 {
@@ -1149,23 +1153,24 @@ overflow-x: hidden;
     margin-bottom: 35px;
   }
 
-.logo4 {
+  .logo4 {
     width: 135px;
     transform: rotate(25deg);
-    left: 372px;
+    left: 85%;
     transition: ease-in-out 1s;
     position: absolute;
     bottom: -44px;
-}
+  }
+
   .logo5 {
-        left: 92px;
-        bottom: -72px;
-        font: 200 176px Bunny Flowers;
+    left: -50%;
+    bottom: -72px;
+    font: 200 176px Bunny Flowers;
   }
 
   .logo6 {
-        left: 208px;
-        font: 200 74px Bunny Flowers;
+    left: 10%;
+    font: 200 74px Bunny Flowers;
   }
 
   div .psp {

@@ -53,7 +53,7 @@ if (document.querySelector('.intro')) {
         let main = document.querySelector("main");
         main.style.scale = "1"
         main.style.filter = 'opacity(1)'
-        
+
       }, 2500)
     })
   })
@@ -109,12 +109,32 @@ fetch('https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91')
   .catch(error => console.error('Error fetching data:', error));
 
 function createNewItem(item, color) {
+
+
   const catalog = document.getElementById("ctlg");
 
   // Create a new item element
   const newItem = document.createElement("div");
   newItem.classList.add("item");
   newItem.style.display = "flex";
+
+  if (item.tradable == false && color != "rgb(201, 96, 254)") {
+    const untradable = document.createElement("img");
+
+    untradable.src = "https://i.imgur.com/WLjbELh.png";
+    untradable.style.width = "17%";
+
+
+
+    untradable.style.height = "auto";
+    untradable.style.position = "sticky";
+    untradable.style.marginRight = "-73%";
+    untradable.style.marginTop = "-13px";
+
+    untradable.setAttribute('draggable', false);
+    newItem.appendChild(untradable);
+    //price.style.display = "none"; // Hide the price element
+  }
   // Create and set the image element
   const img = document.createElement("img");
   img.src = item.img;
@@ -124,7 +144,7 @@ function createNewItem(item, color) {
   newItem.appendChild(img);
 
   // Create and set the name element
-  const name = document.createElement("div");
+  let name = document.createElement("div");
   name.id = "h3";
   name.innerText = item.name;
 
@@ -143,15 +163,20 @@ function createNewItem(item, color) {
     newItem.style.display = "flex";
     newItem.style.alignItems = "center";
     newItem.style.justifyContent = "center";
-    name.style.bottom = "0";
-    name.style.font = "600 47px 'Arimo'";
+    name.style.font = "600 234% 'Arimo'";
     name.style.color = "rgb(255 255 255)";
     name.style.whiteSpace = "nowrap";
+    name.style.bottom = "-10";
+    name.style.margin = "57px 0";
+    name.style.position = "relative";
 
     if (item.style) {
 
       name.setAttribute("style", item.style);
       name.style.whiteSpace = "nowrap";
+
+      name.style.bottom = "-10";
+      name.style.margin = "57px 0";
 
     }
 
@@ -159,15 +184,18 @@ function createNewItem(item, color) {
       //clone name and parent it to original name
 
       name.setAttribute("style", item.style2);
+
       name.style.whiteSpace = "nowrap";
 
       let clone = name.cloneNode(true);
-
+      name.style.bottom = "-10";
+      name.style.margin = "57px 0";
       clone.style.position = "absolute";
       clone.style.textShadow = "none";
       clone.style.fontSize = "1em";
       clone.style.whiteSpace = "nowrap";
       name.appendChild(clone)
+
     }
 
     if (item.color) {
@@ -204,16 +232,29 @@ function createNewItem(item, color) {
     newItem.id = "gears";
   }
 
-
+ newItem.appendChild(name);
   if (item.style3) {
-    name.remove();
-    newItem.innerHTML = item.style3;
-
-
-  } else {
-    newItem.appendChild(name);
+    name.outerHTML = item.style3;
   }
+   
 
+if (item.tradable == false && color == "rgb(201, 96, 254)") {
+
+        name.style.bottom = "12px";
+        name.style.margin = " 0";
+      const untradable = document.createElement("img");
+
+      untradable.src = "https://i.imgur.com/WLjbELh.png";
+      untradable.style.width = "17%";
+      untradable.style.height = "auto";
+      untradable.style.position = "sticky";
+      untradable.style.marginRight = "-73%";
+      untradable.style.marginBottom = "-44px";
+
+      untradable.setAttribute('draggable', false);
+      newItem.appendChild(untradable);
+      //price.style.display = "none"; // Hide the price element
+    }
 
 
 
@@ -223,20 +264,7 @@ function createNewItem(item, color) {
   newItem.appendChild(price);
   // if item.tradae is false, add the untradable icon and hide price
 
-  if (item.tradable == false) {
-    const untradable = document.createElement("img");
 
-    untradable.src = "https://i.imgur.com/WLjbELh.png";
-    untradable.style.width = "33px";
-    untradable.style.height = "auto";
-    untradable.style.position = "absolute";
-    untradable.style.marginLeft = "126px";
-    untradable.style.paddingTop = "136px";
-
-    untradable.setAttribute('draggable', false);
-    newItem.appendChild(untradable);
-    price.style.display = "none"; // Hide the price element
-  }
 
 
   // Create and set the from element
@@ -321,6 +349,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+  let main = document.querySelector("main");
+
+  main.style.filter = 'opacity(1)'
+
 
 
 
@@ -392,21 +424,22 @@ document.addEventListener("DOMContentLoaded", () => {
         modalContent.style.backgroundColor = "rgb(221, 89, 62)";
       } else if (item.id == "titles") {
         modalContent.style.backgroundColor = "rgb(154, 45, 209)";
+
+
         modalTitle.style.display = "none";
         modalImage.style.display = "none";
         let clone = item.querySelector("#h3").cloneNode(true);
-        clone.style.height = "50px";
+        clone.style.height = "100%";
         clone.style.zoom = "1.7";
         clone.style.zIndex = "22";
-        clone.style['margin'] = "90px 0";
+        clone.style['margin'] = "31px  0px 46px 0px";
+        clone.style['align-self'] = "center";
+        clone.style.position = "relative";
 
         if (clone.children.length > 0) {
-          clone.childNodes[1].style.height = "100%";
-          clone.childNodes[1].style['align-content'] = "center";
-          clone.childNodes[1].style.width = "100%";
-          clone.childNodes[1].style.bottom = "108px";
-          clone.childNodes[1].style.top = "0";
-          clone.childNodes[1].style.right = "0";
+            clone.childNodes[1].style.height = "97%";
+            clone.childNodes[1].style.position = "absolute";
+            clone.childNodes[1].style['place-content'] = "center";
         }
 
         clone.classList.add('font');
