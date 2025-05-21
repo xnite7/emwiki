@@ -457,7 +457,7 @@ document.addEventListener("DOMContentLoaded", () => {
       let splitted = prcdra.split("<br>");
 
 
-      modalPrice.src = "";
+      modalPrice.src = "../imgs/trs.png";
       modalPrice.nextSibling.textContent = splitted[0]
       modalPrice.nextSibling.style.color = "rgb(255 255 255)";
       modalPrice.nextSibling.style.fontSize = "32px"

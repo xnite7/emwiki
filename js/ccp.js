@@ -67,20 +67,25 @@ function init() {
   canvas.width = w;
   canvas.height = h;
   canvas.addEventListener('mousedown', mouseDownHandler, false);
-  canvas.addEventListener('touchstart', mouseDownHandler, false);
+
 
   canvas.addEventListener('mouseup', mouseUpHandler, false);
-  canvas.addEventListener('touchend', mouseUpHandler, false);
- 
+
 
   canvas.addEventListener('mousemove', mouseMoveHandler, false);
-  canvas.addEventListener('touchmove', mouseMoveHandler, false);
+
 
   canvas.addEventListener('mouseenter', mouseEnterHandler, false);
   canvas.addEventListener('mouseleave', mouseLeaveHandler, false);
 
-  canvas.addEventListener('touchcancel', mouseLeaveHandler, false);
+  canvas.addEventListener('touchstart', touchStartHandler, false);
+  canvas.addEventListener('touchmove', touchMoveHandler, false);
+  canvas.addEventListener('touchend', touchEndHandler, false);
 
+
+
+
+  
   gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
   gl.enable(gl.DEPTH_TEST);
 
@@ -679,6 +684,32 @@ function mouseEnterHandler( event ) {
   mouseActive = true;
 
 }
+
+
+function touchStartHandler(event) {
+  event.preventDefault();
+  mouseDown = true;
+  mouseActive = true;
+
+  const touch = event.touches[0];
+  mousePos.x = touch.clientX;
+  mousePos.y = touch.clientY;
+}
+
+function touchMoveHandler(event) {
+  event.preventDefault();
+
+  const touch = event.touches[0];
+  mousePos.x = touch.clientX;
+  mousePos.y = touch.clientY;
+}
+
+function touchEndHandler(event) {
+  event.preventDefault();
+  mouseDown = false;
+}
+
+
 
 function mouseLeaveHandler( event ) {
 
