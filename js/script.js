@@ -55,6 +55,11 @@ if (document.querySelector('.intro')) {
         main.style.filter = 'opacity(1)'
 
       }, 2500)
+      setTimeout(() => {
+        intro.style.display = "none"
+
+
+      }, 500)
     })
   })
 }
