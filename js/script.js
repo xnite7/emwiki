@@ -350,10 +350,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   let main = document.querySelector("main");
-
+  if (main.style.scale == '1'){
   main.style.filter = 'opacity(1)'
 
-
+}
 
 
 
