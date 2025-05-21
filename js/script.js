@@ -180,7 +180,6 @@ if (item.img) {
     newItem.id = "deaths";
   } else if (color == "rgb(201, 96, 254)") {
     newItem.id = "titles";
-    img.style.display = "none";
     newItem.style.display = "flex";
     newItem.style.alignItems = "center";
     newItem.style.justifyContent = "center";
