@@ -1063,18 +1063,20 @@ div.logo-container {
   animation: position 2.45s linear 0s infinite;
 }
 
-
+html {
+    overflow-x: hidden;
+}
 
 html {
   @media screen and (max-width: 600px) {
-width:100vw;
-overflow-x: hidden;
+    width:100vw;
+    overflow-x: hidden;
     font-size: 12px;
   }
 
   @media screen and (max-width: 500px) {
-overflow-x: hidden;
-width:100vw;
+    overflow-x: hidden;
+    width:100vw;
     font-size: 8px;
   }
 }
@@ -1210,7 +1212,7 @@ width:100vw;
 
   will-change: transform;
 }
-
+body {position: relative;}
 .gradient-overlay {
   position: absolute;
   bottom: 0;
