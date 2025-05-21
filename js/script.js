@@ -59,7 +59,7 @@ if (document.querySelector('.intro')) {
         intro.style.display = "none"
 
 
-      }, 500)
+      }, 3000)
     })
   })
 }
