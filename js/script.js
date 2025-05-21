@@ -404,293 +404,208 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Ensure the modal is marked as "showing" when opened
+
+  // Simplified modal interaction logic
+  let isModalOpen = false;
+
   catalog.addEventListener("click", (event) => {
+    if (isModalOpen) return;
+
     const item = event.target.closest(".item");
-    if (item) {
-      document.querySelectorAll(".item").forEach((el) => el.classList.remove("showing")); // Remove "showing" from all items
-      item.classList.add("showing"); // Mark the clicked item as "showing"
-    }
-  });
-  // Use event delegation to handle clicks on dynamically created items
-  catalog.addEventListener("click", (event) => {
+    if (!item) return;
 
+    document.querySelectorAll(".item").forEach((el) => el.classList.remove("showing"));
+    item.classList.add("showing");
 
-    const item = event.target.closest(".item"); // Check if the clicked element is an item
-    if (item) {
-      // Populate modal with item details
-      const title = item.querySelector("#h3").textContent;
-      modalContent.style.pointerEvents = "none";
-      const imageSrc = item.dataset.image;
+    const title = item.querySelector("#h3").textContent;
+    const imageSrc = item.dataset.image;
+    const from = item.querySelector("#from").textContent.replace(/<br>/g, "\n");
+    const prcdra = item.querySelector("#pricecoderarity").textContent;
+    const price = item.querySelector("p img").nextSibling.textContent.trim();
 
-      let from = item.querySelector("#from").textContent;
-      let prcdra = item.querySelector("#pricecoderarity").textContent;
-      const price = item.querySelector("p img").nextSibling.textContent.trim();
-      let Omega = '\u{000A}';
-
-
-      modalContent.style.backgroundColor = item.style.backgroundColor;
-      modalTitle.textContent = title;
-
-
+    modalContent.style.pointerEvents = "none";
+    modalContent.style.backgroundColor = item.style.backgroundColor;
+    modalTitle.textContent = title;
 
     if (item.id !== "titles") {
+      const existingCanvas = modalContent.querySelector("#content-area canvas");
+      if (existingCanvas) existingCanvas.remove();
 
-
-      // Check if a previous canvas exists and remove it
-      let existingCanvas = modalContent.querySelector("#content-area").querySelector("canvas");
-      if (existingCanvas) {
-        existingCanvas.remove();
-      }
-
-      // Create a canvas element
       const canvas = document.createElement("canvas");
-      canvas.style.maxWidth = "100%";
-      canvas.style.maxHeight = "100%";
-      canvas.style.display = "block";
-      //canvas.style.margin = "0 auto"; // center it
-      canvas.style.userSelect = "none";
-      canvas.style.webkitUserSelect = "none";
-      canvas.style.pointerEvents = "none"; // block interaction
+      Object.assign(canvas.style, {
+        maxWidth: "100%",
+        maxHeight: "100%",
+        display: "block",
+        userSelect: "none",
+        webkitUserSelect: "none",
+        pointerEvents: "none"
+      });
 
-      // Add canvas to DOM (where <img> was)
       modalContent.querySelector("#content-area").insertBefore(canvas, modalDescription);
 
-      // Load and draw the image
       const ctx = canvas.getContext("2d");
       const img = new Image();
-
-      img.onload = function () {
+      img.onload = () => {
         canvas.width = img.width;
         canvas.height = img.height;
         ctx.drawImage(img, 0, 0);
       };
       img.src = imageSrc;
-
     }
 
+    modalDescription.textContent = from;
+    modalPrice.setAttribute("draggable", false);
+    modalTitle.style.display = item.id === "titles" ? "none" : "block";
 
+    modalContent.querySelectorAll(".font").forEach((el) => el.remove());
 
-      modalPrice.setAttribute('draggable', false);
-      modalTitle.style.display = "block";
+    const bgColors = {
+      pets: "rgb(39, 102, 221)",
+      effects: "rgb(243, 164, 37)",
+      deaths: "rgb(221, 89, 62)",
+      titles: "rgb(154, 45, 209)",
+      gears: "rgb(55, 205, 68)"
+    };
 
-
-      modalDescription.textContent = from.replace(/<br>/g, Omega);
-
-
-      // Remove all elements with id "h3" inside the item
-      const elementsToRemove = modalContent.querySelectorAll(".font");
-      elementsToRemove.forEach((element) => element.remove());
-
-      if (item.id == "pets") {
-        modalContent.style.backgroundColor = "rgb(39, 102, 221)";
-      } else if (item.id == "effects") {
-        modalContent.style.backgroundColor = "rgb(243, 164, 37)";
-      } else if (item.id == "deaths") {
-        modalContent.style.backgroundColor = "rgb(221, 89, 62)";
-      } else if (item.id == "titles") {
-        modalContent.style.backgroundColor = "rgb(154, 45, 209)";
-
-
-        modalTitle.style.display = "none";
-
-        let clone = item.querySelector("#h3").cloneNode(true);
-        clone.style.height = "100%";
-        clone.style.zoom = "1.7";
-        clone.style.zIndex = "22";
-        clone.style['margin'] = "31px  0px 46px 0px";
-        clone.style['align-self'] = "center";
-        clone.style.position = "relative";
-
-        if (clone.children.length > 0) {
-          clone.childNodes[1].style.height = "97%";
-          clone.childNodes[1].style.position = "absolute";
-          clone.childNodes[1].style['place-content'] = "center";
-        }
-
-        clone.classList.add('font');
-        clone.style['align-content'] = "center";
-        modalContent.querySelector("#content-area").insertBefore(clone, modalDescription);
-
-      } else if (item.id == "gears") {
-        modalContent.style.backgroundColor = "rgb(55, 205, 68)";
-      }
-
-      //if prcdra has multiple lines, split them and duplicate the modalPrice
-
-      let splitted = prcdra.split("<br>");
-
-
-      modalPrice.src = "";
-      modalPrice.nextSibling.textContent = splitted[0]
-      modalPrice.nextSibling.style.color = "rgb(255 255 255)";
-      modalPrice.nextSibling.style.fontSize = "32px"
-      modalPrice.nextSibling.style.fontWeight = 400;
-      modalPrice.nextSibling.style['-webkit-text-stroke'] = "";
-      modalPrice.nextSibling.style['text-stroke'] = "";
-      modalPrice.nextSibling.style['text-shadow'] = ""
-      let elements = popo.parentElement.querySelectorAll(".price")
-      elements.forEach((element, index) => {
-        if (index > 0) {
-          //remove lines
-          element.remove();
-        }
-      });
-
-      if (splitted.length > 0) {
-        splitted.forEach((line, index) => {
-          if (index > 0) {
-            let newPrice = popo.cloneNode(true);
-
-
-
-
-            popo.parentElement.appendChild(newPrice);
-
-            popo.childNodes[1].textContent = line; // Set the text content to the current line
-
-          }
-        });
-      }
-
-      const prices = popo.parentElement.querySelectorAll(".price");
-
-      prices.forEach((price) => {
-        const children = price.children; // Use a separate variable for clarity
-        if (children.length > 1) { // Ensure there are at least two children
-          if (children[1].textContent.includes("Robux")) {
-            children[1].textContent = children[1].textContent.replace(" Robux", "");
-            children[0].src = "https://i.imgur.com/cf8ZvY7.png";
-            children[1].style.fontWeight = 700;
-          } else if (children[1].textContent.includes("Coins")) {
-            children[1].textContent = children[1].textContent.replace(" Coins", "");
-            children[0].src = "../imgs/Coin.webp";
-          } else if (children[1].textContent.includes("Stars")) {
-            children[1].textContent = children[1].textContent.replace(" Stars", "");
-            children[0].src = "https://i.imgur.com/WKeX5AS.png";
-          } else if (children[1].textContent.includes("Visors")) {
-            children[1].textContent = children[1].textContent.replace(" Visors", "");
-            children[0].src = "https://i.imgur.com/7IoLZCN.png";
-          } else if (children[1].textContent.includes("Pumpkins")) {
-            children[1].textContent = children[1].textContent.replace(" Pumpkins", "");
-            children[0].src = "https://i.imgur.com/bHRBTrU.png";
-          } else if (children[1].textContent.includes("Eggs")) {
-            children[1].textContent = children[1].textContent.replace(" Eggs", "");
-            children[0].src = "https://i.imgur.com/qMxjgQy.png";
-          } else if (children[1].textContent.includes("Baubles")) {
-            children[1].textContent = children[1].textContent.replace(" Baubles", "");
-            children[0].src = "https://i.imgur.com/wwMMAvr.png";
-          } else if (children[1].textContent.includes("Tokens") || children[1].textContent.includes("Token")) {
-            children[1].textContent = children[1].textContent.replace(" Tokens", "");
-            children[1].textContent = children[1].textContent.replace(" Token", "");
-            children[0].src = "https://i.imgur.com/Cy9r140.png";
-            children[1].style.color = "rgb(255 255 255)";
-            children[1].style['-webkit-text-stroke'] = "1px rgb(255, 83, 219)";
-            children[1].style['text-stroke'] = "1px rgb(255, 83, 219)";
-            children[1].style.fontWeight = 500;
-          } else if (children[1].textContent.includes("%")) {
-            children[1].style.color = "rgb(193 68 255)";
-            children[1].style.fontWeight = 500;
-            children[1].style['text-shadow'] = "0 0 6px rgb(199 0 255)";
-          } else if (children[1].textContent.includes("[EXPIRED]")) {
-            children[1].style.fontSize = "23px"
-            children[1].style.color = "rgb(161 17 17)";
-          } else if (children[1].textContent.includes("[ACTIVE]")) {
-            children[1].style.fontSize = "23px"
-            children[1].style.color = "rgb(251 255 68)";
-          } else if (children[1].textContent.includes("Unobtainable")) {
-            children[0].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Red_x.svg/600px-Red_x.svg.png";
-            children[1].style.color = "rgb(255 44 44)";
-          }
-          if (children[1].textContent == "") {
-            price.style.display = "none";
-          } else {
-            price.style.display = "flex";
-          }
-          if (children[0].src == "") {
-            children[0].style.display = "none";
-          } else {
-            children[0].style.display = "flex";
-          }
-        }
-      });
-
-      if (prices.length > 1) { // Ensure there are at least two children
-        prices.forEach((price) => {
-
-          for (let i = 0; i < prices.length; i++) {
-            if (prices[i].childNodes[1].textContent == price.childNodes[1].textContent) {
-              if (prices[i].style.display == "none" || price.style.display == "none") {
-                return;
-              }
-              if (prices[i] == price) {
-                return;
-              }
-              price.style.display = "none";
-            } else {
-
-              price.style.display = "flex";
-            }
-          }
-        });
-      }
-
-      modalPrc.innerHTML = `<img src="https://i.imgur.com/iZGLVYo.png" style="height: 37px;">${price || 0}`; // Set the price
-
-      // Show the modal
-      modal.style.display = "flex";
-      modal.classList.add("show");
-
-      // Get the item's position and size
-      const itemRect = item.getBoundingClientRect();
-
-      // Set the modal content's initial position and size
-      modalContent.style.position = "absolute";
-      modalContent.style.top = `${itemRect.top}px`;
-      modalContent.style.left = `${itemRect.left}px`;
-      modalContent.style.width = `${itemRect.width}px`;
-      modalContent.style.height = `${itemRect.height}px`;
-
-      // Show the modal
-      modal.classList.add("show");
-
-      // Trigger the animation to expand the modal
-      setTimeout(() => {
-        modalContent.style.position = "relative";
-        modalContent.style.top = "0";
-        modalContent.style.left = "0";
-        modalContent.style.width = "";
-        modalContent.style.height = "";
-        modalContent.classList.add("expand");
-        modalContent.style.pointerEvents = "all";
-      }, 10); // Small delay to ensure the transition starts
-
+    if (bgColors[item.id]) {
+      modalContent.style.backgroundColor = bgColors[item.id];
     }
+
+    if (item.id === "titles") {
+      const clone = item.querySelector("#h3").cloneNode(true);
+      Object.assign(clone.style, {
+        height: "100%",
+        zoom: "1.7",
+        zIndex: "22",
+        margin: "31px 0px 46px 0px",
+        alignSelf: "center",
+        position: "relative",
+        alignContent: "center"
+      });
+      if (clone.children.length > 0) {
+        Object.assign(clone.children[0].style, {
+          height: "97%",
+          position: "absolute",
+          placeContent: "center"
+        });
+      }
+      clone.classList.add("font");
+      modalContent.querySelector("#content-area").insertBefore(clone, modalDescription);
+    }
+
+    const splitted = prcdra.split("<br>");
+    modalPrice.src = "";
+    const modalText = modalPrice.nextSibling;
+    modalText.textContent = splitted[0];
+    Object.assign(modalText.style, {
+      color: "#fff",
+      fontSize: "32px",
+      fontWeight: 400,
+      textStroke: "",
+      webkitTextStroke: "",
+      textShadow: ""
+    });
+
+    popo.parentElement.querySelectorAll(".price").forEach((el, idx) => {
+      if (idx > 0) el.remove();
+    });
+
+    splitted.slice(1).forEach((line) => {
+      const newPrice = popo.cloneNode(true);
+      newPrice.childNodes[1].textContent = line;
+      popo.parentElement.appendChild(newPrice);
+    });
+
+    popo.parentElement.querySelectorAll(".price").forEach((priceEl) => {
+      const children = priceEl.children;
+      if (children.length > 1) {
+        const text = children[1].textContent;
+        if (!text) return priceEl.style.display = "none";
+
+        const iconMap = {
+          Robux: "https://i.imgur.com/cf8ZvY7.png",
+          Coins: "../imgs/Coin.webp",
+          Stars: "https://i.imgur.com/WKeX5AS.png",
+          Visors: "https://i.imgur.com/7IoLZCN.png",
+          Pumpkins: "https://i.imgur.com/bHRBTrU.png",
+          Eggs: "https://i.imgur.com/qMxjgQy.png",
+          Baubles: "https://i.imgur.com/wwMMAvr.png",
+          Tokens: "https://i.imgur.com/Cy9r140.png",
+          Token: "https://i.imgur.com/Cy9r140.png"
+        };
+
+        for (const [key, src] of Object.entries(iconMap)) {
+          if (text.includes(key)) {
+            children[1].textContent = text.replace(` ${key}`, "");
+            children[0].src = src;
+            break;
+          }
+        }
+
+        if (text.includes("%")) {
+          children[1].style.color = "rgb(193 68 255)";
+          children[1].style.fontWeight = 500;
+          children[1].style.textShadow = "0 0 6px rgb(199 0 255)";
+        } else if (text.includes("[EXPIRED]")) {
+          Object.assign(children[1].style, { fontSize: "23px", color: "rgb(161 17 17)" });
+        } else if (text.includes("[ACTIVE]")) {
+          Object.assign(children[1].style, { fontSize: "23px", color: "rgb(251 255 68)" });
+        } else if (text.includes("Unobtainable")) {
+          children[0].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Red_x.svg/600px-Red_x.svg.png";
+          children[1].style.color = "rgb(255 44 44)";
+        }
+
+        priceEl.style.display = children[1].textContent ? "flex" : "none";
+      }
+    });
+
+    modalPrc.innerHTML = `<img src="https://i.imgur.com/iZGLVYo.png" style="height: 37px;">${price || 0}`;
+
+    // Show the modal with animation
+    const itemRect = item.getBoundingClientRect();
+    modal.style.display = "flex";
+    modal.classList.add("show");
+    isModalOpen = true;
+
+    Object.assign(modalContent.style, {
+      position: "absolute",
+      top: `${itemRect.top}px`,
+      left: `${itemRect.left}px`,
+      width: `${itemRect.width}px`,
+      height: `${itemRect.height}px`
+    });
+
+    setTimeout(() => {
+      Object.assign(modalContent.style, {
+        position: "relative",
+        top: "0",
+        left: "0",
+        width: "",
+        height: "",
+        pointerEvents: "all"
+      });
+      modalContent.classList.add("expand");
+    }, 10);
   });
 
-  closeModal.addEventListener("click", () => {
-    // Reverse the animation
+  const closeModalHandler = () => {
     modalContent.classList.remove("expand");
     modal.classList.remove("show");
     modalContent.style.pointerEvents = "none";
-  });
+    setTimeout(() => {
+      isModalOpen = false;
+    }, 200)
+    
+  };
 
-  // Close modal when clicking outside the modal content
+  closeModal.addEventListener("click", closeModalHandler);
   window.addEventListener("click", (event) => {
-    if (event.target === modal) {
-      modalContent.classList.remove("expand");
-      modal.classList.remove("show");
-      modalContent.style.pointerEvents = "none";
-    }
+    if (event.target === modal) closeModalHandler();
+  });
+  window.addEventListener("touchend", (event) => {
+    if (event.target === modal) closeModalHandler();
   });
 
-  window.addEventListener("touchend", (event) => {
-    if (event.target === modal) {
-      modalContent.classList.remove("expand");
-      modal.classList.remove("show");
-      modalContent.style.pointerEvents = "none";
-    }
-  });
 
 
   resize_to_fit();
