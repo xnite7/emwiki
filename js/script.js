@@ -505,7 +505,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         clone.classList.add('font');
         clone.style['align-content'] = "center";
-        modalContent.insertBefore(clone, modalTitle.nextSibling);
+        modalContent.querySelector("#content-area").insertBefore(clone, modalDescription);
 
       } else if (item.id == "gears") {
         modalContent.style.backgroundColor = "rgb(55, 205, 68)";
