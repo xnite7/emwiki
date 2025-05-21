@@ -2,16 +2,16 @@ fetch('https://api.github.com/gists/7fcec01fdc989745bdd556e60de728fa')
 
   .then(results => {
 
-      return results.json();
+    return results.json();
   })
   .then(data => {
-    
+
     // Determine the current page and select the appropriate data
     let arr = JSON.parse(data.files["auto.Json"].content); // Parse the JSON content
     let color;
 
     showInfo(arr, color); // Pass the color to the showInfo function
-    
+
   })
   .catch(error => console.error('Error fetching data:', error));
 
@@ -27,7 +27,7 @@ function createNewItem(item, color, list) {
 
 
 
-  
+
   // Create and set the name element
   const name = document.createElement("div");
   name.id = "h3";
@@ -36,7 +36,7 @@ function createNewItem(item, color, list) {
 
 
 
-    if (newItem.id == "titles") {
+  if (newItem.id == "titles") {
 
     newItem.id = "titles";
     newItem.style.display = "flex";
@@ -59,7 +59,7 @@ function createNewItem(item, color, list) {
       name.setAttribute("style", item.style2);
 
       let clone = name.cloneNode(true);
-      
+
       clone.style.position = "absolute";
       clone.style.textShadow = "none";
       clone.style.fontSize = "1em";
@@ -85,21 +85,44 @@ function createNewItem(item, color, list) {
     }
 
     if (item.rotate) {
-      name.style.transform = "rotate("+item.rotate+"deg)";
+      name.style.transform = "rotate(" + item.rotate + "deg)";
     }
 
     if (item.tradable == false) {
       name.style.bottom = "-15px";
       newItem.style.flexDirection = "column";
     }
-    
-  }else{
-    const img = document.createElement("img");
-    img.src = item.img;
 
-    img.setAttribute('draggable', false);
-    img.style.pointerEvents = "none";
-    newItem.appendChild(img);
+  } else {
+
+
+    const canvas = document.createElement("canvas");
+
+
+    canvas.setAttribute("id", "img");
+    canvas.style.maxWidth = "100%";
+    canvas.style.maxHeight = "100%";
+    canvas.style.display = "block";
+    canvas.style.margin = "0 auto";
+    canvas.style.userSelect = "none";
+    canvas.style.webkitUserSelect = "none";
+    canvas.style.pointerEvents = "none"; // Optional: block interactions
+
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+
+    img.onload = function () {
+      console.log(newItem)
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+
+
+    }
+      img.src = item.img;
+
+      newItem.appendChild(canvas);
+
   }
 
   // Adjust font size based on name length
@@ -118,7 +141,7 @@ function createNewItem(item, color, list) {
   price.innerHTML = `<img src=\"https://i.imgur.com/iZGLVYo.png\" draggable="false">${item.price || 0}`;
   newItem.appendChild(price);
   // if item.tradae is false, add the untradable icon and hide price
-  
+
   if (item.tradable == false) {
     const untradable = document.createElement("img");
     color = color - "rgb(30 30 30)";
@@ -135,18 +158,18 @@ function createNewItem(item, color, list) {
   }
 
 
-    // Create and set the from element
-    const from = document.createElement("div");
-    from.innerText = item.from;
-    from.id = "from";
-    from.style.display = "none"; // Hide the element
-    newItem.appendChild(from);
-    // Create and set the rarity element
-    const prcdra = document.createElement("div");
-    prcdra.innerText = item["price/code/rarity"];
-    prcdra.id = "pricecoderarity";
-    prcdra.style.display = "none"; // Hide the element
-    newItem.appendChild(prcdra);
+  // Create and set the from element
+  const from = document.createElement("div");
+  from.innerText = item.from;
+  from.id = "from";
+  from.style.display = "none"; // Hide the element
+  newItem.appendChild(from);
+  // Create and set the rarity element
+  const prcdra = document.createElement("div");
+  prcdra.innerText = item["price/code/rarity"];
+  prcdra.id = "pricecoderarity";
+  prcdra.style.display = "none"; // Hide the element
+  newItem.appendChild(prcdra);
 
   // Append the new item to the catalog
   list.appendChild(newItem);
@@ -157,19 +180,19 @@ function createNewItem(item, color, list) {
 
 
 function showInfo(arr, color) {
-    const steelChestItems = [];
-    const elusiveBagItems = [];
-    const legendaryChestItems = [];
-    const itemcrateItems = [];
-    const luckyChestItems = [];
-    const epicChestItems = [];
-    const mysterybagItems = [];
-    const typicalChestItems = [];
-    const premiumChestItems = [];
-    const secretItems = [];
+  const steelChestItems = [];
+  const elusiveBagItems = [];
+  const legendaryChestItems = [];
+  const itemcrateItems = [];
+  const luckyChestItems = [];
+  const epicChestItems = [];
+  const mysterybagItems = [];
+  const typicalChestItems = [];
+  const premiumChestItems = [];
+  const secretItems = [];
   for (const [listName, list] of Object.entries(arr)) {
 
-    
+
     list.forEach(item => {
       item.listName = listName;
       if (item.from && item.from.toLowerCase().includes("steel chest")) {
@@ -202,96 +225,96 @@ function showInfo(arr, color) {
       if (item.from && item.from.toLowerCase().includes("secret item")) {
         secretItems.push(item);
       }
-    }); 
+    });
   };
   const chests = [steelChestItems, elusiveBagItems, legendaryChestItems, itemcrateItems, luckyChestItems, epicChestItems, mysterybagItems, typicalChestItems, premiumChestItems, secretItems];
-    chests.forEach((chestItems) => {
-      chestItems.forEach((item) => {
-        let listElement ;
-        if (item.from.toLowerCase().includes("steel chest")) {
-          listElement = document.getElementById("steelchest");
-        } else if (item.from.toLowerCase().includes("elusive bag")) {
-          listElement = document.getElementById("elusivebag");
-        } else if (item.from.toLowerCase().includes("legendary chest")) {
-          listElement = document.getElementById("legendarychest");
-        } else if (item.from.toLowerCase().includes("lucky chest")) {
-          listElement = document.getElementById("luckychest");
-        } else if (item.from.toLowerCase().includes("epic chest")) {
-          listElement = document.getElementById("epicchest");
-        } else if (item.from.toLowerCase().includes("item crate")) {
-          listElement = document.getElementById("itemcrate");
-        } else if (item.from.toLowerCase().includes("mystery bag")) {
-          listElement = document.getElementById("mysterybag");
-        } else if (item.from.toLowerCase().includes("typical chest")) {
-          listElement = document.getElementById("typicalchest");
-        } else if (item.from.toLowerCase().includes("premium chest")) {
-          listElement = document.getElementById("premiumchest");
-        } else if (item.from.toLowerCase().includes("secret item")) {
-          listElement = document.getElementById("secretitems");
-        }
-        
-        // Check if the item's parent is "pets" and set the color to orange
-        if (item.parent && item.parent.toLowerCase() === "pets") {
-          color = "rgb(255, 165, 0)"; // Orange color
-        }
-
-        createNewItem(item, color, listElement);
-      });
-    });
-
-
-
-    function showTooltip(e) {
-
-      if (e.target.classList.contains("item")) {
-        var element = e.target;
-      }else if (e.target.parentElement.classList.contains("item")) {
-        var element = e.target.parentElement;
+  chests.forEach((chestItems) => {
+    chestItems.forEach((item) => {
+      let listElement;
+      if (item.from.toLowerCase().includes("steel chest")) {
+        listElement = document.getElementById("steelchest");
+      } else if (item.from.toLowerCase().includes("elusive bag")) {
+        listElement = document.getElementById("elusivebag");
+      } else if (item.from.toLowerCase().includes("legendary chest")) {
+        listElement = document.getElementById("legendarychest");
+      } else if (item.from.toLowerCase().includes("lucky chest")) {
+        listElement = document.getElementById("luckychest");
+      } else if (item.from.toLowerCase().includes("epic chest")) {
+        listElement = document.getElementById("epicchest");
+      } else if (item.from.toLowerCase().includes("item crate")) {
+        listElement = document.getElementById("itemcrate");
+      } else if (item.from.toLowerCase().includes("mystery bag")) {
+        listElement = document.getElementById("mysterybag");
+      } else if (item.from.toLowerCase().includes("typical chest")) {
+        listElement = document.getElementById("typicalchest");
+      } else if (item.from.toLowerCase().includes("premium chest")) {
+        listElement = document.getElementById("premiumchest");
+      } else if (item.from.toLowerCase().includes("secret item")) {
+        listElement = document.getElementById("secretitems");
       }
 
-        let rect = element.getBoundingClientRect();
-        
-        if (document.querySelector(".tooltip")) {
-            
+      // Check if the item's parent is "pets" and set the color to orange
+      if (item.parent && item.parent.toLowerCase() === "pets") {
+        color = "rgb(255, 165, 0)"; // Orange color
+      }
 
-          var tooltip = document.querySelector(".tooltip")
-            
-            ? document.querySelector(".tooltip")
-            : document.querySelector(":scope .tooltip");
-            tooltip.style.opacity = "1";
+      createNewItem(item, color, listElement);
+    });
+  });
 
 
 
-            //get child with id pricefromrarity
-            var pricefromrarity = element.querySelector("#pricecoderarity");
-            tooltip.innerHTML = `
+  function showTooltip(e) {
+
+    if (e.target.classList.contains("item")) {
+      var element = e.target;
+    } else if (e.target.parentElement.classList.contains("item")) {
+      var element = e.target.parentElement;
+    }
+
+    let rect = element.getBoundingClientRect();
+
+    if (document.querySelector(".tooltip")) {
+
+
+      var tooltip = document.querySelector(".tooltip")
+
+        ? document.querySelector(".tooltip")
+        : document.querySelector(":scope .tooltip");
+      tooltip.style.opacity = "1";
+
+
+
+      //get child with id pricefromrarity
+      var pricefromrarity = element.querySelector("#pricecoderarity");
+      tooltip.innerHTML = `
             <div id="tooltipname">${pricefromrarity.innerText}</div>
             `;
-            
-            
-          tooltip.style.left =
-              (rect.x + tooltip.clientWidth + 10 < document.body.clientWidth)
-                ? (rect.x + 140 + window.scrollX + "px")
-                : (document.body.clientWidth + 5 - tooltip.clientWidth + window.scrollX + "px");
-            tooltip.style.top =
-              (rect.y + tooltip.clientHeight + 10 < document.body.clientHeight)
-                ? (rect.y + 10 + window.scrollY + "px")
-                : (document.body.clientHeight + 5 - tooltip.clientHeight + window.scrollY + "px");
 
-      }
+
+      tooltip.style.left =
+        (rect.x + tooltip.clientWidth + 10 < document.body.clientWidth)
+          ? (rect.x + 140 + window.scrollX + "px")
+          : (document.body.clientWidth + 5 - tooltip.clientWidth + window.scrollX + "px");
+      tooltip.style.top =
+        (rect.y + tooltip.clientHeight + 10 < document.body.clientHeight)
+          ? (rect.y + 10 + window.scrollY + "px")
+          : (document.body.clientHeight + 5 - tooltip.clientHeight + window.scrollY + "px");
+
     }
+  }
 
   var tooltips = document.querySelectorAll('.item');
   tooltips.forEach((item, i) => {
     item.addEventListener('mouseover', showTooltip);
 
 
-    item.addEventListener('mouseout', function() {
+    item.addEventListener('mouseout', function () {
       var tooltip = document.querySelector(".tooltip")
-        tooltip.style.opacity = "0";
+      tooltip.style.opacity = "0";
 
 
-        
+
 
     });
   })

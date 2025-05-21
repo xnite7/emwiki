@@ -136,16 +136,33 @@ function createNewItem(item, color) {
     //price.style.display = "none"; // Hide the price element
   }
   // Create and set the image element
-  const img = document.createElement("img");
-  img.setAttribute("id", "img");
-  if (item.img) {
-    img.src = item.img;
-  }
-  
+// Draw image on a canvas instead of using <img>
+if (item.img) {
+  const canvas = document.createElement("canvas");
+  newItem.dataset.image = item.img;
 
-  img.setAttribute('draggable', false);
+  canvas.setAttribute("id", "img");
+  canvas.style.maxWidth = "100%";
+  canvas.style.maxHeight = "100%";
+  canvas.style.display = "block";
+  canvas.style.margin = "0 auto";
+  canvas.style.userSelect = "none";
+  canvas.style.webkitUserSelect = "none";
+  canvas.style.pointerEvents = "none"; // Optional: block interactions
 
-  newItem.appendChild(img);
+  const ctx = canvas.getContext("2d");
+  const img = new Image();
+
+  img.onload = function () {
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
+  };
+  img.src = item.img;
+
+  newItem.appendChild(canvas);
+}
+
 
   // Create and set the name element
   let name = document.createElement("div");
@@ -400,7 +417,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // Populate modal with item details
       const title = item.querySelector("#h3").textContent;
       modalContent.style.pointerEvents = "none";
-      const imageSrc = item.querySelector("#img").src;
+      const imageSrc = item.dataset.image;
+
       let from = item.querySelector("#from").textContent;
       let prcdra = item.querySelector("#pricecoderarity").textContent;
       const price = item.querySelector("p img").nextSibling.textContent.trim();

@@ -441,7 +441,8 @@ section {
 }
 
 section:last-of-type {
-  margin-bottom: 0px;
+    background: linear-gradient(172deg, #5b5b5b, transparent);
+    margin-bottom: 0px;
 }
 
 button {
@@ -477,12 +478,7 @@ footer {
   box-shadow: 0 0 2em 20px #000000;
 }
 
-canvas {
-  width: -webkit-fill-available;
-  background: #000000;
-  box-shadow: 0 0 2em 20px #000000;
-  margin-top: 42px;
-}
+
 
 .logo-container {
   margin-bottom: 18px;
@@ -569,7 +565,7 @@ div.logo-container {
     -1.3px 0 0 #000;
 }
 
-.item>img {
+.item>canvas {
   top: 30px;
   position: relative;
   width: 135px;

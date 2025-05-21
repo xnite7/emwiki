@@ -704,7 +704,7 @@ p {
 
 
 
-.item>img {
+.item>canvas {
   position: relative;
   width: 70%;
   height: 70%;
