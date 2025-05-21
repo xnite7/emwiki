@@ -1085,7 +1085,10 @@ overflow-x: hidden;
   justify-content: space-around;
   flex-direction: column;
 }
-
+  #scammers-container {
+    column-gap: 31px;
+    zoom: 0.53;
+  }
 .catalog {
   background: linear-gradient(180deg, #141414, transparent);
   margin-bottom: 53px;
@@ -1098,7 +1101,10 @@ overflow-x: hidden;
   #grid {
     zoom: 0.27;
   }
-
+  #scammers-container {
+        column-gap: 31px;
+    zoom: 0.53;
+  }
   section.catalog {
     margin-bottom: 0px;
   }
@@ -1137,7 +1143,7 @@ overflow-x: hidden;
 }
 
   .scammer-block {
-    max-width: 1376px;
+     max-width: 785px;
   }
 
   .scammer-content {
