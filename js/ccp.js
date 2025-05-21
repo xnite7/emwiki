@@ -126,7 +126,8 @@ function init() {
 //---
 
 function onResize( event ) {
-    
+      canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
   restart();
 
 }

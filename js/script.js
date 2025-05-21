@@ -43,7 +43,7 @@ if (document.querySelector('.intro')) {
       }, 2000)
 
       setTimeout(() => {
-        logo.style.scale = "1"
+        logo.style.scale = "1.2"
         intro.style.backdropFilter = 'blur(0px)'
         intro.style.filter = 'opacity(0)'
       }, 2000)

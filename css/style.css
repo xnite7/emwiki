@@ -28,8 +28,11 @@ body {
   position: fixed;
   z-index: 127;
   display: grid;
-  width: 100vw;
-  height: 100%;
+    top:0;
+    left:0;
+
+  width: 100vw;           /* Viewport width */
+  height: 100vh;          /* Viewport height */
   background: linear-gradient(180deg, #e9e9e9, #ffffff80);
   backdrop-filter: blur(10px);
   transition: 0.5s;
@@ -144,7 +147,7 @@ body {
 
 .logo#two.fade {
   bottom: -180px;
-  left: -47px;
+  /*left: -47px;*/
   scale: 1.25;
   opacity: 0;
   transition: ease-in-out 0.5s;
@@ -165,7 +168,7 @@ main {
 
 .logo.fade {
   bottom: -90px;
-  left: -367px;
+  /*left: -367px;*/
   opacity: 0;
   scale: 1.25;
   transition: ease-in-out 0.5s;
@@ -196,7 +199,7 @@ main {
   position: absolute;
   transition: ease-in-out 0.4s;
   scale: 1.35;
-  left: 211px;
+  /*left: 211px;*/
   filter: opacity(0);
   bottom: -43px;
 }
@@ -1424,6 +1427,10 @@ html {
   nav a:active img {
     padding: 10px;
     margin-bottom: 0px;
+  }
+  nav a:active {
+
+    transform: none;
   }
 
   nav a:hover img {
