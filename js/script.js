@@ -345,7 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeModal = document.getElementById("close-modal");
   const modalTitle = document.getElementById("modal-title");
   const modalPrc = document.getElementById("modal-prc");
-  const modalImage = document.getElementById("modal-image");
+
   const modalDescription = document.getElementById("modal-description");
   const modalPrice = document.getElementById("modal-price-value");
 
@@ -409,17 +409,55 @@ document.addEventListener("DOMContentLoaded", () => {
 
       modalContent.style.backgroundColor = item.style.backgroundColor;
       modalTitle.textContent = title;
-      modalImage.src = imageSrc;
-      modalImage.setAttribute('draggable', false);
+
+
+
+
+
+
+// Check if a previous canvas exists and remove it
+let existingCanvas = modalContent.querySelector("#content-area").querySelector("canvas");
+if (existingCanvas) {
+  existingCanvas.remove();
+}
+
+// Create a canvas element
+const canvas = document.createElement("canvas");
+canvas.style.maxWidth = "100%";
+canvas.style.maxHeight = "100%";
+canvas.style.display = "block";
+//canvas.style.margin = "0 auto"; // center it
+canvas.style.userSelect = "none";
+canvas.style.webkitUserSelect = "none";
+canvas.style.pointerEvents = "none"; // block interaction
+
+// Add canvas to DOM (where <img> was)
+modalContent.querySelector("#content-area").insertBefore(canvas, modalDescription);
+
+// Load and draw the image
+const ctx = canvas.getContext("2d");
+const img = new Image();
+
+img.onload = function () {
+  canvas.width = img.width;
+  canvas.height = img.height;
+  ctx.drawImage(img, 0, 0);
+};
+img.src = imageSrc;
+
+
+
+
+
       modalPrice.setAttribute('draggable', false);
       modalTitle.style.display = "block";
-      modalImage.style.display = "block";
+      
 
       modalDescription.textContent = from.replace(/<br>/g, Omega);
 
 
       // Remove all elements with id "h3" inside the item
-      const elementsToRemove = modalImage.parentElement.querySelectorAll(".font");
+      const elementsToRemove = modalContent.querySelectorAll(".font");
       elementsToRemove.forEach((element) => element.remove());
 
       if (item.id == "pets") {
@@ -433,7 +471,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         modalTitle.style.display = "none";
-        modalImage.style.display = "none";
+
         let clone = item.querySelector("#h3").cloneNode(true);
         clone.style.height = "100%";
         clone.style.zoom = "1.7";
@@ -450,7 +488,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         clone.classList.add('font');
         clone.style['align-content'] = "center";
-        modalImage.parentElement.insertBefore(clone, modalImage);
+        modalContent.insertBefore(clone, canvas);
 
       } else if (item.id == "gears") {
         modalContent.style.backgroundColor = "rgb(55, 205, 68)";
