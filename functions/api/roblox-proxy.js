@@ -6,7 +6,9 @@ export async function onRequestGet({ request, env }) {
   if (!userId && !discordId) {
     return new Response(JSON.stringify({ error: "Missing userId or discordId" }), {
       status: 400,
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+
+        "Content-Type": "application/json" },
     });
   }
 
@@ -70,6 +72,11 @@ export async function onRequestGet({ request, env }) {
     ...robloxData,
     discordDisplayName
   }), {
-    headers: { "Content-Type": "application/json" },
+    headers: {
+              "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Max-Age": "86400",
+       "Content-Type": "application/json" },
   });
 }
