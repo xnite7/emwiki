@@ -158,11 +158,7 @@ if (item.img) {
     canvas.height = img.height;
     ctx.drawImage(img, 0, 0);
   };
-  let safeImgUrl = item.img.replace(/\\/g, "/"); // convert backslashes to slashes
-
-  img.src = `/proxy-image?url=${safeImgUrl}`;
-
-
+  img.src = item.img;
 
   newItem.appendChild(canvas);
 }
