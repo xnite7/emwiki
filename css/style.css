@@ -488,7 +488,7 @@ footer {
 }
 
 footer p {
-  padding: 27px 0;
+
   margin-bottom: 0;
   color: #ffffffb0;
   font-family: monospace;
@@ -1231,7 +1231,7 @@ html {
 
   will-change: transform;
 }
-body {position: relative;}
+
 .gradient-overlay {
   position: absolute;
   bottom: 0;
