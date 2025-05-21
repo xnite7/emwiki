@@ -212,7 +212,60 @@
 				<p style="font-size: large;">Join to get the latest updates and news about the game! <br><br><a class="discord" href="https://discord.com/invite/tg">Discord server</a></p>
 				
 			</section>
+			<style>
 
+				#messages {
+				height: 300px;
+				overflow-y: auto;
+				border: 1px solid #444;
+				padding: 10px;
+				margin-bottom: 10px;
+				background: #1e1e1e;
+				}
+				input {
+				padding: 10px;
+				width: calc(100% - 22px);
+				border: 1px solid #555;
+				background: #2a2a2a;
+				color: white;
+				}
+			</style>
+			<section id="join">
+				<h1>🌻 Epic Realtime Chat</h1>
+				<div id="messages"></div>
+				<input type="text" id="chatInput" placeholder="Type a message and hit enter..." autocomplete="off" />
+
+				<script>
+					const messagesDiv = document.getElementById("messages");
+					const input = document.getElementById("chatInput");
+
+					// 🔄 Replace with your deployed Worker URL
+					const socket = new WebSocket("wss://cf-chat-backend.<your-subdomain>.workers.dev");
+
+					socket.addEventListener("open", () => {
+					messagesDiv.innerHTML += `<div><em>Connected to chat.</em></div>`;
+					});
+
+					socket.addEventListener("message", (event) => {
+					messagesDiv.innerHTML += `<div>${event.data}</div>`;
+					messagesDiv.scrollTop = messagesDiv.scrollHeight;
+					});
+
+					input.addEventListener("keypress", (e) => {
+					if (e.key === "Enter") {
+						const message = input.value.trim();
+						if (message) {
+						socket.send(message);
+						input.value = "";
+						}
+					}
+					});
+
+					socket.addEventListener("close", () => {
+					messagesDiv.innerHTML += `<div><em>Connection closed.</em></div>`;
+					});
+				</script>
+			</section>
 			<a href="/404" ><img src="./imgs/sef.png" style="width: 66px;"></a>
 		</main>
 
