@@ -244,9 +244,17 @@
 
 					socket.addEventListener("open", () => {
 					messagesDiv.innerHTML += `<div><em>Connected to chat.</em></div>`;
+
+					let username = localStorage.getItem("chat-username") || prompt("Enter a username:");
+					if (!username) {
+					username = "User#" + Math.floor(1000 + Math.random() * 9000);
+					}
+					localStorage.setItem("chat-username", username);
+
+
 					socket.send(JSON.stringify({
 					type: "set_username",
-					username: "one"
+					username
 					}));
 					});
 
