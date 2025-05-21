@@ -136,32 +136,32 @@ function createNewItem(item, color) {
     //price.style.display = "none"; // Hide the price element
   }
   // Create and set the image element
-// Draw image on a canvas instead of using <img>
-if (item.img) {
-  const canvas = document.createElement("canvas");
-  newItem.dataset.image = item.img;
+  // Draw image on a canvas instead of using <img>
+  if (item.img) {
+    const canvas = document.createElement("canvas");
+    newItem.dataset.image = item.img;
 
-  canvas.setAttribute("id", "img");
-  canvas.style.maxWidth = "100%";
-  canvas.style.maxHeight = "100%";
-  canvas.style.display = "block";
-  canvas.style.margin = "0 auto";
-  canvas.style.userSelect = "none";
-  canvas.style.webkitUserSelect = "none";
-  canvas.style.pointerEvents = "none"; // Optional: block interactions
+    canvas.setAttribute("id", "img");
+    canvas.style.maxWidth = "100%";
+    canvas.style.maxHeight = "100%";
+    canvas.style.display = "block";
+    canvas.style.margin = "0 auto";
+    canvas.style.userSelect = "none";
+    canvas.style.webkitUserSelect = "none";
+    canvas.style.pointerEvents = "none"; // Optional: block interactions
 
-  const ctx = canvas.getContext("2d");
-  const img = new Image();
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
 
-  img.onload = function () {
-    canvas.width = img.width;
-    canvas.height = img.height;
-    ctx.drawImage(img, 0, 0);
-  };
-  img.src = item.img;
+    img.onload = function () {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+    };
+    img.src = item.img;
 
-  newItem.appendChild(canvas);
-}
+    newItem.appendChild(canvas);
+  }
 
 
   // Create and set the name element
@@ -252,29 +252,29 @@ if (item.img) {
     newItem.id = "gears";
   }
 
- newItem.appendChild(name);
+  newItem.appendChild(name);
   if (item.style3) {
     name.outerHTML = item.style3;
   }
-   
 
-if (item.tradable == false && color == "rgb(201, 96, 254)") {
 
-        name.style.bottom = "12px";
-        name.style.margin = " 0";
-      const untradable = document.createElement("img");
+  if (item.tradable == false && color == "rgb(201, 96, 254)") {
 
-      untradable.src = "https://i.imgur.com/WLjbELh.png";
-      untradable.style.width = "17%";
-      untradable.style.height = "auto";
-      untradable.style.position = "sticky";
-      untradable.style.marginRight = "-73%";
-      untradable.style.marginBottom = "-44px";
+    name.style.bottom = "12px";
+    name.style.margin = " 0";
+    const untradable = document.createElement("img");
 
-      untradable.setAttribute('draggable', false);
-      newItem.appendChild(untradable);
-      //price.style.display = "none"; // Hide the price element
-    }
+    untradable.src = "https://i.imgur.com/WLjbELh.png";
+    untradable.style.width = "17%";
+    untradable.style.height = "auto";
+    untradable.style.position = "sticky";
+    untradable.style.marginRight = "-73%";
+    untradable.style.marginBottom = "-44px";
+
+    untradable.setAttribute('draggable', false);
+    newItem.appendChild(untradable);
+    //price.style.display = "none"; // Hide the price element
+  }
 
 
 
@@ -370,10 +370,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   let main = document.querySelector("main");
-  if (main.style.scale == '1'){
-  main.style.filter = 'opacity(1)'
+  if (main.style.scale == '1') {
+    main.style.filter = 'opacity(1)'
 
-}
+  }
 
 
 
@@ -410,7 +410,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Use event delegation to handle clicks on dynamically created items
   catalog.addEventListener("click", (event) => {
 
-    
+
     const item = event.target.closest(".item"); // Check if the clicked element is an item
     if (item) {
       // Populate modal with item details
@@ -429,46 +429,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+    if (item.id !== "titles") {
 
 
+      // Check if a previous canvas exists and remove it
+      let existingCanvas = modalContent.querySelector("#content-area").querySelector("canvas");
+      if (existingCanvas) {
+        existingCanvas.remove();
+      }
 
-// Check if a previous canvas exists and remove it
-let existingCanvas = modalContent.querySelector("#content-area").querySelector("canvas");
-if (existingCanvas) {
-  existingCanvas.remove();
-}
+      // Create a canvas element
+      const canvas = document.createElement("canvas");
+      canvas.style.maxWidth = "100%";
+      canvas.style.maxHeight = "100%";
+      canvas.style.display = "block";
+      //canvas.style.margin = "0 auto"; // center it
+      canvas.style.userSelect = "none";
+      canvas.style.webkitUserSelect = "none";
+      canvas.style.pointerEvents = "none"; // block interaction
 
-// Create a canvas element
-const canvas = document.createElement("canvas");
-canvas.style.maxWidth = "100%";
-canvas.style.maxHeight = "100%";
-canvas.style.display = "block";
-//canvas.style.margin = "0 auto"; // center it
-canvas.style.userSelect = "none";
-canvas.style.webkitUserSelect = "none";
-canvas.style.pointerEvents = "none"; // block interaction
+      // Add canvas to DOM (where <img> was)
+      modalContent.querySelector("#content-area").insertBefore(canvas, modalDescription);
 
-// Add canvas to DOM (where <img> was)
-modalContent.querySelector("#content-area").insertBefore(canvas, modalDescription);
+      // Load and draw the image
+      const ctx = canvas.getContext("2d");
+      const img = new Image();
 
-// Load and draw the image
-const ctx = canvas.getContext("2d");
-const img = new Image();
+      img.onload = function () {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+      };
+      img.src = imageSrc;
 
-img.onload = function () {
-  canvas.width = img.width;
-  canvas.height = img.height;
-  ctx.drawImage(img, 0, 0);
-};
-img.src = imageSrc;
-
-
+    }
 
 
 
       modalPrice.setAttribute('draggable', false);
       modalTitle.style.display = "block";
-      
+
 
       modalDescription.textContent = from.replace(/<br>/g, Omega);
 
@@ -498,14 +498,14 @@ img.src = imageSrc;
         clone.style.position = "relative";
 
         if (clone.children.length > 0) {
-            clone.childNodes[1].style.height = "97%";
-            clone.childNodes[1].style.position = "absolute";
-            clone.childNodes[1].style['place-content'] = "center";
+          clone.childNodes[1].style.height = "97%";
+          clone.childNodes[1].style.position = "absolute";
+          clone.childNodes[1].style['place-content'] = "center";
         }
 
         clone.classList.add('font');
         clone.style['align-content'] = "center";
-        modalContent.insertBefore(clone, canvas);
+        modalContent.insertBefore(clone, modalDescription);
 
       } else if (item.id == "gears") {
         modalContent.style.backgroundColor = "rgb(55, 205, 68)";
@@ -657,7 +657,7 @@ img.src = imageSrc;
         modalContent.classList.add("expand");
         modalContent.style.pointerEvents = "all";
       }, 10); // Small delay to ensure the transition starts
-      
+
     }
   });
 
@@ -665,7 +665,7 @@ img.src = imageSrc;
     // Reverse the animation
     modalContent.classList.remove("expand");
     modal.classList.remove("show");
-     modalContent.style.pointerEvents = "none";
+    modalContent.style.pointerEvents = "none";
   });
 
   // Close modal when clicking outside the modal content
@@ -673,7 +673,7 @@ img.src = imageSrc;
     if (event.target === modal) {
       modalContent.classList.remove("expand");
       modal.classList.remove("show");
-       modalContent.style.pointerEvents = "none";
+      modalContent.style.pointerEvents = "none";
     }
   });
 
@@ -681,7 +681,7 @@ img.src = imageSrc;
     if (event.target === modal) {
       modalContent.classList.remove("expand");
       modal.classList.remove("show");
-       modalContent.style.pointerEvents = "none";
+      modalContent.style.pointerEvents = "none";
     }
   });
 
