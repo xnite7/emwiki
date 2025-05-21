@@ -243,40 +243,28 @@
 					const socket = new WebSocket("wss://cf-chat-backend.xnite7.workers.dev/chat");
 
 					socket.addEventListener("open", () => {
-					messagesDiv.innerHTML += `<div><em>Connected to chat.</em></div>`;
-
-					let username = localStorage.getItem("chat-username") || prompt("Enter a username:");
-					if (!username) {
-					username = "User#" + Math.floor(1000 + Math.random() * 9000);
-					}
-					localStorage.setItem("chat-username", username);
-
-
-					socket.send(JSON.stringify({
-					type: "set_username",
-					username
-					}));
+						messagesDiv.innerHTML += `<div><em>Connected to chat.</em></div>`;
 					});
 
 					socket.addEventListener("message", (event) => {
-					messagesDiv.innerHTML += `<div>${event.data}</div>`;
-					messagesDiv.scrollTop = messagesDiv.scrollHeight;
+						messagesDiv.innerHTML += `<div>${event.data}</div>`;
+						messagesDiv.scrollTop = messagesDiv.scrollHeight;
 					});
 
 
 
 					input.addEventListener("keypress", (e) => {
-					if (e.key === "Enter") {
-						const message = input.value.trim();
-						if (message) {
-						socket.send(message);
-						input.value = "";
+						if (e.key === "Enter") {
+							const message = input.value.trim();
+							if (message) {
+							socket.send(message);
+							input.value = "";
+							}
 						}
-					}
 					});
 
 					socket.addEventListener("close", () => {
-					messagesDiv.innerHTML += `<div><em>Connection closed.</em></div>`;
+						messagesDiv.innerHTML += `<div><em>Connection closed.</em></div>`;
 					});
 				</script>
 			</section>
