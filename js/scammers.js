@@ -36,7 +36,7 @@ async function createScammerBlock(scammer, container) {
     `;
 
     try {
-      const response = await fetch(`https://emwikirr.pages.dev/api/roblox-proxy?userId=${userId}&discordId=${discordid.split(',')[0]}`);
+      const response = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${userId}&discordId=${discordid.split(',')[0]}`);
       const data = await response.json();
 
       const imageUrl = data.avatar || 'imgs/plr.jpg';
