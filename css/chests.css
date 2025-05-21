@@ -58,7 +58,7 @@ body {
   position: relative;
   height: 180px;
   scale: 0.72;
-  transform: translate(-112%, -50%);
+  transform: translate(0%, -50%);
   color: #ffffff;
   transition: ease-in-out 0.5s;
 }
