@@ -1085,11 +1085,11 @@ overflow-x: hidden;
   justify-content: space-around;
   flex-direction: column;
 }
-  #scammers-container {
+  #scammers-container.grid {
     column-gap: 31px;
-    zoom: 0.53;
+    zoom: 0.6;
   }
-.catalog {
+ #scammers-container.grid {
   background: linear-gradient(180deg, #141414, transparent);
   margin-bottom: 53px;
   padding-bottom: 19px;
