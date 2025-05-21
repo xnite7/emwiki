@@ -158,7 +158,8 @@ if (item.img) {
     canvas.height = img.height;
     ctx.drawImage(img, 0, 0);
   };
-  img.src = item.img;
+  img.src = '/proxy-image?url=' + encodeURIComponent(item.img);
+
 
   newItem.appendChild(canvas);
 }
