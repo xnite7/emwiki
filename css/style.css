@@ -1481,7 +1481,9 @@ html {
     position: absolute;
     bottom: -44px;
   }
-
+  .modal-content{
+        scale: 0.8;
+  }
   .logo5 {
     left: -50%;
     bottom: -72px;
