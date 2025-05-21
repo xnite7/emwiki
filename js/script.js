@@ -137,7 +137,10 @@ function createNewItem(item, color) {
   }
   // Create and set the image element
   const img = document.createElement("img");
-  img.src = item.img;
+  if (item.img) {
+    img.src = item.img;
+  }
+  
 
   img.setAttribute('draggable', false);
 
@@ -457,7 +460,7 @@ document.addEventListener("DOMContentLoaded", () => {
       let splitted = prcdra.split("<br>");
 
 
-      modalPrice.src = "../imgs/trs.png";
+      modalPrice.src = "";
       modalPrice.nextSibling.textContent = splitted[0]
       modalPrice.nextSibling.style.color = "rgb(255 255 255)";
       modalPrice.nextSibling.style.fontSize = "32px"
