@@ -3,6 +3,11 @@ export async function onRequestGet({ request, env }) {
   const userId = url.searchParams.get("userId");
   const discordId = url.searchParams.get("discordId"); // Optional
 
+  if (request.headers.get("origin") !== "https://emwiki.site" || request.headers.get("origin") !== "https://www.emwiki.site") {
+    return new Response("Unauthorized", { status: 403 });
+  }
+
+
   if (!userId && !discordId) {
     return new Response(JSON.stringify({ error: "Missing userId or discordId" }), {
       status: 400,
