@@ -1,4 +1,4 @@
-fetch('https://api.github.com/gists/7fcec01fdc989745bdd556e60de728fa')
+fetch('https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91')
 
   .then(results => {
 
@@ -7,7 +7,7 @@ fetch('https://api.github.com/gists/7fcec01fdc989745bdd556e60de728fa')
   .then(data => {
 
     // Determine the current page and select the appropriate data
-    let arr = JSON.parse(data.files["auto.Json"].content); // Parse the JSON content
+    let arr = JSON.parse(data.files["auto.json"].content); // Parse the JSON content
     let color;
 
     showInfo(arr, color); // Pass the color to the showInfo function
@@ -189,8 +189,8 @@ function showInfo(arr, color) {
   const mysterybagItems = [];
   const typicalChestItems = [];
   const premiumChestItems = [];
-  const playtimeItems = [];
-  const secretItems = [];
+  const hrplaytimeItems = [];
+  const gamenightItems = [];
   for (const [listName, list] of Object.entries(arr)) {
 
 
@@ -224,14 +224,14 @@ function showInfo(arr, color) {
         premiumChestItems.push(item);
       }
       if (item.from && item.from.toLowerCase().includes("1hr playtime rewards")) {
-        playtimeItems.push(item);
+        hrplaytimeItems.push(item);
       }
-      if (item.from && item.from.toLowerCase().includes("secret item")) {
-        secretItems.push(item);
+      if (item.from && item.from.toLowerCase().includes("gamenight")) {
+        gamenightItems.push(item);
       }
     });
   };
-  const chests = [steelChestItems, elusiveBagItems, legendaryChestItems, itemcrateItems, luckyChestItems, epicChestItems, mysterybagItems, typicalChestItems, premiumChestItems, playtimeItems, secretItems];
+  const chests = [steelChestItems, elusiveBagItems, legendaryChestItems, itemcrateItems, luckyChestItems, epicChestItems, mysterybagItems, typicalChestItems, premiumChestItems, hrplaytimeItems, gamenightItems];
   chests.forEach((chestItems) => {
     chestItems.forEach((item) => {
       let listElement;
@@ -254,9 +254,9 @@ function showInfo(arr, color) {
       } else if (item.from.toLowerCase().includes("premium chest")) {
         listElement = document.getElementById("premiumchest");
       } else if (item.from.toLowerCase().includes("1hr playtime rewards")) {
-        listElement = document.getElementById("playtimerewards");
-      } else if (item.from.toLowerCase().includes("secret item")) {
-        listElement = document.getElementById("secretitems");
+        listElement = document.getElementById("1hrplaytimerewards");
+      } else if (item.from.toLowerCase().includes("gamenight")) {
+        listElement = document.getElementById("gamenightitems");
       }
 
       // Check if the item's parent is "pets" and set the color to orange
@@ -274,8 +274,8 @@ function showInfo(arr, color) {
 
     if (e.target.classList.contains("item")) {
       var element = e.target;
-    } else if (e.target.parentElement.classList.contains("item")) {
-      var element = e.target.parentElement;
+    }else{
+      return;
     }
 
     let rect = element.getBoundingClientRect();
@@ -283,20 +283,29 @@ function showInfo(arr, color) {
     if (document.querySelector(".tooltip")) {
 
 
+
+
+
+      
       var tooltip = document.querySelector(".tooltip")
 
         ? document.querySelector(".tooltip")
         : document.querySelector(":scope .tooltip");
-      tooltip.style.opacity = "1";
-
+      
 
 
       //get child with id pricefromrarity
       var pricefromrarity = element.querySelector("#pricecoderarity");
+      
+
+      if (pricefromrarity.innerText=="") {
+        return;
+      }
       tooltip.innerHTML = `
             <div id="tooltipname">${pricefromrarity.innerText}</div>
             `;
 
+      tooltip.style.opacity = "1";
 
       tooltip.style.left =
         (rect.x + tooltip.clientWidth + 10 < document.body.clientWidth)

@@ -522,6 +522,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const text = children[1].textContent;
         if (!text) return priceEl.style.display = "none";
 
+          if (text.includes("Tokens")) {
+          Object.assign(children[1].style, { fontWeight: 500,textStroke : "1px rgb(255, 83, 219)",webkitTextStroke: "1px rgb(255, 83, 219)" });
+          }
+          if (text.includes("Robux")) {
+          Object.assign(children[1].style, { fontWeight: 700 });
+          }
+
         const iconMap = {
           Robux: "https://i.imgur.com/cf8ZvY7.png",
           Coins: "../imgs/Coin.webp",
