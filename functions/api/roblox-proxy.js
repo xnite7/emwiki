@@ -43,7 +43,12 @@ export async function onRequestGet({ request, env }) {
   }
 
   // Attempt to get Discord username if discordId is provided
-  if (discordId) {
+// Attempt to get Discord username if discordId is provided
+if (discordId) {
+  const maxRetries = 3;
+  let attempt = 0;
+
+  while (attempt < maxRetries) {
     try {
       const discordRes = await fetch(`https://discord.com/api/v10/users/${discordId}`, {
         headers: {
@@ -54,15 +59,22 @@ export async function onRequestGet({ request, env }) {
       if (discordRes.ok) {
         const discordData = await discordRes.json();
         discordDisplayName = discordData.global_name || `${discordData.username}#${discordData.discriminator}`;
-      } else {
-        // Invalid Discord ID (e.g., 404): just set to null
-        discordDisplayName = null;
+        break; // success, exit retry loop
       }
+
+      // Not ok (e.g., 404 or 403)
+      attempt++;
+      if (attempt >= maxRetries) discordDisplayName = null;
+      else await new Promise(r => setTimeout(r, 500 * attempt)); // backoff delay
+
     } catch {
-      // Network or other fetch error: set to null
-      discordDisplayName = null;
+      attempt++;
+      if (attempt >= maxRetries) discordDisplayName = null;
+      else await new Promise(r => setTimeout(r, 500 * attempt)); // backoff delay
     }
   }
+}
+
 
   if (!robloxData && !discordDisplayName) {
     return new Response(JSON.stringify({ error: "No user data found" }), {

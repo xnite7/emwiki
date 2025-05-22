@@ -17,7 +17,7 @@ async function createScammerBlock(scammer, container) {
   const robloxProfileMatch = scammer.Content.match(/roblox profile:\s*\*\*\s*(https:\/\/www\.roblox\.com\/users\/\d+\/profile)/);
 
   const discordid = discordMatch ? discordMatch[1].trim() : "N/A";
-  console.log(discordid.split(',')[0])
+
   let robloxUser = robloxUserMatch ? robloxUserMatch[1].trim() : "N/A";
   const robloxProfile = robloxProfileMatch ? robloxProfileMatch[1].trim() : "#";
   const userIdMatch = robloxProfile.match(/users\/(\d+)\/profile/);
