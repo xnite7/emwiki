@@ -175,24 +175,25 @@
 				<a id="effectstab" href="./effects.html"><img src="https://i.imgur.com/l90cgxf.png" style="max-width: -webkit-fill-available;" draggable="false" display="none" onmousedown="return false"></a>
 				<a id="cheststab" href="./chests.html"><img src="https://i.imgur.com/XwkWVJJ.png" style="max-width: -webkit-fill-available;"draggable="false" display="none" onmousedown="return false"></a>
 				<a id="scammerstab" href="./scammers.html"><img src="https://i.imgur.com/SK5csOS.png" style="max-width: -webkit-fill-available;"draggable="false" display="none" onmousedown="return false"></a>
-				
 			</nav>
-
 			<section class="welcome">
 				<!-- ? Button -->
 				<div id="credits-button">❤</div>
+
 				<h1 style="margin-top: 10px;">Welcome to Epic Catalogue!</h1>
 				<p>A collection of every Epic minigames item</p>
 			</section>
-			
 			<section class="catalog">
+				<div id="refresh-button"onclick="rinse();">↻</div>
 				<h2>🎲 Random items</h2>
+								
 				<p id="zd" style="display: none;">0</p>
-				<div class="catalog-grid" id="ctlg" style="display: flex;
-															gap: 1.5rem;
-															padding: 1rem;
-															justify-content: center;
-															flex-wrap: wrap;">
+				<div class="catalog-grid" id="ctlg" style="
+					display: flex;
+					gap: 1.5rem;
+					padding: 1rem;
+					justify-content: center;
+					flex-wrap: wrap;">
 
 				</div>
 			</section>
@@ -224,8 +225,8 @@
 						if (e.key === "Enter") {
 							const message = input.value.trim();
 							if (message) {
-							socket.send(message);
-							input.value = "";
+								socket.send(message);
+								input.value = "";
 							}
 						}
 					});
@@ -241,7 +242,7 @@
 			<a href="/404" ><img src="./imgs/sef.png" style="margin-top: 27px;width: 66px;"></a>
 		</main>
 		<footer style="margin-top: 0px;">
-			<p>if u come upon any bugs / have any suggestions contact @xnite on discord </p>
+			<p>if u come upon any bugs / have any suggestions contact @xnite on discord</p>
 			  <p style="
 			    font-size: 1.1rem;
 				text-wrap-style: balance;
@@ -260,14 +261,11 @@
 					<div id="credits-content">
 						<!-- Close Button -->
 						<div id="close-credits">&times;</div>
-
 						<h2>Credits</h2>
 						<p>
 							Huge thanks to everyone who contributed to making the Epic Minigames item list.
 						</p>
-
 						<div>
-
 							<div>
 							<h3 style="color: #ffdd57;">Creator</h3>
 							<p><strong>Mason</strong> (@Kypsus)</p>
@@ -287,7 +285,6 @@
 							<h3 style="color: #a5ff90;">Editors</h3>
 							<p><strong>Elie</strong> (@31iee)<br><strong>Cat</strong> (@kittyywawa)<br><strong>Nooby_Dev</strong> (@Linkinthegamer)</p>
 							</div>
-
 						</div>
 					</div>
 				</div>
@@ -380,8 +377,8 @@
 
 	// Close modal
 	function hideModal() {
-	modal.style.display = "none";
-	modal.style.pointerEvents = "none";
+		modal.style.display = "none";
+		modal.style.pointerEvents = "none";
 	}
 
 	// Events

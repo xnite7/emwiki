@@ -62,57 +62,65 @@ if (document.querySelector('.intro')) {
   })
 }
 
+function rinse() {
+  fetch('https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91')
+    .then(results => {
+      return results.json();
+    })
+    .then(data => {
+      document.querySelectorAll(".item").forEach((el) => el.remove());
+      if (document.getElementById('refresh-button')){
+        document.getElementById('refresh-button').style.animation = "";
+        document.getElementById('refresh-button').style.webkitanimation = "";
+        setTimeout(() => {
+          document.getElementById('refresh-button').style.animation = "rotate 0.7s ease-in-out 0s 1 alternate";
+          document.getElementById('refresh-button').style.webkitanimation = "rotate 0.7s ease-in-out 0s 1 alternate";
+        }, 50)
+       
+      }
+      // Determine the current page and select the appropriate data
+      const page = window.location.pathname.split('/').pop(); // Get the current file name
+      let arr = JSON.parse(data.files["auto.json"].content); // Parse the JSON content
+      let color;
+      if (page.includes("gears")) {
+        document.body.style.backgroundColor = "#24be31";
+        color = "rgb(91, 254, 106)";
+        arr = arr.gears;
+      } else if (page.includes("deaths")) {
+        document.body.style.backgroundColor = "#be4324";
+        color = "rgb(255, 122, 94)";
+        arr = arr.deaths;
+      } else if (page.includes("titles")) {
+        document.body.style.backgroundColor = "#7724c0";
+        color = "rgb(201, 96, 254)";
+        arr = arr.titles;
+      } else if (page.includes("pets")) {
+        document.body.style.backgroundColor = "#2723c1";
+        color = "rgb(55, 122, 250)";
+        arr = arr.pets;
+      } else if (page.includes("effects")) {
+        document.body.style.backgroundColor = "#c08223";
+        color = "rgb(255, 177, 53)";
+        arr = arr.effects;
+      } else {
+        arr = arr;
+        color = "rgb(0, 0, 0)";
+      }
+      showInfo(arr, color); // Pass the color to the showInfo function
+    })
+    .catch(error => console.error('Error fetching data:', error));
+}
+rinse()
 
 
 
-fetch('https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91')
-  .then(results => {
-    return results.json();
-  })
-  .then(data => {
-    // Determine the current page and select the appropriate data
-    const page = window.location.pathname.split('/').pop(); // Get the current file name
-    let arr = JSON.parse(data.files["auto.json"].content); // Parse the JSON content
-    let color;
-
-    if (page.includes("gears")) {
-      document.body.style.backgroundColor = "#24be31";
-      color = "rgb(91, 254, 106)";
-      arr = arr.gears;
-    } else if (page.includes("deaths")) {
-      document.body.style.backgroundColor = "#be4324";
-      color = "rgb(255, 122, 94)";
-      arr = arr.deaths;
-    } else if (page.includes("titles")) {
-      document.body.style.backgroundColor = "#7724c0";
-      color = "rgb(201, 96, 254)";
-      arr = arr.titles;
-    } else if (page.includes("pets")) {
-      document.body.style.backgroundColor = "#2723c1";
-      color = "rgb(55, 122, 250)";
-      arr = arr.pets;
-    } else if (page.includes("effects")) {
-      document.body.style.backgroundColor = "#c08223";
-      color = "rgb(255, 177, 53)";
-      arr = arr.effects;
-    } else {
-      arr = arr;
-      color = "rgb(0, 0, 0)";
-    }
-    showInfo(arr, color); // Pass the color to the showInfo function
-  })
-  .catch(error => console.error('Error fetching data:', error));
 
 function createNewItem(item, color) {
-
-
   const catalog = document.getElementById("ctlg");
-
   // Create a new item element
   const newItem = document.createElement("div");
   newItem.classList.add("item");
   newItem.style.display = "flex";
-
   if (item.tradable == false && color != "rgb(201, 96, 254)") {
     const untradable = document.createElement("img");
 
@@ -343,11 +351,6 @@ function showInfo(arr, color) {
 
 
 document.addEventListener("DOMContentLoaded", () => {
-
-
-
-
-
   template = document.getElementById("itom");
   const catalog = document.getElementById("ctlg"); // Parent container for items
   const modal = document.getElementById("product-modal");
@@ -356,22 +359,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeModal = document.getElementById("close-modal");
   const modalTitle = document.getElementById("modal-title");
   const modalPrc = document.getElementById("modal-prc");
-
   const modalDescription = document.getElementById("modal-description");
   const modalPrice = document.getElementById("modal-price-value");
-
-
-
-
-
   let main = document.querySelector("main");
   if (main.style.scale == '1') {
     main.style.filter = 'opacity(1)'
-
   }
-
-
-
   document.addEventListener("keydown", (event) => {
     if (event.key === "ArrowRight") {
       const currentItem = document.querySelector(".item.showing"); // Find the currently showing item
@@ -393,7 +386,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   });
-
 
   // Simplified modal interaction logic
   let isModalOpen = false;
@@ -644,15 +636,9 @@ document.addEventListener("DOMContentLoaded", () => {
           item.childNodes[1].style.fontSize = `${fontsize}px`;
         }
       }
-
       // Decrease the font size
-
     });
   }
-
-
-
-
 });
 
 
