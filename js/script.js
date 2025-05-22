@@ -426,10 +426,10 @@ document.addEventListener("DOMContentLoaded", () => {
     modalContent.style.pointerEvents = "none";
     modalContent.style.backgroundColor = item.style.backgroundColor;
     modalTitle.textContent = title;
-
-    if (item.id !== "titles") {
       const existingCanvas = modalContent.querySelector("#content-area canvas");
       if (existingCanvas) existingCanvas.remove();
+    if (item.id !== "titles") {
+
 
       const canvas = document.createElement("canvas");
       Object.assign(canvas.style, {
