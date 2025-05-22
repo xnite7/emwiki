@@ -210,18 +210,19 @@
 				</ol>
 			</section>
 			<section id="join">
-				<div id="messages"></div>
+				<div id="messages"><div id="indicator"></div></div>
 				<input type="text" id="chatInput" placeholder="Type a message and hit enter..." autocomplete="off" />
 
 				<script>
 					const messagesDiv = document.getElementById("messages");
+					const indicatorDiv = document.getElementById("indicator");
 					const input = document.getElementById("chatInput");
 
 					// 🔄 Replace with your deployed Worker URL
 					const socket = new WebSocket("wss://cf-chat-backend.xnite7.workers.dev/chat");
 
 					socket.addEventListener("open", () => {
-						messagesDiv.innerHTML += `<div><em>Connected to chat.</em></div>`;
+						indicatorDiv.innerHTML = `🟢`;
 					});
 
 					socket.addEventListener("message", (event) => {
@@ -242,7 +243,7 @@
 					});
 
 					socket.addEventListener("close", () => {
-						messagesDiv.innerHTML += `<div><em>Connection closed.</em></div>`;
+						indicatorDiv.innerHTML = `🔴`;
 					});
 				</script>
 			</section>
@@ -251,24 +252,6 @@
 				<p style="font-size: large;">Join to get the latest updates and news about the game! <br><br><a class="discord" href="https://discord.com/invite/tg">Discord server</a></p>
 				
 			</section>
-			<style>
-
-				#messages {
-				height: 300px;
-				overflow-y: auto;
-				border: 1px solid #444;
-				padding: 10px;
-				margin-bottom: 10px;
-				background: #1e1e1e;
-				}
-				input {
-				padding: 10px;
-				width: calc(100% - 22px);
-				border: 1px solid #555;
-				background: #2a2a2a;
-				color: white;
-				}
-			</style>
 			
 			<a href="/404" ><img src="./imgs/sef.png" style="width: 66px;"></a>
 		</main>
