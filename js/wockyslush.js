@@ -189,6 +189,7 @@ function showInfo(arr, color) {
   const mysterybagItems = [];
   const typicalChestItems = [];
   const premiumChestItems = [];
+  const playtimeItems = [];
   const secretItems = [];
   for (const [listName, list] of Object.entries(arr)) {
 
@@ -222,12 +223,15 @@ function showInfo(arr, color) {
       if (item.from && item.from.toLowerCase().includes("premium chest")) {
         premiumChestItems.push(item);
       }
+      if (item.from && item.from.toLowerCase().includes("1hr playtime rewards")) {
+        playtimeItems.push(item);
+      }
       if (item.from && item.from.toLowerCase().includes("secret item")) {
         secretItems.push(item);
       }
     });
   };
-  const chests = [steelChestItems, elusiveBagItems, legendaryChestItems, itemcrateItems, luckyChestItems, epicChestItems, mysterybagItems, typicalChestItems, premiumChestItems, secretItems];
+  const chests = [steelChestItems, elusiveBagItems, legendaryChestItems, itemcrateItems, luckyChestItems, epicChestItems, mysterybagItems, typicalChestItems, premiumChestItems, playtimeItems, secretItems];
   chests.forEach((chestItems) => {
     chestItems.forEach((item) => {
       let listElement;
@@ -249,6 +253,8 @@ function showInfo(arr, color) {
         listElement = document.getElementById("typicalchest");
       } else if (item.from.toLowerCase().includes("premium chest")) {
         listElement = document.getElementById("premiumchest");
+      } else if (item.from.toLowerCase().includes("1hr playtime rewards")) {
+        listElement = document.getElementById("playtimerewards");
       } else if (item.from.toLowerCase().includes("secret item")) {
         listElement = document.getElementById("secretitems");
       }

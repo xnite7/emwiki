@@ -1386,8 +1386,154 @@ html {
   }
 }
 
+
+
+#credits-modal{
+					display: none;
+					pointer-events: none;
+					z-index: 9999;
+					padding: 20px;
+}
+
+#credits-content {
+						background: #1c1c1c;
+						color: #eee;
+						border-radius: 12px;
+    					padding: 0px 25px 25px;
+
+						position: absolute;
+						box-shadow: 0 0 15px #000;
+						font-size: 14px;
+}
+
+
+#close-credits {
+								position: absolute;
+								top: 0px;
+								right: 15px;
+								color: #aaa;
+								font-size: 35px;
+								cursor: pointer;
+}
+#credits-content>h2 {
+font-size: 2rem; margin-bottom: 10px; color: #ffcc00; text-align: center;
+}
+
+#credits-content>p {
+font-size: 1rem; text-align: center; margin-bottom: 30px; color: #ccc;
+}
+
+#credits-content>div:last-child {
+                  display: flex;
+									gap: 20px;
+									grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+									font-size: 0.95rem;
+									flex-wrap: wrap;
+									flex-direction: row;
+}
+#credits-content>div:last-child div {
+background: #2c2c2c; padding: 15px; border-radius: 10px;
+}
+
+
+
+
+
+
+
+
+#credits-button{
+
+
+				right: 20px;
+				background: #333;
+				color: #fff;
+				font-size: 20px;
+				width: 40px;
+				height: 40px;
+				border-radius: 50%;
+				text-align: center;
+				line-height: 40px;
+				cursor: pointer;
+				z-index: 1000;
+				box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  float: right;
+}
+
+
+
+
+#credits-content>div:last-child div p {
+    font-size: 16px;
+}
+
+
+
+
+
+
 @media (max-width: 600px) {
 
+#credits-modal{
+  display: none;
+    pointer-events: auto;
+    z-index: 9999;
+    padding: 20px;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: -webkit-fill-available;
+    height: -webkit-fill-available;
+    backdrop-filter: blur(6px);
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+#credits-content {
+    background: rgb(28, 28, 28);
+    color: rgb(238, 238, 238);
+    border-radius: 12px;
+    padding: 0px 25px 25px;
+    position: relative;
+    box-shadow: rgb(0, 0, 0) 0px 0px 15px;
+    font-size: 14px;
+    margin: 60px auto;
+}
+
+
+#close-credits {
+      position: absolute;
+    top: 0px;
+    right: 15px;
+    color: #aaa;
+    font-size: 35px;
+    cursor: pointer;
+}
+#credits-content>h2 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    color: #ffcc00;
+    padding-top: 11px;
+    text-align: center;
+}
+
+#credits-content>p {
+    font-size: 1.6rem;
+    margin-top: 18px;
+    text-align: center;
+    margin-bottom: 30px;
+    color: #ccc;
+}
+
+#credits-content>div:last-child {
+  gap: 14px;
+}
+#credits-content>div:last-child div {
+padding: 13px;
+}
+
+#credits-content>div:last-child div p {
+    font-size: 12px;
+}
   #grid {
     zoom: 0.27;
     

@@ -184,6 +184,8 @@
 			</nav>
 
 			<section class="welcome">
+				<!-- ? Button -->
+				<div id="credits-button">❤</div>
 				<h1>Welcome to Epic Catalogue!</h1>
 				<p>A collection of every Epic minigames item</p>
 			</section>
@@ -272,16 +274,56 @@
 		</main>
 
 		<footer style="margin-top: 0px;">
-			<p>if u come upon any bugs / have any suggestions contact @xnite on discord</p>
-			
-			
+			<p>if u come upon any bugs / have any suggestions contact @xnite on discord </p>
+			  <p style="    font-size: 1.1rem;
+    text-wrap-style: balance;
+    padding: 0 0 37px 0;
+    margin: 0;">
+				<a style="color: #33f1ff;" href="https://discord.com/channels/236205096730492928/1374877653265416345/1375059359972855888">Original item list Google Doc by @Kypsus & @Espretion</a>
+			</p>
 		</footer>
 		
 	</body>
 </html>
 
 
+				<!-- Modal Container -->
+				<div id="credits-modal">
+				<!-- Modal Content -->
+					<div id="credits-content">
+						<!-- Close Button -->
+						<div id="close-credits">&times;</div>
 
+						<h2>Credits</h2>
+						<p>
+							Huge thanks to everyone who contributed to making the Epic Minigames item list.
+						</p>
+
+						<div>
+
+							<div>
+							<h3 style="color: #ffdd57;">Creator</h3>
+							<p><strong>Mason</strong> (@Kypsus)</p>
+							</div>
+
+							<div>
+							<h3 style="color: #57c3ff;">Co-Creator</h3>
+							<p><strong>Enzo</strong> (@Espretion)</p>
+							</div>
+
+							<div>
+							<h3 style="color: #ffa8dc;">Contributors</h3>
+							<p><strong>Jay</strong> (@Jayvoux)<br><strong>Nuppa</strong> (@Icsdee_Bro)<br><strong>Street</strong> (@GhostOfPlazma)</p>
+							</div>
+
+							<div>
+							<h3 style="color: #a5ff90;">Editors</h3>
+							<p><strong>Elie</strong> (@31iee)<br><strong>Cat</strong> (@kittyywawa)<br><strong>Nooby_Dev</strong> (@Linkinthegamer)</p>
+							</div>
+
+						</div>
+					</div>
+				</div>
   
 <div id="product-modal" class="modal" style="display: none;">
 	<div id="modal-content" class="modal-content expand" data-tilt="" data-tilt-max="10" data-tilt-speed="500" data-tilt-perspective="1800" data-tilt-glare="" data-tilt-max-glare="0.1" data-tilt-scale="1.03" data-tilt-reset="true" style="will-change: transform; background-color: rgb(91, 254, 106); position: relative; top: 0px; left: 0px; transform: perspective(1800px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1);">
@@ -336,4 +378,63 @@
 
     VanillaTilt.init(document.querySelectorAll("[data-tilt]"), {
     });
+</script>
+
+	<script>
+	const modal = document.getElementById("credits-modal");
+	const content = document.getElementById("credits-content");
+	const button = document.getElementById("credits-button");
+	const close = document.getElementById("close-credits");
+
+	const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+	// Show modal
+	function showModal(e) {
+	modal.style.display = "block";
+	modal.style.pointerEvents = "auto";
+
+	if (!isTouch) {
+		// Position near mouse on desktop
+		const x = button.getBoundingClientRect().left -content.getBoundingClientRect().width;
+		const y = button.getBoundingClientRect().top +10;
+		content.style.position = "absolute";
+		content.style.left = `${x}px`;
+		content.style.top = `${y}px`;
+		close.style.display="none";
+		modal.style.padding= "0";
+	} else {
+		// Fullscreen on mobile with blur background
+		modal.style.position = "fixed";
+		modal.style.top = "0";
+		modal.style.left = "0";
+		modal.style.width = "-webkit-fill-available";
+		modal.style.height = "-webkit-fill-available";
+		modal.style.backdropFilter = "blur(6px)";
+		modal.style.backgroundColor = "rgba(0,0,0,0.5)";
+		content.style.position = "relative";
+		content.style.margin = "60px auto";
+	}
+	}
+
+	// Close modal
+	function hideModal() {
+	modal.style.display = "none";
+	modal.style.pointerEvents = "none";
+	}
+
+	// Events
+	button.addEventListener("touchend", (e) => {
+	showModal(e);
+	});
+	button.addEventListener("mouseover", (e) => {
+	if (!isTouch) showModal(e);
+	});
+		button.addEventListener("mouseout", (e) => {
+	if (!isTouch) hideModal();
+	});
+	close.addEventListener("click", hideModal);
+	modal.addEventListener("click", (e) => {
+	if (e.target === modal) hideModal();
+	});
+
 </script>

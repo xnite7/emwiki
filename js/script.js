@@ -426,7 +426,7 @@ document.addEventListener("DOMContentLoaded", () => {
     modalContent.style.pointerEvents = "none";
     modalContent.style.backgroundColor = item.style.backgroundColor;
     modalTitle.textContent = title;
-      const existingCanvas = modalContent.querySelector("#content-area canvas");
+    const existingCanvas = modalContent.querySelector("#content-area canvas");
       if (existingCanvas) existingCanvas.remove();
     if (item.id !== "titles") {
 
@@ -618,9 +618,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (items.length > 0) { // Check if items are generated
         obs.disconnect(); // Stop observing
         items.forEach(item => {
-          if (item.id != "titles") {
-            return;
-          }
           if (item.id != "titles") {
             return;
           }
