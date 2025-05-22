@@ -57,8 +57,6 @@ if (document.querySelector('.intro')) {
       }, 2500)
       setTimeout(() => {
         intro.style.display = "none"
-
-
       }, 3000)
     })
   })
@@ -68,13 +66,10 @@ if (document.querySelector('.intro')) {
 
 
 fetch('https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91')
-
   .then(results => {
-
     return results.json();
   })
   .then(data => {
-
     // Determine the current page and select the appropriate data
     const page = window.location.pathname.split('/').pop(); // Get the current file name
     let arr = JSON.parse(data.files["auto.json"].content); // Parse the JSON content
@@ -101,15 +96,10 @@ fetch('https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91')
       color = "rgb(255, 177, 53)";
       arr = arr.effects;
     } else {
-
       arr = arr;
       color = "rgb(0, 0, 0)";
-
     }
-
-
     showInfo(arr, color); // Pass the color to the showInfo function
-
   })
   .catch(error => console.error('Error fetching data:', error));
 
