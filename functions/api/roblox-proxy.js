@@ -10,17 +10,15 @@ export async function onRequestGet({ request, env }) {
     try {
       const messagesRes = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages?limit=100`, {
         headers: {
-          Authorization: `Bearer ${env.ACCESS_TOKEN}`,
+          Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`
         }
       });
 
-
-      const messages = await messagesRes.json();
-
-      if (messagesRes.ok) {
-        return new Response(messages);
+      if (!messagesRes.ok) {
+        return new Response("Failed to fetch messages", { status: 500 });
       }
 
+      const messages = await messagesRes.json();
 
       const scammers = await Promise.all(
         messages
