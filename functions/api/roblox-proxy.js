@@ -10,13 +10,12 @@ export async function onRequestGet({ request, env }) {
     try {
       const messagesRes = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages?limit=100`, {
         headers: {
-          Authorization: `Bot ${env.ACCESS_TOKEN}`
+          Authorization: `Bearer ${env.ACCESS_TOKEN}`,
+          'Content-Type': 'application/json',
         }
       });
 
-      if (!messagesRes.ok) {
-        return new Response("Failed to fetch messages", { status: 500 });
-      }
+
 
       const messages = await messagesRes.json();
 
