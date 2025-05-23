@@ -29,6 +29,10 @@
 
 	<script type="text/javascript" src="./js/sparkles.js"></script>
 	</head>
+	<div style="background: rgb(66, 66, 66); padding: 10px; text-align: center;">
+  🛠️ Site updated May 23 — <a style="color: #33c5ff;" href="#patchnotes">See what's new</a>
+</div>
+
 	<body id="body">
 		<div class="intro" style="pointer-events:none ;">
 			<h1 class="logo-header"><img class="logo3" src="https://i.imgur.com/XRmpB1c.png">
@@ -235,10 +239,33 @@
 					});
 				</script>
 			</section>
-			<section id="join">
-				<h1 style="margin-top: 0;">Typical Games Discord</h1>
-				<p style="font-size: large;">Join to get the latest updates and news about the game! <br><br><a class="discord" href="https://discord.com/invite/tg">Discord server</a></p>
-			</section>
+			<div class="flex-sections">
+				<section class="half" id="join">
+					<h1 style="margin-top: 0;">Typical Games Discord</h1>
+					<p style="font-size: large;">Join to get the latest updates and news about the game! <br><br><a class="discord" href="https://discord.com/invite/tg">Discord server</a></p>
+				</section>
+				<section class="half" id="patchnotes">
+					<h2 style="font-size: 2.2em;margin-top: 0;">Patch Notes</h2>
+					<p style="font-size: small;font-family: monospace;"><strong>Last updated:</strong> May 23, 2025</p>
+					<ul>
+						<li>Better icons</li>
+						<li>Improved pages</li>
+						<li>Updated background visuals</li>
+					</ul>
+				</section>
+			</div>
+
+<script>
+  document.querySelector('a[href="#patchnotes"]').addEventListener("click", (e) => {
+    const patch = document.getElementById("patchnotes");
+
+    // Remove and re-add class to retrigger animation
+    patch.classList.remove("animate");
+    void patch.offsetWidth; // force reflow
+    patch.classList.add("animate");
+  });
+</script>
+
 			<a href="/404" ><img src="./imgs/sef.png" style="margin-top: 27px;width: 66px;"></a>
 		</main>
 		<footer style="margin-top: 0px;">
