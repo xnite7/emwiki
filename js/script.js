@@ -476,27 +476,37 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const splitted = prcdra.split("<br>");
-    modalPrice.src = "";
-    const modalText = modalPrice.nextSibling;
-    modalText.textContent = splitted[0];
-    Object.assign(modalText.style, {
-      color: "#fff",
-      fontSize: "32px",
-      fontWeight: 400,
-      textStroke: "",
-      webkitTextStroke: "",
-      textShadow: ""
-    });
 
-    popo.parentElement.querySelectorAll(".price").forEach((el, idx) => {
-      if (idx > 0) el.remove();
-    });
+// Remove duplicates but keep the first occurrence
+const seen = new Set();
+const uniqueLines = splitted.filter(line => {
+  if (seen.has(line)) return false;
+  seen.add(line);
+  return true;
+});
 
-    splitted.slice(1).forEach((line) => {
-      const newPrice = popo.cloneNode(true);
-      newPrice.childNodes[1].textContent = line;
-      popo.parentElement.appendChild(newPrice);
-    });
+modalPrice.src = "";
+const modalText = modalPrice.nextSibling;
+modalText.textContent = uniqueLines[0];
+Object.assign(modalText.style, {
+  color: "#fff",
+  fontSize: "32px",
+  fontWeight: 400,
+  textStroke: "",
+  webkitTextStroke: "",
+  textShadow: ""
+});
+
+popo.parentElement.querySelectorAll(".price").forEach((el, idx) => {
+  if (idx > 0) el.remove();
+});
+
+uniqueLines.slice(1).forEach((line) => {
+  const newPrice = popo.cloneNode(true);
+  newPrice.childNodes[1].textContent = line;
+  popo.parentElement.appendChild(newPrice);
+});
+
 
     popo.parentElement.querySelectorAll(".price").forEach((priceEl) => {
       const children = priceEl.children;
