@@ -83,23 +83,23 @@ function rinse() {
       let arr = JSON.parse(data.files["auto.json"].content); // Parse the JSON content
       let color;
       if (page.includes("gears")) {
-        document.body.style.backgroundColor = "#24be31";
+        //document.body.style.backgroundColor = "#24be31";
         color = "rgb(91, 254, 106)";
         arr = arr.gears;
       } else if (page.includes("deaths")) {
-        document.body.style.backgroundColor = "#be4324";
+        //document.body.style.backgroundColor = "#be4324";
         color = "rgb(255, 122, 94)";
         arr = arr.deaths;
       } else if (page.includes("titles")) {
-        document.body.style.backgroundColor = "#7724c0";
+       // document.body.style.backgroundColor = "#7724c0";
         color = "rgb(201, 96, 254)";
         arr = arr.titles;
       } else if (page.includes("pets")) {
-        document.body.style.backgroundColor = "#2723c1";
+       // document.body.style.backgroundColor = "#2723c1";
         color = "rgb(55, 122, 250)";
         arr = arr.pets;
       } else if (page.includes("effects")) {
-        document.body.style.backgroundColor = "#c08223";
+       // document.body.style.backgroundColor = "#c08223";
         color = "rgb(255, 177, 53)";
         arr = arr.effects;
       } else {
@@ -527,7 +527,10 @@ uniqueLines.slice(1).forEach((line) => {
           Visors: "https://i.imgur.com/7IoLZCN.png",
           Pumpkins: "https://i.imgur.com/bHRBTrU.png",
           Eggs: "https://i.imgur.com/qMxjgQy.png",
-          Baubles: "https://i.imgur.com/wwMMAvr.png",
+          Opals: "https://i.imgur.com/wwMMAvr.png",
+          Opal: "https://i.imgur.com/wwMMAvr.png",
+          Baubles: "../imgs/bauble.png",
+          Bauble: "../imgs/bauble.png",
           Tokens: "https://i.imgur.com/Cy9r140.png",
           Token: "https://i.imgur.com/Cy9r140.png"
         };

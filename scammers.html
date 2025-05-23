@@ -10,6 +10,29 @@
   <link rel="stylesheet" href="./css/chests.css">
   <script  src="./js/scammers.js"></script>
 </head>
+
+<style>
+	body {
+		background-image: url(https://www.shutterstock.com/shutterstock/videos/3626014191/thumb/1.jpg?ip=x480);
+		background-repeat: repeat;
+		background-size: 40vw;
+		background-attachment: fixed;
+		animation: diagonalScroll 30s linear infinite;
+		background-color: #422006;
+    	background-blend-mode: color-burn;
+    	backdrop-filter: grayscale(1);
+	}
+
+	@keyframes diagonalScroll {
+	0% {
+		background-position: 60% 0%;
+	}
+	100% {
+		background-position: 100% 100%;
+	}
+	}
+
+</style>
 <body>
 	<header>
 		<div class="headersheet" style="justify-self: center;width: 200px;">
@@ -99,7 +122,7 @@
 		<h2>Scammers list</h2>
 		<p>Check if a trader has been reported for scamming</p>
 		<input type="text" id="search-bar" placeholder="Search names..." oninput="filterItems()" style="margin-bottom: 20px; padding: 10px; width: 80%; border-radius: 5px; border: 1px solid #ccc;">
-		<p>to report a user to this list please do so in this server made by <a href="http://discordapp.com/users/366063543260282890">@.bby</a> <br><br><a class="discord" href="https://discord.gg/YsKW6UDWZ6">Discord server</a></p>
+		<p>to report a user to this list please do so in this server made by <a href="http://discordapp.com/users/366063543260282890" style="color: #06F;">@.bby</a> <br><br><a class="discord" href="https://discord.gg/YsKW6UDWZ6">Discord server</a></p>
 	</section>
 	
 
