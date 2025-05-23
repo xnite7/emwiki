@@ -112,7 +112,6 @@ function createNewItem(item, color, list) {
     const img = new Image();
 
     img.onload = function () {
-      console.log(newItem)
       canvas.width = img.width;
       canvas.height = img.height;
       ctx.drawImage(img, 0, 0);

@@ -334,13 +334,13 @@ function showInfo(arr, color) {
 
       const item = pick[Math.floor(Math.random() * pick.length)]; // Get random item from the array
 
-      document.getElementById("zd").innerHTML = `${step + 1} items loaded!`;
+      document.getElementById("zd").innerHTML = `${step + 1} items`;
 
       createNewItem(item, color);
     }
   } else {
     arr.forEach((item, i) => {
-      document.getElementById("zd").innerHTML = `${i + 1} items loaded!`;
+      document.getElementById("zd").innerHTML = `${i + 1} items`;
       createNewItem(item, color);
     });
   }
@@ -507,7 +507,6 @@ uniqueLines.slice(1).forEach((line) => {
   popo.parentElement.appendChild(newPrice);
 });
 
-
     popo.parentElement.querySelectorAll(".price").forEach((priceEl) => {
       const children = priceEl.children;
       if (children.length > 1) {
@@ -546,9 +545,9 @@ uniqueLines.slice(1).forEach((line) => {
           children[1].style.fontWeight = 500;
           children[1].style.textShadow = "0 0 6px rgb(199 0 255)";
         } else if (text.includes("[EXPIRED]")) {
-          Object.assign(children[1].style, { fontSize: "23px", color: "rgb(161 17 17)" });
+          Object.assign(children[1].style, { fontFamily:"monospace" ,fontSize: "23px", color: "rgb(161 17 17)" });
         } else if (text.includes("[ACTIVE]")) {
-          Object.assign(children[1].style, { fontSize: "23px", color: "rgb(251 255 68)" });
+          Object.assign(children[1].style, {  fontFamily:"monospace" ,fontSize: "23px", color: "rgb(251 255 68)" });
         } else if (text.includes("Unobtainable")) {
           children[0].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Red_x.svg/600px-Red_x.svg.png";
           children[1].style.color = "rgb(255 44 44)";
