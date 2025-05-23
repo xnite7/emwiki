@@ -43,7 +43,7 @@ footer p {
 .flex-sections {
   display: flex;
   flex-direction: row;
-  gap: 20px;
+
   width: 100%;
   flex-wrap: wrap; /* fallback for overflow */
       margin-top: 44px;
