@@ -11,13 +11,16 @@ export async function onRequestGet({ request, env }) {
       const messagesRes = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages?limit=100`, {
         headers: {
           Authorization: `Bearer ${env.ACCESS_TOKEN}`,
-          'Content-Type': 'application/json',
         }
       });
 
 
-
       const messages = await messagesRes.json();
+
+      if (messagesRes.ok) {
+        return new Response(messages);
+      }
+
 
       const scammers = await Promise.all(
         messages
