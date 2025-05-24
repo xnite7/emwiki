@@ -349,6 +349,7 @@ async function fetchResults() {
 
 		if (res.status === 403) {
 		disableVoting('You have already voted.');
+		document.querySelector('.poll-box').style.display='none'
 		} else if (res.ok) {
 		disableVoting('Thanks for voting!');
 		} else {
