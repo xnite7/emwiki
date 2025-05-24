@@ -596,7 +596,6 @@ uniqueLines.slice(1).forEach((line) => {
     setTimeout(() => {
       isModalOpen = false;
     }, 200)
-    
   };
 
   closeModal.addEventListener("click", closeModalHandler);

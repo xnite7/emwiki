@@ -1091,6 +1091,30 @@ overflow-x: hidden;
   transform: translateZ(40px) translateY(0px);
 }
 
+.shelf-oppener{
+    height: 70px;
+    background-color: #424242d0;
+    border-radius: 17px;
+    color: aliceblue;
+    margin-bottom: 27px;
+    font-size: 34px;
+    width: -webkit-fill-available;
+    rotate: 0deg;
+
+    transition: background-color 100ms linear;
+}
+
+.shelf-oppener:hover{
+    height: 70px;
+    background-color: #6161617e;
+    border-radius: 17px;
+    color: aliceblue;
+    margin-bottom: 27px;
+    font-size: 34px;
+    width: -webkit-fill-available;
+    transform: none;
+}
+
 #grid {
   margin: 42px;
   zoom: 0.6;

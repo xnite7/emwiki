@@ -185,7 +185,7 @@ function createNewItem(item, color, list) {
       
       newItem.appendChild(retiredTag)
       newItem.style.order="10"
-      
+
       if (newItem.id == "titles"){
         retiredTag.style.top = "42%";
       }
@@ -201,7 +201,26 @@ function createNewItem(item, color, list) {
 }
 
 
+  var shelfs = document.querySelectorAll(".shelf-oppener")
 
+  shelfs.forEach((e) => {
+    e.innerText = 'V'
+    e.addEventListener("click", function () {
+      console.log(e.style.rotate)
+      if (e.style.rotate == '-180deg'){
+       // e.parentElement.querySelector('.psp').style.display="block";
+       e.parentElement.querySelector('.psp').style.width="auto"
+        e.parentElement.querySelector('.catalog-grid').style.display="grid";
+        e.style.rotate = '0deg'
+      }else{
+      //  e.parentElement.querySelector('.psp').style.display="none";
+      e.parentElement.querySelector('.psp').style.width="-webkit-fill-available"
+        e.parentElement.querySelector('.catalog-grid').style.display="none";
+        e.style.rotate = '-180deg'
+      }
+
+    });
+  })
 
 
 function showInfo(arr, color) {
@@ -301,6 +320,7 @@ function showInfo(arr, color) {
 
 
 
+
   function showTooltip(e) {
 
     if (e.target.classList.contains("item")) {
@@ -326,7 +346,7 @@ function showInfo(arr, color) {
 
       var pricefromrarity = element.querySelector("#pricecoderarity");
 
-      console.log(element.parentElement)
+
 
       if (element.parentElement.id =='gamenightitems'){
 
