@@ -301,7 +301,7 @@
 <script>
   async function loadPoll() {
     try {
-      const res = await fetch('https://emwiki-poll.xnite7.workers.dev/poll');
+      const res = await fetch('https://emwiki-poll.xnite7.workers.dev/api/poll');
       const data = await res.json();
       document.getElementById('pollTotals').innerHTML = 
         `👍 ${data.like} votes | 👎 ${data.dislike} votes`;
@@ -312,7 +312,7 @@
 
   async function submitVote(vote) {
     try {
-      const res = await fetch('/api/poll', {
+      const res = await fetch('https://emwiki-poll.xnite7.workers.dev/api/poll', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ vote })
