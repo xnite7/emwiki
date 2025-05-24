@@ -56,6 +56,7 @@ footer p {
 .half {
   flex: 1;
   min-width: 0; /* Prevent overflow */
+  flex: 1 337px;
 }
 
 /* Stack on smaller screens */
@@ -208,6 +209,7 @@ main {
   scale: 0.9;
   transition: 1s;
   filter: opacity(0);
+          justify-content: center;
 }
 
 .logo.fade {
@@ -275,6 +277,7 @@ nav {
   height: 88px;
   display: flex;
   gap: 4px;
+      justify-content: center;
   align-items: flex-end;
   justify-content: center;
   -webkit-user-select: none;
@@ -323,7 +326,7 @@ nav a:hover img {
 nav a {
   display: flex;
   max-width: 100px;
-  width: 12vw;
+      width: calc(3vw + 46px);
   max-height: inherit;
   padding: 0.35rem;
   border-radius: 35% 35% 0 0;
@@ -476,6 +479,11 @@ nav a:active {
 
 main {
   text-align: center;
+      display: flex
+;
+    filter: opacity(1);
+    flex-direction: row;
+    flex-wrap: wrap;
 }
 
 section {
@@ -486,6 +494,7 @@ section {
   position: sticky;
   z-index: 22;
   margin: 0 5vw 38px 5vw;
+      flex: 1 1230px;
 }
 
 .show {
@@ -1704,6 +1713,7 @@ html {
     height: auto;
     gap: 16px;
     flex-wrap: wrap;
+    flex: 1;
     margin-bottom: 20px;
   }
 
@@ -1713,8 +1723,7 @@ html {
 
   nav a {
     display: flex;
-    max-width: 100px;
-    width: 18vw;
+    width: calc(3vw + 46px);
     max-height: inherit;
     padding: 0.35rem;
     border-radius: 100%;

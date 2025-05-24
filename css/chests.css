@@ -117,6 +117,7 @@ nav {
   height: 88px;
   display: flex;
   gap: 4px;
+
   align-items: flex-end;
   justify-content: center;
   -webkit-user-select: none;
@@ -419,6 +420,7 @@ nav a:active {
 
 main {
   text-align: center;
+          justify-content: center;
 }
 
 section {
@@ -1160,7 +1162,7 @@ overflow-x: hidden;
   nav a {
     display: flex;
     max-width: 100px;
-    width: 18vw;
+    width: calc(3vw + 46px);
     max-height: inherit;
     padding: 0.35rem;
     border-radius: 100%;
