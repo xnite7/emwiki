@@ -69,14 +69,14 @@ function rinse() {
     })
     .then(data => {
       document.querySelectorAll(".item").forEach((el) => el.remove());
-      if (document.getElementById('refresh-button')){
+      if (document.getElementById('refresh-button')) {
         document.getElementById('refresh-button').style.animation = "";
         document.getElementById('refresh-button').style.webkitanimation = "";
         setTimeout(() => {
           document.getElementById('refresh-button').style.animation = "rotate 0.7s ease-in-out 0s 1 alternate";
           document.getElementById('refresh-button').style.webkitanimation = "rotate 0.7s ease-in-out 0s 1 alternate";
         }, 50)
-       
+
       }
       // Determine the current page and select the appropriate data
       const page = window.location.pathname.split('/').pop(); // Get the current file name
@@ -91,15 +91,15 @@ function rinse() {
         color = "rgb(255, 122, 94)";
         arr = arr.deaths;
       } else if (page.includes("titles")) {
-       // document.body.style.backgroundColor = "#7724c0";
+        // document.body.style.backgroundColor = "#7724c0";
         color = "rgb(201, 96, 254)";
         arr = arr.titles;
       } else if (page.includes("pets")) {
-       // document.body.style.backgroundColor = "#2723c1";
+        // document.body.style.backgroundColor = "#2723c1";
         color = "rgb(55, 122, 250)";
         arr = arr.pets;
       } else if (page.includes("effects")) {
-       // document.body.style.backgroundColor = "#c08223";
+        // document.body.style.backgroundColor = "#c08223";
         color = "rgb(255, 177, 53)";
         arr = arr.effects;
       } else {
@@ -304,7 +304,13 @@ function createNewItem(item, color) {
   newItem.appendChild(prcdra);
 
   // Append the new item to the catalog
-  catalog.appendChild(newItem);
+
+
+
+        newItem.classList.add('item', 'item-refresh-animate');
+        catalog.appendChild(newItem);
+
+  
 
 
 }
@@ -409,7 +415,7 @@ document.addEventListener("DOMContentLoaded", () => {
     modalContent.style.backgroundColor = item.style.backgroundColor;
     modalTitle.textContent = title;
     const existingCanvas = modalContent.querySelector("#content-area canvas");
-      if (existingCanvas) existingCanvas.remove();
+    if (existingCanvas) existingCanvas.remove();
     if (item.id !== "titles") {
 
 
@@ -477,35 +483,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const splitted = prcdra.split("<br>");
 
-// Remove duplicates but keep the first occurrence
-const seen = new Set();
-const uniqueLines = splitted.filter(line => {
-  if (seen.has(line)) return false;
-  seen.add(line);
-  return true;
-});
 
-modalPrice.src = "";
-const modalText = modalPrice.nextSibling;
-modalText.textContent = uniqueLines[0];
-Object.assign(modalText.style, {
-  color: "#fff",
-  fontSize: "32px",
-  fontWeight: 400,
-  textStroke: "",
-  webkitTextStroke: "",
-  textShadow: ""
-});
 
-popo.parentElement.querySelectorAll(".price").forEach((el, idx) => {
-  if (idx > 0) el.remove();
-});
 
-uniqueLines.slice(1).forEach((line) => {
-  const newPrice = popo.cloneNode(true);
-  newPrice.childNodes[1].textContent = line;
-  popo.parentElement.appendChild(newPrice);
-});
+
+    // Remove duplicates but keep the first occurrence
+    const seen = new Set();
+    const uniqueLines = splitted.filter(line => {
+      if (seen.has(line)) return false;
+      seen.add(line);
+      return true;
+    });
+
+    modalPrice.src = "";
+    const modalText = modalPrice.nextSibling;
+    modalText.textContent = uniqueLines[0];
+    Object.assign(modalText.style, {
+      color: "#fff",
+      fontSize: "32px",
+      fontWeight: 400,
+      textStroke: "",
+      webkitTextStroke: "",
+      textShadow: ""
+    });
+
+    popo.parentElement.querySelectorAll(".price").forEach((el, idx) => {
+      if (idx > 0) el.remove();
+    });
+
+    uniqueLines.slice(1).forEach((line) => {
+      const newPrice = popo.cloneNode(true);
+      newPrice.childNodes[1].textContent = line;
+      popo.parentElement.appendChild(newPrice);
+    });
 
     popo.parentElement.querySelectorAll(".price").forEach((priceEl) => {
       const children = priceEl.children;
@@ -513,12 +523,12 @@ uniqueLines.slice(1).forEach((line) => {
         const text = children[1].textContent;
         if (!text) return priceEl.style.display = "none";
 
-          if (text.includes("Tokens")) {
-          Object.assign(children[1].style, { fontWeight: 500,textStroke : "1px rgb(255, 83, 219)",webkitTextStroke: "1px rgb(255, 83, 219)" });
-          }
-          if (text.includes("Robux")) {
+        if (text.includes("Tokens")) {
+          Object.assign(children[1].style, { fontWeight: 500, textStroke: "1px rgb(255, 83, 219)", webkitTextStroke: "1px rgb(255, 83, 219)" });
+        }
+        if (text.includes("Robux")) {
           Object.assign(children[1].style, { fontWeight: 700 });
-          }
+        }
 
         const iconMap = {
           Robux: "https://i.imgur.com/cf8ZvY7.png",
@@ -548,9 +558,9 @@ uniqueLines.slice(1).forEach((line) => {
           children[1].style.fontWeight = 500;
           children[1].style.textShadow = "0 0 6px rgb(199 0 255)";
         } else if (text.includes("[EXPIRED]")) {
-          Object.assign(children[1].style, { fontFamily:"monospace" ,fontSize: "23px", color: "rgb(161 17 17)" });
+          Object.assign(children[1].style, { fontFamily: "monospace", fontSize: "23px", color: "rgb(161 17 17)" });
         } else if (text.includes("[ACTIVE]")) {
-          Object.assign(children[1].style, {  fontFamily:"monospace" ,fontSize: "23px", color: "rgb(251 255 68)" });
+          Object.assign(children[1].style, { fontFamily: "monospace", fontSize: "23px", color: "rgb(251 255 68)" });
         } else if (text.includes("Unobtainable")) {
           children[0].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Red_x.svg/600px-Red_x.svg.png";
           children[1].style.color = "rgb(255 44 44)";
