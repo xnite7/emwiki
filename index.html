@@ -301,7 +301,7 @@
 <script>
   async function loadPoll() {
     try {
-      const res = await fetch('https://cf-poll-backend.xnite7.workers.dev/poll');
+      const res = await fetch('https://emwiki-poll.xnite7.workers.dev/poll');
       const data = await res.json();
       document.getElementById('pollTotals').innerHTML = 
         `👍 ${data.like} votes | 👎 ${data.dislike} votes`;
@@ -342,7 +342,7 @@
 				text-wrap-style: balance;
 				padding: 0 0 37px 0;
 				margin: 0;">
-				<a style="color: #33c5ff;" href="https://discord.com/channels/236205096730492928/1374877653265416345/1375059359972855888">Original item list Google Doc by @Kypsus & @Espretion</a>
+				<a style="color: #33c5ff;" href="https://docs.google.com/spreadsheets/d/11qKj8UTf2-x0Z7bNMuguEFKALCWI1v7QtkDbNlBzy9M/edit?gid=0#gid=0">Original item list Google Doc by @Kypsus & @Espretion</a>
 			</p>
 		</footer>
 	</body>
