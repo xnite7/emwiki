@@ -1694,7 +1694,23 @@ html {
   float: right;
 
 }
+#polls-button {
+  font-family: monospace;
+  right: 20px;
+  background: #333;
+  color: #fff;
+  font-size: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 40px;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  float: right;
 
+}
 
 
 #credits-content>div:last-child div p {

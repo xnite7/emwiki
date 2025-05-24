@@ -41,13 +41,13 @@
 			</h1>
 			
 		</div>
-<div class="poll-box" style="right: 36px;position: fixed;max-width: 520px;margin: auto;background: linear-gradient(45deg, #000000fa, #18181899);box-shadow: -6px 6px 11px #00000094;z-index: 222;bottom: 35px;padding: 26px;border-radius: 16px;color: white;backdrop-filter: blur(59px);font-family: 'Segoe UI', sans-serif;">
+<div class="poll-box" style="right: 3%;position: fixed;margin: auto;background: linear-gradient(45deg, #000000fa, #18181899);box-shadow: -6px 6px 11px #00000094;z-index: 222;bottom: 35px;padding: 3%;border-radius: 16px;color: white;backdrop-filter: blur(59px);font-family: 'Segoe UI', sans-serif;">
     <button onclick="document.querySelector('.poll-box').style.display='none'" style="position: absolute;top: 0px;right: -10px;background: none;border: none;color: white;font-size: 34px;cursor: pointer;">×</button>
 
     <h2 style="text-align: left;font-size: 22px;margin: 0 37px 30px 0;font-family: monospace;">Should we add RAP?</h2>
 
 	<div class="ff" id="gears" style="display: flex;margin: 30px auto;">
-		<div id="pricecoderarity" style="text-align-last: center;background: #333333d9;margin-left: 108px;margin-top: -13px;padding: 0px 0px 9px 0px;font-weight: 700;width: 37%;border-radius: 32%;"><img src="https://i.imgur.com/cf8ZvY7.png" style="width: 27%;position: relative;top: 5px;margin: 4px 3px 0 0;">299</div>
+		<div id="pricecoderarity" style="text-align-last: center;background: #333333d9;margin-left: 70px;margin-top: -18px;padding: 5%;font-weight: 700;width: 37%;border-radius: 32%;"><img src="https://i.imgur.com/cf8ZvY7.png" style="width: 27%;position: relative;top: 5px;margin: 4px 3px 0 0;">299</div>
 		<img id="img" src=".\imgs\gears\50btZsI.png" width="512" height="512" style="max-width: 70%;max-height: 70%;display: block;margin: 0px auto;user-select: none;pointer-events: none;">
 		<div id="h3" style="font-size: 123%;text-align: -webkit-center;">Berry Sweet Boba</div>
 		<p><img src="https://i.imgur.com/iZGLVYo.png" draggable="false">0</p>
@@ -56,13 +56,13 @@
 
     <!-- Voting Buttons -->
     <div style="display: flex; justify-content: space-around; margin-top: 15px;">
-      <button data-vote="like" onclick="submitVote('like')" class="vote-button like">✓</button>
-      <button data-vote="dislike" onclick="submitVote('dislike')" class="vote-button dislike">✖</button>
+      <button data-vote="like" onclick="submitVote('like')" class="vote-button like" disabled="">✓</button>
+      <button data-vote="dislike" onclick="submitVote('dislike')" class="vote-button dislike" disabled="">✖</button>
     </div>
 
     <!-- Results -->
-    <div id="pollResult" style="margin-top: 15px; text-align: center; display: block;"></div>
-    <div id="pollTotals" style="margin-top: 1em; text-align: center;"></div>
+    <div id="pollResult" style="margin-top: 15px;text-align: center;FONT-SIZE: 162%;display: block;"></div>
+    <div id="pollTotals" style="margin-top: 1em;FONT-SIZE: 210%;text-align: center;"></div>
 </div>
 		<script src="./js/script.js"></script>
 		<header>
@@ -204,9 +204,21 @@
 				<a id="scammerstab" href="./scammers.html"><img src="https://i.imgur.com/SK5csOS.png" style="max-width: -webkit-fill-available;"draggable="false" display="none" onmousedown="return false"></a>
 			</nav>
 			<section class="welcome">
-				<!-- ? Button -->
-				<div id="credits-button">❤</div>
-
+				<div style="
+    display: flex;
+    height: 0px;
+    align-items: center;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    width: 33px;
+    position: relative;
+    float: right;
+    gap: 9px;
+">
+				<div id="credits-button">❤</div><div id="polls-button" onclick="document.querySelector('.poll-box').style.display='block'">🗠</div>
+				
+				
+                    </div>
 				<h1 style="margin-top: 10px;">Welcome to Epic Catalogue!</h1>
 				<p>A collection of every Epic minigames item</p>
 			</section>
@@ -307,8 +319,9 @@ const voteButtons = document.querySelectorAll('.vote-button');
 // Check if user already voted using localStorage
 const alreadyVoted = localStorage.getItem('hasVoted') === 'true';
 
-function disableVoting(message = 'You already voted.') {
-  voteButtons.forEach(btn => btn.disabled = true);
+function disableVoting(message) {
+  voteButtons.forEach(btn => {btn.style.display="none";btn.disabled = true});
+
   pollResult.textContent = message;
   pollResult.style.display = 'block';
 }
@@ -360,7 +373,10 @@ async function fetchResults() {
 	});
 
 	// Init on load
-	if (alreadyVoted) disableVoting();
+	if (alreadyVoted) {
+		disableVoting();
+		document.querySelector('.poll-box').style.display='none'
+	}
 	fetchResults();
 </script>
 
