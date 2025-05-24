@@ -301,7 +301,7 @@
 <script>
   async function loadPoll() {
     try {
-      const res = await fetch('cf-poll-backend.xnite7.workers.dev/poll');
+      const res = await fetch('https://cf-poll-backend.xnite7.workers.dev/poll');
       const data = await res.json();
       document.getElementById('pollTotals').innerHTML = 
         `👍 ${data.like} votes | 👎 ${data.dislike} votes`;
