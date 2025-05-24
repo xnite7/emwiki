@@ -507,9 +507,7 @@ nav a:active {
 
 main {
   text-align: center;
-      display: flex
-;
-    filter: opacity(1);
+      display: flex;
     flex-direction: row;
     flex-wrap: wrap;
 }
