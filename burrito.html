@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Burrito</title>
+        <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: rgb(255, 151, 91);
+      font-family: sans-serif;
+      color: white;
+    }
+
+    .burrito {
+      position: absolute;
+      top: -100px;
+      width: 60px;
+      height: 60px;
+      background-image: url('./imgs/burrito.png'); /* Burrito emoji */
+      background-size: cover;
+      animation: fall linear;
+      cursor: pointer;
+      z-index: 2;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -o-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+      padding: 10px; /* Boosts touch area */
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(110vh) rotate(360deg);
+        opacity: 0.7;
+      }
+    }
+
+    .explode {
+      background-image: url('https://emojicdn.elk.sh/💥');
+      transform: scale(1.5) rotate(720deg);
+      transition: all 0.3s ease-out;
+    }
+
+    #score, #startScreen, #gameOverScreen {
+      position: fixed;
+      z-index: 10;
+      font-size: 20px;
+      display: block;
+      font-family: monospace;
+    }
+
+    #score {
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 6px 12px;
+      border-radius: 6px;
+      display: none;
+    }
+
+#gameContainer {
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  background: black;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  /* Default to square */
+  width: min(100vw, 100vh);
+  height: min(100vw, 100vh);
+}
+
+@media (max-width: 768px) {
+  #gameContainer {
+    /* Force landscape 16:9 aspect ratio */
+    width: 100vw;
+    height: calc(100vw * 9 / 16);
+  }
+}
+
+
+    #startScreen, #gameOverScreen {
+        top: 50%;
+        left: 50%;
+        backdrop-filter: blur(14px);
+        transform: translate(-50%, -50%);
+        background: rgb(51 51 51 / 85%);
+        padding: 30px 40px;
+        border-radius: 10px;
+        text-align: center;
+        display: none;
+    }
+
+    button {
+        font-size: 158%;
+        margin-top: 15px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(152deg, #ffe76a, #ff5e00);
+        color: white;
+        cursor: pointer;
+        font-family: monospace;
+    }
+
+    ul {
+      text-align: left;
+      padding-left: 0;
+    }
+
+    li {
+      list-style: none;
+      margin: 5px 0;
+    }
+  </style>
+    </head>
+    <body>
+        <div id="gameContainer">
+        <audio id="music" loop autoplay hidden>
+            <source src="./imgs/imburrito.mp3"
+                type="audio/mpeg">
+        </audio>
+
+        <audio id="gameover"  autoplay hidden>
+            <source src="./imgs/gameover.mp3"
+                type="audio/mpeg">
+        </audio>
+
+        <div style="font-family: monospace;" id="score">Score: 0</div>
+
+        <div id="startScreen">
+            <h2 style="font-family: monospace;font-size: xxx-large;">Burrito</h2>
+<p style="white-space: break-spaces;font-family: monospace;" id="firstScoreText"></p>
+            <button onclick="startGame()">▶</button>
+        </div>
+
+        <div id="gameOverScreen">
+            <h2 style="font-family: monospace;font-size: xxx-large;">Game Over</h2>
+            <p style="white-space: break-spaces;font-family: monospace;" id="finalScoreText"></p>
+
+            <button onclick="startGame()">Restart</button>
+        </div>
+
+        <audio id="popSound" preload="auto">
+            <source src="./imgs/pop.mp3"
+                type="audio/mp3">
+        </audio>
+
+        <script>
+    const popSound = document.getElementById('popSound');
+    const scoreDisplay = document.getElementById('score');
+    const startScreen = document.getElementById('startScreen');
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    const finalScoreText = document.getElementById('finalScoreText');
+    const firstScore = document.getElementById('firstScoreText');
+    const leaderboardList = document.getElementById('leaderboard');
+    const gameContainer = document.getElementById('gameContainer');
+
+
+    let score = 0;
+    let gameOver = false;
+    let spawnRate = 100; // ms
+    let spawnInterval;
+    let difficultyInterval;
+
+
+
+function endGame() {
+
+  gameOver = true;
+  const gameover = document.getElementById('gameover');
+  gameover.currentTime = 0;
+  gameover.play();
+
+  clearInterval(spawnInterval);
+  clearInterval(difficultyInterval);
+
+  finalScoreText.textContent = `Score: ${score}`;
+  updateHighScore(score);
+  gameOverScreen.style.display = 'block';
+  music.pause();
+
+  // Pause all burritos in place
+  document.querySelectorAll('.burrito').forEach(burrito => {
+    burrito.style.animationPlayState = 'paused';
+    burrito.style.pointerEvents = 'none'; // Optional: block interactions
+  });
+}
+
+
+function updateHighScore(newScore) {
+  const high = parseInt(localStorage.getItem('highScore') || "0", 10);
+  if (newScore > high) {
+    localStorage.setItem('highScore', newScore);
+  }
+  firstScore.textContent += `\nHigh Score: ${localStorage.getItem('highScore')}`;
+  finalScoreText.textContent += `\nHigh Score: ${localStorage.getItem('highScore')}`;
+}
+updateHighScore(score);
+    function createBurrito() {
+        if (gameOver) return;
+
+        const burrito = document.createElement('div');
+        burrito.className = 'burrito';
+
+        const size = Math.random() * 40 + 30;
+        burrito.style.width = size + 'px';
+        burrito.style.height = size + 'px';
+
+        const containerWidth = gameContainer.clientWidth;
+        const padding = 10;
+        const maxLeft = containerWidth - size - padding;
+        const left = Math.random() * (maxLeft - padding) + padding;
+        burrito.style.left = `${left}px`;
+
+
+        const duration = Math.random() * 2 + 2;
+        burrito.style.animationDuration = duration + 's';
+
+        const timeout = setTimeout(() => {
+            console.log(document.querySelector('burrito'))
+            if (!gameOver && !burrito.classList.contains('explode') && gameContainer.contains(burrito)) {
+                endGame();
+            }
+
+            burrito.remove();
+        }, duration * 1000);
+
+        const explodeBurrito = () => {
+            if (gameOver || burrito.classList.contains('explode')) return;
+            burrito.classList.add('explode');
+            clearTimeout(timeout);
+            popSound.currentTime = 0;
+            popSound.play();
+            score++;
+            scoreDisplay.textContent = 'Score: ' + score;
+            setTimeout(() => {
+                
+                burrito.remove(), 300});
+        };
+
+        // Click and touch support
+        burrito.addEventListener('click', explodeBurrito);
+        burrito.addEventListener('touchstart', explodeBurrito);
+
+        gameContainer.appendChild(burrito);
+
+    }
+    const music = document.getElementById('music');
+
+
+    function startGame() {
+        // Reset
+        document.querySelectorAll('.burrito').forEach(el => el.remove());
+        score = 0;
+        gameOver = false;
+        spawnRate = 1000;
+
+        scoreDisplay.textContent = 'Score: 0';
+        scoreDisplay.style.display = 'block';
+        startScreen.style.display = 'none';
+        gameOverScreen.style.display = 'none';
+
+        music.currentTime = 0;
+        music.play();
+
+        spawnInterval = setInterval(createBurrito, spawnRate);
+        difficultyInterval = setInterval(() => {
+            if (spawnRate > 20) {
+            clearInterval(spawnInterval);
+            spawnRate -= 100;
+            spawnInterval = setInterval(createBurrito, spawnRate);
+            }
+        }, 5000);
+    }
+
+    // Start screen on load
+    startScreen.style.display = 'block';
+  </script>
+</div>    
+</body>
+    
+</html>
