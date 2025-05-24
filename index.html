@@ -374,7 +374,7 @@ async function fetchResults() {
 
 	// Init on load
 	if (alreadyVoted) {
-		disableVoting();
+		disableVoting('You have already voted.');
 		document.querySelector('.poll-box').style.display='none'
 	}
 	fetchResults();
