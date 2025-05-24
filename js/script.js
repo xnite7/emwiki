@@ -552,7 +552,7 @@ document.addEventListener("DOMContentLoaded", () => {
             break;
           }
         }
-
+        Object.assign(children[1].style, { fontFamily: "BuilderSans"});
         if (text.includes("%")) {
           children[1].style.color = "rgb(193 68 255)";
           children[1].style.fontWeight = 500;
