@@ -56,13 +56,13 @@
 
     <!-- Voting Buttons -->
     <div style="display: flex; justify-content: space-around; margin-top: 15px;">
-      <button onclick="submitVote('like')" class="vote-button like">✓</button>
-      <button onclick="submitVote('dislike')" class="vote-button dislike">✖</button>
+      <button data-vote="like" onclick="submitVote('like')" class="vote-button like">✓</button>
+      <button data-vote="dislike" onclick="submitVote('dislike')" class="vote-button dislike">✖</button>
     </div>
 
     <!-- Results -->
-    <div id="pollResult" style="margin-top: 15px; text-align: center; display: block;">There was an error submitting your vote.</div>
-    <div id="pollTotals" style="margin-top: 1em; text-align: center;">Failed to load poll results.</div>
+    <div id="pollResult" style="margin-top: 15px; text-align: center; display: block;"></div>
+    <div id="pollTotals" style="margin-top: 1em; text-align: center;"></div>
 </div>
 		<script src="./js/script.js"></script>
 		<header>
@@ -299,37 +299,74 @@
 
 
 <script>
-  async function loadPoll() {
-    try {
-      const res = await fetch('https://emwiki-poll.xnite7.workers.dev/api/poll');
-      const data = await res.json();
-      document.getElementById('pollTotals').innerHTML = 
-        `👍 ${data.like} votes | 👎 ${data.dislike} votes`;
-    } catch (e) {
-      document.getElementById('pollTotals').textContent = 'Failed to load poll results.';
-    }
-  }
+const API_URL = 'https://emwiki-poll.xnite7.workers.dev/api/poll';
+const pollResult = document.getElementById('pollResult');
+const pollTotals = document.getElementById('pollTotals');
+const voteButtons = document.querySelectorAll('.vote-button');
 
-  async function submitVote(vote) {
-    try {
-      const res = await fetch('https://emwiki-poll.xnite7.workers.dev/api/poll', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ vote })
-      });
-      const data = await res.json();
-      document.getElementById('pollResult').style.display = 'block';
-      document.getElementById('pollResult').textContent = `You voted: ${vote === 'like' ? '👍 Like' : '👎 Dislike'}. Thanks!`;
-      document.getElementById('pollTotals').innerHTML = 
-        `👍 ${data.like} votes | 👎 ${data.dislike} votes`;
-    } catch (e) {
-      document.getElementById('pollResult').style.display = 'block';
-      document.getElementById('pollResult').textContent = 'There was an error submitting your vote.';
-    }
-  }
+// Check if user already voted using localStorage
+const alreadyVoted = localStorage.getItem('hasVoted') === 'true';
 
-  loadPoll();
+function disableVoting(message = 'You already voted.') {
+  voteButtons.forEach(btn => btn.disabled = true);
+  pollResult.textContent = message;
+  pollResult.style.display = 'block';
+}
+
+async function fetchResults() {
+	try {
+		const res = await fetch(API_URL);
+		const data = await res.json();
+		pollTotals.textContent = `👍 ${data.like} · 👎 ${data.dislike}`;
+	} catch {
+		pollTotals.textContent = '⚠️ Error loading poll results.';
+	}
+	}
+
+	async function submitVote(vote) {
+	if (alreadyVoted) return;
+
+	try {
+		const res = await fetch(API_URL, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ vote })
+		});
+
+		if (res.status === 403) {
+		disableVoting('You have already voted.');
+		} else if (res.ok) {
+		disableVoting('Thanks for voting!');
+		} else {
+		pollResult.textContent = 'Error submitting vote.';
+		pollResult.style.display = 'block';
+		return;
+		}
+
+		localStorage.setItem('hasVoted', 'true');
+		await fetchResults();
+	} catch {
+		pollResult.textContent = 'Network error.';
+		pollResult.style.display = 'block';
+	}
+	}
+
+	// Attach click handlers
+	voteButtons.forEach(button => {
+	button.addEventListener('click', () => {
+		const vote = button.getAttribute('data-vote');
+		submitVote(vote);
+	});
+	});
+
+	// Init on load
+	if (alreadyVoted) disableVoting();
+	fetchResults();
 </script>
+
+
+
+
 
 
 		<div style="width: -webkit-fill-available;">
