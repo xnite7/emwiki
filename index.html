@@ -269,47 +269,69 @@
   });
 </script>
 
-<div class="poll-box">
-  <h2>📊 Should we add RAP (Recent Average Price)?</h2>
-  <p><strong>Example:</strong> Ghostwalker — RAP: <strong>1,745</strong></p>
+<!-- Trigger Button -->
+<button onclick="document.getElementById('pollModal').style.display='flex'" class="open-poll">Open RAP Poll</button>
 
-  <form id="pollForm">
-    <label><input type="radio" name="vote" value="like"> 👍 Yes, I like this idea!</label><br>
-    <label><input type="radio" name="vote" value="dislike"> 👎 No, I don’t like it.</label><br><br>
-    <button type="submit">Vote</button>
-  </form>
+<!-- Modal -->
+<div id="pollModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #00000080; justify-content: center; align-items: center; z-index: 9999;">
+  <div class="poll-box" style="position: relative; max-width: 520px; margin: auto; background: #1c1c1c; padding: 20px; border-radius: 12px; color: white; font-family: 'Segoe UI', sans-serif;">
+    <button onclick="document.getElementById('pollModal').style.display='none'" style="position: absolute; top: 8px; right: 12px; background: none; border: none; color: white; font-size: 18px; cursor: pointer;">×</button>
 
-  <div id="pollResult" style="display:none;"></div>
-  <div id="pollTotals" style="margin-top: 1em;"></div>
+    <h2 style="text-align: center;">📊 Should we add RAP<br>(Recent Average Price)?</h2>
+
+	<div class="item item-refresh-animate" data-image="imgs\gears\50btZsI.png" id="gears" style="display: flex;margin: auto;"><div id="pricecoderarity" style="/* display: none; */background: #333333d9;margin-left: 69px;margin-top: -18px;padding: 0 0 3px 0;width: 40%;border-radius: 20%;"><img src="https://i.imgur.com/cf8ZvY7.png" style="
+		width: 28%;
+		margin: 4px 3px 0 0;
+	">299</div><img id="img" width="512" height="512" style="max-width: 70%;max-height: 70%;display: block;margin: 0px auto;user-select: none;pointer-events: none;" src="/imgs/gears/50btZsI.png"><div id="h3" style="
+		font-size: 90%;
+	">Berry Sweet Boba</div><p><img src="https://i.imgur.com/iZGLVYo.png" draggable="false">0</p><div id="from" style="display: none;">Bundle (Valentine's 2025)</div></div>
+
+    <!-- Voting Buttons -->
+    <div style="display: flex; justify-content: space-around; margin-top: 15px;">
+      <button onclick="submitVote('like')" class="vote-button like">👍</button>
+      <button onclick="submitVote('dislike')" class="vote-button dislike">👎</button>
+    </div>
+
+    <!-- Results -->
+    <div id="pollResult" style="margin-top: 15px; text-align: center; display: none;"></div>
+    <div id="pollTotals" style="margin-top: 1em; text-align: center;"></div>
+  </div>
 </div>
+
 
 <script>
   async function loadPoll() {
-    const res = await fetch('/api/poll');
-    const data = await res.json();
-    document.getElementById('pollTotals').innerHTML = 
-      `👍 ${data.like} votes | 👎 ${data.dislike} votes`;
+    try {
+      const res = await fetch('/api/poll');
+      const data = await res.json();
+      document.getElementById('pollTotals').innerHTML = 
+        `👍 ${data.like} votes | 👎 ${data.dislike} votes`;
+    } catch (e) {
+      document.getElementById('pollTotals').textContent = 'Failed to load poll results.';
+    }
   }
 
-  document.getElementById('pollForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-    const vote = document.querySelector('input[name="vote"]:checked')?.value;
-    if (!vote) return alert('Please choose an option.');
-    const res = await fetch('/api/poll', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vote })
-    });
-    const data = await res.json();
-    document.getElementById('pollForm').style.display = 'none';
-    document.getElementById('pollResult').style.display = 'block';
-    document.getElementById('pollResult').innerText = `You voted: ${vote === "like" ? "Like" : "Dislike"}. Thanks!`;
-    document.getElementById('pollTotals').innerHTML = 
-      `👍 ${data.like} votes | 👎 ${data.dislike} votes`;
-  });
+  async function submitVote(vote) {
+    try {
+      const res = await fetch('/api/poll', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vote })
+      });
+      const data = await res.json();
+      document.getElementById('pollResult').style.display = 'block';
+      document.getElementById('pollResult').textContent = `You voted: ${vote === 'like' ? '👍 Like' : '👎 Dislike'}. Thanks!`;
+      document.getElementById('pollTotals').innerHTML = 
+        `👍 ${data.like} votes | 👎 ${data.dislike} votes`;
+    } catch (e) {
+      document.getElementById('pollResult').style.display = 'block';
+      document.getElementById('pollResult').textContent = 'There was an error submitting your vote.';
+    }
+  }
 
   loadPoll();
 </script>
+
 
 		<div style="width: -webkit-fill-available;">
 			<a href="/404" ><img src="./imgs/sef.png" style="width: 66px;"></a></div>
