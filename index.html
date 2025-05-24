@@ -41,6 +41,29 @@
 			</h1>
 			
 		</div>
+<div class="poll-box" style="right: 36px;position: fixed;max-width: 520px;margin: auto;background: linear-gradient(45deg, #000000fa, #18181899);box-shadow: -6px 6px 11px #00000094;z-index: 222;top: 35px;padding: 26px;border-radius: 16px;color: white;backdrop-filter: blur(59px);font-family: 'Segoe UI', sans-serif;">
+    <button onclick="document.getElementById('pollModal').style.display='none'" style="position: absolute;top: 0px;right: -10px;background: none;border: none;color: white;font-size: 34px;cursor: pointer;">×</button>
+
+    <h2 style="text-align: left;font-size: 22px;margin: 0 37px 30px 0;font-family: monospace;">Should we add RAP?</h2>
+
+	<div class="ff" id="gears" style="display: flex;margin: 30px auto;">
+		<div id="pricecoderarity" style="text-align-last: center;background: #333333d9;margin-left: 108px;margin-top: -13px;padding: 0px 0px 9px 0px;font-weight: 700;width: 37%;border-radius: 32%;"><img src="https://i.imgur.com/cf8ZvY7.png" style="width: 27%;position: relative;top: 5px;margin: 4px 3px 0 0;">299</div>
+		<img id="img" src=".\imgs\gears\50btZsI.png" width="512" height="512" style="max-width: 70%;max-height: 70%;display: block;margin: 0px auto;user-select: none;pointer-events: none;">
+		<div id="h3" style="font-size: 123%;">Berry Sweet Boba</div>
+		<p><img src="https://i.imgur.com/iZGLVYo.png" draggable="false">0</p>
+		<div id="from" style="display: none;">Bundle (Valentine's 2025)</div>
+	</div>
+
+    <!-- Voting Buttons -->
+    <div style="display: flex; justify-content: space-around; margin-top: 15px;">
+      <button onclick="submitVote('like')" class="vote-button like">✓</button>
+      <button onclick="submitVote('dislike')" class="vote-button dislike">✖</button>
+    </div>
+
+    <!-- Results -->
+    <div id="pollResult" style="margin-top: 15px; text-align: center; display: block;">There was an error submitting your vote.</div>
+    <div id="pollTotals" style="margin-top: 1em; text-align: center;">Failed to load poll results.</div>
+</div>
 		<script src="./js/script.js"></script>
 		<header>
 			<div class="headersheet" style="
@@ -269,38 +292,10 @@
   });
 </script>
 
-<!-- Trigger Button -->
-<button onclick="document.getElementById('pollModal').style.display='flex'" class="open-poll">Open RAP Poll</button>
 
-<!-- Modal -->
-<div id="pollModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #00000080; justify-content: center; align-items: center; z-index: 9999;">
-  <div class="poll-box" style="position: relative; max-width: 520px; margin: auto; background: #1c1c1c; padding: 20px; border-radius: 12px; color: white; font-family: 'Segoe UI', sans-serif;">
-    <button onclick="document.getElementById('pollModal').style.display='none'" style="position: absolute; top: 8px; right: 12px; background: none; border: none; color: white; font-size: 18px; cursor: pointer;">×</button>
 
-    <h2 style="text-align: center;">📊 Should we add RAP<br>(Recent Average Price)?</h2>
 
-	<div class="item item-refresh-animate" data-image="imgs\gears\50btZsI.png" id="gears" style="display: flex;margin: auto;">
-		<div id="pricecoderarity" style="/* display: none; */background: #333333d9;margin-left: 69px;margin-top: -18px;padding: 0 0 3px 0;width: 40%;border-radius: 20%;">
-			<img src="https://i.imgur.com/cf8ZvY7.png" style="width: 28%;margin: 4px 3px 0 0;">299
-		</div>
-			<img id="img" width="512" height="512" style="max-width: 70%;max-height: 70%;display: block;margin: 0px auto;user-select: none;pointer-events: none;" src="/imgs/gears/50btZsI.png">
-			<div id="h3" style="font-size: 90%;">Berry Sweet Boba</div>
-			<p><img src="https://i.imgur.com/iZGLVYo.png" draggable="false">0</p>
-			<div id="from" style="display: none;">Bundle (Valentine's 2025)</div>
-		</div>
-	</div>
 
-    <!-- Voting Buttons -->
-    <div style="display: flex; justify-content: space-around; margin-top: 15px;">
-      <button onclick="submitVote('like')" class="vote-button like">👍</button>
-      <button onclick="submitVote('dislike')" class="vote-button dislike">👎</button>
-    </div>
-
-    <!-- Results -->
-    <div id="pollResult" style="margin-top: 15px; text-align: center; display: none;"></div>
-    <div id="pollTotals" style="margin-top: 1em; text-align: center;"></div>
-  </div>
-</div>
 
 
 <script>

@@ -694,9 +694,72 @@ p {
 }
 
 
+.ff{
+  -webkit-user-select: none;
+  /* Safari */
+  -ms-user-select: none;
+  /* IE 10 and IE 11 */
+  user-select: none;
+  /* Standard syntax */
+  background-color: rgba(255, 255, 255, 0.15);
+  padding: 0px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.18s ease, background 0.25s ease;
+  height: 190px;
+  width: 190px;
+  color: white;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  background-color: rgba(255, 255, 255, 0.15);
+  padding: 0px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.18s ease, background 0.25s ease;
+  height: 13vw;
+  max-height: 191px;
+  width: 13vw;
+  max-width: 191px;
+  min-width: 126px;
+  min-height: 126px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  justify-items: center;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.ff p {
+  display: none;
+  font-size: 22px;
+  position: relative;
+  text-align: left;
+  margin-left: 40;
+  left: 16px;
+  bottom: 43px;
+  z-index: 99999;
+  font: 100 24px 'Source Sans Pro';
+  text-shadow:
+    -2px -2px 0 #000,
+    0 -2px 0 #000,
+    2px -2px 0 #000,
+    1px 0 0 #000,
+    2px 2px 0 #000,
+    0 2px 0 #000,
+    -2px 2px 0 #000,
+    -2px 0 0 #000
+}
 
 
-
+.ff p img {
+  height: 27px;
+  width: 27px;
+  float: left;
+}
 
 .item {
   -webkit-user-select: none;
@@ -714,13 +777,6 @@ p {
   width: 190px;
   color: white;
   cursor: pointer;
-}
-
-
-
-
-
-.item {
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
@@ -737,7 +793,6 @@ p {
   min-height: 126px;
   color: white;
   cursor: pointer;
-
   display: flex;
   justify-items: center;
   flex-direction: column-reverse;
