@@ -31,17 +31,21 @@ function createNewItem(item, color, list) {
   // Create and set the name element
   const name = document.createElement("div");
   name.id = "h3";
+  name.classList.add('itemname')
   name.innerText = item.name;
   name.style.pointerEvents = "none";
 
 
 
   if (newItem.id == "titles") {
-
+    
+    name.classList.remove('itemname')
     newItem.id = "titles";
     newItem.style.display = "flex";
     newItem.style.alignItems = "center";
     newItem.style.justifyContent = "center";
+    
+    //newItem.style.flexDirection = "column";
     name.style.bottom = "0";
     name.style.font = "600 47px 'Arimo'";
     name.style.color = "rgb(255 255 255)";
@@ -95,9 +99,7 @@ function createNewItem(item, color, list) {
 
   } else {
 
-
     const canvas = document.createElement("canvas");
-
 
     canvas.setAttribute("id", "img");
     canvas.style.maxWidth = "100%";
@@ -169,6 +171,30 @@ function createNewItem(item, color, list) {
   prcdra.id = "pricecoderarity";
   prcdra.style.display = "none"; // Hide the element
   newItem.appendChild(prcdra);
+
+
+
+
+    if (item.retired) {
+      newItem.style.border = "solid 3px darkred"
+
+
+      const retiredTag = document.createElement("span");
+      retiredTag.classList.add('retired-badge')
+      retiredTag.innerHTML='RETIRED'
+      
+      newItem.appendChild(retiredTag)
+      newItem.style.order="10"
+      
+      if (newItem.id == "titles"){
+        retiredTag.style.top = "42%";
+      }
+    }
+
+
+
+
+
 
   // Append the new item to the catalog
   list.appendChild(newItem);
@@ -298,18 +324,21 @@ function showInfo(arr, color) {
         : document.querySelector(":scope .tooltip");
       
 
-
-      //get child with id pricefromrarity
       var pricefromrarity = element.querySelector("#pricecoderarity");
+
+      console.log(element.parentElement)
+
+      if (element.parentElement.id =='gamenightitems'){
+
+        pricefromrarity = element.querySelector("#from");
+        
+      }
       
 
       if (pricefromrarity.innerText=="") {
         return;
       }
-      tooltip.innerHTML = `
-            <div id="tooltipname">${pricefromrarity.innerText}</div>
-            `;
-
+      tooltip.innerHTML = `<div id="tooltipname">${pricefromrarity.innerText}</div>`;
       tooltip.style.opacity = "1";
 
       tooltip.style.left =

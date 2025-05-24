@@ -18,6 +18,7 @@ body {
 
 }
 
+
 @keyframes pulse-highlight {
   0% { background-color: #707070;scale: 1; }
   25% { background-color: #7a8183;scale: 1.1;    box-shadow: 0px 0px 20px 4px rgba(255, 255, 255, 0.5); }
