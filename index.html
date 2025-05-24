@@ -268,6 +268,49 @@
     patch.classList.add("animate");
   });
 </script>
+
+<div class="poll-box">
+  <h2>📊 Should we add RAP (Recent Average Price)?</h2>
+  <p><strong>Example:</strong> Ghostwalker — RAP: <strong>1,745</strong></p>
+
+  <form id="pollForm">
+    <label><input type="radio" name="vote" value="like"> 👍 Yes, I like this idea!</label><br>
+    <label><input type="radio" name="vote" value="dislike"> 👎 No, I don’t like it.</label><br><br>
+    <button type="submit">Vote</button>
+  </form>
+
+  <div id="pollResult" style="display:none;"></div>
+  <div id="pollTotals" style="margin-top: 1em;"></div>
+</div>
+
+<script>
+  async function loadPoll() {
+    const res = await fetch('/api/poll');
+    const data = await res.json();
+    document.getElementById('pollTotals').innerHTML = 
+      `👍 ${data.like} votes | 👎 ${data.dislike} votes`;
+  }
+
+  document.getElementById('pollForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const vote = document.querySelector('input[name="vote"]:checked')?.value;
+    if (!vote) return alert('Please choose an option.');
+    const res = await fetch('/api/poll', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vote })
+    });
+    const data = await res.json();
+    document.getElementById('pollForm').style.display = 'none';
+    document.getElementById('pollResult').style.display = 'block';
+    document.getElementById('pollResult').innerText = `You voted: ${vote === "like" ? "Like" : "Dislike"}. Thanks!`;
+    document.getElementById('pollTotals').innerHTML = 
+      `👍 ${data.like} votes | 👎 ${data.dislike} votes`;
+  });
+
+  loadPoll();
+</script>
+
 		<div style="width: -webkit-fill-available;">
 			<a href="/404" ><img src="./imgs/sef.png" style="width: 66px;"></a></div>
 		</main>
