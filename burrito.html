@@ -34,9 +34,9 @@
       height: min(100vw, 100vh);
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 968px) {
       #gameContainer {
-        width: 100vw;
+        width: -webkit-fill-available;
         height: 100vh;
         aspect-ratio: 16 / 9;
       }
@@ -124,6 +124,7 @@
     }
 
     #score {
+      font-size: 337%;
       top: 10px;
       -webkit-user-select: none;
       user-select: none;
@@ -137,6 +138,7 @@
 
 
     #muteButton {
+      
       position: fixed;
       -webkit-user-select: none;
       user-select: none;
@@ -145,11 +147,11 @@
       background: rgba(0,0,0,0.6);
       padding: 6px 12px;
       border-radius: 6px;
-      font-size: 18px;
+      font-size: 32px;
       cursor: pointer;
       z-index: 15;
       transition: transform 0.2s ease-in-out;
-          font-size: 26px;
+          font-size: 200%;
     }
     #muteButton:hover {
       transform: scale(1.1);
@@ -228,7 +230,7 @@
       @media (max-width: 768px) {
         button {
           font-size: 230%;
-          padding: 20px 30px;
+
         }
         .start-icon {
           font-size: 64px;
@@ -384,9 +386,7 @@
         }
       window.addEventListener("resize", handleOrientation);
       handleOrientation();
-        function toggleMute() {
-            music.volume = music.volume==0 ? 1 : 0;
-        }
+
 
       /* --------------------------------------------------
        *  HIGH SCORE UTILS (local)
@@ -442,53 +442,47 @@
        *  GAME LOGIC
        * -------------------------------------------------- */
       function createBurrito() {
-        if (gameOver) return;
+            if (gameOver) return;
 
-        const burrito = document.createElement("div");
-        burrito.className = "burrito";
+            const burrito = document.createElement("div");
+            burrito.className = "burrito";
+            burrito.style.left = Math.random() * 90 + "%";
+            burrito.style.width = "60px";
+            burrito.style.height = "60px";
+            burrito.style.animationDuration = (1.8 + Math.random() * 1.5) + "s";
 
-        const size = Math.random() * 12 + 2;
-        burrito.style.width = size + "%";
-        burrito.style.height = size + "%";
+            burrito.onclick = () => {
+                popSound.currentTime = 0;
+                popSound.play();
 
-        // spawn horizontally within container
-        const containerWidth = gameContainer.clientWidth;
-        const padding = 60;
-        const maxLeft = containerWidth - padding;
-        const left = Math.random() * (maxLeft - padding);
-        burrito.style.left = `${left}px`;
+                explodeBurrito();
+                scoreDisplay.textContent = score;
 
-        // random fall duration
-        const duration = Math.random() * 2 + 2;
-        burrito.style.animationDuration = duration + "s";
+                burrito.classList.add("explode");
+                setTimeout(() => burrito.remove(), 300);
 
-        const timeout = setTimeout(() => {
+                const emoji = document.createElement("div");
+                emoji.className = "float-emoji";
+                emoji.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+                emoji.style.left = burrito.style.left;
+                emoji.style.top = burrito.offsetTop + "px";
+                gameContainer.appendChild(emoji);
+                setTimeout(() => emoji.remove(), 1000);
+            };
 
-            // Replace endGame() with:
-            if (!gameOver && !burrito.classList.contains('explode') && gameContainer.contains(burrito)) {
+
+
+
+            burrito.addEventListener("animationend", () => {
+                if (!gameOver && document.body.contains(burrito)) {
+                burrito.remove();
                 lives--;
                 if (lives <= 0) endGame();
-            }
-          burrito.remove();
-        }, duration * 1000);
+                }
+            });
 
-        const explodeBurrito = (evt) => {
-          if (gameOver || burrito.classList.contains("explode")) return;
-          burrito.classList.add("explode");
-          clearTimeout(timeout);
-          popSound.currentTime = 0;
-          popSound.play();
-          score++;
-          scoreDisplay.textContent = `${score}`;
-          spawnEmojiParticle(burrito);
-          setTimeout(() => burrito.remove(), 300);
-        };
-
-        burrito.addEventListener("mousedown", explodeBurrito);
-        burrito.addEventListener("touchstart", explodeBurrito);
-
-        gameContainer.appendChild(burrito);
-      }
+  gameContainer.appendChild(burrito);
+}
 
       function spawnEmojiParticle(burritoEl) {
         const rect = burritoEl.getBoundingClientRect();
@@ -503,15 +497,21 @@
 
       function endGame() {
         gameOver = true;
-        document.getElementById("gameover").play();
-
         clearInterval(spawnInterval);
         clearInterval(difficultyInterval);
+        scoreDisplay.style.display = "none";
+        gameOverScreen.style.display = "block";
+
+
+        music.pause();
+        document.getElementById("gameover").play();
+
+
 
         finalScoreText.textContent = `Score: ${score}`;
         updateHighScore(score);
-        gameOverScreen.style.display = "block";
-        music.pause();
+
+        
 
         document.querySelectorAll(".burrito").forEach((b) => {
           b.style.animationPlayState = "paused";
@@ -530,6 +530,11 @@
         postHighScoreBackend(playerName, getHighScoreFor(playerName));
         refreshLeaderboard();
       }
+      function toggleMute() {
+        music.muted = !music.muted;
+        gameOverAudio.muted = music.muted;
+        document.getElementById("muteButton").textContent = music.muted ? "🔇" : "🔊";
+        }
 
       function startGame() {
         playerName = (usernameInput.value || "Player").trim().slice(0, 20);
@@ -557,6 +562,8 @@
           }
         }, 5000);
       }
+
+      
 
       /* --------------------------------------------------
        *  INIT START SCREEN
