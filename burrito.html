@@ -1,98 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Burrito</title>
-        <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background-color: rgb(255, 151, 91);
-      font-family: sans-serif;
-      color: white;
-    }
-
-    .burrito {
-      position: absolute;
-      top: -100px;
-      width: 60px;
-      height: 60px;
-      background-image: url('./imgs/burrito.png'); /* Burrito emoji */
-      background-size: cover;
-      animation: fall linear;
-      cursor: pointer;
-      z-index: 2;
-      -webkit-user-select: none;
-      -khtml-user-select: none;
-      -moz-user-select: none;
-      -o-user-select: none;
-      user-select: none;
-      touch-action: manipulation;
-      padding: 10px; /* Boosts touch area */
-    }
-
-    @keyframes fall {
-      0% {
-        transform: translateY(-100px) rotate(0deg);
-        opacity: 1;
-      }
-      100% {
-        transform: translateY(110vh) rotate(360deg);
-        opacity: 0.7;
-      }
-    }
-
-    .explode {
-      background-image: url('https://emojicdn.elk.sh/💥');
-      transform: scale(1.5) rotate(720deg);
-      transition: all 0.3s ease-out;
-    }
-
-    #score, #startScreen, #gameOverScreen {
-      position: fixed;
-      z-index: 10;
-      font-size: 20px;
-      display: block;
-      font-family: monospace;
-    }
-
-    #score {
-      top: 10px;
-      left: 10px;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 6px 12px;
-      border-radius: 6px;
-      display: none;
-    }
-
-#gameContainer {
-  position: relative;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  overflow: hidden;
-  background: black;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  /* Default to square */
-  width: min(100vw, 100vh);
-  height: min(100vw, 100vh);
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Burrito</title>
+    <style>
+      /* ---------- base layout ---------- */
+body {
+  background: linear-gradient(45deg, #ff9966, #ff5e62);
+  background-size: 200% 200%;
+  animation: bgmove 10s ease infinite;
 }
-
-@media (max-width: 768px) {
-  #gameContainer {
-    /* Force landscape 16:9 aspect ratio */
-    width: 100vw;
-    height: calc(100vw * 9 / 16);
-  }
+@keyframes bgmove {
+  0% {background-position: 0% 50%;}
+  50% {background-position: 100% 50%;}
+  100% {background-position: 0% 50%;}
 }
 
 
-    #startScreen, #gameOverScreen {
+      #gameContainer {
+        position: relative;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, 0%);
+        overflow: hidden;
+        background: black;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: min(100vw, 100vh);
+        height: min(100vw, 100vh);
+      }
+
+      @media (max-width: 768px) {
+        #gameContainer {
+          width: 100vw;
+          height: 100vh;
+          aspect-ratio: 16 / 9;
+        }
+      }
+
+      /* ---------- burrito sprite ---------- */
+      .burrito {
+        position: absolute;
+        top: -100px;
+        width: 10%;
+        height: 10%;
+        background-image: url("./imgs/burrito.png");
+        background-size: cover;
+        animation: fall linear;
+        cursor: pointer;
+        z-index: 2;
+        -webkit-user-select: none;
+        user-select: none;
+        touch-action: manipulation;
+        padding: 10px; /* Boosts touch area */
+      }
+
+      @keyframes fall {
+        0% {
+          transform: translateY(-100px) rotate(0deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(110vh) rotate(360deg);
+          opacity: 0.7;
+        }
+      }
+
+      .explode {
+        background-image: url("https://emojicdn.elk.sh/%F0%9F%92%A5");
+        transform: scale(1.5) rotate(720deg);
+        transition: all 0.3s ease-out;
+      }
+
+      /* ---------- floating emoji particles ---------- */
+      .float-emoji {
+        position: absolute;
+        pointer-events: none;
+        font-size: 2.2rem;
+        animation: rise 900ms ease-out forwards;
+        z-index: 3;
+      }
+
+      @keyframes rise {
+        0% {
+          transform: translateY(0) scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-60px) scale(1.3);
+          opacity: 0;
+        }
+      }
+
+      /* ---------- UI panels ---------- */
+      #score,
+      #startScreen,
+      #gameOverScreen {
+        position: fixed;
+        z-index: 10;
+        font-size: 20px;
+        font-family: monospace;
+      }
+
+      #score {
+        top: 10px;
+        left: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 6px 12px;
+        border-radius: 6px;
+        display: none;
+      }
+
+      #startScreen,
+      #gameOverScreen {
         top: 50%;
         left: 50%;
         backdrop-filter: blur(14px);
@@ -102,9 +125,10 @@
         border-radius: 10px;
         text-align: center;
         display: none;
-    }
+        min-width: 260px;
+      }
 
-    button {
+      button {
         font-size: 158%;
         margin-top: 15px;
         padding: 10px 20px;
@@ -114,183 +138,345 @@
         color: white;
         cursor: pointer;
         font-family: monospace;
-    }
+      }
 
-    ul {
-      text-align: left;
-      padding-left: 0;
-    }
+      /* ---------- bigger animated button for mobile ---------- */
+      @media (max-width: 768px) {
+        button {
+          font-size: 230%;
+          padding: 20px 30px;
+        }
+        .start-icon {
+          font-size: 64px;
+          animation: bounce 1.2s infinite;
+          display: block;
+          margin-bottom: 10px;
+        }
+      }
 
-    li {
-      list-style: none;
-      margin: 5px 0;
-    }
-  </style>
-    </head>
-    <body>
-        <div id="gameContainer">
-        <audio id="music" loop autoplay hidden>
-            <source src="./imgs/imburrito.mp3"
-                type="audio/mpeg">
-        </audio>
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-14px);
+        }
+      }
 
-        <audio id="gameover"  autoplay hidden>
-            <source src="./imgs/gameover.mp3"
-                type="audio/mpeg">
-        </audio>
+      /* ---------- orientation handling ---------- */
+      #orientationPrompt {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-family: monospace;
+        font-size: 2rem;
+        padding: 20px;
+        z-index: 999;
+      }
 
-        <div style="font-family: monospace;" id="score">Score: 0</div>
+      body.portrait #orientationPrompt {
+        display: flex;
+      }
 
-        <div id="startScreen">
-            <h2 style="font-family: monospace;font-size: xxx-large;">Burrito</h2>
-<p style="white-space: break-spaces;font-family: monospace;" id="firstScoreText"></p>
-            <button onclick="startGame()">▶</button>
-        </div>
+      body.portrait #gameContainer {
+        transform: rotate(90deg) translate(0, -100%);
+        transform-origin: top left;
+        width: 100vh;
+        height: 100vw;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="orientationPrompt">Please rotate your device :)</div>
+    <div id="gameContainer">
+      <audio id="music" loop autoplay hidden>
+        <source src="./imgs/imburrito.mp3" type="audio/mpeg" />
+      </audio>
 
-        <div id="gameOverScreen">
-            <h2 style="font-family: monospace;font-size: xxx-large;">Game Over</h2>
-            <p style="white-space: break-spaces;font-family: monospace;" id="finalScoreText"></p>
+      <audio id="gameover" autoplay hidden>
+        <source src="./imgs/gameover.mp3" type="audio/mpeg" />
+      </audio>
 
-            <button onclick="startGame()">Restart</button>
-        </div>
+      <div id="score">Score: 0</div>
 
-        <audio id="popSound" preload="auto">
-            <source src="./imgs/pop.mp3"
-                type="audio/mp3">
-        </audio>
+      <div id="startScreen">
+        <span class="start-icon">🌯</span>
+        <h2 style="font-family: monospace; font-size: xxx-large">Burrito</h2>
+        <input
+          id="usernameInput"
+          placeholder="Enter your name"
+          style="font-family: monospace; padding: 6px; font-size: 18px; width: 80%; max-width: 250px" />
+        <p id="firstScoreText" style="white-space: break-spaces"></p>
+        <button onclick="startGame()">▶</button>
+        <h3 style="margin-top: 25px">Global Leaderboard</h3>
+        <ul id="leaderboardList" style="padding-left: 0; list-style: none"></ul>
+      </div>
 
-        <script>
-    const popSound = document.getElementById('popSound');
-    const scoreDisplay = document.getElementById('score');
-    const startScreen = document.getElementById('startScreen');
-    const gameOverScreen = document.getElementById('gameOverScreen');
-    const finalScoreText = document.getElementById('finalScoreText');
-    const firstScore = document.getElementById('firstScoreText');
-    const leaderboardList = document.getElementById('leaderboard');
-    const gameContainer = document.getElementById('gameContainer');
+      <div id="gameOverScreen">
+        <h2 style="font-family: monospace; font-size: xxx-large">Game Over</h2>
+        <p id="finalScoreText" style="white-space: break-spaces"></p>
 
+        <button onclick="startGame()">Restart</button>
+      </div>
 
-    let score = 0;
-    let gameOver = false;
-    let spawnRate = 100; // ms
-    let spawnInterval;
-    let difficultyInterval;
+      <audio id="popSound" preload="auto">
+        <source src="./imgs/pop.mp3" type="audio/mp3" />
+      </audio>
+    </div>
 
-
-
-function endGame() {
-
-  gameOver = true;
-  const gameover = document.getElementById('gameover');
-  gameover.currentTime = 0;
-  gameover.play();
-
-  clearInterval(spawnInterval);
-  clearInterval(difficultyInterval);
-
-  finalScoreText.textContent = `Score: ${score}`;
-  updateHighScore(score);
-  gameOverScreen.style.display = 'block';
-  music.pause();
-
-  // Pause all burritos in place
-  document.querySelectorAll('.burrito').forEach(burrito => {
-    burrito.style.animationPlayState = 'paused';
-    burrito.style.pointerEvents = 'none'; // Optional: block interactions
-  });
-}
+    <script>
 
 
-function updateHighScore(newScore) {
-  const high = parseInt(localStorage.getItem('highScore') || "0", 10);
-  if (newScore > high) {
-    localStorage.setItem('highScore', newScore);
+let combo = 0;
+let lastHitTime = 0;
+function explodeBurrito() {
+  // ...
+  const now = Date.now();
+  if (now - lastHitTime < 1000) {
+    combo++;
+    score += 1 + combo;
+  } else {
+    combo = 0;
+    score++;
   }
-  firstScore.textContent += `\nHigh Score: ${localStorage.getItem('highScore')}`;
-  finalScoreText.textContent += `\nHigh Score: ${localStorage.getItem('highScore')}`;
+  lastHitTime = now;
 }
-updateHighScore(score);
-    function createBurrito() {
+
+      /* --------------------------------------------------
+       *  CONFIG
+       * -------------------------------------------------- */
+      const EMOJIS = ["🌶️", "🧀", "🌯"];
+      const BACKEND_ENDPOINT = "/api/score"; // Cloudflare Worker route (same origin)
+
+      /* --------------------------------------------------
+       *  DOM REFS
+       * -------------------------------------------------- */
+      const gameContainer = document.getElementById("gameContainer");
+      const scoreDisplay = document.getElementById("score");
+      const startScreen = document.getElementById("startScreen");
+      const gameOverScreen = document.getElementById("gameOverScreen");
+      const finalScoreText = document.getElementById("finalScoreText");
+      const firstScoreText = document.getElementById("firstScoreText");
+      const usernameInput = document.getElementById("usernameInput");
+      const leaderboardList = document.getElementById("leaderboardList");
+      const music = document.getElementById("music");
+      const popSound = document.getElementById("popSound");
+
+      /* --------------------------------------------------
+       *  GAME STATE
+       * -------------------------------------------------- */
+      let score = 0;
+      let gameOver = false;
+      let spawnRate = 1000; // ms
+      let spawnInterval;
+      let difficultyInterval;
+      let playerName = "";
+
+      // Load saved name early
+      usernameInput.value = localStorage.getItem("playerName") || "";
+
+      /* --------------------------------------------------
+       *  ORIENTATION HANDLING
+       * -------------------------------------------------- */
+        function handleOrientation() {
+
+            window.mobileCheck = function() {
+                let check = false;
+                (function(a){if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4))) check = true;})(navigator.userAgent||navigator.vendor||window.opera);
+                if (check) {
+                    if (window.innerHeight < window.innerWidth && check) {
+                        document.body.classList.add("portrait");
+                    } else {
+                        document.body.classList.remove("portrait");
+                    }
+                }
+            };
+        }
+      window.addEventListener("resize", handleOrientation);
+      handleOrientation();
+
+      /* --------------------------------------------------
+       *  HIGH SCORE UTILS (local)
+       * -------------------------------------------------- */
+      function getHighScores() {
+        try {
+          return JSON.parse(localStorage.getItem("highScores")) || {};
+        } catch {
+          return {};
+        }
+      }
+
+      function getHighScoreFor(name) {
+        const h = getHighScores();
+        return h[name] || 0;
+      }
+
+      function setHighScoreFor(name, newScore) {
+        const h = getHighScores();
+        h[name] = newScore;
+        localStorage.setItem("highScores", JSON.stringify(h));
+      }
+
+      /* --------------------------------------------------
+       *  GLOBAL LEADERBOARD (backend)
+       * -------------------------------------------------- */
+      async function postHighScoreBackend(name, newScore) {
+        try {
+          await fetch(BACKEND_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, score: newScore }),
+          });
+        } catch (err) {
+          console.warn("Unable to post score", err);
+        }
+      }
+
+      async function refreshLeaderboard() {
+        leaderboardList.innerHTML = "Loading…";
+        try {
+          const res = await fetch(BACKEND_ENDPOINT);
+          const list = (await res.json()).slice(0, 10);
+          leaderboardList.innerHTML = list
+            .map((e, i) => `<li>${i + 1}. ${e.name} — ${e.score}</li>`) //
+            .join("");
+        } catch (err) {
+          leaderboardList.innerHTML = "(offline)";
+        }
+      }
+
+      /* --------------------------------------------------
+       *  GAME LOGIC
+       * -------------------------------------------------- */
+      function createBurrito() {
         if (gameOver) return;
 
-        const burrito = document.createElement('div');
-        burrito.className = 'burrito';
+        const burrito = document.createElement("div");
+        burrito.className = "burrito";
 
-        const size = Math.random() * 40 + 30;
-        burrito.style.width = size + 'px';
-        burrito.style.height = size + 'px';
+        const size = Math.random() * 12 + 2;
+        burrito.style.width = size + "%";
+        burrito.style.height = size + "%";
 
+        // spawn horizontally within container
         const containerWidth = gameContainer.clientWidth;
-        const padding = 10;
-        const maxLeft = containerWidth - size - padding;
-        const left = Math.random() * (maxLeft - padding) + padding;
+        const padding = 60;
+        const maxLeft = containerWidth - padding;
+        const left = Math.random() * (maxLeft - padding);
         burrito.style.left = `${left}px`;
 
-
+        // random fall duration
         const duration = Math.random() * 2 + 2;
-        burrito.style.animationDuration = duration + 's';
+        burrito.style.animationDuration = duration + "s";
 
         const timeout = setTimeout(() => {
-            console.log(document.querySelector('burrito'))
-            if (!gameOver && !burrito.classList.contains('explode') && gameContainer.contains(burrito)) {
-                endGame();
-            }
-
-            burrito.remove();
+          if (!gameOver && !burrito.classList.contains("explode") && gameContainer.contains(burrito)) {
+            endGame();
+          }
+          burrito.remove();
         }, duration * 1000);
 
-        const explodeBurrito = () => {
-            if (gameOver || burrito.classList.contains('explode')) return;
-            burrito.classList.add('explode');
-            clearTimeout(timeout);
-            popSound.currentTime = 0;
-            popSound.play();
-            score++;
-            scoreDisplay.textContent = 'Score: ' + score;
-            setTimeout(() => {
-                
-                burrito.remove(), 300});
+        const explodeBurrito = (evt) => {
+          if (gameOver || burrito.classList.contains("explode")) return;
+          burrito.classList.add("explode");
+          clearTimeout(timeout);
+          popSound.currentTime = 0;
+          popSound.play();
+          score++;
+          scoreDisplay.textContent = `Score: ${score}`;
+          spawnEmojiParticle(burrito);
+          setTimeout(() => burrito.remove(), 300);
         };
 
-        // Click and touch support
-        burrito.addEventListener('click', explodeBurrito);
-        burrito.addEventListener('touchstart', explodeBurrito);
+        burrito.addEventListener("mousedown", explodeBurrito);
+        burrito.addEventListener("touchstart", explodeBurrito);
 
         gameContainer.appendChild(burrito);
+      }
 
-    }
-    const music = document.getElementById('music');
+      function spawnEmojiParticle(burritoEl) {
+        const rect = burritoEl.getBoundingClientRect();
+        const emoji = document.createElement("span");
+        emoji.className = "float-emoji";
+        emoji.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+        emoji.style.left = rect.left + rect.width / 2 + "px";
+        emoji.style.top = rect.top + rect.height / 2 + "px";
+        document.body.appendChild(emoji);
+        setTimeout(() => emoji.remove(), 900);
+      }
 
+      function endGame() {
+        gameOver = true;
+        document.getElementById("gameover").play();
 
-    function startGame() {
-        // Reset
-        document.querySelectorAll('.burrito').forEach(el => el.remove());
+        clearInterval(spawnInterval);
+        clearInterval(difficultyInterval);
+
+        finalScoreText.textContent = `Score: ${score}`;
+        updateHighScore(score);
+        gameOverScreen.style.display = "block";
+        music.pause();
+
+        document.querySelectorAll(".burrito").forEach((b) => {
+          b.style.animationPlayState = "paused";
+          b.style.pointerEvents = "none";
+        });
+      }
+
+      function updateHighScore(newScore) {
+        const hs = getHighScoreFor(playerName);
+        if (newScore > hs) setHighScoreFor(playerName, newScore);
+        const text = `High Score: ${getHighScoreFor(playerName)}`;
+        firstScoreText.textContent = text;
+        finalScoreText.textContent += `\n${text}`;
+
+        // fire-and-forget to backend
+        postHighScoreBackend(playerName, getHighScoreFor(playerName));
+        refreshLeaderboard();
+      }
+
+      function startGame() {
+        playerName = (usernameInput.value || "Player").trim().slice(0, 20);
+        localStorage.setItem("playerName", playerName);
+
+        document.querySelectorAll(".burrito").forEach((el) => el.remove());
         score = 0;
         gameOver = false;
         spawnRate = 1000;
 
-        scoreDisplay.textContent = 'Score: 0';
-        scoreDisplay.style.display = 'block';
-        startScreen.style.display = 'none';
-        gameOverScreen.style.display = 'none';
+        scoreDisplay.textContent = "Score: 0";
+        scoreDisplay.style.display = "block";
+        startScreen.style.display = "none";
+        gameOverScreen.style.display = "none";
 
         music.currentTime = 0;
         music.play();
 
         spawnInterval = setInterval(createBurrito, spawnRate);
         difficultyInterval = setInterval(() => {
-            if (spawnRate > 20) {
+          if (spawnRate > 200) {
             clearInterval(spawnInterval);
             spawnRate -= 100;
             spawnInterval = setInterval(createBurrito, spawnRate);
-            }
+          }
         }, 5000);
-    }
+      }
 
-    // Start screen on load
-    startScreen.style.display = 'block';
-  </script>
-</div>    
-</body>
-    
+      /* --------------------------------------------------
+       *  INIT START SCREEN
+       * -------------------------------------------------- */
+      (function init() {
+        firstScoreText.textContent = playerName
+          ? `Welcome back, ${playerName}!\nHigh Score: ${getHighScoreFor(playerName)}`
+          : "";
+        startScreen.style.display = "block";
+        refreshLeaderboard();
+      })();
+    </script>
+  </body>
 </html>
