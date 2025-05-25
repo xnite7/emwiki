@@ -53,7 +53,6 @@
       z-index: 2;
       -webkit-user-select: none;
       user-select: none;
-      user-select: none;
       touch-action: manipulation;
       padding: 10px;
     }
@@ -179,17 +178,7 @@
       display: none;
     }
 
-    #leaderboardList {
-      text-align: left;
-      padding: 0;
-      list-style: none;
-      font-family: monospace;
-      font-size: 18px;
-    }
 
-    #leaderboardList li {
-      margin-bottom: 4px;
-    }
 
     button {
       font-size: 158%;
@@ -276,11 +265,11 @@
     <div id="orientationPrompt">Please rotate your device :)</div>
     <div id="gameContainer">
       <div id="muteButton" onclick="toggleMute()">🔇</div>
-      <audio id="music" loop autoplay hidden>
+      <audio id="music" loop hidden>
         <source src="./imgs/imburrito.mp3" type="audio/mpeg" />
       </audio>
 
-      <audio id="gameover" autoplay hidden>
+      <audio id="gameover" hidden>
         <source src="./imgs/gameover.mp3" type="audio/mpeg" />
       </audio>
 
@@ -289,27 +278,31 @@
       <div id="startScreen">
 
         <h2 style="font-family: monospace; font-size: xxx-large">Burrito</h2>
+            
+
             <input id="usernameInput" placeholder="Player" style="font-size: 16px; padding: 8px; width: 100%; margin-bottom: 10px;"/>
-            <img src="./imgs/burrito.png" id="playIcon" onclick="startGame()">
-        
+           <p id="yourHighScore" style="margin: 10px 0;">Your Best: 0</p>
+            <img src="./imgs/burrito.png" id="playIcon" onclick="startGame()">        
             <p id="firstScoreText" style="white-space: break-spaces"></p>
 
-        <h3 style="display:none;margin-top: 25px">Global Leaderboard</h3>
-        <ul id="leaderboardList" style="display:none;justify-self: center;padding-left: 0; list-style: none"></ul>
+            <div id="topScores" style="margin-top: 25px; text-align: left;">
+                <h3 style="margin: 0 0 10px;">🥇 Top Players</h3>
+                <ol id="topScoresList" style="padding-left: 20px; margin: 0;"></ol>
+            </div>
       </div>
 
       <div id="gameOverScreen">
         <h2 style="font-family: monospace; font-size: xxx-large">Game Over</h2>
         <p id="finalScoreText" style="white-space: break-spaces"></p>
-        <button style="filter: grayscale(1) brightness(0.5);" onclick="showLeaderboard()">🏆 Leaderboard</button>
+        
         <button onclick="startGame()">Restart</button>
+            <div id="topScores" style="margin-top: 25px; text-align: left;">
+                <h3 style="margin: 0 0 10px;">🥇 Top Players</h3>
+                <ol id="topScoresList" style="padding-left: 20px; margin: 0;"></ol>
+            </div>
       </div>
 
-    <div id="leaderboardScreen">
-      <h3 style="font-family: monospace; font-size: x-large;">🏆 Top Burrito Blasters</h3>
-      <ul id="leaderboardList"></ul>
-      <button onclick="startScreen.style.display = 'block'; leaderboardScreen.style.display = 'none';">Back</button>
-    </div>
+    
 
       <audio id="popSound" preload="auto">
         <source src="./imgs/pop.mp3" type="audio/mp3" />
@@ -338,7 +331,7 @@
        *  CONFIG
        * -------------------------------------------------- */
       const EMOJIS = ["🌶️", "🧀", "🥓"];
-      const BACKEND_ENDPOINT = "/api/score"; // Cloudflare Worker route (same origin)
+      const BACKEND_ENDPOINT = "https://burrito-leaderboard.xnite7.workers.dev"; // Cloudflare Worker route (same origin)
 
       /* --------------------------------------------------
        *  DOM REFS
@@ -359,13 +352,42 @@
        * -------------------------------------------------- */
       let score = 0;
       let gameOver = false;
-      let spawnRate = 1000; // ms
+      let spawnRate = 1000;
       let spawnInterval;
       let difficultyInterval;
       let playerName = "";
 
-      // Load saved name early
+      async function loadTop3Leaderboard() {
+        try {
+            const res = await fetch(BACKEND_ENDPOINT + "/top");
+            const data = await res.json();
+            const top3 = data.slice(0, 3); // just top 3
+
+            const topList = document.getElementById("topScoresList");
+            topList.innerHTML = "";
+
+            top3.forEach((entry, index) => {
+            const li = document.createElement("li");
+            li.textContent = `${entry.name || "Anonymous"} - ${entry.score}`;
+            topList.appendChild(li);
+            });
+        } catch (err) {
+            console.error("Failed to load leaderboard:", err);
+            const topList = document.getElementById("topScoresList");
+            topList.innerHTML = "<li>Unable to load leaderboard</li>";
+        }
+        }
+
+
+        // Call on page load or before showing start screen
+        window.addEventListener("DOMContentLoaded", () => {
+            loadTop3Leaderboard();
+        });
+
+
+
       usernameInput.value = localStorage.getItem("playerName") || "";
+      music.muted = localStorage.getItem("mute") || false;
 
       /* --------------------------------------------------
        *  ORIENTATION HANDLING
@@ -383,9 +405,12 @@
                     }
                 }
             };
+            window.mobileCheck();
+            window.addEventListener("resize", () => window.mobileCheck());
         }
-      window.addEventListener("resize", handleOrientation);
-      handleOrientation();
+
+        handleOrientation();
+
 
 
       /* --------------------------------------------------
@@ -425,23 +450,27 @@
         }
       }
 
-      async function refreshLeaderboard() {
-        leaderboardList.innerHTML = "Loading…";
-        try {
-          const res = await fetch(BACKEND_ENDPOINT);
-          const list = (await res.json()).slice(0, 10);
-          leaderboardList.innerHTML = list
-            .map((e, i) => `<li>${i + 1}. ${e.name} — ${e.score}</li>`) //
-            .join("");
-        } catch (err) {
-          leaderboardList.innerHTML = "(offline)";
+
+
+      function showLeaderboard() {
+        gameOverScreen.style.display = 'none';
+        leaderboardScreen.style.display = 'block';
+        loadTop3Leaderboard();
         }
-      }
             let lives = 3;
       /* --------------------------------------------------
        *  GAME LOGIC
        * -------------------------------------------------- */
-      function createBurrito() {
+
+        const highScore = parseInt(localStorage.getItem("burritoHighScore") || "0");
+        if (score > highScore) {
+        localStorage.setItem("burritoHighScore", score);
+        }
+
+
+
+
+        function createBurrito() {
             if (gameOver) return;
 
             const burrito = document.createElement("div");
@@ -451,7 +480,9 @@
             burrito.style.height = "60px";
             burrito.style.animationDuration = (1.8 + Math.random() * 1.5) + "s";
 
-            burrito.onclick = () => {
+            function burritoClick() {
+                burrito.removeEventListener("mousedown", burritoClick)
+                burrito.removeEventListener("touchdown", burritoClick)
                 popSound.currentTime = 0;
                 popSound.play();
 
@@ -468,9 +499,10 @@
                 emoji.style.top = burrito.offsetTop + "px";
                 gameContainer.appendChild(emoji);
                 setTimeout(() => emoji.remove(), 1000);
-            };
-
-
+            }
+        
+            burrito.addEventListener("mousedown", burritoClick)
+            burrito.addEventListener("touchdown", burritoClick)
 
 
             burrito.addEventListener("animationend", () => {
@@ -481,8 +513,8 @@
                 }
             });
 
-  gameContainer.appendChild(burrito);
-}
+        gameContainer.appendChild(burrito);
+        }
 
       function spawnEmojiParticle(burritoEl) {
         const rect = burritoEl.getBoundingClientRect();
@@ -497,6 +529,7 @@
 
       function endGame() {
         gameOver = true;
+        loadTop3Leaderboard();
         clearInterval(spawnInterval);
         clearInterval(difficultyInterval);
         scoreDisplay.style.display = "none";
@@ -532,7 +565,7 @@
       }
       function toggleMute() {
         music.muted = !music.muted;
-        gameOverAudio.muted = music.muted;
+        localStorage.setItem("mute", music.muted);
         document.getElementById("muteButton").textContent = music.muted ? "🔇" : "🔊";
         }
 
@@ -573,7 +606,7 @@
           ? `Welcome back, ${playerName}!\nHigh Score: ${getHighScoreFor(playerName)}`
           : "";
         startScreen.style.display = "block";
-        refreshLeaderboard();
+
       })();
     </script>
   </body>
