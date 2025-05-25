@@ -298,7 +298,7 @@
         <button onclick="startGame()">Restart</button>
             <div id="topScores" style="margin-top: 25px; text-align: left;">
                 <h3 style="margin: 0 0 10px;">🥇 Top Players</h3>
-                <ol id="topScoresList" style="padding-left: 20px; margin: 0;"></ol>
+                <ol id="topScoresList2" style="padding-left: 20px; margin: 0;"></ol>
             </div>
       </div>
 
@@ -364,16 +364,21 @@
             const top3 = data.slice(0, 3); // just top 3
 
             const topList = document.getElementById("topScoresList");
+            const topList2 = document.getElementById("topScoresList2");
             topList.innerHTML = "";
+            topList2.innerHTML = "";
 
             top3.forEach((entry, index) => {
             const li = document.createElement("li");
             li.textContent = `${entry.name || "Anonymous"} - ${entry.score}`;
             topList.appendChild(li);
+            topList2.appendChild(li);
             });
         } catch (err) {
             console.error("Failed to load leaderboard:", err);
+            const topList2 = document.getElementById("topScoresList2");
             const topList = document.getElementById("topScoresList");
+            topList2.innerHTML = "<li>Unable to load leaderboard</li>";
             topList.innerHTML = "<li>Unable to load leaderboard</li>";
         }
         }
