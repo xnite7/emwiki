@@ -138,6 +138,25 @@
         }
       }
 
+      .float-health {
+        position: absolute;
+        pointer-events: none;
+        font-size: 2.2rem;
+        animation: risehesalth 900ms ease-out forwards;
+        z-index: 3;
+      }
+
+      @keyframes risehesalth {
+        0% {
+          transform: translateY(0) scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-70%) scale(1.3);
+          opacity: 0;
+        }
+      }
+
       /* ---------- UI panels ---------- */
     #score, #startScreen, #gameOverScreen, #leaderboardScreen {
       position: fixed;
@@ -302,8 +321,20 @@ ol li{
         <source src="./imgs/gameover.mp3" type="audio/mpeg" />
       </audio>
 
+      <audio id="crashSound" hidden>
+        <source src="./imgs/crash.wav" type="audio/mpeg" />
+      </audio>
+
+
       <div id="score">0</div>
-      <div id="lives">🌯🌯🌯</div>
+      <div id="combo" style="display:none;position:fixed;right:10px;bottom:80px;font-size:180%;font-family:monospace;color:#ffe76a;background:rgba(46,46,46,0.7);padding:6px 12px;border-radius:6px;z-index:11;">
+        <span id="comboText">x1</span>
+        <svg id="comboRadial" width="48" height="48" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;">
+          <circle r="22" cx="24" cy="24" stroke="#ffe76a" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="0"/>
+        </svg>
+      </div>
+      <div id="lives"></div>
+
 
       <div id="startScreen">
 
@@ -312,7 +343,7 @@ ol li{
 
             <input id="usernameInput" placeholder="Player" style="font-size: 16px; padding: 8px; width: 100%; margin-bottom: 10px;"/>
            <p id="yourHighScore" style="margin: 10px 0;">Your Best: 0</p>
-            <img src="./imgs/burrito.png" id="playIcon" onclick="startGame()">        
+            <img src="./imgs/burrito.png" draggable="false" id="playIcon" onclick="startGame()">        
             <p id="firstScoreText" style="white-space: break-spaces"></p>
 
             <div id="topScores" style="margin-top: 25px; text-align: left;">
@@ -334,29 +365,71 @@ ol li{
 
     
 
-      <audio id="popSound" preload="auto">
-        <source src="./imgs/pop.mp3" type="audio/mp3" />
+      <audio id="popSound1" preload="auto">
+        <source src="./imgs/squishsounds/squish1.mp3" type="audio/mpeg" />
+      </audio>
+      <audio id="popSound2" preload="auto">
+        <source src="./imgs/squishsounds/squish2.mp3" type="audio/mpeg" />
+      </audio>
+      <audio id="popSound3" preload="auto">
+        <source src="./imgs/squishsounds/squish3.mp3" type="audio/mpeg" />
+      </audio>
+      <audio id="popSound4" preload="auto">
+        <source src="./imgs/squishsounds/squish4.mp3" type="audio/mpeg" />
       </audio>
     </div>
 
     <script>
 
-
     let combo = 0;
     let lastHitTime = 0;
+    let comboTimeoutInterval = null;
+
     function explodeBurrito() {
-    // ...
-    const now = Date.now();
-    if (now - lastHitTime < 500) {
-        combo++;
-        score += 1 + combo;
-    } else {
-        combo = 0;
-        score++;
-    }
-    lastHitTime = now;
+      const now = Date.now();
+      if (now - lastHitTime < 850) {
+          combo++;
+          score += 1 + combo;
+      } else {
+          combo = 0;
+          score++;
+      }
+      lastHitTime = now;
+
+      // Show combo if combo > 0
+      if (combo > 0) {
+        comboDisplay.style.display = "block";
+        updateComboCountdown();
+        // Start or reset the countdown interval
+        if (comboTimeoutInterval) clearInterval(comboTimeoutInterval);
+        comboTimeoutInterval = setInterval(updateComboCountdown, 50);
+      } else {
+        comboDisplay.style.display = "none";
+        if (comboTimeoutInterval) {
+          clearInterval(comboTimeoutInterval);
+          comboTimeoutInterval = null;
+        }
+      }
     }
 
+// ...existing code...
+
+let clickTimestamps = [];
+
+window.addEventListener("mousedown", function () {
+  const now = Date.now();
+  // Keep only clicks in the last 1 second
+  clickTimestamps = clickTimestamps.filter(ts => now - ts < 1000);
+  clickTimestamps.push(now);
+
+  // If more than 15 clicks in the last second, that's >15 CPS (very suspicious)
+  if (clickTimestamps.length > 15 && !gameOver) {
+    endGame();
+    alert("Autoclicker detected! Game stopped.");
+  }
+});
+
+// ...existing code...
       /* --------------------------------------------------
        *  CONFIG
        * -------------------------------------------------- */
@@ -368,6 +441,9 @@ ol li{
        * -------------------------------------------------- */
       const gameContainer = document.getElementById("gameContainer");
       const scoreDisplay = document.getElementById("score");
+      const comboDisplay = document.getElementById("combo");
+const comboText = document.getElementById("comboText");
+const comboRadial = document.getElementById("comboRadial").querySelector("circle");
       const startScreen = document.getElementById("startScreen");
       const gameOverScreen = document.getElementById("gameOverScreen");
       const finalScoreText = document.getElementById("finalScoreText");
@@ -375,7 +451,11 @@ ol li{
       const usernameInput = document.getElementById("usernameInput");
       const leaderboardList = document.getElementById("leaderboardList");
       const music = document.getElementById("music");
-      const popSound = document.getElementById("popSound");
+      music.volume = 0.8; // lower volume for background music
+      const popSound1 = document.getElementById("popSound1");
+      const popSound2 = document.getElementById("popSound2");
+      const popSound3 = document.getElementById("popSound3");
+      const popSound4 = document.getElementById("popSound4");
       const urhighscore = document.getElementById("yourHighScore");
 
       /* --------------------------------------------------
@@ -389,7 +469,6 @@ ol li{
       let playerName = "";
       let lives = 3;
       const livesDisplay = document.getElementById("lives");
-
 
 
 async function loadTop3Leaderboard() {
@@ -422,18 +501,50 @@ async function loadTop3Leaderboard() {
     }
 }
 
+function updateComboCountdown() {
+  const duration = 1000;
+  const timeLeft = Math.max(0, duration - (Date.now() - lastHitTime));
+  if (combo > 0 && timeLeft > 0) {
+    comboText.textContent = `x${combo+1}`;
+    // Radial progress (circle)
+    const percent = timeLeft / duration;
+    const circumference = 2 * Math.PI * 22; // r=22
+    comboRadial.style.strokeDasharray = circumference;
+    comboRadial.style.strokeDashoffset = circumference * (1 - percent);
+    comboRadial.style.opacity = 1;
+  } else {
+    comboText.textContent = "x1";
+    comboRadial.style.strokeDashoffset = 0;
+    comboRadial.style.opacity = 0.3;
+    if (comboTimeoutInterval) {
+      clearInterval(comboTimeoutInterval);
+      comboTimeoutInterval = null;
+    }
+    combo = 0;
+    comboDisplay.style.display = "none";
+  }
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  loadTop3Leaderboard();
+  usernameInput.value = localStorage.getItem("playerName") || "";
+
+  const isMuted = localStorage.getItem("mute") === "true" || false;
+  music.muted = isMuted;
+  document.getElementById("muteButton").textContent = isMuted ? "🔇" : "🔊";
+});
+
+function toggleMute() {
+  music.muted = !music.muted;
+  localStorage.setItem("mute", music.muted.toString());
+  document.getElementById("muteButton").textContent = music.muted ? "🔇" : "🔊";
+}
 
 
-        // Call on page load or before showing start screen
-        window.addEventListener("DOMContentLoaded", () => {
-            loadTop3Leaderboard();
-        });
 
 
 
-      usernameInput.value = localStorage.getItem("playerName") || "";
-      music.muted = localStorage.getItem("mute") || false;
-      
+
 
       /* --------------------------------------------------
        *  ORIENTATION HANDLING
@@ -514,14 +625,24 @@ async function loadTop3Leaderboard() {
        *  GAME LOGIC
        * -------------------------------------------------- */
         function updateLivesDisplay() {
+          if (lives > 0 && lives < 3) {
+            const rect = livesDisplay.lastChild.getBoundingClientRect();
+            const emoji = document.createElement("span");
+            emoji.className = "float-health";
+            emoji.innerHTML = `<img draggable="false" src="./imgs/burrito.png" style="width: 20%;"/>`
+            emoji.style.left = rect.left + rect.width / 2 + "px";
+            emoji.style.top = rect.top + rect.height / 2 + "px";
+            document.body.appendChild(emoji);
+            setTimeout(() => emoji.remove(), 900);
+          }
           if (lives==3) {
-            livesDisplay.textContent = `🌯🌯🌯`;
+            livesDisplay.innerHTML = `<img draggable="false" src="./imgs/burrito.png" style="position:relative;width: 20%;"/><img draggable="false" src="./imgs/burrito.png" style="position:relative;left:-10%;width: 20%;"/><img draggable="false" src="./imgs/burrito.png" style="position:relative;left:-20%;width: 20%;"/>`;
           } else if (lives==2) {
-            livesDisplay.textContent = `🌯🌯`;
+            livesDisplay.innerHTML = `<img draggable="false" src="./imgs/burrito.png" style="position:relative;width: 20%;"/><img draggable="false" src="./imgs/burrito.png" style="position:relative;left:-10%;width: 20%;"/>`;
           } else if (lives==1) {
-            livesDisplay.textContent = `🌯`;
+            livesDisplay.innerHTML = `<img draggable="false" src="./imgs/burrito.png" style="position:relative;width: 33%;"/>`;
           } else {
-            livesDisplay.textContent = ``;
+            livesDisplay.innerHTML = ``;
           }
           
         }
@@ -539,8 +660,11 @@ async function loadTop3Leaderboard() {
             function burritoClick() {
                 burrito.removeEventListener("mousedown", burritoClick)
                 burrito.removeEventListener("touchdown", burritoClick)
-                popSound.currentTime = 0;
-                popSound.play();
+                //randomly select a pop sound
+                const popSounds = [popSound1, popSound2, popSound3, popSound4];
+                const randomPopSound = popSounds[Math.floor(Math.random() * popSounds.length)];
+                randomPopSound.currentTime = 0;
+                randomPopSound.play();
 
                 explodeBurrito();
                 scoreDisplay.textContent = score;
@@ -564,6 +688,8 @@ async function loadTop3Leaderboard() {
             burrito.addEventListener("animationend", () => {
                 if (!gameOver && document.body.contains(burrito)) {
                   lives--;
+                  crashSound.currentTime = 0;
+                  crashSound.play();
                   updateLivesDisplay();
                   burrito.remove();
                 if (lives <= 0) endGame();
@@ -573,18 +699,15 @@ async function loadTop3Leaderboard() {
         gameContainer.appendChild(burrito);
         }
 
-      function spawnEmojiParticle(burritoEl) {
-        const rect = burritoEl.getBoundingClientRect();
-        const emoji = document.createElement("span");
-        emoji.className = "float-emoji";
-        emoji.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
-        emoji.style.left = rect.left + rect.width / 2 + "px";
-        emoji.style.top = rect.top + rect.height / 2 + "px";
-        document.body.appendChild(emoji);
-        setTimeout(() => emoji.remove(), 900);
-      }
+
 
       function endGame() {
+        combo = 0;
+        comboDisplay.style.display = "none";
+        if (comboTimeoutInterval) {
+          clearInterval(comboTimeoutInterval);
+          comboTimeoutInterval = null;
+        }
         livesDisplay.style.display = "none";
         gameOver = true;
         loadTop3Leaderboard();
@@ -620,17 +743,18 @@ async function loadTop3Leaderboard() {
 
         // fire-and-forget to backend
         postHighScoreBackend(playerName, getHighScoreFor(playerName));
-        refreshLeaderboard();
+        loadTop3Leaderboard();
       }
       
-      function toggleMute() {
-        music.muted = !music.muted;
-        localStorage.setItem("mute", music.muted);
-        document.getElementById("muteButton").textContent = music.muted ? "🔇" : "🔊";
-        }
+
 
       function startGame() {
-
+        combo = 0;
+        comboDisplay.style.display = "none";
+        if (comboTimeoutInterval) {
+          clearInterval(comboTimeoutInterval);
+          comboTimeoutInterval = null;
+        }
         lives = 3;
         livesDisplay.style.display = "block";
         updateLivesDisplay();
@@ -654,9 +778,9 @@ async function loadTop3Leaderboard() {
 
         spawnInterval = setInterval(createBurrito, spawnRate);
         difficultyInterval = setInterval(() => {
-          if (spawnRate > 200) {
+          if (spawnRate > -1000) {
             clearInterval(spawnInterval);
-            spawnRate -= 100;
+            spawnRate -= 50;
             spawnInterval = setInterval(createBurrito, spawnRate);
           }
         }, 5000);
