@@ -6,17 +6,41 @@
     <title>Burrito</title>
     <style>
       /* ---------- base layout ---------- */
-    body {
-  background: linear-gradient(45deg, #ff9966, #ff5e62);
-  background-size: 200% 200%;
-  animation: bgmove 10s ease infinite;
-    margin: 0;    
+
+
+    	body {
+		background-image: url(./imgs/burritobg.png);
+		background-repeat: repeat;
+    background-size: 13%;
+    margin: 0;  
+		background-attachment: fixed;
+		animation: diagonalScroll 30s linear infinite;
+
+		background-blend-mode: overlay;
+	}
+
+	@keyframes diagonalScroll {
+	0% {
+		background-position: 60% 0%;
+	}
+	100% {
+		background-position: 100% 100%;
+	}
+	}
+#lives {
+    font-size: 550%;
+    bottom: 10px;
+    left: 13px;
+    position: fixed;
+    -webkit-user-select: none;
+    user-select: none;
+    color: #ffbaba;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-family: monospace;
+    z-index: 10;
+    display: none;
 }
-    @keyframes bgmove {
-  0% {background-position: 0% 50%;}
-  50% {background-position: 100% 50%;}
-  100% {background-position: 0% 50%;}
-    }
 
 
     #gameContainer {
@@ -120,14 +144,19 @@
       z-index: 10;
       font-size: 20px;
       font-family: monospace;
+            -webkit-user-select: none;
+            user-select: none;
     }
+ol li{
+  list-style-type: none;
 
+}
     #score {
       font-size: 337%;
-      top: 10px;
+      bottom: 10px;
       -webkit-user-select: none;
       user-select: none;
-      left: 10px;
+      right: 10px;
       color: aliceblue;
       background: rgba(46, 46, 46, 0.7);
       padding: 6px 12px;
@@ -274,6 +303,7 @@
       </audio>
 
       <div id="score">0</div>
+      <div id="lives">🌯🌯🌯</div>
 
       <div id="startScreen">
 
@@ -286,8 +316,8 @@
             <p id="firstScoreText" style="white-space: break-spaces"></p>
 
             <div id="topScores" style="margin-top: 25px; text-align: left;">
-                <h3 style="margin: 0 0 10px;">🥇 Top Players</h3>
-                <ol id="topScoresList" style="padding-left: 20px; margin: 0;"></ol>
+                
+                <ol id="topScoresList" style="padding-left: 0;"></ol>
             </div>
       </div>
 
@@ -297,8 +327,8 @@
         
         <button onclick="startGame()">Restart</button>
             <div id="topScores" style="margin-top: 25px; text-align: left;">
-                <h3 style="margin: 0 0 10px;">🥇 Top Players</h3>
-                <ol id="topScoresList2" style="padding-left: 20px; margin: 0;"></ol>
+                
+                <ol id="topScoresList2" style="padding-left: 0;"></ol>
             </div>
       </div>
 
@@ -317,7 +347,7 @@
     function explodeBurrito() {
     // ...
     const now = Date.now();
-    if (now - lastHitTime < 1000) {
+    if (now - lastHitTime < 500) {
         combo++;
         score += 1 + combo;
     } else {
@@ -346,6 +376,7 @@
       const leaderboardList = document.getElementById("leaderboardList");
       const music = document.getElementById("music");
       const popSound = document.getElementById("popSound");
+      const urhighscore = document.getElementById("yourHighScore");
 
       /* --------------------------------------------------
        *  GAME STATE
@@ -356,32 +387,41 @@
       let spawnInterval;
       let difficultyInterval;
       let playerName = "";
+      let lives = 3;
+      const livesDisplay = document.getElementById("lives");
 
-      async function loadTop3Leaderboard() {
-        try {
-            const res = await fetch(BACKEND_ENDPOINT + "/top");
-            const data = await res.json();
-            const top3 = data.slice(0, 3); // just top 3
 
-            const topList = document.getElementById("topScoresList");
-            const topList2 = document.getElementById("topScoresList2");
-            topList.innerHTML = "";
-            topList2.innerHTML = "";
 
-            top3.forEach((entry, index) => {
+async function loadTop3Leaderboard() {
+    try {
+        const res = await fetch(BACKEND_ENDPOINT + "/top");
+        const data = await res.json();
+        const top3 = data.slice(0, 3); // just top 3
+
+        const topList = document.getElementById("topScoresList");
+        const topList2 = document.getElementById("topScoresList2");
+        topList.innerHTML = "";
+        topList2.innerHTML = "";
+
+        const medals = ["🥇", "🥈", "🥉"];
+
+        top3.forEach((entry, index) => {
             const li = document.createElement("li");
-            li.textContent = `${entry.name || "Anonymous"} - ${entry.score}`;
+            const medal = medals[index] || "🏅";
+            li.textContent = `${medal} ${entry.name || "Anonymous"} - ${entry.score}`;
             topList.appendChild(li);
-            topList2.appendChild(li);
-            });
-        } catch (err) {
-            console.error("Failed to load leaderboard:", err);
-            const topList2 = document.getElementById("topScoresList2");
-            const topList = document.getElementById("topScoresList");
-            topList2.innerHTML = "<li>Unable to load leaderboard</li>";
-            topList.innerHTML = "<li>Unable to load leaderboard</li>";
-        }
-        }
+            // Clone the element for the second list
+            topList2.appendChild(li.cloneNode(true));
+        });
+    } catch (err) {
+        console.error("Failed to load leaderboard:", err);
+        const topList2 = document.getElementById("topScoresList2");
+        const topList = document.getElementById("topScoresList");
+        topList2.innerHTML = "<li>Offline</li>";
+        topList.innerHTML = "<li>Offline</li>";
+    }
+}
+
 
 
         // Call on page load or before showing start screen
@@ -393,6 +433,7 @@
 
       usernameInput.value = localStorage.getItem("playerName") || "";
       music.muted = localStorage.getItem("mute") || false;
+      
 
       /* --------------------------------------------------
        *  ORIENTATION HANDLING
@@ -423,12 +464,19 @@
        * -------------------------------------------------- */
       function getHighScores() {
         try {
-          return JSON.parse(localStorage.getItem("highScores")) || {};
+          return JSON.parse(localStorage.getItem("highScores1")) || {};
         } catch {
           return {};
         }
       }
 
+      usernameInput.addEventListener("change", updateValue);
+
+      function updateValue() {
+        urhighscore.innerText = `Your Best: ${getHighScoreFor(usernameInput.value)}`
+        
+      }
+      updateValue(usernameInput)
       function getHighScoreFor(name) {
         const h = getHighScores();
         return h[name] || 0;
@@ -437,7 +485,7 @@
       function setHighScoreFor(name, newScore) {
         const h = getHighScores();
         h[name] = newScore;
-        localStorage.setItem("highScores", JSON.stringify(h));
+        localStorage.setItem("highScores1", JSON.stringify(h));
       }
 
       /* --------------------------------------------------
@@ -462,18 +510,21 @@
         leaderboardScreen.style.display = 'block';
         loadTop3Leaderboard();
         }
-            let lives = 3;
       /* --------------------------------------------------
        *  GAME LOGIC
        * -------------------------------------------------- */
-
-        const highScore = parseInt(localStorage.getItem("burritoHighScore") || "0");
-        if (score > highScore) {
-        localStorage.setItem("burritoHighScore", score);
+        function updateLivesDisplay() {
+          if (lives==3) {
+            livesDisplay.textContent = `🌯🌯🌯`;
+          } else if (lives==2) {
+            livesDisplay.textContent = `🌯🌯`;
+          } else if (lives==1) {
+            livesDisplay.textContent = `🌯`;
+          } else {
+            livesDisplay.textContent = ``;
+          }
+          
         }
-
-
-
 
         function createBurrito() {
             if (gameOver) return;
@@ -512,8 +563,9 @@
 
             burrito.addEventListener("animationend", () => {
                 if (!gameOver && document.body.contains(burrito)) {
-                burrito.remove();
-                lives--;
+                  lives--;
+                  updateLivesDisplay();
+                  burrito.remove();
                 if (lives <= 0) endGame();
                 }
             });
@@ -533,6 +585,7 @@
       }
 
       function endGame() {
+        livesDisplay.style.display = "none";
         gameOver = true;
         loadTop3Leaderboard();
         clearInterval(spawnInterval);
@@ -557,6 +610,7 @@
         });
       }
        firstScoreText.textContent = getHighScoreFor(playerName);
+
       function updateHighScore(newScore) {
         const hs = getHighScoreFor(playerName);
         if (newScore > hs) setHighScoreFor(playerName, newScore);
@@ -568,6 +622,7 @@
         postHighScoreBackend(playerName, getHighScoreFor(playerName));
         refreshLeaderboard();
       }
+      
       function toggleMute() {
         music.muted = !music.muted;
         localStorage.setItem("mute", music.muted);
@@ -575,8 +630,14 @@
         }
 
       function startGame() {
+
+        lives = 3;
+        livesDisplay.style.display = "block";
+        updateLivesDisplay();
+
         playerName = (usernameInput.value || "Player").trim().slice(0, 20);
         localStorage.setItem("playerName", playerName);
+        
 
         document.querySelectorAll(".burrito").forEach((el) => el.remove());
         score = 0;
@@ -587,7 +648,7 @@
         scoreDisplay.style.display = "block";
         startScreen.style.display = "none";
         gameOverScreen.style.display = "none";
-        lives = 3;
+
         music.currentTime = 0;
         music.play();
 
