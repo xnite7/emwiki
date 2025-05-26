@@ -2,7 +2,7 @@
 <html lang="en">
   <head style="touch-action: manipulation;">
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
     <title>Burrito</title>
     <style>
       /* ---------- base layout ---------- */
@@ -305,6 +305,7 @@ ol li{
 
       /* ---------- orientation handling ---------- */
       #orientationPrompt {
+        touch-action: manipulation;
         position: fixed;
         inset: 0;
         background: rgba(0, 0, 0, 0.8);
@@ -319,10 +320,12 @@ ol li{
       }
 
       body.portrait #orientationPrompt {
+        touch-action: manipulation;
         display: flex;
       }
 
       body.portrait #gameContainer {
+        touch-action: manipulation;
         transform: rotate(90deg) translate(0, -100%);
         transform-origin: top left;
         width: 100vh;
