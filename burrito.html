@@ -9,6 +9,7 @@
 
 
     	body {
+        touch-action: manipulation;
         overflow: hidden;
 		background-image: url(./imgs/burritobg.png);
 		background-repeat: repeat;
@@ -29,6 +30,7 @@
 	}
 	}
 #lives {
+  touch-action: manipulation;
     font-size: 550%;
     bottom: 10px;
     left: 13px;
@@ -45,6 +47,7 @@
 
 
     #gameContainer {
+      touch-action: manipulation;
       position: relative;
       top: 50%;
       left: 50%;
@@ -73,6 +76,7 @@
 
       /* ---------- burrito sprite ---------- */
       .burrito {
+        touch-action: manipulation;
       position: absolute;
       top: -100px;
       background-image: url('./imgs/burrito.png');
@@ -98,6 +102,7 @@
     }
 
     .explode {
+      touch-action: manipulation;
       background-image: url('https://emojicdn.elk.sh/💥');
       transform: scale(1.5) rotate(720deg);
       transition: all 0.3s ease-out;
@@ -105,6 +110,7 @@
 
 
         .particle {
+          touch-action: manipulation;
       position: absolute;
       font-size: 2.5rem;
       animation: float 1.2s ease-out forwards;
@@ -125,6 +131,7 @@
 
       /* ---------- floating emoji particles ---------- */
       .float-emoji {
+        touch-action: manipulation;
         position: absolute;
         pointer-events: none;
         font-size: 2.2rem;
@@ -144,6 +151,7 @@
       }
 
       .float-health {
+        touch-action: manipulation;
         position: absolute;
         pointer-events: none;
         font-size: 2.2rem;
@@ -164,6 +172,7 @@
 
       /* ---------- UI panels ---------- */
     #score, #startScreen, #gameOverScreen, #leaderboardScreen {
+      touch-action: manipulation;
       position: fixed;
       z-index: 10;
       font-size: 20px;
@@ -176,6 +185,7 @@ ol li{
 
 }
     #score {
+      touch-action: manipulation;
       font-size: 337%;
       bottom: 10px;
       -webkit-user-select: none;
@@ -190,6 +200,7 @@ ol li{
 
 
     #muteButton {
+      touch-action: manipulation;
       
       position: fixed;
       -webkit-user-select: none;
@@ -210,6 +221,7 @@ ol li{
     }
 
 #finalScoreText{
+  touch-action: manipulation;
     white-space: break-spaces;
     width: 190px;
     justify-self: anchor-center;
@@ -219,6 +231,7 @@ ol li{
 }
 
     #startScreen, #gameOverScreen, #leaderboardScreen {
+      touch-action: manipulation;
       top: 50%;
       left: 50%;
           color: aliceblue;
@@ -234,6 +247,7 @@ ol li{
 
 
     button {
+      touch-action: manipulation;
       font-size: 158%;
       margin-top: 15px;
       padding: 10px 20px;
@@ -247,6 +261,7 @@ ol li{
     }
 
     #playIcon {
+      touch-action: manipulation;
       font-size: 84px;
       width: 2em;
       cursor: pointer;
