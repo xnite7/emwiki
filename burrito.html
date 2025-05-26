@@ -401,7 +401,9 @@ ol li{
     </div>
 
     <script>
-
+document.addEventListener("dblclick", function(event) {
+    event.preventDefault();
+});
     let combo = 0;
     let lastHitTime = 0;
     let comboTimeoutInterval = null;
