@@ -24,14 +24,14 @@ body {
 .logo4 {
   width: 135px;
   transform: rotate(25deg);
-  left: 145px;
+  left: 180px;
   transition: ease-in-out 1s;
   position: absolute;
   bottom: -42px;
 }
 
 .logo5 {
-  left: -196px;
+  left: -150px;
   text-shadow: -4px -4px 0 #000, 0 -4px 0 #000, 4px -4px 0 #000, 4px 0 0 #000, 4px 4px 0 #000, 0 4px 0 #000, -4px 4px 0 #000, -4px 0 0 #000;
   position: absolute;
   -webkit-text-fill-color: transparent;
@@ -50,7 +50,7 @@ body {
   z-index: 123;
   font: 200 224px Bunny Flowers;
   transition: ease-in-out 0.5s;
-  left: -35px;
+
   text-shadow: -3px -3px 0 #000, 0 -3px 0 #000, 3px -3px 0 #000, 3px 0 0 #000, 3px 3px 0 #000, 0 3px 0 #000, -3px 3px 0 #000, -3px 0 0 #000;
   font-size: 51px;
 }
@@ -1249,7 +1249,8 @@ overflow-x: hidden;
 
   .logo6 {
     left: 10%;
-    font: 200 74px Bunny Flowers;
+    font: 200 55px Bunny Flowers;
+    top: 113%;
   }
 
 

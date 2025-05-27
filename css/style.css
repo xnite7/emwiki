@@ -164,10 +164,9 @@ footer p {
   display: inline-block;
   bottom: -150px;
   opacity: 0;
-  left: -196px;
   z-index: 123;
   font: 200 224px Bunny Flowers;
-  left: -196px;
+  left: -216px;
   text-shadow: -4px -4px 0 #000, 0 -4px 0 #000, 4px -4px 0 #000, 4px 0 0 #000, 4px 4px 0 #000, 0 4px 0 #000, -4px 4px 0 #000, -4px 0 0 #000;
 }
 
@@ -175,9 +174,9 @@ footer p {
   position: absolute;
   -webkit-text-fill-color: transparent;
   display: inline-block;
-  bottom: -150px;
+  bottom: -50px;
   opacity: 0;
-  left: -35px;
+  left: -15px;
   z-index: 123;
   font: 200 51px Bunny Flowers;
   text-shadow: -3px -3px 0 #000, 0 -3px 0 #000, 3px -3px 0 #000, 3px 0 0 #000, 3px 3px 0 #000, 0 3px 0 #000, -3px 3px 0 #000, -3px 0 0 #000;
@@ -251,7 +250,7 @@ main {
 .logo3 {
   width: 135px;
   transform: rotate(-80deg);
-  left: 126px;
+  left: 66px;
   transition: cubic-bezier(.6, -0.25, .59, 1.12) 1s;
   position: absolute;
   filter: opacity(0);
@@ -261,7 +260,7 @@ main {
 .logo3.active {
   width: 135px;
   transform: rotate(21deg);
-  left: 136px;
+  left: 106px;
   transition: all 0.9s cubic-bezier(0.18, 0.89, 0.32, 1.28);
   filter: opacity(1);
   position: absolute;
@@ -1967,7 +1966,8 @@ input {
 
   .logo6 {
     left: 10%;
-    font: 200 74px Bunny Flowers;
+    font: 200 55px Bunny Flowers;
+    top: 113%;
   }
 
   div .psp {
