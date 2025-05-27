@@ -994,7 +994,9 @@ p {
 }
 
 #messages {
-  height: 200px;
+      text-align: left;
+      font-size: 160%;
+      height: 346px;
   overflow-y: auto;
   border: 1px solid #444;
   padding: 10px;
@@ -1764,7 +1766,14 @@ html {
     display: grid
 ;
   }
+input {
 
+  font-size: 2rem;
+}
+#messages {
+      height: 200px;
+
+}
   #credits-content {
     background: rgb(28, 28, 28);
     color: rgb(238, 238, 238);
