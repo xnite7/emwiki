@@ -121,14 +121,12 @@ function createNewItem(item, color) {
   const newItem = document.createElement("div");
   newItem.classList.add("item");
   newItem.style.display = "flex";
+  newItem.style.overflow = "hidden";
   if (item.tradable == false && color != "rgb(201, 96, 254)") {
     const untradable = document.createElement("img");
-
+    newItem.style.order = "1";
     untradable.src = "https://i.imgur.com/WLjbELh.png";
     untradable.style.width = "17%";
-
-
-
     untradable.style.height = "auto";
     untradable.style.position = "sticky";
     untradable.style.marginRight = "-73%";
@@ -205,11 +203,8 @@ function createNewItem(item, color) {
 
     if (item.style2) {
       //clone name and parent it to original name
-
       name.setAttribute("style", item.style2);
-
       name.style.whiteSpace = "nowrap";
-
       let clone = name.cloneNode(true);
       name.style.bottom = "-10";
       name.style.margin = "57px 0";
@@ -243,10 +238,7 @@ function createNewItem(item, color) {
       name.style.transform = "rotate(" + item.rotate + "deg)";
     }
 
-    if (item.tradable == false) {
-      name.style.bottom = "-15px";
-      newItem.style.flexDirection = "column";
-    }
+
 
 
 
@@ -262,8 +254,9 @@ function createNewItem(item, color) {
 
 
   if (item.tradable == false && color == "rgb(201, 96, 254)") {
-
+    newItem.style.order = "1";
     name.style.bottom = "12px";
+    newItem.style.flexDirection = "column";
     name.style.margin = " 0";
     const untradable = document.createElement("img");
 
@@ -305,14 +298,15 @@ function createNewItem(item, color) {
 
   // Append the new item to the catalog
 
-
-
-        newItem.classList.add('item', 'item-refresh-animate');
-        catalog.appendChild(newItem);
-
+  if (item.from.toLowerCase().includes("staff item")) {
+    newItem.style.mixBlendMode = "difference";
+    //newItem.style.order = "2";
+  }
   
+  newItem.style.border = "1px solid rgba(0, 0, 0, 0.2)";
 
-
+  newItem.classList.add('item', 'item-refresh-animate');
+  catalog.appendChild(newItem);
 }
 
 function showInfo(arr, color) {
