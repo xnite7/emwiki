@@ -580,13 +580,13 @@ footer p {
 .logo-container {
   margin-bottom: 18px;
   transition: transform 0.25s cubic-bezier(.7, .38, .24, 1.27);
-  transform: scale(0.9);
+  transform: scale(0.8);
   z-index: 1;
   position: relative;
 }
 
 .logo-container:hover {
-  transform: scale(1.0) rotate(2.4deg);
+  transform: scale(0.9) rotate(2.4deg);
 }
 
 div.logo-container {
@@ -818,7 +818,7 @@ p {
 }
 
 #titles.item {
-  display: flex;
+
   align-items: center;
   justify-content: center;
 }
@@ -1719,8 +1719,21 @@ html {
 
 
 
+.butts{
+    display: flex;
+    height: 0px;
+    align-items: center;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    width: 33px;
+    position: relative;
+    float: right;
+    gap: 9px;
+}
 
-
+  .bn{
+    background: rgb(66, 66, 66); padding: 10px; text-align: center;
+  }
 
 @media (max-width: 600px) {
 
@@ -1736,6 +1749,20 @@ html {
     height: -webkit-fill-available;
     backdrop-filter: blur(6px);
     background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  .bn{
+    display: none;
+  }
+
+  header {
+    background: linear-gradient(0deg, rgba(57, 150, 196, 0) 7%, rgba(16, 73, 102, 0.77) 55%, rgba(0, 0, 0, 1) 100%);
+    padding: 3.2rem 2.2rem 0rem 2.2rem;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    display: grid
+;
   }
 
   #credits-content {
@@ -1776,6 +1803,13 @@ html {
     color: #ccc;
   }
 
+  .item{
+    scale: 0.9;
+  }
+  .item:last-of-type{
+    display: none;
+  }
+
   #credits-content>div:last-child {
     gap: 14px;
   }
@@ -1796,14 +1830,32 @@ html {
 
   }
 
+  section:first-of-type {
+    padding: 2rem 2rem 8rem 2rem;
+  }
+
+  .butts{
+    display: flex;
+    height: 0;
+    align-items: center;
+    flex-direction: row;
+    top: 109px;
+    flex-wrap: nowrap;
+    width: 64%;
+    position: relative;
+    float: right;
+    gap: 9px;
+  }
+
+
+
   section.catalog {
     background: #707070;
     border-radius: 15px;
-    padding: 9vw 4vw;
+    padding: 5vw 4vw;
     box-shadow: 0 5px 15px rgb(0 0 0 / 30%);
     position: sticky;
     z-index: 22;
-    margin: 44px 0px 38px 0vw;
   }
 
   nav {

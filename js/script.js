@@ -120,7 +120,7 @@ function createNewItem(item, color) {
   // Create a new item element
   const newItem = document.createElement("div");
   newItem.classList.add("item");
-  newItem.style.display = "flex";
+
   newItem.style.overflow = "hidden";
   if (item.tradable == false && color != "rgb(201, 96, 254)") {
     const untradable = document.createElement("img");
@@ -195,7 +195,7 @@ function createNewItem(item, color) {
     newItem.id = "deaths";
   } else if (color == "rgb(201, 96, 254)") {
     newItem.id = "titles";
-    newItem.style.display = "flex";
+
     newItem.style.alignItems = "center";
     newItem.style.justifyContent = "center";
     name.style.font = "600 234% 'Arimo'";
