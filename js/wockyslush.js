@@ -236,6 +236,7 @@ function showInfo(arr, color) {
   const hrplaytimeItems = [];
   const gamenightItems = [];
   const drsecretItems = [];
+  const staffitems = [];
   for (const [listName, list] of Object.entries(arr)) {
 
 
@@ -277,9 +278,12 @@ function showInfo(arr, color) {
       if (item.from && item.from.toLowerCase().includes("secret item (daily rewards)")) {
         drsecretItems.push(item);
       }
+      if (item.from && item.from.toLowerCase().includes("staff item")) {
+        staffitems.push(item);
+      }
     });
   };
-  const chests = [steelChestItems, elusiveBagItems, legendaryChestItems, itemcrateItems, luckyChestItems, epicChestItems, mysterybagItems, typicalChestItems, premiumChestItems, hrplaytimeItems, gamenightItems, drsecretItems];
+  const chests = [steelChestItems, elusiveBagItems, legendaryChestItems, itemcrateItems, luckyChestItems, epicChestItems, mysterybagItems, typicalChestItems, premiumChestItems, hrplaytimeItems, gamenightItems, drsecretItems, staffitems];
   chests.forEach((chestItems) => {
     chestItems.forEach((item) => {
       let listElement;
@@ -307,6 +311,8 @@ function showInfo(arr, color) {
         listElement = document.getElementById("gamenightitems");
       } else if (item.from.toLowerCase().includes("secret item (daily rewards)")) {
         listElement = document.getElementById("drsecretitems");
+      } else if (item.from.toLowerCase().includes("staff item")) {
+        listElement = document.getElementById("staffitems");
       }
 
       // Check if the item's parent is "pets" and set the color to orange
