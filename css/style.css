@@ -580,13 +580,13 @@ footer p {
 .logo-container {
   margin-bottom: 18px;
   transition: transform 0.25s cubic-bezier(.7, .38, .24, 1.27);
-  transform: scale(0.8);
+  transform: scale(0.9);
   z-index: 1;
   position: relative;
 }
 
 .logo-container:hover {
-  transform: scale(0.9) rotate(2.4deg);
+  transform: scale(1) rotate(2.4deg);
 }
 
 div.logo-container {
@@ -1725,7 +1725,7 @@ html {
     align-items: center;
     flex-direction: column;
     flex-wrap: nowrap;
-    width: 33px;
+
     position: relative;
     float: right;
     gap: 9px;
@@ -1840,8 +1840,8 @@ html {
     align-items: center;
     flex-direction: row;
     top: 109px;
+            margin: 0 2000px;
     flex-wrap: nowrap;
-    width: 64%;
     position: relative;
     float: right;
     gap: 9px;
@@ -1857,6 +1857,18 @@ html {
     position: sticky;
     z-index: 22;
   }
+
+  .logo-container {
+  margin-bottom: 18px;
+  transition: transform 0.25s cubic-bezier(.7, .38, .24, 1.27);
+  transform: scale(0.8);
+  z-index: 1;
+  position: relative;
+}
+
+.logo-container:hover {
+  transform: scale(0.9) rotate(2.4deg);
+}
 
   nav {
     height: auto;
