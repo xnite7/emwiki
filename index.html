@@ -41,7 +41,7 @@
 			</h1>
 			
 		</div>
-<div class="poll-box" style="right: 3%; position: fixed; margin: auto; background: linear-gradient(45deg, rgba(0, 0, 0, 0.98), rgba(24, 24, 24, 0.6)); box-shadow: rgba(0, 0, 0, 0.58) -6px 6px 11px; z-index: 222; bottom: 35px; padding: 3%; border-radius: 16px; color: white; backdrop-filter: blur(59px); font-family: &quot;Segoe UI&quot;, sans-serif; display: block;">
+<div class="poll-box" style="right: 3%; position: fixed; margin: auto; background: linear-gradient(45deg, rgba(0, 0, 0, 0.98), rgba(24, 24, 24, 0.6)); box-shadow: rgba(0, 0, 0, 0.58) -6px 6px 11px; z-index: 222; bottom: 35px; padding: 3%; border-radius: 16px; color: white; backdrop-filter: blur(59px); font-family: &quot;Segoe UI&quot;, sans-serif; display: none;">
     <button onclick="document.querySelector('.poll-box').style.display='none'" style="position: absolute;top: 0px;right: -10px;background: none;border: none;color: white;font-size: 34px;cursor: pointer;">×</button>
 
     <h2 style="text-align: left;font-size: 22px;margin: 0 37px 30px 0;font-family: monospace;">Should we add RAP?</h2>
@@ -206,7 +206,7 @@
 			<section class="welcome">
 				<div class="butts">
 					<div id="credits-button">❤</div>
-					<div id="polls-button" onclick="document.querySelector('.poll-box').style.display='block'">RAP</div>
+					<div style="display: none" id="polls-button" onclick="document.querySelector('.poll-box').style.display='block'">RAP</div>
                 </div>
 				<h1 style="margin-top: 10px;">Welcome to Epic Catalogue!</h1>
 				<p>A collection of every Epic minigames item</p>
@@ -299,20 +299,20 @@
 
 
 <script>
-const API_URL = 'https://emwiki-poll.xnite7.workers.dev/api/poll';
-const pollResult = document.getElementById('pollResult');
-const pollTotals = document.getElementById('pollTotals');
-const voteButtons = document.querySelectorAll('.vote-button');
+	const API_URL = 'https://emwiki-poll.xnite7.workers.dev/api/poll';
+	const pollResult = document.getElementById('pollResult');
+	const pollTotals = document.getElementById('pollTotals');
+	const voteButtons = document.querySelectorAll('.vote-button');
 
-// Check if user already voted using localStorage
-const alreadyVoted = localStorage.getItem('hasVoted') === 'true';
+	// Check if user already voted using localStorage
+	const alreadyVoted = localStorage.getItem('hasVoted') === 'true';
 
-function disableVoting(message) {
-  voteButtons.forEach(btn => {btn.style.display="none";btn.disabled = true});
+	function disableVoting(message) {
+		voteButtons.forEach(btn => {btn.style.display="none";btn.disabled = true});
 
-  pollResult.textContent = message;
-  pollResult.style.display = 'block';
-}
+		pollResult.textContent = message;
+		pollResult.style.display = 'block';
+	}
 
 async function fetchResults() {
 	try {
@@ -321,7 +321,7 @@ async function fetchResults() {
 		pollTotals.textContent = `👍 ${data.like} · 👎 ${data.dislike}`;
 	} catch {
 		pollTotals.textContent = '⚠️ Error loading poll results.';
-	}
+		}
 	}
 
 	async function submitVote(vote) {
@@ -335,14 +335,14 @@ async function fetchResults() {
 		});
 
 		if (res.status === 403) {
-		disableVoting('You have already voted.');
-		document.querySelector('.poll-box').style.display='none'
+			disableVoting('You have already voted.');
+			document.querySelector('.poll-box').style.display='none'
 		} else if (res.ok) {
-		disableVoting('Thanks for voting!');
+			disableVoting('Thanks for voting!');
 		} else {
-		pollResult.textContent = 'Error submitting vote.';
-		pollResult.style.display = 'block';
-		return;
+			pollResult.textContent = 'Error submitting vote.';
+			pollResult.style.display = 'block';
+			return;
 		}
 
 		localStorage.setItem('hasVoted', 'true');
