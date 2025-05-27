@@ -136,6 +136,20 @@ function createNewItem(item, color) {
     newItem.appendChild(untradable);
     //price.style.display = "none"; // Hide the price element
   }
+  if (item.premium) {
+    const premium = document.createElement("img");
+    newItem.style.order = "1";
+    premium.src = "../imgs/prem.png";
+    premium.style.width = "17%";
+    premium.style.height = "auto";
+    premium.style.position = "sticky";
+    premium.style.marginRight = "-73%";
+    premium.style.marginTop = "-13px";
+
+    premium.setAttribute('draggable', false);
+    newItem.appendChild(premium);
+    //price.style.display = "none"; // Hide the price element
+  }
   // Create and set the image element
   // Draw image on a canvas instead of using <img>
   if (item.img) {
