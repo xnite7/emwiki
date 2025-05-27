@@ -1873,6 +1873,8 @@ input {
   }
 
   nav a:hover {
+        padding: 10px;
+    margin-bottom: 0px;
     transform: none;
   }
 
@@ -1889,20 +1891,13 @@ input {
     align-items: stretch;
   }
 
-  nav a:active img {
+  nav a:active {
     padding: 10px;
     margin-bottom: 0px;
-  }
-
-  nav a:active {
-
     transform: none;
   }
 
-  nav a:hover img {
-    padding: 10px;
-    margin-bottom: 0px;
-  }
+
 
   .scammer-block {
     max-width: 600px;
