@@ -297,6 +297,15 @@ ol li{
           display: block;
           margin-bottom: 10px;
         }
+    #score, #startScreen, #gameOverScreen, #leaderboardScreen {
+      touch-action: manipulation;
+      position: fixed;
+      z-index: 10;
+      font-size: 14px;
+      font-family: monospace;
+            -webkit-user-select: none;
+            user-select: none;
+    }
       }
 
     @keyframes bounce {
@@ -352,7 +361,7 @@ ol li{
 
 
       <div id="score">0</div>
-      <div id="combo" style="display:none;position:fixed;right:10px;bottom:80px;font-size:180%;font-family:monospace;color:#ffe76a;background:rgba(46,46,46,0.7);padding:6px 12px;border-radius:6px;z-index:11;">
+      <div id="combo" style="user-select: none;display:none;position:fixed;right:10px;bottom:80px;font-size:180%;font-family:monospace;color:#ffe76a;background:rgba(46,46,46,0.7);padding:6px 12px;border-radius:6px;z-index:11;">
         <span id="comboText">x1</span>
         <svg id="comboRadial" width="48" height="48" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;">
           <circle r="22" cx="24" cy="24" stroke="#ffe76a" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="0"/>
