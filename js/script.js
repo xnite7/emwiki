@@ -138,13 +138,12 @@ function createNewItem(item, color) {
   }
   if (item.premium) {
     const premium = document.createElement("img");
-    newItem.style.order = "1";
     premium.src = "../imgs/prem.png";
     premium.style.width = "17%";
     premium.style.height = "auto";
     premium.style.position = "sticky";
     premium.style.marginRight = "-73%";
-    premium.style.marginTop = "-13px";
+    premium.style.marginTop = "-18px";
 
     premium.setAttribute('draggable', false);
     newItem.appendChild(premium);
