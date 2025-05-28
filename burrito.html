@@ -13,23 +13,23 @@
         
         touch-action: manipulation;
         overflow: hidden;
-		background-image: url(./imgs/burritobg.png);
-		background-repeat: repeat;
-    background-size: 13%;
-    margin: 0;  
-		background-attachment: fixed;
-		animation: diagonalScroll 30s linear infinite;
+        background-image: url(./imgs/burritobg.png);
+        background-repeat: repeat;
+        background-size: 13%;
+        margin: 0;  
+        background-attachment: fixed;
+        animation: diagonalScroll 30s linear infinite;
 
-		background-blend-mode: overlay;
-	}
+        background-blend-mode: overlay;
+	    }
 
 	@keyframes diagonalScroll {
-	0% {
-		background-position: 60% 0%;
-	}
-	100% {
-		background-position: 100% 100%;
-	}
+	  0% {
+		  background-position: 0px 0px;
+    }
+    100% {
+		  background-position: 900px 900px;
+	  }
 	}
 #lives {
   touch-action: manipulation;
@@ -71,7 +71,7 @@
       }
       #gameContainer {
         width: -webkit-fill-available;
-        height: 90vh;
+        height: 95vh;
         aspect-ratio: 16 / 9;
       }
     }
