@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
+
+
+<url>
+  <loc>https://emwiki.site/</loc>
+  <lastmod>2025-05-28T15:28:11+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>https://emwiki.site/gears</loc>
+  <lastmod>2025-05-28T15:28:11+00:00</lastmod>
+  <priority>0.90</priority>
+</url>
+<url>
+  <loc>https://emwiki.site/deaths</loc>
+  <lastmod>2025-05-28T15:28:11+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://emwiki.site/pets</loc>
+  <lastmod>2025-05-28T15:28:11+00:00</lastmod>
+  <priority>0.90</priority>
+</url>
+<url>
+  <loc>https://emwiki.site/titles</loc>
+  <lastmod>2025-05-28T15:28:11+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://emwiki.site/effects</loc>
+  <lastmod>2025-05-28T15:28:11+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://emwiki.site/chests</loc>
+  <lastmod>2025-05-28T15:28:11+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://emwiki.site/scammers</loc>
+  <lastmod>2025-05-28T15:28:11+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://emwiki.site/burrito</loc>
+  <lastmod>2025-05-28T15:28:11+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+
+
+</urlset>
