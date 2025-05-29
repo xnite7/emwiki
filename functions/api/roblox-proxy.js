@@ -23,18 +23,17 @@ export async function onRequestGet({ request, env }) {
         messages
           //.filter(msg => msg.content.includes("discord user:") && msg.content.includes("roblox user:") && msg.content.includes("roblox profile:"))
           .map(async (msg) => {
-            console.log(msg); // 🔍 This logs each message's content
+            console.log(msg.content); // 🔍 This logs each message's content
             const discordMatch = msg.content.match(/discord user:\s*\*\*\s*(.*)/);
-            
             const robloxUserMatch = msg.content.match(/roblox user:\s*\*\*\s*(.*)/);
-            const robloxProfileMatch = msg.content.match(/roblox profile:\s*\*\*\s*(https:\/\/www\\.roblox\\.com\/users\/\d+\/profile)/);
+            const robloxProfileMatch = msg.content.match(/https:\/\/www\.roblox\.com\/users\/\d+\/profile/g);
 
             const discordid = discordMatch ? discordMatch[1].trim().split(',')[0] : null;
             const robloxProfile = robloxProfileMatch ? robloxProfileMatch[1].trim() : null;
             const userIdMatch = robloxProfile ? robloxProfile.match(/users\/(\d+)\/profile/) : null;
 
             
-            console.log(userIdMatch,robloxProfile,discordid); // 🔍 This logs each message's content
+            console.log(userIdMatch,discordid); // 🔍 This logs each message's content
             if (!userIdMatch) return null;
 
             const userId = userIdMatch[1];
