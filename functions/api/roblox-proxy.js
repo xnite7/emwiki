@@ -6,6 +6,7 @@ export async function onRequestGet({ request, env }) {
 
   if (mode === "discord-scammers") {
     const channelId = env.DISCORD_CHANNEL_ID;
+    console.log(`Fetching Discord scammers from channel: ${channelId}`);
 
     try {
       const messagesRes = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages?limit=100`, {
