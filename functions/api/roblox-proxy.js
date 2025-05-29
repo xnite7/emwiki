@@ -9,7 +9,7 @@ export async function onRequestGet({ request, env }) {
     console.log(`Fetching Discord scammers from channel: ${channelId}`);
 
     try {
-      const messagesRes = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages?limit=100`, {
+      const messagesRes = await fetch(`https://discord.com/api/v10/channels/1312002142491508746/messages?limit=100`, {
         headers: {
           Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`
         }
