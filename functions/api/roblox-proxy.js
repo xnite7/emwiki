@@ -6,10 +6,9 @@ export async function onRequestGet({ request, env }) {
 
   if (mode === "discord-scammers") {
     const channelId = env.DISCORD_CHANNEL_ID;
-    console.log(`Fetching Discord scammers from channel: ${channelId}`);
 
     try {
-      const messagesRes = await fetch(`https://discord.com/api/v10/channels/1312002142491508746/messages?limit=100`, {
+      const messagesRes = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages?limit=100`, {
         headers: {
           Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`
         }
@@ -20,11 +19,14 @@ export async function onRequestGet({ request, env }) {
       }
 
       const messages = await messagesRes.json();
+      console.log("Fetched messages count:", messages.length);
+      console.log("Example message:", messages[0]?.content);
 
       const scammers = await Promise.all(
         messages
-          .filter(msg => msg.content.includes("discord user:") && msg.content.includes("roblox user:") && msg.content.includes("roblox profile:"))
+          //.filter(msg => msg.content.includes("discord user:") && msg.content.includes("roblox user:") && msg.content.includes("roblox profile:"))
           .map(async (msg) => {
+            console.log("Message content:\n", msg.content); // 🔍 This logs each message's content
             const discordMatch = msg.content.match(/discord user:\s*\*\*\s*(.*)/);
             const robloxUserMatch = msg.content.match(/roblox user:\s*\*\*\s*(.*)/);
             const robloxProfileMatch = msg.content.match(/roblox profile:\s*\*\*\s*(https:\/\/www\\.roblox\\.com\/users\/\d+\/profile)/);
