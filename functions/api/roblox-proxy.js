@@ -32,8 +32,11 @@ export async function onRequestGet({ request, env }) {
             const robloxProfile = robloxProfileMatch ? robloxProfileMatch[1].trim() : null;
             const userIdMatch = robloxProfile ? robloxProfile.match(/users\/(\d+)\/profile/) : null;
 
-            
-            console.log(userIdMatch,discordid); // 🔍 This logs each message's content
+            const victims = msg.content.match(/\*\*<:pinkdot:\d+> victims: \*\*(.+)/)?.[1]?.trim();
+            const itemsScammed = msg.content.match(/\*\*<:pinkdot:\d+> items scammed: \*\*(.+)/)?.[1]?.trim();
+            const robloxAlts = msg.content.match(/\*\*roblox alts:\*\* (https?:\/\/[^\s]+)/)?.[1];
+
+            console.log(userIdMatch, discordid); // 🔍 This logs each message's content
             if (!userIdMatch) return null;
 
             const userId = userIdMatch[1];
@@ -43,9 +46,6 @@ export async function onRequestGet({ request, env }) {
               const data = await response.json();
 
               return {
-                Content: msg.content,
-                Timestamp: msg.timestamp,
-                AuthorId: msg.author.id,
                 robloxUser: data.displayName || robloxUserMatch?.[1] || "N/A",
                 robloxProfile: robloxProfile,
                 avatar: data.avatar || null,
