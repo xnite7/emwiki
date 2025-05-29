@@ -80,4 +80,10 @@ async function createScammerBlock(scammer, container) {
 
 
 
- fetch('https://emwiki.site/api/roblox-proxy?mode=discord-scammers').then(res => res.json()).then(data => {const container = document.getElementById('scammers-container');data.forEach(scammer => createScammerBlock(scammer, container));});
+ fetch('https://emwiki.site/api/roblox-proxy?mode=discord-scammers')
+ .then(res => res.json())
+ .then(data => {
+  console.log(data);
+  const container = document.getElementById('scammers-container');
+  data.forEach(scammer => createScammerBlock(scammer, container));
+ });
