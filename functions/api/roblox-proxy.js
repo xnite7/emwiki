@@ -19,15 +19,13 @@ export async function onRequestGet({ request, env }) {
       }
 
       const messages = await messagesRes.json();
-      console.log("Fetched messages count:", messages.length);
-      console.log("Example message:", messages[0]?.content);
-
       const scammers = await Promise.all(
         messages
           //.filter(msg => msg.content.includes("discord user:") && msg.content.includes("roblox user:") && msg.content.includes("roblox profile:"))
           .map(async (msg) => {
-            console.log("Message content:\n", msg.content); // 🔍 This logs each message's content
+            console.log(msg.content); // 🔍 This logs each message's content
             const discordMatch = msg.content.match(/discord user:\s*\*\*\s*(.*)/);
+            
             const robloxUserMatch = msg.content.match(/roblox user:\s*\*\*\s*(.*)/);
             const robloxProfileMatch = msg.content.match(/roblox profile:\s*\*\*\s*(https:\/\/www\\.roblox\\.com\/users\/\d+\/profile)/);
 
@@ -35,6 +33,8 @@ export async function onRequestGet({ request, env }) {
             const robloxProfile = robloxProfileMatch ? robloxProfileMatch[1].trim() : null;
             const userIdMatch = robloxProfile ? robloxProfile.match(/users\/(\d+)\/profile/) : null;
 
+            
+            console.log(userIdMatch,robloxProfile,discordid); // 🔍 This logs each message's content
             if (!userIdMatch) return null;
 
             const userId = userIdMatch[1];
