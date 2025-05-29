@@ -23,7 +23,7 @@ export async function onRequestGet({ request, env }) {
         messages
           //.filter(msg => msg.content.includes("discord user:") && msg.content.includes("roblox user:") && msg.content.includes("roblox profile:"))
           .map(async (msg) => {
-            console.log(msg.content); // 🔍 This logs each message's content
+            console.log(msg); // 🔍 This logs each message's content
             const discordMatch = msg.content.match(/discord user:\s*\*\*\s*(.*)/);
             
             const robloxUserMatch = msg.content.match(/roblox user:\s*\*\*\s*(.*)/);
