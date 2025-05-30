@@ -9,32 +9,51 @@ export async function onRequestGet({ request, env }) {
 
   if (mode === "discord-scammers") {
     try {
-      const { results } = await env.DB.prepare(
-        "SELECT value, updated_at FROM scammer_cache WHERE key = ?"
-      ).bind(CACHE_KEY).all();
+      // --- LOCKING SECTION ---
+      // Try to acquire a lock (expires in 2 minutes)
+      const LOCK_KEY = "discord-scammers-lock";
+      const LOCK_TTL_MS = 2 * 60 * 1000;
+      const now = Date.now();
 
-      if (results.length > 0) {
-        const { value, updated_at } = results[0];
+      // Remove expired lock
+      await env.DB.prepare(
+        "DELETE FROM scammer_cache_locks WHERE key = ? AND expires_at < ?"
+      ).bind(LOCK_KEY, now).run();
 
-        const latestMessageRes = await fetch(`https://discord.com/api/v10/channels/${env.DISCORD_CHANNEL_ID}/messages?limit=1`, {
-          headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
+      // Try to insert lock
+      let lockAcquired = false;
+      try {
+        await env.DB.prepare(
+          "INSERT INTO scammer_cache_locks (key, expires_at) VALUES (?, ?)"
+        ).bind(LOCK_KEY, now + LOCK_TTL_MS).run();
+        lockAcquired = true;
+      } catch {
+        lockAcquired = false;
+      }
+
+      // If lock not acquired, wait for cache to be built
+      if (!lockAcquired) {
+        // Wait up to 30 seconds for cache to be built
+        let waited = 0;
+        const waitStep = 1000;
+        while (waited < 30000) {
+          const { results } = await env.DB.prepare(
+            "SELECT value FROM scammer_cache WHERE key = ?"
+          ).bind(CACHE_KEY).all();
+          if (results.length > 0) {
+            // Cache is ready, return it
+            return new Response(results[0].value, {
+              headers: { "Content-Type": "application/json", "X-Cache": "D1-WAIT" },
+            });
+          }
+          await new Promise(r => setTimeout(r, waitStep));
+          waited += waitStep;
+        }
+        // Timed out waiting for cache
+        return new Response(JSON.stringify({ error: "Cache is being built, try again soon." }), {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
         });
-
-        if (!latestMessageRes.ok) {
-          return new Response(JSON.stringify({ error: "Failed to check latest message" }), {
-            status: 500,
-            headers: { "Content-Type": "application/json" }
-          });
-        }
-
-        const [latestMessage] = await latestMessageRes.json();
-        const latestTimestamp = new Date(latestMessage.timestamp).getTime();
-
-        if (latestTimestamp <= updated_at) {
-          return new Response(value, {
-            headers: { "Content-Type": "application/json", "X-Cache": "D1-HIT" },
-          });
-        }
       }
 
       const channelId = env.DISCORD_CHANNEL_ID;
@@ -173,11 +192,21 @@ export async function onRequestGet({ request, env }) {
         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
       `).bind(CACHE_KEY, payload, Date.now()).run();
 
+      // After cache is built, remove lock
+      await env.DB.prepare(
+        "DELETE FROM scammer_cache_locks WHERE key = ?"
+      ).bind(LOCK_KEY).run();
+
       return new Response(payload, {
         headers: { "Content-Type": "application/json", "X-Cache": "D1-MISS" },
       });
 
     } catch (err) {
+      // Always remove lock on error
+      await env.DB.prepare(
+        "DELETE FROM scammer_cache_locks WHERE key = ?"
+      ).bind("discord-scammers-lock").run();
+
       return new Response(JSON.stringify({ error: err.message }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
