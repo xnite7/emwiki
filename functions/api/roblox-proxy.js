@@ -27,18 +27,18 @@ export async function onRequestGet({ request, env }) {
           //.filter(msg => msg.content.includes("discord user:") && msg.content.includes("roblox user:") && msg.content.includes("roblox profile:"))
           .map(async (msg) => {
             console.log(msg.content); // 🔍 This logs each message's content
-            const discordMatch = msg.content.match(/discord user:\s*\*\*\s*(.*)/);
-            const robloxUserMatch = msg.content.match(/roblox user:\s*\*\*\s*(.*)/);
-            const robloxProfileMatch = msg.content.match(/https:\/\/www\.roblox\.com\/users\/\d+\/profile/);
+            const discordMatch = msg.content?.match(/discord user:\s*\*\*\s*(.*)/);
+            const robloxUserMatch = msg.content?.match(/roblox user:\s*\*\*\s*(.*)/);
+            const robloxProfileMatch = msg.content?.match(/https:\/\/www\.roblox\.com\/users\/\d+\/profile/);
 
             const discordid = discordMatch ? discordMatch[1].trim().split(',')[0] : null;
             const robloxProfile = robloxProfileMatch ? robloxProfileMatch[0] : null;
-            const userIdMatch = robloxProfile ? robloxProfile.match(/users\/(\d+)\/profile/) : null;
+            const userIdMatch = robloxProfile ? robloxProfile?.match(/users\/(\d+)\/profile/) : null;
 
 
-            const victims = msg.content.match(/\*\*<:pinkdot:\d+> victims: \*\*(.+)/)?.[1]?.trim();
-            const itemsScammed = msg.content.match(/\*\*<:pinkdot:\d+> items scammed: \*\*(.+)/)?.[1]?.trim();
-            const robloxAlts = msg.content.match(/\*\*roblox alts:\*\* (https?:\/\/[^\s]+)/)?.[1];
+            const victims = msg.content?.match(/\*\*<:pinkdot:\d+> victims: \*\*(.+)/)?.[1]?.trim();
+            const itemsScammed = msg.content?.match(/\*\*<:pinkdot:\d+> items scammed: \*\*(.+)/)?.[1]?.trim();
+            const robloxAlts = msg.content?.match(/\*\*roblox alts:\*\* (https?:\/\/[^\s]+)/)?.[1];
 
             console.log(discordMatch, robloxUserMatch, robloxProfileMatch, discordid, robloxProfile, userIdMatch); // 🔍 This logs each message's content
             if (!userIdMatch) return null;
