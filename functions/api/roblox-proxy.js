@@ -75,50 +75,53 @@ export async function onRequestGet({ request, env }) {
         if (allMessages.length >= 5000) break;
       }
 
-      const scammers = await Promise.all(
-        allMessages.map(async (msg) => {
-          try {
-            const discordMatch = msg.content?.match(/discord user:\s*\*{0,2}\s*([^\n\r]+)/i);
-            const robloxProfileMatch = msg.content?.match(/https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i);
-            const robloxUserMatch = msg.content?.match(/roblox user:\s*\*{0,2}(.*)/i);
+      const scammers = [];
+const MAX_LOOKUPS = 100;
 
-            const discordid = discordMatch ? discordMatch[1].trim().split(',')[0] : null;
-            const robloxProfile = robloxProfileMatch ? `https://www.roblox.com/users/${robloxProfileMatch[1]}/profile` : null;
-            const userId = robloxProfileMatch ? robloxProfileMatch[1] : null;
-            const victims = msg.content?.match(/victims:\s*\*{0,2}(.*)/i)?.[1]?.trim();
-            const itemsScammed = msg.content?.match(/items scammed:\s*\*{0,2}(.*)/i)?.[1]?.trim();
+for (let i = 0; i < allMessages.length; i++) {
+  const msg = allMessages[i];
 
-            if (!userId) return null;
+  try {
+    const discordMatch = msg.content?.match(/discord user:\s*\*{0,2}\s*([^\n\r]+)/i);
+    const robloxProfileMatch = msg.content?.match(/https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i);
+    const robloxUserMatch = msg.content?.match(/roblox user:\s*\*{0,2}(.*)/i);
 
-            let data = {};
-            const maxRetries = 5;
-            for (let attempt = 0; attempt < maxRetries; attempt++) {
-              try {
-                const response = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${userId}&discordId=${discordid}`);
-                if (response.ok) {
-                  data = await response.json();
-                  break;
-                }
-              } catch {}
-              await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
-            }
+    const discordid = discordMatch ? discordMatch[1].trim().split(',')[0] : null;
+    const robloxProfile = robloxProfileMatch ? `https://www.roblox.com/users/${robloxProfileMatch[1]}/profile` : null;
+    const userId = robloxProfileMatch ? robloxProfileMatch[1] : null;
+    const victims = msg.content?.match(/victims:\s*\*{0,2}(.*)/i)?.[1]?.trim();
+    const itemsScammed = msg.content?.match(/items scammed:\s*\*{0,2}(.*)/i)?.[1]?.trim();
 
-            //if (!userId) return null; // still skip if we can't extract the Roblox user ID
+    if (!userId) continue;
 
-
-            return {
-              robloxUser: data.displayName || data.name || robloxUserMatch?.[1]?.trim() || "Unknown",
-              robloxProfile,
-              avatar: data.avatar || null,
-              discordDisplay: data.discordDisplayName || discordid || "Unknown",
-              victims: victims || "Unknown",
-              itemsScammed: itemsScammed || "Unknown",
-            };
-          } catch {
-            return null;
+    let data = {};
+    if (i < MAX_LOOKUPS) {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        try {
+          const response = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${userId}&discordId=${discordid}`);
+          if (response.ok) {
+            data = await response.json();
+            break;
           }
-        })
-      );
+        } catch {}
+        await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+      }
+    }
+
+    scammers.push({
+      robloxUser: data.displayName || data.name || robloxUserMatch?.[1]?.trim() || "Unknown",
+      robloxProfile,
+      avatar: data.avatar || null,
+      discordDisplay: data.discordDisplayName || discordid || "Unknown",
+      victims: victims || "Unknown",
+      itemsScammed: itemsScammed || "Unknown",
+    });
+
+  } catch {
+    // Skip on error
+  }
+}
+
 
       const validScammers = scammers.filter(entry => entry);
       const payload = JSON.stringify(validScammers);
