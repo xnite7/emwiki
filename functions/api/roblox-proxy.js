@@ -14,41 +14,75 @@ export async function onRequestGet({ request, env }) {
         "SELECT value, updated_at FROM scammer_cache WHERE key = ?"
       ).bind(CACHE_KEY).all();
 
-      if (results.length > 0) {
-        const { value, updated_at } = results[0];
-        if (Date.now() - updated_at < CACHE_TTL_MS) {
-          return new Response(value, {
-            headers: { "Content-Type": "application/json", "X-Cache": "D1-HIT" },
-          });
-        }
+    if (results.length > 0) {
+      const { value, updated_at } = results[0];
+
+      // Check the latest message in the Discord channel
+      const latestMessageRes = await fetch(`https://discord.com/api/v10/channels/${env.DISCORD_CHANNEL_ID}/messages?limit=1`, {
+        headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
+      });
+
+      if (!latestMessageRes.ok) {
+        return new Response(JSON.stringify({ error: "Failed to check latest message" }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" }
+        });
       }
+
+      const [latestMessage] = await latestMessageRes.json();
+      const latestTimestamp = new Date(latestMessage.timestamp).getTime();
+
+      // ✅ If no new messages, use cache
+      if (latestTimestamp <= updated_at) {
+        return new Response(value, {
+          headers: { "Content-Type": "application/json", "X-Cache": "D1-HIT" },
+        });
+      }
+    }
 
       // Fetch Discord messages
       const channelId = env.DISCORD_CHANNEL_ID;
       let allMessages = [];
       let before = null;
 
-      for (let i = 0; i < 5; i++) {
-        const fetchUrl = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
-        fetchUrl.searchParams.set("limit", "100");
-        if (before) fetchUrl.searchParams.set("before", before);
+while (true) {
+  const fetchUrl = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
+  fetchUrl.searchParams.set("limit", "100");
+  if (before) fetchUrl.searchParams.set("before", before);
 
-        const response = await fetch(fetchUrl.toString(), {
-          headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
-        });
+  let response;
 
-        if (!response.ok) {
-          return new Response(JSON.stringify({ error: "Failed to fetch messages" }), {
-            status: 500,
-            headers: { "Content-Type": "application/json" },
-          });
-        }
+  for (let attempt = 0; attempt < 3; attempt++) {
+    response = await fetch(fetchUrl.toString(), {
+      headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+    });
 
-        const messages = await response.json();
-        if (messages.length === 0) break;
-        allMessages.push(...messages);
-        before = messages[messages.length - 1].id;
-      }
+    if (response.status === 429) {
+      const retryAfter = await response.json();
+      console.warn(`Rate limited. Retrying after ${retryAfter.retry_after} seconds`);
+      await new Promise(r => setTimeout(r, retryAfter.retry_after * 1000));
+    } else {
+      break; // ✅ Exit retry loop
+    }
+  }
+
+  if (!response.ok) {
+    return new Response(JSON.stringify({ error: "Failed to fetch messages" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const messages = await response.json();
+  console.log(`Fetched ${messages.length} messages`);
+
+  if (messages.length === 0) break;
+  allMessages.push(...messages);
+  before = messages[messages.length - 1].id;
+
+  if (allMessages.length >= 1000) break;
+}
+
 
       const scammers = await Promise.all(
         allMessages.map(async (msg) => {
