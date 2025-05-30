@@ -2,10 +2,10 @@
 let sparklesEnabled = true; // Single global declaration
 let sparkleInterval = null;
 let animateInterval = null;
-
+const sparkles = 50;
 window.addEventListener('DOMContentLoaded', () => {
   const colour = "random";
-  const sparkles = 50;
+  
   const colours = [
     "#ff0000", "#00ff00", "#ffffff", "#ff00ff",
     "#ffa500", "#ffff00", "#00ff00", "#ffffff", "#ff00ff"
@@ -122,9 +122,25 @@ window.addEventListener('DOMContentLoaded', () => {
     shigh = window.innerHeight;
   }
 
+  function clearAllSparkles() {
+    for (let i = 0; i < sparkles; i++) {
+      if (star[i]) {
+        star[i].style.visibility = "hidden";
+        starv[i] = 0;
+      }
+      if (tiny[i]) {
+        tiny[i].style.visibility = "hidden";
+        tinyv[i] = 0;
+      }
+    }
+  }
+
   // Event listeners
   window.addEventListener("scroll", set_scroll);
-  window.addEventListener("resize", set_width);
+  window.addEventListener("resize", () => {
+    set_width();
+    clearAllSparkles();
+  });
   window.addEventListener("mousemove", e => { x = e.pageX; y = e.pageY; });
 
   // Sparkle toggle logic
