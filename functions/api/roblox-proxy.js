@@ -26,7 +26,7 @@ export async function onRequestGet({ request, env }) {
             console.log(msg.content); // 🔍 This logs each message's content
             const discordMatch = msg.content.match(/discord user:\s*\*\*\s*(.*)/);
             const robloxUserMatch = msg.content.match(/roblox user:\s*\*\*\s*(.*)/);
-            const robloxProfileMatch = msg.content.match(/https:\/\/www\.roblox\.com\/users\/\d+\/profile/g);
+            const robloxProfileMatch = msg.content.match(/https:\/\/www\.roblox\.com\/users\/\d+\/profile/);
 
             const discordid = discordMatch ? discordMatch[1].trim().split(',')[0] : null;
             const robloxProfile = robloxProfileMatch ? robloxProfileMatch[1].trim() : null;
@@ -61,7 +61,11 @@ export async function onRequestGet({ request, env }) {
         headers: { "Content-Type": "application/json" }
       });
     } catch (error) {
-      return new Response("Error fetching Discord scammers", { status: 500 });
+        const text = await response.text();
+        console.log("Non-JSON response from roblox-proxy:", text);
+
+        return new Response(text, { status: 500 });
+
     }
   }
 
