@@ -196,32 +196,72 @@ export async function onRequestGet({ request, env }) {
   let robloxData = {};
   let discordDisplayName = null;
 
-  if (userId) {
-    for (let attempt = 0; attempt < 6; attempt++) {
-      try {
-        const userRes = await fetch(`https://users.roblox.com/v1/users/${userId}`);
-        if (userRes.ok) {
-          const userData = await userRes.json();
-          robloxData.name = userData.name;
-          robloxData.displayName = userData.displayName;
-          break;
-        }
-      } catch { }
-      await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
-    }
 
-    for (let attempt = 0; attempt < 6; attempt++) {
-      try {
-        const thumbRes = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=100x100&format=Png&isCircular=false`);
-        if (thumbRes.ok) {
-          const thumbData = await thumbRes.json();
-          robloxData.avatar = thumbData.data?.[0]?.imageUrl;
-          break;
-        }
-      } catch { }
-      await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
-    }
+
+  if (userId) {
+  const now = Date.now();
+  const cached = await env.DB.prepare(`
+    SELECT * FROM scammer_profile_cache WHERE user_id = ?
+  `).bind(userId).first();
+
+  if (cached && now - cached.updated_at < 7 * 24 * 60 * 60 * 1000) {
+    return new Response(JSON.stringify({
+      name: cached.roblox_name || "Unknown",
+      displayName: cached.roblox_display_name || "Unknown",
+      avatar: cached.avatar || null,
+      discordDisplayName: cached.discord_display_name || "Unknown"
+    }), {
+      headers: { "Content-Type": "application/json" },
+    });
   }
+
+  // Not cached or expired — fetch it now
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const userRes = await fetch(`https://users.roblox.com/v1/users/${userId}`);
+      if (userRes.ok) {
+        const userData = await userRes.json();
+        robloxData.name = userData.name;
+        robloxData.displayName = userData.displayName;
+        break;
+      }
+    } catch {}
+    await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+  }
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const thumbRes = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=100x100&format=Png&isCircular=false`);
+      if (thumbRes.ok) {
+        const thumbData = await thumbRes.json();
+        robloxData.avatar = thumbData.data?.[0]?.imageUrl;
+        break;
+      }
+    } catch {}
+    await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+  }
+
+  // Only write to cache if something valid was fetched
+  if (robloxData.name || robloxData.displayName || robloxData.avatar) {
+    await env.DB.prepare(`
+      INSERT INTO scammer_profile_cache (user_id, roblox_name, roblox_display_name, avatar, updated_at)
+      VALUES (?, ?, ?, ?, ?)
+      ON CONFLICT(user_id) DO UPDATE SET
+        roblox_name = excluded.roblox_name,
+        roblox_display_name = excluded.roblox_display_name,
+        avatar = excluded.avatar,
+        updated_at = excluded.updated_at
+    `).bind(
+      userId,
+      robloxData.name || null,
+      robloxData.displayName || null,
+      robloxData.avatar || null,
+      now
+    ).run();
+  }
+}
+
+
 
   if (discordId) {
     const maxRetries = 3;
@@ -234,6 +274,18 @@ export async function onRequestGet({ request, env }) {
         if (discordRes.ok) {
           const discordData = await discordRes.json();
           discordDisplayName = discordData.global_name || `${discordData.username}#${discordData.discriminator}`;
+          if (userId && discordDisplayName) {
+            await env.DB.prepare(`
+              UPDATE scammer_profile_cache
+              SET discord_display_name = ?, discord_id = ?
+              WHERE user_id = ?
+            `).bind(
+              discordDisplayName,
+              discordId,
+              userId
+            ).run();
+          } 
+
           break;
         }
       } catch {
