@@ -8,7 +8,7 @@ export async function onRequestGet({ request, env }) {
     const channelId = env.DISCORD_CHANNEL_ID;
 
     try {
-      const messagesRes = await fetch(`https://discord.com/api/v10/channels/1312002142491508746/messages?limit=100`, {
+      const messagesRes = await fetch(`https://discord.com/api/v10/channels/1312002142491508746/messages?limit=300`, {
         headers: {
           Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`
         }
@@ -26,7 +26,7 @@ export async function onRequestGet({ request, env }) {
         messages
           //.filter(msg => msg.content.includes("discord user:") && msg.content.includes("roblox user:") && msg.content.includes("roblox profile:"))
           .map(async (msg) => {
-            console.log(msg.content); // 🔍 This logs each message's content
+
             const discordMatch = msg.content?.match(/discord user:\s*\*\*\s*(.*)/);
             const robloxUserMatch = msg.content?.match(/roblox user:\s*\*\*\s*(.*)/);
             const robloxProfileMatch = msg.content?.match(/https:\/\/www\.roblox\.com\/users\/\d+\/profile/);
@@ -40,7 +40,7 @@ export async function onRequestGet({ request, env }) {
             const itemsScammed = msg.content?.match(/\*\*<:pinkdot:\d+> items scammed: \*\*(.+)/)?.[1]?.trim();
             const robloxAlts = msg.content?.match(/\*\*roblox alts:\*\* (https?:\/\/[^\s]+)/)?.[1];
 
-            console.log(discordMatch, robloxUserMatch, robloxProfileMatch, discordid, robloxProfile, userIdMatch); // 🔍 This logs each message's content
+           
             if (!userIdMatch) return null;
 
             const userId = userIdMatch[1];
