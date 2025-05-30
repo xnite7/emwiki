@@ -159,42 +159,24 @@ export async function onRequestGet({ request, env }) {
   }
 
   let robloxData = null;
-  let robloxAvatar = null;
   let discordDisplayName = null;
 
   if (userId) {
     const maxRetries = 6;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        const [userRes] = await Promise.all([
-          fetch(`https://users.roblox.com/v1/users/${userId}`)
-        ]);
-
-        if (userRes.ok) {
-          const userData = await userRes.json();
-          robloxData = {
-            name: userData.name,
-            displayName: userData.displayName
-          };
-          break;
-        }
-      } catch {}
-      await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
-    }
-  }
-
-    if (userId) {
-    const maxRetries = 6;
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        const [thumbRes] = await Promise.all([
+        const [userRes, thumbRes] = await Promise.all([
+          fetch(`https://users.roblox.com/v1/users/${userId}`),
           fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=100x100&format=Png&isCircular=false`)
         ]);
 
-        if (thumbRes.ok) {
+        if (userRes.ok && thumbRes.ok) {
+          const userData = await userRes.json();
           const thumbData = await thumbRes.json();
-          robloxAvatar = {
-            avatar: thumbData.data?.[0]?.imageUrl || null,
+          robloxData = {
+            name: userData.name,
+            displayName: userData.displayName,
+            avatar: thumbData.data?.[0]?.imageUrl
           };
           break;
         }
@@ -231,7 +213,6 @@ export async function onRequestGet({ request, env }) {
 
   return new Response(JSON.stringify({
     ...robloxData,
-    robloxAvatar,
     discordDisplayName
   }), {
     headers: { "Content-Type": "application/json" },
