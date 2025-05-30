@@ -13,12 +13,12 @@ function filterItems() {
 // Create scammer block
 async function createScammerBlock(scammer, container) {
   const {
-    robloxUser = "N/A",
+    robloxUser = "Unknown",
     robloxProfile = "#",
     avatar = "imgs/plr.jpg",
-    discordDisplay = "N/A",
-    victims = "Unknown",
-    itemsScammed = "Unknown",
+    discordDisplay = null,
+    victims = null,
+    itemsScammed = null,
     robloxAlts = null
   } = scammer;
 
