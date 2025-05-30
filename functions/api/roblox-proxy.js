@@ -103,9 +103,8 @@ export async function onRequestGet({ request, env }) {
               await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
             }
 
-            if (!data.displayName && !data.name && !data.avatar && !data.discordDisplayName) {
-              return null;
-            }
+            //if (!userId) return null; // still skip if we can't extract the Roblox user ID
+
 
             return {
               robloxUser: data.displayName || data.name || robloxUserMatch?.[1]?.trim() || "Unknown",
