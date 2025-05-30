@@ -82,19 +82,30 @@ export async function onRequestGet({ request, env }) {
         })
       );
 
-      const filtered = scammers.filter(Boolean);
-      const payload = JSON.stringify(filtered);
+      const validScammers = scammers.filter(entry => entry && entry.avatar); // Only keep those with non-null avatars
 
-      // Save to D1
-      await env.DB.prepare(`
-        INSERT INTO scammer_cache (key, value, updated_at)
-        VALUES (?, ?, ?)
-        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
-      `).bind(CACHE_KEY, payload, Date.now()).run();
+      // Check if at least 50% of entries had avatars
+      const avatarSuccessRate = validScammers.length / scammers.filter(Boolean).length;
 
-      return new Response(payload, {
-        headers: { "Content-Type": "application/json", "X-Cache": "D1-MISS" },
-      });
+      if (validScammers.length > 0 && avatarSuccessRate >= 0.5) {
+        const payload = JSON.stringify(validScammers);
+
+        await env.DB.prepare(`
+          INSERT INTO scammer_cache (key, value, updated_at)
+          VALUES (?, ?, ?)
+          ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
+        `).bind(CACHE_KEY, payload, Date.now()).run();
+
+        return new Response(payload, {
+          headers: { "Content-Type": "application/json", "X-Cache": "D1-MISS" },
+        });
+      } else {
+        return new Response(JSON.stringify(validScammers), {
+          headers: { "Content-Type": "application/json", "X-Cache": "BYPASSED-CACHE" },
+        });
+      }
+
+
 
     } catch (err) {
       return new Response(JSON.stringify({ error: err.message }), {
