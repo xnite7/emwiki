@@ -188,7 +188,7 @@ nav button:hover img {
   align-self: center;
 }
 
-.scammer-info h2 {
+.scammer-info a h2 {
   font-size: 3.5rem;
   font-family: 'BuilderSans', sans-serif;
   background: -webkit-linear-gradient(#ffffff, #c7c7c78f);
@@ -200,6 +200,13 @@ nav button:hover img {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.scammer-info a h2 svg {
+width: 0px;
+}
+.scammer-info a:hover h2 svg {
+width: 20px;
 }
 
 .scammer-info p {
@@ -1203,7 +1210,7 @@ overflow-x: hidden;
     place-self: center;
   }
 
-  .scammer-info h2 {
+  .scammer-info a h2 {
     font-size: 5.1rem;
   }
 
