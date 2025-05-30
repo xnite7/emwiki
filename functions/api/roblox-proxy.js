@@ -127,6 +127,8 @@ export async function onRequestGet({ request, env }) {
   let discordDisplayName = null;
 
   if (userId) {
+  const maxRetries = 3;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       const [userRes, thumbRes] = await Promise.all([
         fetch(`https://users.roblox.com/v1/users/${userId}`),
@@ -141,9 +143,16 @@ export async function onRequestGet({ request, env }) {
           displayName: userData.displayName,
           avatar: thumbData.data?.[0]?.imageUrl
         };
+        break; // ✅ Success, exit retry loop
       }
-    } catch {}
+    } catch {
+      // Silent error, retry after a short delay
+    }
+
+    await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
   }
+}
+
 
   if (discordId) {
     const maxRetries = 3;
