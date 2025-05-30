@@ -78,9 +78,10 @@ export async function onRequestGet({ request, env }) {
 
       const scammers = await Promise.all(
         allMessages.map(async (msg) => {
-          const discordMatch = msg.content?.match(/discord user:\s*\*\*\s*(.*)/);
-          const robloxUserMatch = msg.content?.match(/roblox user:\s*\*\*\s*(.*)/);
-          const robloxProfileMatch = msg.content?.match(/https:\/\/www\.roblox\.com\/users\/\d+\/profile/);
+          const discordMatch = msg.content?.match(/discord user:\s*\*{0,2}(.*)/i);
+          const robloxUserMatch = msg.content?.match(/roblox user:\s*\*{0,2}(.*)/i);
+          const robloxProfileMatch = msg.content?.match(/https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i);
+
           const discordid = discordMatch ? discordMatch[1].trim().split(',')[0] : null;
           const robloxProfile = robloxProfileMatch ? robloxProfileMatch[0] : null;
           const userIdMatch = robloxProfile?.match(/users\/(\d+)\/profile/);
@@ -108,7 +109,7 @@ export async function onRequestGet({ request, env }) {
         })
       );
 
-      const validScammers = scammers.filter(entry => entry && entry.avatar);
+      const validScammers = scammers.filter(entry => entry);
       const avatarSuccessRate = validScammers.length / scammers.filter(Boolean).length;
 
       if (validScammers.length > 0 && avatarSuccessRate >= 0.5) {
