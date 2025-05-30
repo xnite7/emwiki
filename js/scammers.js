@@ -12,18 +12,14 @@ function filterItems() {
 
 // Create scammer block
 async function createScammerBlock(scammer, container) {
-  const discordMatch = scammer.Content.match(/discord user:\s*\*\*\s*(.*)/);
-  const robloxUserMatch = scammer.Content.match(/roblox user:\s*\*\*\s*(.*)/);
-  const robloxProfileMatch = scammer.Content.match(/roblox profile:\s*\*\*\s*(https:\/\/www\.roblox\.com\/users\/\d+\/profile)/);
-
-  const discordid = discordMatch ? discordMatch[1].trim() : "N/A";
-
-  let robloxUser = robloxUserMatch ? robloxUserMatch[1].trim() : "N/A";
-  const robloxProfile = robloxProfileMatch ? robloxProfileMatch[1].trim() : "#";
+  const robloxUser = scammer.robloxUser || "N/A";
+  const robloxProfile = scammer.robloxProfile || "#";
   const userIdMatch = robloxProfile.match(/users\/(\d+)\/profile/);
   if (!userIdMatch) return;
 
   const userId = userIdMatch[1];
+  const discordId = scammer.discordDisplay || "N/A";
+
   const block = document.createElement('section');
   block.className = 'scammer-block';
 
@@ -36,20 +32,19 @@ async function createScammerBlock(scammer, container) {
     `;
 
     try {
-      const response = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${userId}&discordId=${discordid.split(',')[0]}`);
+      const response = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${userId}&discordId=${discordId}`);
       const data = await response.json();
 
       const imageUrl = data.avatar || 'imgs/plr.jpg';
-      robloxUser = data.displayName || robloxUser;
-      discordDisplay = data.discordDisplayName;
-
+      const finalRobloxUser = data.displayName || robloxUser;
+      const finalDiscordDisplay = data.discordDisplayName || discordId;
 
       block.innerHTML = `
         <div class="scammer-content">
-          <img class="scammer-img" src="${imageUrl}" alt="Avatar of ${robloxUser}" />
+          <img class="scammer-img" src="${imageUrl}" alt="Avatar of ${finalRobloxUser}" />
           <div class="scammer-info">
-            <h2>${robloxUser}</h2>
-            <p><strong>Discord User:</strong> ${discordDisplay}</p>
+            <h2>${finalRobloxUser}</h2>
+            <p><strong>Discord User:</strong> ${finalDiscordDisplay}</p>
             <a href="${robloxProfile}" class="tour-button">
               View Roblox Profile
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -67,8 +62,7 @@ async function createScammerBlock(scammer, container) {
         <div style="font-size: 200%;color: #ff5555; font-weight: bold; margin: 20px; text-align: center;">
           ⚠️ Unable to load user data. Try again later.
         </div>
-        <div style="text-align: center;">
-        </div>
+        <div style="text-align: center;"></div>
       `;
     }
   }
@@ -77,13 +71,10 @@ async function createScammerBlock(scammer, container) {
   container.appendChild(block);
 }
 
-
-
-
- fetch('https://emwiki.site/api/roblox-proxy?mode=discord-scammers')
- .then(res => res.json())
- .then(data => {
-  console.log(data);
-  const container = document.getElementById('scammers-container');
-  data.forEach(scammer => createScammerBlock(scammer, container));
- });
+fetch('https://emwiki.site/api/roblox-proxy?mode=discord-scammers')
+  .then(res => res.json())
+  .then(data => {
+    console.log(data);
+    const container = document.getElementById('scammers-container');
+    data.forEach(scammer => createScammerBlock(scammer, container));
+  });
