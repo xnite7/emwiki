@@ -4,90 +4,96 @@ export async function onRequestGet({ request, env }) {
   const userId = url.searchParams.get("userId");
   const discordId = url.searchParams.get("discordId");
 
-  let scammerCache = null;
-let scammerCacheTime = 0;
+  if (mode === "discord-scammers") {
+    const channelId = env.DISCORD_CHANNEL_ID;
 
-if (mode === "discord-scammers") {
-  const channelId = env.DISCORD_CHANNEL_ID;
-
-  // Use cache if valid
-  if (scammerCache && (Date.now() - scammerCacheTime < 2 * 60 * 1000)) {
-    return new Response(JSON.stringify(scammerCache), {
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
-  const allMessages = [];
-  let lastMessageId = null;
-
-  try {
-    // Paginate up to 500 messages in batches of 25
-    while (allMessages.length < 500) {
-      const url = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
-      url.searchParams.set("limit", "25");
-      if (lastMessageId) url.searchParams.set("before", lastMessageId);
-
-      const messagesRes = await fetch(url.toString(), {
+    try {
+      const messagesRes = await fetch(`https://discord.com/api/v10/channels/1312002142491508746/messages?limit=100`, {
         headers: {
           Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`
         }
       });
 
-      if (!messagesRes.ok) break;
+      if (!messagesRes.ok) {
+        return new Response(JSON.stringify({ error: "Failed to fetch messages" }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
 
-      const batch = await messagesRes.json();
-      if (batch.length === 0) break;
+      const messages = await messagesRes.json();
+      const scammers = await Promise.all(
+        messages
+          //.filter(msg => msg.content.includes("discord user:") && msg.content.includes("roblox user:") && msg.content.includes("roblox profile:"))
+          .map(async (msg) => {
 
-      allMessages.push(...batch);
-      lastMessageId = batch[batch.length - 1].id;
+            const discordMatch = msg.content?.match(/discord user:\s*\*\*\s*(.*)/);
+            const robloxUserMatch = msg.content?.match(/roblox user:\s*\*\*\s*(.*)/);
+            const robloxProfileMatch = msg.content?.match(/https:\/\/www\.roblox\.com\/users\/\d+\/profile/);
+
+            const discordid = discordMatch ? discordMatch[1].trim().split(',')[0] : null;
+            const robloxProfile = robloxProfileMatch ? robloxProfileMatch[0] : null;
+            const userIdMatch = robloxProfile ? robloxProfile?.match(/users\/(\d+)\/profile/) : null;
+
+
+            const victims = msg.content?.match(/victims: \*\*(.+)/)?.[1]?.trim();
+            const itemsScammed = msg.content?.match(/items scammed: \*\*(.+)/)?.[1]?.trim();
+            const robloxAlts = msg.content?.match(/roblox alts:\*\* (https?:\/\/[^\s]+)/)?.[1];
+
+           
+            if (!userIdMatch) return null;
+
+            const userId = userIdMatch[1];
+
+            try {
+              const response = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${userId}&discordId=${discordid}`);
+
+              let data;
+              try {
+                data = await response.json();
+              } catch (error) {
+                console.error("Error fetching Discord scammers:", error);
+                return new Response("Error fetching Discord scammers", {
+                  status: 500,
+                  headers: { "Content-Type": "application/json" }
+                });
+              }
+
+
+
+              return {
+                robloxUser: data.displayName || robloxUserMatch?.[1] || "N/A",
+                robloxProfile: robloxProfile,
+                avatar: data.avatar || null,
+                discordDisplay: data.discordDisplayName || discordid || "N/A",
+                victims: victims || "Unknown",
+                itemsScammed: itemsScammed || "Unknown",
+                robloxAlts: robloxAlts || null,
+              };
+            } catch (err) {
+              return null;
+            }
+          })
+      );
+
+      return new Response(JSON.stringify(scammers.filter(Boolean)), {
+        headers: { "Content-Type": "application/json" }
+      });
+    } catch (error) {
+        const text = await response.text();
+        console.log("Non-JSON response from roblox-proxy:", text);
+
+        return new Response("Error fetching Discord scammers", { status: 500 });
+
     }
-
-    const scammers = await Promise.all(
-      allMessages.map(async (msg) => {
-        const content = msg.content;
-        const discordMatch = content.match(/discord user:\s*\*\*\s*(.*)/);
-        const robloxUserMatch = content.match(/roblox user:\s*\*\*\s*(.*)/);
-        const robloxProfileMatch = content.match(/https:\/\/www\.roblox\.com\/users\/\d+\/profile/);
-
-        const discordid = discordMatch ? discordMatch[1].trim().split(',')[0] : null;
-        const robloxProfile = robloxProfileMatch ? robloxProfileMatch[0] : null;
-        const userIdMatch = robloxProfile ? robloxProfile.match(/users\/(\d+)\/profile/) : null;
-
-        if (!userIdMatch) return null;
-        const userId = userIdMatch[1];
-
-        try {
-          const response = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${userId}&discordId=${discordid}`);
-          const data = await response.json();
-
-          return {
-            robloxUser: data.displayName || robloxUserMatch?.[1] || "N/A",
-            robloxProfile,
-            avatar: data.avatar || null,
-            discordDisplay: data.discordDisplayName || discordid || "N/A",
-            victims: victims || "Unknown",
-            itemsScammed: itemsScammed || "Unknown",
-            robloxAlts: robloxAlts || null,
-          };
-        } catch (err) {
-          return null;
-        }
-      })
-    );
-
-    const filteredScammers = scammers.filter(Boolean);
-    scammerCache = filteredScammers;
-    scammerCacheTime = Date.now();
-
-    return new Response(JSON.stringify(filteredScammers), {
-      headers: { "Content-Type": "application/json" }
-    });
-
-  } catch (error) {
-    return new Response("Error fetching Discord scammers", { status: 500 });
   }
-}
 
+  if (!userId && !discordId) {
+    return new Response(JSON.stringify({ error: "Missing userId or discordId" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
   let robloxData = null;
   let discordDisplayName = null;
