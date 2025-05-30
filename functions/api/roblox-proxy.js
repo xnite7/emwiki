@@ -153,7 +153,7 @@ export async function onRequestGet({ request, env }) {
   let discordDisplayName = null;
 
   if (userId) {
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < 6; attempt++) {
       try {
         const userRes = await fetch(`https://users.roblox.com/v1/users/${userId}`);
         if (userRes.ok) {
@@ -166,7 +166,7 @@ export async function onRequestGet({ request, env }) {
       await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
     }
 
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < 6; attempt++) {
       try {
         const thumbRes = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=100x100&format=Png&isCircular=false`);
         if (thumbRes.ok) {
