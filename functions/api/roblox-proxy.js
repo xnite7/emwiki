@@ -78,57 +78,57 @@ export async function onRequestGet({ request, env }) {
 
       const scammers = await Promise.all(
         allMessages.map(async (msg) => {
-          const discordMatch = msg.content?.match(/discord user:\s*\*{0,2}(.*)/i);
-          const robloxUserMatch = msg.content?.match(/roblox user:\s*\*{0,2}(.*)/i);
-          const robloxProfileMatch = msg.content?.match(/https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i);
-
-          const discordid = discordMatch ? discordMatch[1].trim().split(',')[0] : null;
-          const robloxProfile = robloxProfileMatch ? robloxProfileMatch[0] : null;
-          const userIdMatch = robloxProfile?.match(/users\/(\d+)\/profile/);
-          const victims = msg.content?.match(/victims: \*\*(.+)/)?.[1]?.trim();
-          const itemsScammed = msg.content?.match(/items scammed: \*\*(.+)/)?.[1]?.trim();
-
-          if (!userIdMatch) return null;
-          const userId = userIdMatch[1];
-
           try {
-            const response = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${userId}&discordId=${discordid}`);
-            const data = await response.json();
+            const discordMatch = msg.content?.match(/discord user:\s*\*{0,2}\s*([^\n\r]+)/i);
+            const robloxProfileMatch = msg.content?.match(/https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i);
+            const robloxUserMatch = msg.content?.match(/roblox user:\s*\*{0,2}(.*)/i);
+
+            const discordid = discordMatch ? discordMatch[1].trim().split(',')[0] : null;
+            const robloxProfile = robloxProfileMatch ? `https://www.roblox.com/users/${robloxProfileMatch[1]}/profile` : null;
+            const userId = robloxProfileMatch ? robloxProfileMatch[1] : null;
+            const victims = msg.content?.match(/victims:\s*\*{0,2}(.*)/i)?.[1]?.trim();
+            const itemsScammed = msg.content?.match(/items scammed:\s*\*{0,2}(.*)/i)?.[1]?.trim();
+
+            if (!userId) {
+              console.warn("Skipping message: Missing Roblox user ID", msg.content);
+              return null;
+            }
+
+            let data = {};
+            try {
+              const response = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${userId}&discordId=${discordid}`);
+              data = await response.json();
+            } catch (e) {
+              console.warn(`Proxy fetch failed for ${userId}:`, e.message);
+            }
 
             return {
-              robloxUser: data.displayName || robloxUserMatch?.[1] || "N/A",
+              robloxUser: data.displayName || robloxUserMatch?.[1]?.trim() || "Unknown",
               robloxProfile,
               avatar: data.avatar || null,
-              discordDisplay: data.discordDisplayName || discordid || "N/A",
+              discordDisplay: data.discordDisplayName || discordid || "Unknown",
               victims: victims || "Unknown",
               itemsScammed: itemsScammed || "Unknown",
             };
-          } catch {
+          } catch (err) {
+            console.warn("Error parsing message:", err);
             return null;
           }
         })
       );
 
       const validScammers = scammers.filter(entry => entry);
-      const avatarSuccessRate = validScammers.length / scammers.filter(Boolean).length;
+      const payload = JSON.stringify(validScammers);
 
-      if (validScammers.length > 0 && avatarSuccessRate >= 0.5) {
-        const payload = JSON.stringify(validScammers);
+      await env.DB.prepare(`
+        INSERT INTO scammer_cache (key, value, updated_at)
+        VALUES (?, ?, ?)
+        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
+      `).bind(CACHE_KEY, payload, Date.now()).run();
 
-        await env.DB.prepare(`
-          INSERT INTO scammer_cache (key, value, updated_at)
-          VALUES (?, ?, ?)
-          ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
-        `).bind(CACHE_KEY, payload, Date.now()).run();
-
-        return new Response(payload, {
-          headers: { "Content-Type": "application/json", "X-Cache": "D1-MISS" },
-        });
-      } else {
-        return new Response(JSON.stringify(validScammers), {
-          headers: { "Content-Type": "application/json", "X-Cache": "BYPASSED-CACHE" },
-        });
-      }
+      return new Response(payload, {
+        headers: { "Content-Type": "application/json", "X-Cache": "D1-MISS" },
+      });
 
     } catch (err) {
       return new Response(JSON.stringify({ error: err.message }), {
@@ -168,9 +168,7 @@ export async function onRequestGet({ request, env }) {
           };
           break;
         }
-      } catch {
-        // silent retry
-      }
+      } catch {}
       await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
     }
   }
