@@ -1,5 +1,5 @@
 const CACHE_KEY = "discord-scammers";
-const CACHE_TTL_MS = 7 * 2 * 12 * 60 * 60 * 1000; // 12 hours
+const CACHE_TTL_MS = 7 * 2 * 12 * 60 * 60 * 1000; // Weekly cache, 7 days
 // ...existing code...
 
 export async function onRequestGet({ request, env }) {
