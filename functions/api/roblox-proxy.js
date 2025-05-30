@@ -1,27 +1,40 @@
+const CACHE_KEY = "discord-scammers";
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
   const mode = url.searchParams.get("mode");
   const userId = url.searchParams.get("userId");
   const discordId = url.searchParams.get("discordId");
 
-
-
   if (mode === "discord-scammers") {
-    const channelId = env.DISCORD_CHANNEL_ID;
-    let allMessages = [];
-    let before = null;
-
     try {
-      // Fetch up to 500 messages (5 * 100)
+      // Check cache in D1
+      const { results } = await env.DB.prepare(
+        "SELECT value, updated_at FROM scammer_cache WHERE key = ?"
+      ).bind(CACHE_KEY).all();
+
+      if (results.length > 0) {
+        const { value, updated_at } = results[0];
+        if (Date.now() - updated_at < CACHE_TTL_MS) {
+          return new Response(value, {
+            headers: { "Content-Type": "application/json", "X-Cache": "D1-HIT" },
+          });
+        }
+      }
+
+      // Fetch Discord messages
+      const channelId = env.DISCORD_CHANNEL_ID;
+      let allMessages = [];
+      let before = null;
+
       for (let i = 0; i < 5; i++) {
         const fetchUrl = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
         fetchUrl.searchParams.set("limit", "100");
         if (before) fetchUrl.searchParams.set("before", before);
 
         const response = await fetch(fetchUrl.toString(), {
-          headers: {
-            Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`,
-          },
+          headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
         });
 
         if (!response.ok) {
@@ -33,7 +46,6 @@ export async function onRequestGet({ request, env }) {
 
         const messages = await response.json();
         if (messages.length === 0) break;
-
         allMessages.push(...messages);
         before = messages[messages.length - 1].id;
       }
@@ -45,12 +57,11 @@ export async function onRequestGet({ request, env }) {
           const robloxProfileMatch = msg.content?.match(/https:\/\/www\.roblox\.com\/users\/\d+\/profile/);
           const discordid = discordMatch ? discordMatch[1].trim().split(',')[0] : null;
           const robloxProfile = robloxProfileMatch ? robloxProfileMatch[0] : null;
-          const userIdMatch = robloxProfile ? robloxProfile.match(/users\/(\d+)\/profile/) : null;
+          const userIdMatch = robloxProfile?.match(/users\/(\d+)\/profile/);
           const victims = msg.content?.match(/victims: \*\*(.+)/)?.[1]?.trim();
           const itemsScammed = msg.content?.match(/items scammed: \*\*(.+)/)?.[1]?.trim();
 
           if (!userIdMatch) return null;
-
           const userId = userIdMatch[1];
 
           try {
@@ -71,16 +82,29 @@ export async function onRequestGet({ request, env }) {
         })
       );
 
-      return new Response(JSON.stringify(scammers.filter(Boolean)), {
-        headers: { "Content-Type": "application/json" },
+      const filtered = scammers.filter(Boolean);
+      const payload = JSON.stringify(filtered);
+
+      // Save to D1
+      await env.DB.prepare(`
+        INSERT INTO scammer_cache (key, value, updated_at)
+        VALUES (?, ?, ?)
+        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
+      `).bind(CACHE_KEY, payload, Date.now()).run();
+
+      return new Response(payload, {
+        headers: { "Content-Type": "application/json", "X-Cache": "D1-MISS" },
       });
 
-    } catch (error) {
-      return new Response("Error fetching Discord scammers", { status: 500 });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: "Internal error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
   }
 
-  // Fallback user info lookup (unchanged)
+  // Fallback userId/discordId lookup
   if (!userId && !discordId) {
     return new Response(JSON.stringify({ error: "Missing userId or discordId" }), {
       status: 400,
