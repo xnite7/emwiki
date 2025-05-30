@@ -181,12 +181,12 @@ export async function onRequestGet({ request, env }) {
           }
 
           scammers.push({
-            robloxUser: data.displayName || data.name || robloxUserMatch?.[1]?.trim() || "Unknown",
+            robloxUser: data.displayName || data.name || robloxUserMatch?.[1]?.trim() || null,
             robloxProfile,
             avatar: data.avatar || null,
-            discordDisplay: data.discordDisplayName || discordid || "Unknown",
-            victims: victims || "Unknown",
-            itemsScammed: itemsScammed || "Unknown",
+            discordDisplay: data.discordDisplayName || discordid || null,
+            victims: victims || null,
+            itemsScammed: itemsScammed || null,
           });
 
         } catch {
@@ -248,10 +248,10 @@ export async function onRequestGet({ request, env }) {
 
   if (cached && now - cached.updated_at < 7 * 24 * 60 * 60 * 1000) {
     return new Response(JSON.stringify({
-      name: cached.roblox_name || "Unknown",
-      displayName: cached.roblox_display_name || "Unknown",
+      name: cached.roblox_name || null,
+      displayName: cached.roblox_display_name || null,
       avatar: cached.avatar || null,
-      discordDisplayName: cached.discord_display_name || "Unknown"
+      discordDisplayName: cached.discord_display_name || null
     }), {
       headers: { "Content-Type": "application/json" },
     });
@@ -344,10 +344,10 @@ export async function onRequestGet({ request, env }) {
   }
 
   return new Response(JSON.stringify({
-    name: robloxData.name || "Unknown",
-    displayName: robloxData.displayName || "Unknown",
+    name: robloxData.name || null,
+    displayName: robloxData.displayName || null,
     avatar: robloxData.avatar || null,
-    discordDisplayName: discordDisplayName || "Unknown"
+    discordDisplayName: discordDisplayName || null
   }), {
     headers: { "Content-Type": "application/json" },
   });
