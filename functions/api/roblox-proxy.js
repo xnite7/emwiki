@@ -15,7 +15,10 @@ export async function onRequestGet({ request, env }) {
       });
 
       if (!messagesRes.ok) {
-        return new Response("Failed to fetch messages", { status: 500 });
+        return new Response(JSON.stringify({ error: "Failed to fetch messages" }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" }
+        });
       }
 
       const messages = await messagesRes.json();
@@ -26,11 +29,12 @@ export async function onRequestGet({ request, env }) {
             console.log(msg.content); // 🔍 This logs each message's content
             const discordMatch = msg.content.match(/discord user:\s*\*\*\s*(.*)/);
             const robloxUserMatch = msg.content.match(/roblox user:\s*\*\*\s*(.*)/);
-            const robloxProfileMatch = msg.content.match(/https:\/\/www\.roblox\.com\/users\/\d+\/profile/g);
+            const robloxProfileMatch = msg.content.match(/https:\/\/www\.roblox\.com\/users\/\d+\/profile/);
 
             const discordid = discordMatch ? discordMatch[1].trim().split(',')[0] : null;
-            const robloxProfile = robloxProfileMatch ? robloxProfileMatch[1].trim() : null;
+            const robloxProfile = robloxProfileMatch ? robloxProfileMatch[0] : null;
             const userIdMatch = robloxProfile ? robloxProfile.match(/users\/(\d+)\/profile/) : null;
+
 
             const victims = msg.content.match(/\*\*<:pinkdot:\d+> victims: \*\*(.+)/)?.[1]?.trim();
             const itemsScammed = msg.content.match(/\*\*<:pinkdot:\d+> items scammed: \*\*(.+)/)?.[1]?.trim();
@@ -43,7 +47,19 @@ export async function onRequestGet({ request, env }) {
 
             try {
               const response = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${userId}&discordId=${discordid}`);
-              const data = await response.json();
+
+              let data;
+              try {
+                data = await response.json();
+              } catch (error) {
+                console.error("Error fetching Discord scammers:", error);
+                return new Response("Error fetching Discord scammers", {
+                  status: 500,
+                  headers: { "Content-Type": "application/json" }
+                });
+              }
+
+
 
               return {
                 robloxUser: data.displayName || robloxUserMatch?.[1] || "N/A",
