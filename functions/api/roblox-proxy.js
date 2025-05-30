@@ -76,7 +76,7 @@ export async function onRequestGet({ request, env }) {
       }
 
       const scammers = [];
-      const MAX_LOOKUPS = 1000;
+      const MAX_LOOKUPS = 500;
 
       for (let i = 0; i < allMessages.length; i++) {
         const msg = allMessages[i];
@@ -95,12 +95,52 @@ export async function onRequestGet({ request, env }) {
           if (!userId) continue;
 
           let data = {};
-          if (i < MAX_LOOKUPS) {
+          const now = Date.now();
+
+          // Try to load from persistent cache
+          let cacheHit = false;
+          const cached = await env.DB.prepare(`
+      SELECT * FROM scammer_profile_cache WHERE user_id = ?
+    `).bind(userId).first();
+
+          if (cached && now - cached.updated_at < 7 * 24 * 60 * 60 * 1000) { // 7 days
+            data = {
+              name: cached.roblox_name,
+              displayName: cached.roblox_display_name,
+              avatar: cached.avatar,
+              discordDisplayName: cached.discord_display_name
+            };
+            cacheHit = true;
+          }
+
+          // If not cached, fetch and store
+          if (!cacheHit) {
             for (let attempt = 0; attempt < 5; attempt++) {
               try {
-                const response = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${userId}&discordId=${discordid}`);
-                if (response.ok) {
-                  data = await response.json();
+                const res = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${userId}&discordId=${discordid}`);
+                if (res.ok) {
+                  data = await res.json();
+
+                  await env.DB.prepare(`
+              INSERT INTO scammer_profile_cache (user_id, roblox_name, roblox_display_name, avatar, discord_id, discord_display_name, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?)
+              ON CONFLICT(user_id) DO UPDATE SET
+                roblox_name = excluded.roblox_name,
+                roblox_display_name = excluded.roblox_display_name,
+                avatar = excluded.avatar,
+                discord_id = excluded.discord_id,
+                discord_display_name = excluded.discord_display_name,
+                updated_at = excluded.updated_at
+            `).bind(
+                    userId,
+                    data.name || null,
+                    data.displayName || null,
+                    data.avatar || null,
+                    discordid || null,
+                    data.discordDisplayName || null,
+                    now
+                  ).run();
+
                   break;
                 }
               } catch { }
@@ -121,6 +161,7 @@ export async function onRequestGet({ request, env }) {
           // Skip on error
         }
       }
+
 
 
       const validScammers = scammers.filter(entry => entry);
