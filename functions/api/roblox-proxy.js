@@ -64,7 +64,7 @@ export async function onRequestGet({ request, env }) {
         const text = await response.text();
         console.log("Non-JSON response from roblox-proxy:", text);
 
-        return new Response("Error fetching Discord scammers", { status: 500, statusText: text });
+        return new Response("Error fetching Discord scammers", { status: 500 });
 
     }
   }
