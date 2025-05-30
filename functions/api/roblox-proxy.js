@@ -36,7 +36,7 @@ export async function onRequestGet({ request, env }) {
             const itemsScammed = msg.content.match(/\*\*<:pinkdot:\d+> items scammed: \*\*(.+)/)?.[1]?.trim();
             const robloxAlts = msg.content.match(/\*\*roblox alts:\*\* (https?:\/\/[^\s]+)/)?.[1];
 
-            console.log(userIdMatch, discordid); // 🔍 This logs each message's content
+            console.log(discordMatch, robloxUserMatch, robloxProfileMatch, discordid, robloxProfile, userIdMatch); // 🔍 This logs each message's content
             if (!userIdMatch) return null;
 
             const userId = userIdMatch[1];
