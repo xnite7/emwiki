@@ -1865,7 +1865,7 @@ input {
   }
 
   nav a:hover {
-        padding: 10px;
+        padding: 0px;
     margin-bottom: 0px;
     transform: none;
   }
@@ -1927,6 +1927,7 @@ input {
   }
   nav a:hover img {
     margin-bottom: 0px;
+    padding: 10px;
 }
 
   .catalog p {
