@@ -95,17 +95,29 @@ export async function onRequestGet({ request, env }) {
             }
 
             let data = {};
-            try {
-              const response = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${userId}&discordId=${discordid}`);
-              data = await response.json();
-            } catch (e) {
-              console.warn(`Proxy fetch failed for ${userId}:`, e.message);
+            const maxRetries = 5;
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+              try {
+                const response = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${userId}&discordId=${discordid}`);
+                if (response.ok) {
+                  data = await response.json();
+                  if (data.avatar) break;
+                }
+              } catch (e) {
+                console.warn(`Proxy fetch error for ${userId}:`, e.message);
+              }
+              await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+            }
+
+            if (!data.avatar) {
+              console.warn(`Avatar fetch failed after retries for user ${userId}`);
+              return null;
             }
 
             return {
               robloxUser: data.displayName || robloxUserMatch?.[1]?.trim() || "Unknown",
               robloxProfile,
-              avatar: data.avatar || null,
+              avatar: data.avatar,
               discordDisplay: data.discordDisplayName || discordid || "Unknown",
               victims: victims || "Unknown",
               itemsScammed: itemsScammed || "Unknown",
