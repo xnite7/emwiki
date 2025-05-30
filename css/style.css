@@ -274,7 +274,8 @@ main {
   scale: 1.35;
   /*left: 211px;*/
   filter: opacity(0);
-  bottom: -43px;
+  bottom: 5px;
+  left: 133px;
 }
 
 
