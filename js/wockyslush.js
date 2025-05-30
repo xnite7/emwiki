@@ -361,7 +361,7 @@ function showInfo(arr, color) {
       }
       
 
-      if (pricefromrarity.innerText=="") {
+      if (pricefromrarity.innerText=="" || pricefromrarity.innerText=="Unobtainable") {
         return;
       }
       tooltip.innerHTML = `<div id="tooltipname">${pricefromrarity.innerText}</div>`;
