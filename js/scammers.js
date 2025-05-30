@@ -48,18 +48,20 @@ async function createScammerBlock(scammer, container) {
   container.appendChild(block);
 }
 
-// Show loading indicator
-const container = document.getElementById('scammers-container');
-container.innerHTML = '<p class="loading">Loading scammers...</p>';
+document.addEventListener("DOMContentLoaded", () => {
+  const container = document.getElementById('scammers-container');
+  if (!container) return console.error('Missing #scammers-container in HTML');
 
-// Load scammers
-fetch('https://emwiki.site/api/roblox-proxy?mode=discord-scammers')
-  .then(res => res.json())
-  .then(data => {
-    container.innerHTML = ''; // Clear loading text
-    data.forEach(scammer => createScammerBlock(scammer, container));
-  })
-  .catch(err => {
-    container.innerHTML = `<p class="error">Failed to load scammers. Please try again later.</p>`;
-    console.error("Failed to fetch scammers:", err);
-  });
+  container.innerHTML = '<p class="loading">Loading scammers...</p>';
+
+  fetch('https://emwiki.site/api/roblox-proxy?mode=discord-scammers')
+    .then(res => res.json())
+    .then(data => {
+      container.innerHTML = ''; // Clear loading text
+      data.forEach(scammer => createScammerBlock(scammer, container));
+    })
+    .catch(err => {
+      container.innerHTML = `<p class="error">Failed to load scammers. Please try again later.</p>`;
+      console.error("Failed to fetch scammers:", err);
+    });
+});
