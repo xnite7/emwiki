@@ -30,9 +30,9 @@ async function createScammerBlock(scammer, container) {
       <img class="scammer-img" src="${avatar}" alt="Avatar of ${robloxUser}" />
       <div class="scammer-info">
         <h2>${robloxUser}</h2>
-        <p><img src="../imgs/discord.png">${discordDisplay}</p>
-        ${victims ? `<p><strong>Victims:</strong> <a href="${victims}" target="_blank">${victims}</a></p>` : ""}
-        ${itemsScammed ? `<p><strong>Items Scammed:</strong> <a href="${itemsScammed}" target="_blank">${itemsScammed}</a></p>` : ""}
+        ${discordDisplay ? `<p><img src="../imgs/discord.png">${discordDisplay}</p>` : ""}
+        ${victims ? `<p><strong>Victims:</strong> ${victims}</p>` : ""}
+        ${itemsScammed ? `<p><strong>Items Scammed:</strong>${itemsScammed}</p>` : ""}
         ${robloxAlts ? `<p><strong>Alts:</strong> <a href="${robloxAlts}" target="_blank">${robloxAlts}</a></p>` : ""}
         <a href="${robloxProfile}" class="tour-button">
           View Roblox Profile
