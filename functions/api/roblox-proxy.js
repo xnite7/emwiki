@@ -162,22 +162,27 @@ export async function onRequestGet({ request, env }) {
   let discordDisplayName = null;
 
   if (userId) {
-    const maxRetries = 6;
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
+    // Fetch user info (name + displayName)
+    for (let attempt = 0; attempt < 6; attempt++) {
       try {
-        const [userRes, thumbRes] = await Promise.all([
-          fetch(`https://users.roblox.com/v1/users/${userId}`),
-          fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=100x100&format=Png&isCircular=false`)
-        ]);
-
-        if (userRes.ok && thumbRes.ok) {
+        const userRes = await fetch(`https://users.roblox.com/v1/users/${userId}`);
+        if (userRes.ok) {
           const userData = await userRes.json();
+          robloxData.name = userData.name;
+          robloxData.displayName = userData.displayName;
+          break;
+        }
+      } catch {}
+      await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+    }
+
+    // Fetch avatar image separately
+    for (let attempt = 0; attempt < 6; attempt++) {
+      try {
+        const thumbRes = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=100x100&format=Png&isCircular=false`);
+        if (thumbRes.ok) {
           const thumbData = await thumbRes.json();
-          robloxData = {
-            name: userData.name,
-            displayName: userData.displayName,
-            avatar: thumbData.data?.[0]?.imageUrl
-          };
+          robloxData.avatar = thumbData.data?.[0]?.imageUrl;
           break;
         }
       } catch {}
@@ -185,8 +190,8 @@ export async function onRequestGet({ request, env }) {
     }
   }
 
-  if (discordId) {
-    const maxRetries = 6;
+if (discordId) {
+    const maxRetries = 3;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
         const discordRes = await fetch(`https://discord.com/api/v10/users/${discordId}`, {
@@ -204,7 +209,7 @@ export async function onRequestGet({ request, env }) {
     }
   }
 
-  if (!robloxData && !discordDisplayName) {
+  if (!robloxData.name && !discordDisplayName) {
     return new Response(JSON.stringify({ error: "No user data found" }), {
       status: 404,
       headers: { "Content-Type": "application/json" },
@@ -218,3 +223,4 @@ export async function onRequestGet({ request, env }) {
     headers: { "Content-Type": "application/json" },
   });
 }
+

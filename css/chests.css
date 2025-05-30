@@ -384,6 +384,16 @@ nav a:active {
     0 0 0 rgba(0, 0, 0, 0);
   transform: translateZ(40px) translateY(0px);
 }
+.loading {
+  font-weight: bold;
+  text-align: center;
+  margin-top: 1rem;
+}
+.error {
+  color: red;
+  text-align: center;
+  margin-top: 1rem;
+}
 
 .top-link {
       overflow: hidden;
