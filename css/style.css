@@ -1935,6 +1935,9 @@ input {
     font-size: 3rem;
     margin-bottom: 3vh;
   }
+  nav a:hover img {
+    margin-bottom: 0px;
+}
 
   .catalog p {
     font-size: 2rem;
