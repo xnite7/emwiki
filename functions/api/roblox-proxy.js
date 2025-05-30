@@ -1,5 +1,6 @@
 const CACHE_KEY = "discord-scammers";
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
+// ...existing code...
 
 export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
@@ -53,6 +54,18 @@ export async function onRequestGet({ request, env }) {
         return new Response(JSON.stringify({ error: "Cache is being built, try again soon." }), {
           status: 503,
           headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      // Check for valid cache first
+      const cacheRow = await env.DB.prepare(
+        "SELECT value, updated_at FROM scammer_cache WHERE key = ?"
+      ).bind(CACHE_KEY).first();
+
+      if (cacheRow && Date.now() - cacheRow.updated_at < CACHE_TTL_MS) {
+        // Cache is fresh, return immediately
+        return new Response(cacheRow.value, {
+          headers: { "Content-Type": "application/json", "X-Cache": "D1-HIT" },
         });
       }
 
