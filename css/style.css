@@ -1247,16 +1247,12 @@ html {
 
 html {
   @media screen and (max-width: 600px) {
-    width: 100vw;
-    overflow-x: hidden;
-    font-size: 12px;
-  }
-
-  @media screen and (max-width: 500px) {
     overflow-x: hidden;
     width: 100vw;
     font-size: 8px;
   }
+
+
 }
 
 
@@ -1798,6 +1794,12 @@ input {
     margin-bottom: 30px;
     color: #ccc;
   }
+
+.discord {
+
+  font: 600 1.45em 'BuilderSans';
+
+}
 
   .item{
     scale: 0.9;
