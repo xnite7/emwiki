@@ -55,7 +55,6 @@ export async function onRequestGet({ request, env }) {
 
           if (response.status === 429) {
             const retryAfter = await response.json();
-            console.warn(`Rate limited. Retrying after ${retryAfter.retry_after} seconds`);
             await new Promise(r => setTimeout(r, retryAfter.retry_after * 1000));
           } else {
             break;
@@ -73,7 +72,7 @@ export async function onRequestGet({ request, env }) {
         if (messages.length === 0) break;
         allMessages.push(...messages);
         before = messages[messages.length - 1].id;
-        if (allMessages.length >= 5000) break; // Set a hard limit for performance
+        if (allMessages.length >= 5000) break;
       }
 
       const scammers = await Promise.all(
@@ -89,10 +88,7 @@ export async function onRequestGet({ request, env }) {
             const victims = msg.content?.match(/victims:\s*\*{0,2}(.*)/i)?.[1]?.trim();
             const itemsScammed = msg.content?.match(/items scammed:\s*\*{0,2}(.*)/i)?.[1]?.trim();
 
-            if (!userId) {
-              console.warn("Skipping message: Missing Roblox user ID", msg.content);
-              return null;
-            }
+            if (!userId) return null;
 
             let data = {};
             const maxRetries = 5;
@@ -101,29 +97,25 @@ export async function onRequestGet({ request, env }) {
                 const response = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${userId}&discordId=${discordid}`);
                 if (response.ok) {
                   data = await response.json();
-                  if (data.avatar) break;
+                  break;
                 }
-              } catch (e) {
-                console.warn(`Proxy fetch error for ${userId}:`, e.message);
-              }
+              } catch {}
               await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
             }
 
-            if (!data.avatar) {
-              console.warn(`Avatar fetch failed after retries for user ${userId}`);
+            if (!data.displayName && !data.name && !data.avatar && !data.discordDisplayName) {
               return null;
             }
 
             return {
-              robloxUser: data.displayName || robloxUserMatch?.[1]?.trim() || "Unknown",
+              robloxUser: data.displayName || data.name || robloxUserMatch?.[1]?.trim() || "Unknown",
               robloxProfile,
-              avatar: data.avatar,
+              avatar: data.avatar || null,
               discordDisplay: data.discordDisplayName || discordid || "Unknown",
               victims: victims || "Unknown",
               itemsScammed: itemsScammed || "Unknown",
             };
-          } catch (err) {
-            console.warn("Error parsing message:", err);
+          } catch {
             return null;
           }
         })
@@ -158,12 +150,11 @@ export async function onRequestGet({ request, env }) {
     });
   }
 
-  let robloxData = null;
+  let robloxData = {};
   let discordDisplayName = null;
 
   if (userId) {
-    // Fetch user info (name + displayName)
-    for (let attempt = 0; attempt < 6; attempt++) {
+    for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const userRes = await fetch(`https://users.roblox.com/v1/users/${userId}`);
         if (userRes.ok) {
@@ -176,8 +167,7 @@ export async function onRequestGet({ request, env }) {
       await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
     }
 
-    // Fetch avatar image separately
-    for (let attempt = 0; attempt < 6; attempt++) {
+    for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const thumbRes = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=100x100&format=Png&isCircular=false`);
         if (thumbRes.ok) {
@@ -190,7 +180,7 @@ export async function onRequestGet({ request, env }) {
     }
   }
 
-if (discordId) {
+  if (discordId) {
     const maxRetries = 3;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
@@ -209,7 +199,7 @@ if (discordId) {
     }
   }
 
-  if (!robloxData.name && !discordDisplayName) {
+  if (!robloxData.name && !robloxData.displayName && !robloxData.avatar && !discordDisplayName) {
     return new Response(JSON.stringify({ error: "No user data found" }), {
       status: 404,
       headers: { "Content-Type": "application/json" },
@@ -217,10 +207,11 @@ if (discordId) {
   }
 
   return new Response(JSON.stringify({
-    ...robloxData,
-    discordDisplayName
+    name: robloxData.name || "Unknown",
+    displayName: robloxData.displayName || "Unknown",
+    avatar: robloxData.avatar || null,
+    discordDisplayName: discordDisplayName || "Unknown"
   }), {
     headers: { "Content-Type": "application/json" },
   });
 }
-
