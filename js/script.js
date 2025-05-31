@@ -505,6 +505,7 @@ document.addEventListener("DOMContentLoaded", () => {
         //scale: "1.5",
         paddingTop: "4px",
         zoom: "2",
+        width: "-webkit-fill-available",
         zIndex: "22",
         margin: "31px 0px 46px 0px",
         alignSelf: "center",
