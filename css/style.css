@@ -20,10 +20,27 @@ body {
 
 
 @keyframes pulse-highlight {
-  0% { background-color: #707070;scale: 1; }
-  25% { background-color: #7a8183;scale: 1.1;    box-shadow: 0px 0px 20px 4px rgba(255, 255, 255, 0.5); }
-  75% { background-color: #7a8183;scale: 1.1;    box-shadow: 0px 0px 20px 4px rgba(255, 255, 255, 0.5); }
-  100% { background-color: #707070;scale: 1; }
+  0% {
+    background-color: #707070;
+    scale: 1;
+  }
+
+  25% {
+    background-color: #7a8183;
+    scale: 1.1;
+    box-shadow: 0px 0px 20px 4px rgba(255, 255, 255, 0.5);
+  }
+
+  75% {
+    background-color: #7a8183;
+    scale: 1.1;
+    box-shadow: 0px 0px 20px 4px rgba(255, 255, 255, 0.5);
+  }
+
+  100% {
+    background-color: #707070;
+    scale: 1;
+  }
 }
 
 #patchnotes.animate {
@@ -44,18 +61,21 @@ footer p {
   background: #719cff;
   box-shadow: inset 0 0 9px #8367ff, 0 0 9px 0px #00000038;
 }
+
 .flex-sections {
   display: flex;
   flex-direction: row;
 
   width: 100%;
-  flex-wrap: wrap; /* fallback for overflow */
-      margin-top: 44px;
+  flex-wrap: wrap;
+  /* fallback for overflow */
+  margin-top: 44px;
 }
 
 .half {
   flex: 1;
-  min-width: 0; /* Prevent overflow */
+  min-width: 0;
+  /* Prevent overflow */
   flex: 1 337px;
 }
 
@@ -196,6 +216,7 @@ footer p {
   opacity: 0;
   transition: ease-in-out 0.5s;
 }
+
 .vote-button {
   background-color: #4caf50;
   border: none;
@@ -205,12 +226,15 @@ footer p {
   font-size: 16px;
   cursor: pointer;
 }
+
 .vote-button.dislike {
   background-color: #f44336;
 }
+
 .vote-button:hover {
   opacity: 0.9;
 }
+
 .open-poll {
   background: #2e2e2e;
   color: white;
@@ -220,6 +244,7 @@ footer p {
   cursor: pointer;
   font-size: 15px;
 }
+
 .open-poll:hover {
   background: #3a3a3a;
 }
@@ -236,7 +261,7 @@ main {
   scale: 0.9;
   transition: 1s;
   filter: opacity(0);
-          justify-content: center;
+  justify-content: center;
 }
 
 .logo.fade {
@@ -305,7 +330,7 @@ nav {
   height: 88px;
   display: flex;
   gap: 4px;
-      justify-content: center;
+  justify-content: center;
   align-items: flex-end;
   justify-content: center;
   -webkit-user-select: none;
@@ -335,11 +360,13 @@ nav a:hover img {
 
   margin-bottom: 25px;
 }
+
 @keyframes itemFadeIn {
   from {
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -354,7 +381,7 @@ nav a:hover img {
 nav a {
   display: flex;
   max-width: 100px;
-      width: calc(3vw + 46px);
+  width: calc(3vw + 46px);
   max-height: inherit;
   padding: 0.35rem;
   border-radius: 35% 35% 0 0;
@@ -507,9 +534,9 @@ nav a:active {
 
 main {
   text-align: center;
-      display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 
 section {
@@ -520,7 +547,7 @@ section {
   position: sticky;
   z-index: 22;
   margin: 0 5vw 38px 5vw;
-      flex: 1 20030px;
+  flex: 1 20030px;
 }
 
 .show {
@@ -692,7 +719,7 @@ p {
 }
 
 
-.ff{
+.ff {
   -webkit-user-select: none;
   /* Safari */
   -ms-user-select: none;
@@ -932,8 +959,8 @@ p {
 
 .rotate {
   position: relative;
-    top: -127px;
-    left: calc(46% - -97px);
+  top: -127px;
+  left: calc(46% - -97px);
   width: 30px;
   height: 30px;
   z-index: -1;
@@ -994,9 +1021,9 @@ p {
 }
 
 #messages {
-      text-align: left;
-      font-size: 160%;
-      height: 346px;
+  text-align: left;
+  font-size: 160%;
+  height: 346px;
   overflow-y: auto;
   border: 1px solid #444;
   padding: 10px;
@@ -1016,19 +1043,19 @@ input {
 
 /* width */
 #messages::-webkit-scrollbar {
-    width: 11px;
+  width: 11px;
 }
 
 /* Track */
 #messages::-webkit-scrollbar-track {
-    box-shadow: inset 0 0 5px #000000;
-    border-radius: 10px;
+  box-shadow: inset 0 0 5px #000000;
+  border-radius: 10px;
 }
- 
+
 /* Handle */
 #messages::-webkit-scrollbar-thumb {
-    background: #545454;
-    border-radius: 10px;
+  background: #545454;
+  border-radius: 10px;
 }
 
 /* Handle on hover */
@@ -1039,7 +1066,7 @@ input {
 
 
 
-#indicator{
+#indicator {
   position: absolute;
   right: 58px;
   pointer-events: none;
@@ -1274,12 +1301,9 @@ html {
 
 html {
   @media screen and (max-width: 600px) {
-    overflow-x: hidden;
     width: 100vw;
-    font-size: 8px;
+    font-size: 20px;
   }
-
-
 }
 
 
@@ -1401,17 +1425,17 @@ html {
   border: 1px solid rgba(255, 214, 102, 0.1);
 }
 
-#ctlg{
+#ctlg {
   box-shadow: inset 0px 0px 20px 0px #00000054;
-    border-radius: 20px;
-    background: #343434;
-    padding-top: 65px;
+  border-radius: 20px;
+  background: #343434;
+  padding-top: 65px;
 }
 
-#zd{
-      font-size: 1.4rem;
-    font-weight: 100;
-    margin: 0 0 22px 0;
+#zd {
+  font-size: 1.4rem;
+  font-weight: 100;
+  margin: 0 0 22px 0;
 }
 
 
@@ -1694,6 +1718,7 @@ html {
   float: right;
 
 }
+
 #polls-button {
   font-family: monospace;
   right: 20px;
@@ -1719,21 +1744,23 @@ html {
 
 
 
-.butts{
-    display: flex;
-    height: 0px;
-    align-items: center;
-    flex-direction: column;
-    flex-wrap: nowrap;
+.butts {
+  display: flex;
+  height: 0px;
+  align-items: center;
+  flex-direction: column;
+  flex-wrap: nowrap;
 
-    position: relative;
-    float: right;
-    gap: 9px;
+  position: relative;
+  float: right;
+  gap: 9px;
 }
 
-  .bn{
-    background: rgb(66, 66, 66); padding: 10px; text-align: center;
-  }
+.bn {
+  background: rgb(66, 66, 66);
+  padding: 10px;
+  text-align: center;
+}
 
 @media (max-width: 600px) {
 
@@ -1751,27 +1778,29 @@ html {
     background-color: rgba(0, 0, 0, 0.5);
   }
 
-  .bn{
+  .bn {
     display: none;
   }
 
   header {
     background: linear-gradient(0deg, rgba(57, 150, 196, 0) 7%, rgba(16, 73, 102, 0.77) 55%, rgba(0, 0, 0, 1) 100%);
-    padding: 3.2rem 2.2rem 0rem 2.2rem;
+    padding: 1rem 2.2rem 0rem 2.2rem;
     -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    display: grid
-;
+    display: grid;
   }
-input {
 
-  font-size: 2rem;
-}
-#messages {
-      height: 200px;
+  input {
 
-}
+    font-size: 2rem;
+  }
+
+  #messages {
+    height: 200px;
+
+  }
+
   #credits-content {
     background: rgb(28, 28, 28);
     color: rgb(238, 238, 238);
@@ -1810,16 +1839,38 @@ input {
     color: #ccc;
   }
 
-.discord {
+  .discord {
 
-  font: 600 1.45em 'BuilderSans';
+    font: 600 1.45em 'BuilderSans';
 
-}
+  }
 
-  .item{
+
+  #zd {
+    font-size: 0.6rem;
+    font-weight: 100;
+    margin: 0 0 17px 0;
+  }
+
+
+  .catalog h2 {
+    text-shadow: 2px 3px 9px #00000066;
+    font-size: 1.32rem;
+    margin-bottom: 2vh;
+  }
+
+
+  .catalog p {
+    font-size: 0.9rem;
+    color: #ffffff;
+    margin-bottom: 30px;
+  }
+
+  .item {
     scale: 0.9;
   }
-  .item:last-of-type{
+
+  .item:last-of-type {
     display: none;
   }
 
@@ -1834,10 +1885,11 @@ input {
   #credits-content>div:last-child div p {
     font-size: 12px;
   }
-  
+
   #credits-content>div:last-child div:nth-child(3) {
     display: none;
   }
+
   #grid {
     zoom: 0.27;
 
@@ -1847,13 +1899,13 @@ input {
     padding: 2rem 2rem 8rem 2rem;
   }
 
-  .butts{
+  .butts {
     display: flex;
     height: 0;
     align-items: center;
     flex-direction: row;
     top: 109px;
-            margin: 0 2000px;
+    margin: 0 2000px;
     flex-wrap: nowrap;
     position: relative;
     float: right;
@@ -1872,16 +1924,16 @@ input {
   }
 
   .logo-container {
-  margin-bottom: 18px;
-  transition: transform 0.25s cubic-bezier(.7, .38, .24, 1.27);
-  transform: scale(0.8);
-  z-index: 1;
-  position: relative;
-}
+    margin-bottom: 18px;
+    transition: transform 0.25s cubic-bezier(.7, .38, .24, 1.27);
+    transform: scale(0.8);
+    z-index: 1;
+    position: relative;
+  }
 
-.logo-container:hover {
-  transform: scale(0.9) rotate(2.4deg);
-}
+  .logo-container:hover {
+    transform: scale(0.9) rotate(2.4deg);
+  }
 
   nav {
     height: auto;
@@ -1892,7 +1944,7 @@ input {
   }
 
   nav a:hover {
-        padding: 0px;
+    padding: 0px;
     margin-bottom: 0px;
     transform: none;
   }
@@ -1917,7 +1969,7 @@ input {
   }
 
   #indicator {
-    right:28px;
+    right: 28px;
   }
 
   .scammer-block {
@@ -1949,21 +2001,13 @@ input {
     font-size: 29px;
   }
 
-  .catalog h2 {
-    text-shadow: 2px 3px 9px #00000066;
-    font-size: 3rem;
-    margin-bottom: 3vh;
-  }
+
   nav a:hover img {
     margin-bottom: 0px;
     padding: 10px;
-}
-
-  .catalog p {
-    font-size: 2rem;
-    color: #ffffff;
-    margin-bottom: 35px;
   }
+
+
 
   .logo4 {
     width: 135px;
