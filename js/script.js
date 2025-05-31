@@ -225,7 +225,7 @@ function createNewItem(item, color) {
       let clone = name.cloneNode(true);
       name.style.bottom = "-10";
       name.style.margin = "57px 0";
-      name.style.paddingTop = "39px";
+      
 
       clone.style.position = "absolute";
       clone.style.textShadow = "none";
@@ -287,7 +287,7 @@ function createNewItem(item, color) {
         untradable.style.position = "relative";
         untradable.style.marginRight = "-73%";
         untradable.style.marginTop = "24px";
-
+        name.style.paddingTop = "39px";
         untradable.setAttribute('draggable', false);
         newItem.appendChild(untradable);
         //price.style.display = "none"; // Hide the price element
