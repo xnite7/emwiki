@@ -1176,7 +1176,9 @@ overflow-x: hidden;
     height: auto;
     gap: 16px;
     flex-wrap: wrap;
+    flex: 1;
     margin-bottom: 20px;
+    margin-right: 31px;
   }
 
   nav a:hover {
@@ -1185,8 +1187,7 @@ overflow-x: hidden;
 
   nav a {
     display: flex;
-    max-width: 100px;
-    width: calc(3vw + 46px);
+    width: calc(3vw + 60px);
     max-height: inherit;
     padding: 0.35rem;
     border-radius: 100%;

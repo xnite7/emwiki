@@ -1302,7 +1302,7 @@ html {
 html {
   @media screen and (max-width: 600px) {
     width: 100vw;
-    font-size: 20px;
+    font-size: 9px;
   }
 }
 
@@ -1870,9 +1870,11 @@ html {
     scale: 0.9;
   }
 
-  .item:last-of-type {
+  .welcome + .catalog .catalog-grid .item:last-of-type {
     display: none;
   }
+
+
 
   #credits-content>div:last-child {
     gap: 14px;
@@ -1941,11 +1943,11 @@ html {
     flex-wrap: wrap;
     flex: 1;
     margin-bottom: 20px;
-    margin-right: 29px;
+    margin-right: 31px;
   }
 
   nav a:hover {
-    padding: 0px;
+
     margin-bottom: 0px;
     transform: none;
   }
@@ -1964,13 +1966,13 @@ html {
   }
 
   nav a:active {
-    padding: 10px;
+
     margin-bottom: 0px;
     transform: none;
   }
 
   #indicator {
-    right: 28px;
+    right: 32px;
   }
 
   .scammer-block {
