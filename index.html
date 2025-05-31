@@ -262,7 +262,18 @@
 						indicatorDiv.innerHTML = `🟢`;
 					});
 					socket.addEventListener("message", (event) => {
-						messagesDiv.innerHTML += `<div>${event.data}</div>`;
+						let data;
+						try {
+							data = JSON.parse(event.data);
+							if (data.user && data.text) {
+								messagesDiv.innerHTML += `<div><b>${data.user}:</b> ${data.text}</div>`;
+							} else if (data.type === "user" && data.name) {
+								// Optionally handle user assignment message
+							}
+						} catch {
+							// Fallback for plain text messages
+							messagesDiv.innerHTML += `<div>${event.data}</div>`;
+						}
 						messagesDiv.scrollTop = messagesDiv.scrollHeight;
 					});
 					input.addEventListener("keypress", (e) => {
