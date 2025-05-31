@@ -1016,7 +1016,7 @@ input {
 
 /* width */
 #messages::-webkit-scrollbar {
-  width: 20px;
+  width: 12px;
 }
 
 /* Track */
@@ -1027,13 +1027,13 @@ input {
  
 /* Handle */
 #messages::-webkit-scrollbar-thumb {
-  background: red; 
-  border-radius: 10px;
+    background: #545454;
+    border-radius: 10px;
 }
 
 /* Handle on hover */
 #messages::-webkit-scrollbar-thumb:hover {
-  background: #b30000; 
+  background: #484848;
 }
 
 
