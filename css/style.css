@@ -1941,6 +1941,7 @@ html {
     flex-wrap: wrap;
     flex: 1;
     margin-bottom: 20px;
+    margin-right: 29px;
   }
 
   nav a:hover {
