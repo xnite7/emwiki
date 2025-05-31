@@ -197,12 +197,14 @@ function createNewItem(item, color) {
 
     newItem.style.alignItems = "center";
     newItem.style.justifyContent = "center";
-    name.style.font = "600 234% 'Arimo'";
+    name.style.font = "600 clamp(1.1rem, 2.35vw, 2.25rem) 'Arimo'";
     name.style.color = "rgb(255 255 255)";
     name.style.whiteSpace = "nowrap";
     name.style.bottom = "-10";
     name.style.margin = "57px 0";
     name.style.position = "relative";
+    //name.style.paddingTop = "39px";
+    //name.style.height = "5px";
 
     if (item.style) {
 
@@ -211,6 +213,8 @@ function createNewItem(item, color) {
 
       name.style.bottom = "-10";
       name.style.margin = "57px 0";
+      name.style.paddingTop = "39px";
+
 
     }
 
@@ -221,11 +225,14 @@ function createNewItem(item, color) {
       let clone = name.cloneNode(true);
       name.style.bottom = "-10";
       name.style.margin = "57px 0";
+      name.style.paddingTop = "39px";
+
       clone.style.position = "absolute";
       clone.style.textShadow = "none";
       clone.style.fontSize = "1em";
       clone.style.whiteSpace = "nowrap";
       name.appendChild(clone)
+
 
     }
 
@@ -266,24 +273,49 @@ function createNewItem(item, color) {
   }
 
 
-  if (item.tradable == false && color == "rgb(201, 96, 254)") {
-    newItem.style.order = "1";
-    name.style.bottom = "12px";
-    newItem.style.flexDirection = "column";
-    name.style.margin = " 0";
-    const untradable = document.createElement("img");
+    if (item.style2) {
+      if (item.tradable == false && color == "rgb(201, 96, 254)") {
+        newItem.style.order = "1";
+        //name.style.bottom = "12px";
+        newItem.style.flexDirection = "column";
+        name.style.margin = " 0";
+        const untradable = document.createElement("img");
 
-    untradable.src = "https://i.imgur.com/WLjbELh.png";
-    untradable.style.width = "17%";
-    untradable.style.height = "auto";
-    untradable.style.position = "sticky";
-    untradable.style.marginRight = "-73%";
-    untradable.style.marginBottom = "-44px";
+        untradable.src = "https://i.imgur.com/WLjbELh.png";
+        untradable.style.width = "17%";
+        untradable.style.height = "auto";
+        untradable.style.position = "relative";
+        untradable.style.marginRight = "-73%";
+        untradable.style.marginTop = "24px";
 
-    untradable.setAttribute('draggable', false);
-    newItem.appendChild(untradable);
-    //price.style.display = "none"; // Hide the price element
-  }
+        untradable.setAttribute('draggable', false);
+        newItem.appendChild(untradable);
+        //price.style.display = "none"; // Hide the price element
+      }
+
+
+    } else {
+      if (item.tradable == false && color == "rgb(201, 96, 254)") {
+        newItem.style.order = "1";
+        //name.style.bottom = "12px";
+        newItem.style.flexDirection = "column";
+        name.style.margin = " 0";
+        const untradable = document.createElement("img");
+        name.style.paddingTop = "31%";
+        name.style.height = "21%";
+        untradable.src = "https://i.imgur.com/WLjbELh.png";
+        untradable.style.width = "17%";
+        untradable.style.height = "auto";
+        untradable.style.position = "relative";
+        untradable.style.marginRight = "-73%";
+        untradable.style.marginTop = "39px";
+
+        untradable.setAttribute('draggable', false);
+        newItem.appendChild(untradable);
+        //price.style.display = "none"; // Hide the price element
+      }
+   
+    }
 
 
 
@@ -470,7 +502,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const clone = item.querySelector("#h3").cloneNode(true);
       Object.assign(clone.style, {
         height: "100%",
-        zoom: "1.7",
+        //scale: "1.5",
+        paddingTop: "4px",
+        zoom: "2",
         zIndex: "22",
         margin: "31px 0px 46px 0px",
         alignSelf: "center",
