@@ -231,6 +231,7 @@ function createNewItem(item, color) {
       clone.style.textShadow = "none";
       clone.style.fontSize = "1em";
       clone.style.whiteSpace = "nowrap";
+      
       name.appendChild(clone)
 
 
@@ -273,7 +274,7 @@ function createNewItem(item, color) {
   }
 
 
-    if (item.style2) {
+
       if (item.tradable == false && color == "rgb(201, 96, 254)") {
         newItem.style.order = "1";
         //name.style.bottom = "12px";
@@ -281,41 +282,20 @@ function createNewItem(item, color) {
         name.style.margin = " 0";
         const untradable = document.createElement("img");
 
+
         untradable.src = "https://i.imgur.com/WLjbELh.png";
         untradable.style.width = "17%";
         untradable.style.height = "auto";
-        untradable.style.position = "relative";
-        untradable.style.marginRight = "-73%";
-        untradable.style.marginTop = "24px";
-        name.style.paddingTop = "39px";
+        untradable.style.position = "absolute";
+        untradable.style.right = "5px";
+        untradable.style.bottom = "5px";
+        newItem.style.scale = "1";
+
         untradable.setAttribute('draggable', false);
         newItem.appendChild(untradable);
         //price.style.display = "none"; // Hide the price element
       }
 
-
-    } else {
-      if (item.tradable == false && color == "rgb(201, 96, 254)") {
-        newItem.style.order = "1";
-        //name.style.bottom = "12px";
-        newItem.style.flexDirection = "column";
-        name.style.margin = " 0";
-        const untradable = document.createElement("img");
-        name.style.paddingTop = "31%";
-        name.style.height = "21%";
-        untradable.src = "https://i.imgur.com/WLjbELh.png";
-        untradable.style.width = "17%";
-        untradable.style.height = "auto";
-        untradable.style.position = "relative";
-        untradable.style.marginRight = "-73%";
-        untradable.style.marginTop = "39px";
-
-        untradable.setAttribute('draggable', false);
-        newItem.appendChild(untradable);
-        //price.style.display = "none"; // Hide the price element
-      }
-   
-    }
 
 
 
@@ -516,7 +496,8 @@ document.addEventListener("DOMContentLoaded", () => {
         Object.assign(clone.children[0].style, {
           height: "97%",
           position: "absolute",
-          placeContent: "center"
+          placeContent: "center",
+          width: "inherit",
         });
       }
       clone.classList.add("font");
