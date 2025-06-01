@@ -1967,8 +1967,6 @@ html {
     transition: 0.5s;
 }
   nav a:hover {
-
-    margin-bottom: 0px;
     transform: none;
   }
 
