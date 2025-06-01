@@ -419,9 +419,12 @@ document.addEventListener("DOMContentLoaded", () => {
   catalog.addEventListener("click", (event) => {
   Modal(event);
 });
-catalog2.addEventListener("click", (event) => {
-  Modal(event);
-});
+if (catalog2) {
+  catalog2.addEventListener("click", (event) => {
+    Modal(event);
+  });
+}
+
   if (main.style.scale == '1') {
     main.style.filter = 'opacity(1)'
   }
