@@ -108,46 +108,33 @@ function rinse() {
       }
       // Add this after you fetch and parse your data in rinse(), before calling showInfo(arr, color):
 
-// Find and display new items in the #newest grid
-const newestGrid = document.getElementById("newest");
-if (newestGrid) {
-  newestGrid.innerHTML = ""; // Clear previous
-  // Collect all items from all categories
-  let allItems = [];
-  if (Array.isArray(arr)) {
-    allItems = arr;
-  } else if (typeof arr === "object" && arr !== null) {
-    // If arr is the full data object, combine all arrays
-    ["gears", "deaths", "titles", "pets", "effects"].forEach(key => {
-      if (Array.isArray(arr[key])) allItems = allItems.concat(arr[key]);
-    });
-  }
-  // Filter for new items
-  const newItems = allItems.filter(item => item.new === true);
-  // Append each new item to the newest grid
-  newItems.forEach(item => {
-    createNewItem(item, getColorForItem(item)); // getColorForItem is a helper below
-    // Move the created .item from #ctlg to #newest
-    const lastItem = document.querySelector("#ctlg .item:last-child");
-    if (lastItem) newestGrid.appendChild(lastItem);
-  });
-}
+      // Find and display new items in the #newest grid
+      const newestGrid = document.getElementById("newest");
+      if (newestGrid) {
+        newestGrid.innerHTML = ""; // Clear previous
 
-// Helper to get color for an item based on its category
-function getColorForItem(item) {
-  if (item.type === "gear" || item.category === "gears") return "rgb(91, 254, 106)";
-  if (item.type === "death" || item.category === "deaths") return "rgb(255, 122, 94)";
-  if (item.type === "title" || item.category === "titles") return "rgb(201, 96, 254)";
-  if (item.type === "pet" || item.category === "pets") return "rgb(55, 122, 250)";
-  if (item.type === "effect" || item.category === "effects") return "rgb(255, 177, 53)";
-  // Fallback: try to guess from keys
-  if (item.from && item.from.toLowerCase().includes("gear")) return "rgb(91, 254, 106)";
-  if (item.from && item.from.toLowerCase().includes("death")) return "rgb(255, 122, 94)";
-  if (item.from && item.from.toLowerCase().includes("title")) return "rgb(201, 96, 254)";
-  if (item.from && item.from.toLowerCase().includes("pet")) return "rgb(55, 122, 250)";
-  if (item.from && item.from.toLowerCase().includes("effect")) return "rgb(255, 177, 53)";
-  return "rgb(91, 254, 106)"; // default to gears color
-}
+        // Go through each category and assign the right color
+        const categoryColors = {
+          gears: "rgb(91, 254, 106)",
+          deaths: "rgb(255, 122, 94)",
+          titles: "rgb(201, 96, 254)",
+          pets: "rgb(55, 122, 250)",
+          effects: "rgb(255, 177, 53)"
+        };
+
+        Object.entries(categoryColors).forEach(([key, color]) => {
+          if (Array.isArray(arr[key])) {
+            arr[key].forEach(item => {
+              if (item.new === true) {
+                createNewItem(item, color);
+                // Move the created .item from #ctlg to #newest
+                const lastItem = document.querySelector("#ctlg .item:last-child");
+                if (lastItem) newestGrid.appendChild(lastItem);
+              }
+            });
+          }
+        });
+      }
       showInfo(arr, color); // Pass the color to the showInfo function
     })
     .catch(error => console.error('Error fetching data:', error));
@@ -227,7 +214,7 @@ function createNewItem(item, color) {
     img.src = item.img;
 
     if (item.new) {
-        canvas.style.paddingTop = "15px";
+      canvas.style.paddingTop = "15px";
     }
     newItem.appendChild(canvas);
   }
@@ -237,9 +224,9 @@ function createNewItem(item, color) {
   name.id = "h3";
   name.innerText = item.name;
 
-    if (item.new) {
-        name.style.order = "-1";
-    }
+  if (item.new) {
+    name.style.order = "-1";
+  }
 
   // Category-specific styling
   if (color === "rgb(55, 122, 250)") {
@@ -346,7 +333,7 @@ function createNewItem(item, color) {
   newItem.style.border = "1px solid rgba(0, 0, 0, 0.2)";
   newItem.classList.add('item', 'item-refresh-animate');
 
-  
+
   catalog.appendChild(newItem);
 
 }
@@ -417,13 +404,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalPrice = document.getElementById("modal-price-value");
   let main = document.querySelector("main");
   catalog.addEventListener("click", (event) => {
-  Modal(event);
-});
-if (catalog2) {
-  catalog2.addEventListener("click", (event) => {
     Modal(event);
   });
-}
+  if (catalog2) {
+    catalog2.addEventListener("click", (event) => {
+      Modal(event);
+    });
+  }
 
   if (main.style.scale == '1') {
     main.style.filter = 'opacity(1)'
@@ -613,7 +600,7 @@ if (catalog2) {
             break;
           }
         }
-        Object.assign(children[1].style, { fontFamily: "BuilderSans"});
+        Object.assign(children[1].style, { fontFamily: "BuilderSans" });
         if (text.includes("%")) {
           children[1].style.color = "rgb(193 68 255)";
           children[1].style.fontWeight = 500;
