@@ -106,6 +106,48 @@ function rinse() {
         arr = arr;
         color = "rgb(0, 0, 0)";
       }
+      // Add this after you fetch and parse your data in rinse(), before calling showInfo(arr, color):
+
+// Find and display new items in the #newest grid
+const newestGrid = document.getElementById("newest");
+if (newestGrid) {
+  newestGrid.innerHTML = ""; // Clear previous
+  // Collect all items from all categories
+  let allItems = [];
+  if (Array.isArray(arr)) {
+    allItems = arr;
+  } else if (typeof arr === "object" && arr !== null) {
+    // If arr is the full data object, combine all arrays
+    ["gears", "deaths", "titles", "pets", "effects"].forEach(key => {
+      if (Array.isArray(arr[key])) allItems = allItems.concat(arr[key]);
+    });
+  }
+  // Filter for new items
+  const newItems = allItems.filter(item => item.new === true);
+  // Append each new item to the newest grid
+  newItems.forEach(item => {
+    createNewItem(item, getColorForItem(item)); // getColorForItem is a helper below
+    // Move the created .item from #ctlg to #newest
+    const lastItem = document.querySelector("#ctlg .item:last-child");
+    if (lastItem) newestGrid.appendChild(lastItem);
+  });
+}
+
+// Helper to get color for an item based on its category
+function getColorForItem(item) {
+  if (item.type === "gear" || item.category === "gears") return "rgb(91, 254, 106)";
+  if (item.type === "death" || item.category === "deaths") return "rgb(255, 122, 94)";
+  if (item.type === "title" || item.category === "titles") return "rgb(201, 96, 254)";
+  if (item.type === "pet" || item.category === "pets") return "rgb(55, 122, 250)";
+  if (item.type === "effect" || item.category === "effects") return "rgb(255, 177, 53)";
+  // Fallback: try to guess from keys
+  if (item.from && item.from.toLowerCase().includes("gear")) return "rgb(91, 254, 106)";
+  if (item.from && item.from.toLowerCase().includes("death")) return "rgb(255, 122, 94)";
+  if (item.from && item.from.toLowerCase().includes("title")) return "rgb(201, 96, 254)";
+  if (item.from && item.from.toLowerCase().includes("pet")) return "rgb(55, 122, 250)";
+  if (item.from && item.from.toLowerCase().includes("effect")) return "rgb(255, 177, 53)";
+  return "rgb(91, 254, 106)"; // default to gears color
+}
       showInfo(arr, color); // Pass the color to the showInfo function
     })
     .catch(error => console.error('Error fetching data:', error));
@@ -120,7 +162,7 @@ function createNewItem(item, color) {
   const newItem = document.createElement("div");
   newItem.classList.add("item");
   newItem.style.overflow = "hidden";
-
+  newItem.style.scale = "1";
   // Untradable icon for non-titles
   if (item.tradable === false && color !== "rgb(201, 96, 254)") {
     const untradable = document.createElement("img");
@@ -128,9 +170,9 @@ function createNewItem(item, color) {
     untradable.src = "https://i.imgur.com/WLjbELh.png";
     untradable.style.width = "17%";
     untradable.style.height = "auto";
-    untradable.style.position = "sticky";
-    untradable.style.marginRight = "-73%";
-    untradable.style.marginTop = "-13px";
+    untradable.style.position = "absolute";
+    untradable.style.right = "5px";
+    untradable.style.bottom = "5px";
     untradable.setAttribute('draggable', false);
     newItem.appendChild(untradable);
   }
@@ -146,6 +188,19 @@ function createNewItem(item, color) {
     premium.style.marginTop = "-18px";
     premium.setAttribute('draggable', false);
     newItem.appendChild(premium);
+  }
+
+  // New icon
+  if (item.new) {
+    const newbanner = document.createElement("img");
+    newbanner.src = "./imgs/new.png";
+    newbanner.style.width = "50%";
+    newbanner.style.height = "auto";
+    newbanner.style.position = "absolute";
+    newbanner.style.top = "0";
+    newbanner.style.left = "0";
+    newbanner.setAttribute('draggable', false);
+    newItem.appendChild(newbanner);
   }
 
   // Item image (canvas)
@@ -170,6 +225,10 @@ function createNewItem(item, color) {
       ctx.drawImage(img, 0, 0);
     };
     img.src = item.img;
+
+    if (item.new) {
+        canvas.style.paddingTop = "15px";
+    }
     newItem.appendChild(canvas);
   }
 
@@ -177,6 +236,10 @@ function createNewItem(item, color) {
   let name = document.createElement("div");
   name.id = "h3";
   name.innerText = item.name;
+
+    if (item.new) {
+        name.style.order = "-1";
+    }
 
   // Category-specific styling
   if (color === "rgb(55, 122, 250)") {
@@ -252,7 +315,6 @@ function createNewItem(item, color) {
     untradable.style.position = "absolute";
     untradable.style.right = "5px";
     untradable.style.bottom = "5px";
-    newItem.style.scale = "1";
     untradable.setAttribute('draggable', false);
     newItem.appendChild(untradable);
   }
@@ -283,7 +345,10 @@ function createNewItem(item, color) {
 
   newItem.style.border = "1px solid rgba(0, 0, 0, 0.2)";
   newItem.classList.add('item', 'item-refresh-animate');
+
+  
   catalog.appendChild(newItem);
+
 }
 
 
@@ -322,6 +387,9 @@ function showInfo(arr, color) {
       document.getElementById("zd").innerHTML = `${step + 1} items`;
 
       createNewItem(item, color);
+
+
+
     }
   } else {
     arr.forEach((item, i) => {
@@ -338,6 +406,7 @@ function showInfo(arr, color) {
 document.addEventListener("DOMContentLoaded", () => {
   template = document.getElementById("itom");
   const catalog = document.getElementById("ctlg"); // Parent container for items
+  const catalog2 = document.getElementById("newest"); // Parent container for items
   const modal = document.getElementById("product-modal");
   const popo = document.getElementById("popo");
   const modalContent = document.getElementById("modal-content");
@@ -347,6 +416,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalDescription = document.getElementById("modal-description");
   const modalPrice = document.getElementById("modal-price-value");
   let main = document.querySelector("main");
+  catalog.addEventListener("click", (event) => {
+  Modal(event);
+});
+catalog2.addEventListener("click", (event) => {
+  Modal(event);
+});
   if (main.style.scale == '1') {
     main.style.filter = 'opacity(1)'
   }
@@ -375,7 +450,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Simplified modal interaction logic
   let isModalOpen = false;
 
-  catalog.addEventListener("click", (event) => {
+  function Modal() {
     if (isModalOpen) return;
 
     const item = event.target.closest(".item");
@@ -580,7 +655,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       modalContent.classList.add("expand");
     }, 10);
-  });
+  };
 
   const closeModalHandler = () => {
     modalContent.classList.remove("expand");

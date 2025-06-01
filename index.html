@@ -123,14 +123,14 @@
 							position: absolute;
 						">
 			<img src="https://static.vecteezy.com/system/resources/thumbnails/046/032/381/small/clouds-explode-freedom-shapes-on-transparent-backgrounds-3d-render-png.png" style="
-    position: absolute;
-    justify-self: anchor-center;
-    top: 7vw;
-    left: 19%;
-    filter: blur(13px);
-    opacity: 0.8;
-    width: 66vw;
-    pointer-events: none;
+				position: absolute;
+				justify-self: anchor-center;
+				top: 7vw;
+				left: 19%;
+				filter: blur(13px);
+				opacity: 0.8;
+				width: 66vw;
+				pointer-events: none;
 				">
 			<img src="https://static.vecteezy.com/system/resources/thumbnails/046/032/381/small/clouds-explode-freedom-shapes-on-transparent-backgrounds-3d-render-png.png" style="
 					position: absolute;
@@ -228,11 +228,9 @@
 				<p>A collection of every Epic minigames item</p>
 			</section>
 			<section class="catalog">
-				<div id="refresh-button"onclick="rinse();">↻</div>
-				<h2>🎲 Random items</h2>
+				<h2>! Newest items !</h2>
 				<p id="zd" style="display: none;">0</p>
-
-				<div class="catalog-grid" id="ctlg" style="
+				<div class="catalog-grid" id="newest" style="
 					display: flex;
 					gap: 1.5rem;
 					padding: 1rem;
@@ -241,6 +239,7 @@
 
 				</div>
 			</section>
+			
 			<section id="leaderboard" style="display: none;">
 				<h2>🏆 Team</h2>
 				<ol>
@@ -289,6 +288,20 @@
 						indicatorDiv.innerHTML = `🔴`;
 					});
 				</script>
+			</section>
+			<section class="catalog">
+				<div id="refresh-button"onclick="rinse();">↻</div>
+				<h2>🎲 Random items</h2>
+				<p id="zd" style="display: none;">0</p>
+
+				<div class="catalog-grid" id="ctlg" style="
+					display: flex;
+					gap: 1.5rem;
+					padding: 1rem;
+					justify-content: center;
+					flex-wrap: wrap;">
+
+				</div>
 			</section>
 
 				<section class="half" id="join">
