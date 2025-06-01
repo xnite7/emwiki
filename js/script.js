@@ -117,12 +117,12 @@ rinse()
 
 function createNewItem(item, color) {
   const catalog = document.getElementById("ctlg");
-  // Create a new item element
   const newItem = document.createElement("div");
   newItem.classList.add("item");
-
   newItem.style.overflow = "hidden";
-  if (item.tradable == false && color != "rgb(201, 96, 254)") {
+
+  // Untradable icon for non-titles
+  if (item.tradable === false && color !== "rgb(201, 96, 254)") {
     const untradable = document.createElement("img");
     newItem.style.order = "1";
     untradable.src = "https://i.imgur.com/WLjbELh.png";
@@ -131,11 +131,11 @@ function createNewItem(item, color) {
     untradable.style.position = "sticky";
     untradable.style.marginRight = "-73%";
     untradable.style.marginTop = "-13px";
-
     untradable.setAttribute('draggable', false);
     newItem.appendChild(untradable);
-    //price.style.display = "none"; // Hide the price element
   }
+
+  // Premium icon
   if (item.premium) {
     const premium = document.createElement("img");
     premium.src = "../imgs/prem.png";
@@ -144,57 +144,49 @@ function createNewItem(item, color) {
     premium.style.position = "sticky";
     premium.style.marginRight = "-73%";
     premium.style.marginTop = "-18px";
-
     premium.setAttribute('draggable', false);
     newItem.appendChild(premium);
-    //price.style.display = "none"; // Hide the price element
   }
-  // Create and set the image element
-  // Draw image on a canvas instead of using <img>
+
+  // Item image (canvas)
   if (item.img) {
     const canvas = document.createElement("canvas");
     newItem.dataset.image = item.img;
-
     canvas.setAttribute("id", "img");
-    canvas.style.maxWidth = "100%";
-    canvas.style.maxHeight = "100%";
-    canvas.style.display = "block";
-    canvas.style.margin = "0 auto";
-    canvas.style.userSelect = "none";
-    canvas.style.webkitUserSelect = "none";
-    canvas.style.pointerEvents = "none"; // Optional: block interactions
-
+    Object.assign(canvas.style, {
+      maxWidth: "100%",
+      maxHeight: "100%",
+      display: "block",
+      margin: "0 auto",
+      userSelect: "none",
+      webkitUserSelect: "none",
+      pointerEvents: "none"
+    });
     const ctx = canvas.getContext("2d");
     const img = new Image();
-
     img.onload = function () {
       canvas.width = img.width;
       canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
     };
     img.src = item.img;
-
     newItem.appendChild(canvas);
   }
 
-
-  // Create and set the name element
+  // Name element
   let name = document.createElement("div");
   name.id = "h3";
   name.innerText = item.name;
 
-  // Adjust font size based on name length
-
-
-  if (color == "rgb(55, 122, 250)") {
+  // Category-specific styling
+  if (color === "rgb(55, 122, 250)") {
     newItem.id = "pets";
-  } else if (color == "rgb(255, 177, 53)") {
+  } else if (color === "rgb(255, 177, 53)") {
     newItem.id = "effects";
-  } else if (color == "rgb(255, 122, 94)") {
+  } else if (color === "rgb(255, 122, 94)") {
     newItem.id = "deaths";
-  } else if (color == "rgb(201, 96, 254)") {
+  } else if (color === "rgb(201, 96, 254)") {
     newItem.id = "titles";
-
     newItem.style.alignItems = "center";
     newItem.style.justifyContent = "center";
     name.style.font = "600 clamp(1.1rem, 2.35vw, 2.25rem) 'Arimo'";
@@ -203,68 +195,43 @@ function createNewItem(item, color) {
     name.style.bottom = "-10";
     name.style.margin = "57px 0";
     name.style.position = "relative";
-    //name.style.paddingTop = "39px";
-    //name.style.height = "5px";
-
     if (item.style) {
-
       name.setAttribute("style", item.style);
       name.style.whiteSpace = "nowrap";
-
       name.style.bottom = "-10";
       name.style.margin = "57px 0";
       name.style.paddingTop = "39px";
-
-
     }
-
     if (item.style2) {
-      //clone name and parent it to original name
       name.setAttribute("style", item.style2);
       name.style.whiteSpace = "nowrap";
       let clone = name.cloneNode(true);
       name.style.bottom = "-10";
       name.style.margin = "57px 0";
-      
-
       clone.style.position = "absolute";
       clone.style.textShadow = "none";
       clone.style.fontSize = "1em";
       clone.style.whiteSpace = "nowrap";
-      
-      name.appendChild(clone)
-
-
+      name.appendChild(clone);
     }
-
     if (item.color) {
       name.style.color = item.color;
-
     }
     if (item.stroke) {
       let stroke = item.stroke.split(" ");
       name.style.textShadow = `-${stroke[0]} -${stroke[0]} 0 ${stroke[1]}, 0 -${stroke[0]} 0 ${stroke[1]}, ${stroke[0]} -${stroke[0]} 0 ${stroke[1]}, ${stroke[0]} 0 0 ${stroke[1]}, ${stroke[0]} ${stroke[0]} 0 ${stroke[1]}, 0 ${stroke[0]} 0 ${stroke[1]}, -${stroke[0]} ${stroke[0]} 0 ${stroke[1]}, -${stroke[0]} 0 0 ${stroke[1]}`;
     }
-
     if (item.font) {
       name.style.font = item.font;
-      //if name has a child, set the child font to item.font
       if (name.children.length > 0) {
         name.childNodes[1].style.font = item.font;
         name.childNodes[1].style.fontSize = "1em";
       }
     }
-
     if (item.rotate) {
       name.style.transform = "rotate(" + item.rotate + "deg)";
     }
-
-
-
-
-
-
-  } else if (color == "rgb(91, 254, 106)") {
+  } else if (color === "rgb(91, 254, 106)") {
     newItem.id = "gears";
   }
 
@@ -273,63 +240,48 @@ function createNewItem(item, color) {
     name.outerHTML = item.style3;
   }
 
+  // Untradable icon for titles
+  if (item.tradable === false && color === "rgb(201, 96, 254)") {
+    newItem.style.order = "1";
+    newItem.style.flexDirection = "column";
+    name.style.margin = "0";
+    const untradable = document.createElement("img");
+    untradable.src = "https://i.imgur.com/WLjbELh.png";
+    untradable.style.width = "17%";
+    untradable.style.height = "auto";
+    untradable.style.position = "absolute";
+    untradable.style.right = "5px";
+    untradable.style.bottom = "5px";
+    newItem.style.scale = "1";
+    untradable.setAttribute('draggable', false);
+    newItem.appendChild(untradable);
+  }
 
-
-      if (item.tradable == false && color == "rgb(201, 96, 254)") {
-        newItem.style.order = "1";
-        //name.style.bottom = "12px";
-        newItem.style.flexDirection = "column";
-        name.style.margin = " 0";
-        const untradable = document.createElement("img");
-
-
-        untradable.src = "https://i.imgur.com/WLjbELh.png";
-        untradable.style.width = "17%";
-        untradable.style.height = "auto";
-        untradable.style.position = "absolute";
-        untradable.style.right = "5px";
-        untradable.style.bottom = "5px";
-        newItem.style.scale = "1";
-
-        untradable.setAttribute('draggable', false);
-        newItem.appendChild(untradable);
-        //price.style.display = "none"; // Hide the price element
-      }
-
-
-
-
-  // Create and set the price element
+  // Price element
   const price = document.createElement("p");
-  price.innerHTML = `<img src=\"https://i.imgur.com/iZGLVYo.png\" draggable="false">${item.price || 0}`;
+  price.innerHTML = `<img src="https://i.imgur.com/iZGLVYo.png" draggable="false">${item.price || 0}`;
   newItem.appendChild(price);
-  // if item.tradae is false, add the untradable icon and hide price
 
-
-
-
-  // Create and set the from element
+  // From element (hidden)
   const from = document.createElement("div");
   from.innerText = item.from;
   from.id = "from";
-  from.style.display = "none"; // Hide the element
+  from.style.display = "none";
   newItem.appendChild(from);
-  // Create and set the rarity element
+
+  // Rarity element (hidden)
   const prcdra = document.createElement("div");
   prcdra.innerText = item["price/code/rarity"];
   prcdra.id = "pricecoderarity";
-  prcdra.style.display = "none"; // Hide the element
+  prcdra.style.display = "none";
   newItem.appendChild(prcdra);
 
-  // Append the new item to the catalog
-
-  if (item.from.toLowerCase().includes("staff item")) {
+  // Staff item styling
+  if (item.from && item.from.toLowerCase().includes("staff item")) {
     newItem.style.mixBlendMode = "difference";
-    //newItem.style.order = "2";
   }
-  
-  newItem.style.border = "1px solid rgba(0, 0, 0, 0.2)";
 
+  newItem.style.border = "1px solid rgba(0, 0, 0, 0.2)";
   newItem.classList.add('item', 'item-refresh-animate');
   catalog.appendChild(newItem);
 }
