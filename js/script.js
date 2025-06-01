@@ -286,6 +286,14 @@ function createNewItem(item, color) {
   catalog.appendChild(newItem);
 }
 
+
+
+
+
+
+
+
+
 function showInfo(arr, color) {
   if (color == "rgb(0, 0, 0)") {
     pick = arr.gears;
