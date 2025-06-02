@@ -149,9 +149,9 @@ function createNewItem(item, color, list) {
     untradable.src = "https://i.imgur.com/WLjbELh.png";
     untradable.style.width = "33px";
     untradable.style.height = "auto";
-    untradable.style.position = "relative";
-    untradable.style.top = "-21px";
-    untradable.style.right = "-72px";
+    untradable.style.position = "absolute";
+    untradable.style.bottom = "10px";
+    untradable.style.right = "10px";
     untradable.style.zIndex = "1";
     untradable.setAttribute('draggable', false);
     newItem.appendChild(untradable);

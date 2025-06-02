@@ -186,6 +186,7 @@ function createNewItem(item, color) {
     newbanner.style.height = "auto";
     newbanner.style.position = "absolute";
     newbanner.style.top = "0";
+    newbanner.style.zIndex = "9";
     newbanner.style.left = "0";
     newbanner.setAttribute('draggable', false);
     newItem.appendChild(newbanner);
