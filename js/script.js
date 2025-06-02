@@ -158,6 +158,7 @@ function createNewItem(item, color) {
     untradable.style.width = "17%";
     untradable.style.height = "auto";
     untradable.style.position = "absolute";
+    untradable.style.zIndex = "4";
     untradable.style.right = "5px";
     untradable.style.bottom = "5px";
     untradable.setAttribute('draggable', false);
