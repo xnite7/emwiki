@@ -472,7 +472,8 @@ section {
   box-shadow: 0 5px 15px rgb(0 0 0 / 30%);
   position: sticky;
   z-index: 22;
-  margin: 0 5vw 38px 5vw;
+
+  margin: 0 0vw 39px 0vw;
 }
 
 .show {
@@ -523,7 +524,47 @@ footer {
   box-shadow: 0 0 2em 20px #000000;
 }
 
+#tooltip[popover] {
+  left: anchor(center);
+  position-anchor: --a;
+  top: anchor(bottom);
+  transform: translate(-50%, 8px);
 
+  color: #fff;
+
+  padding: 12px 18px;
+  inset: auto;
+  position: absolute;
+  font-size: 1.1em;
+  box-shadow:0 0 12px black, 0 0 12px black, 0 0 15px black, inset 0 0 12px black;
+  backdrop-filter: blur(5px);
+  z-index: 9999;
+  margin: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  position-area: inline-end span-block-end;
+  position-try-fallbacks: flip-inline;
+
+
+  white-space: nowrap;
+
+  background: linear-gradient(0deg, #000000, #00000063);
+  border: 1px solid #ffffff45;
+  border-radius: 18px;
+}
+
+
+
+
+
+
+
+
+#tooltip[popover]:popover-open {
+  opacity: 1;
+  pointer-events: none;
+}
 
 .logo-container {
   margin-bottom: 18px;
@@ -544,6 +585,7 @@ div.logo-container {
 
 .catalog {
   /* margin-top: 2rem; */
+  width: -webkit-fill-available;
   text-align: center;
   padding-bottom: 66px;
 }
@@ -564,14 +606,15 @@ div.logo-container {
 }
 
 .catalog-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, 190px);
-  gap: 1.5rem;
-  padding: 1rem;
-  align-content: center;
-  justify-items: center;
-  justify-content: center;
-  align-items: center;
+    display: grid
+;
+    gap: 1.5rem;
+    padding: 0rem;
+    grid-template-columns: repeat(auto-fit, minmax(206px, 0fr));
+    justify-items: center;
+    width: -webkit-fill-available;
+
+    justify-content: flex-start;
 }
 
 .item {
@@ -678,22 +721,7 @@ div.logo-container {
 
 
 
-.tooltip {
-  position: absolute;
-  pointer-events: none;
-  white-space: nowrap;
-  transition: opacity 0.15s;
-  background: linear-gradient(0deg, #000000, #00000063);
-  border: 1px solid #ffffff45;
-  border-radius: 18px;
-  backdrop-filter: blur(5px);
-  box-shadow: 0 0 12px black;
-  color: #ffffff;
-  padding: 15px 27px;
-  z-index: 999999;
 
-
-}
 
 .logo5 {
   animation: logo 6s ease 0s infinite alternate;
@@ -1147,13 +1175,17 @@ html {
   width: 87px;
   transform: none;
 }
+.papi{
+  grid-template-columns: repeat(auto-fit, minmax(468px, 2fr));
+}
 
 #grid {
-  margin: 42px;
-  zoom: 0.6;
-  display: flex;
-  justify-content: space-around;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
+    width: -webkit-fill-available;
+    flex-wrap: wrap;
+    zoom: 0.5;
+    align-items: flex-start;
 }
 
 #scammers-container.grid {
@@ -1171,7 +1203,7 @@ html {
 @media (max-width: 600px) {
 
   #grid {
-    zoom: 0.27;
+    zoom: 0.37;
   }
 
   #scammers-container {
@@ -1248,6 +1280,11 @@ html {
     margin-top: 21px;
     font-size: 29px;
   }
+.papi{
+  grid-template-columns: repeat(auto-fit, minmax(104vw, 0fr));
+      zoom: 0.86;
+  }
+  
 
   .catalog h2 {
     margin-top: 17px;
@@ -1289,8 +1326,5 @@ html {
     font-size: 5rem;
   }
 
-  .tooltip {
-    display: none;
-  }
 
 }

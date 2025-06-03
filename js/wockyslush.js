@@ -153,6 +153,7 @@ function createNewItem(item, color, list) {
     untradable.style.bottom = "10px";
     untradable.style.right = "10px";
     untradable.style.zIndex = "1";
+    newItem.style.scale = "1";
     untradable.setAttribute('draggable', false);
     newItem.appendChild(untradable);
     price.style.display = "none"; // Hide the price element
@@ -193,7 +194,32 @@ function createNewItem(item, color, list) {
 
 
 
+    newItem.addEventListener('mouseenter', function (e) {
+      const tooltip = document.getElementById('tooltip');
+      // Set anchor attribute to match this item
+      //instead of first word get last word
+      const anchorName = name.innerText.split(/[\s\W]/).pop(); // Get last word before any spaces or special characters
+      //newItem.id = anchorName;
+      oldstyle = newItem.getAttribute('style') || '';
+      //if no anchor-name attribute, set it
+      if (!oldstyle.includes('anchor-name:')) {
+        newItem.setAttribute('style', `${oldstyle}anchor-name: --${anchorName};`);
+      }
+      tooltip.setAttribute('style', `top:anchor( --${anchorName} bottom);left:anchor( --${anchorName} center); position-anchor: --${anchorName}`);
+      // Set tooltip content
+      let pricefromrarity = newItem.querySelector("#pricecoderarity");
+      if (newItem.parentElement.id == 'gamenightitems') {
+        pricefromrarity = newItem.querySelector("#from");
+      }
+      if (!pricefromrarity || !pricefromrarity.innerText || pricefromrarity.innerText === "Unobtainable") return;
 
+      tooltip.innerHTML = pricefromrarity.innerText;
+      tooltip.showPopover();
+    });
+    newItem.addEventListener('mouseleave', function () {
+      const tooltip = document.getElementById('tooltip');
+      tooltip.hidePopover();
+    });
 
 
   // Append the new item to the catalog
@@ -323,75 +349,5 @@ function showInfo(arr, color) {
       createNewItem(item, color, listElement);
     });
   });
-
-
-
-
-  function showTooltip(e) {
-
-    if (e.target.classList.contains("item")) {
-      var element = e.target;
-    }else{
-      return;
-    }
-
-    let rect = element.getBoundingClientRect();
-
-    if (document.querySelector(".tooltip")) {
-
-
-
-
-
-      
-      var tooltip = document.querySelector(".tooltip")
-
-        ? document.querySelector(".tooltip")
-        : document.querySelector(":scope .tooltip");
-      
-
-      var pricefromrarity = element.querySelector("#pricecoderarity");
-
-
-
-      if (element.parentElement.id =='gamenightitems'){
-
-        pricefromrarity = element.querySelector("#from");
-        
-      }
-      
-
-      if (pricefromrarity.innerText=="" || pricefromrarity.innerText=="Unobtainable") {
-        return;
-      }
-      tooltip.innerHTML = `<div id="tooltipname">${pricefromrarity.innerText}</div>`;
-      tooltip.style.opacity = "1";
-
-      tooltip.style.left =
-        (rect.x + tooltip.clientWidth + 10 < document.body.clientWidth)
-          ? (rect.x + 140 + window.scrollX + "px")
-          : (document.body.clientWidth + 5 - tooltip.clientWidth + window.scrollX + "px");
-      tooltip.style.top =
-        (rect.y + tooltip.clientHeight + 10 < document.body.clientHeight)
-          ? (rect.y + 10 + window.scrollY + "px")
-          : (document.body.clientHeight + 5 - tooltip.clientHeight + window.scrollY + "px");
-
-    }
-  }
-
-  var tooltips = document.querySelectorAll('.item');
-  tooltips.forEach((item, i) => {
-    item.addEventListener('mouseover', showTooltip);
-
-
-    item.addEventListener('mouseout', function () {
-      var tooltip = document.querySelector(".tooltip")
-      tooltip.style.opacity = "0";
-
-
-
-
-    });
-  })
 };
 

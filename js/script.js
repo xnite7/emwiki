@@ -8,6 +8,7 @@ if (document.querySelector('.intro')) {
   var d = Math.random();
   if (d > 0.9) {
     logo3.src = "https://i.imgur.com/o7IJiwl.png"
+    logo3.style.fontFamily = "Bunny Flowers";
     imgg = "https://i.imgur.com/o7IJiwl.png"
   } else {
     logo3.src = "https://i.imgur.com/XRmpB1c.png"
@@ -18,7 +19,6 @@ if (document.querySelector('.intro')) {
     let logo4 = document.querySelector('.logo4')
     logo4.src = imgg
     let header = document.querySelector('.headersheet')
-
     setTimeout(() => {
 
       logoSpan.forEach((span, idx) => {
@@ -40,13 +40,19 @@ if (document.querySelector('.intro')) {
 
           }, (idx + 1) * 20)
         })
+      }, 2100)
+
+      setTimeout(() => {
+        document.body.style.backgroundSize = "auto 124vh"
       }, 2000)
 
       setTimeout(() => {
         logo.style.scale = "1.2"
         intro.style.backdropFilter = 'blur(0px)'
-        intro.style.filter = 'opacity(0)'
-      }, 2000)
+        intro.style.filter = 'opacity(0) blur(9px)'
+        
+        
+      }, 2440)
       setTimeout(() => {
         intro.style.top = "-100vh"
         header.style.opacity = "1"
@@ -54,9 +60,9 @@ if (document.querySelector('.intro')) {
         main.style.scale = "1"
         main.style.filter = 'opacity(1)'
 
-      }, 2500)
+      }, 2800)
       setTimeout(() => {
-        intro.style.display = "none"
+       // intro.style.display = "none"
       }, 3000)
     })
   })
@@ -329,7 +335,7 @@ function createNewItem(item, color) {
 
   // Staff item styling
   if (item.from && item.from.toLowerCase().includes("staff item")) {
-    newItem.style.mixBlendMode = "difference";
+    newItem.classList.add('staff');
   }
 
   newItem.style.border = "1px solid rgba(0, 0, 0, 0.2)";
