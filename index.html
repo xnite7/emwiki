@@ -598,9 +598,18 @@ async function fetchResults() {
   }
 </script>
 <script>
+
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isInStandaloneMode = ('standalone' in window.navigator) && window.navigator.standalone;
+
+if (isIOS && !isInStandaloneMode) {
+  // Show a custom message like:
+  alert("Add to Home Screen: Tap the Share button and then 'Add to Home Screen'.");
+}
+
+
   let deferredPrompt;
 
-  
   const installBtn = document.getElementById('installBtn');
 
   window.addEventListener('beforeinstallprompt', (e) => {
