@@ -6,15 +6,20 @@ body {
     color: #fff;
     margin: 0;
     padding: 0;
-    background-size: auto 100vh;
-    background-attachment: fixed;
     width: -webkit-fill-available;
     overflow-x: hidden;
     transition: cubic-bezier(.55,-0.01,.36,1) 1.7s;
-
-    background-position-x: center;
-    background-repeat: no-repeat;
-    background-image: url(https://pbs.twimg.com/media/EyEoHIpWEAMBiEu.jpg:large)
+}
+.background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('/imgs/bg.jpg'); /* your background path */
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
 }
 
 @keyframes pulse-highlight {
@@ -369,6 +374,9 @@ nav a {
 nav #gearstab {
     background: linear-gradient(145deg, #47fd4e, #1de9c4)
 }
+
+
+
 
 nav #deathstab {
     background: linear-gradient(145deg, #ff4848, #ff6f1a)
@@ -1799,8 +1807,3 @@ html {
 }
 
 
-@media (hover: none) {
-   body {
-       background-attachment: initial;
-   }
-}
