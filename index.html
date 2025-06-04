@@ -737,6 +737,12 @@ async function fetchResults() {
         const { outcome } = await deferredPrompt.userChoice;
         console.log(`Install outcome: ${outcome}`);
         deferredPrompt = null;
+
+		if (outcome === 'dismissed') {
+      		installBtn.style.display = 'inline';
+		} else {
+			installBtn.style.display = 'none';
+		}
       }
     });
   });
