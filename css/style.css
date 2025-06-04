@@ -87,11 +87,6 @@ footer p {
 }
 
 
-@media (hover: none) {
-   body {
-       background-attachment: initial;
-   }
-}
 .intro {
     position: fixed;
     z-index: 1272;
@@ -1801,4 +1796,11 @@ html {
     .logo-header {
         scale: .6
     }
+}
+
+
+@media (hover: none) {
+   body {
+       background-attachment: initial;
+   }
 }
