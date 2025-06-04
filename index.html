@@ -777,11 +777,17 @@ async function fetchResults() {
 <script>
   // Fix 100vh on iOS by setting --vh to actual visible height
   function updateVh() {
-    const vh = window.innerHeight * 0.01;
-    document.documentElement.style.setProperty('--vh', `${vh}px`);
-  }
+  // Get the actual visible height
+  const vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
 
-  window.addEventListener('resize', updateVh);
-  window.addEventListener('orientationchange', updateVh);
-  updateVh(); // Run on load
+// Run it after layout is ready
+window.addEventListener('load', updateVh);
+window.addEventListener('resize', updateVh);
+window.addEventListener('orientationchange', updateVh);
+
+// Optional: Run again after slight delay to handle iOS animation quirks
+setTimeout(updateVh, 500);
+
 </script>
