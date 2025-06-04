@@ -43,7 +43,7 @@ if (document.querySelector('.intro')) {
       }, 2100)
 
       setTimeout(() => {
-        document.querySelector(".background").style.backgroundSize = "auto 124vh"
+        document.querySelector(".parallax-bg").style.backgroundSize = "auto 124vh"
         intro.style['transition'] = "0.5s"
       }, 2000)
 

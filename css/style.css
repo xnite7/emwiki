@@ -10,6 +10,30 @@ body {
     overflow-x: hidden;
 
 }
+
+.parallax-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 120%;
+  background-image: url('/imgs/bg.jpg'); /* Replace with your actual path */
+  background-size: auto 100vh;
+  background-position: center;
+  z-index: -1;
+  transform: translateY(0);
+  opacity: 1;
+  transition: all cubic-bezier(.55,-0.01,.36,1) 1.7s, transform 0.1s ease-out, opacity 0.2s ease;
+  will-change: transform, opacity;
+
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+
 .background {
   position: fixed;
   transition: 0.5s;
