@@ -135,6 +135,38 @@
 	</div>
 
 	<body id="body">
+
+
+
+		<div id="iosInstallPopup" style="
+		display: none;
+		position: fixed;
+		bottom: -150px;
+		left: 50%;
+		transform: translateX(-50%);
+		background: rgba(0, 0, 0, 0.85);
+		color: white;
+		padding: 1.2rem 1.5rem;
+		border-radius: 12px;
+		font-size: 1rem;
+		max-width: 320px;
+		text-align: center;
+		z-index: 9999;
+		box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+		opacity: 0;
+		transition: bottom 0.6s ease, opacity 0.6s ease;
+		">
+		📱 To install: Tap <b>Share</b> → <b>Add to Home Screen</b><br>
+		<button onclick="hideIosPopup()"
+			style="margin-top: 10px; background: #fff; color: #000; border: none; border-radius: 8px; padding: 6px 12px; cursor: pointer;">
+			Got it
+		</button>
+		</div>
+
+
+
+
+
 		<div class="intro" style="pointer-events:none ;">
 			<h1 class="logo-header"><img class="logo3" src="https://i.imgur.com/XRmpB1c.png">
 				<span class="logo">Epic<span class="logo2">Epic</span></span>			
@@ -661,30 +693,7 @@ async function fetchResults() {
 	if (e.target === modal) hideModal();
 	});
 </script>
-<div id="iosInstallPopup" style="
-  display: none;
-  position: fixed;
-  bottom: -150px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.85);
-  color: white;
-  padding: 1.2rem 1.5rem;
-  border-radius: 12px;
-  font-size: 1rem;
-  max-width: 320px;
-  text-align: center;
-  z-index: 9999;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-  opacity: 0;
-  transition: bottom 0.6s ease, opacity 0.6s ease;
-">
-  📱 To install: Tap <b>Share</b> → <b>Add to Home Screen</b><br>
-  <button onclick="hideIosPopup()"
-    style="margin-top: 10px; background: #fff; color: #000; border: none; border-radius: 8px; padding: 6px 12px; cursor: pointer;">
-    Got it
-  </button>
-</div>
+
 
 
 	<link rel="preload" href="./css/style.css" as="style" onload="this.rel='stylesheet'">
