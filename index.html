@@ -586,6 +586,30 @@ async function fetchResults() {
 	if (e.target === modal) hideModal();
 	});
 </script>
+<div id="iosInstallPopup" style="
+  display: none;
+  position: fixed;
+  bottom: -150px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 1.2rem 1.5rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  max-width: 320px;
+  text-align: center;
+  z-index: 9999;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  opacity: 0;
+  transition: bottom 0.6s ease, opacity 0.6s ease;
+">
+  📱 To install: Tap <b>Share</b> → <b>Add to Home Screen</b><br>
+  <button onclick="hideIosPopup()"
+    style="margin-top: 10px; background: #fff; color: #000; border: none; border-radius: 8px; padding: 6px 12px; cursor: pointer;">
+    Got it
+  </button>
+</div>
 
 
 	<link rel="preload" href="./css/style.css" as="style" onload="this.rel='stylesheet'">
@@ -597,32 +621,64 @@ async function fetchResults() {
     navigator.serviceWorker.register('/sw.js');
   }
 </script>
+
+
+
+
 <script>
-
-const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-const isInStandaloneMode = ('standalone' in window.navigator) && window.navigator.standalone;
-
-if (isIOS && !isInStandaloneMode) {
-  // Show a custom message like:
-  alert("Add to Home Screen: Tap the Share button and then 'Add to Home Screen'.");
-}
-
-
+  const installBtn = document.getElementById('installBtn');
+  const iosPopup = document.getElementById('iosInstallPopup');
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone === true;
   let deferredPrompt;
 
-  const installBtn = document.getElementById('installBtn');
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault(); // Prevent the mini-infobar
-    deferredPrompt = e;
+  // Show button only if not already installed
+  if (!(isIOS && isStandalone)) {
     installBtn.style.display = 'inline';
+  }
+
+  // Show real install prompt on Android/desktop
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+
+    if (!isIOS) {
+      installBtn.style.display = 'inline';
+    }
 
     installBtn.addEventListener('click', async () => {
-      installBtn.style.display = 'none';
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log(`Install outcome: ${outcome}`);
-      deferredPrompt = null;
+      if (deferredPrompt) {
+        installBtn.style.display = 'none';
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`Install outcome: ${outcome}`);
+        deferredPrompt = null;
+      }
     });
   });
+
+  // Show animated popup for iOS users
+  if (isIOS && !isStandalone) {
+    installBtn.addEventListener('click', () => {
+      iosPopup.style.display = 'block';
+      requestAnimationFrame(() => {
+        iosPopup.style.bottom = '20px';
+        iosPopup.style.opacity = '1';
+      });
+
+      // Auto-hide after 8 seconds
+      setTimeout(() => {
+        hideIosPopup();
+      }, 8000);
+    });
+  }
+
+  function hideIosPopup() {
+    iosPopup.style.bottom = '-150px';
+    iosPopup.style.opacity = '0';
+    setTimeout(() => {
+      iosPopup.style.display = 'none';
+    }, 600);
+  }
 </script>
+
