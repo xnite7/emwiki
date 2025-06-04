@@ -43,8 +43,10 @@ if (document.querySelector('.intro')) {
       }, 2100)
 
       setTimeout(() => {
-        document.body.style.backgroundSize = "auto 124vh"
+        document.querySelector(".background").style.backgroundSize = "auto 124vh"
+        intro.style['transition'] = "0.5s"
       }, 2000)
+
 
       setTimeout(() => {
         logo.style.scale = "1.2"
