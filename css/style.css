@@ -1365,7 +1365,8 @@ html {
     animation: cloud 8s ease 2s infinite alternate;
     position: absolute;
     pointer-events: none;
-    opacity: 0
+    opacity: 0;
+    width: 160px;
 }
 
 .cloud2 {
@@ -1730,7 +1731,12 @@ html {
     nav a:hover {
         transform: none
     }
-
+    .cloud,
+    .cloud2,
+    .cloud3,
+    .cloud4 {
+        width: 100px;
+    }
     nav a {
         display: flex;
         width: calc(3vw + 60px);
