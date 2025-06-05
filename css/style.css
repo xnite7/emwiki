@@ -1683,7 +1683,7 @@ html {
     }
 
     .title{
-        font: 600 3rem 'Source Sans Pro';
+        font: 600 2.5rem 'Source Sans Pro';
         -webkit-text-stroke: 0px black;
         position: absolute;
         justify-self: anchor-center;
