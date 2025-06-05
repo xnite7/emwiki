@@ -328,7 +328,7 @@ header {
     -ms-user-select: none;
     user-select: none;
     display: grid;
-    opacity: 0;
+
 }
 
 .grad {
