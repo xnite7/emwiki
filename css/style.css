@@ -126,7 +126,17 @@ footer p {
 
 }
 
-body.fonts-loaded .intro, body.fonts-loaded .parallax-bg, body.fonts-loaded header {
+.grad {
+    visibility: hidden;
+    opacity: 0;
+    height: 24vh;
+    width: -webkit-fill-available;
+    position: fixed;
+    z-index: 0;
+    background: linear-gradient(0deg, #fff0 7%, rgb(16 73 102 / .77) 55%, rgb(0 0 0) 100%);
+}
+
+body.fonts-loaded .intro, body.fonts-loaded .parallax-bg, body.fonts-loaded header, body.fonts-loaded .grad {
   visibility: visible;
   opacity: 1;
   
@@ -331,13 +341,7 @@ header {
 
 }
 
-.grad {
-    height: 24vh;
-    width: -webkit-fill-available;
-    position: fixed;
-    z-index: 0;
-    background: linear-gradient(0deg, #fff0 7%, rgb(16 73 102 / .77) 55%, rgb(0 0 0) 100%);
-}
+
 
 h1 {
     font-size: 2.2em
