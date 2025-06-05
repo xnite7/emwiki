@@ -1687,6 +1687,10 @@ html {
         text-shadow: 2px 3px 9px #0006;
     }
     
+    .parallax-bg {
+
+        height: 100%;
+    }
 
     #zd {
         font-size: .6rem;

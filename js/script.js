@@ -10,8 +10,6 @@ const modalPrice = document.getElementById("modal-price-value");
 
 if (document.querySelector('.intro')) {
   window.scrollTo(0, 0); 
-  document.documentElement.scrollTop = 0;
-  document.body.scrollTop = 0;
   let intro = document.querySelector('.intro');
   let logo = document.querySelector('.logo-header');
   let logo3 = document.querySelector('.logo3');
@@ -35,7 +33,7 @@ if (document.querySelector('.intro')) {
 
 
       setTimeout(() => {
-
+        window.scrollTo(0, 0); 
         logoSpan.forEach((span, idx) => {
           setTimeout(() => {
             span.classList.add('active')
@@ -46,7 +44,7 @@ if (document.querySelector('.intro')) {
 
         setTimeout(() => {
           logoSpan.forEach((span, idx) => {
-
+            window.scrollTo(0, 0); 
 
             setTimeout(() => {
               span.classList.remove('active')
@@ -59,11 +57,11 @@ if (document.querySelector('.intro')) {
         }, 2100)
 
         setTimeout(() => {
-
+          window.scrollTo(0, 0); 
           const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
           if (isTouch) {
-            document.querySelector(".parallax-bg").style.backgroundSize = "auto 204vh"
+            document.querySelector(".parallax-bg").style.backgroundSize = "auto 104vh"
             console.log("mobile")
           } else {
             document.querySelector(".parallax-bg").style.backgroundSize = "124vw auto"
