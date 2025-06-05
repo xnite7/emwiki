@@ -672,6 +672,9 @@ async function fetchResults() {
   <!-- Parallax and fade script at bottom -->
   <script>
     const bg = document.querySelector('.parallax-bg');
+	const isTouchr = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+    if (!isTouchr) {
     window.addEventListener('scroll', () => {
       const scrollY = window.scrollY;
       bg.style.transform = `translateY(${scrollY * -0.4}px)`;
@@ -680,6 +683,7 @@ async function fetchResults() {
       const opacity = Math.max(0, 1 - scrollY / fadePoint);
       bg.style.opacity = opacity.toFixed(2);
     });
+  }
   </script>
 </body>
 </html>

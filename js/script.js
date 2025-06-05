@@ -9,6 +9,9 @@ const modalPrice = document.getElementById("modal-price-value");
 
 
 if (document.querySelector('.intro')) {
+  window.scrollTo(0, 0); 
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
   let intro = document.querySelector('.intro');
   let logo = document.querySelector('.logo-header');
   let logo3 = document.querySelector('.logo3');
