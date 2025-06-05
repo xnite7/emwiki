@@ -1688,6 +1688,8 @@ html {
         gap: 9px
     }
 
+
+
     section.catalog {
         background: #707070;
         border-radius: 15px;
@@ -1740,9 +1742,7 @@ html {
         transition: 0.5s
     }
 
-    nav a:hover {
-        transform: none
-    }
+
     .cloud,
     .cloud2,
     .cloud3,
@@ -1760,6 +1760,10 @@ html {
         flex-direction: column;
         flex-wrap: nowrap;
         align-items: stretch
+    }
+
+    nav a:hover {
+        transform: none
     }
 
     nav a:active {
@@ -1813,8 +1817,8 @@ html {
     }
 
     nav a:hover img {
-        margin-bottom: 0;
-        padding: 10px
+        margin-bottom: 0px;
+        padding: 0px;
     }
 
     .logo4 {

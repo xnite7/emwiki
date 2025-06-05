@@ -51,7 +51,7 @@ if (document.querySelector('.intro')) {
       setTimeout(() => {
         
         const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        console.log(isTouch)
+
         if (isTouch) {
           document.querySelector(".parallax-bg").style.backgroundSize = "auto 204vh"
           console.log("mobile")
@@ -83,7 +83,13 @@ if (document.querySelector('.intro')) {
 
       }, 2800)
       setTimeout(() => {
+        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+        if (!isTouch) {
         document.querySelector(".parallax-bg").style.transition = "none";
+        } else {
+        document.querySelector(".parallax-bg").style.transition = "transform 0.1s ease-out, opacity 0.2s ease";
+        }
        // intro.style.display = "none"
       }, 3700)
     })
