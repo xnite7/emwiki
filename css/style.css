@@ -1620,18 +1620,19 @@ html {
     }
 
     h2.title:first-of-type {
-    background: #707070;
-    border-top: solid 3px white;
-    border-right: solid 3px white;
-    height: 29px;
-    border-left: solid 3px white;
-    padding-left: 20px;
-    padding-right: 20px;
-    border-radius: 21px 21px 0 0;
-}
-.title + .title{
-    display: none;
-}
+        background: #707070;
+        border-top: solid 3px white;
+        border-right: solid 3px white;
+        height: 28px;
+        border-left: solid 3px white;
+        padding-left: 20px;
+        padding-right: 20px;
+        border-radius: 15px 15px 0 0;
+    }
+
+    .title + .title{
+        display: none;
+    }
 
     input {
         font-size: 2rem
