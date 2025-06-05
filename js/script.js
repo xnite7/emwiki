@@ -115,56 +115,7 @@ let isModalOpen = false;
 
 
 
-	const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-	// Show modal
-	function showModal(e) {
-	modal.style.display = "block";
-	modal.style.pointerEvents = "auto";
-
-	if (!isTouch) {
-		// Position near mouse on desktop
-		const x = button.getBoundingClientRect().left -content.getBoundingClientRect().width;
-		const y = button.getBoundingClientRect().top -30;
-		content.style.position = "absolute";
-		content.style.left = `${x}px`;
-		content.style.top = `${y}px`;
-		close.style.display="none";
-		modal.style.padding= "0";
-	} else {
-			// Fullscreen on mobile with blur background
-			modal.style.position = "fixed";
-			modal.style.top = "0";
-			modal.style.left = "0";
-			modal.style.width = "-webkit-fill-available";
-			modal.style.height = "-webkit-fill-available";
-			modal.style.backdropFilter = "blur(6px)";
-			modal.style.backgroundColor = "rgba(0,0,0,0.5)";
-			content.style.position = "relative";
-			content.style.margin = "60px auto";
-		}
-	}
-
-	// Close modal
-	function hideModal() {
-		modal.style.display = "none";
-		modal.style.pointerEvents = "none";
-	}
-
-	// Events
-	button.addEventListener("touchend", (e) => {
-	showModal(e);
-	});
-	button.addEventListener("mouseover", (e) => {
-	if (!isTouch) showModal(e);
-	});
-		button.addEventListener("mouseout", (e) => {
-	if (!isTouch) hideModal();
-	});
-	close.addEventListener("click", hideModal);
-	modal.addEventListener("click", (e) => {
-	if (e.target === modal) hideModal();
-	});
 
 
 function Modal() {
