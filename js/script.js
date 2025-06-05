@@ -95,6 +95,9 @@ if (document.querySelector('.intro')) {
     })
     });
   })
+} else {
+          document.documentElement.style.overflow = "scroll"
+        document.documentElement.style.overflowX = "hidden"
 }
 
 function rinse() {
