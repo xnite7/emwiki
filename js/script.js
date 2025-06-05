@@ -93,11 +93,7 @@ if (document.querySelector('.intro')) {
        // intro.style.display = "none"
       }, 3700)
     })
-
-
     });
-
-
   })
 }
 
@@ -584,7 +580,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return true;
     });
 
-    modalPrice.src = "";
+    modalPrice.src = "../imgs/rarity.webp";
     const modalText = modalPrice.nextSibling;
     modalText.textContent = uniqueLines[0];
     Object.assign(modalText.style, {
