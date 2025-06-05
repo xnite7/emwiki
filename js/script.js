@@ -1,3 +1,5 @@
+
+
 let imgg;
 if (document.querySelector('.intro')) {
   let intro = document.querySelector('.intro');
@@ -19,12 +21,16 @@ if (document.querySelector('.intro')) {
     let logo4 = document.querySelector('.logo4')
     logo4.src = imgg
     let header = document.querySelector('.headersheet')
+    document.fonts.ready.then(() => {
+      
+
     setTimeout(() => {
 
       logoSpan.forEach((span, idx) => {
         setTimeout(() => {
           span.classList.add('active')
           logo3.classList.add('active')
+          document.body.classList.add('fonts-loaded');
         }, (idx + 1) * 400)
       });
 
@@ -43,8 +49,19 @@ if (document.querySelector('.intro')) {
       }, 2100)
 
       setTimeout(() => {
-        document.querySelector(".parallax-bg").style.backgroundSize = "auto 124vh"
+        
+        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        console.log(isTouch)
+        if (isTouch) {
+          document.querySelector(".parallax-bg").style.backgroundSize = "auto 204vh"
+          console.log("mobile")
+        } else {
+          document.querySelector(".parallax-bg").style.backgroundSize = "124vw auto"
+          console.log("pc")
+        }
+
         intro.style['transition'] = "0.5s"
+
       }, 2000)
 
 
@@ -52,6 +69,8 @@ if (document.querySelector('.intro')) {
         logo.style.scale = "1.2"
         intro.style.backdropFilter = 'blur(0px)'
         intro.style.filter = 'opacity(0) blur(9px)'
+        document.documentElement.style.overflow = "scroll"
+        document.documentElement.style.overflowX = "hidden"
         
         
       }, 2440)
@@ -64,9 +83,15 @@ if (document.querySelector('.intro')) {
 
       }, 2800)
       setTimeout(() => {
+        document.querySelector(".parallax-bg").style.transition = "none";
        // intro.style.display = "none"
-      }, 3000)
+      }, 3700)
     })
+
+
+    });
+
+
   })
 }
 

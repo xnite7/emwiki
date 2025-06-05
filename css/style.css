@@ -12,17 +12,20 @@ body {
 }
 
 .parallax-bg {
+  background-position: top;
+  visibility: hidden;
+  opacity: 0;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 120%;
+  height: 1000vw;
   background-image: url('/imgs/bg.jpg'); /* Replace with your actual path */
-  background-size: auto 100vh;
-  background-position: center;
+  background-size: 100vw auto;
+
+  background-repeat: no-repeat;
   z-index: -1;
   transform: translateY(0);
-  opacity: 1;
   transition: all cubic-bezier(.55,-0.01,.36,1) 1.7s, transform 0.1s ease-out, opacity 0.2s ease;
   will-change: transform, opacity;
 
@@ -34,19 +37,6 @@ body {
 }
 
 
-.background {
-  position: fixed;
-  transition: 0.5s;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: url('/imgs/bg.jpg'); /* your background path */
-  background-size: auto 100vh;
-      transition: cubic-bezier(.55,-0.01,.36,1) 1.7s;
-  background-position: center;
-  z-index: -1;
-}
 
 @keyframes pulse-highlight {
     0% {
@@ -119,19 +109,31 @@ footer p {
 
 
 .intro {
+    visibility: hidden;
+    opacity: 0;
     position: fixed;
     z-index: 1272;
     display: grid;
     top: 0;
     left: 0;
     width: -webkit-fill-available;
-    transition: filter 0.5s;
+    transition: filter 0.5s,opacity 0.4s ease;
     height: 100vh;
     height: 100dvh;
     height: calc(var(--vh, 1vh) * 100);
     background: linear-gradient(180deg, #e9e9e9, #ffffff80);
     backdrop-filter: blur(10px);
 
+}
+
+body.fonts-loaded .intro, body.fonts-loaded .parallax-bg, body.fonts-loaded header {
+  visibility: visible;
+  opacity: 1;
+  
+}
+
+body.fonts-loaded html {
+    overflow: scroll;
 }
 
 .logo4 {
@@ -320,12 +322,21 @@ main {
 
 
 header {
-    background: linear-gradient(0deg, #fff0 7%, rgb(16 73 102 / .77) 55%, rgb(0 0 0) 100%);
+    
     padding: 2.2rem;
     -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    display: grid
+    display: grid;
+    opacity: 0;
+}
+
+.grad {
+    height: 24vh;
+    width: -webkit-fill-available;
+    position: fixed;
+    z-index: 0;
+    background: linear-gradient(0deg, #fff0 7%, rgb(16 73 102 / .77) 55%, rgb(0 0 0) 100%);
 }
 
 h1 {
@@ -1179,7 +1190,8 @@ input {
 }
 
 html {
-    overflow-x: hidden
+    overflow-x: hidden;
+    overflow: hidden;
 }
 
 html {
@@ -1556,7 +1568,7 @@ html {
     }
 
     header {
-        background: linear-gradient(0deg, #fff0 7%, rgb(16 73 102 / .77) 55%, rgb(0 0 0) 100%);
+        
         padding: 1rem 2.2rem 0rem 2.2rem;
         -webkit-user-select: none;
         -ms-user-select: none;
@@ -1767,6 +1779,14 @@ html {
         flex-direction: column;
         align-items: flex-start
     }
+
+
+    .parallax-bg {
+
+        background-size: auto 124vh;
+
+    }
+
 
     .scammer-img {
         width: 195px;
