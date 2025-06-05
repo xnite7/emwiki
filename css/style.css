@@ -1328,6 +1328,7 @@ html {
     border-radius: 20px;
     background: #343434;
     padding-top: 65px
+    
 }
 
 #zd {
@@ -1887,6 +1888,9 @@ html {
 		flex-wrap: wrap;
     }
 
+    #ctlg {
+        zoom: 0.75;
+    }
 
 
     #h3 {
