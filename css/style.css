@@ -1629,6 +1629,9 @@ html {
     padding-right: 20px;
     border-radius: 21px 21px 0 0;
 }
+.title + .title{
+    display: none;
+}
 
     input {
         font-size: 2rem
@@ -1681,11 +1684,11 @@ html {
 
     .title{
         font: 600 3rem 'Source Sans Pro';
-        -webkit-text-stroke: 1rem black;
+        -webkit-text-stroke: 0px black;
         position: absolute;
         justify-self: anchor-center;
-        top: -57px;
-        text-shadow: 2px 3px 9px #0006;
+        top: -49px;
+        
     }
     
     .parallax-bg {
