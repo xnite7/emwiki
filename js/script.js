@@ -1,6 +1,13 @@
-
-
 let imgg;
+const modal = document.getElementById("product-modal");
+const popo = document.getElementById("popo");
+const modalContent = document.getElementById("modal-content");
+const modalTitle = document.getElementById("modal-title");
+const modalPrc = document.getElementById("modal-prc");
+const modalDescription = document.getElementById("modal-description");
+const modalPrice = document.getElementById("modal-price-value");
+
+
 if (document.querySelector('.intro')) {
   let intro = document.querySelector('.intro');
   let logo = document.querySelector('.logo-header');
@@ -22,83 +29,419 @@ if (document.querySelector('.intro')) {
     logo4.src = imgg
     let header = document.querySelector('.headersheet')
     document.fonts.ready.then(() => {
-      
 
-    setTimeout(() => {
-
-      logoSpan.forEach((span, idx) => {
-        setTimeout(() => {
-          span.classList.add('active')
-          logo3.classList.add('active')
-          document.body.classList.add('fonts-loaded');
-        }, (idx + 1) * 400)
-      });
 
       setTimeout(() => {
+
         logoSpan.forEach((span, idx) => {
-
-
           setTimeout(() => {
-            span.classList.remove('active')
-            span.classList.add('fade')
-            logo3.classList.remove('active')
-            logo3.classList.add('fade')
+            span.classList.add('active')
+            logo3.classList.add('active')
+            document.body.classList.add('fonts-loaded');
+          }, (idx + 1) * 400)
+        });
 
-          }, (idx + 1) * 20)
-        })
-      }, 2100)
-
-      setTimeout(() => {
-        
-        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-        if (isTouch) {
-          document.querySelector(".parallax-bg").style.backgroundSize = "auto 204vh"
-          console.log("mobile")
-        } else {
-          document.querySelector(".parallax-bg").style.backgroundSize = "124vw auto"
-          console.log("pc")
-        }
-
-        intro.style['transition'] = "0.5s"
-
-      }, 2000)
+        setTimeout(() => {
+          logoSpan.forEach((span, idx) => {
 
 
-      setTimeout(() => {
-        logo.style.scale = "1.2"
-        intro.style.backdropFilter = 'blur(0px)'
-        intro.style.filter = 'opacity(0) blur(9px)'
-        document.documentElement.style.overflow = "scroll"
-        document.documentElement.style.overflowX = "hidden"
-        
-        
-      }, 2440)
-      setTimeout(() => {
-        intro.style.top = "-100vh"
-        header.style.opacity = "1"
-        let main = document.querySelector("main");
-        main.style.scale = "1"
-        main.style.filter = 'opacity(1)'
+            setTimeout(() => {
+              span.classList.remove('active')
+              span.classList.add('fade')
+              logo3.classList.remove('active')
+              logo3.classList.add('fade')
 
-      }, 2800)
-      setTimeout(() => {
-        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            }, (idx + 1) * 20)
+          })
+        }, 2100)
 
-        if (!isTouch) {
-        document.querySelector(".parallax-bg").style.transition = "none";
-        } else {
-        document.querySelector(".parallax-bg").style.transition = "transform 0.1s ease-out, opacity 0.2s ease";
-        }
-       // intro.style.display = "none"
-      }, 3700)
-    })
+        setTimeout(() => {
+
+          const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+          if (isTouch) {
+            document.querySelector(".parallax-bg").style.backgroundSize = "auto 204vh"
+            console.log("mobile")
+          } else {
+            document.querySelector(".parallax-bg").style.backgroundSize = "124vw auto"
+            console.log("pc")
+          }
+
+          intro.style['transition'] = "0.5s"
+
+        }, 2000)
+
+
+        setTimeout(() => {
+          logo.style.scale = "1.2"
+          intro.style.backdropFilter = 'blur(0px)'
+          intro.style.filter = 'opacity(0) blur(9px)'
+          document.documentElement.style.overflow = "scroll"
+          document.documentElement.style.overflowX = "hidden"
+
+
+        }, 2440)
+        setTimeout(() => {
+          intro.style.top = "-100vh"
+          header.style.opacity = "1"
+          let main = document.querySelector("main");
+          main.style.scale = "1"
+          main.style.filter = 'opacity(1)'
+
+        }, 2800)
+        setTimeout(() => {
+          const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+          if (!isTouch) {
+            document.querySelector(".parallax-bg").style.transition = "none";
+          } else {
+            document.querySelector(".parallax-bg").style.transition = "transform 0.1s ease-out, opacity 0.2s ease";
+          }
+          // intro.style.display = "none"
+        }, 3700)
+      })
     });
   })
 } else {
-          document.documentElement.style.overflow = "scroll"
-        document.documentElement.style.overflowX = "hidden"
+  document.documentElement.style.overflow = "scroll"
+  document.documentElement.style.overflowX = "hidden"
 }
+
+
+// Simplified modal interaction logic
+let isModalOpen = false;
+
+
+
+
+
+	const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+	// Show modal
+	function showModal(e) {
+	modal.style.display = "block";
+	modal.style.pointerEvents = "auto";
+
+	if (!isTouch) {
+		// Position near mouse on desktop
+		const x = button.getBoundingClientRect().left -content.getBoundingClientRect().width;
+		const y = button.getBoundingClientRect().top -30;
+		content.style.position = "absolute";
+		content.style.left = `${x}px`;
+		content.style.top = `${y}px`;
+		close.style.display="none";
+		modal.style.padding= "0";
+	} else {
+			// Fullscreen on mobile with blur background
+			modal.style.position = "fixed";
+			modal.style.top = "0";
+			modal.style.left = "0";
+			modal.style.width = "-webkit-fill-available";
+			modal.style.height = "-webkit-fill-available";
+			modal.style.backdropFilter = "blur(6px)";
+			modal.style.backgroundColor = "rgba(0,0,0,0.5)";
+			content.style.position = "relative";
+			content.style.margin = "60px auto";
+		}
+	}
+
+	// Close modal
+	function hideModal() {
+		modal.style.display = "none";
+		modal.style.pointerEvents = "none";
+	}
+
+	// Events
+	button.addEventListener("touchend", (e) => {
+	showModal(e);
+	});
+	button.addEventListener("mouseover", (e) => {
+	if (!isTouch) showModal(e);
+	});
+		button.addEventListener("mouseout", (e) => {
+	if (!isTouch) hideModal();
+	});
+	close.addEventListener("click", hideModal);
+	modal.addEventListener("click", (e) => {
+	if (e.target === modal) hideModal();
+	});
+
+
+function Modal() {
+  if (isModalOpen) return;
+
+  const item = event.target.closest(".item");
+  if (!item) return;
+
+  document.querySelectorAll(".item").forEach((el) => el.classList.remove("showing"));
+  item.classList.add("showing");
+
+  const title = item.querySelector("#h3").textContent;
+  const imageSrc = item.dataset.image;
+  const from = item.querySelector("#from").textContent.replace(/<br>/g, "\n");
+  const prcdra = item.querySelector("#pricecoderarity").textContent;
+  const price = item.querySelector("p img").nextSibling.textContent.trim();
+
+  modalContent.style.pointerEvents = "none";
+  modalContent.style.backgroundColor = item.style.backgroundColor;
+  modalTitle.textContent = title;
+  const existingCanvas = modalContent.querySelector("#content-area canvas");
+  if (existingCanvas) existingCanvas.remove();
+  if (item.id !== "titles") {
+
+
+    const canvas = document.createElement("canvas");
+    Object.assign(canvas.style, {
+      maxWidth: "100%",
+      maxHeight: "100%",
+      display: "block",
+      userSelect: "none",
+      webkitUserSelect: "none",
+      pointerEvents: "none"
+    });
+
+    modalContent.querySelector("#content-area").insertBefore(canvas, modalDescription);
+
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+    };
+    img.src = imageSrc;
+  }
+
+  modalDescription.textContent = from;
+  modalPrice.setAttribute("draggable", false);
+  modalTitle.style.display = item.id === "titles" ? "none" : "block";
+
+  modalContent.querySelectorAll(".font").forEach((el) => el.remove());
+
+  const bgColors = {
+    pets: "rgb(39, 102, 221)",
+    effects: "rgb(243, 164, 37)",
+    deaths: "rgb(221, 89, 62)",
+    titles: "rgb(154, 45, 209)",
+    gears: "rgb(55, 205, 68)"
+  };
+
+  if (bgColors[item.id]) {
+    modalContent.style.backgroundColor = bgColors[item.id];
+  }
+
+  if (item.id === "titles") {
+    const clone = item.querySelector("#h3").cloneNode(true);
+    Object.assign(clone.style, {
+      height: "100%",
+      //scale: "1.5",
+      paddingTop: "4px",
+      zoom: "2",
+      width: "-webkit-fill-available",
+      zIndex: "22",
+      margin: "31px 0px 46px 0px",
+      alignSelf: "center",
+      position: "relative",
+      alignContent: "center"
+    });
+    if (clone.children.length > 0) {
+      Object.assign(clone.children[0].style, {
+        height: "97%",
+        position: "absolute",
+        placeContent: "center",
+        width: "inherit",
+      });
+    }
+    clone.classList.add("font");
+    modalContent.querySelector("#content-area").insertBefore(clone, modalDescription);
+  }
+
+  const splitted = prcdra.split("<br>");
+
+
+
+
+
+  // Remove duplicates but keep the first occurrence
+  const seen = new Set();
+  const uniqueLines = splitted.filter(line => {
+    if (seen.has(line)) return false;
+    seen.add(line);
+    return true;
+  });
+
+  modalPrice.src = "./imgs/rarity.webp";
+  const modalText = modalPrice.nextSibling;
+  modalText.textContent = uniqueLines[0];
+  Object.assign(modalText.style, {
+    color: "#fff",
+    fontSize: "32px",
+    fontWeight: 400,
+    textStroke: "",
+    webkitTextStroke: "",
+    textShadow: ""
+  });
+
+  popo.parentElement.querySelectorAll(".price").forEach((el, idx) => {
+    if (idx > 0) el.remove();
+  });
+
+  uniqueLines.slice(1).forEach((line) => {
+    const newPrice = popo.cloneNode(true);
+    newPrice.childNodes[1].textContent = line;
+    popo.parentElement.appendChild(newPrice);
+  });
+
+  popo.parentElement.querySelectorAll(".price").forEach((priceEl) => {
+    const children = priceEl.children;
+    if (children.length > 1) {
+      const text = children[1].textContent;
+      if (!text) return priceEl.style.display = "none";
+
+      if (text.includes("Tokens")) {
+        Object.assign(children[1].style, { fontWeight: 500, textStroke: "1px rgb(255, 83, 219)", webkitTextStroke: "1px rgb(255, 83, 219)" });
+      }
+      if (text.includes("Robux")) {
+        Object.assign(children[1].style, { fontWeight: 700 });
+      }
+
+      const iconMap = {
+        Robux: "https://i.imgur.com/cf8ZvY7.png",
+        Coins: "./imgs/Coin.webp",
+        Stars: "https://i.imgur.com/WKeX5AS.png",
+        Visors: "https://i.imgur.com/7IoLZCN.png",
+        Pumpkins: "https://i.imgur.com/bHRBTrU.png",
+        Eggs: "https://i.imgur.com/qMxjgQy.png",
+        Opals: "https://i.imgur.com/wwMMAvr.png",
+        Opal: "https://i.imgur.com/wwMMAvr.png",
+        Baubles: "./imgs/bauble.png",
+        Bauble: "./imgs/bauble.png",
+        Tokens: "https://i.imgur.com/Cy9r140.png",
+        Token: "https://i.imgur.com/Cy9r140.png"
+      };
+
+      for (const [key, src] of Object.entries(iconMap)) {
+        if (text.includes(key)) {
+          children[1].textContent = text.replace(` ${key}`, "");
+          children[0].src = src;
+          break;
+        }
+      }
+      Object.assign(children[1].style, { fontFamily: "BuilderSans" });
+      if (text.includes("%")) {
+        children[1].style.color = "rgb(193 68 255)";
+        children[1].style.fontWeight = 500;
+        children[1].style.textShadow = "0 0 6px rgb(199 0 255)";
+      } else if (text.includes("[EXPIRED]")) {
+        Object.assign(children[1].style, { fontFamily: "monospace", fontSize: "23px", color: "rgb(161 17 17)" });
+      } else if (text.includes("[ACTIVE]")) {
+        Object.assign(children[1].style, { fontFamily: "monospace", fontSize: "23px", color: "rgb(251 255 68)" });
+      } else if (text.includes("Unobtainable")) {
+        children[0].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Red_x.svg/600px-Red_x.svg.png";
+        children[1].style.color = "rgb(255 44 44)";
+      }
+
+      priceEl.style.display = children[1].textContent ? "flex" : "none";
+    }
+  });
+
+  modalPrc.innerHTML = `<img src="https://i.imgur.com/iZGLVYo.png" style="height: 37px;">${price || 0}`;
+
+  // Show the modal with animation
+  const itemRect = item.getBoundingClientRect();
+  modal.style.display = "flex";
+  modal.classList.add("show");
+  isModalOpen = true;
+
+  Object.assign(modalContent.style, {
+    position: "absolute",
+    top: `${itemRect.top}px`,
+    left: `${itemRect.left}px`,
+    width: `${itemRect.width}px`,
+    height: `${itemRect.height}px`
+  });
+
+  setTimeout(() => {
+    Object.assign(modalContent.style, {
+      position: "relative",
+      top: "0",
+      left: "0",
+      width: "",
+      height: "",
+      pointerEvents: "all"
+    });
+    modalContent.classList.add("expand");
+  }, 10);
+};
+
+const closeModalHandler = () => {
+  modalContent.classList.remove("expand");
+  modal.classList.remove("show");
+  modalContent.style.pointerEvents = "none";
+  setTimeout(() => {
+    isModalOpen = false;
+  }, 200)
+};
+
+
+window.addEventListener("click", (event) => {
+  if (event.target === modal) closeModalHandler();
+});
+window.addEventListener("touchend", (event) => {
+  if (event.target === modal) closeModalHandler();
+});
+
+
+
+resize_to_fit();
+
+function resize_to_fit() {
+  const items = document.querySelectorAll('.catalog-grid .item'); // Define items here
+
+  const observer = new MutationObserver((mutations, obs) => {
+    const items = document.querySelectorAll('.catalog-grid .item'); // Move query inside the function
+    if (items.length > 0) { // Check if items are generated
+      obs.disconnect(); // Stop observing
+      items.forEach(item => {
+        if (item.id != "titles") {
+          return;
+        }
+        if (item.childNodes[1]) {
+          let fontsize = parseInt(window.getComputedStyle(item.childNodes[1]).fontSize, 10);
+
+          while (item.childNodes[1].offsetWidth > 150 && fontsize > 14) {
+            fontsize -= 2;
+            item.childNodes[1].style.fontSize = `${fontsize}px`;
+          }
+        }
+      });
+    }
+  });
+
+  observer.observe(document.querySelector('.catalog-grid'), { childList: true, subtree: true });
+
+  items.forEach(item => {
+    if (item.id != "titles") {
+      return;
+    }
+    if (item.childNodes[1]) {
+      let fontsize = parseInt(window.getComputedStyle(item.childNodes[1]).fontSize, 10);
+
+      while (item.childNodes[1].offsetWidth > 150 && fontsize > 14) {
+        fontsize -= 2;
+        item.childNodes[1].style.fontSize = `${fontsize}px`;
+      }
+    }
+    // Decrease the font size
+  });
+}
+
+
+
+
+
+
+
 
 function rinse() {
   fetch('https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91')
@@ -146,33 +489,44 @@ function rinse() {
       }
       // Add this after you fetch and parse your data in rinse(), before calling showInfo(arr, color):
 
-      // Find and display new items in the #newest grid
-      const newestGrid = document.getElementById("newest");
-      if (newestGrid) {
-        newestGrid.innerHTML = ""; // Clear previous
+      // Combined logic for #new, #weekly, #weeklystar grids
+      const gridConfigs = [
+        "new",
+        "weekly",
+        "weeklystar"
+      ];
 
-        // Go through each category and assign the right color
-        const categoryColors = {
-          gears: "rgb(91, 254, 106)",
-          deaths: "rgb(255, 122, 94)",
-          titles: "rgb(201, 96, 254)",
-          pets: "rgb(55, 122, 250)",
-          effects: "rgb(255, 177, 53)"
-        };
+      const categoryColors = {
+        gears: "rgb(91, 254, 106)",
+        deaths: "rgb(255, 122, 94)",
+        titles: "rgb(201, 96, 254)",
+        pets: "rgb(55, 122, 250)",
+        effects: "rgb(255, 177, 53)"
+      };
 
-        Object.entries(categoryColors).forEach(([key, color]) => {
-          if (Array.isArray(arr[key])) {
-            arr[key].forEach(item => {
-              if (item.new === true) {
-                createNewItem(item, color);
-                // Move the created .item from #ctlg to #newest
-                const lastItem = document.querySelector("#ctlg .item:last-child");
-                if (lastItem) newestGrid.appendChild(lastItem);
-              }
-            });
-          }
-        });
-      }
+      gridConfigs.forEach(gridId => {
+        const grid = document.getElementById(gridId);
+        if (grid) {
+          grid.addEventListener("click", (event) => {
+            Modal(event);
+          });
+          grid.innerHTML = ""; // Clear previous
+          Object.entries(categoryColors).forEach(([key, color]) => {
+            if (Array.isArray(arr[key])) {
+              arr[key].forEach(item => {
+                if (item[gridId] === true) {
+                  createNewItem(item, color);
+                  // Move the created .item from #ctlg to the current grid
+                  const lastItem = document.querySelector("#ctlg .item:last-child");
+                  if (lastItem) grid.appendChild(lastItem);
+                }
+              });
+            }
+          });
+        }
+      });
+
+
       showInfo(arr, color); // Pass the color to the showInfo function
     })
     .catch(error => console.error('Error fetching data:', error));
@@ -206,7 +560,7 @@ function createNewItem(item, color) {
   // Premium icon
   if (item.premium) {
     const premium = document.createElement("img");
-    premium.src = "../imgs/prem.png";
+    premium.src = "./imgs/prem.png";
     premium.style.width = "17%";
     premium.style.height = "auto";
     premium.style.position = "sticky";
@@ -433,24 +787,13 @@ function showInfo(arr, color) {
 document.addEventListener("DOMContentLoaded", () => {
   template = document.getElementById("itom");
   const catalog = document.getElementById("ctlg"); // Parent container for items
-  const catalog2 = document.getElementById("newest"); // Parent container for items
-  const modal = document.getElementById("product-modal");
-  const popo = document.getElementById("popo");
-  const modalContent = document.getElementById("modal-content");
-  const closeModal = document.getElementById("close-modal");
-  const modalTitle = document.getElementById("modal-title");
-  const modalPrc = document.getElementById("modal-prc");
-  const modalDescription = document.getElementById("modal-description");
-  const modalPrice = document.getElementById("modal-price-value");
+  //const catalog2 = document.getElementById("new"); // Parent container for items
+
   let main = document.querySelector("main");
   catalog.addEventListener("click", (event) => {
     Modal(event);
   });
-  if (catalog2) {
-    catalog2.addEventListener("click", (event) => {
-      Modal(event);
-    });
-  }
+
 
   if (main.style.scale == '1') {
     main.style.filter = 'opacity(1)'
@@ -477,277 +820,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Simplified modal interaction logic
-  let isModalOpen = false;
 
-  function Modal() {
-    if (isModalOpen) return;
-
-    const item = event.target.closest(".item");
-    if (!item) return;
-
-    document.querySelectorAll(".item").forEach((el) => el.classList.remove("showing"));
-    item.classList.add("showing");
-
-    const title = item.querySelector("#h3").textContent;
-    const imageSrc = item.dataset.image;
-    const from = item.querySelector("#from").textContent.replace(/<br>/g, "\n");
-    const prcdra = item.querySelector("#pricecoderarity").textContent;
-    const price = item.querySelector("p img").nextSibling.textContent.trim();
-
-    modalContent.style.pointerEvents = "none";
-    modalContent.style.backgroundColor = item.style.backgroundColor;
-    modalTitle.textContent = title;
-    const existingCanvas = modalContent.querySelector("#content-area canvas");
-    if (existingCanvas) existingCanvas.remove();
-    if (item.id !== "titles") {
-
-
-      const canvas = document.createElement("canvas");
-      Object.assign(canvas.style, {
-        maxWidth: "100%",
-        maxHeight: "100%",
-        display: "block",
-        userSelect: "none",
-        webkitUserSelect: "none",
-        pointerEvents: "none"
-      });
-
-      modalContent.querySelector("#content-area").insertBefore(canvas, modalDescription);
-
-      const ctx = canvas.getContext("2d");
-      const img = new Image();
-      img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-      };
-      img.src = imageSrc;
-    }
-
-    modalDescription.textContent = from;
-    modalPrice.setAttribute("draggable", false);
-    modalTitle.style.display = item.id === "titles" ? "none" : "block";
-
-    modalContent.querySelectorAll(".font").forEach((el) => el.remove());
-
-    const bgColors = {
-      pets: "rgb(39, 102, 221)",
-      effects: "rgb(243, 164, 37)",
-      deaths: "rgb(221, 89, 62)",
-      titles: "rgb(154, 45, 209)",
-      gears: "rgb(55, 205, 68)"
-    };
-
-    if (bgColors[item.id]) {
-      modalContent.style.backgroundColor = bgColors[item.id];
-    }
-
-    if (item.id === "titles") {
-      const clone = item.querySelector("#h3").cloneNode(true);
-      Object.assign(clone.style, {
-        height: "100%",
-        //scale: "1.5",
-        paddingTop: "4px",
-        zoom: "2",
-        width: "-webkit-fill-available",
-        zIndex: "22",
-        margin: "31px 0px 46px 0px",
-        alignSelf: "center",
-        position: "relative",
-        alignContent: "center"
-      });
-      if (clone.children.length > 0) {
-        Object.assign(clone.children[0].style, {
-          height: "97%",
-          position: "absolute",
-          placeContent: "center",
-          width: "inherit",
-        });
-      }
-      clone.classList.add("font");
-      modalContent.querySelector("#content-area").insertBefore(clone, modalDescription);
-    }
-
-    const splitted = prcdra.split("<br>");
-
-
-
-
-
-    // Remove duplicates but keep the first occurrence
-    const seen = new Set();
-    const uniqueLines = splitted.filter(line => {
-      if (seen.has(line)) return false;
-      seen.add(line);
-      return true;
-    });
-
-    modalPrice.src = "../imgs/rarity.webp";
-    const modalText = modalPrice.nextSibling;
-    modalText.textContent = uniqueLines[0];
-    Object.assign(modalText.style, {
-      color: "#fff",
-      fontSize: "32px",
-      fontWeight: 400,
-      textStroke: "",
-      webkitTextStroke: "",
-      textShadow: ""
-    });
-
-    popo.parentElement.querySelectorAll(".price").forEach((el, idx) => {
-      if (idx > 0) el.remove();
-    });
-
-    uniqueLines.slice(1).forEach((line) => {
-      const newPrice = popo.cloneNode(true);
-      newPrice.childNodes[1].textContent = line;
-      popo.parentElement.appendChild(newPrice);
-    });
-
-    popo.parentElement.querySelectorAll(".price").forEach((priceEl) => {
-      const children = priceEl.children;
-      if (children.length > 1) {
-        const text = children[1].textContent;
-        if (!text) return priceEl.style.display = "none";
-
-        if (text.includes("Tokens")) {
-          Object.assign(children[1].style, { fontWeight: 500, textStroke: "1px rgb(255, 83, 219)", webkitTextStroke: "1px rgb(255, 83, 219)" });
-        }
-        if (text.includes("Robux")) {
-          Object.assign(children[1].style, { fontWeight: 700 });
-        }
-
-        const iconMap = {
-          Robux: "https://i.imgur.com/cf8ZvY7.png",
-          Coins: "../imgs/Coin.webp",
-          Stars: "https://i.imgur.com/WKeX5AS.png",
-          Visors: "https://i.imgur.com/7IoLZCN.png",
-          Pumpkins: "https://i.imgur.com/bHRBTrU.png",
-          Eggs: "https://i.imgur.com/qMxjgQy.png",
-          Opals: "https://i.imgur.com/wwMMAvr.png",
-          Opal: "https://i.imgur.com/wwMMAvr.png",
-          Baubles: "../imgs/bauble.png",
-          Bauble: "../imgs/bauble.png",
-          Tokens: "https://i.imgur.com/Cy9r140.png",
-          Token: "https://i.imgur.com/Cy9r140.png"
-        };
-
-        for (const [key, src] of Object.entries(iconMap)) {
-          if (text.includes(key)) {
-            children[1].textContent = text.replace(` ${key}`, "");
-            children[0].src = src;
-            break;
-          }
-        }
-        Object.assign(children[1].style, { fontFamily: "BuilderSans" });
-        if (text.includes("%")) {
-          children[1].style.color = "rgb(193 68 255)";
-          children[1].style.fontWeight = 500;
-          children[1].style.textShadow = "0 0 6px rgb(199 0 255)";
-        } else if (text.includes("[EXPIRED]")) {
-          Object.assign(children[1].style, { fontFamily: "monospace", fontSize: "23px", color: "rgb(161 17 17)" });
-        } else if (text.includes("[ACTIVE]")) {
-          Object.assign(children[1].style, { fontFamily: "monospace", fontSize: "23px", color: "rgb(251 255 68)" });
-        } else if (text.includes("Unobtainable")) {
-          children[0].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Red_x.svg/600px-Red_x.svg.png";
-          children[1].style.color = "rgb(255 44 44)";
-        }
-
-        priceEl.style.display = children[1].textContent ? "flex" : "none";
-      }
-    });
-
-    modalPrc.innerHTML = `<img src="https://i.imgur.com/iZGLVYo.png" style="height: 37px;">${price || 0}`;
-
-    // Show the modal with animation
-    const itemRect = item.getBoundingClientRect();
-    modal.style.display = "flex";
-    modal.classList.add("show");
-    isModalOpen = true;
-
-    Object.assign(modalContent.style, {
-      position: "absolute",
-      top: `${itemRect.top}px`,
-      left: `${itemRect.left}px`,
-      width: `${itemRect.width}px`,
-      height: `${itemRect.height}px`
-    });
-
-    setTimeout(() => {
-      Object.assign(modalContent.style, {
-        position: "relative",
-        top: "0",
-        left: "0",
-        width: "",
-        height: "",
-        pointerEvents: "all"
-      });
-      modalContent.classList.add("expand");
-    }, 10);
-  };
-
-  const closeModalHandler = () => {
-    modalContent.classList.remove("expand");
-    modal.classList.remove("show");
-    modalContent.style.pointerEvents = "none";
-    setTimeout(() => {
-      isModalOpen = false;
-    }, 200)
-  };
-
-  closeModal.addEventListener("click", closeModalHandler);
-  window.addEventListener("click", (event) => {
-    if (event.target === modal) closeModalHandler();
-  });
-  window.addEventListener("touchend", (event) => {
-    if (event.target === modal) closeModalHandler();
-  });
-
-
-
-  resize_to_fit();
-
-  function resize_to_fit() {
-    const items = document.querySelectorAll('.catalog-grid .item'); // Define items here
-
-    const observer = new MutationObserver((mutations, obs) => {
-      const items = document.querySelectorAll('.catalog-grid .item'); // Move query inside the function
-      if (items.length > 0) { // Check if items are generated
-        obs.disconnect(); // Stop observing
-        items.forEach(item => {
-          if (item.id != "titles") {
-            return;
-          }
-          if (item.childNodes[1]) {
-            let fontsize = parseInt(window.getComputedStyle(item.childNodes[1]).fontSize, 10);
-
-            while (item.childNodes[1].offsetWidth > 150 && fontsize > 14) {
-              fontsize -= 2;
-              item.childNodes[1].style.fontSize = `${fontsize}px`;
-            }
-          }
-        });
-      }
-    });
-
-    observer.observe(document.querySelector('.catalog-grid'), { childList: true, subtree: true });
-
-    items.forEach(item => {
-      if (item.id != "titles") {
-        return;
-      }
-      if (item.childNodes[1]) {
-        let fontsize = parseInt(window.getComputedStyle(item.childNodes[1]).fontSize, 10);
-
-        while (item.childNodes[1].offsetWidth > 150 && fontsize > 14) {
-          fontsize -= 2;
-          item.childNodes[1].style.fontSize = `${fontsize}px`;
-        }
-      }
-      // Decrease the font size
-    });
-  }
 });
 
 

@@ -20,7 +20,7 @@ body {
   left: 0;
   width: 100%;
   height: 1000vw;
-  background-image: url('/imgs/bg.jpg'); /* Replace with your actual path */
+  background-image: url('../imgs/bg.jpg'); /* Replace with your actual path */
   background-size: 100vw auto;
 
   background-repeat: no-repeat;
@@ -30,6 +30,12 @@ body {
   will-change: transform, opacity;
 
 }
+
+
+
+
+
+
 
 .content {
   position: relative;
@@ -541,14 +547,29 @@ main {
 }
 
 section {
-    background: #707070;
+    background: #757575;
     border-radius: 15px;
     padding: 2rem;
     box-shadow: 0 5px 15px rgb(0 0 0 / 30%);
     position: sticky;
     z-index: 22;
     margin: 0 5vw 38px 5vw;
-    flex: 1 20030px
+    flex: 1 20030px;
+    border: solid #ffefda;
+    padding: 3vw 3vw;
+}
+
+.title{
+    font: 600 3rem 'Source Sans Pro';
+    -webkit-text-stroke: 0.5rem black;
+    position: absolute;
+    justify-self: anchor-center;
+    top: -75px;
+    text-shadow: 2px 3px 9px #0006;
+}
+
+.title + .title{
+    -webkit-text-stroke: 0px black;
 }
 
 .show {
@@ -623,7 +644,8 @@ div.logo-container {
 
 .catalog {
     text-align: center;
-    padding-bottom: 66px
+    padding-bottom: 15px;
+    background: #434343;
 }
 
 p {
@@ -634,13 +656,6 @@ p {
 .catalog p {
     font: 600 1.25rem 'Source Sans Pro';
     color: #fff
-}
-
-.catalog h2 {
-    margin-top: 1px;
-    text-shadow: 2px 3px 9px #0006;
-    font-size: 2rem;
-    margin-bottom: 1rem
 }
 
 .catalog-grid {
@@ -697,6 +712,18 @@ p {
     white-space: pre;
     font: 600 1em 'BuilderSans';
     transition: all 0.2s
+}
+
+
+h2.title:first-of-type {
+    background: #434343;
+    border-top: solid 3px white;
+    border-right: solid 3px white;
+    height: 33px;
+    border-left: solid 3px white;
+    padding-left: 20px;
+    padding-right: 20px;
+    border-radius: 21px 21px 0 0;
 }
 
 .ff {
@@ -1440,6 +1467,8 @@ html {
     }
 }
 
+
+
 @keyframes cloud {
     0% {
         transform: translateY(0);
@@ -1451,6 +1480,15 @@ html {
         opacity: .8
     }
 }
+
+    #new, #weekly, #weeklystar {
+        zoom: 1;
+        display: flex;
+        flex-flow: row;
+		justify-content: center;
+        gap: 0.5rem;
+		flex-wrap: wrap;
+    }
 
 #credits-modal {
     display: none;
@@ -1580,6 +1618,17 @@ html {
         display: grid
     }
 
+    h2.title:first-of-type {
+    background: #707070;
+    border-top: solid 3px white;
+    border-right: solid 3px white;
+    height: 24px;
+    border-left: solid 3px white;
+    padding-left: 20px;
+    padding-right: 20px;
+    border-radius: 21px 21px 0 0;
+}
+
     input {
         font-size: 2rem
     }
@@ -1629,16 +1678,20 @@ html {
         font: 600 1.45em 'BuilderSans'
     }
 
+    .title{
+        font: 600 4rem 'Source Sans Pro';
+        -webkit-text-stroke: 1rem black;
+        position: absolute;
+        justify-self: anchor-center;
+        top: -57px;
+        text-shadow: 2px 3px 9px #0006;
+    }
+    
+
     #zd {
         font-size: .6rem;
         font-weight: 100;
         margin: 0 0 17px 0
-    }
-
-    .catalog h2 {
-        text-shadow: 2px 3px 9px #0006;
-        font-size: 1.32rem;
-        margin-bottom: 2vh
     }
 
     .catalog p {
@@ -1794,6 +1847,10 @@ html {
         background-size: auto 124vh;
 
     }
+    .item:hover {
+        transform: scale(1);
+
+    }
 
 
     .scammer-img {
@@ -1815,6 +1872,18 @@ html {
         margin-top: 21px;
         font-size: 29px
     }
+
+
+    #new, #weekly, #weeklystar {
+        zoom: 0.8;
+        display: flex;
+        flex-flow: row;
+		justify-content: center;
+        gap: 0.5rem;
+		flex-wrap: wrap;
+    }
+
+
 
     #h3 {
         font: 100 1.2em 'Source Sans Pro'
