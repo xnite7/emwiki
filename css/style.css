@@ -560,7 +560,7 @@ section {
 }
 
 .title{
-    font: 600 2rem 'Source Sans Pro';
+    font: 600 3rem 'Source Sans Pro';
     -webkit-text-stroke: 0.5rem black;
     position: absolute;
     justify-self: anchor-center;
@@ -1679,7 +1679,7 @@ html {
     }
 
     .title{
-        font: 600 4rem 'Source Sans Pro';
+        font: 600 3rem 'Source Sans Pro';
         -webkit-text-stroke: 1rem black;
         position: absolute;
         justify-self: anchor-center;
