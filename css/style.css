@@ -562,7 +562,7 @@ section {
 .title{
     font: 600 2.2rem 'Source Sans Pro';
     position: absolute;
-    justify-self: anchor-center;
+
     padding-top: 8px;
     top: -65px;
     text-shadow: 2px 3px 9px #0006;
@@ -648,6 +648,8 @@ div.logo-container {
     padding-bottom: 33px;
     border: solid #818181;
     background: #434343;
+    display: flex;
+    justify-content: center;
 }
 
 p {
@@ -1731,7 +1733,7 @@ html {
         font: 600 2.5rem 'Source Sans Pro';
         -webkit-text-stroke: 0px black;
         position: absolute;
-        justify-self: unset;
+
         top: -49px;
     }
     
