@@ -547,6 +547,7 @@ main {
 }
 
 section {
+    zoom: 0.93;
     background: #757575;
     border-radius: 15px;
     padding: 2rem;
@@ -643,7 +644,7 @@ div.logo-container {
 }
 
 .catalog {
-    
+    zoom: 0.85;
     padding-top: 30px;
     text-align: center;
     padding-bottom: 33px;
@@ -986,7 +987,7 @@ h2.title:first-of-type {
 
 #messages {
     text-align: left;
-    font-size: 160%;
+    font-size: 123%;
     height: 346px;
     overflow-y: auto;
     border: 1px solid #444;
@@ -1681,11 +1682,11 @@ html {
     }
 
     h2.title:first-of-type {
-        background: #707070;
-        border-top: solid 3px #818181;
-        border-right: solid 3px #818181;
+        background: #363636;
+        border-top: solid 4px #818181;
+        border-right: solid 4px #818181;
         height: 19px;
-        border-left: solid 3px #818181;
+        border-left: solid 4px #818181;
         padding-left: 20px;
         padding-right: 20px;
         border-radius: 15px 15px 0 0;
@@ -1842,7 +1843,7 @@ html {
 
     section.catalog {
         
-        background: #707070;
+        background: #363636;
         border-radius: 15px;
         padding: 3vw 4vw;
         box-shadow: 0 5px 15px rgb(0 0 0 / 30%);

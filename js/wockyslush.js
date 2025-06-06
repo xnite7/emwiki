@@ -353,4 +353,38 @@ function showInfo(arr, color) {
     });
   });
 };
+function reorderChestsIfMobile() {
+  const containers = document.querySelectorAll('.grid'); // all grid wrappers
 
+  console.log(containers); 
+  console.log(window.innerWidth); 
+
+  if (window.innerWidth < 600 && containers.length) {
+    // Collect all .catalog elements from all .grid containers
+    const chests = [];
+    containers.forEach(container => {
+      chests.push(...container.querySelectorAll('.catalog'));
+    });
+
+    // Sort by data-order attribute
+    chests.sort((a, b) => {
+      return parseInt(a.getAttribute('data-order')) - parseInt(b.getAttribute('data-order'));
+    });
+
+    // Append in sorted order to the first .grid container
+    chests.forEach(chest => containers[0].appendChild(chest));
+  }else {
+    // If not mobile, ensure the original order is restored
+    containers.forEach(container => {
+      const chests = container.querySelectorAll('.catalog');
+      chests.forEach(chest => {
+        // Reset the order by appending them back to their original container
+        container.appendChild(chest);
+      });
+    });
+  }
+}
+
+
+window.addEventListener('load', reorderChestsIfMobile);
+window.addEventListener('resize', reorderChestsIfMobile);
