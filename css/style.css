@@ -643,6 +643,7 @@ div.logo-container {
 }
 
 .catalog {
+    
     padding-top: 30px;
     text-align: center;
     padding-bottom: 33px;
@@ -650,6 +651,8 @@ div.logo-container {
     background: #434343;
     display: flex;
     justify-content: center;
+    display: flow;
+    
 }
 
 p {
@@ -1497,6 +1500,42 @@ html {
 		flex-wrap: wrap;
     }
 
+
+    .modal-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 42px;
+  font-weight: bold;
+  color: white;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+  z-index: 1001;
+  transition: background 0.2s ease;
+}
+
+#modal-left-arrow {
+  left: 10px;
+}
+
+#modal-right-arrow {
+  right: 10px;
+}
+
+.modal-arrow:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+@media (pointer: coarse) {
+  .modal-arrow {
+    display: none;
+  }
+}
+
+
 #credits-modal {
     display: none;
     pointer-events: none;
@@ -1718,7 +1757,7 @@ html {
     }
 
     #credits-content>p {
-        font-size: 1.6rem;
+        font-size: 1.3rem;
         margin-top: 18px;
         text-align: center;
         margin-bottom: 30px;
@@ -1743,7 +1782,7 @@ html {
     }
 
     #zd {
-        font-size: .6rem;
+        font-size: 1.6rem;
         font-weight: 100;
         margin: 0 0 17px 0
     }
@@ -1761,11 +1800,12 @@ html {
     }*/
 
     #credits-content>div:last-child {
-        gap: 14px
+        gap: 8px 5px;
     }
 
     #credits-content>div:last-child div {
-        padding: 13px
+        padding: 9px;
+        width: 130px;
     }
 
     #credits-content>div:last-child div p {
@@ -1801,6 +1841,7 @@ html {
 
 
     section.catalog {
+        
         background: #707070;
         border-radius: 15px;
         padding: 3vw 4vw;

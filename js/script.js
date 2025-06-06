@@ -774,6 +774,67 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 
+const leftArrow = document.createElement("div");
+leftArrow.id = "modal-left-arrow";
+leftArrow.className = "modal-arrow";
+leftArrow.innerHTML = "&#8592;";
+modal.appendChild(leftArrow);
+
+const rightArrow = document.createElement("div");
+rightArrow.id = "modal-right-arrow";
+rightArrow.className = "modal-arrow";
+rightArrow.innerHTML = "&#8594;";
+modal.appendChild(rightArrow);
+
+  // Mobile swipe support for modal navigation
+let touchStartX = 0;
+let touchEndX = 0;
+
+modalContent.addEventListener("touchstart", (e) => {
+  touchStartX = e.changedTouches[0].screenX;
+}, false);
+
+modalContent.addEventListener("touchend", (e) => {
+  touchEndX = e.changedTouches[0].screenX;
+  handleSwipeGesture();
+}, false);
+
+function handleSwipeGesture() {
+  const delta = touchEndX - touchStartX;
+  const threshold = 50; // minimum px to be considered swipe
+
+  if (Math.abs(delta) > threshold) {
+    const currentItem = document.querySelector(".item.showing");
+    if (!currentItem) return;
+    if (delta < 0) {
+      // Swipe left → next item
+      const nextItem = currentItem.nextElementSibling;
+      if (nextItem?.classList.contains("item")) nextItem.click();
+    } else {
+      // Swipe right → previous item
+      const prevItem = currentItem.previousElementSibling;
+      if (prevItem?.classList.contains("item")) prevItem.click();
+    }
+  }
+}
+
+document.getElementById("modal-left-arrow").addEventListener("click", () => {
+  const currentItem = document.querySelector(".item.showing");
+  if (currentItem) {
+    const prevItem = currentItem.previousElementSibling;
+    if (prevItem?.classList.contains("item")) prevItem.click();
+  }
+});
+
+document.getElementById("modal-right-arrow").addEventListener("click", () => {
+  const currentItem = document.querySelector(".item.showing");
+  if (currentItem) {
+    const nextItem = currentItem.nextElementSibling;
+    if (nextItem?.classList.contains("item")) nextItem.click();
+  }
+});
+
+
 });
 
 
