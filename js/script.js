@@ -696,8 +696,9 @@ function showInfo(arr, color) {
   if (color == "rgb(0, 0, 0)") {
     pick = arr.gears;
 
-    for (let step = 0; step < 5; step++) {
+    for (let step = 0; step < 4; step++) {
       const randomIndex = Math.floor(Math.random() * 5); // Random index between 0 and 4
+      console.log(randomIndex)
       if (randomIndex === 0) {
         pick = arr.gears;
         color = "rgb(91, 254, 106)";

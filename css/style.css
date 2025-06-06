@@ -553,18 +553,18 @@ section {
     box-shadow: 0 5px 15px rgb(0 0 0 / 30%);
     position: sticky;
     z-index: 22;
-    margin: 0 5vw 38px 5vw;
+    margin:0 5vw 50px 5vw;
     flex: 1 20030px;
-    border: solid #ffefda;
+    border: solid #494949;
     padding: 3vw 3vw;
 }
 
 .title{
-    font: 600 3rem 'Source Sans Pro';
-    -webkit-text-stroke: 0.5rem black;
+    font: 600 2.2rem 'Source Sans Pro';
     position: absolute;
     justify-self: anchor-center;
-    top: -75px;
+    padding-top: 8px;
+    top: -65px;
     text-shadow: 2px 3px 9px #0006;
 }
 
@@ -643,14 +643,17 @@ div.logo-container {
 }
 
 .catalog {
+    
     text-align: center;
-    padding-bottom: 15px;
+    padding-bottom: 33px;
+    border: solid #818181;
     background: #434343;
 }
 
 p {
-    font-size: 1.6em;
-    color: #fff
+    font-size: 1.3em;
+    margin: 13px;
+    color: #fff;
 }
 
 .catalog p {
@@ -717,10 +720,10 @@ p {
 
 h2.title:first-of-type {
     background: #434343;
-    border-top: solid 3px white;
-    border-right: solid 3px white;
-    height: 33px;
-    border-left: solid 3px white;
+    border-top: solid 3px #818181;
+    border-right: solid 3px #818181;
+    height: 25px;
+    border-left: solid 3px #818181;
     padding-left: 20px;
     padding-right: 20px;
     border-radius: 21px 21px 0 0;
@@ -792,9 +795,10 @@ h2.title:first-of-type {
     box-shadow: 0 4px 10px rgb(0 0 0 / .3);
     transition: transform 0.15s ease;
     height: 13vw;
-    max-height: 191px;
+
     width: 13vw;
-    max-width: 191px;
+    max-width: 139px;
+    max-height: 139px;
     min-width: 126px;
     min-height: 126px;
     display: flex;
@@ -1327,8 +1331,8 @@ html {
     box-shadow: inset 0 0 20px 0 #00000054;
     border-radius: 20px;
     background: #343434;
-    padding-top: 65px
-    
+    padding-top: 65px;
+    padding: 1rem;
 }
 
 #zd {
@@ -1551,6 +1555,9 @@ html {
 
 
 .circlebutton {
+    -webkit-text-stroke: thin;
+    padding: 5px;
+    margin-left: 20px;
     user-select: none;
     font-family: monospace;
     right: 20px;
@@ -1564,9 +1571,9 @@ html {
     line-height: 40px;
     cursor: pointer;
     z-index: 1000;
-    box-shadow: 0 0 10px rgb(255 255 255 / .1);
+    box-shadow: inset 0 0 0px 3px rgb(255 255 255);
     float: right;
-    transition: 0.5s
+    transition: 0.5s;
 }
 
 
@@ -1589,6 +1596,19 @@ html {
     background: #424242;
     padding: 10px;
     text-align: center
+}
+
+@media (min-width:1035px) {
+    .catalog:has(#weeklystar) {
+        flex: 0 0 60vw;
+    }
+    .catalog:has(#weekly) {
+        flex: 0 0 32vw;
+    }
+    .catalog:has(#new) {
+        flex: 0 0 32vw;
+    }
+        
 }
 
 @media (max-width:600px) {
@@ -1621,10 +1641,10 @@ html {
 
     h2.title:first-of-type {
         background: #707070;
-        border-top: solid 3px white;
-        border-right: solid 3px white;
+        border-top: solid 3px #818181;
+        border-right: solid 3px #818181;
         height: 28px;
-        border-left: solid 3px white;
+        border-left: solid 3px #818181;
         padding-left: 20px;
         padding-right: 20px;
         border-radius: 15px 15px 0 0;
@@ -1633,6 +1653,29 @@ html {
     .title + .title{
         display: none;
     }
+
+    .catalog:has(#new) .title {
+        margin-left: 40px;
+        justify-self: anchor-center;
+    }
+
+    .catalog:has(#weekly) .title {
+        margin-left: 39px;
+        justify-self: anchor-center;
+    }
+
+    .catalog:has(#weeklystar) .title {
+        margin-left: 16px;
+        justify-self: anchor-center;
+    }
+
+    .catalog:has(#ctlg) .title {
+        margin-left: 17px;
+        justify-self: anchor-center;
+        font-size: 26px;
+        height: 24px;
+    }
+
 
     input {
         font-size: 2rem
@@ -1687,7 +1730,7 @@ html {
         font: 600 2.5rem 'Source Sans Pro';
         -webkit-text-stroke: 0px black;
         position: absolute;
-        justify-self: anchor-center;
+        justify-self: unset;
         top: -49px;
     }
     
@@ -1737,7 +1780,8 @@ html {
     }
 
     section:first-of-type {
-        padding: 2rem 2rem 8rem 2rem
+        padding: 1rem 2rem 1rem 2rem;
+        margin-bottom: 87px;
     }
 
     .butts {
@@ -1745,12 +1789,12 @@ html {
         height: 0;
         align-items: center;
         flex-direction: row;
-        top: 120px;
+        top: 135px;
         margin: 0 2000px;
         flex-wrap: nowrap;
         position: relative;
         float: right;
-        gap: 9px
+        gap: 9px;
     }
 
 
@@ -1758,7 +1802,7 @@ html {
     section.catalog {
         background: #707070;
         border-radius: 15px;
-        padding: 5vw 4vw;
+        padding: 3vw 4vw;
         box-shadow: 0 5px 15px rgb(0 0 0 / 30%);
         position: sticky;
         z-index: 22
@@ -1791,20 +1835,20 @@ html {
         user-select: none;
         position: absolute;
         right: 20px;
-        background: #333;
+        background: #37373700;
         color: #fff;
         font-size: 20px;
         width: 40px;
         height: 40px;
-        top: 14px;
+        top: 24px;
         border-radius: 50%;
         text-align: center;
         line-height: 40px;
         cursor: pointer;
         z-index: 1000;
-        box-shadow: 0 0 10px rgb(255 255 255 / .1);
+        box-shadow: 0 0 10px rgb(255 255 255 / 0%);
         float: right;
-        transition: 0.5s
+        transition: 0.5s;
     }
 
 
@@ -1849,6 +1893,9 @@ html {
         align-items: flex-start
     }
 
+    #ctlg {
+        padding: 4rem;
+    }
 
     .parallax-bg {
 
@@ -1883,7 +1930,7 @@ html {
 
 
     #new, #weekly, #weeklystar {
-        zoom: 0.8;
+        zoom: 0.56;
         display: flex;
         flex-flow: row;
 		justify-content: center;
@@ -1945,6 +1992,9 @@ html {
 
     .logo-header {
         scale: .6
+    }
+    .catalog {
+        padding: 2rem;
     }
 }
 
