@@ -643,7 +643,7 @@ div.logo-container {
 }
 
 .catalog {
-    
+    padding-top: 30px;
     text-align: center;
     padding-bottom: 33px;
     border: solid #818181;
@@ -1336,7 +1336,7 @@ html {
 }
 
 #zd {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     font-weight: 100;
     margin: 0 0 22px 0
 }
@@ -1508,7 +1508,7 @@ html {
     border-radius: 12px;
     padding: 0 25px 25px;
     width: min-content;
-    min-width: 523px;
+    min-width: 575px;
     position: absolute;
     box-shadow: 0 0 15px #000;
     font-size: 14px
@@ -1751,13 +1751,11 @@ html {
         margin-bottom: 30px
     }
 
-    .item {
-        scale: .9
-    }
 
-    #join+.catalog .catalog-grid .item:last-of-type {
+
+    /*#join+.catalog .catalog-grid .item:last-of-type {
         display: none
-    }
+    }*/
 
     #credits-content>div:last-child {
         gap: 14px
@@ -1894,6 +1892,7 @@ html {
     }
 
     #ctlg {
+
         padding: 4rem;
     }
 
@@ -1939,7 +1938,7 @@ html {
     }
 
     #ctlg {
-        zoom: 0.75;
+        zoom: 0.6;
     }
 
 
