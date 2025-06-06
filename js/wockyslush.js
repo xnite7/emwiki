@@ -195,31 +195,34 @@ function createNewItem(item, color, list) {
 
 
     newItem.addEventListener('mouseenter', function (e) {
-      const tooltip = document.getElementById('tooltip');
-      // Set anchor attribute to match this item
-      //instead of first word get last word
-      const anchorName = name.innerText.split(/[\s\W]/).pop(); // Get last word before any spaces or special characters
-      //newItem.id = anchorName;
-      oldstyle = newItem.getAttribute('style') || '';
-      //if no anchor-name attribute, set it
-      if (!oldstyle.includes('anchor-name:')) {
-        newItem.setAttribute('style', `${oldstyle}anchor-name: --${anchorName};`);
-      }
-      tooltip.setAttribute('style', `top:anchor( --${anchorName} bottom);left:anchor( --${anchorName} center); position-anchor: --${anchorName}`);
-      // Set tooltip content
-      let pricefromrarity = newItem.querySelector("#pricecoderarity");
-      if (newItem.parentElement.id == 'gamenightitems') {
-        pricefromrarity = newItem.querySelector("#from");
-      }
-      if (!pricefromrarity || !pricefromrarity.innerText || pricefromrarity.innerText === "Unobtainable") return;
+    const tooltip = document.getElementById('tooltip');
 
-      tooltip.innerHTML = pricefromrarity.innerText;
-      tooltip.showPopover();
-    });
-    newItem.addEventListener('mouseleave', function () {
-      const tooltip = document.getElementById('tooltip');
-      tooltip.hidePopover();
-    });
+    // Generate a unique random anchor name
+    const anchorName = `anchor-${Math.floor(Math.random() * 1_000_000)}`;
+
+    // Set unique anchor-name style
+    const oldstyle = newItem.getAttribute('style') || '';
+    newItem.setAttribute('style', `${oldstyle}anchor-name: --${anchorName};`);
+
+    // Set tooltip anchor positioning
+    tooltip.setAttribute('style', `top:anchor(--${anchorName} bottom); left:anchor(--${anchorName} center); position-anchor: --${anchorName};`);
+
+    // Set tooltip content
+    let pricefromrarity = newItem.querySelector("#pricecoderarity");
+    if (newItem.parentElement.id === 'gamenightitems') {
+      pricefromrarity = newItem.querySelector("#from");
+    }
+    if (!pricefromrarity || !pricefromrarity.innerText || pricefromrarity.innerText === "Unobtainable") return;
+
+    tooltip.innerHTML = pricefromrarity.innerText;
+    tooltip.showPopover();
+  });
+
+  newItem.addEventListener('mouseleave', function () {
+    const tooltip = document.getElementById('tooltip');
+    tooltip.hidePopover();
+  });
+
 
 
   // Append the new item to the catalog
