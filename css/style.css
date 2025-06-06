@@ -1833,13 +1833,13 @@ html {
         font-family: monospace;
         user-select: none;
         position: absolute;
-        right: 0px;
+                right: 13px;
         background: #888888;
         color: #fff;
         font-size: 20px;
         width: 40px;
         height: 40px;
-        top: -20px;
+                top: 12px;
         border-radius: 50%;
         text-align: center;
         line-height: 40px;
@@ -1939,7 +1939,7 @@ html {
     }
 
     #ctlg {
-        zoom: 0.6;
+        zoom: 0.59;
     }
 
 
