@@ -2042,3 +2042,43 @@ html {
 }
 
 
+.modal-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 42px;
+  font-weight: bold;
+  color: white;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+  z-index: 1001;
+  transition: opacity 0.3s ease, background 0.2s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+#modal-left-arrow {
+  left: 10px;
+}
+
+#modal-right-arrow {
+  right: 10px;
+}
+
+.modal-arrow.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-arrow:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+@media (pointer: coarse) {
+  .modal-arrow {
+    display: none !important;
+  }
+}

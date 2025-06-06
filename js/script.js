@@ -751,13 +751,18 @@ document.addEventListener("DOMContentLoaded", () => {
   if (main.style.scale == '1') {
     main.style.filter = 'opacity(1)'
   }
+
+
   document.addEventListener("keydown", (event) => {
     if (event.key === "ArrowRight") {
+      
       const currentItem = document.querySelector(".item.showing"); // Find the currently showing item
+      
       if (currentItem) {
         const nextItem = currentItem.nextElementSibling; // Get the next sibling item
         if (nextItem && nextItem.classList.contains("item")) {
           // Simulate a click on the next item to show its modal
+          isModalOpen = false
           nextItem.click();
         }
       }
@@ -767,6 +772,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const prevItem = currentItem.previousElementSibling; // Get the previous sibling item
         if (prevItem && prevItem.classList.contains("item")) {
           // Simulate a click on the previous item to show its modal
+          isModalOpen = false
           prevItem.click();
         }
       }
@@ -809,11 +815,16 @@ function handleSwipeGesture() {
     if (delta < 0) {
       // Swipe left → next item
       const nextItem = currentItem.nextElementSibling;
-      if (nextItem?.classList.contains("item")) nextItem.click();
+      if (nextItem?.classList.contains("item")) {
+          isModalOpen = false 
+          nextItem.click()
+        } ;
     } else {
       // Swipe right → previous item
       const prevItem = currentItem.previousElementSibling;
-      if (prevItem?.classList.contains("item")) prevItem.click();
+      if (prevItem?.classList.contains("item")){
+        isModalOpen = false 
+        prevItem.click()} ;
     }
   }
 }
@@ -822,7 +833,10 @@ document.getElementById("modal-left-arrow").addEventListener("click", () => {
   const currentItem = document.querySelector(".item.showing");
   if (currentItem) {
     const prevItem = currentItem.previousElementSibling;
-    if (prevItem?.classList.contains("item")) prevItem.click();
+    if (prevItem?.classList.contains("item")){
+      isModalOpen = false 
+      prevItem.click();
+    } 
   }
 });
 
@@ -830,9 +844,37 @@ document.getElementById("modal-right-arrow").addEventListener("click", () => {
   const currentItem = document.querySelector(".item.showing");
   if (currentItem) {
     const nextItem = currentItem.nextElementSibling;
-    if (nextItem?.classList.contains("item")) nextItem.click();
+    if (nextItem?.classList.contains("item")) {
+      isModalOpen = false 
+      nextItem.click();
+    }
   }
 });
+
+let arrowTimeout;
+
+function showModalArrows() {
+  document.getElementById("modal-left-arrow").classList.add("show");
+  document.getElementById("modal-right-arrow").classList.add("show");
+
+  clearTimeout(arrowTimeout);
+  arrowTimeout = setTimeout(() => {
+    document.getElementById("modal-left-arrow").classList.remove("show");
+    document.getElementById("modal-right-arrow").classList.remove("show");
+  }, 3000); // hide after 3s of inactivity
+}
+
+// Show arrows when modal opens
+const originalModal = Modal;
+Modal = function () {
+  originalModal.apply(this, arguments); // preserve original logic
+  showModalArrows();
+};
+
+// Show arrows on mouse move/hover over modal
+modal.addEventListener("mousemove", showModalArrows);
+modal.addEventListener("touchstart", showModalArrows); // for quick re-show on touch
+
 
 
 });
