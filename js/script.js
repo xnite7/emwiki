@@ -9,10 +9,11 @@ const modalPrice = document.getElementById("modal-price-value");
 
 
 if (document.querySelector('.intro')) {
-  window.scrollTo(0, 0); 
+  window.scrollTo(0, 0);
   let intro = document.querySelector('.intro');
   let logo = document.querySelector('.logo-header');
   let logo3 = document.querySelector('.logo3');
+  let xnite = document.querySelector('.credit');
 
   let logoSpan = document.querySelectorAll('.logo');
   var d = Math.random();
@@ -33,7 +34,7 @@ if (document.querySelector('.intro')) {
 
 
       setTimeout(() => {
-        window.scrollTo(0, 0); 
+        window.scrollTo(0, 0);
         logoSpan.forEach((span, idx) => {
           setTimeout(() => {
             span.classList.add('active')
@@ -41,10 +42,10 @@ if (document.querySelector('.intro')) {
             document.body.classList.add('fonts-loaded');
           }, (idx + 1) * 400)
         });
-
+        xnite.style.color = "#000000b0";
         setTimeout(() => {
           logoSpan.forEach((span, idx) => {
-            window.scrollTo(0, 0); 
+            window.scrollTo(0, 0);
 
             setTimeout(() => {
               span.classList.remove('active')
@@ -57,7 +58,7 @@ if (document.querySelector('.intro')) {
         }, 2100)
 
         setTimeout(() => {
-          window.scrollTo(0, 0); 
+          window.scrollTo(0, 0);
           const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
           if (isTouch) {
@@ -79,6 +80,7 @@ if (document.querySelector('.intro')) {
           intro.style.filter = 'opacity(0) blur(9px)'
           document.documentElement.style.overflow = "scroll"
           document.documentElement.style.overflowX = "hidden"
+          xnite.style.color = "#ffffffb0";
 
 
         }, 2440)
@@ -144,8 +146,9 @@ function Modal() {
 
     const canvas = document.createElement("canvas");
     Object.assign(canvas.style, {
-      maxWidth: "100%",
-      maxHeight: "100%",
+      width: "100%",
+      height: "auto",
+      placeSelf: "center",
       display: "block",
       userSelect: "none",
       webkitUserSelect: "none",
@@ -324,7 +327,62 @@ function Modal() {
     });
     modalContent.classList.add("expand");
   }, 10);
+
+
+
 };
+
+let tut = false;
+
+// Add this after your Modal open logic (e.g., inside Modal() or after showing the modal)
+function showSwipeTutorial() {
+  // Only show on mobile/touch devices
+  if (!('ontouchstart' in window || navigator.maxTouchPoints > 0)) return;
+
+  // Prevent multiple tutorials
+  if (document.getElementById('swipe-tutorial')) return;
+
+  if (tut) return; // Prevent multiple tutorials
+  tut = true;
+  const tutorial = document.createElement('div');
+  tutorial.id = 'swipe-tutorial';
+  tutorial.textContent = '⬅️ Swipe left or right to view previous/next item';
+  Object.assign(tutorial.style, {
+    position: 'fixed',
+    bottom: '80px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    background: 'rgba(0,0,0,0.85)',
+    color: '#fff',
+    padding: '14px 22px',
+    borderRadius: '16px',
+    fontSize: '1.2em',
+    zIndex: 99999,
+    boxShadow: '0 4px 16px #000a',
+    textAlign: 'center',
+    pointerEvents: 'none',
+    opacity: '0',
+    transition: 'opacity 0.3s'
+  });
+  document.body.appendChild(tutorial);
+
+  // Fade in
+  setTimeout(() => { tutorial.style.opacity = '1'; }, 10);
+  // Fade out after 2.5s
+  setTimeout(() => {
+    tutorial.style.opacity = '0';
+    setTimeout(() => tutorial.remove(), 600);
+  }, 2500);
+}
+
+
+
+
+
+
+
+
+
 
 const closeModalHandler = () => {
   modalContent.classList.remove("expand");
@@ -332,7 +390,7 @@ const closeModalHandler = () => {
   modalContent.style.pointerEvents = "none";
   setTimeout(() => {
     isModalOpen = false;
-  }, 200)
+  }, 300)
 };
 
 
@@ -393,7 +451,7 @@ function resize_to_fit() {
 
 
 
-
+let currentItems = []; // Top of your script
 
 function rinse() {
   fetch('https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91')
@@ -402,15 +460,7 @@ function rinse() {
     })
     .then(data => {
       document.querySelectorAll(".item").forEach((el) => el.remove());
-      if (document.getElementById('refresh-button')) {
-        document.getElementById('refresh-button').style.animation = "";
-        document.getElementById('refresh-button').style.webkitanimation = "";
-        setTimeout(() => {
-          document.getElementById('refresh-button').style.animation = "rotate 0.7s ease-in-out 0s 1 alternate";
-          document.getElementById('refresh-button').style.webkitanimation = "rotate 0.7s ease-in-out 0s 1 alternate";
-        }, 50)
 
-      }
       // Determine the current page and select the appropriate data
       const page = window.location.pathname.split('/').pop(); // Get the current file name
       let arr = JSON.parse(data.files["auto.json"].content); // Parse the JSON content
@@ -438,6 +488,7 @@ function rinse() {
       } else {
         arr = arr;
         color = "rgb(0, 0, 0)";
+
       }
       // Add this after you fetch and parse your data in rinse(), before calling showInfo(arr, color):
 
@@ -445,7 +496,8 @@ function rinse() {
       const gridConfigs = [
         "new",
         "weekly",
-        "weeklystar"
+        "weeklystar",
+        "random"
       ];
 
       const categoryColors = {
@@ -456,19 +508,42 @@ function rinse() {
         effects: "rgb(255, 177, 53)"
       };
 
+      // ...inside rinse(), after you define arr and categoryColors...
+      // Save arr and categoryColors globally for refresh use
+      window._randomArr = arr;
+      window._randomCategoryColors = categoryColors;
+
       gridConfigs.forEach(gridId => {
         const grid = document.getElementById(gridId);
-        if (grid) {
-          grid.addEventListener("click", (event) => {
-            Modal(event);
+        if (!grid) return;
+
+        grid.innerHTML = "";
+
+        if (gridId === "random") {
+          randomGridPopulate(window._randomArr, window._randomCategoryColors);
+          return;
+        }
+
+        grid.addEventListener("click", (event) => {
+          Modal(event);
+        });
+
+        // If arr is an array (e.g., on gears.html), just use it directly
+        if (Array.isArray(arr)) {
+          arr.forEach(item => {
+            if (item[gridId] === true) {
+              createNewItem(item, color);
+              const lastItem = document.querySelector("#ctlg .item:last-child");
+              if (lastItem) grid.appendChild(lastItem);
+            }
           });
-          grid.innerHTML = ""; // Clear previous
+        } else {
+          // If arr is an object (main page), use categoryColors
           Object.entries(categoryColors).forEach(([key, color]) => {
             if (Array.isArray(arr[key])) {
               arr[key].forEach(item => {
                 if (item[gridId] === true) {
                   createNewItem(item, color);
-                  // Move the created .item from #ctlg to the current grid
                   const lastItem = document.querySelector("#ctlg .item:last-child");
                   if (lastItem) grid.appendChild(lastItem);
                 }
@@ -478,11 +553,88 @@ function rinse() {
         }
       });
 
-
-      showInfo(arr, color); // Pass the color to the showInfo function
+      currentItems = arr; // ✅ Store current items for search use
+      // After fetching and parsing arr:
+      let flatArray = [];
+      if (Array.isArray(arr)) {
+        // Category page: arr is already an array
+        flatArray = arr.map(item => ({ ...item, _color: color }));
+      } else {
+        // Main page: arr is an object of arrays
+        Object.entries(categoryColors).forEach(([key, color]) => {
+          if (Array.isArray(arr[key])) {
+            arr[key].forEach(item => {
+              flatArray.push({ ...item, _category: key, _color: color });
+            });
+          }
+        });
+      }
+      showInfo(flatArray, color);
+      setupSearch(flatArray, color);
     })
     .catch(error => console.error('Error fetching data:', error));
 }
+
+
+function randomGridPopulate(arr, categoryColors) {
+  let color = "rgb(0, 0, 0)";
+  let pick;
+  const randomGrid = document.getElementById("random");
+  if (!randomGrid) return;
+  randomGrid.innerHTML = ""; // Clear previous
+
+  for (let step = 0; step < 4; step++) {
+    const randomIndex = Math.floor(Math.random() * 5);
+    if (randomIndex === 0) {
+      pick = arr.gears;
+      color = categoryColors.gears;
+    } else if (randomIndex === 1) {
+      pick = arr.deaths;
+      color = categoryColors.deaths;
+    } else if (randomIndex === 2) {
+      pick = arr.titles;
+      color = categoryColors.titles;
+    } else if (randomIndex === 3) {
+      pick = arr.pets;
+      color = categoryColors.pets;
+    } else if (randomIndex === 4) {
+      pick = arr.effects;
+      color = categoryColors.effects;
+    }
+    const item = pick[Math.floor(Math.random() * pick.length)];
+    createNewItem(item, color);
+    // Move the created .item from #ctlg to #random
+    const lastItem = document.querySelector("#ctlg .item:last-child");
+    if (lastItem && randomGrid) randomGrid.appendChild(lastItem);
+  }
+
+    // Attach modal click handler to random items
+  randomGrid.querySelectorAll('.item').forEach(item => {
+    item.onclick = (event) => Modal(event);
+  });
+}
+
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  const refreshBtn = document.getElementById('refresh-button');
+  if (refreshBtn) {
+    refreshBtn.onclick = () => {
+      refreshBtn.style.animation = "";
+      refreshBtn.style.webkitAnimation = "";
+      setTimeout(() => {
+        refreshBtn.style.animation = "rotate 0.7s ease-in-out 0s 1 alternate";
+        refreshBtn.style.webkitAnimation = "rotate 0.7s ease-in-out 0s 1 alternate";
+      }, 50);
+      // Only refresh random grid, not the whole page!
+      randomGridPopulate(window._randomArr, window._randomCategoryColors);
+    };
+  }
+});
+
+
+
 rinse()
 
 
@@ -680,57 +832,74 @@ function createNewItem(item, color) {
   newItem.classList.add('item', 'item-refresh-animate');
 
 
-  catalog.appendChild(newItem);
+
+  if (catalog) {
+    catalog.appendChild(newItem);
+  }
+}
+
+
+function showInfo(arr, color) {
+
+  arr.forEach((item, i) => {
+    document.getElementById("zd").innerHTML = `${i + 1} items`;
+    createNewItem(item, color);
+  });
 
 }
 
 
 
+function setupSearch(itemList) {
+  const searchInput = document.getElementById('search-bar');
+  const searchResults = document.getElementById('search-results');
 
+  searchInput.addEventListener('input', function () {
+    const query = this.value.trim().toLowerCase();
+    searchResults.innerHTML = '';
+    if (!query) return;
 
+    // Simple search: filter by name
+    const results = itemList.filter(item => item.name.toLowerCase().includes(query));
+    results.slice(0, 12).forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'search-item';
+      div.textContent = item.name;
+      div.style.padding = "8px 14px";
+      div.style.cursor = "pointer";
 
-
-
-
-function showInfo(arr, color) {
-  if (color == "rgb(0, 0, 0)") {
-    pick = arr.gears;
-
-    for (let step = 0; step < 4; step++) {
-      const randomIndex = Math.floor(Math.random() * 5); // Random index between 0 and 4
-      console.log(randomIndex)
-      if (randomIndex === 0) {
-        pick = arr.gears;
-        color = "rgb(91, 254, 106)";
-      } else if (randomIndex === 1) {
-        pick = arr.deaths;
-        color = "rgb(255, 122, 94)";
-      } else if (randomIndex === 2) {
-        pick = arr.titles;
-        color = "rgb(201, 96, 254)";
-      } else if (randomIndex === 3) {
-        pick = arr.pets;
-        color = "rgb(55, 122, 250)";
-      } else if (randomIndex === 4) {
-        pick = arr.effects;
-        color = "rgb(255, 177, 53)";
-      }
-
-      const item = pick[Math.floor(Math.random() * pick.length)]; // Get random item from the array
-
-      document.getElementById("zd").innerHTML = `${step + 1} items`;
-
-      createNewItem(item, color);
-
-
-
-    }
-  } else {
-    arr.forEach((item, i) => {
-      document.getElementById("zd").innerHTML = `${i + 1} items`;
-      createNewItem(item, color);
+      div.style.borderBottom = "1px solid #333";
+      div.style.whiteSpace = "nowrap";
+      div.addEventListener('mouseenter', () => div.style.background = "#444");
+      div.addEventListener('mouseleave', () => div.style.background = "transparent");
+      div.addEventListener('click', () => {
+        searchResults.innerHTML = '';
+        searchInput.value = '';
+        // Remove any .item.showing
+        document.querySelectorAll('.item').forEach(el => el.classList.remove('showing'));
+        // Remove all items from #ctlg
+        document.querySelectorAll('#ctlg .item').forEach(el => el.remove());
+        // Create and show only the selected item
+        createNewItem(item, item._color);
+        // Find the new item and open modal
+        const newItem = document.querySelector('#ctlg .item:last-child');
+        if (newItem) {
+          isModalOpen = false;
+          newItem.classList.add('showing');
+          // Simulate a real click event
+          newItem.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        }
+      });
+      searchResults.appendChild(div);
     });
-  }
+  });
+
+  // Hide results when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+      searchResults.innerHTML = '';
+    }
+  });
 }
 
 
@@ -743,9 +912,12 @@ document.addEventListener("DOMContentLoaded", () => {
   //const catalog2 = document.getElementById("new"); // Parent container for items
 
   let main = document.querySelector("main");
-  catalog.addEventListener("click", (event) => {
-    Modal(event);
-  });
+  if (catalog) {
+    catalog.addEventListener("click", (event) => {
+      Modal(event);
+    });
+  }
+
 
 
   if (main.style.scale == '1') {
@@ -755,9 +927,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "ArrowRight") {
-      
+
       const currentItem = document.querySelector(".item.showing"); // Find the currently showing item
-      
+
       if (currentItem) {
         const nextItem = currentItem.nextElementSibling; // Get the next sibling item
         if (nextItem && nextItem.classList.contains("item")) {
@@ -780,100 +952,104 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 
-const leftArrow = document.createElement("div");
-leftArrow.id = "modal-left-arrow";
-leftArrow.className = "modal-arrow";
-leftArrow.innerHTML = "&#8592;";
-modal.appendChild(leftArrow);
+  const leftArrow = document.createElement("div");
+  leftArrow.id = "modal-left-arrow";
+  leftArrow.className = "modal-arrow";
+  leftArrow.innerHTML = "&#8592;";
+  modal.appendChild(leftArrow);
 
-const rightArrow = document.createElement("div");
-rightArrow.id = "modal-right-arrow";
-rightArrow.className = "modal-arrow";
-rightArrow.innerHTML = "&#8594;";
-modal.appendChild(rightArrow);
+  const rightArrow = document.createElement("div");
+  rightArrow.id = "modal-right-arrow";
+  rightArrow.className = "modal-arrow";
+  rightArrow.innerHTML = "&#8594;";
+  modal.appendChild(rightArrow);
 
   // Mobile swipe support for modal navigation
-let touchStartX = 0;
-let touchEndX = 0;
+  let touchStartX = 0;
+  let touchEndX = 0;
 
-modalContent.addEventListener("touchstart", (e) => {
-  touchStartX = e.changedTouches[0].screenX;
-}, false);
+  modalContent.addEventListener("touchstart", (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, false);
 
-modalContent.addEventListener("touchend", (e) => {
-  touchEndX = e.changedTouches[0].screenX;
-  handleSwipeGesture();
-}, false);
+  modalContent.addEventListener("touchend", (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipeGesture();
+  }, false);
 
-function handleSwipeGesture() {
-  const delta = touchEndX - touchStartX;
-  const threshold = 50; // minimum px to be considered swipe
+  function handleSwipeGesture() {
 
-  if (Math.abs(delta) > threshold) {
+    const delta = touchEndX - touchStartX;
+    const threshold = 50; // minimum px to be considered swipe
+
+    if (Math.abs(delta) > threshold) {
+      const currentItem = document.querySelector(".item.showing");
+      if (!currentItem) return;
+      if (delta < 0) {
+        // Swipe left → next item
+        const nextItem = currentItem.nextElementSibling;
+        if (nextItem?.classList.contains("item")) {
+          isModalOpen = false
+          nextItem.click()
+        };
+      } else {
+        // Swipe right → previous item
+        const prevItem = currentItem.previousElementSibling;
+        if (prevItem?.classList.contains("item")) {
+          isModalOpen = false
+          prevItem.click()
+        };
+      }
+    }
+  }
+
+  document.getElementById("modal-left-arrow").addEventListener("click", () => {
     const currentItem = document.querySelector(".item.showing");
-    if (!currentItem) return;
-    if (delta < 0) {
-      // Swipe left → next item
+    if (currentItem) {
+      const prevItem = currentItem.previousElementSibling;
+      if (prevItem?.classList.contains("item")) {
+        isModalOpen = false
+        prevItem.click();
+      }
+    }
+  });
+
+  document.getElementById("modal-right-arrow").addEventListener("click", () => {
+    const currentItem = document.querySelector(".item.showing");
+    if (currentItem) {
       const nextItem = currentItem.nextElementSibling;
       if (nextItem?.classList.contains("item")) {
-          isModalOpen = false 
-          nextItem.click()
-        } ;
-    } else {
-      // Swipe right → previous item
-      const prevItem = currentItem.previousElementSibling;
-      if (prevItem?.classList.contains("item")){
-        isModalOpen = false 
-        prevItem.click()} ;
+        isModalOpen = false
+        nextItem.click();
+      }
     }
+  });
+
+  let arrowTimeout;
+
+  function showModalArrows() {
+    document.getElementById("modal-left-arrow").classList.add("show");
+    document.getElementById("modal-right-arrow").classList.add("show");
+    showSwipeTutorial()
+    clearTimeout(arrowTimeout);
+    arrowTimeout = setTimeout(() => {
+      document.getElementById("modal-left-arrow").classList.remove("show");
+      document.getElementById("modal-right-arrow").classList.remove("show");
+    }, 2000); // hide after 2s of inactivity
   }
-}
 
-document.getElementById("modal-left-arrow").addEventListener("click", () => {
-  const currentItem = document.querySelector(".item.showing");
-  if (currentItem) {
-    const prevItem = currentItem.previousElementSibling;
-    if (prevItem?.classList.contains("item")){
-      isModalOpen = false 
-      prevItem.click();
-    } 
-  }
-});
+  // Show arrows when modal opens
+  const originalModal = Modal;
+  Modal = function () {
+    originalModal.apply(this, arguments); // preserve original logic
+    showModalArrows();
+  };
 
-document.getElementById("modal-right-arrow").addEventListener("click", () => {
-  const currentItem = document.querySelector(".item.showing");
-  if (currentItem) {
-    const nextItem = currentItem.nextElementSibling;
-    if (nextItem?.classList.contains("item")) {
-      isModalOpen = false 
-      nextItem.click();
-    }
-  }
-});
 
-let arrowTimeout;
 
-function showModalArrows() {
-  document.getElementById("modal-left-arrow").classList.add("show");
-  document.getElementById("modal-right-arrow").classList.add("show");
-
-  clearTimeout(arrowTimeout);
-  arrowTimeout = setTimeout(() => {
-    document.getElementById("modal-left-arrow").classList.remove("show");
-    document.getElementById("modal-right-arrow").classList.remove("show");
-  }, 3000); // hide after 3s of inactivity
-}
-
-// Show arrows when modal opens
-const originalModal = Modal;
-Modal = function () {
-  originalModal.apply(this, arguments); // preserve original logic
-  showModalArrows();
-};
-
-// Show arrows on mouse move/hover over modal
-modal.addEventListener("mousemove", showModalArrows);
-modal.addEventListener("touchstart", showModalArrows); // for quick re-show on touch
+  // Show arrows on mouse move/hover over modal
+  modal.addEventListener("mousemove", showModalArrows);
+  modal.addEventListener("touchstart", showModalArrows); // for quick re-show on touch
 
 
 
