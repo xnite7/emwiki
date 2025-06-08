@@ -9,7 +9,7 @@ const modalPrice = document.getElementById("modal-price-value");
 
 
 if (document.querySelector('.intro')) {
-  
+
   window.scrollTo(0, 0);
   let intro = document.querySelector('.intro');
   let logo = document.querySelector('.logo-header');
@@ -28,7 +28,7 @@ if (document.querySelector('.intro')) {
   }
 
   window.addEventListener('DOMContentLoaded', () => {
-    if (document.querySelector(".sparkle")) {document.querySelector(".sparkle").style.opacity="0";}
+    if (document.querySelector(".sparkle")) { document.querySelector(".sparkle").style.opacity = "0"; }
     let logo4 = document.querySelector('.logo4')
     logo4.src = imgg
     let header = document.querySelector('.headersheet')
@@ -65,10 +65,10 @@ if (document.querySelector('.intro')) {
 
           if (isTouch) {
             document.querySelector(".parallax-bg").style.backgroundSize = "auto 104vh"
-            console.log("mobile")
+
           } else {
             document.querySelector(".parallax-bg").style.backgroundSize = "124vw auto"
-            console.log("pc")
+
           }
 
           intro.style['transition'] = "0.5s"
@@ -83,7 +83,7 @@ if (document.querySelector('.intro')) {
           document.documentElement.style.overflow = "scroll"
           document.documentElement.style.overflowX = "hidden"
           xnite.style.color = "#ffffffb0";
-          document.querySelector(".sparkle").style.opacity="1"
+          document.querySelector(".sparkle").style.opacity = "1"
 
 
         }, 2440)
@@ -107,117 +107,121 @@ if (document.querySelector('.intro')) {
         }, 3700)
       })
     });
-
-
-
-    let main = document.querySelector("main");
-
-
-
-
-    if (main.style.scale == '1') {
-      main.style.filter = 'opacity(1)'
-    }
-
-    const leftArrow = document.createElement("div");
-    leftArrow.id = "modal-left-arrow";
-    leftArrow.className = "modal-arrow";
-    leftArrow.innerHTML = "&#8592;";
-    modal.appendChild(leftArrow);
-
-    const rightArrow = document.createElement("div");
-    rightArrow.id = "modal-right-arrow";
-    rightArrow.className = "modal-arrow";
-    rightArrow.innerHTML = "&#8594;";
-    modal.appendChild(rightArrow);
-
-    // Mobile swipe support for modal navigation
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    modalContent.addEventListener("touchstart", (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-    }, false);
-
-    modalContent.addEventListener("touchend", (e) => {
-      touchEndX = e.changedTouches[0].screenX;
-      handleSwipeGesture();
-    }, false);
-
-    let arrowTimeout;
-
-    function showModalArrows() {
-      document.getElementById("modal-left-arrow").classList.add("show");
-      document.getElementById("modal-right-arrow").classList.add("show");
-      showSwipeTutorial()
-      clearTimeout(arrowTimeout);
-      arrowTimeout = setTimeout(() => {
-        document.getElementById("modal-left-arrow").classList.remove("show");
-        document.getElementById("modal-right-arrow").classList.remove("show");
-      }, 2000); // hide after 2s of inactivity
-    }
-
-    // Show arrows when modal opens
-    const originalModal = Modal;
-    Modal = function () {
-      originalModal.apply(this, arguments); // preserve original logic
-      showModalArrows();
-    };
-
-    // Show arrows on mouse move/hover over modal
-    modal.addEventListener("mousemove", showModalArrows);
-    modal.addEventListener("touchstart", showModalArrows); // for quick re-show on touch
-
-
-
-
-    const refreshBtn = document.getElementById('refresh-button');
-    if (refreshBtn) {
-      refreshBtn.onclick = () => {
-        refreshBtn.childNodes[0].style.animation = "";
-        refreshBtn.childNodes[0].style.webkitAnimation = "";
-        setTimeout(() => {
-          refreshBtn.childNodes[0].style.animation = "rotate 0.7s ease-in-out 0s 1 alternate";
-          refreshBtn.childNodes[0].style.webkitAnimation = "rotate 0.7s ease-in-out 0s 1 alternate";
-        }, 50);
-        // Only refresh random grid, not the whole page!
-        randomGridPopulate(window._randomArr, window._randomCategoryColors);
-      };
-    }
-
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "ArrowRight") {
-        openSiblingModal("next");
-      } else if (event.key === "ArrowLeft") {
-        openSiblingModal("prev");
-      }
-    });
-
-    document.getElementById("modal-left-arrow").addEventListener("click", () => {
-      openSiblingModal("prev");
-    });
-
-    document.getElementById("modal-right-arrow").addEventListener("click", () => {
-      openSiblingModal("next");
-    });
-
-    function handleSwipeGesture() {
-      const delta = touchEndX - touchStartX;
-      const threshold = 50; // minimum px to be considered swipe
-
-      if (Math.abs(delta) > threshold) {
-        if (delta < 0) {
-          openSiblingModal("next");
-        } else {
-          openSiblingModal("prev");
-        }
-      }
-    }
   })
+
 } else {
   document.documentElement.style.overflow = "scroll"
   document.documentElement.style.overflowX = "hidden"
+  let main = document.querySelector("main");
+  if (main.style.scale == '1') {
+    main.style.filter = 'opacity(1)'
+  }
 }
+window.addEventListener('DOMContentLoaded', () => {
+
+
+
+
+
+
+
+
+  const leftArrow = document.createElement("div");
+  leftArrow.id = "modal-left-arrow";
+  leftArrow.className = "modal-arrow";
+  leftArrow.innerHTML = "&#8592;";
+  modal.appendChild(leftArrow);
+
+  const rightArrow = document.createElement("div");
+  rightArrow.id = "modal-right-arrow";
+  rightArrow.className = "modal-arrow";
+  rightArrow.innerHTML = "&#8594;";
+  modal.appendChild(rightArrow);
+
+  // Mobile swipe support for modal navigation
+  let touchStartX = 0;
+  let touchEndX = 0;
+
+  modalContent.addEventListener("touchstart", (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, false);
+
+  modalContent.addEventListener("touchend", (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipeGesture();
+  }, false);
+
+  let arrowTimeout;
+
+  function showModalArrows() {
+    document.getElementById("modal-left-arrow").classList.add("show");
+    document.getElementById("modal-right-arrow").classList.add("show");
+    showSwipeTutorial()
+    clearTimeout(arrowTimeout);
+    arrowTimeout = setTimeout(() => {
+      document.getElementById("modal-left-arrow").classList.remove("show");
+      document.getElementById("modal-right-arrow").classList.remove("show");
+    }, 2000); // hide after 2s of inactivity
+  }
+
+  // Show arrows when modal opens
+  const originalModal = Modal;
+  Modal = function () {
+    originalModal.apply(this, arguments); // preserve original logic
+    showModalArrows();
+  };
+
+  // Show arrows on mouse move/hover over modal
+  modal.addEventListener("mousemove", showModalArrows);
+  modal.addEventListener("touchstart", showModalArrows); // for quick re-show on touch
+
+
+
+
+  const refreshBtn = document.getElementById('refresh-button');
+  if (refreshBtn) {
+    refreshBtn.onclick = () => {
+      refreshBtn.childNodes[0].style.animation = "";
+      refreshBtn.childNodes[0].style.webkitAnimation = "";
+      setTimeout(() => {
+        refreshBtn.childNodes[0].style.animation = "rotate 0.7s ease-in-out 0s 1 alternate";
+        refreshBtn.childNodes[0].style.webkitAnimation = "rotate 0.7s ease-in-out 0s 1 alternate";
+      }, 50);
+      // Only refresh random grid, not the whole page!
+      randomGridPopulate(window._randomArr, window._randomCategoryColors);
+    };
+  }
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowRight") {
+      openSiblingModal("next");
+    } else if (event.key === "ArrowLeft") {
+      openSiblingModal("prev");
+    }
+  });
+
+  document.getElementById("modal-left-arrow").addEventListener("click", () => {
+    openSiblingModal("prev");
+  });
+
+  document.getElementById("modal-right-arrow").addEventListener("click", () => {
+    openSiblingModal("next");
+  });
+
+  function handleSwipeGesture() {
+    const delta = touchEndX - touchStartX;
+    const threshold = 50; // minimum px to be considered swipe
+
+    if (Math.abs(delta) > threshold) {
+      if (delta < 0) {
+        openSiblingModal("next");
+      } else {
+        openSiblingModal("prev");
+      }
+    }
+  }
+})
+
 
 // Simplified modal interaction logic
 let isModalOpen = false;
@@ -232,10 +236,10 @@ function openSiblingModal(direction) {
   if (sibling && sibling.classList.contains("item")) {
     isModalOpen = false;
 
-      closeModalHandler();
-      setTimeout(() => {
-        sibling.click();
-      }, 90);
+    closeModalHandler();
+    setTimeout(() => {
+      sibling.click();
+    }, 90);
   }
 }
 
@@ -504,7 +508,7 @@ const closeModalHandler = () => {
   modalContent.style.pointerEvents = "none";
   setTimeout(() => {
     isModalOpen = false;
-  }, 200)
+  }, 150)
 };
 
 
@@ -628,16 +632,16 @@ function rinse() {
       window._randomCategoryColors = categoryColors;
       if (!document.getElementById("itemlist")) return;
 
-        if (Array.isArray(arr)) {
-          arr.forEach(item => {
-            console.log(item)
+      if (Array.isArray(arr)) {
+        arr.forEach(item => {
 
-              createNewItem(item, color);
-              const lastItem = document.querySelector("#itemlist .item:last-child");
-              if (lastItem) document.getElementById("ctlg").appendChild(lastItem);
 
-          });
-        }
+          createNewItem(item, color);
+          const lastItem = document.querySelector("#itemlist .item:last-child");
+          if (lastItem) document.getElementById("ctlg").appendChild(lastItem);
+
+        });
+      }
       document.getElementById("ctlg").addEventListener("click", (event) => {
         Modal(event);
       });
@@ -659,19 +663,19 @@ function rinse() {
 
         // If arr is an array (e.g., on gears.html), just use it directly
 
-          // If arr is an object (main page), use categoryColors
-          Object.entries(categoryColors).forEach(([key, color]) => {
-            if (Array.isArray(arr[key])) {
-              arr[key].forEach(item => {
-                if (item[gridId] === true) {
-                  createNewItem(item, color);
-                  const lastItem = document.querySelector("#itemlist .item:last-child");
-                  if (lastItem) grid.appendChild(lastItem);
-                }
-              });
-            }
-          });
-        
+        // If arr is an object (main page), use categoryColors
+        Object.entries(categoryColors).forEach(([key, color]) => {
+          if (Array.isArray(arr[key])) {
+            arr[key].forEach(item => {
+              if (item[gridId] === true) {
+                createNewItem(item, color);
+                const lastItem = document.querySelector("#itemlist .item:last-child");
+                if (lastItem) grid.appendChild(lastItem);
+              }
+            });
+          }
+        });
+
       });
 
       currentItems = arr; // ✅ Store current items for search use
