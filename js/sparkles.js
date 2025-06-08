@@ -145,6 +145,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Sparkle toggle logic
   const toggleButton = document.createElement("button");
+  toggleButton.classList.add("sparkle")
   toggleButton.textContent = "✦";
   toggleButton.style.position = "fixed";
   toggleButton.style.bottom = "10px";

@@ -9,6 +9,7 @@ const modalPrice = document.getElementById("modal-price-value");
 
 
 if (document.querySelector('.intro')) {
+  
   window.scrollTo(0, 0);
   let intro = document.querySelector('.intro');
   let logo = document.querySelector('.logo-header');
@@ -27,6 +28,7 @@ if (document.querySelector('.intro')) {
   }
 
   window.addEventListener('DOMContentLoaded', () => {
+    if (document.querySelector(".sparkle")) {document.querySelector(".sparkle").style.opacity="0";}
     let logo4 = document.querySelector('.logo4')
     logo4.src = imgg
     let header = document.querySelector('.headersheet')
@@ -81,6 +83,7 @@ if (document.querySelector('.intro')) {
           document.documentElement.style.overflow = "scroll"
           document.documentElement.style.overflowX = "hidden"
           xnite.style.color = "#ffffffb0";
+          document.querySelector(".sparkle").style.opacity="1"
 
 
         }, 2440)
@@ -105,15 +108,12 @@ if (document.querySelector('.intro')) {
       })
     });
 
-    template = document.getElementById("itom");
-    const catalog = document.getElementById("ctlg"); // Parent container for items
+
+
     let main = document.querySelector("main");
 
-    if (catalog) {
-      catalog.addEventListener("click", (event) => {
-        Modal(event);
-      });
-    }
+
+
 
     if (main.style.scale == '1') {
       main.style.filter = 'opacity(1)'
@@ -174,21 +174,16 @@ if (document.querySelector('.intro')) {
     const refreshBtn = document.getElementById('refresh-button');
     if (refreshBtn) {
       refreshBtn.onclick = () => {
-        refreshBtn.style.animation = "";
-        refreshBtn.style.webkitAnimation = "";
+        refreshBtn.childNodes[0].style.animation = "";
+        refreshBtn.childNodes[0].style.webkitAnimation = "";
         setTimeout(() => {
-          refreshBtn.style.animation = "rotate 0.7s ease-in-out 0s 1 alternate";
-          refreshBtn.style.webkitAnimation = "rotate 0.7s ease-in-out 0s 1 alternate";
+          refreshBtn.childNodes[0].style.animation = "rotate 0.7s ease-in-out 0s 1 alternate";
+          refreshBtn.childNodes[0].style.webkitAnimation = "rotate 0.7s ease-in-out 0s 1 alternate";
         }, 50);
         // Only refresh random grid, not the whole page!
         randomGridPopulate(window._randomArr, window._randomCategoryColors);
       };
     }
-
-
-
-
-
 
     document.addEventListener("keydown", (event) => {
       if (event.key === "ArrowRight") {
@@ -218,21 +213,14 @@ if (document.querySelector('.intro')) {
         }
       }
     }
-
-
   })
 } else {
   document.documentElement.style.overflow = "scroll"
   document.documentElement.style.overflowX = "hidden"
 }
 
-
 // Simplified modal interaction logic
 let isModalOpen = false;
-
-
-
-
 
 // DRY utility for modal navigation
 function openSiblingModal(direction) {
@@ -248,7 +236,6 @@ function openSiblingModal(direction) {
       setTimeout(() => {
         sibling.click();
       }, 90);
-
   }
 }
 
@@ -345,9 +332,6 @@ function Modal() {
   }
 
   const splitted = prcdra.split("<br>");
-
-
-
 
 
   // Remove duplicates but keep the first occurrence
@@ -520,7 +504,7 @@ const closeModalHandler = () => {
   modalContent.style.pointerEvents = "none";
   setTimeout(() => {
     isModalOpen = false;
-  }, 300)
+  }, 200)
 };
 
 
@@ -642,6 +626,21 @@ function rinse() {
       // Save arr and categoryColors globally for refresh use
       window._randomArr = arr;
       window._randomCategoryColors = categoryColors;
+      if (!document.getElementById("itemlist")) return;
+
+        if (Array.isArray(arr)) {
+          arr.forEach(item => {
+            console.log(item)
+
+              createNewItem(item, color);
+              const lastItem = document.querySelector("#itemlist .item:last-child");
+              if (lastItem) document.getElementById("ctlg").appendChild(lastItem);
+
+          });
+        }
+      document.getElementById("ctlg").addEventListener("click", (event) => {
+        Modal(event);
+      });
 
       gridConfigs.forEach(gridId => {
         const grid = document.getElementById(gridId);
@@ -659,28 +658,20 @@ function rinse() {
         });
 
         // If arr is an array (e.g., on gears.html), just use it directly
-        if (Array.isArray(arr)) {
-          arr.forEach(item => {
-            if (item[gridId] === true) {
-              createNewItem(item, color);
-              const lastItem = document.querySelector("#ctlg .item:last-child");
-              if (lastItem) grid.appendChild(lastItem);
-            }
-          });
-        } else {
+
           // If arr is an object (main page), use categoryColors
           Object.entries(categoryColors).forEach(([key, color]) => {
             if (Array.isArray(arr[key])) {
               arr[key].forEach(item => {
                 if (item[gridId] === true) {
                   createNewItem(item, color);
-                  const lastItem = document.querySelector("#ctlg .item:last-child");
+                  const lastItem = document.querySelector("#itemlist .item:last-child");
                   if (lastItem) grid.appendChild(lastItem);
                 }
               });
             }
           });
-        }
+        
       });
 
       currentItems = arr; // ✅ Store current items for search use
@@ -733,8 +724,8 @@ function randomGridPopulate(arr, categoryColors) {
     }
     const item = pick[Math.floor(Math.random() * pick.length)];
     createNewItem(item, color);
-    // Move the created .item from #ctlg to #random
-    const lastItem = document.querySelector("#ctlg .item:last-child");
+    // Move the created .item from ctlg to #random
+    const lastItem = document.querySelector("#itemlist .item:last-child");
     if (lastItem && randomGrid) randomGrid.appendChild(lastItem);
   }
 
@@ -945,8 +936,8 @@ function createNewItem(item, color) {
 
 
 
-  if (catalog) {
-    catalog.appendChild(newItem);
+  if (document.getElementById("itemlist")) {
+    document.getElementById("itemlist").appendChild(newItem);
   }
 }
 
@@ -1038,7 +1029,7 @@ function setupSearch(itemList) {
   });
 
   function showSelectedItem(item) {
-    // Remove all items from #ctlg
+    // Remove all items from ctlg
     document.querySelectorAll('#ctlg .item').forEach(el => el.remove());
     // Create and show only the selected item
     createNewItem(item, item._color || 'pink');
@@ -1056,7 +1047,7 @@ function setupSearch(itemList) {
 
 function filterItems() {
   const searchValue = document.getElementById('search-bar').value.toLowerCase();
-  const items = document.querySelectorAll('.catalog-grid .item');
+  const items = document.querySelectorAll('#itemlist .item');
 
   items.forEach(item => {
     let display = "flex";
