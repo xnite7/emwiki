@@ -104,6 +104,122 @@ if (document.querySelector('.intro')) {
         }, 3700)
       })
     });
+
+    template = document.getElementById("itom");
+    const catalog = document.getElementById("ctlg"); // Parent container for items
+    let main = document.querySelector("main");
+
+    if (catalog) {
+      catalog.addEventListener("click", (event) => {
+        Modal(event);
+      });
+    }
+
+    if (main.style.scale == '1') {
+      main.style.filter = 'opacity(1)'
+    }
+
+    const leftArrow = document.createElement("div");
+    leftArrow.id = "modal-left-arrow";
+    leftArrow.className = "modal-arrow";
+    leftArrow.innerHTML = "&#8592;";
+    modal.appendChild(leftArrow);
+
+    const rightArrow = document.createElement("div");
+    rightArrow.id = "modal-right-arrow";
+    rightArrow.className = "modal-arrow";
+    rightArrow.innerHTML = "&#8594;";
+    modal.appendChild(rightArrow);
+
+    // Mobile swipe support for modal navigation
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    modalContent.addEventListener("touchstart", (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, false);
+
+    modalContent.addEventListener("touchend", (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipeGesture();
+    }, false);
+
+    let arrowTimeout;
+
+    function showModalArrows() {
+      document.getElementById("modal-left-arrow").classList.add("show");
+      document.getElementById("modal-right-arrow").classList.add("show");
+      showSwipeTutorial()
+      clearTimeout(arrowTimeout);
+      arrowTimeout = setTimeout(() => {
+        document.getElementById("modal-left-arrow").classList.remove("show");
+        document.getElementById("modal-right-arrow").classList.remove("show");
+      }, 2000); // hide after 2s of inactivity
+    }
+
+    // Show arrows when modal opens
+    const originalModal = Modal;
+    Modal = function () {
+      originalModal.apply(this, arguments); // preserve original logic
+      showModalArrows();
+    };
+
+    // Show arrows on mouse move/hover over modal
+    modal.addEventListener("mousemove", showModalArrows);
+    modal.addEventListener("touchstart", showModalArrows); // for quick re-show on touch
+
+
+
+
+    const refreshBtn = document.getElementById('refresh-button');
+    if (refreshBtn) {
+      refreshBtn.onclick = () => {
+        refreshBtn.style.animation = "";
+        refreshBtn.style.webkitAnimation = "";
+        setTimeout(() => {
+          refreshBtn.style.animation = "rotate 0.7s ease-in-out 0s 1 alternate";
+          refreshBtn.style.webkitAnimation = "rotate 0.7s ease-in-out 0s 1 alternate";
+        }, 50);
+        // Only refresh random grid, not the whole page!
+        randomGridPopulate(window._randomArr, window._randomCategoryColors);
+      };
+    }
+
+
+
+
+
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight") {
+        openSiblingModal("next");
+      } else if (event.key === "ArrowLeft") {
+        openSiblingModal("prev");
+      }
+    });
+
+    document.getElementById("modal-left-arrow").addEventListener("click", () => {
+      openSiblingModal("prev");
+    });
+
+    document.getElementById("modal-right-arrow").addEventListener("click", () => {
+      openSiblingModal("next");
+    });
+
+    function handleSwipeGesture() {
+      const delta = touchEndX - touchStartX;
+      const threshold = 50; // minimum px to be considered swipe
+
+      if (Math.abs(delta) > threshold) {
+        if (delta < 0) {
+          openSiblingModal("next");
+        } else {
+          openSiblingModal("prev");
+        }
+      }
+    }
+
+
   })
 } else {
   document.documentElement.style.overflow = "scroll"
@@ -118,7 +234,23 @@ let isModalOpen = false;
 
 
 
+// DRY utility for modal navigation
+function openSiblingModal(direction) {
+  const currentItem = document.querySelector(".item.showing");
+  if (!currentItem) return;
+  const sibling = direction === "next"
+    ? currentItem.nextElementSibling
+    : currentItem.previousElementSibling;
+  if (sibling && sibling.classList.contains("item")) {
+    isModalOpen = false;
 
+      closeModalHandler();
+      setTimeout(() => {
+        sibling.click();
+      }, 90);
+
+  }
+}
 
 
 function Modal() {
@@ -126,6 +258,7 @@ function Modal() {
 
   const item = event.target.closest(".item");
   if (!item) return;
+
 
   document.querySelectorAll(".item").forEach((el) => el.classList.remove("showing"));
   item.classList.add("showing");
@@ -308,28 +441,32 @@ function Modal() {
   modal.classList.add("show");
   isModalOpen = true;
 
+  // Start with cloned size/position
   Object.assign(modalContent.style, {
     position: "absolute",
     top: `${itemRect.top}px`,
     left: `${itemRect.left}px`,
     width: `${itemRect.width}px`,
-    height: `${itemRect.height}px`
+    height: `${itemRect.height}px`,
+    opacity: "0",
+    transform: "scale(0.9)",
+    boxShadow: "0 0 0 rgba(0,0,0,0)"
   });
 
-  setTimeout(() => {
+  requestAnimationFrame(() => {
+    modalContent.classList.add("expand");
+    modalContent.style.pointerEvents = "auto";
     Object.assign(modalContent.style, {
       position: "relative",
       top: "0",
       left: "0",
       width: "",
       height: "",
-      pointerEvents: "all"
+      opacity: "",
+      transform: "",
+      boxShadow: ""
     });
-    modalContent.classList.add("expand");
-  }, 10);
-
-
-
+  });
 };
 
 let tut = false;
@@ -346,7 +483,7 @@ function showSwipeTutorial() {
   tut = true;
   const tutorial = document.createElement('div');
   tutorial.id = 'swipe-tutorial';
-  tutorial.textContent = '⬅️ Swipe left or right to view previous/next item';
+  tutorial.textContent = 'Swipe left or right to view previous/next item';
   Object.assign(tutorial.style, {
     position: 'fixed',
     bottom: '80px',
@@ -374,13 +511,6 @@ function showSwipeTutorial() {
     setTimeout(() => tutorial.remove(), 600);
   }, 2500);
 }
-
-
-
-
-
-
-
 
 
 
@@ -608,30 +738,12 @@ function randomGridPopulate(arr, categoryColors) {
     if (lastItem && randomGrid) randomGrid.appendChild(lastItem);
   }
 
-    // Attach modal click handler to random items
+  // Attach modal click handler to random items
   randomGrid.querySelectorAll('.item').forEach(item => {
     item.onclick = (event) => Modal(event);
   });
 }
 
-
-
-
-document.addEventListener("DOMContentLoaded", () => {
-  const refreshBtn = document.getElementById('refresh-button');
-  if (refreshBtn) {
-    refreshBtn.onclick = () => {
-      refreshBtn.style.animation = "";
-      refreshBtn.style.webkitAnimation = "";
-      setTimeout(() => {
-        refreshBtn.style.animation = "rotate 0.7s ease-in-out 0s 1 alternate";
-        refreshBtn.style.webkitAnimation = "rotate 0.7s ease-in-out 0s 1 alternate";
-      }, 50);
-      // Only refresh random grid, not the whole page!
-      randomGridPopulate(window._randomArr, window._randomCategoryColors);
-    };
-  }
-});
 
 
 
@@ -850,217 +962,101 @@ function showInfo(arr, color) {
 
 
 
+// Make sure Fuse.js is loaded in your HTML before this script!
+
 function setupSearch(itemList) {
   const searchInput = document.getElementById('search-bar');
-  const searchResults = document.getElementById('search-results');
+  const resultsContainer = document.getElementById('search-results');
 
-  searchInput.addEventListener('input', function () {
-    const query = this.value.trim().toLowerCase();
-    searchResults.innerHTML = '';
+  // Use Fuse.js for fuzzy search
+  const fuse = new Fuse(itemList, {
+    keys: ['name'],
+    threshold: 0.3,
+  });
+
+  let activeIndex = -1;
+
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value.trim();
+    resultsContainer.innerHTML = '';
+    activeIndex = -1;
+
     if (!query) return;
 
-    // Simple search: filter by name
-    const results = itemList.filter(item => item.name.toLowerCase().includes(query));
-    results.slice(0, 12).forEach(item => {
+    const results = fuse.search(query).slice(0, 12);
+
+    results.forEach((result, index) => {
+      const item = result.item;
       const div = document.createElement('div');
       div.className = 'search-item';
       div.textContent = item.name;
       div.style.padding = "8px 14px";
       div.style.cursor = "pointer";
-
       div.style.borderBottom = "1px solid #333";
       div.style.whiteSpace = "nowrap";
+
       div.addEventListener('mouseenter', () => div.style.background = "#444");
       div.addEventListener('mouseleave', () => div.style.background = "transparent");
       div.addEventListener('click', () => {
-        searchResults.innerHTML = '';
-        searchInput.value = '';
-        // Remove any .item.showing
-        document.querySelectorAll('.item').forEach(el => el.classList.remove('showing'));
-        // Remove all items from #ctlg
-        document.querySelectorAll('#ctlg .item').forEach(el => el.remove());
-        // Create and show only the selected item
-        createNewItem(item, item._color);
-        // Find the new item and open modal
-        const newItem = document.querySelector('#ctlg .item:last-child');
-        if (newItem) {
-          isModalOpen = false;
-          newItem.classList.add('showing');
-          // Simulate a real click event
-          newItem.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        }
+        searchInput.value = item.name;
+        resultsContainer.innerHTML = '';
+        showSelectedItem(item);
       });
-      searchResults.appendChild(div);
+
+      resultsContainer.appendChild(div);
     });
   });
 
-  // Hide results when clicking outside
+  // Keyboard navigation
+  searchInput.addEventListener('keydown', (e) => {
+    const items = resultsContainer.querySelectorAll('.search-item');
+
+    if (e.key === 'ArrowDown') {
+      activeIndex = (activeIndex + 1) % items.length;
+    } else if (e.key === 'ArrowUp') {
+      activeIndex = (activeIndex - 1 + items.length) % items.length;
+    } else if (e.key === 'Enter' && activeIndex >= 0) {
+      e.preventDefault();
+      items[activeIndex].click();
+    } else if (e.key === 'Escape') {
+      resultsContainer.innerHTML = '';
+      return;
+    } else {
+      return;
+    }
+
+    items.forEach((item, i) =>
+      item.classList.toggle('active', i === activeIndex)
+    );
+  });
+
+  // Click outside to close
   document.addEventListener('click', (e) => {
-    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-      searchResults.innerHTML = '';
+    if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+      resultsContainer.innerHTML = '';
     }
   });
+
+  function showSelectedItem(item) {
+    // Remove all items from #ctlg
+    document.querySelectorAll('#ctlg .item').forEach(el => el.remove());
+    // Create and show only the selected item
+    createNewItem(item, item._color || 'pink');
+    document.getElementById("zd").innerText = `1 item`;
+    // Open modal for the new item
+    const newItem = document.querySelector('#ctlg .item:last-child');
+    if (newItem) {
+      isModalOpen = false;
+      newItem.classList.add('showing');
+      newItem.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    }
+  }
 }
-
-
-
-
-
-document.addEventListener("DOMContentLoaded", () => {
-  template = document.getElementById("itom");
-  const catalog = document.getElementById("ctlg"); // Parent container for items
-  //const catalog2 = document.getElementById("new"); // Parent container for items
-
-  let main = document.querySelector("main");
-  if (catalog) {
-    catalog.addEventListener("click", (event) => {
-      Modal(event);
-    });
-  }
-
-
-
-  if (main.style.scale == '1') {
-    main.style.filter = 'opacity(1)'
-  }
-
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "ArrowRight") {
-
-      const currentItem = document.querySelector(".item.showing"); // Find the currently showing item
-
-      if (currentItem) {
-        const nextItem = currentItem.nextElementSibling; // Get the next sibling item
-        if (nextItem && nextItem.classList.contains("item")) {
-          // Simulate a click on the next item to show its modal
-          isModalOpen = false
-          nextItem.click();
-        }
-      }
-    } else if (event.key === "ArrowLeft") {
-      const currentItem = document.querySelector(".item.showing"); // Find the currently showing item
-      if (currentItem) {
-        const prevItem = currentItem.previousElementSibling; // Get the previous sibling item
-        if (prevItem && prevItem.classList.contains("item")) {
-          // Simulate a click on the previous item to show its modal
-          isModalOpen = false
-          prevItem.click();
-        }
-      }
-    }
-  });
-
-
-  const leftArrow = document.createElement("div");
-  leftArrow.id = "modal-left-arrow";
-  leftArrow.className = "modal-arrow";
-  leftArrow.innerHTML = "&#8592;";
-  modal.appendChild(leftArrow);
-
-  const rightArrow = document.createElement("div");
-  rightArrow.id = "modal-right-arrow";
-  rightArrow.className = "modal-arrow";
-  rightArrow.innerHTML = "&#8594;";
-  modal.appendChild(rightArrow);
-
-  // Mobile swipe support for modal navigation
-  let touchStartX = 0;
-  let touchEndX = 0;
-
-  modalContent.addEventListener("touchstart", (e) => {
-    touchStartX = e.changedTouches[0].screenX;
-  }, false);
-
-  modalContent.addEventListener("touchend", (e) => {
-    touchEndX = e.changedTouches[0].screenX;
-    handleSwipeGesture();
-  }, false);
-
-  function handleSwipeGesture() {
-
-    const delta = touchEndX - touchStartX;
-    const threshold = 50; // minimum px to be considered swipe
-
-    if (Math.abs(delta) > threshold) {
-      const currentItem = document.querySelector(".item.showing");
-      if (!currentItem) return;
-      if (delta < 0) {
-        // Swipe left → next item
-        const nextItem = currentItem.nextElementSibling;
-        if (nextItem?.classList.contains("item")) {
-          isModalOpen = false
-          nextItem.click()
-        };
-      } else {
-        // Swipe right → previous item
-        const prevItem = currentItem.previousElementSibling;
-        if (prevItem?.classList.contains("item")) {
-          isModalOpen = false
-          prevItem.click()
-        };
-      }
-    }
-  }
-
-  document.getElementById("modal-left-arrow").addEventListener("click", () => {
-    const currentItem = document.querySelector(".item.showing");
-    if (currentItem) {
-      const prevItem = currentItem.previousElementSibling;
-      if (prevItem?.classList.contains("item")) {
-        isModalOpen = false
-        prevItem.click();
-      }
-    }
-  });
-
-  document.getElementById("modal-right-arrow").addEventListener("click", () => {
-    const currentItem = document.querySelector(".item.showing");
-    if (currentItem) {
-      const nextItem = currentItem.nextElementSibling;
-      if (nextItem?.classList.contains("item")) {
-        isModalOpen = false
-        nextItem.click();
-      }
-    }
-  });
-
-  let arrowTimeout;
-
-  function showModalArrows() {
-    document.getElementById("modal-left-arrow").classList.add("show");
-    document.getElementById("modal-right-arrow").classList.add("show");
-    showSwipeTutorial()
-    clearTimeout(arrowTimeout);
-    arrowTimeout = setTimeout(() => {
-      document.getElementById("modal-left-arrow").classList.remove("show");
-      document.getElementById("modal-right-arrow").classList.remove("show");
-    }, 2000); // hide after 2s of inactivity
-  }
-
-  // Show arrows when modal opens
-  const originalModal = Modal;
-  Modal = function () {
-    originalModal.apply(this, arguments); // preserve original logic
-    showModalArrows();
-  };
-
-
-
-  // Show arrows on mouse move/hover over modal
-  modal.addEventListener("mousemove", showModalArrows);
-  modal.addEventListener("touchstart", showModalArrows); // for quick re-show on touch
-
-
-
-});
 
 
 function filterItems() {
   const searchValue = document.getElementById('search-bar').value.toLowerCase();
   const items = document.querySelectorAll('.catalog-grid .item');
-
-
 
   items.forEach(item => {
     let display = "flex";
@@ -1076,4 +1072,3 @@ function filterItems() {
     }
   });
 }
-
