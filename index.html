@@ -506,57 +506,50 @@
 
  
 
-  <script>
-    const countdownEl = document.getElementById("countdown");
-	const countdownEl2 = document.getElementById("countdown2");
+<script>
+  const countdownEl = document.getElementById("countdown");
+  const countdownEl2 = document.getElementById("countdown2");
 
-	const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
-    // Starting point: May 31, 2025, 9:00 PM local time
-    const baseStart = new Date("2025-05-25T04:00:00");
-	const baseStart2 = new Date("2025-05-30T04:00:00");
-    // One week in milliseconds
-    const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+  const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
+  const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
-    function updateCountdown() {
-      const now = new Date();
+  // Abu Dhabi is UTC+4, so 9:00 PM local is 17:00 UTC
+  const baseStart = new Date(Date.UTC(2025, 4, 25, 17)); // May 25, 2025, 9:00 PM Abu Dhabi
+  const baseStart2 = new Date(Date.UTC(2025, 4, 30, 17)); // May 30, 2025, 9:00 PM Abu Dhabi
 
-      // Find how many full weeks have passed since baseStart
-      const elapsed = now - baseStart;
-      const elapsed2 = now - baseStart2;
-      const timeIntoCurrentCycle = elapsed % WEEK_MS;
-      const timeIntoCurrentCycle2 = elapsed2 % WEEK_MS;
+  function updateCountdown() {
+    const now = new Date();
+    const utcNow = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
 
-      const timeLeft = WEEK_MS - timeIntoCurrentCycle;
-      const timeLeft2 = WEEK_MS - timeIntoCurrentCycle2;
+    const elapsed = utcNow - baseStart;
+    const elapsed2 = utcNow - baseStart2;
+    const timeIntoCurrentCycle = elapsed % WEEK_MS;
+    const timeIntoCurrentCycle2 = elapsed2 % WEEK_MS;
 
-      countdownEl.style.color = timeLeft < SIX_HOURS_MS ? "#ff9999" : "#cccccc";
-      countdownEl2.style.color = timeLeft2 < SIX_HOURS_MS ? "#ff9999" : "#cccccc";
+    const timeLeft = WEEK_MS - timeIntoCurrentCycle;
+    const timeLeft2 = WEEK_MS - timeIntoCurrentCycle2;
 
-      // Calculate days, hours, minutes, seconds
-      const totalSeconds = Math.floor(timeLeft / 1000);
+    countdownEl.style.color = timeLeft < SIX_HOURS_MS ? "#ff9999" : "#cccccc";
+    countdownEl2.style.color = timeLeft2 < SIX_HOURS_MS ? "#ff9999" : "#cccccc";
+
+    const formatTime = (ms) => {
+      const totalSeconds = Math.floor(ms / 1000);
       const days = Math.floor(totalSeconds / (24 * 3600));
       const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
       const minutes = Math.floor((totalSeconds % 3600) / 60);
       const seconds = totalSeconds % 60;
-
-      // Update second countdown
-      const totalSeconds2 = Math.floor(timeLeft2 / 1000);
-      const days2 = Math.floor(totalSeconds2 / (24 * 3600));
-      const hours2 = Math.floor((totalSeconds2 % (24 * 3600)) / 3600);
-      const minutes2 = Math.floor((totalSeconds2 % 3600) / 60);
-      const seconds2 = totalSeconds2 % 60;
-
-      // Format with leading zeroes
       const pad = (n) => n.toString().padStart(2, '0');
+      return `${pad(days)}:${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    };
 
-      countdownEl.textContent = `${pad(days)}:${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-      countdownEl2.textContent = `${pad(days2)}:${pad(hours2)}:${pad(minutes2)}:${pad(seconds2)}`;
-    }
+    countdownEl.textContent = formatTime(timeLeft);
+    countdownEl2.textContent = formatTime(timeLeft2);
+  }
 
-    // Update every second
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-  </script>
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+</script>
+
 
 
 
