@@ -1032,6 +1032,8 @@ function setupSearch(itemList) {
 
   // Click outside to close
   document.addEventListener('click', (e) => {
+    if (!result) return;
+    if (!searchInput) return;
     if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
       resultsContainer.innerHTML = '';
     }
