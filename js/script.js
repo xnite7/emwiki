@@ -250,7 +250,8 @@ function openSiblingModal(direction) {
 }
 
 
-function Modal() {
+function Modal(event) {
+  console.log(event.target)
   if (isModalOpen) return;
 
   const item = event.target.closest(".item");
@@ -1040,16 +1041,19 @@ function setupSearch(itemList) {
 
   function showSelectedItem(item) {
     // Remove all items from ctlg
-    document.querySelectorAll('#ctlg .item').forEach(el => el.remove());
+    document.querySelectorAll('#itemlist .item').forEach(el => el.remove());
     // Create and show only the selected item
     createNewItem(item, item._color || 'pink');
     document.getElementById("zd").innerText = `1 item`;
     // Open modal for the new item
-    const newItem = document.querySelector('#ctlg .item:last-child');
+    const newItem = document.querySelector('#itemlist .item:last-child');
     if (newItem) {
       isModalOpen = false;
-      newItem.classList.add('showing');
-      newItem.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      //newItem.click();
+      
+      newItem.onclick = (event) => Modal(event);
+      newItem.click();
+
     }
   }
 }
@@ -1057,7 +1061,7 @@ function setupSearch(itemList) {
 
 function filterItems() {
   const searchValue = document.getElementById('search-bar').value.toLowerCase();
-  const items = document.querySelectorAll('#itemlist .item');
+  const items = document.querySelectorAll('#ctlg .item');
 
   items.forEach(item => {
     let display = "flex";
