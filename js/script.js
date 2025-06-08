@@ -967,7 +967,7 @@ function showInfo(arr, color) {
 function setupSearch(itemList) {
   const searchInput = document.getElementById('search-bar');
   const resultsContainer = document.getElementById('search-results');
-
+  if (!resultsContainer) return;
   // Use Fuse.js for fuzzy search
   const fuse = new Fuse(itemList, {
     keys: ['name'],
@@ -1032,8 +1032,6 @@ function setupSearch(itemList) {
 
   // Click outside to close
   document.addEventListener('click', (e) => {
-    if (!result) return;
-    if (!searchInput) return;
     if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
       resultsContainer.innerHTML = '';
     }
