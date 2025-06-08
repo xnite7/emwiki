@@ -1812,7 +1812,9 @@ html {
         padding-top: 11px;
         text-align: center
     }
-
+    #dacord{
+        display: none;
+    }
     #credits-content>p {
         font-size: 1.3rem;
         margin-top: 18px;
