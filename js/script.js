@@ -105,6 +105,10 @@ if (document.querySelector('.intro')) {
           }
           // intro.style.display = "none"
         }, 3700)
+
+        setTimeout(() => {
+          xnite.style.color = "#ffffff00";
+        }, 5600)
       })
     });
   })
