@@ -852,7 +852,7 @@ p {
     bottom: 0;
     z-index: 99;
     padding-top: 6px;
-    font: 100 clamp(0.7rem, 1vw, 1.25rem) 'Source Sans Pro';
+    font: 100 clamp(0.7rem, 1vw, 0.9rem) 'Source Sans Pro';
     text-shadow: -1.3px -1.3px 0 #000, 0 -1.3px 0 #000, 1.3px -1.3px 0 #000, 1.3px 0 0 #000, 1.3px 1.3px 0 #000, 0 1.3px 0 #000, -1.3px 1.3px 0 #000, -1.3px 0 0 #000;
     height: 21px
 }
