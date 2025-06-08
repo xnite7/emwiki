@@ -18,15 +18,17 @@ if (document.querySelector('.intro')) {
 
   let logoSpan = document.querySelectorAll('.logo');
   var d = Math.random();
-  if (d > 0.9) {
-    logo3.src = "https://i.imgur.com/o7IJiwl.png"
-    logo3.style.fontFamily = "Bunny Flowers";
+
+  if (d > 0.99) {
+    imgg = "./imgs/burrito.png"
+  }else if (d > 0.98) {
+    imgg = "./imgs/tran.webp"
+  }else if (d > 0.9) {
     imgg = "https://i.imgur.com/o7IJiwl.png"
   } else {
-    logo3.src = "https://i.imgur.com/XRmpB1c.png"
     imgg = "https://i.imgur.com/XRmpB1c.png"
   }
-
+  logo3.src = imgg
   window.addEventListener('DOMContentLoaded', () => {
     if (document.querySelector(".sparkle")) { document.querySelector(".sparkle").style.opacity = "0"; }
     let logo4 = document.querySelector('.logo4')
