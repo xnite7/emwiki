@@ -514,40 +514,87 @@
   const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 
-  const baseStart = new Date(Date.UTC(2025, 4, 24, 20)); 
-  const baseStart2 = new Date(Date.UTC(2025, 4, 29, 20));
+  const baseStart = new Date(Date.UTC(2025, 4, 24, 24)); 
+  const baseStart2 = new Date(Date.UTC(2025, 4, 29, 24));
 
-  function updateCountdown() {
-    const now = new Date();
-    const utcNow = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
+let cachedUTC = null;
+let cachedAt = 0;
 
-    const elapsed = utcNow - baseStart;
-    const elapsed2 = utcNow - baseStart2;
-    const timeIntoCurrentCycle = elapsed % WEEK_MS;
-    const timeIntoCurrentCycle2 = elapsed2 % WEEK_MS;
-
-    const timeLeft = WEEK_MS - timeIntoCurrentCycle;
-    const timeLeft2 = WEEK_MS - timeIntoCurrentCycle2;
-
-    countdownEl.style.color = timeLeft < SIX_HOURS_MS ? "#ff9999" : "#cccccc";
-    countdownEl2.style.color = timeLeft2 < SIX_HOURS_MS ? "#ff9999" : "#cccccc";
-
-    const formatTime = (ms) => {
-      const totalSeconds = Math.floor(ms / 1000);
-      const days = Math.floor(totalSeconds / (24 * 3600));
-      const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = totalSeconds % 60;
-      const pad = (n) => n.toString().padStart(2, '0');
-      return `${pad(days)}:${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-    };
-
-    countdownEl.textContent = formatTime(timeLeft);
-    countdownEl2.textContent = formatTime(timeLeft2);
+async function getAccurateUTC() {
+  const now = Date.now();
+  // Use cached value if less than 5 minutes old
+  if (cachedUTC && (now - cachedAt < 5 * 60 * 1000)) {
+    // Add the elapsed time since last fetch
+    return new Date(cachedUTC.getTime() + (now - cachedAt));
   }
+  try {
+    const res = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(text);
+    }
+    cachedUTC = new Date(data.utc_datetime);
+    cachedAt = Date.now();
+    return cachedUTC;
+  } catch (e) {
+    // Fallback: use device time as UTC (not perfect, but better than nothing)
+    console.warn("Falling back to device UTC time:", e);
+    return new Date(Date.now());
+  }
+}
 
+let lastUTC = null;
+let lastUTCAt = 0;
+
+async function syncUTC() {
+  lastUTC = await getAccurateUTC();
+  lastUTCAt = Date.now();
+}
+
+function getCurrentUTC() {
+  if (!lastUTC) return new Date(Date.now());
+  const now = Date.now();
+  return new Date(lastUTC.getTime() + (now - lastUTCAt));
+}
+
+function updateCountdown() {
+  const utcNow = getCurrentUTC();
+
+  const elapsed = utcNow - baseStart;
+  const elapsed2 = utcNow - baseStart2;
+  const timeIntoCurrentCycle = elapsed % WEEK_MS;
+  const timeIntoCurrentCycle2 = elapsed2 % WEEK_MS;
+
+  const timeLeft = WEEK_MS - timeIntoCurrentCycle;
+  const timeLeft2 = WEEK_MS - timeIntoCurrentCycle2;
+
+  countdownEl.style.color = timeLeft < SIX_HOURS_MS ? "#ff9999" : "#cccccc";
+  countdownEl2.style.color = timeLeft2 < SIX_HOURS_MS ? "#ff9999" : "#cccccc";
+
+  const formatTime = (ms) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const days = Math.floor(totalSeconds / (24 * 3600));
+    const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    const pad = (n) => n.toString().padStart(2, '0');
+    return `${pad(days)}:${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  };
+
+  countdownEl.textContent = formatTime(timeLeft);
+  countdownEl2.textContent = formatTime(timeLeft2);
+}
+
+// Initial sync
+syncUTC().then(() => {
   updateCountdown();
   setInterval(updateCountdown, 1000);
+  // Re-sync with server every 5 minutes
+  setInterval(syncUTC, 5 * 60 * 1000);
+});
 </script>
 
 
@@ -900,8 +947,6 @@ async function fetchResults() {
     }, 600);
   }
 </script>
-
-</style>
 
 
 
