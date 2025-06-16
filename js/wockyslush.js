@@ -301,7 +301,7 @@ function showInfo(arr, color) {
       if (item.from && item.from.toLowerCase().includes("1hr playtime rewards")) {
         hrplaytimeItems.push(item);
       }
-      if (item.from && item.from.toLowerCase().includes("gamenight")) {
+      if (item.from && item.from.toLowerCase().includes("gamenight") || item.from.toLowerCase().includes("rodis")) {
         gamenightItems.push(item);
       }
       if (item.from && item.from.toLowerCase().includes("secret item (daily rewards)")) {
