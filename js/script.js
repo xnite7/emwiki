@@ -761,6 +761,20 @@ function createNewItem(item, color) {
   newItem.style.overflow = "hidden";
   newItem.style.scale = "1";
   // Untradable icon for non-titles
+  if (item.weeklystar) {
+    if (item["price/code/rarity"].toLowerCase().includes("60") ) {
+      newItem.style.outlineColor = "#b31aff";
+    }
+    if (item["price/code/rarity"].toLowerCase().includes("30") ) {
+      newItem.style.outlineColor = "#ff2a00";
+    }
+    if (item["price/code/rarity"].toLowerCase().includes("15") ) {
+      newItem.style.outlineColor = "#fae351";
+    }
+    if (item["price/code/rarity"].toLowerCase().includes("5") ) {
+      newItem.style.outlineColor = "#fffffff6";
+    }
+  }
   if (item.tradable === false && color !== "rgb(201, 96, 254)") {
     const untradable = document.createElement("img");
     newItem.style.order = "1";
