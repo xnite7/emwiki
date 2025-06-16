@@ -301,7 +301,10 @@ function showInfo(arr, color) {
       if (item.from && item.from.toLowerCase().includes("1hr playtime rewards")) {
         hrplaytimeItems.push(item);
       }
-      if (item.from && item.from.toLowerCase().includes("gamenight") || item.from.toLowerCase().includes("rodis")) {
+      if (
+        (item.from && item.from.toLowerCase().includes("gamenight")) ||
+        (item.from && item.from.toLowerCase().includes("rodis"))
+      ) {
         gamenightItems.push(item);
       }
       if (item.from && item.from.toLowerCase().includes("secret item (daily rewards)")) {
@@ -336,7 +339,7 @@ function showInfo(arr, color) {
         listElement = document.getElementById("premiumchest");
       } else if (item.from.toLowerCase().includes("1hr playtime rewards")) {
         listElement = document.getElementById("1hrplaytimerewards");
-      } else if (item.from.toLowerCase().includes("gamenight")) {
+      } else if (item.from.toLowerCase().includes("gamenight") || item.from.toLowerCase().includes("rodis")) {
         listElement = document.getElementById("gamenightitems");
       } else if (item.from.toLowerCase().includes("secret item (daily rewards)")) {
         listElement = document.getElementById("drsecretitems");
