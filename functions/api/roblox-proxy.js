@@ -8,6 +8,28 @@ export async function onRequestGet({ request, env }) {
   const discordId = url.searchParams.get("discordId");
   const forceRefresh = url.searchParams.get("refresh") === "true";
 
+
+  if (url.pathname.endsWith("/api/roblox-proxy") && userId) {
+  try {
+    const [userData, avatarData] = await Promise.all([
+      fetch(`https://users.roblox.com/v1/users/${userId}`).then(r => r.ok ? r.json() : null),
+      fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=true`)
+        .then(r => r.ok ? r.json() : null)
+    ]);
+
+    if (!userData) throw new Error("Failed to fetch Roblox user data");
+
+    return new Response(JSON.stringify({
+      name: userData.name,
+      displayName: userData.displayName,
+      avatar: avatarData?.data?.[0]?.imageUrl || null
+    }), { headers: { "Content-Type": "application/json" } });
+
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+  }
+}
+
   if (mode === "discord-scammers") {
     try {
       const now = Date.now();
