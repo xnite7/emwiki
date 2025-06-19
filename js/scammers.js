@@ -34,14 +34,14 @@ async function createScammerBlock(scammer, container) {
             <path d="M5 12h14"></path>
           </svg></h2></a>
         ${discordDisplay && discordDisplay.trim() !== "NA"
-          ? `<p style="color: #ffffff;align-self: center;width: fit-content;border-radius: 21px;padding: 7px 14px;background: cornflowerblue;filter: brightness(0.7);"><img src="../imgs/discord.png" style="width: 28px;"> ${discordDisplay}</p>`
-          : ""}
+      ? `<p style="color: #ffffff;align-self: center;width: fit-content;border-radius: 21px;padding: 7px 14px;background: cornflowerblue;filter: brightness(0.7);"><img src="../imgs/discord.png" style="width: 28px;"> ${discordDisplay}</p>`
+      : ""}
         ${victims && victims.trim() !== "NA"
-          ? `<p><strong>Victims:</strong> ${victims}</p>`
-          : ""}
+      ? `<p><strong>Victims:</strong> ${victims}</p>`
+      : ""}
         ${itemsScammed && itemsScammed.trim() !== "NA"
-          ? `<p><strong>Items Scammed:</strong> ${itemsScammed}</p>`
-          : ""}
+      ? `<p><strong>Items Scammed:</strong> ${itemsScammed}</p>`
+      : ""}
         ${robloxAlts ? `<p><strong>Alts:</strong> <a href="${robloxAlts}" target="_blank">${robloxAlts}</a></p>` : ""}
         
       </div>
@@ -61,9 +61,9 @@ document.addEventListener("DOMContentLoaded", () => {
     .then(res => res.json())
     .then(data => {
       container.innerHTML = ''; // Clear loading text
-      const scammers = Array.isArray(data) ? data : data.scammers;
-      if (Array.isArray(scammers)) {
-        scammers.forEach(scammer => createScammerBlock(scammer, container));
+
+      if (Array.isArray(data.scammers)) {
+        data.scammers.forEach(scammer => createScammerBlock(scammer, container));
       } else {
         console.error("Scammers data is not an array", scammers);
       }
@@ -74,9 +74,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 //<a href="${robloxProfile}" class="tour-button">
- //         View Roblox Profile
-  //        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-   //         <path d="M12 5l7 7-7 7"></path>
-   //         <path d="M5 12h14"></path>
-    //      </svg>
-     //   </a>
+//         View Roblox Profile
+//        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+//       <path d="M12 5l7 7-7 7"></path>
+//         <path d="M5 12h14"></path>
+//      </svg>
+//   </a>
