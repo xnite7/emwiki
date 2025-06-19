@@ -145,7 +145,7 @@ export async function onRequestGet({ request, env }) {
 
       for (const msg of allMessages) {
         try {
-const discordMatch = msg.content?.match(/discord user:\s*\*{0,2}\s*([^\n\r]+)/i);
+          const discordMatch = msg.content?.match(/discord user:\s*\*{0,2}\s*([^\n\r]+)/i);
           const robloxProfileMatch = msg.content?.match(/https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i);
           const robloxUserMatch = msg.content?.match(/roblox user:\s*\*{0,2}(.*)/i);
 
@@ -159,7 +159,7 @@ const discordMatch = msg.content?.match(/discord user:\s*\*{0,2}\s*([^\n\r]+)/i)
             robloxUser: robloxUserMatch?.[1]?.trim() || null,
             robloxProfile,
             avatar: null,
-            discordDisplay: discordid || null,
+            discordDisplay: null,
             victims: victims || null,
             itemsScammed: itemsScammed || null,
             incomplete: false
