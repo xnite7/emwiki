@@ -44,8 +44,9 @@ async function createScammerBlock(scammer, container) {
         ${itemsScammed && itemsScammed.trim() !== "NA"
       ? `<p><strong>Items Scammed:</strong> ${itemsScammed}</p>`
       : ""}
-        ${robloxAlts ? `<p><strong>Alts:</strong> <a href="${robloxAlts}" target="_blank">${robloxAlts}</a></p>` : ""}
-        
+        ${robloxAlts !== "" && robloxAlts !== null
+      ? `<p><strong>Alts:</strong> ${robloxAlts.map(alt => `<a href="${alt.profile}" target="_blank">${alt.name}</a>`).join(", ")}</p>`
+      : ""}
       </div>
     </div>
   `;
