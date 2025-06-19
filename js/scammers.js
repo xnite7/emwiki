@@ -62,11 +62,16 @@ document.addEventListener("DOMContentLoaded", () => {
   fetch('https://emwiki.site/api/roblox-proxy?mode=discord-scammers')
     .then(res => res.json())
     .then(data => {
-      container.innerHTML = ''; // Clear loading text
-      console.log("Fetched data:", data); // Add this for debugging
+      container.innerHTML = '';
+      console.log("Fetched data:", data);
 
-      const scammersArr = Array.isArray(data.scammers) ? data.scammers : [];
-      scammersArr.forEach(scammer => createScammerBlock(scammer, container));
+      // FIX: scammers array is at data.scammers.scammers
+      if (data && data.scammers && Array.isArray(data.scammers.scammers)) {
+        data.scammers.scammers.forEach(scammer => createScammerBlock(scammer, container));
+      } else {
+        console.error("Scammers data is not an array", data && data.scammers && data.scammers.scammers, data);
+        container.innerHTML = `<p class="error">Failed to load scammers list. Please try again later.</p>`;
+      }
     })
     .catch(err => {
       container.innerHTML = `<p class="error">Failed to load scammers. Please try again later.</p>`;
