@@ -61,7 +61,12 @@ document.addEventListener("DOMContentLoaded", () => {
     .then(res => res.json())
     .then(data => {
       container.innerHTML = ''; // Clear loading text
-      data.forEach(scammer => createScammerBlock(scammer, container));
+      const scammers = Array.isArray(data) ? data : data.scammers;
+      if (Array.isArray(scammers)) {
+        scammers.forEach(scammer => createScammerBlock(scammer, container));
+      } else {
+        console.error("Scammers data is not an array", scammers);
+      }
     })
     .catch(err => {
       container.innerHTML = `<p class="error">Failed to load scammers. Please try again later.</p>`;
