@@ -163,7 +163,7 @@ export async function onRequestGet({ request, env }) {
             victims: victims || null,
             itemsScammed: itemsScammed || null,
             incomplete: false,
-            robloxAlts: null,
+            robloxAlts: [],
           };
 
           if (!userId) {
@@ -224,7 +224,7 @@ export async function onRequestGet({ request, env }) {
           }
 
           entry.robloxUser = data.displayName || data.name || entry.robloxUser;
-          entry.avatar = data.avatar || null;
+          entry.avatar = data.avatar ?? "https://emwiki.site/imgs/plr.jpg";
           entry.discordDisplay = data.discordDisplayName || entry.discordDisplay;
 
 
