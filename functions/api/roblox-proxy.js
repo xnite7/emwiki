@@ -145,8 +145,8 @@ export async function onRequestGet({ request, env }) {
 
       for (const msg of allMessages) {
         try {
-          const discordMatch = msg.content?.match(/discord user:\s*\*{0,2}\s*([^\n\r]+)/i);
-          const robloxProfileMatch = msg.content?.match(/https:\/\/www\\.roblox\\.com\/users\/(\d+)\/profile/i);
+const discordMatch = msg.content?.match(/discord user:\s*\*{0,2}\s*([^\n\r]+)/i);
+          const robloxProfileMatch = msg.content?.match(/https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i);
           const robloxUserMatch = msg.content?.match(/roblox user:\s*\*{0,2}(.*)/i);
 
           const discordid = discordMatch ? discordMatch[1].trim().split(',')[0] : null;
