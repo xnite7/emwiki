@@ -216,7 +216,7 @@ export async function onRequestGet({ request, env }) {
               } catch { }
               await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
             }
-            if (!fetchSuccess || !data.avatar) {
+            if (!fetchSuccess) {
               entry.incomplete = true;
               partialScammers.push(entry);
               continue; // Don't push to scammers
@@ -226,41 +226,38 @@ export async function onRequestGet({ request, env }) {
           entry.robloxUser = data.displayName || data.name || entry.robloxUser;
           entry.avatar = data.avatar || null;
           entry.discordDisplay = data.discordDisplayName || entry.discordDisplay;
-          entry.robloxAlts = [];
-          let anyAltFetchSucceeded = false;  // <-- Track success
 
-          // --- HANDLE ROBLOX ALTS ---
+
+          // --- ALTS ---
+          let altIds = [];
           const altMatches = msg.content?.match(/roblox alts:\s*([\s\S]+)/i);
           if (altMatches) {
             const altBlock = altMatches[1].trim();
-            const altIds = [...altBlock.matchAll(/roblox\.com\/users\/(\d+)\//g)].map(m => m[1]);
+            altIds = [...altBlock.matchAll(/roblox\.com\/users\/(\d+)\//g)].map(m => m[1]);
 
             for (const altId of altIds) {
               try {
                 const altRes = await fetch(`https://users.roblox.com/v1/users/${altId}`);
                 if (altRes.ok) {
                   const altUser = await altRes.json();
-                  entry.robloxAlts.push(altUser.name);
-                  anyAltFetchSucceeded = true; // Mark success
+                  entry.robloxAlts.push({
+                    name: altUser.name,
+                    profile: `https://www.roblox.com/users/${altUser.id}/profile`
+                  });
                 }
               } catch {
-                // ignore error, just continue
+                // Ignore failure silently
               }
-            }
-            // After loop, check if all failed
-            if (altIds.length > 0 && !anyAltFetchSucceeded) {
-              console.warn(`All alt fetches failed for user with alts: ${altIds.join(", ")}`);
-              // You could also set a flag here, or mark entry incomplete if needed
             }
           }
 
+          // --- Push finalized entry to scammers ---
           scammers.push(entry);
 
         } catch (err) {
           console.warn("Failed to parse message:", err);
         }
       }
-
       const payload = JSON.stringify({ lastMessageId: latestMessageId, scammers, partials: partialScammers });
 
       await env.DB.prepare(`
