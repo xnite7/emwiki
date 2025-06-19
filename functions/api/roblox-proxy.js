@@ -1,5 +1,5 @@
 const CACHE_KEY = "discord-scammers";
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const CACHE_TTL_MS = 1000;
 
 export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
@@ -215,7 +215,9 @@ export async function onRequestGet({ request, env }) {
               } catch {}
               await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
             }
-            if (!fetchSuccess || !data.name || !data.displayName || !data.avatar) entry.incomplete = true;
+            if (!fetchSuccess || !data.avatar) {
+                entry.incomplete = true;
+              }
           }
 
           entry.robloxUser = data.displayName || data.name || entry.robloxUser;
