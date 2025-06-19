@@ -55,9 +55,9 @@ export async function onRequestGet({ request, env }) {
         const cachedLastMessageId = cachedData.lastMessageId;
 
         // Retry even if message ID unchanged, if any incomplete scammers
-        const hasIncomplete = (cachedData.scammers || []).some(s => s.incomplete);
+        
 
-        if (now - existing.updated_at < CACHE_TTL_MS && latestMessageId === cachedLastMessageId && !hasIncomplete) {
+        if (now - existing.updated_at < CACHE_TTL_MS && latestMessageId === cachedLastMessageId) {
           return new Response(JSON.stringify({ lastUpdated: existing.updated_at, scammers: cachedData.scammers, partials: cachedData.partials }), {
             headers: { "Content-Type": "application/json", "X-Cache": "D1-HIT-EARLY" },
           });
@@ -215,14 +215,39 @@ export async function onRequestGet({ request, env }) {
               } catch {}
               await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
             }
-            if (!fetchSuccess || !data.avatar) {
+              if (!fetchSuccess || !data.avatar) {
                 entry.incomplete = true;
+                partialScammers.push(entry);
+                continue; // Don't push to scammers
               }
           }
 
           entry.robloxUser = data.displayName || data.name || entry.robloxUser;
           entry.avatar = data.avatar || null;
           entry.discordDisplay = data.discordDisplayName || entry.discordDisplay;
+          
+
+          // --- HANDLE ROBLOX ALTS ---
+          const altMatches = msg.content?.match(/roblox alts:\s*([\s\S]+)/i);
+          if (altMatches) {
+            const altBlock = altMatches[1].trim();
+            const altIds = [...altBlock.matchAll(/roblox\.com\/users\/(\d+)\//g)].map(m => m[1]);
+
+            if (altIds.length > 0) {
+              entry.robloxAlts = [];
+
+              for (const altId of altIds) {
+                try {
+                  const altRes = await fetch(`https://users.roblox.com/v1/users/${altId}`);
+                  if (altRes.ok) {
+                    const altUser = await altRes.json();
+                    entry.robloxAlts.push(altUser.name);
+                  }
+                } catch {}
+              }
+            }
+          }
+
 
           scammers.push(entry);
         } catch (err) {
