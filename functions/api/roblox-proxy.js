@@ -225,7 +225,8 @@ export async function onRequestGet({ request, env }) {
           entry.robloxUser = data.displayName || data.name || entry.robloxUser;
           entry.avatar = data.avatar || null;
           entry.discordDisplay = data.discordDisplayName || entry.discordDisplay;
-          
+          entry.robloxAlts = [];
+          let anyAltFetchSucceeded = false;  // <-- Track success
 
           // --- HANDLE ROBLOX ALTS ---
           const altMatches = msg.content?.match(/roblox alts:\s*([\s\S]+)/i);
@@ -233,23 +234,26 @@ export async function onRequestGet({ request, env }) {
             const altBlock = altMatches[1].trim();
             const altIds = [...altBlock.matchAll(/roblox\.com\/users\/(\d+)\//g)].map(m => m[1]);
 
-            if (altIds.length > 0) {
-              entry.robloxAlts = [];
-
-              for (const altId of altIds) {
-                try {
-                  const altRes = await fetch(`https://users.roblox.com/v1/users/${altId}`);
-                  if (altRes.ok) {
-                    const altUser = await altRes.json();
-                    entry.robloxAlts.push(altUser.name);
-                  }
-                } catch {}
+            for (const altId of altIds) {
+              try {
+                const altRes = await fetch(`https://users.roblox.com/v1/users/${altId}`);
+                if (altRes.ok) {
+                  const altUser = await altRes.json();
+                  entry.robloxAlts.push(altUser.name);
+                  anyAltFetchSucceeded = true; // Mark success
+                }
+              } catch {
+                // ignore error, just continue
               }
             }
           }
 
 
-          scammers.push(entry);
+          // After loop, check if all failed
+          if (altIds.length > 0 && !anyAltFetchSucceeded) {
+            console.warn(`All alt fetches failed for user with alts: ${altIds.join(", ")}`);
+            // You could also set a flag here, or mark entry incomplete if needed
+          }
         } catch (err) {
           console.warn("Failed to parse message:", err);
         }
