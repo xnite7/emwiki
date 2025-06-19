@@ -162,7 +162,8 @@ export async function onRequestGet({ request, env }) {
             discordDisplay: null,
             victims: victims || null,
             itemsScammed: itemsScammed || null,
-            incomplete: false
+            incomplete: false,
+            robloxAlts: null,
           };
 
           if (!userId) {
