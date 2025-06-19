@@ -12,16 +12,32 @@ export async function onRequestGet({ request, env }) {
     try {
       const now = Date.now();
 
-      // --- EARLY RETURN IF CACHE IS FRESH AND NO REFRESH IS REQUESTED ---
+      // --- CHECK NEWEST MESSAGE ID FOR EARLY REFRESH ---
+      let latestMessageId = null;
+      const checkUrl = `https://discord.com/api/v10/channels/${env.DISCORD_CHANNEL_ID}/messages?limit=1`;
+      const checkRes = await fetch(checkUrl, {
+        headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+      });
+
+      if (checkRes.ok) {
+        const [latestMessage] = await checkRes.json();
+        latestMessageId = latestMessage?.id;
+      }
+
       const existing = await env.DB.prepare(
         "SELECT value, updated_at FROM scammer_cache WHERE key = ?"
       ).bind(CACHE_KEY).first();
 
-      if (existing && !forceRefresh && now - existing.updated_at < CACHE_TTL_MS) {
-        const enriched = JSON.parse(existing.value);
-        return new Response(JSON.stringify({ lastUpdated: existing.updated_at, scammers: enriched }), {
-          headers: { "Content-Type": "application/json", "X-Cache": "D1-HIT-EARLY" },
-        });
+      if (existing && !forceRefresh) {
+        const cachedData = JSON.parse(existing.value);
+        const cachedLastMessageId = cachedData.lastMessageId;
+
+        // Skip rebuild if TTL valid AND message ID unchanged
+        if (now - existing.updated_at < CACHE_TTL_MS && latestMessageId === cachedLastMessageId) {
+          return new Response(JSON.stringify({ lastUpdated: existing.updated_at, scammers: cachedData.scammers, partials: cachedData.partials }), {
+            headers: { "Content-Type": "application/json", "X-Cache": "D1-HIT-EARLY" },
+          });
+        }
       }
 
       // --- LOCKING ---
@@ -42,7 +58,6 @@ export async function onRequestGet({ request, env }) {
         lockAcquired = false;
       }
 
-      // --- WAIT FOR CACHE TO BE BUILT ---
       if (!lockAcquired) {
         let waited = 0;
         const waitStep = 1000;
@@ -52,7 +67,7 @@ export async function onRequestGet({ request, env }) {
           ).bind(CACHE_KEY).all();
           if (results.length > 0) {
             const enriched = JSON.parse(results[0].value);
-            return new Response(JSON.stringify({ lastUpdated: results[0].updated_at, scammers: enriched }), {
+            return new Response(JSON.stringify({ lastUpdated: results[0].updated_at, scammers: enriched.scammers, partials: enriched.partials }), {
               headers: { "Content-Type": "application/json", "X-Cache": "D1-WAIT" },
             });
           }
@@ -122,7 +137,8 @@ export async function onRequestGet({ request, env }) {
             avatar: null,
             discordDisplay: discordid || null,
             victims: victims || null,
-            itemsScammed: itemsScammed || null
+            itemsScammed: itemsScammed || null,
+            incomplete: false
           };
 
           if (!userId) {
@@ -144,6 +160,7 @@ export async function onRequestGet({ request, env }) {
               discordDisplayName: cached.discord_display_name
             };
           } else {
+            let fetchSuccess = false;
             for (let attempt = 0; attempt < 5; attempt++) {
               try {
                 const res = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${userId}&discordId=${discordid}`);
@@ -168,11 +185,13 @@ export async function onRequestGet({ request, env }) {
                     data.discordDisplayName || null,
                     now
                   ).run();
+                  fetchSuccess = true;
                   break;
                 }
               } catch {}
               await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
             }
+            if (!fetchSuccess) entry.incomplete = true;
           }
 
           entry.robloxUser = data.displayName || data.name || entry.robloxUser;
@@ -185,15 +204,13 @@ export async function onRequestGet({ request, env }) {
         }
       }
 
-      const payload = JSON.stringify({ scammers, partials: partialScammers });
+      const payload = JSON.stringify({ lastMessageId: latestMessageId, scammers, partials: partialScammers });
 
-      if (!existing || existing.value !== payload) {
-        await env.DB.prepare(`
-          INSERT INTO scammer_cache (key, value, updated_at)
-          VALUES (?, ?, ?)
-          ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
-        `).bind(CACHE_KEY, payload, now).run();
-      }
+      await env.DB.prepare(`
+        INSERT INTO scammer_cache (key, value, updated_at)
+        VALUES (?, ?, ?)
+        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
+      `).bind(CACHE_KEY, payload, now).run();
 
       await env.DB.prepare("DELETE FROM scammer_cache_locks WHERE key = ?").bind(LOCK_KEY).run();
 
