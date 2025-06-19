@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (Array.isArray(data.scammers)) {
         data.scammers.forEach(scammer => createScammerBlock(scammer, container));
       } else {
-        console.error("Scammers data is not an array", scammers);
+        console.error("Scammers data is not an array", data.scammers);
       }
     })
     .catch(err => {
