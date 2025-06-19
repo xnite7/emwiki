@@ -246,14 +246,15 @@ export async function onRequestGet({ request, env }) {
                 // ignore error, just continue
               }
             }
-          }
-
-
-          // After loop, check if all failed
+                      // After loop, check if all failed
           if (altIds.length > 0 && !anyAltFetchSucceeded) {
             console.warn(`All alt fetches failed for user with alts: ${altIds.join(", ")}`);
             // You could also set a flag here, or mark entry incomplete if needed
           }
+          }
+
+          scammers.push(entry);
+
         } catch (err) {
           console.warn("Failed to parse message:", err);
         }
