@@ -221,6 +221,7 @@ nav button:hover img {
 
 
 .scammer-info p {
+  text-wrap-style: balance;
   font-size: 1.9rem;
   font-family: 'BuilderSans', sans-serif;
   color: #56697b;
