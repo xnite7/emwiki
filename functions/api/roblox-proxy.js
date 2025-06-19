@@ -32,8 +32,9 @@ export async function onRequestGet({ request, env }) {
         const cachedData = JSON.parse(existing.value);
         const cachedLastMessageId = cachedData.lastMessageId;
 
-        // Skip rebuild if TTL valid AND message ID unchanged
-        if (now - existing.updated_at < CACHE_TTL_MS && latestMessageId === cachedLastMessageId) {
+        // Skip rebuild if TTL valid AND message ID unchanged AND no incomplete entries
+        const hasIncomplete = cachedData.scammers?.some(s => s.incomplete);
+        if (now - existing.updated_at < CACHE_TTL_MS && latestMessageId === cachedLastMessageId && !hasIncomplete) {
           return new Response(JSON.stringify({ lastUpdated: existing.updated_at, scammers: cachedData.scammers, partials: cachedData.partials }), {
             headers: { "Content-Type": "application/json", "X-Cache": "D1-HIT-EARLY" },
           });
@@ -122,7 +123,7 @@ export async function onRequestGet({ request, env }) {
       for (const msg of allMessages) {
         try {
           const discordMatch = msg.content?.match(/discord user:\s*\*{0,2}\s*([^\n\r]+)/i);
-          const robloxProfileMatch = msg.content?.match(/https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i);
+          const robloxProfileMatch = msg.content?.match(/https:\/\/www\\.roblox\\.com\/users\/(\d+)\/profile/i);
           const robloxUserMatch = msg.content?.match(/roblox user:\s*\*{0,2}(.*)/i);
 
           const discordid = discordMatch ? discordMatch[1].trim().split(',')[0] : null;
@@ -152,7 +153,7 @@ export async function onRequestGet({ request, env }) {
           const cached = await env.DB.prepare("SELECT * FROM scammer_profile_cache WHERE user_id = ?")
             .bind(userId).first();
 
-          if (cached && now - cached.updated_at < 7 * 24 * 60 * 60 * 1000) {
+          if (cached && now - cached.updated_at < 7 * 24 * 60 * 60 * 1000 && cached.roblox_name && cached.roblox_display_name && cached.avatar) {
             data = {
               name: cached.roblox_name,
               displayName: cached.roblox_display_name,
@@ -191,7 +192,7 @@ export async function onRequestGet({ request, env }) {
               } catch {}
               await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
             }
-            if (!fetchSuccess) entry.incomplete = true;
+            if (!fetchSuccess || !data.name || !data.displayName || !data.avatar) entry.incomplete = true;
           }
 
           entry.robloxUser = data.displayName || data.name || entry.robloxUser;
