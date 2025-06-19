@@ -32,8 +32,9 @@ export async function onRequestGet({ request, env }) {
         const cachedData = JSON.parse(existing.value);
         const cachedLastMessageId = cachedData.lastMessageId;
 
-        // Skip rebuild if TTL valid AND message ID unchanged AND no incomplete entries
-        const hasIncomplete = cachedData.scammers?.some(s => s.incomplete);
+        // Retry even if message ID unchanged, if any incomplete scammers
+        const hasIncomplete = (cachedData.scammers || []).some(s => s.incomplete);
+
         if (now - existing.updated_at < CACHE_TTL_MS && latestMessageId === cachedLastMessageId && !hasIncomplete) {
           return new Response(JSON.stringify({ lastUpdated: existing.updated_at, scammers: cachedData.scammers, partials: cachedData.partials }), {
             headers: { "Content-Type": "application/json", "X-Cache": "D1-HIT-EARLY" },
