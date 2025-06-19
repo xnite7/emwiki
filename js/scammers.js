@@ -21,6 +21,8 @@ async function createScammerBlock(scammer, container) {
     itemsScammed = null,
     robloxAlts = null
   } = scammer;
+  
+  console.log(scammer);
 
   const block = document.createElement('section');
   block.className = 'scammer-block';
