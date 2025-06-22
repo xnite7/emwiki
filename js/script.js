@@ -357,7 +357,7 @@ function Modal(event) {
   const modalText = modalPrice.nextSibling;
   modalText.textContent = uniqueLines[0];
   Object.assign(modalText.style, {
-    color: "#fff",
+    color: "#e1e1e1",
     fontSize: "32px",
     fontWeight: 400,
     textStroke: "",
