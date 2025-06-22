@@ -796,7 +796,7 @@ function createNewItem(item, color) {
     if (item.premium) {
       untradable.style.left = "5px";
     } else {
-            untradable.style.right = "5px";
+      untradable.style.right = "5px";
     }
       newItem.style.order = "1";
       untradable.src = "https://i.imgur.com/WLjbELh.png";
