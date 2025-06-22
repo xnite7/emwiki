@@ -1276,6 +1276,39 @@ html {
     user-select: none
 }
 
+#modal-retired {
+    display: block;
+    visibility: hidden;
+    margin-top: 20px;
+    width: fit-content;
+    background: linear-gradient(180deg, #ff3c3c, #9f0000);
+    letter-spacing: 2px;
+    position: relative;
+    justify-self: right;
+    transform: translateZ(30px);
+    z-index: 22;
+    color: #ffffff;
+    padding: 5px;
+    border-radius: 12px;
+    border: solid red;
+    max-width: max-content;
+    box-shadow: -1px 4px 6px #00000054;
+    font: 1000 16px 'Arimo';
+}
+
+.modal-icon {
+    height: 35px;
+    margin-top: 18px;
+    display: block;
+    visibility: hidden;
+    margin-bottom: 18px;
+    position: relative;
+    filter: drop-shadow(0px 2px 6px #00000069);
+    justify-self: right;
+    transform: translateZ(30px);
+    z-index: 22;
+}
+
 .modal.show {
     opacity: 1;
     display: flex;
@@ -1300,8 +1333,8 @@ html {
     background-position: center;
     box-shadow: 0 0 0 2px rgb(255 214 102 / .4), 0 0 25px 8px rgb(255 214 102 / .15);
     transform-style: preserve-3d;
-      transition: transform 300ms cubic-bezier(0.25, 0.8, 0.25, 1),
-              opacity 300ms ease;
+    transition: transform 300ms cubic-bezier(0.25, 0.8, 0.25, 1),
+        opacity 300ms ease;
     cursor: default;
     transform: translateY(1000px);
     will-change: transform, box-shadow, background-size
@@ -1368,7 +1401,8 @@ html {
     font-weight: 100;
     margin: 0 0 22px 0
 }
-#itemlist{
+
+#itemlist {
     display: none;
 }
 
@@ -1553,7 +1587,7 @@ html {
 }
 
 .modal-arrow:hover {
-    color:#ffffffb9 ;
+    color: #ffffffb9;
 }
 
 @media (pointer: coarse) {
@@ -1812,9 +1846,11 @@ html {
         padding-top: 11px;
         text-align: center
     }
-    #dacord{
+
+    #dacord {
         display: none;
     }
+
     #credits-content>p {
         font-size: 1.3rem;
         margin-top: 18px;
@@ -1920,7 +1956,7 @@ html {
     }
 
     #refresh-button {
-        
+
         font-family: monospace;
         user-select: none;
         position: absolute;

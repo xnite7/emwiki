@@ -6,7 +6,9 @@ const modalTitle = document.getElementById("modal-title");
 const modalPrc = document.getElementById("modal-prc");
 const modalDescription = document.getElementById("modal-description");
 const modalPrice = document.getElementById("modal-price-value");
-
+const modalRetired = document.getElementById("modal-retired");
+const modalPremium = document.getElementById("modal-premium");
+const modaluntradable = document.getElementById("modal-untradable");
 
 if (document.querySelector('.intro')) {
 
@@ -258,6 +260,24 @@ function Modal(event) {
   if (!item) return;
 
 
+  modalRetired.style.visibility = "hidden";
+  modalPremium.style.visibility = "hidden";
+  modaluntradable.style.visibility = "hidden";
+
+ //if found untradable icon, then show untradable modal
+  if (item.querySelector(".untradable")) {
+    modaluntradable.style.visibility = "visible";
+  }
+  //if found premium icon, then show premium modal
+  if (item.querySelector(".premium")) {
+    modalPremium.style.visibility = "visible";
+  }
+  //if found retired icon, then show retired modal
+  if (item.querySelector(".retired")) {
+    modalRetired.style.visibility = "visible";
+  }
+
+
   document.querySelectorAll(".item").forEach((el) => el.classList.remove("showing"));
   item.classList.add("showing");
 
@@ -320,7 +340,6 @@ function Modal(event) {
     const clone = item.querySelector("#h3").cloneNode(true);
     Object.assign(clone.style, {
       height: "100%",
-      //scale: "1.5",
       paddingTop: "4px",
       zoom: "2",
       width: "-webkit-fill-available",
@@ -776,10 +795,24 @@ function createNewItem(item, color) {
     }
   }
 
-
+  // Retired tag
+  if (item.retired) {
+    const retired = document.createElement("img");
+    retired.classList.add("retired");
+    retired.style.display = "none";
+    retired.src = "./imgs/retired.png";
+    retired.style.width = "17%";
+    retired.style.height = "auto";
+    retired.style.position = "sticky";
+    retired.style.marginRight = "-73%";
+    retired.style.marginTop = "-18px";
+    retired.setAttribute('draggable', false);
+    newItem.appendChild(retired);
+  }
   // Premium icon
   if (item.premium) {
     const premium = document.createElement("img");
+    premium.classList.add("premium");
     premium.src = "./imgs/prem.png";
     premium.style.width = "17%";
     premium.style.height = "auto";
@@ -792,6 +825,7 @@ function createNewItem(item, color) {
 
   if (item.tradable === false && color !== "rgb(201, 96, 254)") {
     const untradable = document.createElement("img");
+    untradable.classList.add("untradable");
     //if found premium, then make untradable icon on left instead of right
     if (item.premium) {
       untradable.style.left = "5px";
@@ -932,6 +966,7 @@ function createNewItem(item, color) {
     newItem.style.flexDirection = "column";
     name.style.margin = "0";
     const untradable = document.createElement("img");
+    untradable.classList.add("untradable");
     untradable.src = "https://i.imgur.com/WLjbELh.png";
     untradable.style.width = "17%";
     untradable.style.height = "auto";

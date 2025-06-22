@@ -148,9 +148,25 @@
   
 
   
-	<div id="product-modal" class="modal" style="display: none;">
+<div id="product-modal" class="modal" style="display: none;">
 	<div id="modal-content" class="modal-content expand" data-tilt="" data-tilt-max="10" data-tilt-speed="500" data-tilt-perspective="1800" data-tilt-glare="" data-tilt-max-glare="0.1" data-tilt-scale="1.03" data-tilt-reset="true" style="will-change: transform; background-color: rgb(91, 254, 106); position: relative; top: 0px; left: 0px; transform: perspective(1800px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1);">
-		<div class="inner-border-overlay"><h3 id="modal-prc" class="modal-prc" data-tilt-transform-element="">500</h3></div>
+		<div class="inner-border-overlay">
+			<h3 id="modal-prc" class="modal-prc">500</h3>
+			<div class="dock" style="
+				display: flex;
+				position: absolute;
+				bottom: 0px;
+				width: -webkit-fill-available;
+				justify-content: space-around;
+			">
+				<img src="./imgs/prem.png" id="modal-premium" class="modal-icon">
+				<h3 id="modal-retired">Retired</h3>
+				<img src="https://i.imgur.com/WLjbELh.png" id="modal-untradable" class="modal-icon">
+			</div>
+			<h3 id="modal-retired">Retired</h3>
+			<img src="./imgs/prem.png" id="modal-premium" class="modal-icon">
+			<img src="https://i.imgur.com/WLjbELh.png" id="modal-untradable" class="modal-icon">
+		</div>
 		<h3 id="modal-title" class="modal-title" data-tilt-transform-element=""></h3>
         
 		<div id="content-area" class="content-area p-4 sm:p-5 lg:p-7" data-tilt-transform-element="" style="align-items: normal;padding: 100px 22px 51px 22px;">
