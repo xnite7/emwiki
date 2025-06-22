@@ -772,7 +772,7 @@ function createNewItem(item, color) {
       newItem.style.outlineColor = "#fae351";
     }
     if (item["price/code/rarity"].toLowerCase().includes("5") ) {
-      newItem.style.outlineColor = "#fffffff6";
+      newItem.style.outlineColor = "#e0e6df";
     }
   }
   if (item.tradable === false && color !== "rgb(201, 96, 254)") {
