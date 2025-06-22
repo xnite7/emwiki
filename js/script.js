@@ -776,18 +776,6 @@ function createNewItem(item, color) {
     }
   }
   if (item.tradable === false && color !== "rgb(201, 96, 254)") {
-    const untradable = document.createElement("img");
-    newItem.style.order = "1";
-    untradable.src = "https://i.imgur.com/WLjbELh.png";
-    untradable.style.width = "17%";
-    untradable.style.height = "auto";
-    untradable.style.position = "absolute";
-    untradable.style.zIndex = "4";
-    untradable.style.right = "5px";
-    untradable.style.bottom = "5px";
-    untradable.setAttribute('draggable', false);
-    newItem.appendChild(untradable);
-  }
 
   // Premium icon
   if (item.premium) {
@@ -801,6 +789,28 @@ function createNewItem(item, color) {
     premium.setAttribute('draggable', false);
     newItem.appendChild(premium);
   }
+
+
+    const untradable = document.createElement("img");
+    //if found premium, then make untradable icon on left instead of right
+    if (item.premium) {
+      untradable.style.left = "5px";
+    } else {
+            untradable.style.right = "5px";
+    }
+      newItem.style.order = "1";
+      untradable.src = "https://i.imgur.com/WLjbELh.png";
+      untradable.style.width = "17%";
+      untradable.style.height = "auto";
+      untradable.style.position = "absolute";
+      untradable.style.zIndex = "4";
+      untradable.style.bottom = "5px";
+      untradable.setAttribute('draggable', false);
+      newItem.appendChild(untradable);
+
+  }
+
+
 
   // New icon
   if (item.new) {
