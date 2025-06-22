@@ -416,7 +416,7 @@ function Modal(event) {
         children[1].style.fontWeight = 500;
         children[1].style.textShadow = "0 0 6px rgb(199 0 255)";
       } else if (text.includes("[EXPIRED]")) {
-        Object.assign(children[1].style, { fontFamily: "monospace", fontSize: "23px", color: "rgb(161 17 17)" });
+        Object.assign(children[1].style, { fontFamily: "monospace", fontSize: "23px", color: "#cd1f1f" });
       } else if (text.includes("[ACTIVE]")) {
         Object.assign(children[1].style, { fontFamily: "monospace", fontSize: "23px", color: "rgb(251 255 68)" });
       } else if (text.includes("Unobtainable")) {
@@ -775,7 +775,7 @@ function createNewItem(item, color) {
       newItem.style.outlineColor = "#e0e6df";
     }
   }
-  if (item.tradable === false && color !== "rgb(201, 96, 254)") {
+
 
   // Premium icon
   if (item.premium) {
@@ -790,7 +790,7 @@ function createNewItem(item, color) {
     newItem.appendChild(premium);
   }
 
-
+  if (item.tradable === false && color !== "rgb(201, 96, 254)") {
     const untradable = document.createElement("img");
     //if found premium, then make untradable icon on left instead of right
     if (item.premium) {
