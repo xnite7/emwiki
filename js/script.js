@@ -358,7 +358,7 @@ function Modal(event) {
   modalText.textContent = uniqueLines[0];
   Object.assign(modalText.style, {
     color: "#e1e1e1",
-    fontSize: "32px",
+    fontSize: "30px",
     fontWeight: 400,
     textStroke: "",
     webkitTextStroke: "",
