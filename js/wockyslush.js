@@ -37,7 +37,7 @@ function createNewItem(item, color, list) {
 
 
 
-  if (newItem.id == "titles") {
+  if (!item.img) {
     
     name.classList.remove('itemname')
     newItem.id = "titles";
@@ -49,19 +49,20 @@ function createNewItem(item, color, list) {
     name.style.bottom = "0";
     name.style.font = "600 47px 'Arimo'";
     name.style.color = "rgb(255 255 255)";
+    name.style.height = "27px";
 
 
     if (item.style) {
 
       name.setAttribute("style", item.style);
-
+      name.style.height = "27px";
     }
 
     if (item.style2) {
       //clone name and parent it to original name
 
       name.setAttribute("style", item.style2);
-
+      name.style.height = "27px";
       let clone = name.cloneNode(true);
 
       clone.style.position = "absolute";
@@ -98,7 +99,9 @@ function createNewItem(item, color, list) {
     }
 
   } else {
-
+    if (newItem.id == "titles"){
+      name.style.visibility = "hidden"; // Hide the name for titles with images
+    }
     const canvas = document.createElement("canvas");
 
     canvas.setAttribute("id", "img");
@@ -187,7 +190,7 @@ function createNewItem(item, color, list) {
       newItem.appendChild(retiredTag)
       newItem.style.order="10"
 
-      if (newItem.id == "titles"){
+      if (!item.img){
         retiredTag.style.top = "42%";
       }
     }
