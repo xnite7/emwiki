@@ -664,6 +664,17 @@ div.logo-container {
 
 }
 
+.catalog-grid {
+    display: flex;
+    grid-template-columns: repeat(auto-fill, 194px);
+    gap: 21px;
+    padding: 2%;
+    zoom: 1.25;
+    justify-items: center;
+    justify-content: center;
+    flex-wrap: wrap
+}
+
 p {
     font-size: 1.3em;
     margin: 13px;
@@ -675,16 +686,7 @@ p {
     color: #fff
 }
 
-.catalog-grid {
-    display: flex;
-    grid-template-columns: repeat(auto-fill, 194px);
-    gap: 21px;
-    padding: 2%;
-    zoom: 1.25;
-    justify-items: center;
-    justify-content: center;
-    flex-wrap: wrap
-}
+
 
 .search-item:hover,
 .search-item.active {
@@ -887,6 +889,8 @@ p {
     height: 70%;
     z-index: 0
 }
+
+
 
 #titles.item>canvas {
     position: relative;
@@ -1281,6 +1285,19 @@ html {
     -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none
+}
+
+.retired-badge {
+  background: linear-gradient(180deg, #ff3c3c, #9f0000);
+  color: #ffffff;
+  font-size: 1em;
+  letter-spacing: 2px;
+  padding: 3px 4px 4px 6px;
+  font-family: monospace;
+  font-weight: bolder;
+  border-radius: 6px;
+  position: relative;
+  top: 34px;
 }
 
 #modal-retired {

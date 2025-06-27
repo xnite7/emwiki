@@ -38,13 +38,13 @@ function createNewItem(item, color, list) {
 
 
   if (!item.img) {
-    
+
     name.classList.remove('itemname')
     newItem.id = "titles";
     newItem.style.display = "flex";
     newItem.style.alignItems = "center";
     newItem.style.justifyContent = "center";
-    
+
     //newItem.style.flexDirection = "column";
     name.style.bottom = "0";
     name.style.font = "600 47px 'Arimo'";
@@ -99,7 +99,7 @@ function createNewItem(item, color, list) {
     }
 
   } else {
-    if (newItem.id == "titles"){
+    if (newItem.id == "titles") {
       name.style.visibility = "hidden"; // Hide the name for titles with images
     }
     const canvas = document.createElement("canvas");
@@ -123,9 +123,9 @@ function createNewItem(item, color, list) {
 
 
     }
-      img.src = item.img;
+    img.src = item.img;
 
-      newItem.appendChild(canvas);
+    newItem.appendChild(canvas);
 
   }
 
@@ -179,25 +179,25 @@ function createNewItem(item, color, list) {
 
 
 
-    if (item.retired) {
-      newItem.style.border = "solid 3px darkred"
+  if (item.retired) {
+    newItem.style.border = "solid 3px darkred"
 
 
-      const retiredTag = document.createElement("span");
-      retiredTag.classList.add('retired-badge')
-      retiredTag.innerHTML='RETIRED'
-      
-      newItem.appendChild(retiredTag)
-      newItem.style.order="10"
+    const retiredTag = document.createElement("span");
+    retiredTag.classList.add('retired-badge')
+    retiredTag.innerHTML = 'RETIRED'
 
-      if (!item.img){
-        retiredTag.style.top = "42%";
-      }
+    newItem.appendChild(retiredTag)
+    newItem.style.order = "10"
+
+    if (!item.img) {
+      retiredTag.style.top = "42%";
     }
+  }
 
 
 
-    newItem.addEventListener('mouseenter', function (e) {
+  newItem.addEventListener('mouseenter', function (e) {
     const tooltip = document.getElementById('tooltip');
 
     // Generate a unique random anchor name
@@ -233,26 +233,26 @@ function createNewItem(item, color, list) {
 }
 
 
-  var shelfs = document.querySelectorAll(".shelf-oppener")
+var shelfs = document.querySelectorAll(".shelf-oppener")
 
-  shelfs.forEach((e) => {
-    e.innerText = 'V'
-    e.addEventListener("click", function () {
-      console.log(e.style.rotate)
-      if (e.style.rotate == '-180deg'){
-       // e.parentElement.querySelector('.psp').style.display="block";
-       e.parentElement.querySelector('.psp').style.width="auto"
-        e.parentElement.querySelector('.catalog-grid').style.display="grid";
-        e.style.rotate = '0deg'
-      }else{
+shelfs.forEach((e) => {
+  e.innerText = 'V'
+  e.addEventListener("click", function () {
+    console.log(e.style.rotate)
+    if (e.style.rotate == '-180deg') {
+      // e.parentElement.querySelector('.psp').style.display="block";
+      e.parentElement.querySelector('.psp').style.width = "auto"
+      e.parentElement.querySelector('.catalog-grid').style.display = "grid";
+      e.style.rotate = '0deg'
+    } else {
       //  e.parentElement.querySelector('.psp').style.display="none";
-      e.parentElement.querySelector('.psp').style.width="-webkit-fill-available"
-        e.parentElement.querySelector('.catalog-grid').style.display="none";
-        e.style.rotate = '-180deg'
-      }
+      e.parentElement.querySelector('.psp').style.width = "-webkit-fill-available"
+      e.parentElement.querySelector('.catalog-grid').style.display = "none";
+      e.style.rotate = '-180deg'
+    }
 
-    });
-  })
+  });
+})
 
 
 function showInfo(arr, color) {
@@ -362,8 +362,8 @@ function showInfo(arr, color) {
 function reorderChestsIfMobile() {
   const containers = document.querySelectorAll('.grid'); // all grid wrappers
 
-  console.log(containers); 
-  console.log(window.innerWidth); 
+  console.log(containers);
+  console.log(window.innerWidth);
 
   if (window.innerWidth < 600 && containers.length) {
     // Collect all .catalog elements from all .grid containers
@@ -379,7 +379,7 @@ function reorderChestsIfMobile() {
 
     // Append in sorted order to the first .grid container
     chests.forEach(chest => containers[0].appendChild(chest));
-  }else {
+  } else {
     // If not mobile, ensure the original order is restored
     containers.forEach(container => {
       const chests = container.querySelectorAll('.catalog');
