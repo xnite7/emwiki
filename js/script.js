@@ -253,7 +253,6 @@ function openSiblingModal(direction) {
 
 
 function Modal(event) {
-  console.log(event.target)
   if (isModalOpen) return;
 
   const item = event.target.closest(".item");
@@ -292,10 +291,12 @@ function Modal(event) {
   modalTitle.textContent = title;
   const existingCanvas = modalContent.querySelector("#content-area canvas");
   if (existingCanvas) existingCanvas.remove();
-  if (item.id !== "titles") {
+  console.log("Image source:", imageSrc);
+  if (imageSrc) {
 
-
+   
     const canvas = document.createElement("canvas");
+    canvas.style.zIndex= "99";
     Object.assign(canvas.style, {
       width: "100%",
       height: "auto",
@@ -336,7 +337,7 @@ function Modal(event) {
     modalContent.style.backgroundColor = bgColors[item.id];
   }
 
-  if (item.id === "titles") {
+  if (!imageSrc) {
     const clone = item.querySelector("#h3").cloneNode(true);
     Object.assign(clone.style, {
       height: "100%",
@@ -887,12 +888,22 @@ function createNewItem(item, color) {
       canvas.style.paddingTop = "15px";
     }
     newItem.appendChild(canvas);
+    if (color === "rgb(201, 96, 254)") {
+      canvas.style.position = "absolute";
+    }
+
   }
 
   // Name element
   let name = document.createElement("div");
   name.id = "h3";
   name.innerText = item.name;
+
+  if (item.img) {
+    if (color === "rgb(201, 96, 254)") {
+      name.style.visibility = "hidden";
+    }
+  }
 
   if (item.new) {
     name.style.order = "-1";
@@ -913,6 +924,7 @@ function createNewItem(item, color) {
     name.style.color = "rgb(255 255 255)";
     name.style.whiteSpace = "nowrap";
     name.style.bottom = "-10";
+    name.style.paddingTop = "0px";
     name.style.margin = "57px 0";
     name.style.position = "relative";
     if (item.style) {

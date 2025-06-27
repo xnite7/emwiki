@@ -888,6 +888,13 @@ p {
     z-index: 0
 }
 
+#titles.item>canvas {
+    position: relative;
+    width: 90%;
+    height: 90%;
+    z-index: 0
+}
+
 .widgetRoot * {
     all: unset
 }
