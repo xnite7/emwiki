@@ -920,7 +920,7 @@ function createNewItem(item, color) {
     newItem.id = "titles";
     newItem.style.alignItems = "center";
     newItem.style.justifyContent = "center";
-    name.style.font = "600 clamp(1.1rem, 2.35vw, 2.25rem) 'Arimo'";
+    name.style.font = "600 28px 'Arimo'";
     name.style.color = "rgb(255 255 255)";
     name.style.whiteSpace = "nowrap";
     name.style.bottom = "-10";
@@ -932,7 +932,6 @@ function createNewItem(item, color) {
       name.style.whiteSpace = "nowrap";
       name.style.bottom = "-10";
       name.style.margin = "57px 0";
-      name.style.paddingTop = "39px";
     }
     if (item.style2) {
       name.setAttribute("style", item.style2);
