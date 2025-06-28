@@ -618,7 +618,14 @@ div.logo-container {
     width: fit-content;
 
 }
+nav #gamenightstab:hover {
+    background: linear-gradient(145deg, #5188ff, #9013af);
+    box-shadow: inset 2px 2px 5px rgb(160 110 0 / .5), inset -2px -2px 5px rgb(255 245 200 / .6), 0 2px 4px rgb(0 0 0 / .15)
+}
 
+nav #gamenightstab {
+    background: linear-gradient(145deg, #4753fd, #5c0e91)
+}
 .catalog-grid {
     display: flex;
     grid-template-columns: repeat(auto-fill, 194px);

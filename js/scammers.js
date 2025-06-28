@@ -1,3 +1,27 @@
+const navButtons = [
+  { id: "gearstab", href: "./gears.html", img: "./imgs/AYUbTJv.png" },
+  { id: "deathstab", href: "./deaths.html", img: "./imgs/fADZwOh.png" },
+  { id: "petstab", href: "./pets.html", img: "./imgs/GHXB0nC.png" },
+  { id: "effectstab", href: "./effects.html", img: "./imgs/l90cgxf.png" },
+  { id: "titlestab", href: "./titles.html", img: "./imgs/ZOP8l9g.png" },
+  { id: "cheststab", href: "./chests.html", img: "./imgs/XwkWVJJ.png" },
+  { id: "scammerstab", href: "./scammers.html", img: "./imgs/SK5csOS.png" },
+  { id: "gamenightstab", href: "./gamenights.html", img: "./imgs/gn.png" }
+];
+
+function insertNavButtons() {
+  const nav = document.querySelector("nav");
+  if (!nav) return;
+  // Get current page filename
+  const current = location.pathname.split('/').pop();
+  nav.innerHTML = navButtons
+    .filter(btn => !btn.href.endsWith(current))
+    .map(btn =>
+      `<a id="${btn.id}" href="${btn.href}"><img src="${btn.img}" style="max-width: -webkit-fill-available;" draggable="false" display="none" onmousedown="return false"></a>`
+    ).join('\n');
+}
+insertNavButtons()
+
 // Filter function
 function filterItems() {
   const searchValue = document.getElementById('search-bar').value.toLowerCase();
@@ -88,3 +112,4 @@ document.addEventListener("DOMContentLoaded", () => {
 //         <path d="M5 12h14"></path>
 //      </svg>
 //   </a>
+
