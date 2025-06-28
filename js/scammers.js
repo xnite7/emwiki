@@ -1,12 +1,12 @@
 const navButtons = [
-  { id: "gearstab", href: "./gears.html", img: "./imgs/AYUbTJv.png" },
-  { id: "deathstab", href: "./deaths.html", img: "./imgs/fADZwOh.png" },
-  { id: "petstab", href: "./pets.html", img: "./imgs/GHXB0nC.png" },
-  { id: "effectstab", href: "./effects.html", img: "./imgs/l90cgxf.png" },
-  { id: "titlestab", href: "./titles.html", img: "./imgs/ZOP8l9g.png" },
-  { id: "cheststab", href: "./chests.html", img: "./imgs/XwkWVJJ.png" },
-  { id: "scammerstab", href: "./scammers.html", img: "./imgs/SK5csOS.png" },
-  { id: "gamenightstab", href: "./gamenights.html", img: "./imgs/gn.png" }
+  { id: "gearstab", href: "./gears", img: "./imgs/AYUbTJv.png" },
+  { id: "deathstab", href: "./deaths", img: "./imgs/fADZwOh.png" },
+  { id: "petstab", href: "./pets", img: "./imgs/GHXB0nC.png" },
+  { id: "effectstab", href: "./effects", img: "./imgs/l90cgxf.png" },
+  { id: "titlestab", href: "./titles", img: "./imgs/ZOP8l9g.png" },
+  { id: "cheststab", href: "./chests", img: "./imgs/XwkWVJJ.png" },
+  { id: "scammerstab", href: "./scammers", img: "./imgs/SK5csOS.png" },
+  { id: "gamenightstab", href: "./gamenights", img: "./imgs/gn.png" }
 ];
 
 function insertNavButtons() {
