@@ -467,14 +467,17 @@ main {
 }
 
 section {
-  background: #707070;
-  border-radius: 15px;
-  padding: 2rem;
-  box-shadow: 0 5px 15px rgb(0 0 0 / 30%);
-  position: sticky;
-  z-index: 22;
+    zoom: 0.93;
+    background: #666666;
+    padding: 2rem;
+    box-shadow: 0 5px 15px rgb(0 0 0 / 30%);
+    position: sticky;
+    z-index: 22;
 
-  margin: 0 0vw 39px 0vw;
+
+    border: 15px solid #555555;
+
+    border-radius: 33px;
 }
 
 .show {
@@ -600,8 +603,10 @@ div.logo-container {
 
 .catalog h2 {
   margin-top: 1px;
+  font-family: 'BuilderSans';
+  font-size: 2.6em;
   text-shadow: 2px 3px 9px #00000066;
-  font-size: 2rem;
+
   margin-bottom: 1rem;
 
 }
