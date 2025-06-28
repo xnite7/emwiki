@@ -12,10 +12,11 @@ const navButtons = [
 function insertNavButtons() {
   const nav = document.querySelector("nav");
   if (!nav) return;
-  // Get current page filename
-  const current = location.pathname.split('/').pop();
+  // Get current page filename, default to "index" if blank
+  let current = location.pathname.split('/').pop();
+  if (!current || current === "") current = "index";
   nav.innerHTML = navButtons
-    .filter(btn => !btn.href.endsWith(current))
+    .filter(btn => !btn.href.endsWith(current.replace('.html', '')))
     .map(btn =>
       `<a id="${btn.id}" href="${btn.href}"><img src="${btn.img}" style="max-width: -webkit-fill-available;" draggable="false" display="none" onmousedown="return false"></a>`
     ).join('\n');
