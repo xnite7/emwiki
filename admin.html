@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Purchase Admin</title>
+    <title>Donation Admin</title>
     <style>
   body {
     font-family: Arial, sans-serif;
@@ -43,14 +43,14 @@
 </style>
   </head>
   <body>
-    <h1>Developer Product Purchases</h1>
+    <h1>Developer Product Donations</h1>
     <div id="loading">Loading...</div>
-    <table id="purchases" style="display:none;">
+    <table id="donations" style="display:none;">
       <thead>
         <tr>
           <th>Avatar</th>
           <th>Username</th>
-          <th>Total Spent (Robux)</th>
+          <th>Total Donated (Robux)</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -63,7 +63,7 @@
           if (!res.ok) throw new Error('Failed to fetch donation data');
           const data = await res.json();
 
-          const tbody = document.querySelector('#purchases tbody');
+          const tbody = document.querySelector('#donations tbody');
           tbody.innerHTML = '';
 
           for (const user of data.slice(0, 5)) {  // limit to top 5 donators
@@ -89,13 +89,13 @@
           }
 
           document.getElementById('loading').style.display = 'none';
-          document.getElementById('purchases').style.display = 'table';
+          document.getElementById('donations').style.display = 'table';
         } catch (err) {
-          document.getElementById('loading').textContent = 'Error loading purchases: ' + err.message;
+          document.getElementById('loading').textContent = 'Error loading donations: ' + err.message;
         }
       }
 
-      fetchPurchases();
+      fetchDonations();
     </script>
 
   </body>
