@@ -57,10 +57,10 @@
     </table>
 
     <script>
-      async function fetchPurchases() {
+      async function fetchDonations() {
         try {
-          const res = await fetch('/api/purchases');
-          if (!res.ok) throw new Error('Failed to fetch purchase data');
+          const res = await fetch('/api/donations');
+          if (!res.ok) throw new Error('Failed to fetch donation data');
           const data = await res.json();
 
           const tbody = document.querySelector('#purchases tbody');
