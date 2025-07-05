@@ -69,6 +69,40 @@ body {
     }
 }
 
+
+	#donate-btn{
+		    padding: 10px 20px;
+			font-size: 1.5rem;
+			font-family: 'Playpen Sans';
+			cursor: pointer;
+			font-weight: 600;
+			color: #000000;
+            transform:rotateX(30deg);
+			/* -webkit-text-stroke: black 1px; */
+			text-shadow: 0 0 0px #ffffff;
+			/* outline: #e5e5e5 solid 3px; */
+			margin: 20px 36%;
+
+            transition: all 0.2s cubic-bezier(0.215, 0.610, 0.355, 1);
+	}
+
+	#donate-btn:hover {
+            transform: translateY(-5px) rotateX(30deg);
+        	padding: 10px 20px 15px;
+            text-shadow: 0 0 5px #ffffff;
+            color: #fff;
+			box-shadow: inset 0px 1px 9px white, inset 0px -8px 0px 0px #793800;
+	}
+    #donate-btn:active {
+        transform: translateY(-5px) rotateX(30deg);
+        background-color: #aa8400;
+        padding: 15px 20px 5px;
+        text-shadow: 0 0 5px #000000;
+        color: #000000;
+        box-shadow: inset 0px 1px 9px #313131, inset 0px 13px 9px #313131e6, inset 0px 10px 0px #dd7920;
+    }
+
+
 #patchnotes.animate {
     animation: pulse-highlight 1.7s cubic-bezier(.18, .89, .32, 1.28);
     transition: background-color 0.3s ease
