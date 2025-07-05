@@ -1026,7 +1026,7 @@ function createNewItem(item, color) {
 
   // Rarity element (hidden)
   const prcdra = document.createElement("div");
-  prcdra.innerText = item["price/code/rarity"];
+  prcdra.innerHTML = item["price/code/rarity"];
   prcdra.id = "pricecoderarity";
   prcdra.style.display = "none";
   newItem.appendChild(prcdra);
