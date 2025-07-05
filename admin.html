@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Purchase Admin</title>
+    <style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 1rem;
+    background: #222;
+    color: white;
+  }
+  h1 {
+    text-align: center;
+  }
+  #loading {
+    text-align: center;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+  th, td {
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #444;
+    text-align: left;
+  }
+  th {
+    background: #333;
+  }
+  tr:hover {
+    background: #444;
+  }
+  img.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+  }
+</style>
+  </head>
+  <body>
+    <h1>Developer Product Purchases</h1>
+    <div id="loading">Loading...</div>
+    <table id="purchases" style="display:none;">
+      <thead>
+        <tr>
+          <th>Avatar</th>
+          <th>Username</th>
+          <th>Total Spent (Robux)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <script>
+      async function fetchPurchases() {
+        try {
+          const res = await fetch('/api/purchases');
+          if (!res.ok) throw new Error('Failed to fetch purchase data');
+          const data = await res.json();
+
+          const tbody = document.querySelector('#purchases tbody');
+          tbody.innerHTML = '';
+
+          for (const user of data.slice(0, 5)) {  // limit to top 5 donators
+            const tr = document.createElement('tr');
+
+            const avatarCell = document.createElement('td');
+            const img = document.createElement('img');
+            img.src = user.avatar || 'https://emwiki.site/imgs/plr.jpg';
+            img.alt = user.displayName || user.name || 'User avatar';
+            img.className = 'avatar';
+            avatarCell.appendChild(img);
+            tr.appendChild(avatarCell);
+
+            const usernameCell = document.createElement('td');
+            usernameCell.textContent = user.displayName || user.name || 'Unknown';
+            tr.appendChild(usernameCell);
+
+            const totalCell = document.createElement('td');
+            totalCell.textContent = user.totalSpent.toLocaleString();
+            tr.appendChild(totalCell);
+
+            tbody.appendChild(tr);
+          }
+
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('purchases').style.display = 'table';
+        } catch (err) {
+          document.getElementById('loading').textContent = 'Error loading purchases: ' + err.message;
+        }
+      }
+
+      fetchPurchases();
+    </script>
+
+  </body>
+</html>

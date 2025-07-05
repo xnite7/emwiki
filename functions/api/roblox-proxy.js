@@ -5,8 +5,30 @@ export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
   const mode = url.searchParams.get("mode");
   const userId = url.searchParams.get("userId");
+  const isLiteMode = url.searchParams.get("mode") === "lite";
   const discordId = url.searchParams.get("discordId");
   const forceRefresh = url.searchParams.get("refresh") === "true";
+
+
+  if (isLiteMode) {
+    // Just fetch live and return directly without writing to DB
+    const [userData, avatarData] = await Promise.all([
+      fetch(`https://users.roblox.com/v1/users/${userId}`).then(r => r.ok ? r.json() : null),
+      fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=true`)
+        .then(r => r.ok ? r.json() : null)
+    ]);
+
+    if (!userData) throw new Error("Failed to fetch Roblox user data");
+
+    return new Response(JSON.stringify({
+      name: userData.name,
+      displayName: userData.displayName,
+      avatar: avatarData?.data?.[0]?.imageUrl || null
+    }), { headers: { "Content-Type": "application/json" } });
+  }
+
+
+
 
 
   if (url.pathname.endsWith("/api/roblox-proxy") && userId) {

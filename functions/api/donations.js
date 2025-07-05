@@ -1,19 +1,39 @@
-export async function onRequestPost(context) {
-  try {
-    const body = await context.request.json();
+export async function onRequestGet(context) {
+  const prefix = "purchase:";
+  const { keys } = await context.env.KV_PURCHASE_LOGS.list({ prefix, limit: 1000 });
 
-    const { userId, productId, price } = body;
+  const userMap = {};
 
-    if (!userId || !productId) {
-      return new Response("Missing fields", { status: 400 });
-    }
+  await Promise.all(
+    keys.map(async (entry) => {
+      const value = await context.env.KV_PURCHASE_LOGS.get(entry.name);
+      try {
+        const parsed = JSON.parse(value);
+        const userId = parsed.userId;
 
-    console.log(`✅ Purchase: User ${userId} bought Product ${productId} for ${price} Robux`);
+        if (!userMap[userId]) {
+          const res = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${userId}&mode=lite`);
+          const profile = res.ok ? await res.json() : {};
 
-    // Optional: Save to D1, KV, or send to Discord/webhook here
+          userMap[userId] = {
+            userId,
+            name: profile.name || null,
+            displayName: profile.displayName || null,
+            avatar: profile.avatar || null,
+            totalSpent: 0,
+          };
+        }
 
-    return new Response("OK", { status: 200 });
-  } catch (err) {
-    return new Response("Invalid JSON", { status: 400 });
-  }
+        userMap[userId].totalSpent += parsed.price || 0;
+      } catch {
+        // ignore parse errors
+      }
+    })
+  );
+
+  const result = Object.values(userMap).sort((a, b) => b.totalSpent - a.totalSpent);
+
+  return new Response(JSON.stringify(result), {
+    headers: { "Content-Type": "application/json" },
+  });
 }
