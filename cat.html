@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head style="touch-action: manipulation;">
+    <meta charset="UTF-8" />
+    <meta name="viewport"
+      content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+    <title>Pet‑a‑Cat!</title>
+    <style>
+    /* --- Base Layout & BG Animation --- */
+    body {
+      touch-action: manipulation;
+      overflow: hidden;
+      margin: 0;
+      background-image: url('./imgs/catsbg.png');
+      background-repeat: repeat;
+      background-size: 500px;
+      background-attachment: fixed;
+      background-blend-mode: overlay;
+      animation: diagonalScroll 90s linear infinite;
+      font-family: monospace;
+    }
+    @keyframes diagonalScroll {
+      0% { background-position: 0 0; }
+      100% { background-position: 900px 900px; }
+    }
+    #gameContainer {
+        touch-action: manipulation;
+        position: relative;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, 0%);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: min(100vw, 100vh);
+        height: min(100vw, 100vh);
+        background: rgba(255,255,255,0.1);
+        border: 5px solid #3f843f;
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+        border-radius: 16px;
+        touch-action: manipulation;
+        overflow: hidden;
+        margin: 0;
+        font-family: monospace;
+        background:
+          radial-gradient(circle at 50% 100%, #6ac36a 0%, #6ac36a 50%, transparent 50%) no-repeat,
+          linear-gradient(to bottom, #87ceeb, #87ceeb 60%, #6ac36a 60%, #6ac36a 100%);
+        background-size: 100% 100%, 100% 100%;
+        background-attachment: fixed;
+        font-family: monospace;
+    }
+
+
+
+    /* --- Floating UI --- */
+    #score,  #combo {
+      position: fixed;
+      z-index: 10;
+      font-family: monospace;
+      background: rgba(46,46,46,0.7);
+      color: aliceblue;
+      padding: 6px 12px;
+      border-radius: 6px;
+      user-select: none;
+    }
+    #score {
+      bottom: 10px; right: 10px; font-size: 3.4rem; display: none;
+    }
+    #lives {
+      top: 0px; font-size: 4.5rem; color: #ffbaba; display: none; position: absolute; z-index: 10; 
+    }
+    #combo {
+      bottom: 80px; right: 10px; display: none;
+      font-size: 2rem; color: #ffe76a; user-select: none;
+    }
+
+    /* --- Mute Button --- */
+    #muteBtn {
+      position: fixed;
+      top: 10px; right: 10px;
+      background: rgba(0,0,0,0.6);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 2rem;
+      z-index: 15;
+      user-select: none;
+      transition: transform .2s;
+    }
+    #muteBtn:hover { transform: scale(1.1); }
+
+    #playIcon {
+      transform: translateY(50%);
+      width: 129px;
+      height: auto;
+      cursor: pointer;
+      transition: transform .2s;
+    }
+
+    #playIcon:hover {
+      transform: translateY(12%);
+
+    }
+
+    /* --- Start / Game Over Screens --- */
+    .screen {
+      
+      position: fixed; top:50%; left:50%;
+      transform: translate(-50%,-50%);
+      background: #f0efee;
+      backdrop-filter: blur(14px);
+      padding: 30px 40px 0; border-radius:10px;
+      text-align:center;
+      display: none;
+      font-family: monospace;
+      z-index: 10;
+    }
+    .screen h2 { font-size: xxx-large; color: black; font-family: cursive; }
+    
+    .peak{
+          user-select: none;
+          -webkit-user-select: none;
+          position: fixed;
+          top: -24%;
+          left: 1%;
+          width: 96%;
+          opacity: 1;
+          z-index: 1;
+          pointer-events: none;
+    }
+
+    .screen .button {
+        height: 33px;
+        font-size: 1.6rem;
+        padding: 6px 14px;
+        border: 2px solid black;
+        border-radius: 6px;
+        color: black;
+        background: #ffffff;
+        transition: all .1s;
+        user-select: none;
+        position: relative;
+        opacity: 0.5;
+        top: 50px;
+        animation: dialog2 0.5s ease alternate;
+            font-family: cursive;
+    }
+    .screen .hover {
+      opacity: 1;
+
+      animation: dialog 0.8s ease infinite alternate;
+    }
+    @keyframes dialog {
+      0% { top: 15px; }
+      50% { top: 00px; }
+      100% { top: 15px; }
+    }
+    @keyframes dialog2 {
+      0% { top: 20px; }
+
+      100% { top: 50px;  }
+    }
+    
+    .screen .button:after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border: 18px solid transparent;
+      border-top-color: #ffffff;
+      border-bottom: 0;
+      margin-left: -18px;
+      margin-top: 32px;
+    }
+
+    
+
+    .screen button:hover { transform: scale(1.05); }
+    #usernameInput {
+      font-size:1rem; padding:8px;
+      width:100%; margin-bottom:10px;
+    }
+
+    /* --- Game Grid & Cats --- */
+    #game {
+      transform: perspective(449px) rotateX(56deg);
+      display: grid;
+      grid-template: repeat(3, 120px) / repeat(3, 120px);
+      gap: 10px;
+      margin-top: 300px;
+    }
+    
+    .hole {
+      background: radial-gradient(ellipse at center, #4b2e1c 0%, #2b1b0e 70%, #000 100%);
+      border-radius: 50%;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 -10px rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.3);
+      cursor: pointer;
+      border: 3px solid #3b2a1a;
+    }
+
+    .cat {
+      bottom: 10%;
+      transform: scale3d(1.9, 6, 0);
+      position: absolute;
+      width: 100%;
+      opacity: 0;
+      transition: all .2s ease;
+      user-select: none;
+      pointer-events: none;
+    }
+    .up .cat {
+      bottom: 10%;
+      opacity:1;
+      filter: drop-shadow(0 -3px 2px rgba(0,0,0,0.2));
+      pointer-events: auto;
+      cursor: pointer;
+    }
+
+    .up {
+      animation: bounce 0.2s ease-out;
+      overflow: visible;
+    }
+
+    @keyframes bounce {
+      0% { overflow: hidden; }
+
+      70% { overflow: visible; }
+      100% { overflow: visible; }
+    }
+
+    .hole:nth-child(1).up > .cat{
+      transform: scale3d(1.9, 6, 1) translate3d(-19px, -38px, 0) perspective(14px) rotateY(2deg) rotateX(-5deg) rotateZ(-15deg) skew(12deg, 8deg);
+    }
+    .hole:nth-child(2).up > .cat{
+      transform: scale3d(2, 6, 1) translate3d(0px, -38px, 0) perspective(14px) rotateY(0deg) rotateX(-6deg) rotateZ(0deg);
+    }
+    .hole:nth-child(3).up > .cat{
+      transform: scale3d(2.1, 5.7, 1) translate3d(21px, -43px, 0px) perspective(15px) rotateY(-2deg) rotateX(-5deg) rotateZ(-3deg) skew(-23deg, -4deg) skew(-8deg, 10deg);
+    }
+    .hole:nth-child(4).up > .cat{
+      transform: scale3d(2, 5.6, 1) translate3d(-23px, -33px, 0) perspective(14px) rotateY(1deg) rotateX(-7deg) rotateZ(-12deg) skew(20deg, 3deg);
+    }
+    .hole:nth-child(5).up > .cat{
+      transform: scale3d(2, 5, 1) translate3d(0px, -35px, 0) perspective(16px) rotateY(0deg) rotateX(-7deg) rotateZ(0deg);
+    }
+    .hole:nth-child(6).up > .cat{
+      transform: scale3d(2, 5, 1) translate3d(16px, -33px, 0) perspective(29px) rotateY(-2deg) rotateX(-15deg) rotateZ(7deg) skew(-17deg, 1deg);
+    }
+    .hole:nth-child(7).up > .cat{
+      transform: scale3d(2, 4.5, 1) translate3d(-30px, -25px, 0) perspective(28px) rotateY(0deg) rotateX(-18deg) rotateZ(-10deg) skew(32deg, -2deg);
+    }
+    .hole:nth-child(8).up > .cat{
+      transform: scale3d(2.2, 4.2, 1) translate3d(0px, -31px, 0) perspective(14px) rotateY(0deg) rotateX(-8deg) rotateZ(0deg);
+    }
+    .hole:nth-child(9).up > .cat{
+      transform: scale3d(2, 4.5, 1) translate3d(23px, -25px, 0) perspective(28px) rotateY(0deg) rotateX(-18deg) rotateZ(12deg) skew(-24deg, -2deg);
+    }
+    /* --- Floating Particles --- */
+    .particle {
+      position: absolute;
+      font-size:2.5rem;
+      animation: float 1.2s ease-out forwards;
+      pointer-events:none;
+      filter: drop-shadow(0,0,3px rgba(0,0,0,0.3));
+      user-select:none;
+    }
+    @keyframes float { 0% { opacity:1; transform:translateY(0); } 100% { opacity:0; transform:translateY(-120px); } }
+
+    /* --- Orientation Prompt --- */
+    #orientationPrompt {
+      position:fixed; inset:0;
+      background:rgba(0,0,0,0.8);
+      color:white; font-family:monospace;
+      font-size:2rem; display:none;
+      align-items:center; justify-content:center;
+      z-index:999;
+    }
+    body.portrait #orientationPrompt {
+      display:flex;
+    }
+    body.portrait #gameContainer {
+      transform: rotate(90deg) translate(0,-100%);
+      transform-origin: top left;
+      width:100vh; height:100vw;
+    }
+    @media (max-width: 968px) {
+      #gameContainer {
+        width: -webkit-fill-available;
+        height: 95vh;
+        aspect-ratio: 16 / 9;
+      }
+    }
+    @media (max-width: 968px) {
+    body {
+        background-image: url();
+        background-color: black;
+    }
+}
+  </style>
+  </head>
+  <body>
+    
+
+    <div id="orientationPrompt">Please rotate your device</div>
+    <div id="gameContainer">
+      <div id="muteBtn">🔇</div>
+      <audio id="music" src="./imgs/imburrito.mp3" loop hidden></audio>
+      <audio id="gameover" src="./imgs/gameover.mp3" hidden></audio>
+      <audio id="crash" src="./imgs/crash.wav" hidden></audio>
+      <audio id="meow1" preload="auto">
+        <source src="./imgs/meows/meow1.ogg" type="audio/mpeg" />
+      </audio>
+      <audio id="meow2" preload="auto">
+        <source src="./imgs/meows/meow2.ogg" type="audio/mpeg" />
+      </audio>
+      <audio id="meow3" preload="auto">
+        <source src="./imgs/meows/meow3.ogg" type="audio/mpeg" />
+      </audio>
+      <audio id="meow4" preload="auto">
+        <source src="./imgs/meows/meow4.ogg" type="audio/mpeg" />
+      </audio>
+      <div id="lives"></div>
+      <div id="score">0</div>
+      <div id="combo"><span id="comboText">x1</span>
+        <svg width="48" height="48"><circle r="22" cx="24" cy="24"
+            stroke="#ffe76a" stroke-width="4" fill="none"
+            stroke-dasharray="138" stroke-dashoffset="0" />
+        </svg>
+      </div>
+
+      <div id="startScreen" class="screen">
+        <img class="peak" draggable="false" src="./imgs/cats/peak.png" />
+        <h2 draggable="false" style="user-select: none;-webkit-user-select: none;">Pet‑a‑Cat!</h2>
+        <input draggable="false" id="usernameInput" placeholder="Player name" />
+        <p draggable="false" style="user-select: none;-webkit-user-select: none;">Your Best: <span id="yourBest">0</span></p>
+        <div class="button" onclick="startGame()">play</div>
+        <div style="overflow:hidden;"><img id="playIcon" onclick="startGame()" src="./imgs/paw.png" draggable="false" style="user-select: none;-webkit-user-select: none;" /></div>
+        <ol id="topList"></ol>
+      </div>
+
+      <div id="gameOverScreen" class="screen">
+        <h2>Game Over</h2>
+        <p id="finalText"></p>
+        <div class="button">restart</div>
+        <div style="overflow:hidden;"><img id="playIcon" onclick="startGame()" src="./imgs/paw.png" draggable="false" style="user-select: none;-webkit-user-select: none;" /></div>
+
+        <ol id="topList2"></ol>
+      </div>
+      <img draggable="false" src="./imgs/cats/barge.png" style="user-select: none;-webkit-user-select: none;position:fixed;top:7%;left:14%;width:30%;opacity:0.8;z-index:1;pointer-events:none;" />
+      <div id="game"></div>
+    </div>
+
+    <script>
+  // --- Game Config ---
+  const catPaths = Array.from({length:6}, (_,i)=>`./imgs/cats/cat${i+1}.png`);
+  const leaderboardURL = "https://emwiki.site/api/cat-leaderboard";
+
+  let score=0, combo=0, lastHit=0;
+  let lives=3, spawnRate=1000, gameOver=false;
+  let currentHole=null, hideT=null, comboInterval=null;
+  let spawnI=null, diffI=null;
+  let playerName="", highScore=0;
+
+  const music = document.getElementById("music"),
+        meows = [meow1, meow2, meow4],
+        gameoverSnd = document.getElementById("gameover"),
+        crashSnd = document.getElementById("crash")
+
+  // DOM Refs
+  const livesEl = document.getElementById("lives"),
+        scoreEl = document.getElementById("score"),
+        comboEl = document.getElementById("combo"),
+        comboText = document.getElementById("comboText"),
+        usernameInput = document.getElementById("usernameInput"),
+        yourBest = document.getElementById("yourBest"),
+        playIcon = document.getElementById("playIcon"),
+        topList = document.getElementById("topList"),
+        topList2 = document.getElementById("topList2"),
+        startScreen = document.getElementById("startScreen"),
+        gameOverScreen = document.getElementById("gameOverScreen"),
+        finalText = document.getElementById("finalText"),
+        gameDiv = document.getElementById("game"),
+        muteBtn = document.getElementById("muteBtn"),
+        orientationPrompt = document.getElementById("orientationPrompt");
+
+  // Setup holes
+
+const playButton = document.querySelector(".button");
+
+playIcon.addEventListener("mouseenter", () => playButton.classList.add("hover"));
+playIcon.addEventListener("mouseleave", () => playButton.classList.remove("hover"));
+
+//wait 2 seconds before showing the play button
+playButton.style.opacity = "0";
+setTimeout(() => {
+  playButton.style.opacity = "1";
+}, 350);
+setTimeout(() => {
+  //remove playbutton.style.opacity all together
+  playButton.style.opacity = "";
+}, 1500);
+
+
+
+  const holes = [];
+  for (let i=0;i<9;i++){
+    const hole=document.createElement("div");
+    hole.classList.add("hole");
+    const img=document.createElement("img");
+    img.style.userSelect="none";
+    img.draggable=false;
+
+    img.classList.add("cat"); img.draggable=false;
+    hole.appendChild(img);
+    hole.clicked=false;
+    hole.addEventListener("mousedown", petCat);
+    holes.push(hole); gameDiv.appendChild(hole);
+  }
+
+  // Utilities
+  function petCat(e){
+    const hole = e.currentTarget;
+    if (!hole.classList.contains("up")) return;
+    hole.classList.remove("up");
+    hole.clicked = true;
+    const now=Date.now();
+    if (now-lastHit<850) combo++;
+    else combo=0;
+    lastHit=now;
+    score += 1 + combo;
+    updateScore();
+    showParticle(hole, "❤️");
+    playMeow();
+    if (combo>0) showCombo();
+    
+  }
+  function playMeow(){
+    const num = Math.floor(Math.random()*meows.length)
+    console.log("Playing meow", num);
+    const s = meows[num];
+    s.currentTime=0;
+    s.volume = 0.5
+    s.play();
+  }
+  function showParticle(hole, text){
+    const p = document.createElement("div");
+    p.className="particle"; p.innerText=text;
+    const rc = hole.getBoundingClientRect();
+    p.style.left = rc.left + (Math.random()*hole.offsetWidth) + "px";
+    p.style.top = rc.top + "px";
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),1200);
+  }
+  function showCombo(){
+    comboEl.style.display="block";
+    comboText.textContent=`x${combo+1}`;
+    clearInterval(comboInterval);
+    comboInterval = setInterval(()=>{comboEl.style.display="none"; clearInterval(comboInterval); combo=0;},1000);
+  }
+  function updateScore(){
+    scoreEl.textContent=score;
+    scoreEl.style.display="block";
+    updateLivesUI();
+  }
+  function updateLivesUI(){
+    livesEl.innerHTML="<img style='width: 30%; height: auto;' src='./imgs/cats/heart.png'>".repeat(lives);
+    livesEl.style.display="block";
+  }
+
+  // Game Loop
+  function randomHole(){
+    let idx;
+    do { idx = Math.floor(Math.random()*holes.length); } 
+    while (holes[idx]===currentHole);
+    return holes[idx];
+  }
+  function spawnCat(){
+    if (hideT) clearTimeout(hideT);
+    if (currentHole && !currentHole.clicked){
+      lives--; crashSnd.play();
+      updateScore();
+    }
+    holes.forEach(h=>h.classList.remove("up"), h=>h.clicked=false);
+    if (lives<=0) return endGame();
+
+    const hole = randomHole();
+    currentHole=hole; hole.clicked=false;
+    hole.querySelector("img").src = catPaths[Math.floor(Math.random()*catPaths.length)];
+    hole.classList.add("up");
+
+    hideT = setTimeout(()=>{
+      if (hole===currentHole && !hole.clicked){
+        lives--; crashSnd.play();
+        updateScore();
+      }
+      hole.classList.remove("up");
+      currentHole=null;
+    }, spawnRate);
+    if (spawnRate>400) spawnRate-=20;
+  }
+
+  function startGame(){
+    playerName = usernameInput.value.trim()||localStorage.getItem("catgame_username")||"Player";
+    localStorage.setItem("catgame_username",playerName);
+    usernameInput.value=playerName;
+
+    score=0; combo=0; lives=3;
+    spawnRate=1400; currentHole=null; gameOver=false;
+    updateScore();
+
+    loadLeaderboard();
+    startScreen.style.display="none";
+    gameOverScreen.style.display="none";
+
+    music.currentTime=0; music.play();
+    spawnI = setInterval(spawnCat,900);
+    diffI = setInterval(()=>{ if (spawnRate>400) clearInterval(spawnI), spawnRate-=50, spawnI=setInterval(spawnCat,spawnRate)},5000);
+  }
+  function endGame(){
+    gameOver=true;
+    clearInterval(spawnI); clearInterval(diffI);
+    if (hideT) clearTimeout(hideT);
+    music.pause(); gameoverSnd.play();
+
+    holes.forEach(h=>{h.classList.remove("up"); h.clicked=false});
+    const text = `Score: ${score}` + (score > highScore ? "<br><strong>New high score!</strong>": "");
+    finalText.innerHTML=text;
+    gameOverScreen.style.display="block";
+
+    if (score > highScore) {
+      highScore = score;
+      localStorage.setItem("catgame_highscore", highScore);
+      yourBest.textContent = highScore;
+      fetch(leaderboardURL,{method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({name:playerName,score})}).catch(console.error);
+    }
+  }
+
+  // Autoclicker detection
+  let clickLog=[];
+  window.addEventListener("mousedown",()=>{
+    const now=Date.now();
+    clickLog = clickLog.filter(ts=>now-ts<1000);
+    clickLog.push(now);
+    if (clickLog.length>15 && !gameOver){ endGame(); alert("Auto-click detected!"); }
+  });
+
+  // Leaderboard UI
+  async function loadLeaderboard(){
+    topList.innerHTML = topList2.innerHTML = "";
+    try {
+      const res = await fetch(leaderboardURL + "/top");
+      const data = await res.json();
+      data.slice(0,3).forEach((e,i)=>{
+        const li=document.createElement("li"), medals=["🥇","🥈","🥉"];
+        li.textContent=`${medals[i]||"🏅"} ${e.name}: ${e.score}`;
+        topList.appendChild(li);
+        topList2.appendChild(li.cloneNode(true));
+      });
+    } catch {}
+    yourBest.textContent = localStorage.getItem("catgame_highscore")||0;
+  }
+
+  // Mute toggle
+  muteBtn.addEventListener("click",()=>{
+    music.muted = !music.muted;
+    muteBtn.textContent = music.muted ? "🔇" : "🔊";
+    localStorage.setItem("catGameMute", music.muted);
+  });
+
+  // Init
+  window.addEventListener("DOMContentLoaded",()=>{
+    usernameInput.value = localStorage.getItem("catgame_username")||"";
+    highScore = parseInt(localStorage.getItem("catgame_highscore")||0);
+    yourBest.textContent = highScore;
+    music.muted = localStorage.getItem("catGameMute")==="true";
+    muteBtn.textContent = music.muted?"🔇":"🔊";
+    startScreen.style.display="block";
+    handleOrientation();
+  });
+  window.addEventListener("orientationchange", handleOrientation);
+  window.addEventListener("resize", handleOrientation);
+
+  function handleOrientation(){
+    if (/Mobi|Android/i.test(navigator.userAgent) && window.innerHeight<window.innerWidth)
+      document.body.classList.add("portrait");
+    else document.body.classList.remove("portrait");
+  }
+</script>
+  </body>
+</html>
