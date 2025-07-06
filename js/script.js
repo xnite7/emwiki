@@ -1019,14 +1019,14 @@ function createNewItem(item, color) {
 
   // From element (hidden)
   const from = document.createElement("div");
-  from.innerHTML = item.from;
+  from.innerText = item.from;
   from.id = "from";
   from.style.display = "none";
   newItem.appendChild(from);
 
   // Rarity element (hidden)
   const prcdra = document.createElement("div");
-  prcdra.innerHTML = item["price/code/rarity"];
+  prcdra.innerText = item["price/code/rarity"];
   prcdra.id = "pricecoderarity";
   prcdra.style.display = "none";
   newItem.appendChild(prcdra);
