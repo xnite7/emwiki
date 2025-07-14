@@ -659,6 +659,7 @@ function startGame(){
         li.textContent=`${medals[i]||"🏅"} ${e.name}: ${e.score}`;
         topList.appendChild(li);
         topList2.appendChild(li.cloneNode(true));
+        console.log(`Leaderboard entry ${i+1}: ${e.name} - ${e.score}`);
       });
 
     yourBest.textContent = localStorage.getItem("catgame_highscore")||0;
