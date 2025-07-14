@@ -23,6 +23,10 @@
       0% { background-position: 0 0; }
       100% { background-position: 900px 900px; }
     }
+
+    @keyframes a {
+  to {background-position:0 -200%}
+}
     #gameContainer {
         touch-action: manipulation;
         position: relative;
@@ -45,8 +49,8 @@
         margin: 0;
         font-family: monospace;
         background:
-          radial-gradient(circle at 50% 100%, #6ac36a 0%, #6ac36a 50%, transparent 50%) no-repeat,
-          linear-gradient(to bottom, #87ceeb, #87ceeb 60%, #6ac36a 60%, #6ac36a 100%);
+          radial-gradient(circle at 50% 100%, #686868 0%, #000000 50%, transparent 50%) no-repeat,
+          linear-gradient(to bottom, #1d1d1d, #000000 60%, #000000 60%, #000000 100%);
         background-size: 100% 100%, 100% 100%;
         background-attachment: fixed;
         font-family: monospace;
@@ -320,8 +324,11 @@
 
     <div id="orientationPrompt">Please rotate your device</div>
     <div id="gameContainer">
+      <div id="countdownOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100vh;z-index:999;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
+        <span id="countdownText" style="user-select: none;-webkit-user-select: none;font-size:7rem;color:#ffe76a;font-family:cursive;text-shadow:0 0 20px #000;"></span>
+      </div>
       <div id="muteBtn">🔇</div>
-      <audio id="music" src="./imgs/cats/nyan.mp3" loop hidden></audio>
+      <audio id="music" src="./imgs/cats/nyan.wav" loop hidden></audio>
       <audio id="gameover" src="./imgs/gameover.mp3" hidden></audio>
       <audio id="crash" src="./imgs/crash.wav" hidden></audio>
       <audio id="meow1" preload="auto">
@@ -336,6 +343,7 @@
       <audio id="meow4" preload="auto">
         <source src="./imgs/meows/meow4.ogg" type="audio/mpeg" />
       </audio>
+
       <div id="lives"></div>
       <div id="score">0</div>
       <script>
@@ -352,7 +360,7 @@
         <img class="peak" draggable="false" src="./imgs/cats/peak.png" />
         <h2 draggable="false" style="user-select: none;-webkit-user-select: none;">Pet‑a‑Cat!</h2>
         <input draggable="false" id="usernameInput" placeholder="Player name" />
-        <p draggable="false" style="user-select: none;-webkit-user-select: none;">Your Best: <span id="yourBest">0</span></p>
+        <p draggable="false" style="color: #00000085;font: 600 20px monospace;margin: 0px; user-select: none;-webkit-user-select: none;">Highscore: <span id="yourBest">0</span></p>
         <div class="button" onclick="startGame()">play</div>
         <div style="overflow:hidden;"><img id="playIcon" onclick="startGame()" src="./imgs/paw.png" draggable="false" style="user-select: none;-webkit-user-select: none;" /></div>
         <ol id="topList"></ol>
@@ -360,13 +368,13 @@
 
       <div id="gameOverScreen" class="screen">
         <h2>Game Over</h2>
-        <p id="finalText"></p>
+        <p style="color: #00000085;font: 600 20px monospace; margin: 0px;" id="finalText"></p>
         <div class="button">restart</div>
         <div style="overflow:hidden;"><img class="restart" id="playIcon" onclick="startGame()" src="./imgs/paw.png" draggable="false" style="user-select: none;-webkit-user-select: none;" /></div>
 
         <ol id="topList2"></ol>
       </div>
-      <img draggable="false" src="./imgs/cats/sun23.png" style="user-select: none;-webkit-user-select: none;position:fixed;top:3%;left:7%;width:20%;opacity:0.8;z-index:1;pointer-events:none;" />
+      <img draggable="false" src="./imgs/cats/galaxy.png" style="filter: opacity(0.1);user-select: none;-webkit-user-select: none;position:fixed;top:3%;left:7%;width:40%;opacity:0.8;z-index:1;pointer-events:none;" />
       <div id="game"></div>
     </div>
 
@@ -385,7 +393,7 @@
         meows = [meow1, meow2, meow4],
         gameoverSnd = document.getElementById("gameover"),
         crashSnd = document.getElementById("crash")
-
+    
   // DOM Refs
   const livesEl = document.getElementById("lives"),
         scoreEl = document.getElementById("score"),
@@ -406,7 +414,7 @@
 
   // Setup holes
 
-
+music.volume = 0.2;
 
 
 const Buttons = document.querySelectorAll(".button");
@@ -488,6 +496,11 @@ setTimeout(() => {
     scoreEl.textContent=score;
     scoreEl.style.display="block";
     updateLivesUI();
+
+    if (score >= 69) {
+      document.getElementById("gameContainer").style.background = "linear-gradient(rgba(255,0,0,1) 0%, rgba(255,154,0,1) 10%, rgba(208,222,33,1) 20%, rgba(79,220,74,1) 30%, rgba(63,218,216,1) 40%, rgba(47,201,226,1) 50%, rgba(28,127,238,1) 60%, rgba(95,21,242,1) 70%, rgba(186,12,248,1) 80%, rgba(251,7,217,1) 90%, rgba(255,0,0,1) 100%) 0 0/100% 200%";
+      document.getElementById("gameContainer").style.animation = "a 2s linear infinite";
+    }
   }
   function updateLivesUI(){
     livesEl.innerHTML="<img draggable='false' style='user-select: none;-webkit-user-select: none;width: 100px; height: 100px;' src='./imgs/cats/heart.png'>".repeat(lives);
@@ -530,23 +543,48 @@ setTimeout(() => {
     if (spawnRate>400) spawnRate-=20;
   }
 
-  function startGame(){
-    playerName = usernameInput.value.trim()||localStorage.getItem("catgame_username")||"Player";
-    localStorage.setItem("catgame_username",playerName);
-    usernameInput.value=playerName;
+function startGame(){
+  // Show countdown overlay
+  const countdownOverlay = document.getElementById("countdownOverlay");
+  const countdownText = document.getElementById("countdownText");
+  let count = 3;
+  countdownOverlay.style.display = "flex";
+  countdownText.textContent = count;
 
-    score=0; combo=0; lives=3;
-    spawnRate=1400; currentHole=null; gameOver=false;
-    updateScore();
+  // Hide screens while counting down
+  startScreen.style.display="none";
+  gameOverScreen.style.display="none";
 
-    loadLeaderboard();
-    startScreen.style.display="none";
-    gameOverScreen.style.display="none";
+  // Countdown logic
+  music.currentTime=3; music.play();
+  const countdownInterval = setInterval(() => {
+    count--;
+    
+    if (count > 0) {
+      countdownText.textContent = count;
+      
+    } else if (count === 0) {
+      countdownText.textContent = "Go!";
+    } else {
+      clearInterval(countdownInterval);
+      countdownOverlay.style.display = "none";
+      // Start game logic
+      playerName = usernameInput.value.trim()||localStorage.getItem("catgame_username")||"Player";
+      localStorage.setItem("catgame_username",playerName);
+      usernameInput.value=playerName;
 
-    music.currentTime=0; music.play();
-    spawnI = setInterval(spawnCat,900);
-    diffI = setInterval(()=>{ if (spawnRate>400) clearInterval(spawnI), spawnRate-=50, spawnI=setInterval(spawnCat,spawnRate)},5000);
-  }
+      score=0; combo=0; lives=3;
+      spawnRate=1400; currentHole=null; gameOver=false;
+      updateScore();
+
+      loadLeaderboard();
+
+      
+      spawnI = setInterval(spawnCat,900);
+      diffI = setInterval(()=>{ if (spawnRate>400) clearInterval(spawnI), spawnRate-=50, spawnI=setInterval(spawnCat,spawnRate)},5000);
+    }
+  }, 700); // 0.7s between each step
+}
   function endGame(){
     gameOver=true;
     clearInterval(spawnI); clearInterval(diffI);
