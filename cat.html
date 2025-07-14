@@ -69,7 +69,16 @@
       bottom: 10px; right: 10px; font-size: 3.4rem; display: none;
     }
     #lives {
-      top: 0px; font-size: 4.5rem; color: #ffbaba; display: none; position: absolute; z-index: 10; 
+      filter: drop-shadow(0 0 5px #ffbaba); top: 30px; font-size: 4.5rem; color: #ffbaba; display: none; position: absolute; z-index: 10; 
+    }
+    #heart {
+      position: absolute;
+      animation: bobblehead calc(0.8s + 0.8s * var(--rand, 0)) ease-in-out infinite alternate;
+    }
+
+    @keyframes bobblehead {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-10px); }
     }
     #combo {
       bottom: 80px; right: 10px; display: none;
@@ -326,6 +335,15 @@
       </audio>
       <div id="lives"></div>
       <div id="score">0</div>
+      <script>
+        // Set random --rand value for #heart element
+        document.addEventListener("DOMContentLoaded", function() {
+          const heart = document.getElementById("heart");
+          if (heart) {
+            heart.style.setProperty("--rand", 1 + Math.random() * 0.5);
+          }
+        });
+      </script>
       <div id="combo"><span id="comboText">x1</span>
         <svg width="48" height="48"><circle r="22" cx="24" cy="24"
             stroke="#ffe76a" stroke-width="4" fill="none"
@@ -351,7 +369,7 @@
 
         <ol id="topList2"></ol>
       </div>
-      <img draggable="false" src="./imgs/cats/sun.png" style="user-select: none;-webkit-user-select: none;position:fixed;top:7%;left:14%;width:30%;opacity:0.8;z-index:1;pointer-events:none;" />
+      <img draggable="false" src="./imgs/cats/sun23.png" style="user-select: none;-webkit-user-select: none;position:fixed;top:3%;left:7%;width:20%;opacity:0.8;z-index:1;pointer-events:none;" />
       <div id="game"></div>
     </div>
 
@@ -468,7 +486,8 @@ setTimeout(() => {
     updateLivesUI();
   }
   function updateLivesUI(){
-    livesEl.innerHTML="<img style='width: 30%; height: auto;' src='./imgs/cats/heart.png'>".repeat(lives);
+    livesEl.innerHTML="<img style='width: 100px; height: 100px;' src='./imgs/cats/heart.png'>".repeat(lives);
+    livesEl.id="heart";
     livesEl.style.display="block";
   }
 
