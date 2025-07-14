@@ -470,6 +470,8 @@ setTimeout(() => {
     hole.appendChild(img);
     hole.clicked=false;
     hole.addEventListener("mousedown", petCat);
+    hole.addEventListener("touchstart", petCat);
+
     holes.push(hole); gameDiv.appendChild(hole);
   }
 
