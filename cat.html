@@ -148,7 +148,11 @@
       font-family: monospace;
       z-index: 10;
     }
-    .screen h2 { font-size: xxx-large; color: black; font-family: cursive; }
+    .screen h2 {     font-size: xxx-large;
+    color: #ff008b;
+    margin: 21px 28px 14px;
+    text-shadow: 0 0 5px #fff700;
+    font-family: cursive; }
     
     .peak{
           user-select: none;
@@ -352,6 +356,9 @@
           background-image: url();
           background-color: black;
       }
+          .screen h2 {
+    margin: 0;
+}
     }
 .hole[data-cat-type="rare"] .cat {
   filter: drop-shadow(0 -8px 8px gold);
@@ -404,11 +411,12 @@
       <div id="startScreen" class="screen">
         <img class="peak" draggable="false" src="./imgs/cats/peak.png" />
         <h2 draggable="false" style="user-select: none;-webkit-user-select: none;">Cat Game</h2>
+        <ol id="topList"></ol>
         <input draggable="false" id="usernameInput" placeholder="Player name" />
         <p draggable="false" style="color: #00000085;font: 600 20px monospace;margin: 0px; user-select: none;-webkit-user-select: none;">Highscore: <span id="yourBest">0</span></p>
         <div class="button" onclick="startGame()">play</div>
         <div style="overflow:hidden;"><img id="playIcon" onclick="startGame()" src="./imgs/paw.png" draggable="false" style="user-select: none;-webkit-user-select: none;" /></div>
-        <ol id="topList"></ol>
+        
       </div>
 
       <div id="gameOverScreen" class="screen">
@@ -793,6 +801,17 @@ if (score > highScore) {
       const data = await res.json();
       data.slice(0,3).forEach((e,i)=>{
         const li=document.createElement("li"), medals=["🥇","🥈","🥉"];
+        li.style.fontSize = "20px";
+        li.style.fontFamily = "cursive";
+        li.style.color = "#3d3d3d";
+        li.style.textShadow = "0 0 5px #ffffff55";
+        li.style.margin = "5px 0";
+        li.style.padding = "5px 10px";
+        li.style.background = "rgba(255, 255, 255, 0.2)";
+        li.style.borderRadius = "8px";
+        li.style.listStyle = "none";
+        li.style.textAlign = "left";
+
         li.textContent=`${medals[i]||"🏅"} ${e.name}: ${e.score}`;
         topList.appendChild(li);
         topList2.appendChild(li.cloneNode(true));
