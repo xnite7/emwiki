@@ -58,15 +58,18 @@
     #score,  #combo {
       position: fixed;
       z-index: 10;
-      font-family: monospace;
-      background: rgba(46,46,46,0.7);
+      font-family: cursive;
+      font-size: 5.4rem;
+      font-weight: 900;
+      text-shadow: 0 0 10px #00000075;
+
       color: aliceblue;
       padding: 6px 12px;
       border-radius: 6px;
       user-select: none;
     }
     #score {
-      bottom: 10px; right: 10px; font-size: 3.4rem; display: none;
+      bottom: 10px; right: 10px; display: none;
     }
     #lives {
       filter: drop-shadow(0 0 5px #ffbaba); top: 30px; font-size: 4.5rem; color: #ffbaba; display: none; position: absolute; z-index: 10; 
@@ -81,7 +84,7 @@
       100% { transform: translateY(-10px); }
     }
     #combo {
-      bottom: 80px; right: 10px; display: none;
+      bottom: 140px; right: 10px; display: none;
       font-size: 2rem; color: #ffe76a; user-select: none;
     }
 
@@ -336,13 +339,7 @@
       <div id="lives"></div>
       <div id="score">0</div>
       <script>
-        // Set random --rand value for #heart element
-        document.addEventListener("DOMContentLoaded", function() {
-          const heart = document.getElementById("heart");
-          if (heart) {
-            heart.style.setProperty("--rand", 1 + Math.random() * 0.5);
-          }
-        });
+
       </script>
       <div id="combo"><span id="comboText">x1</span>
         <svg width="48" height="48"><circle r="22" cx="24" cy="24"
@@ -365,7 +362,7 @@
         <h2>Game Over</h2>
         <p id="finalText"></p>
         <div class="button">restart</div>
-        <div style="overflow:hidden;"><img id="playIcon" onclick="startGame()" src="./imgs/paw.png" draggable="false" style="user-select: none;-webkit-user-select: none;" /></div>
+        <div style="overflow:hidden;"><img class="restart" id="playIcon" onclick="startGame()" src="./imgs/paw.png" draggable="false" style="user-select: none;-webkit-user-select: none;" /></div>
 
         <ol id="topList2"></ol>
       </div>
@@ -397,6 +394,7 @@
         usernameInput = document.getElementById("usernameInput"),
         yourBest = document.getElementById("yourBest"),
         playIcon = document.getElementById("playIcon"),
+        restartIcon = document.querySelector(".restart"),
         topList = document.getElementById("topList"),
         topList2 = document.getElementById("topList2"),
         startScreen = document.getElementById("startScreen"),
@@ -408,19 +406,25 @@
 
   // Setup holes
 
-const playButton = document.querySelector(".button");
 
-playIcon.addEventListener("mouseenter", () => playButton.classList.add("hover"));
-playIcon.addEventListener("mouseleave", () => playButton.classList.remove("hover"));
+
+
+const Buttons = document.querySelectorAll(".button");
+
+restartIcon.addEventListener("mouseenter", () => Buttons.forEach(btn => btn.classList.add("hover")));
+restartIcon.addEventListener("mouseleave", () => Buttons.forEach(btn => btn.classList.remove("hover")));
+
+playIcon.addEventListener("mouseenter", () => Buttons.forEach(btn => btn.classList.add("hover")));
+playIcon.addEventListener("mouseleave", () => Buttons.forEach(btn => btn.classList.remove("hover")));
 
 //wait 2 seconds before showing the play button
-playButton.style.opacity = "0";
+Buttons.forEach(btn => btn.style.opacity = "0");
 setTimeout(() => {
-  playButton.style.opacity = "1";
+  Buttons.forEach(btn => btn.style.opacity = "1");
 }, 350);
 setTimeout(() => {
   //remove playbutton.style.opacity all together
-  playButton.style.opacity = "";
+  Buttons.forEach(btn => btn.style.opacity = "");
 }, 1500);
 
 
@@ -486,9 +490,12 @@ setTimeout(() => {
     updateLivesUI();
   }
   function updateLivesUI(){
-    livesEl.innerHTML="<img style='width: 100px; height: 100px;' src='./imgs/cats/heart.png'>".repeat(lives);
+    livesEl.innerHTML="<img draggable='false' style='user-select: none;-webkit-user-select: none;width: 100px; height: 100px;' src='./imgs/cats/heart.png'>".repeat(lives);
     livesEl.id="heart";
     livesEl.style.display="block";
+    if (livesEl) {
+      livesEl.style.setProperty("--rand", 1 + Math.random() * 0.5);
+    }
   }
 
   // Game Loop
