@@ -651,7 +651,7 @@ function startGame(){
   // Leaderboard UI
   async function loadLeaderboard(){
     topList.innerHTML = topList2.innerHTML = "";
-    try {
+
       const res = await fetch(leaderboardURL);
       const data = await res.json();
       data.slice(0,3).forEach((e,i)=>{
@@ -660,7 +660,7 @@ function startGame(){
         topList.appendChild(li);
         topList2.appendChild(li.cloneNode(true));
       });
-    } catch {}
+
     yourBest.textContent = localStorage.getItem("catgame_highscore")||0;
   }
 loadLeaderboard();
