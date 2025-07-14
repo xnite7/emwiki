@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport"
       content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
-    <title>Pet‑a‑Cat!</title>
+    <title>Cat Game - Epic Catalogue</title>
     <style>
     /* --- Base Layout & BG Animation --- */
     body {
@@ -48,9 +48,7 @@
         overflow: hidden;
         margin: 0;
         font-family: monospace;
-        background:
-          radial-gradient(circle at 50% 100%, #686868 0%, #000000 50%, transparent 50%) no-repeat,
-          linear-gradient(to bottom, #1d1d1d, #000000 60%, #000000 60%, #000000 100%);
+        background: radial-gradient(circle at 50% 100%, #6ac36a 0%, #6ac36a 50%, transparent 50%) no-repeat, linear-gradient(to bottom, #87ceeb, #87ceeb 60%, #6ac36a 60%, #6ac36a 100%);
         background-size: 100% 100%, 100% 100%;
         background-attachment: fixed;
         font-family: monospace;
@@ -380,7 +378,7 @@
 
       <div id="startScreen" class="screen">
         <img class="peak" draggable="false" src="./imgs/cats/peak.png" />
-        <h2 draggable="false" style="user-select: none;-webkit-user-select: none;">Pet‑a‑Cat!</h2>
+        <h2 draggable="false" style="user-select: none;-webkit-user-select: none;">Cat Game</h2>
         <input draggable="false" id="usernameInput" placeholder="Player name" />
         <p draggable="false" style="color: #00000085;font: 600 20px monospace;margin: 0px; user-select: none;-webkit-user-select: none;">Highscore: <span id="yourBest">0</span></p>
         <div class="button" onclick="startGame()">play</div>
@@ -396,7 +394,7 @@
 
         <ol id="topList2"></ol>
       </div>
-      <img draggable="false" src="./imgs/cats/galaxy.png" style="filter: opacity(0.1);user-select: none;-webkit-user-select: none;position:fixed;top:3%;left:7%;width:40%;opacity:0.8;z-index:1;pointer-events:none;" />
+      <img id="ghost" draggable="false" src="./imgs/cats/sun23.png" style="filter: opacity(0.8);user-select: none;-webkit-user-select: none;position:fixed;top:3%;left:7%;width:40%;opacity:0.8;z-index:1;pointer-events:none;" />
       <div id="game"></div>
     </div>
 
@@ -522,6 +520,13 @@ setTimeout(() => {
     if (score >= 69) {
       document.getElementById("gameContainer").style.background = "linear-gradient(rgba(255,0,0,1) 0%, rgba(255,154,0,1) 10%, rgba(208,222,33,1) 20%, rgba(79,220,74,1) 30%, rgba(63,218,216,1) 40%, rgba(47,201,226,1) 50%, rgba(28,127,238,1) 60%, rgba(95,21,242,1) 70%, rgba(186,12,248,1) 80%, rgba(251,7,217,1) 90%, rgba(255,0,0,1) 100%) 0 0/100% 200%";
       document.getElementById("gameContainer").style.animation = "a 2s linear infinite";
+      document.getElementById("ghost").src = "./imgs/cats/sun.png";
+      document.getElementById("ghost").style.filter = "opacity(0.8)";
+    } else if (score >= 30) {
+      document.getElementById("ghost").src = "./imgs/cats/galaxy.png";
+      document.getElementById("ghost").style.filter = "opacity(0.1)";
+      document.getElementById("gameContainer").style.background = "radial-gradient(circle at 50% 100%, #6ac36a 0%, #6ac36a 50%, transparent 50%) no-repeat, linear-gradient(to bottom, #87ceeb, #87ceeb 60%, #6ac36a 60%, #6ac36a 100%)";
+
     }
   }
   function updateLivesUI(){
