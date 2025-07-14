@@ -518,15 +518,22 @@ setTimeout(() => {
     scoreEl.style.display="block";
     updateLivesUI();
 
-    if (score >= 69) {
+
+    if (score >= 100) {
       document.getElementById("gameContainer").style.background = "linear-gradient(rgba(255,0,0,1) 0%, rgba(255,154,0,1) 10%, rgba(208,222,33,1) 20%, rgba(79,220,74,1) 30%, rgba(63,218,216,1) 40%, rgba(47,201,226,1) 50%, rgba(28,127,238,1) 60%, rgba(95,21,242,1) 70%, rgba(186,12,248,1) 80%, rgba(251,7,217,1) 90%, rgba(255,0,0,1) 100%) 0 0/100% 200%";
       document.getElementById("gameContainer").style.animation = "a 2s linear infinite";
       document.getElementById("ghost").src = "./imgs/cats/sun.png";
       document.getElementById("ghost").style.filter = "opacity(0.8)";
-    } else if (score >= 30) {
+    } else if (score >= 50) {
       document.getElementById("ghost").src = "./imgs/cats/galaxy.png";
       document.getElementById("ghost").style.filter = "opacity(0.1)";
-      document.getElementById("gameContainer").style.background = "radial-gradient(circle at 50% 100%, #6ac36a 0%, #6ac36a 50%, transparent 50%) no-repeat, linear-gradient(to bottom, #87ceeb, #87ceeb 60%, #6ac36a 60%, #6ac36a 100%)";
+      document.getElementById("gameContainer").style.background = "radial-gradient(circle at 50% 90%, #6f6f6f 0%, #000 44%, transparent 50%) no-repeat, linear-gradient(to bottom, #1d1d1d, #000000 60%, #000 60%, #000000 100%)";
+
+    } else if (score <= 50) {
+    document.getElementById("gameContainer").style.background = "radial-gradient(circle at 50% 100%, #6ac36a 0%, #6ac36a 50%, transparent 50%) no-repeat, linear-gradient(to bottom, #87ceeb, #87ceeb 60%, #6ac36a 60%, #6ac36a 100%)";
+
+    document.getElementById("ghost").src = "./imgs/cats/sun23.png";
+    document.getElementById("ghost").style.filter = "opacity(0.8)";
 
     }
   }
