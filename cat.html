@@ -663,7 +663,7 @@ function startGame(){
     } catch {}
     yourBest.textContent = localStorage.getItem("catgame_highscore")||0;
   }
-
+loadLeaderboard();
   // Mute toggle
   muteBtn.addEventListener("click",()=>{
     music.muted = !music.muted;
