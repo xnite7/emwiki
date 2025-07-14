@@ -8,6 +8,7 @@
     <link rel="icon" type="image/png" href="./imgs/cats/heart.png" />
     <style>
     /* --- Base Layout & BG Animation --- */
+    
     body {
       touch-action: manipulation;
       overflow: hidden;
@@ -55,6 +56,21 @@
         font-family: monospace;
     }
 
+
+@keyframes space {
+  40% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 0.25;
+  }
+  60% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 
 
     /* --- Floating UI --- */
@@ -337,6 +353,12 @@
           background-color: black;
       }
     }
+.hole[data-cat-type="rare"] .cat {
+  filter: drop-shadow(0 -8px 8px gold);
+}
+.hole[data-cat-type="evil"] .cat {
+  filter: brightness(0.8) drop-shadow(0 -8px 6px red);
+}
 
   </style>
   </head>
@@ -350,11 +372,13 @@
       </div>
       <div id="muteBtn">🔇</div>
       <audio id="music" src="./imgs/cats/nyan.mp3" loop hidden></audio>
+      <audio id="cave" src="./imgs/cats/cave.mp3" loop hidden></audio>
       <audio id="gameover" src="./imgs/gameover.mp3" hidden></audio>
       <audio id="crash" src="./imgs/crash.wav" hidden></audio>
       <audio id="meow1" preload="auto">
         <source src="./imgs/meows/meow1.ogg" type="audio/mpeg" />
       </audio>
+      <audio id="shine" src="./imgs/cats/shine.mp3" hidden preload="auto"></audio>
       <audio id="meow2" preload="auto">
         <source src="./imgs/meows/meow2.ogg" type="audio/mpeg" />
       </audio>
@@ -401,7 +425,17 @@
 
     <script>
   // --- Game Config ---
-  const catPaths = Array.from({length:6}, (_,i)=>`./imgs/cats/cat${i+1}.png`);
+  const catVariants = [
+  { src: "./imgs/cats/cat1.png", type: "normal" },
+  { src: "./imgs/cats/cat2.png", type: "normal" },
+  { src: "./imgs/cats/cat3.png", type: "normal" },
+  { src: "./imgs/cats/cat4.png", type: "normal" },
+  { src: "./imgs/cats/cat5.png", type: "normal" },
+  { src: "./imgs/cats/cat6.png", type: "normal" },
+  { src: "./imgs/cats/rare.png", type: "rare" },  // ✨ bonus points
+  { src: "./imgs/cats/evil.png", type: "evil" },  // 💀 lose more lives
+];
+
   const leaderboardURL = "https://emwiki.site/api/cat-leaderboard";
 
   let score=0, combo=0, lastHit=0;
@@ -413,8 +447,10 @@
   const music = document.getElementById("music"),
         meows = [meow1, meow2, meow4],
         gameoverSnd = document.getElementById("gameover"),
-        crashSnd = document.getElementById("crash")
-    
+        crashSnd = document.getElementById("crash"),
+        cave = document.getElementById("cave"),
+        shineSnd = document.getElementById("shine");
+
   // DOM Refs
   const livesEl = document.getElementById("lives"),
         scoreEl = document.getElementById("score"),
@@ -476,29 +512,49 @@ setTimeout(() => {
   }
 
   // Utilities
-  function petCat(e){
+  function petCat(e) {
     const hole = e.currentTarget;
     if (!hole.classList.contains("up")) return;
+
+    const catType = hole.dataset.catType || "normal";
+
     hole.classList.remove("up");
     hole.clicked = true;
-    const now=Date.now();
-    if (now-lastHit<850) combo++;
-    else combo=0;
-    lastHit=now;
-    score += 1 + combo;
-    updateScore();
-    showParticle(hole, "❤️");
-    playMeow();
-    if (combo>0) showCombo();
-    
-  }
+
+    const now = Date.now();
+    if (now - lastHit < 850) combo++;
+    else combo = 0;
+    lastHit = now;
+
+    if (catType === "rare") {
+      score += 5 + combo * 2; // 🟡 rare = big bonus
+      showParticle(hole, "✨");
+      playShine()
+    } else if (catType === "evil") {
+      lives = Math.max(0, lives - 1); // 🔴 evil = lose 1 life
+      showParticle(hole, "💀");
+      crashSnd.play();
+    } else {
+      score += 1 + combo;
+      showParticle(hole, "❤️");
+      playMeow();
+    }
+
+  updateScore();
+  if (combo > 0 && catType !== "evil") showCombo();
+}
+
   function playMeow(){
     const num = Math.floor(Math.random()*meows.length)
-    console.log("Playing meow", num);
     const s = meows[num];
     s.currentTime=0;
     s.volume = 0.5
     s.play();
+  }
+  function playShine(){
+      shineSnd.currentTime=0;
+      shineSnd.volume = 1
+      shineSnd.play();
   }
   function showParticle(hole, text){
     const p = document.createElement("div");
@@ -521,17 +577,35 @@ setTimeout(() => {
     updateLivesUI();
 
 
-    if (score >= 100) {
+    if (score >= 300) {
       document.getElementById("gameContainer").style.background = "linear-gradient(rgba(255,0,0,1) 0%, rgba(255,154,0,1) 10%, rgba(208,222,33,1) 20%, rgba(79,220,74,1) 30%, rgba(63,218,216,1) 40%, rgba(47,201,226,1) 50%, rgba(28,127,238,1) 60%, rgba(95,21,242,1) 70%, rgba(186,12,248,1) 80%, rgba(251,7,217,1) 90%, rgba(255,0,0,1) 100%) 0 0/100% 200%";
       document.getElementById("gameContainer").style.animation = "a 2s linear infinite";
       document.getElementById("ghost").src = "./imgs/cats/sun.png";
       document.getElementById("ghost").style.filter = "opacity(0.8)";
-    } else if (score >= 50) {
+      cave.pause();
+    } else if (score >= 190) {
+      document.getElementById("gameContainer").style.background = "radial-gradient(circle at 50% 100%, #48e048 0%, #3ea93e 36%, #2b712b 49%, #a9232300 49%) no-repeat, linear-gradient(to bottom, #56ceff, #56ceff, #ffe056, #ff833b 60%, #2b712b 60%, #2b742b 100%)";
+
+    document.getElementById("ghost").src = "./imgs/cats/sun23.png";
+    document.getElementById("ghost").style.filter = "opacity(0.8)";
+    cave.pause();
+    music.volume = 0.2;
+
+    } else if (score >= 140) {
+      music.volume = 0;
+      cave.currentTime = 0;
+      cave.play();
+      
       document.getElementById("ghost").src = "./imgs/cats/galaxy.png";
       document.getElementById("ghost").style.filter = "opacity(0.1)";
       document.getElementById("gameContainer").style.background = "radial-gradient(circle at 50% 90%, #6f6f6f 0%, #000 44%, transparent 50%) no-repeat, linear-gradient(to bottom, #1d1d1d, #000000 60%, #000 60%, #000000 100%)";
 
-    } else if (score <= 50) {
+    } else if (score >= 50) {
+      document.getElementById("ghost").src = "./imgs/cats/blackhole.png";
+      document.getElementById("ghost").style.filter = "opacity(0.5)";
+      document.getElementById("gameContainer").style.background = "radial-gradient(1px 1px at 20% 20%, white, rgba(255, 255, 255, 0)), radial-gradient(1px 1px at 20% 50%, white, rgba(255, 255, 255, 0)), radial-gradient(1.5px 1.5px at 40% 50%, white, rgba(255, 255, 255, 0)), radial-gradient(2px 2px at 40% 20%, white, rgba(255, 255, 255, 0)), radial-gradient(2.5px 2.5px at 70% 10%, white, rgba(255, 255, 255, 0)), radial-gradient(2.5px 2.5px at 10% 10%, white, rgba(255, 255, 255, 0)), radial-gradient(circle at 50% 100%, rgb(14 0 84) 0%, #091538 100%) no-repeat";
+
+    } else {
     document.getElementById("gameContainer").style.background = "radial-gradient(circle at 50% 100%, #48e048 0%, #3ea93e 36%, #2b712b 49%, #a9232300 49%) no-repeat, linear-gradient(to bottom, #56ceff, #56ceff, #ffe056, #ff833b 60%, #2b712b 60%, #2b742b 100%)";
 
     document.getElementById("ghost").src = "./imgs/cats/sun23.png";
@@ -555,30 +629,65 @@ setTimeout(() => {
     while (holes[idx]===currentHole);
     return holes[idx];
   }
-  function spawnCat(){
-    if (hideT) clearTimeout(hideT);
-    if (currentHole && !currentHole.clicked){
-      lives--; crashSnd.play();
+function spawnCat() {
+  if (hideT) clearTimeout(hideT);
+  if (currentHole && !currentHole.clicked) {
+    const prevType = currentHole.dataset.catType || "normal";
+    if (prevType !== "evil") {
+      lives--;
+      crashSnd.play();
       updateScore();
     }
-    holes.forEach(h=>h.classList.remove("up"), h=>h.clicked=false);
-    if (lives<=0) return endGame();
-
-    const hole = randomHole();
-    currentHole=hole; hole.clicked=false;
-    hole.querySelector("img").src = catPaths[Math.floor(Math.random()*catPaths.length)];
-    hole.classList.add("up");
-
-    hideT = setTimeout(()=>{
-      if (hole===currentHole && !hole.clicked){
-        lives--; crashSnd.play();
-        updateScore();
-      }
-      hole.classList.remove("up");
-      currentHole=null;
-    }, spawnRate);
-    if (spawnRate>400) spawnRate-=20;
   }
+
+  holes.forEach(h => {
+    h.classList.remove("up");
+    h.clicked = false;
+    h.dataset.catType = "normal"; // reset
+  });
+
+  if (lives <= 0) return endGame();
+
+  const hole = randomHole();
+  const img = hole.querySelector("img");
+
+  // 🎲 Determine cat type based on rarity
+  const rand = Math.random();
+  let catType = "normal";
+
+  if (rand < 0.05) {
+    catType = "evil";   // 5% chance
+  } else if (rand < 0.10) {
+    catType = "rare";   // 5% chance
+  }
+
+  // 🖼️ Choose a matching image for the cat type
+  const filteredCats = catVariants.filter(cat => cat.type === catType);
+  const cat = filteredCats[Math.floor(Math.random() * filteredCats.length)];
+
+  img.src = cat.src;
+  hole.dataset.catType = cat.type;
+  currentHole = hole;
+  hole.classList.add("up");
+
+  hideT = setTimeout(() => {
+    if (hole === currentHole && !hole.clicked) {
+      const missedType = hole.dataset.catType || "normal";
+      if (missedType !== "evil") {
+        lives--;
+        console.log("Missed", missedType, "cat! Lives left:", lives);
+        crashSnd.play();
+      }
+      updateScore();
+    }
+    hole.classList.remove("up");
+    currentHole = null;
+  }, spawnRate);
+
+  if (spawnRate > 400) spawnRate -= 10;
+}
+
+
 
 function startGame(){
   // Show countdown overlay
@@ -592,8 +701,14 @@ function startGame(){
   startScreen.style.display="none";
   gameOverScreen.style.display="none";
 
+      document.getElementById("gameContainer").style.background = "radial-gradient(circle at 50% 100%, #48e048 0%, #3ea93e 36%, #2b712b 49%, #a9232300 49%) no-repeat, linear-gradient(to bottom, #56ceff, #56ceff, #ffe056, #ff833b 60%, #2b712b 60%, #2b742b 100%)";
+
+    document.getElementById("ghost").src = "./imgs/cats/sun23.png";
+    document.getElementById("ghost").style.filter = "opacity(0.8)";
+
   // Countdown logic
   music.currentTime=3; music.play();
+  music.volume = 0.2;
   const countdownInterval = setInterval(() => {
     count--;
     
@@ -627,6 +742,7 @@ function startGame(){
     clearInterval(spawnI); clearInterval(diffI);
     if (hideT) clearTimeout(hideT);
     music.pause(); gameoverSnd.play();
+    cave.pause();
 
     holes.forEach(h=>{h.classList.remove("up"); h.clicked=false});
     const text = `Score: ${score}` + (score > highScore ? "<br><strong>New high score!</strong>": "");
