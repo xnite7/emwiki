@@ -749,12 +749,31 @@ function startGame(){
     finalText.innerHTML=text;
     gameOverScreen.style.display="block";
 
-    if (score > highScore) {
-      highScore = score;
-      localStorage.setItem("catgame_highscore", highScore);
-      yourBest.textContent = highScore;
-      fetch(leaderboardURL,{method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({name:playerName,score})}).catch(console.error);
-    }
+if (score > highScore) {
+  highScore = score;
+  localStorage.setItem("catgame_highscore", highScore);
+  yourBest.textContent = highScore;
+
+  fetch(leaderboardURL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: playerName, score }),
+  })
+    .then(res => {
+      if (!res.ok) {
+        console.error("Failed to submit score:", res.status);
+        return;
+      }
+      return res.json();
+    })
+    .then(data => {
+      console.log("Score submitted:", data);
+    })
+    .catch(err => {
+      console.error("Submission error:", err);
+    });
+}
+
   }
 
   // Autoclicker detection
