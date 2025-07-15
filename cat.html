@@ -411,9 +411,10 @@
       <div id="startScreen" class="screen">
         <img class="peak" draggable="false" src="./imgs/cats/peak.png" />
         <h2 draggable="false" style="user-select: none;-webkit-user-select: none;">Cat Game</h2>
-        <ol style="padding: 0;" id="topList"></ol>
+        
         <input draggable="false" id="usernameInput" placeholder="Player name" />
         <p draggable="false" style="color: #00000085;font: 600 20px monospace;margin: 0px; user-select: none;-webkit-user-select: none;">Highscore: <span id="yourBest">0</span></p>
+        <ol style="padding: 0;" id="topList"></ol>
         <div class="button" onclick="startGame()">play</div>
         <div style="overflow:hidden;"><img id="playIcon" onclick="startGame()" src="./imgs/paw.png" draggable="false" style="user-select: none;-webkit-user-select: none;" /></div>
         
@@ -421,11 +422,13 @@
 
       <div id="gameOverScreen" class="screen">
         <h2>Game Over</h2>
+        
         <p style="color: #00000085;font: 600 20px monospace; margin: 0px;" id="finalText"></p>
-        <div class="button">restart</div>
+        <ol style="padding: 0;" id="topList2"></ol>
+        <div class="button" onclick="startGame()">restart</div>
         <div style="overflow:hidden;"><img class="restart" id="playIcon" onclick="startGame()" src="./imgs/paw.png" draggable="false" style="user-select: none;-webkit-user-select: none;" /></div>
 
-        <ol id="topList2"></ol>
+        
       </div>
       <img id="ghost" draggable="false" src="./imgs/cats/sun23.png" style="filter: opacity(0.8);user-select: none;-webkit-user-select: none;position:fixed;top:3%;left:7%;width:40%;opacity:0.8;z-index:1;pointer-events:none;" />
       <div id="game"></div>
