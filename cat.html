@@ -411,7 +411,7 @@
       <div id="startScreen" class="screen">
         <img class="peak" draggable="false" src="./imgs/cats/peak.png" />
         <h2 draggable="false" style="user-select: none;-webkit-user-select: none;">Cat Game</h2>
-        <ol id="topList"></ol>
+        <ol style="padding: 0;" id="topList"></ol>
         <input draggable="false" id="usernameInput" placeholder="Player name" />
         <p draggable="false" style="color: #00000085;font: 600 20px monospace;margin: 0px; user-select: none;-webkit-user-select: none;">Highscore: <span id="yourBest">0</span></p>
         <div class="button" onclick="startGame()">play</div>
@@ -806,7 +806,6 @@ if (score > highScore) {
         li.style.color = "#3d3d3d";
         li.style.textShadow = "0 0 5px #ffffff55";
         li.style.margin = "5px 0";
-        li.style.padding = "5px 10px";
         li.style.background = "rgba(255, 255, 255, 0.2)";
         li.style.borderRadius = "8px";
         li.style.listStyle = "none";
