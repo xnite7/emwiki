@@ -414,7 +414,9 @@
         
         <input draggable="false" id="usernameInput" placeholder="Player name" />
         <p draggable="false" style="color: #00000085;font: 600 20px monospace;margin: 0px; user-select: none;-webkit-user-select: none;">Highscore: <span id="yourBest">0</span></p>
-        <ol style="padding: 0;" id="topList"></ol>
+        <ol style="background: black;
+    border-radius: 16px;
+    padding: 5px;" id="topList"></ol>
         <div class="button" onclick="startGame()">play</div>
         <div style="overflow:hidden;"><img id="playIcon" onclick="startGame()" src="./imgs/paw.png" draggable="false" style="user-select: none;-webkit-user-select: none;" /></div>
         
@@ -424,7 +426,9 @@
         <h2>Game Over</h2>
         
         <p style="color: #00000085;font: 600 20px monospace; margin: 0px;" id="finalText"></p>
-        <ol style="padding: 0;" id="topList2"></ol>
+        <ol style="background: black;
+    border-radius: 16px;
+    padding: 5px;" id="topList2"></ol>
         <div class="button" onclick="startGame()">restart</div>
         <div style="overflow:hidden;"><img class="restart" id="playIcon" onclick="startGame()" src="./imgs/paw.png" draggable="false" style="user-select: none;-webkit-user-select: none;" /></div>
 
@@ -804,9 +808,9 @@ if (score > highScore) {
       const data = await res.json();
       data.slice(0,3).forEach((e,i)=>{
         const li=document.createElement("li"), medals=["🥇","🥈","🥉"];
-        li.style.fontSize = "20px";
+        li.style.fontSize = "18px";
         li.style.fontFamily = "cursive";
-        li.style.color = "#3d3d3d";
+        li.style.color = "#fff";
         li.style.textShadow = "0 0 5px #ffffff55";
         li.style.margin = "5px 0";
         li.style.background = "rgba(255, 255, 255, 0.2)";
