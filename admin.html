@@ -1,220 +1,293 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Emwiki Admin</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Panel</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-    #login, #admin { display: none; padding: 20px; }
-    #login.active, #admin.active { display: block; }
-    .tabs { display: flex; gap: 10px; margin-bottom: 10px; }
-    .tab { padding: 8px 16px; background: #eee; cursor: pointer; border-radius: 4px; }
-    .tab.active { background: #ccc; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    .list-container { display: flex; gap: 20px; }
-    .list-box { flex: 1; border: 1px solid #aaa; min-height: 200px; padding: 8px; }
-    .item { padding: 4px; margin: 2px 0; background: #f9f9f9; cursor: move; }
-    button { margin-top: 10px; padding: 8px 16px; }
-    #history { margin-top: 20px; max-height: 200px; overflow-y: auto; background: #f0f0f0; padding: 10px; }
-    #history li { margin-bottom: 5px; }
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #2e2e2e, #1e1e1e);
+      margin: 0;
+      color: white;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .title {
+
+      text-align: center;
+    }
+    p{
+      text-align: center;
+    }
+
+    #save-btn {
+  background: #3a3a3a;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 0 auto 20px;
+  display: block;
+  transition: background 0.2s;
+}
+
+#save-btn:hover {
+  background: #505050;
+}
+
+
+    .grid {
+      width: 564px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+    }
+    .gridall {
+
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+    }
+
+    .item-card {
+      background: #3a3a3a;
+      border-radius: 16px;
+      padding: 10px;
+      text-align: center;
+      cursor: grab;
+      transition: background 0.2s;
+    }
+
+    .item-card img {
+      max-width: 100%;
+      border-radius: 8px;
+    }
+
+    .item-card span {
+      display: block;
+      margin-top: 5px;
+      font-size: 14px;
+    }
+
+    .panel {
+      margin-bottom: 40px;
+    }
+
+    .search-bar {
+      margin-bottom: 10px;
+    }
+
+    .pagination {
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .pagination button {
+      margin: 0 5px;
+      padding: 5px 10px;
+      background: #444;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .title {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
-  <div id="login" class="active">
-    <h2>Admin Login</h2>
-    <input id="username" type="text" placeholder="Username"><br><br>
-    <input id="password" type="password" placeholder="Password"><br><br>
-    <button onclick="doLogin()">Login</button>
-    <p id="login-error" style="color:red"></p>
+  <h1>Admin Panel</h1>
+    <div class="title">Drag & Drop Items</div>
+    <p>Drag items to the appropriate lists below.</p>
+  <div class="panel" style="display: flex;justify-items: stretch;justify-content: space-evenly;">
+
+  <div class="panel">
+    <div class="title">New Items</div>
+    <div class="grid" id="new-items" ondrop="dropFlag(event, 'new')" ondragover="allowDrop(event)"></div>
   </div>
 
-  <div id="admin">
-    <h2>Emwiki Admin</h2>
-    <div class="tabs">
-      <div class="tab active" data-tab="prices">Edit Prices</div>
-      <div class="tab" data-tab="lists">Toggle Lists</div>
-      <div class="tab" data-tab="history">History</div>
-    </div>
-
-    <div id="prices" class="tab-content active">
-      <h3>Edit Prices</h3>
-      <table id="prices-table">
-        <thead><tr><th>Item ID</th><th>Price</th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <button onclick="savePrices()">Save Prices</button>
-      <p id="prices-status"></p>
-    </div>
-
-    <div id="lists" class="tab-content">
-      <h3>Drag & Drop to Toggle Flags</h3>
-      <div>
-        <h4>New Items</h4>
-        <div class="list-container">
-          <div class="list-box" id="new-true" ondragover="allowDrop(event)" ondrop="dropFlag(event, 'new', true)"><strong>New: true</strong></div>
-          <div class="list-box" id="new-false" ondragover="allowDrop(event)" ondrop="dropFlag(event, 'new', false)"><strong>New: false</strong></div>
-        </div>
-      </div>
-      <div>
-        <h4>Weekly Items</h4>
-        <div class="list-container">
-          <div class="list-box" id="weekly-true" ondragover="allowDrop(event)" ondrop="dropFlag(event, 'weekly', true)"><strong>Weekly: true</strong></div>
-          <div class="list-box" id="weekly-false" ondragover="allowDrop(event)" ondrop="dropFlag(event, 'weekly', false)"><strong>Weekly: false</strong></div>
-        </div>
-      </div>
-      <div>
-        <h4>Starshop Items</h4>
-        <div class="list-container">
-          <div class="list-box" id="weeklystar-true" ondragover="allowDrop(event)" ondrop="dropFlag(event, 'weeklystar', true)"><strong>Star: true</strong></div>
-          <div class="list-box" id="weeklystar-false" ondragover="allowDrop(event)" ondrop="dropFlag(event, 'weeklystar', false)"><strong>Star: false</strong></div>
-        </div>
-      </div>
-      <button onclick="saveLists()">Save Lists</button>
-      <p id="lists-status"></p>
-    </div>
-
-    <div id="history" class="tab-content">
-      <h3>Change History</h3>
-      <ul id="history-list"></ul>
-    </div>
+  <div class="panel">
+    <div class="title">Weekly Items</div>
+    <div class="grid" id="weekly-items" ondrop="dropFlag(event, 'weekly')" ondragover="allowDrop(event)"></div>
   </div>
 
+  <div class="panel">
+    <div class="title">Weekly Starshop Items</div>
+    <div class="grid" id="weeklystar-items" ondrop="dropFlag(event, 'weeklystar')" ondragover="allowDrop(event)"></div>
+  </div>
+  </div>
+
+
+
+  <div class="panel" style="display: grid;justify-items: center;">
+    <div class="search-bar">
+      <input type="text" id="search" placeholder="Search items..." />
+    </div>
+    <div class="gridall" id="all-items" ondrop="dropFlag(event, null)" ondragover="allowDrop(event)"></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+
+
+  <button id="save-btn">💾 Save Changes</button>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
   <script>
-    const GIST_ID = '0d0a3800287f3e7c6e5e944c8337fa91';
-    const RAW_URL = `https://gist.githubusercontent.com/xnite7/${GIST_ID}/raw/auto.json`;
     let jsData = {};
-    let currentUser = '';
-    // Replace this with SHA-256 hash of your shared password
-    const PASSWORD_HASH = '16740bf13991fe083fbe5820cc8da08a5d88e5a48f44a3cfcc283c27b2797ba7';
-
-    // Simple SHA-256 hasher
-    async function sha256(text) {
-      const msgBuffer = new TextEncoder().encode(text);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    function showTab(name) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === name));
-    }
-    document.querySelectorAll('.tab').forEach(tab => tab.onclick = () => showTab(tab.dataset.tab));
-
-    async function doLogin() {
-      const user = document.getElementById('username').value.trim();
-      const pass = document.getElementById('password').value;
-      const hash = await sha256(pass);
-      if (hash === PASSWORD_HASH) {
-        currentUser = user;
-        document.getElementById('login').classList.remove('active');
-        document.getElementById('admin').classList.add('active');
-        loadData();
-        loadHistory();
-      } else {
-        document.getElementById('login-error').textContent = 'Invalid password';
-      }
-    }
+    let filteredItems = [];
+    let currentPage = 0;
+    const ITEMS_PER_PAGE = 16;
 
     async function loadData() {
-      const res = await fetch(RAW_URL);
+      const res = await fetch("https://gist.githubusercontent.com/xnite7/0d0a3800287f3e7c6e5e944c8337fa91/raw/auto.json");
       jsData = await res.json();
-      renderPrices();
+      setupSearch();
       renderLists();
     }
+    document.getElementById("save-btn").addEventListener("click", async () => {
+  try {
+    const response = await fetch("/api/update-gist.js", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(jsData)
+    });
 
-    function renderPrices() {
-      const tbody = document.querySelector('#prices-table tbody');
-      tbody.innerHTML = '';
-      Object.entries(jsData).forEach(([id, item]) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td>${id}</td><td><input type="number" value="${item.price}" id="price-${id}"></td>`;
-        tbody.appendChild(row);
-      });
+    if (response.ok) {
+      alert("✅ Changes saved successfully.");
+    } else {
+      alert("❌ Failed to save changes.");
+    }
+  } catch (err) {
+    alert("⚠️ Error saving changes: " + err.message);
+  }
+});
+
+
+    function getAllItems() {
+      return Object.values(jsData).flat();
     }
 
-    function savePrices() {
-      Object.keys(jsData).forEach(id => {
-        const val = parseFloat(document.getElementById(`price-${id}`).value);
-        jsData[id].price = isNaN(val) ? jsData[id].price : val;
+    function setupSearch() {
+      const allItems = getAllItems();
+      const fuse = new Fuse(allItems, {
+        keys: ["name"],
+        threshold: 0.4,
       });
-      pushGist(`Prices updated by ${currentUser}`)
-        .then(() => document.getElementById('prices-status').textContent = 'Prices saved successfully.')
-        .catch(e => document.getElementById('prices-status').textContent = 'Error saving prices.');
+
+      const input = document.getElementById("search");
+      input.addEventListener("input", () => {
+        const query = input.value.trim();
+        filteredItems = query ? fuse.search(query).map(r => r.item) : allItems;
+        currentPage = 0;
+        renderAllItems();
+      });
+
+      filteredItems = allItems;
+      renderAllItems();
     }
 
     function renderLists() {
-      ['new','weekly','weeklystar'].forEach(flag => {
-        ['true','false'].forEach(val => {
-          const box = document.getElementById(`${flag}-${val}`);
-          box.innerHTML = `<strong>${flag}: ${val}</strong>`;
-        });
-      });
-      Object.entries(jsData).forEach(([id, item]) => {
-        ['new','weekly','weeklystar'].forEach(flag => {
-          const val = item[flag] ? 'true' : 'false';
-          const box = document.getElementById(`${flag}-${val}`);
-          const el = document.createElement('div');
-          el.className = 'item';
-          el.draggable = true;
-          el.id = `item-${flag}-${id}`;
-          el.textContent = id;
-          el.addEventListener('dragstart', ev => ev.dataTransfer.setData('text', `${flag}|${id}`));
-          box.appendChild(el);
-        });
-      });
-    }
+      const newEl = document.getElementById("new-items");
+      const weeklyEl = document.getElementById("weekly-items");
+      const starEl = document.getElementById("weeklystar-items");
 
-    function allowDrop(ev) { ev.preventDefault(); }
-    function dropFlag(ev, flag, boolVal) {
-      ev.preventDefault();
-      const data = ev.dataTransfer.getData('text'); // flag|id
-      const [f,id] = data.split('|');
-      if (f === flag) {
-        jsData[id][flag] = boolVal;
-        renderLists();
+      newEl.innerHTML = "";
+      weeklyEl.innerHTML = "";
+      starEl.innerHTML = "";
+
+      for (const type in jsData) {
+        jsData[type].forEach(item => {
+          if (item.new) newEl.appendChild(makeCard(item, "new"));
+          if (item.weekly) weeklyEl.appendChild(makeCard(item, "weekly"));
+          if (item.weeklystar) starEl.appendChild(makeCard(item, "weeklystar"));
+        });
       }
     }
 
-    function saveLists() {
-      pushGist(`Flags updated by ${currentUser}`)
-        .then(() => document.getElementById('lists-status').textContent = 'Lists saved successfully.')
-        .catch(e => document.getElementById('lists-status').textContent = 'Error saving lists.');
+    function renderAllItems() {
+      const container = document.getElementById("all-items");
+      container.innerHTML = "";
+
+      const start = currentPage * ITEMS_PER_PAGE;
+      const end = start + ITEMS_PER_PAGE;
+      const itemsToShow = filteredItems.slice(start, end);
+
+      itemsToShow.forEach(item => {
+        container.appendChild(makeCard(item, null));
+      });
+
+      renderPagination();
     }
 
-    async function pushGist(note) {
-      const token = prompt('Enter your GitHub token with gist scope:');
-      const payload = { files: { 'auto.json': { content: JSON.stringify(jsData, null, 2) } } };
-      await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-        method: 'PATCH',
-        headers: {
-          'Accept': 'application/vnd.github+json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      });
-      // Optionally log note to console or attach to commit message via API (not directly supported)
+    function renderPagination() {
+      const total = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+      const container = document.getElementById("pagination");
+      container.innerHTML = "";
+
+      for (let i = 0; i < total; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i + 1;
+        if (i === currentPage) btn.style.background = "#666";
+        btn.onclick = () => {
+          currentPage = i;
+          renderAllItems();
+        };
+        container.appendChild(btn);
+      }
     }
 
-    async function loadHistory() {
-      const token = prompt('Enter your GitHub token again to fetch history:');
-      const res = await fetch(`https://api.github.com/gists/${GIST_ID}/commits`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const commits = await res.json();
-      const ul = document.getElementById('history-list');
-      ul.innerHTML = '';
-      commits.forEach(c => {
-        const li = document.createElement('li');
-        li.textContent = `${new Date(c.committed_at).toLocaleString()} — ${c.user.login}`;
-        ul.appendChild(li);
-      });
+    function makeCard(item, flag) {
+      const div = document.createElement("div");
+      div.className = "item-card";
+      div.draggable = true;
+      div.ondragstart = (e) => drag(e, item, flag);
+      div.innerHTML = `<img src="${item.img}" /><span>${item.name}</span>`;
+      return div;
     }
+
+    function drag(ev, item, flag) {
+      ev.dataTransfer.setData("text/plain", flag ? `${item.name}|${flag}` : `${item.name}|`);
+    }
+
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    function dropFlag(ev, targetFlag) {
+      ev.preventDefault();
+      const data = ev.dataTransfer.getData("text/plain");
+      const [itemName, fromFlag] = data.split("|");
+
+      for (const type in jsData) {
+        const item = jsData[type].find(i => i.name === itemName);
+        if (!item) continue;
+
+        if (!targetFlag && fromFlag) {
+          // Dragged into All Items → remove flag
+          item[fromFlag] = false;
+        } else if (targetFlag && !item[targetFlag]) {
+          // Add to new list if not already present
+          item[targetFlag] = true;
+        }
+      }
+
+      renderLists();
+    }
+
+    loadData();
   </script>
 </body>
 </html>
