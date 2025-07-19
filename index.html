@@ -1231,7 +1231,7 @@ async function fetchResults() {
 		donatorsList.innerHTML = '';
 
 
-		fetch('https://www.emwiki.site/api/donators')
+		fetch('https://emwiki.site/api/donators')
 			.then(res => res.json())
 			.then(data => {
 				// data is expected to be an array of {username, amount}

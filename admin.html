@@ -1,102 +1,220 @@
+
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Donation Admin</title>
-    <style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 1rem;
-    background: #222;
-    color: white;
-  }
-  h1 {
-    text-align: center;
-  }
-  #loading {
-    text-align: center;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
-  }
-  th, td {
-    padding: 0.5rem 1rem;
-    border-bottom: 1px solid #444;
-    text-align: left;
-  }
-  th {
-    background: #333;
-  }
-  tr:hover {
-    background: #444;
-  }
-  img.avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    vertical-align: middle;
-    margin-right: 0.5rem;
-  }
-</style>
-  </head>
-  <body>
-    <h1>Developer Product Donations</h1>
-    <div id="loading">Loading...</div>
-    <table id="donations" style="display:none;">
-      <thead>
-        <tr>
-          <th>Avatar</th>
-          <th>Username</th>
-          <th>Total Donated (Robux)</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emwiki Admin</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    #login, #admin { display: none; padding: 20px; }
+    #login.active, #admin.active { display: block; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 10px; }
+    .tab { padding: 8px 16px; background: #eee; cursor: pointer; border-radius: 4px; }
+    .tab.active { background: #ccc; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    .list-container { display: flex; gap: 20px; }
+    .list-box { flex: 1; border: 1px solid #aaa; min-height: 200px; padding: 8px; }
+    .item { padding: 4px; margin: 2px 0; background: #f9f9f9; cursor: move; }
+    button { margin-top: 10px; padding: 8px 16px; }
+    #history { margin-top: 20px; max-height: 200px; overflow-y: auto; background: #f0f0f0; padding: 10px; }
+    #history li { margin-bottom: 5px; }
+  </style>
+</head>
+<body>
+  <div id="login" class="active">
+    <h2>Admin Login</h2>
+    <input id="username" type="text" placeholder="Username"><br><br>
+    <input id="password" type="password" placeholder="Password"><br><br>
+    <button onclick="doLogin()">Login</button>
+    <p id="login-error" style="color:red"></p>
+  </div>
 
-    <script>
-      async function fetchDonations() {
-        try {
-          const res = await fetch('/api/donations');
-          if (!res.ok) throw new Error('Failed to fetch donation data');
-          const data = await res.json();
+  <div id="admin">
+    <h2>Emwiki Admin</h2>
+    <div class="tabs">
+      <div class="tab active" data-tab="prices">Edit Prices</div>
+      <div class="tab" data-tab="lists">Toggle Lists</div>
+      <div class="tab" data-tab="history">History</div>
+    </div>
 
-          const tbody = document.querySelector('#donations tbody');
-          tbody.innerHTML = '';
+    <div id="prices" class="tab-content active">
+      <h3>Edit Prices</h3>
+      <table id="prices-table">
+        <thead><tr><th>Item ID</th><th>Price</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <button onclick="savePrices()">Save Prices</button>
+      <p id="prices-status"></p>
+    </div>
 
-          for (const user of data.slice(0, 5)) {  // limit to top 5 donators
-            const tr = document.createElement('tr');
+    <div id="lists" class="tab-content">
+      <h3>Drag & Drop to Toggle Flags</h3>
+      <div>
+        <h4>New Items</h4>
+        <div class="list-container">
+          <div class="list-box" id="new-true" ondragover="allowDrop(event)" ondrop="dropFlag(event, 'new', true)"><strong>New: true</strong></div>
+          <div class="list-box" id="new-false" ondragover="allowDrop(event)" ondrop="dropFlag(event, 'new', false)"><strong>New: false</strong></div>
+        </div>
+      </div>
+      <div>
+        <h4>Weekly Items</h4>
+        <div class="list-container">
+          <div class="list-box" id="weekly-true" ondragover="allowDrop(event)" ondrop="dropFlag(event, 'weekly', true)"><strong>Weekly: true</strong></div>
+          <div class="list-box" id="weekly-false" ondragover="allowDrop(event)" ondrop="dropFlag(event, 'weekly', false)"><strong>Weekly: false</strong></div>
+        </div>
+      </div>
+      <div>
+        <h4>Starshop Items</h4>
+        <div class="list-container">
+          <div class="list-box" id="weeklystar-true" ondragover="allowDrop(event)" ondrop="dropFlag(event, 'weeklystar', true)"><strong>Star: true</strong></div>
+          <div class="list-box" id="weeklystar-false" ondragover="allowDrop(event)" ondrop="dropFlag(event, 'weeklystar', false)"><strong>Star: false</strong></div>
+        </div>
+      </div>
+      <button onclick="saveLists()">Save Lists</button>
+      <p id="lists-status"></p>
+    </div>
 
-            const avatarCell = document.createElement('td');
-            const img = document.createElement('img');
-            img.src = user.avatar || 'https://emwiki.site/imgs/plr.jpg';
-            img.alt = user.displayName || user.name || 'User avatar';
-            img.className = 'avatar';
-            avatarCell.appendChild(img);
-            tr.appendChild(avatarCell);
+    <div id="history" class="tab-content">
+      <h3>Change History</h3>
+      <ul id="history-list"></ul>
+    </div>
+  </div>
 
-            const usernameCell = document.createElement('td');
-            usernameCell.textContent = user.displayName || user.name || 'Unknown';
-            tr.appendChild(usernameCell);
+  <script>
+    const GIST_ID = '0d0a3800287f3e7c6e5e944c8337fa91';
+    const RAW_URL = `https://gist.githubusercontent.com/xnite7/${GIST_ID}/raw/auto.json`;
+    let jsData = {};
+    let currentUser = '';
+    // Replace this with SHA-256 hash of your shared password
+    const PASSWORD_HASH = 'REPLACE_WITH_SHA256_HASH';
 
-            const totalCell = document.createElement('td');
-            totalCell.textContent = user.totalSpent.toLocaleString();
-            tr.appendChild(totalCell);
+    // Simple SHA-256 hasher
+    async function sha256(text) {
+      const msgBuffer = new TextEncoder().encode(text);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
 
-            tbody.appendChild(tr);
-          }
+    function showTab(name) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === name));
+    }
+    document.querySelectorAll('.tab').forEach(tab => tab.onclick = () => showTab(tab.dataset.tab));
 
-          document.getElementById('loading').style.display = 'none';
-          document.getElementById('donations').style.display = 'table';
-        } catch (err) {
-          document.getElementById('loading').textContent = 'Error loading donations: ' + err.message;
-        }
+    async function doLogin() {
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value;
+      const hash = await sha256(pass);
+      if (hash === PASSWORD_HASH) {
+        currentUser = user;
+        document.getElementById('login').classList.remove('active');
+        document.getElementById('admin').classList.add('active');
+        loadData();
+        loadHistory();
+      } else {
+        document.getElementById('login-error').textContent = 'Invalid password';
       }
+    }
 
-      fetchDonations();
-    </script>
+    async function loadData() {
+      const res = await fetch(RAW_URL);
+      jsData = await res.json();
+      renderPrices();
+      renderLists();
+    }
 
-  </body>
+    function renderPrices() {
+      const tbody = document.querySelector('#prices-table tbody');
+      tbody.innerHTML = '';
+      Object.entries(jsData).forEach(([id, item]) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${id}</td><td><input type="number" value="${item.price}" id="price-${id}"></td>`;
+        tbody.appendChild(row);
+      });
+    }
+
+    function savePrices() {
+      Object.keys(jsData).forEach(id => {
+        const val = parseFloat(document.getElementById(`price-${id}`).value);
+        jsData[id].price = isNaN(val) ? jsData[id].price : val;
+      });
+      pushGist(`Prices updated by ${currentUser}`)
+        .then(() => document.getElementById('prices-status').textContent = 'Prices saved successfully.')
+        .catch(e => document.getElementById('prices-status').textContent = 'Error saving prices.');
+    }
+
+    function renderLists() {
+      ['new','weekly','weeklystar'].forEach(flag => {
+        ['true','false'].forEach(val => {
+          const box = document.getElementById(`${flag}-${val}`);
+          box.innerHTML = `<strong>${flag}: ${val}</strong>`;
+        });
+      });
+      Object.entries(jsData).forEach(([id, item]) => {
+        ['new','weekly','weeklystar'].forEach(flag => {
+          const val = item[flag] ? 'true' : 'false';
+          const box = document.getElementById(`${flag}-${val}`);
+          const el = document.createElement('div');
+          el.className = 'item';
+          el.draggable = true;
+          el.id = `item-${flag}-${id}`;
+          el.textContent = id;
+          el.addEventListener('dragstart', ev => ev.dataTransfer.setData('text', `${flag}|${id}`));
+          box.appendChild(el);
+        });
+      });
+    }
+
+    function allowDrop(ev) { ev.preventDefault(); }
+    function dropFlag(ev, flag, boolVal) {
+      ev.preventDefault();
+      const data = ev.dataTransfer.getData('text'); // flag|id
+      const [f,id] = data.split('|');
+      if (f === flag) {
+        jsData[id][flag] = boolVal;
+        renderLists();
+      }
+    }
+
+    function saveLists() {
+      pushGist(`Flags updated by ${currentUser}`)
+        .then(() => document.getElementById('lists-status').textContent = 'Lists saved successfully.')
+        .catch(e => document.getElementById('lists-status').textContent = 'Error saving lists.');
+    }
+
+    async function pushGist(note) {
+      const token = prompt('Enter your GitHub token with gist scope:');
+      const payload = { files: { 'auto.json': { content: JSON.stringify(jsData, null, 2) } } };
+      await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+        method: 'PATCH',
+        headers: {
+          'Accept': 'application/vnd.github+json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      // Optionally log note to console or attach to commit message via API (not directly supported)
+    }
+
+    async function loadHistory() {
+      const token = prompt('Enter your GitHub token again to fetch history:');
+      const res = await fetch(`https://api.github.com/gists/${GIST_ID}/commits`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const commits = await res.json();
+      const ul = document.getElementById('history-list');
+      ul.innerHTML = '';
+      commits.forEach(c => {
+        const li = document.createElement('li');
+        li.textContent = `${new Date(c.committed_at).toLocaleString()} — ${c.user.login}`;
+        ul.appendChild(li);
+      });
+    }
+  </script>
+</body>
 </html>
