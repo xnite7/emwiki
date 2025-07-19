@@ -1219,37 +1219,60 @@ async function fetchResults() {
 <div id="modal-overlay"
 	style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:999;"></div>
 
-<script>
-		// Dummy data for donators, replace with your fetch from server or API
 
 
 
 
 
-		// Display top donators
+	<script>
+
+
+
+      async function fetchDonations() {
+
 		const donatorsList = document.getElementById('donators-list');
 		donatorsList.innerHTML = '';
+        try {
+          const res = await fetch('/api/donations');
+          if (!res.ok) throw new Error('Failed to fetch donation data');
+          const data = await res.json();
 
+		// Display top donators
 
-		fetch('https://emwiki.site/api/donators')
-			.then(res => res.json())
-			.then(data => {
-				// data is expected to be an array of {username, amount}
-				const topDonators = data.sort((a,b) => b.amount - a.amount).slice(0,5);
-				// Render list as above...
-			})
-			.catch(() => {
-				//delete donatorslist
-				donatorsList.outerHTML = '';
-			});
+		const topDonators = data.sort((a,b) => b.amount - a.amount).slice(0,5);
+          for (const user of topDonators) {  // limit to top 5 donators
+            const tr = document.createElement('tr');
 
+            const avatarCell = document.createElement('td');
+            const img = document.createElement('img');
+            img.src = user.avatar || 'https://emwiki.site/imgs/plr.jpg';
+            img.alt = user.displayName || user.name || 'User avatar';
+            img.className = 'avatar';
+            avatarCell.appendChild(img);
+            tr.appendChild(avatarCell);
 
-		topDonators.forEach(d => {
-		const li = document.createElement('li');
-		li.textContent = `${d.username} — ${d.amount} Robux`;
-		donatorsList.appendChild(li);
-		});
+            const usernameCell = document.createElement('td');
+            usernameCell.textContent = `${user.username} — ${user.amount} Robux`;
+            tr.appendChild(usernameCell);
 
+            const totalCell = document.createElement('td');
+            totalCell.textContent = user.totalSpent.toLocaleString();
+            tr.appendChild(totalCell);
+
+            donatorsList.appendChild(tr);
+          }
+
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('donations').style.display = 'table';
+        } catch (err) {
+			donatorsList.outerHTML = '';
+			console.error('Error fetching donations:', err);
+        }
+      }
+
+      fetchDonations();
+    </script>
+<script>
 		// Modal toggling
 		const donateBtn = document.getElementById('donate-btn');
 		const donateModal = document.getElementById('donate-modal');
