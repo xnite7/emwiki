@@ -256,7 +256,7 @@
       div.ondragstart = (e) => drag(e, item, flag);
 
       const imgSrc = item.img || "./imgs/trs.png"; // Use default or placeholder image
-      div.innerHTML = `<img src="${imgSrc}" alt="${item.name}" /><span>${item.name}</span>`;
+      div.innerHTML = `<img src="${imgSrc}" alt="${item.name}" onerror="this.style.display='none'" /><span>${item.name}</span>`;
 
       return div;
     }
