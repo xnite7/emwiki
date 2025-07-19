@@ -37,6 +37,8 @@ export async function onRequestPost(context, env) {
 
     return new Response("Gist updated", { status: 200 });
   } catch (err) {
-    return new Response("Error: " + err.message, { status: 500 });
-  }
-}
+  return new Response(JSON.stringify({ error: err.message, stack: err.stack }), {
+    status: 500,
+    headers: { "Content-Type": "application/json" }
+  });
+}}
