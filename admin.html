@@ -157,7 +157,7 @@
     }
     document.getElementById("save-btn").addEventListener("click", async () => {
   try {
-    const response = await fetch("/api/update-gist.js", {
+    const response = await fetch("/api/update-gist", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -254,9 +254,13 @@
       div.className = "item-card";
       div.draggable = true;
       div.ondragstart = (e) => drag(e, item, flag);
-      div.innerHTML = `<img src="${item.img}" /><span>${item.name}</span>`;
+
+      const imgSrc = item.img || "./imgs/trs.png"; // Use default or placeholder image
+      div.innerHTML = `<img src="${imgSrc}" alt="${item.name}" /><span>${item.name}</span>`;
+
       return div;
     }
+
 
     function drag(ev, item, flag) {
       ev.dataTransfer.setData("text/plain", flag ? `${item.name}|${flag}` : `${item.name}|`);
