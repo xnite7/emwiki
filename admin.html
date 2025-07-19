@@ -162,7 +162,11 @@
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(jsData)
+      body: JSON.stringify({
+        username: prompt("Enter your name to save changes:"), // Or replace with auth
+        content: jsData
+      })
+
     });
 
     if (response.ok) {
