@@ -15,10 +15,7 @@ export async function onRequestPost(context, env) {
       files: {
         "auto.json": {
           content: JSON.stringify(content, null, 2),
-        },
-        "history.log": {
-          content: `${historyNote}\n${JSON.stringify(content)}\n\n`, // append if needed
-        },
+        }
       },
     };
 
