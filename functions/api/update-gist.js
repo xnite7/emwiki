@@ -9,13 +9,17 @@ export async function onRequestPost(context) {
     const username = body.username || "unknown";
     const content = body.content;
 
-    console.log("Content to update:", JSON.stringify(content, null, 2));
+    // Optional: log entry to append to history
+    const historyNote = `Updated by ${username} at ${new Date().toISOString()}`;
 
     const updatedGist = {
       files: {
         "auto.json": {
           content: JSON.stringify(content, null, 2),
-        }
+        },
+        "history.log": {
+          content: `${historyNote}\n${JSON.stringify(content)}\n\n`, // append if needed
+        },
       }
     };
 
