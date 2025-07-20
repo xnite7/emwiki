@@ -1,5 +1,5 @@
 export async function onRequestGet(context) {
-  const GITHUB_TOKEN = env.ACCESS_TOKEN;
+  const GITHUB_TOKEN = env.GITHUB_TOKEN;
   const GIST_ID = "0d0a3800287f3e7c6e5e944c8337fa91";
 
   try {
