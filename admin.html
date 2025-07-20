@@ -44,13 +44,13 @@
 
 
     .grid {
-      width: 564px;
+      width: 517px;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
       gap: 10px;
     }
     .gridall {
-
+      width: -webkit-fill-available;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
       gap: 10px;
@@ -77,7 +77,8 @@
     }
 
     .panel {
-      margin-bottom: 40px;
+        margin: 20px;
+        flex: 0 1 18%;
     }
 
     .search-bar {
