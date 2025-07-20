@@ -1,5 +1,7 @@
 export async function onRequestPost(context, env) {
   const GITHUB_TOKEN = env.GITHUB_TOKEN;
+  console.log("GITHUB_TOKEN is", GITHUB_TOKEN ? "set" : "NOT SET");
+    console.log("GITHUB_TOKEN is", env.GITHUB_TOKEN ? "set" : "NOT SET");
   const GIST_ID = "0d0a3800287f3e7c6e5e944c8337fa91";
 
   try {
@@ -28,9 +30,11 @@ export async function onRequestPost(context, env) {
       body: JSON.stringify(updatedGist),
     });
 
+    const resText = await response.text();
+
     if (!response.ok) {
-        console.error("Failed to update Gist:", await response.text());
-      return new Response("Failed to update Gist", { status: 500 });
+        console.error("Failed to update Gist:", resText);
+        return new Response(resText, { status: 500 });
     }
 
     return new Response("Gist updated", { status: 200 });

@@ -26,21 +26,21 @@
     }
 
     #save-btn {
-  background: #3a3a3a;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-size: 16px;
-  cursor: pointer;
-  margin: 0 auto 20px;
-  display: block;
-  transition: background 0.2s;
-}
+      background: #3a3a3a;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 0 auto 20px;
+      display: block;
+      transition: background 0.2s;
+    }
 
-#save-btn:hover {
-  background: #505050;
-}
+    #save-btn:hover {
+      background: #505050;
+    }
 
 
     .grid {
@@ -68,6 +68,7 @@
     .item-card img {
       max-width: 100%;
       border-radius: 8px;
+      user-select: none;
     }
 
     .item-card span {
@@ -108,9 +109,9 @@
 </head>
 <body>
   <h1>Admin Panel</h1>
-    <div class="title">Drag & Drop Items</div>
+    <div class="title">List Configurator</div>
     <p>Drag items to the appropriate lists below.</p>
-  <div class="panel" style="display: flex;justify-items: stretch;justify-content: space-evenly;">
+  <div class="panel" style="display: flex;flex-wrap: wrap;justify-items: stretch;justify-content: space-evenly;">
 
   <div class="panel">
     <div class="title">New Items</div>
@@ -261,7 +262,7 @@
       div.ondragstart = (e) => drag(e, item, flag);
 
       const imgSrc = item.img || "./imgs/trs.png"; // Use default or placeholder image
-      div.innerHTML = `<img src="${imgSrc}" alt="${item.name}" onerror="this.style.display='none'" /><span>${item.name}</span>`;
+      div.innerHTML = `<img draggable="false" src="${imgSrc}" alt="${item.name}" onerror="this.style.display='none'" /><span>${item.name}</span>`;
 
       return div;
     }
@@ -269,6 +270,11 @@
 
     function drag(ev, item, flag) {
       ev.dataTransfer.setData("text/plain", flag ? `${item.name}|${flag}` : `${item.name}|`);
+      //mouse cursor changes to closed hand
+      ev.dataTransfer.setDragImage(ev.target, 60, 70);
+
+      
+
     }
 
     function allowDrop(ev) {
@@ -276,6 +282,7 @@
     }
 
     function dropFlag(ev, targetFlag) {
+      
       ev.preventDefault();
       const data = ev.dataTransfer.getData("text/plain");
       const [itemName, fromFlag] = data.split("|");
