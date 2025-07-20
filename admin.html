@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
+  <head>
 
-  <link rel="icon" href="./imgs/admin.png" type="image/png" />
+    <meta charset="UTF-8" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin Panel</title>
-  <style>
+    <link rel="icon" href="./imgs/admin.png" type="image/png" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Panel</title>
+    <style>
     body {
       font-family: "Segoe UI", sans-serif;
       background: linear-gradient(180deg, #2e2e2e, #1e1e1e);
@@ -35,32 +36,36 @@
       padding: 12px 0;
     }
     #save-btn {
-      position: fixed;
-      background: #ffd80c;
-      color: #000;
-      outline: 2px solid #fff;
-      font-weight: 800;
-      font-family: monospace;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 10px;
-      top: 20px;
-      font-size: 20px;
-      right: 20px;
-      cursor: pointer;
-      transition: background 0.2s;
+
+    background: #6cd13a;
+    position: fixed;
+    padding: 10px 11px;
+    border-radius: 24px;
+    bottom: 56px;
+    width: 55px;
+    height: 55px;
+    font-size: 24px;
+    left: 20px;
+    transition: all 0.2s;
+    cursor: pointer;
+
     }
     #save-btn:hover {
-      background: rgb(221, 169, 0);
+      background: #5cbf2a;
+      transform: scale(1.1);
     }
+
+
+
+
     .grid {
-      border-radius: 0 0 20px 20px;
-      background: #1a1a1a;
-      padding: 20px;
-      width: 517px;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 10px;
+        border-radius: 0 0 20px 20px;
+        background: #1a1a1a;
+        padding: 20px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 22px;
+        justify-items: center;
     }
     .gridall {
       border-radius: 20px;
@@ -69,29 +74,44 @@
       width: -webkit-fill-available;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 10px;
+     gap: 16px;
     }
     .item-card {
-      background: #3a3a3a;
-      border-radius: 16px;
-      padding: 10px;
-      text-align: center;
-      cursor: grab;
-      transition: background 0.2s;
+        background: #3a3a3a;
+        border-radius: 16px;
+        padding: 10px;
+        text-align: center;
+        scale: 1;
+        width: 111px;
+        height: 111px;
+        cursor: grab;
+        transition: background 0.2s;
     }
     .item-card img {
-      max-width: 100%;
-      border-radius: 8px;
-      user-select: none;
+        max-width: 100px;
+        margin-top: 11px;
+        user-select: none;
     }
     .item-card span {
-      display: block;
-      margin-top: 5px;
-      font-size: 14px;
+        position: absolute;
+        font-size: 14px;
+        margin-top: -2px;
+         text-shadow: -1.3px -1.3px 0 #000, 0 -1.3px 0 #000, 1.3px -1.3px 0 #000, 1.3px 0 0 #000, 1.3px 1.3px 0 #000, 0 1.3px 0 #000, -1.3px 1.3px 0 #000, -1.3px 0 0 #000;
+        justify-self: anchor-center;
+    }
+    .papapanel {
+        display: flex;
+        margin: 20px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: center;
     }
     .panel {
-      margin: 20px;
-      flex: 0 1 18%;
+        display: flex;
+        flex-direction: column;
+        margin: 20px;
+        flex: 1 1 18%;
     }
     .search-bar {
       width: -webkit-fill-available;
@@ -122,6 +142,7 @@
       font-weight: 600;
       opacity: 0.7;
       font-size: 14px;
+      align-self: center;
     }
     #tab-switcher {
       text-align: center;
@@ -190,65 +211,157 @@
       }
     }
 
+    @media (max-width:600px) {
+    .panel {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: space-evenly;
+        zoom: 0.56;
+        flex-direction: column;
+    }
+    .papapanel {
+        display: flex;
+        margin: 20px;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: stretch;
+    }
+    .brod{
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+        zoom: 0.8;
+        justify-content: space-evenly;
+        flex-direction: row;
+    }
+    }
+
+    .brod{
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        flex-direction: row;
+    }
+
+    #search,#price-search {
+      background: black;
+      padding: 8px;
+      width: 98%;
+      border: 2px solid #5b5b5b;
+      font-size: 20px;
+      font-family: monospace;
+      border-radius: 14px;
+      color: #d7d7d7;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-content {
+      background: #222;
+      color: white;
+      padding: 20px;
+      border-radius: 14px;
+      max-width: 300px;
+      width: 90%;
+      font-size: 16px;
+      transform: scale(0.95);
+      transition: transform 0.2s ease;
+    }
+
+    .modal.show .modal-content {
+      transform: scale(1);
+    }
+
+
   </style>
-</head>
-<body>
-  <h1>Admin Panel</h1>
-  <div id="tab-switcher">
-    <button onclick="switchTab('main')">🧩 Item Lists</button>
-    <button onclick="switchTab('prices')">💰 Prices</button>
-  </div>
+  </head>
+  <body>
+    <h1>Admin Panel</h1>
+    <div id="tab-switcher">
+      <button onclick="switchTab('main')">🧩 Item Lists</button>
+      <button onclick="switchTab('prices')">💰 Prices</button>
+    </div>
 
-  <div id="main-tab">
-    <div class="title1">List Configurator<p>Drag items to the appropriate lists below.</p></div>
-    <div class="panel" style="display: flex; flex-wrap: wrap; justify-content: space-evenly;">
-      <div class="panel">
-        <div class="title">New Items</div>
-        <div class="grid" id="new-items" ondrop="dropFlag(event, 'new')" ondragover="allowDrop(event)"></div>
+    <div id="main-tab">
+      <div class="title1">List Configurator<p>Drag items to the appropriate
+          lists below.</p></div>
+      <div class="papapanel">
+        <div class="panel">
+          <div class="title">New Items</div>
+          <div class="grid" id="new-items" ondrop="dropFlag(event, 'new')"
+            ondragover="allowDrop(event)"></div>
+        </div>
+        <div class="panel">
+          <div class="title">Weekly Shop</div>
+          <div class="grid" id="weekly-items" ondrop="dropFlag(event, 'weekly')"
+            ondragover="allowDrop(event)"></div>
+        </div>
+        <div class="panel">
+          <div class="title">Weekly Star Shop</div>
+          <div class="grid" id="weeklystar-items"
+            ondrop="dropFlag(event, 'weeklystar')"
+            ondragover="allowDrop(event)"></div>
+        </div>
       </div>
       <div class="panel">
-        <div class="title">Weekly Shop</div>
-        <div class="grid" id="weekly-items" ondrop="dropFlag(event, 'weekly')" ondragover="allowDrop(event)"></div>
-      </div>
-      <div class="panel">
-        <div class="title">Weekly Star Shop</div>
-        <div class="grid" id="weeklystar-items" ondrop="dropFlag(event, 'weeklystar')" ondragover="allowDrop(event)"></div>
+        <div class="search-bar">
+          <input type="text"
+            style="background:black; padding:8px; width:98%; border:2px solid #5b5b5b; font-size:20px; font-family:monospace; border-radius:14px; color:#d7d7d7;"
+            id="search" placeholder="Search items..." />
+        </div>
+        <div class="gridall" id="all-items" ondrop="dropFlag(event, null)"
+          ondragover="allowDrop(event)"></div>
+        <div id="page-count">Page 1 of 1</div>
+        <div id="pagination-container">
+          <button id="prev-btn">&lt; Prev</button>
+          <select id="page-select"></select>
+          <button id="next-btn">Next &gt;</button>
+        </div>
       </div>
     </div>
-    <div class="panel" style="display: grid; justify-items: center;">
-      <div class="search-bar">
-        <input type="text" style="background:black; padding:8px; width:98%; border:2px solid #5b5b5b; font-size:20px; font-family:monospace; border-radius:14px; color:#d7d7d7;" id="search" placeholder="Search items..." />
+
+    <div id="prices-tab" style="display: none; padding: 10px;">
+      <div class="title1">Prices Configurator<p>Change RAP values here.</p></div>
+      <div class="search-sort-controls">
+        <input type="text" id="price-search" placeholder="Search item name...">
+        <select style="margin-left: 55px;" id="sort-select" onchange="renderPriceGroups()">
+          <option value="default">Sort by Group</option>
+          <option value="az">A → Z</option>
+          <option value="za">Z → A</option>
+          <option value="high">Price High → Low</option>
+          <option value="low">Price Low → High</option>
+        </select>
       </div>
-      <div class="gridall" id="all-items" ondrop="dropFlag(event, null)" ondragover="allowDrop(event)"></div>
-      <div id="page-count">Page 1 of 1</div>
-      <div id="pagination-container">
-        <button id="prev-btn">&lt; Prev</button>
-        <select id="page-select"></select>
-        <button id="next-btn">Next &gt;</button>
-      </div>
+      <div id="price-groups"
+        style="display:flex; flex-direction:column; gap: 30px;"></div>
+
     </div>
-  </div>
 
-<div id="prices-tab" style="display: none; padding: 10px;">
-    <h2 style="text-align:center;">💰 Item Prices</h2>
-    <div class="search-sort-controls">
-      <input type="text" id="price-search" placeholder="Search item name...">
-      <select id="sort-select" onchange="renderPriceGroups()">
-        <option value="default">Sort by Group</option>
-        <option value="az">A → Z</option>
-        <option value="za">Z → A</option>
-        <option value="high">Price High → Low</option>
-        <option value="low">Price Low → High</option>
-      </select>
-    </div>
-    <div id="price-groups" style="display:flex; flex-direction:column; gap: 30px;"></div>
+    <button id="save-btn">✔</button>
 
-  </div>
-
-  <button id="save-btn">💾 Save Changes</button>
-
-  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
-  <script>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+    <script>
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 
 const STORED_HASH = "16740bf13991fe083fbe5820cc8da08a5d88e5a48f44a3cfcc283c27b2797ba7"; // Replace with your actual SHA-256 hash of the password
@@ -297,7 +410,15 @@ promptPassword().then(() => {
   let jsData = {};
   let filteredItems = [];
   let currentPage = 1;
-  const ITEMS_PER_PAGE = 16;
+
+  let ITEMS_PER_PAGE = 16;
+
+
+  if (!isMobile) {
+    ITEMS_PER_PAGE = 16;
+  } else {
+    ITEMS_PER_PAGE = 9;
+  }
 
   function switchTab(tab) {
     document.getElementById("main-tab").style.display = tab === "main" ? "block" : "none";
@@ -431,22 +552,25 @@ promptPassword().then(() => {
     renderAllItems();
   };
 
-  function makeCard(item, flag) {
-    const div = document.createElement("div");
-    div.dataset.id = item.id;
-    div.className = "item-card";
-    div.draggable = true;
-    div.ondragstart = e => drag(e, item, flag);
-    const imgSrc = item.img || "./imgs/trs.png";
-    div.innerHTML = `
-      <img draggable="false" src="${imgSrc}" alt="${item.name}" onerror="this.style.display='none'" />
-      <span>${item.name}</span>
-      <span class="item-price" style="color:#ffd80c;font-size:12px;">
-        ${item.price ? item.price + ' 🪙' : ''}
-      </span>
-    `;
-    return div;
-  }
+    function makeCard(item, flag) {
+      const div = document.createElement("div");
+      div.dataset.id = item.id;
+      div.className = "item-card";
+      div.draggable = !isMobile;
+      if (!isMobile) {
+        div.ondragstart = e => drag(e, item, flag);
+      } else {
+        div.onclick = () => openChecklistModal(item);
+      }
+
+      const imgSrc = item.img || "./imgs/trs.png";
+      div.innerHTML = `
+        <img draggable="false" src="${imgSrc}" alt="${item.name}" onerror="this.style.display='none'" />
+        <span>${item.name}</span>
+      `;
+      return div;
+    }
+
 
   function drag(ev, item, flag) {
     ev.dataTransfer.setData("text/plain", flag ? `${item.name}|${flag}` : `${item.name}|`);
@@ -518,7 +642,7 @@ promptPassword().then(() => {
       section.innerHTML = `
         <div style="font-weight:bold; font-size:20px; color:#ffd80c;">${label}</div>
         <div style="width: 100%;height: 4px;background: #ffd80c;"></div>
-        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;"></div>
+        <div class="brod"></div>
       `;
       const itemGrid = section.querySelector("div:last-child");
 
@@ -570,7 +694,7 @@ promptPassword().then(() => {
     if (!editor) {
       editor = document.createElement("div");
       editor.id = "top-price-editor";
-      editor.style = "display:flex; flex-direction:column; align-items:center; margin:20px auto; padding:15px; background:#2a2a2a; border:2px solid #555; border-radius:16px; max-width:320px;";
+      editor.style = "display: flex;flex-direction: column;align-items: center;margin: 20px auto;padding: 15px;background: rgb(42, 42, 42);border: 7px dashed rgb(85, 85, 85);box-sizing: border-box;border-radius: 16px;max-width: 161px;";
       document.querySelector(".search-sort-controls").after(editor);
     }
 
@@ -592,7 +716,7 @@ promptPassword().then(() => {
     input.min = 0;
     input.value = item.price ?? "";
     input.placeholder = "Set price";
-    input.style = "padding: 6px 10px; font-size:16px; border-radius: 8px; border:none; width:150px;";
+    input.style = "padding: 6px 10px;font-size: 16px;border-radius: 8px;border: none;width: 81px;background: #ffffff;";
     input.addEventListener("input", () => {
       let val = input.value.trim();
 
@@ -609,6 +733,41 @@ promptPassword().then(() => {
     editor.appendChild(img);
     editor.appendChild(name);
     editor.appendChild(input);
+  }
+
+
+  let currentModalItem = null;
+
+  function openChecklistModal(item) {
+    currentModalItem = item;
+    document.getElementById("checklist-title").textContent = item.name;
+
+    document.getElementById("check-new").checked = !!item.new;
+    document.getElementById("check-weekly").checked = !!item.weekly;
+    document.getElementById("check-star").checked = !!item.weeklystar;
+
+
+    const modal = document.getElementById("checklist-modal");
+    modal.classList.add("show");
+
+  }
+
+  function closeChecklistModal() {
+    currentModalItem = null;
+    const modal = document.getElementById("checklist-modal");
+    modal.classList.remove("show");
+
+  }
+
+  function saveChecklist() {
+    if (!currentModalItem) return;
+
+    currentModalItem.new = document.getElementById("check-new").checked;
+    currentModalItem.weekly = document.getElementById("check-weekly").checked;
+    currentModalItem.weeklystar = document.getElementById("check-star").checked;
+
+    closeChecklistModal();
+    renderLists();
   }
 
   // Debounce helper function
@@ -630,5 +789,21 @@ promptPassword().then(() => {
   window.addEventListener("load", renderPriceGroups);
 </script>
 
-</body>
+    <div id="checklist-modal" class="modal">
+      <div class="modal-content">
+        <h3 id="checklist-title"></h3>
+        <label><input type="checkbox" id="check-new"> New</label><br>
+        <label><input type="checkbox" id="check-weekly"> Weekly</label><br>
+        <label><input type="checkbox" id="check-star"> Weekly
+          Star</label><br><br>
+        <div style="display:flex; justify-content:space-between;">
+          <button onclick="saveChecklist()"
+            style="padding:6px 12px; border:none; border-radius:8px; background:#5cbf2a; color:white;">Save</button>
+          <button onclick="closeChecklistModal()"
+            style="padding:6px 12px; border:none; border-radius:8px; background:#666;">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+  </body>
 </html>
