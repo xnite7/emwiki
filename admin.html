@@ -159,6 +159,8 @@
     }
     document.getElementById("save-btn").addEventListener("click", async () => {
   try {
+    console.log("Content to update:", JSON.stringify(jsData, null, 2));
+
     const response = await fetch("https://emwiki.site/api/update-gist", {
       method: "POST",
       headers: {

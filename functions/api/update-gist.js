@@ -1,24 +1,22 @@
 export async function onRequestPost(context, env) {
   const GITHUB_TOKEN = env.GITHUB_TOKEN;
-  console.log("GITHUB_TOKEN is", GITHUB_TOKEN ? "set" : "NOT SET");
-    console.log("GITHUB_TOKEN is", env.GITHUB_TOKEN ? "set" : "NOT SET");
   const GIST_ID = "0d0a3800287f3e7c6e5e944c8337fa91";
 
+  console.log("GITHUB_TOKEN is", GITHUB_TOKEN ? "set" : "NOT SET");
+    console.log("GITHUB_TOKEN is", env.GITHUB_TOKEN ? "set" : "NOT SET");
   try {
     const body = await context.request.json();
     const username = body.username || "unknown";
     const content = body.content;
 
-    // Optional: log entry to append to history
-    const historyNote = `Updated by ${username} at ${new Date().toISOString()}`;
+    console.log("Content to update:", JSON.stringify(content, null, 2));
 
-    // Prepare content for Gist
     const updatedGist = {
       files: {
         "auto.json": {
           content: JSON.stringify(content, null, 2),
         }
-      },
+      }
     };
 
     const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
@@ -26,23 +24,26 @@ export async function onRequestPost(context, env) {
       headers: {
         Authorization: `Bearer ${GITHUB_TOKEN}`,
         Accept: "application/vnd.github+json",
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(updatedGist),
     });
 
-    const resText = await response.text();
-
     if (!response.ok) {
-        console.error("Failed to update Gist:", resText);
-        return new Response(resText, { status: 500 });
+      const errorText = await response.text();
+      console.error("Failed to update Gist:", errorText);
+      return new Response(errorText, {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
     return new Response("Gist updated", { status: 200 });
   } catch (err) {
     console.error(err);
-    // Return error details for debugging
-  return new Response(JSON.stringify({ error: err.message, stack: err.stack }), {
-    status: 500,
-    headers: { "Content-Type": "application/json" }
-  });
-}}
+    return new Response(JSON.stringify({ error: err.message, stack: err.stack }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+}
