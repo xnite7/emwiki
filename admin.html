@@ -9,6 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Admin Panel</title>
     <style>
+      @import url("https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Source Sans Pro&family=Playpen+Sans:wght@100..800&family=Oxanium&family=Patrick+Hand&family=Denk+One&family=Marhey:wght@700&family=Rubik+Wet+Paint&family=Irish+Grover&family=Poppins:wght@700&family=Rye&family=Eater&family=Bangers&family=Inconsolata:wght@900&family=Roboto+Mono:wght@700&family=Sedgwick+Ave+Display&family=Rubik+Marker+Hatch&family=Sarpanch:wght@700&family=Kalam&family=Are+You+Serious&family=Akronim&family=Kings&family=Permanent+Marker&family=Caesar+Dressing&family=Michroma&family=Titillium+Web&family=Grenze+Gotisch:wght@100..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Bungee+Shade&family=Frijole&family=Audiowide&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Lobster&family=Fredoka:wght@300..700&family=Codystar:wght@300;400&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Michroma&family=Jura&family=Special+Elite&family=Noto+Serif+HK:wght@200..900&family=Faster+One&family=Nosifer&family=Silkscreen&family=Finger+Paint&family=Merriweather&family=Luckiest+Guy&family=Bungee+Inline&family=Creepster&family=Indie+Flower&family=Pacifico&family=Cairo&family=Fondamento&family=Balthazar&family=Arimo:ital,wght@0,400..700;1,400..700&display=swap");
     body {
       font-family: "Segoe UI", sans-serif;
       background: linear-gradient(180deg, #2e2e2e, #1e1e1e);
@@ -88,7 +89,7 @@
         transition: background 0.2s;
     }
     .item-card img {
-        max-width: 100px;
+        max-height: 100px;
         margin-top: 11px;
         user-select: none;
     }
@@ -183,11 +184,11 @@
       background-color: #666;
     }
     .search-sort-controls {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 10px auto;
-      max-width: 600px;
+        display: flex;
+        margin: 18px auto;
+        max-width: 600px;
+        align-items: center;
+        flex-direction: column;
     }
     .search-sort-controls input, .search-sort-controls select {
       padding: 6px 10px;
@@ -198,6 +199,26 @@
     .item-card.flash {
       outline: 2px solid #ffd80c;
       animation: flashOutline 0.4s ease;
+    }
+
+    #pets {
+        background-color: #377bfa
+    }
+
+    #effects {
+        background-color: #ffb135
+    }
+
+    #gears {
+        background-color: #5bfe6a
+    }
+
+    #deaths {
+        background-color: #ff7a5e
+    }
+
+    #titles {
+        background-color: #c960fe
     }
 
     @keyframes flashOutline {
@@ -235,7 +256,12 @@
         justify-content: space-evenly;
         flex-direction: row;
     }
+
+    #sort-select {
+      margin-left: 0px;
     }
+    }
+
 
     .brod{
         display: flex;
@@ -246,15 +272,16 @@
         flex-direction: row;
     }
 
-    #search,#price-search {
-      background: black;
-      padding: 8px;
-      width: 98%;
-      border: 2px solid #5b5b5b;
-      font-size: 20px;
-      font-family: monospace;
-      border-radius: 14px;
-      color: #d7d7d7;
+    #search, #price-search {
+        background: black;
+        padding: 8px;
+        width: 98%;
+        border: 2px solid #5b5b5b;
+        font-size: 20px;
+        margin-bottom: 16px;
+        font-family: monospace;
+        border-radius: 14px;
+        color: #d7d7d7;
     }
 
     .modal {
@@ -344,12 +371,13 @@
       <div class="title1">Prices Configurator<p>Change RAP values here.</p></div>
       <div class="search-sort-controls">
         <input type="text" id="price-search" placeholder="Search item name...">
-        <select style="margin-left: 55px;" id="sort-select" onchange="renderPriceGroups()">
-          <option value="default">Sort by Group</option>
+        <select id="sort-select" onchange="renderPriceGroups()">
+          <option value="group">Sort by Price Group</option>
+          <option value="category">Sort by Category</option>
           <option value="az">A → Z</option>
           <option value="za">Z → A</option>
-          <option value="high">Price High → Low</option>
-          <option value="low">Price Low → High</option>
+          <option value="high">$$$ → $</option>
+          <option value="low">$ → $$$</option>
         </select>
       </div>
       <div id="price-groups"
@@ -476,9 +504,9 @@ promptPassword().then(() => {
     newEl.innerHTML = weeklyEl.innerHTML = starEl.innerHTML = "";
     for (const type in jsData) {
       jsData[type].forEach(item => {
-        if (item.new) newEl.appendChild(makeCard(item, "new"));
-        if (item.weekly) weeklyEl.appendChild(makeCard(item, "weekly"));
-        if (item.weeklystar) starEl.appendChild(makeCard(item, "weeklystar"));
+        if (item.new) newEl.appendChild(makeCard(item, type, "new"));
+        if (item.weekly) weeklyEl.appendChild(makeCard(item, type, "weekly"));
+        if (item.weeklystar) starEl.appendChild(makeCard(item, type, "weeklystar"));
       });
     }
   }
@@ -488,9 +516,20 @@ promptPassword().then(() => {
     container.innerHTML = "";
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
     const end = start + ITEMS_PER_PAGE;
-    filteredItems.slice(start, end).forEach(item => container.appendChild(makeCard(item)));
+    filteredItems.slice(start, end).forEach(item => {
+      const type = findItemType(item);
+      container.appendChild(makeCard(item, type));
+    });
     renderPagination();
   }
+
+function findItemType(itemToFind) {
+  for (const type in jsData) {
+    if (jsData[type].includes(itemToFind)) return type;
+  }
+  return "Other";
+}
+
 
   const prevBtn = document.getElementById("prev-btn");
   const nextBtn = document.getElementById("next-btn");
@@ -552,9 +591,10 @@ promptPassword().then(() => {
     renderAllItems();
   };
 
-    function makeCard(item, flag) {
+    function makeCard(item, type, flag) {
       const div = document.createElement("div");
       div.dataset.id = item.id;
+      div.id = type; // 👈 Store parent type
       div.className = "item-card";
       div.draggable = !isMobile;
       if (!isMobile) {
@@ -568,6 +608,54 @@ promptPassword().then(() => {
         <img draggable="false" src="${imgSrc}" alt="${item.name}" onerror="this.style.display='none'" />
         <span>${item.name}</span>
       `;
+      const name = div.querySelector("span");
+
+    if (!item.img) {
+      name.style.font = "600 28px 'Arimo'";
+      name.style.color = "rgb(255 255 255)";
+      name.style.whiteSpace = "nowrap";
+      name.style.bottom = "auto";
+      name.style.paddingTop = "0px";
+      name.style.margin = "40px 0";
+
+    }
+    
+    if (item.style) {
+      name.setAttribute("style", item.style);
+      name.style.whiteSpace = "nowrap";
+      name.style.bottom = "auto";
+      name.style.margin = "40px 0";
+    }
+    if (item.style2) {
+      name.setAttribute("style", item.style2);
+      name.style.whiteSpace = "nowrap";
+      let clone = name.cloneNode(true);
+      name.style.bottom = "auto";
+      name.style.margin = "40px 0";
+      clone.style.position = "absolute";
+      clone.style.textShadow = "none";
+      clone.style.fontSize = "1em";
+      clone.style.whiteSpace = "nowrap";
+      
+      name.appendChild(clone);
+    }
+    if (item.color) {
+      name.style.color = item.color;
+    }
+    if (item.stroke) {
+      let stroke = item.stroke.split(" ");
+      name.style.textShadow = `-${stroke[0]} -${stroke[0]} 0 ${stroke[1]}, 0 -${stroke[0]} 0 ${stroke[1]}, ${stroke[0]} -${stroke[0]} 0 ${stroke[1]}, ${stroke[0]} 0 0 ${stroke[1]}, ${stroke[0]} ${stroke[0]} 0 ${stroke[1]}, 0 ${stroke[0]} 0 ${stroke[1]}, -${stroke[0]} ${stroke[0]} 0 ${stroke[1]}, -${stroke[0]} 0 0 ${stroke[1]}`;
+    }
+    if (item.font) {
+      name.style.font = item.font;
+      if (name.children.length > 0) {
+        name.childNodes[1].style.font = item.font;
+        name.childNodes[1].style.fontSize = "1em";
+      }
+    }
+    if (item.rotate) {
+      name.style.transform = "rotate(" + item.rotate + "deg)";
+    }
       return div;
     }
 
@@ -592,102 +680,132 @@ promptPassword().then(() => {
     renderLists();
   }
 
-  function renderPriceGroups() {
-    const container = document.getElementById("price-groups");
-    const search = document.getElementById("price-search").value.toLowerCase();
-    const sort = document.getElementById("sort-select").value;
-    container.innerHTML = "";
+function renderPriceGroups() {
+  const container = document.getElementById("price-groups");
+  const search = document.getElementById("price-search").value.toLowerCase();
+  const sort = document.getElementById("sort-select").value;
+  container.innerHTML = "";
 
-    let items = allPriceItems;
+  let items = allPriceItems;
 
-    let topMatch = null;
-    if (search) {
-      const fuseResults = fusePrice.search(search, { limit: 50 });
-      items = fuseResults.map(r => r.item);
-      topMatch = items.length > 0 ? items[0] : null;
-      renderTopMatchEditor(topMatch);
-      if (topMatch) {
-        items = items.filter(i => i !== topMatch);
-      }
-    } else {
-      renderTopMatchEditor(null);
+  let topMatch = null;
+  if (search) {
+    const fuseResults = fusePrice.search(search, { limit: 50 });
+    items = fuseResults.map(r => r.item);
+    topMatch = items.length > 0 ? items[0] : null;
+    renderTopMatchEditor(topMatch);
+    if (topMatch) {
+      items = items.filter(i => i !== topMatch);
     }
+  } else {
+    renderTopMatchEditor(null);
+  }
 
-    if (!search) {
-      if (sort === "az") items.sort((a, b) => a.name.localeCompare(b.name));
-      else if (sort === "za") items.sort((a, b) => b.name.localeCompare(a.name));
-      else if (sort === "high") items.sort((a, b) => (b.price || 0) - (a.price || 0));
-      else if (sort === "low") items.sort((a, b) => (a.price || 0) - (b.price || 0));
-    }
+  // Sort by name or price only if no search and sorting is not group/category
+  if (!search) {
+    if (sort === "az") items.sort((a, b) => a.name.localeCompare(b.name));
+    else if (sort === "za") items.sort((a, b) => b.name.localeCompare(a.name));
+    else if (sort === "high") items.sort((a, b) => (b.price || 0) - (a.price || 0));
+    else if (sort === "low") items.sort((a, b) => (a.price || 0) - (b.price || 0));
+  }
 
-    const groups = sort === "default" ? {
+  // Group items by default, price groups, or categories
+  let groups = { All: items };
+
+  if (sort === "group") {
+    groups = {
       "1000+": [],
       "500–999": [],
       "1–499": [],
       "0 (unpriced)": []
-    } : { All: items };
-
-    if (sort === "default") {
-      for (const item of items) {
-        const price = parseInt(item.price || 0);
-        if (isNaN(price) || price === 0) groups["0 (unpriced)"].push(item);
-        else if (price >= 1000) groups["1000+"].push(item);
-        else if (price >= 500) groups["500–999"].push(item);
-        else groups["1–499"].push(item);
-      }
+    };
+    for (const item of items) {
+      const price = parseInt(item.price || 0);
+      if (isNaN(price) || price === 0) groups["0 (unpriced)"].push(item);
+      else if (price >= 1000) groups["1000+"].push(item);
+      else if (price >= 500) groups["500–999"].push(item);
+      else groups["1–499"].push(item);
     }
-
-    for (const label in groups) {
-      const section = document.createElement("div");
-      section.innerHTML = `
-        <div style="font-weight:bold; font-size:20px; color:#ffd80c;">${label}</div>
-        <div style="width: 100%;height: 4px;background: #ffd80c;"></div>
-        <div class="brod"></div>
-      `;
-      const itemGrid = section.querySelector("div:last-child");
-
-      for (const item of groups[label]) {
-        const card = document.createElement("div");
-        card.style.cssText = "background: #3a3a3a; padding: 10px; border-radius: 12px; width: 110px; text-align: center; font-size: 13px; display: flex; flex-direction: column; align-items: center;";
-        card.dataset.id = item.id;
-
-        const img = document.createElement("img");
-        img.src = item.img || "./imgs/trs.png";
-        img.alt = item.name;
-        img.style = "max-width: 80px; max-height: 80px; border-radius: 6px; margin-bottom: 4px;";
-        img.onerror = () => (img.style.display = "none");
-        img.draggable = false;
-
-        const name = document.createElement("div");
-        name.textContent = item.name;
-        name.style = "margin-bottom: 6px;";
-
-
-        const input = document.createElement("input");
-        input.type = "number";
-        input.min = 0;
-        input.value = item.price ?? "";
-        input.placeholder = "Set price";
-        input.style = "width: 80px; padding: 3px 6px; border-radius: 6px; border: none; font-size: 13px;";
-        input.onchange = () => {
-          const val = Math.max(0, parseInt(input.value || 0));
-          item.price = val;
-          input.value = val;
-          renderPriceGroups();
-        };
-
-        card.appendChild(img);
-        card.appendChild(name);
-
-        card.appendChild(input);
-        itemGrid.appendChild(card);
-      }
-
-      container.appendChild(section);
-      if (sort === "default") continue; // render only groups in default sort
-      else break; // render only "All" group if sorting other than default
+  } else if (sort === "category") {
+    groups = {};
+    for (const item of items) {
+      const type = findItemType(item); // your function that returns item type string
+      if (!groups[type]) groups[type] = [];
+      groups[type].push(item);
     }
   }
+
+  // Now render each group section and its items
+  for (const label in groups) {
+    const section = document.createElement("div");
+    section.innerHTML = `
+      <div style="font-weight:bold; font-size:20px; color:#ffd80c;">${label}</div>
+      <div style="width: 100%; height: 4px; background: #ffd80c;"></div>
+      <div class="brod"></div>
+    `;
+    const itemGrid = section.querySelector("div:last-child");
+
+    for (const item of groups[label]) {
+      const card = document.createElement("div");
+
+      card.dataset.id = item.id;
+      card.className = "item-card";
+      card.draggable = false;
+      card.onclick = () => {
+        renderTopMatchEditor(item);
+        const allCards = document.querySelectorAll(".item-card");
+        allCards.forEach(c => c.classList.remove("flash"));
+        card.classList.add("flash");
+      };
+      card.style.cursor = "pointer";
+      const img = document.createElement("img");
+      img.src = item.img || "./imgs/trs.png";
+      img.alt = item.name;
+
+      img.onerror = () => (img.style.display = "none");
+      img.draggable = false;
+
+      const name = document.createElement("span");
+      name.textContent = item.name;
+
+      const input = document.createElement("input");
+      input.type = "number";
+      input.min = 0;
+      input.value = item.price ?? "";
+      input.placeholder = "Set price";
+      input.style = `
+        width: 80px;
+        padding: 3px 6px;
+        border-radius: 6px;
+        border: none;
+        font-size: 13px;
+        top: -28px;
+        position: relative;
+      `;
+      input.onchange = () => {
+        const val = Math.max(0, parseInt(input.value || 0));
+        item.price = val;
+        input.value = val;
+        renderPriceGroups();
+      };
+
+      card.appendChild(name);
+      card.appendChild(img);
+      
+      card.appendChild(input);
+      itemGrid.appendChild(card);
+    }
+
+    container.appendChild(section);
+
+    // If sorting by something other than group or category, only show "All" once
+    if (sort !== "group" && sort !== "category") {
+      break; // stop after rendering "All"
+    }
+  }
+}
+
+
 
   function renderTopMatchEditor(item) {
     let editor = document.getElementById("top-price-editor");
