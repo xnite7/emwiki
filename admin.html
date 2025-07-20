@@ -157,7 +157,7 @@
     }
     document.getElementById("save-btn").addEventListener("click", async () => {
   try {
-    const response = await fetch("/api/update-gist", {
+    const response = await fetch("https://emwiki.site/api/update-gist", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

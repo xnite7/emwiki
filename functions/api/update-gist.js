@@ -32,11 +32,14 @@ export async function onRequestPost(context, env) {
     });
 
     if (!response.ok) {
+        console.error("Failed to update Gist:", await response.text());
       return new Response("Failed to update Gist", { status: 500 });
     }
 
     return new Response("Gist updated", { status: 200 });
   } catch (err) {
+    console.error(err);
+    // Return error details for debugging
   return new Response(JSON.stringify({ error: err.message, stack: err.stack }), {
     status: 500,
     headers: { "Content-Type": "application/json" }

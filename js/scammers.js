@@ -67,7 +67,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     .then(data => {
       container.innerHTML = '';
-      console.log("Fetched data:", data);
 
       // scammers is now an array directly on data
       if (data && Array.isArray(data.scammers)) {
