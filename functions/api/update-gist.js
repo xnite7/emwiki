@@ -1,9 +1,9 @@
-export async function onRequestPost(context, env) {
-  const GITHUB_TOKEN = env.GITHUB_TOKEN;
+export async function onRequestPost(context) {
+  const GITHUB_TOKEN = context.env.GITHUB_TOKEN;
   const GIST_ID = "0d0a3800287f3e7c6e5e944c8337fa91";
 
   console.log("GITHUB_TOKEN is", GITHUB_TOKEN ? "set" : "NOT SET");
-    console.log("GITHUB_TOKEN is", env.GITHUB_TOKEN ? "set" : "NOT SET");
+
   try {
     const body = await context.request.json();
     const username = body.username || "unknown";
