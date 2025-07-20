@@ -1013,10 +1013,11 @@ function createNewItem(item, color) {
   }
 
   // Price element
+  if (item.price > 0){
   const price = document.createElement("p");
   price.innerHTML = `<img src="https://i.imgur.com/iZGLVYo.png" draggable="false">${item.price || 0}`;
   newItem.appendChild(price);
-
+}
   // From element (hidden)
   const from = document.createElement("div");
   from.innerText = item.from;
