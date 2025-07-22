@@ -90,15 +90,17 @@
     }
     .item-card img {
         max-height: 100px;
-        margin-top: 11px;
+        margin-top: 10px;
         user-select: none;
     }
     .item-card span {
-        position: absolute;
-        font-size: 14px;
-        margin-top: -2px;
-         text-shadow: -1.3px -1.3px 0 #000, 0 -1.3px 0 #000, 1.3px -1.3px 0 #000, 1.3px 0 0 #000, 1.3px 1.3px 0 #000, 0 1.3px 0 #000, -1.3px 1.3px 0 #000, -1.3px 0 0 #000;
-        justify-self: anchor-center;
+      position: relative;
+      height: 0px;
+      display: block;
+      font-size: 14px;
+      top: -8px;
+      text-shadow: -1.3px -1.3px 0 #000, 0 -1.3px 0 #000, 1.3px -1.3px 0 #000, 1.3px 0 0 #000, 1.3px 1.3px 0 #000, 0 1.3px 0 #000, -1.3px 1.3px 0 #000, -1.3px 0 0 #000;
+      justify-self: anchor-center;
     }
     .papapanel {
         display: flex;
@@ -602,13 +604,14 @@ function findItemType(itemToFind) {
       } else {
         div.onclick = () => openChecklistModal(item);
       }
-
+      const name = div.querySelector("span");
       const imgSrc = item.img || "./imgs/trs.png";
       div.innerHTML = `
+      <span>${item.name}</span>
         <img draggable="false" src="${imgSrc}" alt="${item.name}" onerror="this.style.display='none'" />
-        <span>${item.name}</span>
+        
       `;
-      const name = div.querySelector("span");
+      
 
     if (!item.img) {
       name.style.font = "600 28px 'Arimo'";
@@ -638,6 +641,7 @@ function findItemType(itemToFind) {
       clone.style.whiteSpace = "nowrap";
       
       name.appendChild(clone);
+      
     }
     if (item.color) {
       name.style.color = item.color;
