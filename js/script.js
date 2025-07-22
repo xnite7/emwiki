@@ -121,7 +121,11 @@ if (document.querySelector('.intro')) {
             img.alt = user.displayName || user.name || 'User avatar';
             img.className = 'avatar';
             li.appendChild(img);
-            li.appendChild(document.createTextNode(`${user.username} — ${user.amount} Robux`));
+            console.log(user);
+            li.style.listStyleType = "none";
+            li.style.display = "grid";
+            img.style.width = "100px";
+            li.appendChild(document.createTextNode(`${user.displayName} — ${user.totalSpent} Robux`));
             donatorsList.appendChild(li);
         });
       })
