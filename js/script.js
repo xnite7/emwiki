@@ -1011,13 +1011,13 @@ function createNewItem(item, color) {
     untradable.setAttribute('draggable', false);
     newItem.appendChild(untradable);
   }
-
-  // Price element
-  if (item.price > 0){
   const price = document.createElement("p");
   price.innerHTML = `<img src="https://i.imgur.com/iZGLVYo.png" draggable="false">${item.price || 0}`;
   newItem.appendChild(price);
-}
+  // Price element
+  if (item.price == 0){
+    price.style.display = "none"; // Hide price if it's 0
+  }
   // From element (hidden)
   const from = document.createElement("div");
   from.innerText = item.from;
