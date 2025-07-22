@@ -1085,7 +1085,7 @@ function setupLazyLoading() {
             ? items.map(item => ({ ...item, _color: color }))
             : Object.values(items).flat().map(item => ({ ...item, _color: color }));
           populateGrid(gridId, itemsWithColor);
-          console.log("Populated catalog grid with items:", itemsWithColor);
+
         } else {
           const filteredItems = Array.isArray(items)
             ? items.filter(item => item[gridId] === true).map(item => ({ ...item, _color: color }))
@@ -1095,6 +1095,14 @@ function setupLazyLoading() {
           populateGrid(gridId, filteredItems);
           console.log("Populated catalog grid with items2:", filteredItems);
         }
+
+        let flatArray = Array.isArray(items)
+  ? items.map(item => ({ ...item, _color: color }))
+  : Object.entries(window._randomCategoryColors).flatMap(([key, catColor]) =>
+      (items[key] || []).map(item => ({ ...item, _color: catColor }))
+    );
+
+setupSearch(flatArray, color);
 
         if (gridId === "new" && entry.target.children.length === 0) {
           entry.target.parentElement.style.display = "none";
@@ -1161,11 +1169,7 @@ async function rinse() {
       color = categoryMap[page].color;
     }
 
-    let flatArray = Array.isArray(items)
-      ? items.map(item => ({ ...item, _color: color }))
-      : Object.values(items).flat().map(item => ({ ...item, _color: color }));
 
-    setupSearch(flatArray, color);
     setupLazyLoading();
 
     if (document.getElementById("zd")) {
@@ -1249,7 +1253,7 @@ function createNewItem(item, color) {
     newItem.appendChild(retired);
   }
   if (item.premium) {
-    const premium = document.createElement("_trigger");
+    const premium = document.createElement("img");
     premium.classList.add("premium");
     premium.src = "./imgs/prem.png";
     premium.style.width = "17%";
@@ -1447,7 +1451,7 @@ function createNewItem(item, color) {
   return newItem;
 }
 
-function setupSearch(itemList) {
+function setupSearch(itemList, defaultColor) {
   const searchInput = document.getElementById('search-bar');
   const resultsContainer = document.getElementById('search-results');
   if (!resultsContainer) return;
@@ -1467,18 +1471,20 @@ function setupSearch(itemList) {
 
     const results = fuse.search(query).slice(0, 12);
 
-    results.forEach((result, index) => {
+    results.forEach((result) => {
       const item = result.item;
       const div = document.createElement('div');
       div.className = 'search-item';
       div.textContent = item.name;
+      div.style.textShadow = "-2px -2px 0 #000, 0 -2px 0 #000, 2px -2px 0 #000, 2px 0 0 #000, 2px 2px 0 #000, 0 2px 0 #000, -2px 2px 0 #000, -2px 0 0 #000";
       div.style.padding = "8px 14px";
       div.style.cursor = "pointer";
       div.style.borderBottom = "1px solid #333";
       div.style.whiteSpace = "nowrap";
+      div.style.backgroundColor = item._color || defaultColor;
 
-      div.addEventListener('mouseenter', () => div.style.background = "#444");
-      div.addEventListener('mouseleave', () => div.style.background = "transparent");
+      div.addEventListener('mouseenter', () => div.style.backgroundColor = item._color ? `rgba(${parseInt(item._color.split('(')[1].split(',')[0])}, ${parseInt(item._color.split(',')[1])}, ${parseInt(item._color.split(',')[2].split(')')[0])}, 0.8)` : "#444");
+      div.addEventListener('mouseleave', () => div.style.backgroundColor = item._color || defaultColor);
       div.addEventListener('click', () => {
         searchInput.value = item.name;
         resultsContainer.innerHTML = '';
@@ -1519,7 +1525,7 @@ function setupSearch(itemList) {
 
   function showSelectedItem(item) {
     document.querySelectorAll('#itemlist .item').forEach(el => el.remove());
-    createNewItem(item, item._color || 'pink');
+    createNewItem(item, item._color);
     document.getElementById("zd").innerText = `1 item`;
     const newItem = document.querySelector('#itemlist .item:last-child');
     if (newItem) {
@@ -1536,7 +1542,7 @@ function filterItems() {
 
   items.forEach(item => {
     let display = "flex";
-    if (item.id == " titles") {
+    if (item.id == "titles") {
       display = "flex";
     }
     const itemText = item.querySelector('#h3').textContent.toLowerCase();
