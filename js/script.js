@@ -23,9 +23,9 @@ if (document.querySelector('.intro')) {
 
   if (d > 0.99) {
     imgg = "./imgs/burrito.png"
-  }else if (d > 0.98) {
+  } else if (d > 0.98) {
     imgg = "./imgs/tran.webp"
-  }else if (d > 0.9) {
+  } else if (d > 0.9) {
     imgg = "https://i.imgur.com/o7IJiwl.png"
   } else {
     imgg = "https://i.imgur.com/XRmpB1c.png"
@@ -117,6 +117,536 @@ if (document.querySelector('.intro')) {
     });
   })
 
+
+
+
+
+  async function fetchDonations() {
+
+    const donatorsList = document.getElementById('donators-list');
+    donatorsList.innerHTML = '';
+    try {
+      const res = await fetch('/api/donations');
+      if (!res.ok) throw new Error('Failed to fetch donation data');
+      const data = await res.json();
+
+      // Display top donators
+
+      const topDonators = data.sort((a, b) => b.amount - a.amount).slice(0, 5);
+      for (const user of topDonators) {  // limit to top 5 donators
+        const tr = document.createElement('tr');
+
+        const avatarCell = document.createElement('td');
+        const img = document.createElement('img');
+        img.src = user.avatar || 'https://emwiki.site/imgs/plr.jpg';
+        img.alt = user.displayName || user.name || 'User avatar';
+        img.className = 'avatar';
+        avatarCell.appendChild(img);
+        tr.appendChild(avatarCell);
+
+        const usernameCell = document.createElement('td');
+        usernameCell.textContent = `${user.username} — ${user.amount} Robux`;
+        tr.appendChild(usernameCell);
+
+        const totalCell = document.createElement('td');
+        totalCell.textContent = user.totalSpent.toLocaleString();
+        tr.appendChild(totalCell);
+
+        donatorsList.appendChild(tr);
+      }
+
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('donations').style.display = 'table';
+    } catch (err) {
+      donatorsList.outerHTML = '';
+      console.error('Error fetching donations:', err);
+    }
+  }
+
+
+
+  // Modal toggling
+  const donateBtn = document.getElementById('donate-btn');
+  const donateModal = document.getElementById('donate-modal');
+  const closeModalBtn = document.getElementById('close-donate-modal');
+  const modalOverlay = document.getElementById('modal-overlay');
+
+  donateBtn.onclick = () => {
+    donateModal.style.display = 'block';
+    modalOverlay.style.display = 'block';
+  };
+
+  closeModalBtn.onclick = () => {
+    donateModal.style.display = 'none';
+    modalOverlay.style.display = 'none';
+  };
+
+  modalOverlay.onclick = () => {
+    donateModal.style.display = 'none';
+
+    modalOverlay.style.display = 'none';
+  };
+
+
+  const installBtn = document.getElementById('installBtn');
+  const iosPopup = document.getElementById('iosInstallPopup');
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone === true;
+  let deferredPrompt;
+
+  // Show button only if not already installed
+  if (!(isIOS && isStandalone)) {
+    installBtn.style.display = 'inline';
+  }
+
+  // Show real install prompt on Android/desktop
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+
+    if (!isIOS) {
+      installBtn.style.display = 'inline';
+    }
+
+    installBtn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        installBtn.style.display = 'none';
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`Install outcome: ${outcome}`);
+        deferredPrompt = null;
+
+        if (outcome === 'dismissed') {
+          installBtn.style.display = 'inline';
+        } else {
+          installBtn.style.display = 'none';
+        }
+      }
+    });
+  });
+
+  // Show animated popup for iOS users
+  if (isIOS && !isStandalone) {
+    installBtn.addEventListener('click', () => {
+      iosPopup.style.display = 'block';
+      requestAnimationFrame(() => {
+        iosPopup.style.bottom = '20px';
+        iosPopup.style.opacity = '1';
+      });
+
+      // Auto-hide after 8 seconds
+      setTimeout(() => {
+        hideIosPopup();
+      }, 8000);
+    });
+  }
+
+  function hideIosPopup() {
+    iosPopup.style.bottom = '-150px';
+    iosPopup.style.opacity = '0';
+    setTimeout(() => {
+      iosPopup.style.display = 'none';
+    }, 600);
+  }
+  const creditsmodal = document.getElementById("credits-modal");
+  const content = document.getElementById("credits-content");
+  const button = document.getElementById("credits-button");
+  const close = document.getElementById("close-credits");
+
+  const isTouche = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+  // Show modal
+  function showModal(e) {
+    creditsmodal.style.display = "block";
+    creditsmodal.style.pointerEvents = "auto";
+
+    if (!isTouche) {
+      // Position near mouse on desktop
+      const x = button.getBoundingClientRect().left - content.getBoundingClientRect().width;
+      const y = button.getBoundingClientRect().top - 30;
+      content.style.position = "absolute";
+      content.style.left = `${x}px`;
+      content.style.top = `${y}px`;
+      close.style.display = "none";
+      creditsmodal.style.padding = "0";
+    } else {
+      // Fullscreen on mobile with blur background
+      creditsmodal.style.position = "fixed";
+      creditsmodal.style.top = "0";
+      creditsmodal.style.left = "0";
+      creditsmodal.style.width = "-webkit-fill-available";
+      creditsmodal.style.height = "-webkit-fill-available";
+      creditsmodal.style.backdropFilter = "blur(6px)";
+      creditsmodal.style.backgroundColor = "rgba(0,0,0,0.5)";
+      content.style.position = "relative";
+      content.style.margin = "60px auto";
+    }
+  }
+
+  // Close modal
+  function hideModal() {
+    creditsmodal.style.display = "none";
+    creditsmodal.style.pointerEvents = "none";
+  }
+
+  // Events
+  button.addEventListener("touchend", (e) => {
+    showModal(e);
+  });
+  button.addEventListener("mouseover", (e) => {
+    if (!isTouche) showModal(e);
+  });
+  button.addEventListener("mouseout", (e) => {
+    if (!isTouche) hideModal();
+  });
+  close.addEventListener("click", hideModal);
+  creditsmodal.addEventListener("click", (e) => {
+    if (e.target === creditsmodal) hideModal();
+  });
+
+  const bg = document.querySelector('.parallax-bg');
+  const isTouchr = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+  if (!isTouchr) {
+    window.addEventListener('scroll', () => {
+      const scrollY = window.scrollY;
+      bg.style.transform = `translateY(${scrollY * -0.4}px)`;
+
+      const fadePoint = 2500;
+      const opacity = Math.max(0, 1 - scrollY / fadePoint);
+      bg.style.opacity = opacity.toFixed(2);
+    });
+  }
+
+  const API_URL = 'https://emwiki-poll.xnite7.workers.dev/api/poll';
+  const pollResult = document.getElementById('pollResult');
+  const pollTotals = document.getElementById('pollTotals');
+  const voteButtons = document.querySelectorAll('.vote-button');
+
+  // Check if user already voted using localStorage
+  const alreadyVoted = localStorage.getItem('hasVoted') === 'true';
+
+  function disableVoting(message) {
+    voteButtons.forEach(btn => { btn.style.display = "none"; btn.disabled = true });
+
+    pollResult.textContent = message;
+    pollResult.style.display = 'block';
+  }
+
+  async function fetchResults() {
+    try {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      pollTotals.textContent = `👍 ${data.like} · 👎 ${data.dislike}`;
+    } catch {
+      pollTotals.textContent = '⚠️ Error loading poll results.';
+    }
+  }
+
+  async function submitVote(vote) {
+    if (alreadyVoted) return;
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vote })
+      });
+
+      if (res.status === 403) {
+        disableVoting('You have already voted.');
+        document.querySelector('.poll-box').style.display = 'none'
+      } else if (res.ok) {
+        disableVoting('Thanks for voting!');
+      } else {
+        pollResult.textContent = 'Error submitting vote.';
+        pollResult.style.display = 'block';
+        return;
+      }
+
+      localStorage.setItem('hasVoted', 'true');
+      await fetchResults();
+    } catch {
+      pollResult.textContent = 'Network error.';
+      pollResult.style.display = 'block';
+    }
+  }
+
+  // Attach click handlers
+  voteButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const vote = button.getAttribute('data-vote');
+      submitVote(vote);
+    });
+  });
+
+  // Init on load
+  if (alreadyVoted) {
+    disableVoting('You have already voted.');
+    document.querySelector('.poll-box').style.display = 'none'
+  }
+
+  const countdownEl = document.getElementById("countdown");
+  const countdownEl2 = document.getElementById("countdown2");
+
+  const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
+  const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+
+  const baseStart = new Date(Date.UTC(2025, 4, 24, 24));
+  const baseStart2 = new Date(Date.UTC(2025, 4, 29, 24));
+
+  let cachedUTC = null;
+  let cachedAt = 0;
+
+  async function getAccurateUTC() {
+    const now = Date.now();
+    // Use cached value if less than 5 minutes old
+    if (cachedUTC && (now - cachedAt < 5 * 60 * 1000)) {
+      // Add the elapsed time since last fetch
+      return new Date(cachedUTC.getTime() + (now - cachedAt));
+    }
+    try {
+      const res = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(text);
+      }
+      cachedUTC = new Date(data.utc_datetime);
+      cachedAt = Date.now();
+      return cachedUTC;
+    } catch (e) {
+      // Fallback: use device time as UTC (not perfect, but better than nothing)
+      console.warn("Falling back to device UTC time:", e);
+      return new Date(Date.now());
+    }
+  }
+
+  let lastUTC = null;
+  let lastUTCAt = 0;
+
+  async function syncUTC() {
+    lastUTC = await getAccurateUTC();
+    lastUTCAt = Date.now();
+  }
+
+  function getCurrentUTC() {
+    if (!lastUTC) return new Date(Date.now());
+    const now = Date.now();
+    return new Date(lastUTC.getTime() + (now - lastUTCAt));
+  }
+
+  function updateCountdown() {
+    const utcNow = getCurrentUTC();
+
+    const elapsed = utcNow - baseStart;
+    const elapsed2 = utcNow - baseStart2;
+    const timeIntoCurrentCycle = elapsed % WEEK_MS;
+    const timeIntoCurrentCycle2 = elapsed2 % WEEK_MS;
+
+    const timeLeft = WEEK_MS - timeIntoCurrentCycle;
+    const timeLeft2 = WEEK_MS - timeIntoCurrentCycle2;
+
+    countdownEl.style.color = timeLeft < SIX_HOURS_MS ? "#ff9999" : "#cccccc";
+    countdownEl2.style.color = timeLeft2 < SIX_HOURS_MS ? "#ff9999" : "#cccccc";
+
+    const formatTime = (ms) => {
+      const totalSeconds = Math.floor(ms / 1000);
+      const days = Math.floor(totalSeconds / (24 * 3600));
+      const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      const pad = (n) => n.toString().padStart(2, '0');
+      return `${pad(days)}:${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    };
+
+    countdownEl.textContent = formatTime(timeLeft);
+    countdownEl2.textContent = formatTime(timeLeft2);
+  }
+
+  // Initial sync
+  updateCountdown();
+
+
+  //after everything is loaded, run this
+  window.addEventListener('load', () => {
+    const container = document.getElementById('top-donators');
+    const canvas = document.getElementById('tentacles-canvas');
+    const ctx = canvas.getContext('2d');
+    const btn = document.getElementById('donate-btn');
+
+    let w, h;
+    let centerX, centerY;
+
+    const tentaclesCount = 8;
+    const maxTentacleLength = 120;
+    const suckerCount = 6;
+
+    let animationProgress = 0;
+    let targetProgress = 0;
+
+    let isActive = false; // new flag for glowing tentacles
+
+    function resize() {
+      w = canvas.width = container.clientWidth;
+      h = canvas.height = container.clientHeight;
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+
+      centerX = w / 2;
+      centerY = h / 2;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    function cubicBezier(p0, p1, p2, p3, t) {
+      const mt = 1 - t;
+      return mt * mt * mt * p0 + 3 * mt * mt * t * p1 + 3 * mt * t * t * p2 + t * t * t * p3;
+    }
+
+    function getBezierPoint(path, t) {
+      const { startX, startY, cp1X, cp1Y, cp2X, cp2Y, endX, endY } = path;
+      const x = cubicBezier(startX, cp1X, cp2X, endX, t);
+      const y = cubicBezier(startY, cp1Y, cp2Y, endY, t);
+      return { x, y };
+    }
+
+    function getTentaclePath(baseAngle, progress, time) {
+      const length = maxTentacleLength * progress;
+
+      const startX = centerX;
+      const startY = centerY;
+
+      const endX = centerX + Math.cos(baseAngle) * length;
+      const endY = centerY + Math.sin(baseAngle) * length;
+
+      const waveAmplitude = progress > 0 ? 15 : 0;
+      const waveFreq = 3;
+
+      const cp1Dist = length * 0.4 * progress;
+      const cp2Dist = length * 0.7 * progress;
+
+      const cp1Angle = baseAngle - Math.PI / 4 + (progress * Math.sin(time * waveFreq) * 0.3);
+      const cp2Angle = baseAngle + Math.PI / 4 + (progress * Math.cos(time * waveFreq + Math.PI / 2) * 0.3);
+
+      const cp1X = centerX + Math.cos(cp1Angle) * cp1Dist + Math.sin(time * waveFreq) * waveAmplitude * progress;
+      const cp1Y = centerY + Math.sin(cp1Angle) * cp1Dist + Math.cos(time * waveFreq) * waveAmplitude * progress;
+
+      const cp2X = centerX + Math.cos(cp2Angle) * cp2Dist + Math.cos(time * waveFreq) * waveAmplitude * progress;
+      const cp2Y = centerY + Math.sin(cp2Angle) * cp2Dist + Math.sin(time * waveFreq) * waveAmplitude * progress;
+
+      return { startX, startY, cp1X, cp1Y, cp2X, cp2Y, endX, endY };
+    }
+
+    function drawTentacle(path, time) {
+      ctx.lineWidth = 6;
+
+      if (isActive) {
+        // Gold glow style
+        ctx.shadowColor = 'gold';
+        ctx.shadowBlur = 15;
+        ctx.strokeStyle = 'rgba(255, 215, 0, 0.9)'; // gold
+      } else {
+        ctx.shadowColor = 'rgba(150, 100, 255, 0.6)';
+        ctx.shadowBlur = 6;
+        const grad = ctx.createLinearGradient(path.startX, path.startY, path.endX, path.endY);
+        grad.addColorStop(0, 'rgba(128,0,128,0.8)');
+        grad.addColorStop(1, 'rgba(255,0,255,0.5)');
+        ctx.strokeStyle = grad;
+      }
+
+      ctx.lineCap = 'round';
+
+      ctx.beginPath();
+      ctx.moveTo(path.startX, path.startY);
+      ctx.bezierCurveTo(path.cp1X, path.cp1Y, path.cp2X, path.cp2Y, path.endX, path.endY);
+      ctx.stroke();
+
+      // Draw suckers
+      for (let i = 1; i <= suckerCount; i++) {
+        const t = i / (suckerCount + 1);
+        const pos = getBezierPoint(path, t);
+        const suckerRadius = 4 + Math.sin(time * 10 + i) * 1;
+
+        ctx.beginPath();
+        ctx.fillStyle = isActive ? 'rgba(255, 223, 100, 0.8)' : 'rgba(200,150,255,0.7)';
+        ctx.shadowColor = isActive ? 'rgba(255, 215, 0, 0.8)' : 'rgba(150,100,255,0.6)';
+        ctx.shadowBlur = isActive ? 10 : 4;
+        ctx.arc(pos.x, pos.y, suckerRadius, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    function animate(time = 0) {
+      ctx.clearRect(0, 0, w, h);
+
+      const speed = 0.05;
+      animationProgress += (targetProgress - animationProgress) * speed;
+
+      if (animationProgress > 0.01) {
+        for (let i = 0; i < tentaclesCount; i++) {
+          const baseAngle = (i / tentaclesCount) * Math.PI * 2;
+          const path = getTentaclePath(baseAngle, animationProgress, time / 1000);
+          drawTentacle(path, time / 1000);
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    btn.addEventListener('mouseenter', () => {
+      targetProgress = 1;
+    });
+
+    btn.addEventListener('mouseleave', () => {
+      targetProgress = 0;
+    });
+
+    btn.addEventListener('mousedown', () => {
+      isActive = true;
+    });
+
+    btn.addEventListener('mouseup', () => {
+      isActive = false;
+    });
+
+    btn.addEventListener('mouseleave', () => {
+      isActive = false;
+    });
+
+  });
+
+  document.querySelector('a[href="#patchnotes"]').addEventListener("click", (e) => {
+    const patch = document.getElementById("patchnotes");
+
+    // Remove and re-add class to retrigger animation
+    patch.classList.remove("animate");
+    void patch.offsetWidth; // force reflow
+    patch.classList.add("animate");
+  });
+
+  // Fix 100vh on iOS by setting --vh to actual visible height
+  function updateVh() {
+    // Get the actual visible height
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  }
+
+  // Run it after layout is ready
+  window.addEventListener('load', updateVh);
+  window.addEventListener('resize', updateVh);
+  window.addEventListener('orientationchange', updateVh);
+
+  // Optional: Run again after slight delay to handle iOS animation quirks
+  setTimeout(updateVh, 500);
+
 } else {
   document.documentElement.style.overflow = "scroll"
   document.documentElement.style.overflowX = "hidden"
@@ -129,30 +659,30 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 
-const navButtons = [
-  { id: "gearstab", href: "./gears", img: "./imgs/AYUbTJv.png" },
-  { id: "deathstab", href: "./deaths", img: "./imgs/fADZwOh.png" },
-  { id: "petstab", href: "./pets", img: "./imgs/GHXB0nC.png" },
-  { id: "effectstab", href: "./effects", img: "./imgs/l90cgxf.png" },
-  { id: "titlestab", href: "./titles", img: "./imgs/ZOP8l9g.png" },
-  { id: "cheststab", href: "./chests", img: "./imgs/XwkWVJJ.png" },
-  { id: "scammerstab", href: "./scammers", img: "./imgs/SK5csOS.png" },
-  { id: "gamenightstab", href: "./gamenights", img: "./imgs/gn.png" }
-];
+  const navButtons = [
+    { id: "gearstab", href: "./gears", img: "./imgs/AYUbTJv.png" },
+    { id: "deathstab", href: "./deaths", img: "./imgs/fADZwOh.png" },
+    { id: "petstab", href: "./pets", img: "./imgs/GHXB0nC.png" },
+    { id: "effectstab", href: "./effects", img: "./imgs/l90cgxf.png" },
+    { id: "titlestab", href: "./titles", img: "./imgs/ZOP8l9g.png" },
+    { id: "cheststab", href: "./chests", img: "./imgs/XwkWVJJ.png" },
+    { id: "scammerstab", href: "./scammers", img: "./imgs/SK5csOS.png" },
+    { id: "gamenightstab", href: "./gamenights", img: "./imgs/gn.png" }
+  ];
 
-function insertNavButtons() {
-  const nav = document.querySelector("nav");
-  if (!nav) return;
-  // Get current page filename, default to "index" if blank
-  let current = location.pathname.split('/').pop();
-  if (!current || current === "") current = "index";
-  nav.innerHTML = navButtons
-    .filter(btn => !btn.href.endsWith(current.replace('.html', '')))
-    .map(btn =>
-      `<a id="${btn.id}" href="${btn.href}"><img src="${btn.img}" style="max-width: -webkit-fill-available;" draggable="false" display="none" onmousedown="return false"></a>`
-    ).join('\n');
-}
-insertNavButtons()
+  function insertNavButtons() {
+    const nav = document.querySelector("nav");
+    if (!nav) return;
+    // Get current page filename, default to "index" if blank
+    let current = location.pathname.split('/').pop();
+    if (!current || current === "") current = "index";
+    nav.innerHTML = navButtons
+      .filter(btn => !btn.href.endsWith(current.replace('.html', '')))
+      .map(btn =>
+        `<a id="${btn.id}" href="${btn.href}"><img src="${btn.img}" style="max-width: -webkit-fill-available;" draggable="false" display="none" onmousedown="return false"></a>`
+      ).join('\n');
+  }
+  insertNavButtons()
   document.addEventListener("DOMContentLoaded", insertNavButtons);
 
 
@@ -194,7 +724,7 @@ insertNavButtons()
       document.getElementById("modal-left-arrow").classList.remove("show");
       document.getElementById("modal-right-arrow").classList.remove("show");
     }, 2000); // hide after 2s of inactivity
-  }
+  };
 
   // Show arrows when modal opens
   const originalModal = Modal;
@@ -287,7 +817,7 @@ function Modal(event) {
   modalPremium.style.visibility = "hidden";
   modaluntradable.style.visibility = "hidden";
 
- //if found untradable icon, then show untradable modal
+  //if found untradable icon, then show untradable modal
   if (item.querySelector(".untradable")) {
     modaluntradable.style.visibility = "visible";
   }
@@ -315,12 +845,12 @@ function Modal(event) {
   modalTitle.textContent = title;
   const existingCanvas = modalContent.querySelector("#content-area canvas");
   if (existingCanvas) existingCanvas.remove();
-  console.log("Image source:", imageSrc);
+
   if (imageSrc) {
 
-   
+
     const canvas = document.createElement("canvas");
-    canvas.style.zIndex= "99";
+    canvas.style.zIndex = "99";
     Object.assign(canvas.style, {
       width: "100%",
       height: "auto",
@@ -397,17 +927,19 @@ function Modal(event) {
     return true;
   });
 
-  modalPrice.src = "./imgs/rarity.webp";
+  modalPrice.src = "./imgs/trs.png";
   const modalText = modalPrice.nextSibling;
-  modalText.textContent = uniqueLines[0];
-  Object.assign(modalText.style, {
-    color: "#e1e1e1",
-    fontSize: "30px",
-    fontWeight: 400,
-    textStroke: "",
-    webkitTextStroke: "",
-    textShadow: ""
-  });
+  if (modalText) {
+    modalText.textContent = uniqueLines[0];
+    Object.assign(modalText.style, {
+      color: "#e1e1e1",
+      fontSize: "30px",
+      fontWeight: 400,
+      textStroke: "",
+      webkitTextStroke: "",
+      textShadow: ""
+    });
+  }
 
   popo.parentElement.querySelectorAll(".price").forEach((el, idx) => {
     if (idx > 0) el.remove();
@@ -699,33 +1231,33 @@ function rinse() {
 
 
 
-    gridConfigs.forEach(gridId => {
-      const grid = document.getElementById(gridId);
-      if (!grid) return;
+      gridConfigs.forEach(gridId => {
+        const grid = document.getElementById(gridId);
+        if (!grid) return;
 
-      grid.innerHTML = "";
+        grid.innerHTML = "";
 
-      if (gridId === "random") {
-        randomGridPopulate(window._randomArr, window._randomCategoryColors);
-        return;
-      }
-
-      grid.addEventListener("click", (event) => {
-        Modal(event);
-      });
-
-      Object.entries(categoryColors).forEach(([key, color]) => {
-        if (Array.isArray(arr[key])) {
-          arr[key].forEach(item => {
-            if (item[gridId] === true) {
-              createNewItem(item, color);
-              const lastItem = document.querySelector("#itemlist .item:last-child");
-              if (lastItem) grid.appendChild(lastItem);
-            }
-          });
+        if (gridId === "random") {
+          randomGridPopulate(window._randomArr, window._randomCategoryColors);
+          return;
         }
+
+        grid.addEventListener("click", (event) => {
+          Modal(event);
+        });
+
+        Object.entries(categoryColors).forEach(([key, color]) => {
+          if (Array.isArray(arr[key])) {
+            arr[key].forEach(item => {
+              if (item[gridId] === true) {
+                createNewItem(item, color);
+                const lastItem = document.querySelector("#itemlist .item:last-child");
+                if (lastItem) grid.appendChild(lastItem);
+              }
+            });
+          }
+        });
       });
-    });
 
       // Hide "new" container if no items with new tag
       const newGrid = document.getElementById("new");
@@ -810,16 +1342,16 @@ function createNewItem(item, color) {
   newItem.style.scale = "1";
   // Untradable icon for non-titles
   if (item.weeklystar) {
-    if (item["price/code/rarity"].toLowerCase().includes("60") ) {
+    if (item["price/code/rarity"].toLowerCase().includes("60")) {
       newItem.style.outlineColor = "#b31aff";
     }
-    if (item["price/code/rarity"].toLowerCase().includes("30") ) {
+    if (item["price/code/rarity"].toLowerCase().includes("30")) {
       newItem.style.outlineColor = "#ff2a00";
     }
-    if (item["price/code/rarity"].toLowerCase().includes("15") ) {
+    if (item["price/code/rarity"].toLowerCase().includes("15")) {
       newItem.style.outlineColor = "#fae351";
     }
-    if (item["price/code/rarity"].toLowerCase().includes("5") ) {
+    if (item["price/code/rarity"].toLowerCase().includes("5")) {
       newItem.style.outlineColor = "#e0e6df";
     }
   }
@@ -861,15 +1393,15 @@ function createNewItem(item, color) {
     } else {
       untradable.style.right = "5px";
     }
-      newItem.style.order = "1";
-      untradable.src = "https://i.imgur.com/WLjbELh.png";
-      untradable.style.width = "17%";
-      untradable.style.height = "auto";
-      untradable.style.position = "absolute";
-      untradable.style.zIndex = "4";
-      untradable.style.bottom = "5px";
-      untradable.setAttribute('draggable', false);
-      newItem.appendChild(untradable);
+    newItem.style.order = "1";
+    untradable.src = "https://i.imgur.com/WLjbELh.png";
+    untradable.style.width = "17%";
+    untradable.style.height = "auto";
+    untradable.style.position = "absolute";
+    untradable.style.zIndex = "4";
+    untradable.style.bottom = "5px";
+    untradable.setAttribute('draggable', false);
+    newItem.appendChild(untradable);
 
   }
 
@@ -877,7 +1409,7 @@ function createNewItem(item, color) {
 
   // New icon
   if (item.new) {
-    
+
     const newbanner = document.createElement("img");
     newbanner.src = "./imgs/new.png";
     newbanner.style.width = "50%";
@@ -1020,7 +1552,7 @@ function createNewItem(item, color) {
   price.innerHTML = `<img src="https://i.imgur.com/iZGLVYo.png" draggable="false">${item.price || 0}`;
   newItem.appendChild(price);
   // Price element
-  if (item.price == 0){
+  if (item.price == 0) {
     price.style.display = "none"; // Hide price if it's 0
   }
   // From element (hidden)
@@ -1150,7 +1682,7 @@ function setupSearch(itemList) {
     if (newItem) {
       isModalOpen = false;
       //newItem.click();
-      
+
       newItem.onclick = (event) => Modal(event);
       newItem.click();
 
