@@ -14,7 +14,6 @@ const modalCache = {
 };
 
 if (document.querySelector('.intro')) {
-
   window.scrollTo(0, 0);
   let intro = document.querySelector('.intro');
   let logo = document.querySelector('.logo-header');
@@ -40,8 +39,6 @@ if (document.querySelector('.intro')) {
     logo4.src = imgg
     let header = document.querySelector('.headersheet')
     document.fonts.ready.then(() => {
-
-
       setTimeout(() => {
         window.scrollTo(0, 0);
         logoSpan.forEach((span, idx) => {
@@ -55,34 +52,24 @@ if (document.querySelector('.intro')) {
         setTimeout(() => {
           logoSpan.forEach((span, idx) => {
             window.scrollTo(0, 0);
-
             setTimeout(() => {
               span.classList.remove('active')
               span.classList.add('fade')
               logo3.classList.remove('active')
               logo3.classList.add('fade')
-
             }, (idx + 1) * 20)
           })
         }, 2100)
-
         setTimeout(() => {
           window.scrollTo(0, 0);
           const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
           if (isTouch) {
             document.querySelector(".parallax-bg").style.backgroundSize = "auto 104vh"
-
           } else {
             document.querySelector(".parallax-bg").style.backgroundSize = "124vw auto"
-
           }
-
           intro.style['transition'] = "0.5s"
-
         }, 2000)
-
-
         setTimeout(() => {
           logo.style.scale = "1.2"
           intro.style.backdropFilter = 'blur(0px)'
@@ -91,8 +78,6 @@ if (document.querySelector('.intro')) {
           document.documentElement.style.overflowX = "hidden"
           xnite.style.color = "#ffffffb0";
           document.querySelector(".sparkle").style.opacity = "1"
-
-
         }, 2440)
         setTimeout(() => {
           intro.style.top = "-100vh"
@@ -100,19 +85,15 @@ if (document.querySelector('.intro')) {
           let main = document.querySelector("main");
           main.style.scale = "1"
           main.style.filter = 'opacity(1)'
-
         }, 2800)
         setTimeout(() => {
           const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
           if (!isTouch) {
             document.querySelector(".parallax-bg").style.transition = "none";
           } else {
             document.querySelector(".parallax-bg").style.transition = "transform 0.1s ease-out, opacity 0.2s ease";
           }
-          // intro.style.display = "none"
         }, 3700)
-
         setTimeout(() => {
           xnite.style.color = "#ffffff00";
         }, 5600)
@@ -120,54 +101,45 @@ if (document.querySelector('.intro')) {
     });
   })
 
-
-
-
-
   function fetchDonations() {
-  const donatorsList = document.getElementById('donators-list');
-  if (!donatorsList) return;
+    const donatorsList = document.getElementById('donators-list');
+    if (!donatorsList) return;
 
-  const loadDonations = () => {
-    fetch('/api/donations')
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to fetch donation data');
-        return res.json();
-      })
-      .then(data => {
-        donatorsList.innerHTML = '';
-        const topDonators = data.sort((a, b) => b.amount - a.amount).slice(0, 5);
-        topDonators.forEach(user => {
-          const li = document.createElement('li');
-          const img = document.createElement('img');
-          img.src = user.avatar || 'https://emwiki.site/imgs/plr.jpg';
-          img.alt = user.displayName || user.name || 'User avatar';
-          img.className = 'avatar';
-          li.appendChild(img);
-          li.appendChild(document.createTextNode(`${user.username} — ${user.amount} Robux`));
-          donatorsList.appendChild(li);
+    const loadDonations = () => {
+      fetch('/api/donations')
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to fetch donation data');
+          return res.json();
+        })
+        .then(data => {
+          donatorsList.innerHTML = '';
+          const topDonators = data.sort((a, b) => b.amount - a.amount).slice(0, 5);
+          topDonators.forEach(user => {
+            const li = document.createElement('li');
+            const img = document.createElement('img');
+            img.src = user.avatar || 'https://emwiki.site/imgs/plr.jpg';
+            img.alt = user.displayName || user.name || 'User avatar';
+            img.className = 'avatar';
+            li.appendChild(img);
+            li.appendChild(document.createTextNode(`${user.username} — ${user.amount} Robux`));
+            donatorsList.appendChild(li);
         });
       })
       .catch(err => {
         console.error('Error fetching donations:', err);
         donatorsList.innerHTML = '<li>Error loading donators</li>';
       });
-  };
+    };
 
-  // Use requestIdleCallback or fallback to setTimeout
-  if (window.requestIdleCallback) {
-    requestIdleCallback(loadDonations, { timeout: 2000 });
-  } else {
-    setTimeout(loadDonations, 100);
+    if (window.requestIdleCallback) {
+      requestIdleCallback(loadDonations, { timeout: 2000 });
+    } else {
+      setTimeout(loadDonations, 100);
+    }
   }
-}
 
-// Call fetchDonations when DOM is ready
-document.addEventListener('DOMContentLoaded', fetchDonations);
+  document.addEventListener('DOMContentLoaded', fetchDonations);
 
-
-
-  // Modal toggling
   const donateBtn = document.getElementById('donate-btn');
   const donateModal = document.getElementById('donate-modal');
   const closeModalBtn = document.getElementById('close-donate-modal');
@@ -185,10 +157,8 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
 
   modalOverlay.onclick = () => {
     donateModal.style.display = 'none';
-
     modalOverlay.style.display = 'none';
   };
-
 
   const installBtn = document.getElementById('installBtn');
   const iosPopup = document.getElementById('iosInstallPopup');
@@ -196,12 +166,10 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
   const isStandalone = window.navigator.standalone === true;
   let deferredPrompt;
 
-  // Show button only if not already installed
   if (!(isIOS && isStandalone)) {
     installBtn.style.display = 'inline';
   }
 
-  // Show real install prompt on Android/desktop
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
@@ -227,7 +195,6 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
     });
   });
 
-  // Show animated popup for iOS users
   if (isIOS && !isStandalone) {
     installBtn.addEventListener('click', () => {
       iosPopup.style.display = 'block';
@@ -236,7 +203,6 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
         iosPopup.style.opacity = '1';
       });
 
-      // Auto-hide after 8 seconds
       setTimeout(() => {
         hideIosPopup();
       }, 8000);
@@ -250,6 +216,7 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
       iosPopup.style.display = 'none';
     }, 600);
   }
+
   const creditsmodal = document.getElementById("credits-modal");
   const content = document.getElementById("credits-content");
   const button = document.getElementById("credits-button");
@@ -257,13 +224,11 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
 
   const isTouche = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-  // Show modal
   function showModal(e) {
     creditsmodal.style.display = "block";
     creditsmodal.style.pointerEvents = "auto";
 
     if (!isTouche) {
-      // Position near mouse on desktop
       const x = button.getBoundingClientRect().left - content.getBoundingClientRect().width;
       const y = button.getBoundingClientRect().top - 30;
       content.style.position = "absolute";
@@ -272,7 +237,6 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
       close.style.display = "none";
       creditsmodal.style.padding = "0";
     } else {
-      // Fullscreen on mobile with blur background
       creditsmodal.style.position = "fixed";
       creditsmodal.style.top = "0";
       creditsmodal.style.left = "0";
@@ -285,13 +249,11 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
     }
   }
 
-  // Close modal
   function hideModal() {
     creditsmodal.style.display = "none";
     creditsmodal.style.pointerEvents = "none";
   }
 
-  // Events
   button.addEventListener("touchend", (e) => {
     showModal(e);
   });
@@ -313,7 +275,6 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
     window.addEventListener('scroll', () => {
       const scrollY = window.scrollY;
       bg.style.transform = `translateY(${scrollY * -0.4}px)`;
-
       const fadePoint = 2500;
       const opacity = Math.max(0, 1 - scrollY / fadePoint);
       bg.style.opacity = opacity.toFixed(2);
@@ -325,12 +286,10 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
   const pollTotals = document.getElementById('pollTotals');
   const voteButtons = document.querySelectorAll('.vote-button');
 
-  // Check if user already voted using localStorage
   const alreadyVoted = localStorage.getItem('hasVoted') === 'true';
 
   function disableVoting(message) {
     voteButtons.forEach(btn => { btn.style.display = "none"; btn.disabled = true });
-
     pollResult.textContent = message;
     pollResult.style.display = 'block';
   }
@@ -374,7 +333,6 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
     }
   }
 
-  // Attach click handlers
   voteButtons.forEach(button => {
     button.addEventListener('click', () => {
       const vote = button.getAttribute('data-vote');
@@ -382,7 +340,6 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
     });
   });
 
-  // Init on load
   if (alreadyVoted) {
     disableVoting('You have already voted.');
     document.querySelector('.poll-box').style.display = 'none'
@@ -394,7 +351,6 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
   const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
   const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
-
   const baseStart = new Date(Date.UTC(2025, 4, 24, 24));
   const baseStart2 = new Date(Date.UTC(2025, 4, 29, 24));
 
@@ -403,9 +359,7 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
 
   async function getAccurateUTC() {
     const now = Date.now();
-    // Use cached value if less than 5 minutes old
     if (cachedUTC && (now - cachedAt < 5 * 60 * 1000)) {
-      // Add the elapsed time since last fetch
       return new Date(cachedUTC.getTime() + (now - cachedAt));
     }
     try {
@@ -421,7 +375,6 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
       cachedAt = Date.now();
       return cachedUTC;
     } catch (e) {
-      // Fallback: use device time as UTC (not perfect, but better than nothing)
       console.warn("Falling back to device UTC time:", e);
       return new Date(Date.now());
     }
@@ -469,11 +422,8 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
     countdownEl2.textContent = formatTime(timeLeft2);
   }
 
-  // Initial sync
   updateCountdown();
 
-
-  //after everything is loaded, run this
   window.addEventListener('load', () => {
     const container = document.getElementById('top-donators');
     const canvas = document.getElementById('tentacles-canvas');
@@ -490,7 +440,7 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
     let animationProgress = 0;
     let targetProgress = 0;
 
-    let isActive = false; // new flag for glowing tentacles
+    let isActive = false;
 
     function resize() {
       w = canvas.width = container.clientWidth;
@@ -548,10 +498,9 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
       ctx.lineWidth = 6;
 
       if (isActive) {
-        // Gold glow style
         ctx.shadowColor = 'gold';
         ctx.shadowBlur = 15;
-        ctx.strokeStyle = 'rgba(255, 215, 0, 0.9)'; // gold
+        ctx.strokeStyle = 'rgba(255, 215, 0, 0.9)';
       } else {
         ctx.shadowColor = 'rgba(150, 100, 255, 0.6)';
         ctx.shadowBlur = 6;
@@ -568,7 +517,6 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
       ctx.bezierCurveTo(path.cp1X, path.cp1Y, path.cp2X, path.cp2Y, path.endX, path.endY);
       ctx.stroke();
 
-      // Draw suckers
       for (let i = 1; i <= suckerCount; i++) {
         const t = i / (suckerCount + 1);
         const pos = getBezierPoint(path, t);
@@ -622,45 +570,33 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
     btn.addEventListener('mouseleave', () => {
       isActive = false;
     });
-
   });
 
   document.querySelector('a[href="#patchnotes"]').addEventListener("click", (e) => {
     const patch = document.getElementById("patchnotes");
-
-    // Remove and re-add class to retrigger animation
     patch.classList.remove("animate");
-    void patch.offsetWidth; // force reflow
+    void patch.offsetWidth;
     patch.classList.add("animate");
   });
 
-  // Fix 100vh on iOS by setting --vh to actual visible height
   function updateVh() {
-    // Get the actual visible height
     const vh = window.innerHeight * 0.01;
     document.documentElement.style.setProperty('--vh', `${vh}px`);
   }
 
   const debounce = (func, wait) => {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), wait);
+    let timeout;
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
   };
-  };
-
-
-
-  // Run it after layout is ready
 
   window.addEventListener('load', debounce(updateVh, 100));
   window.addEventListener('resize', debounce(updateVh, 100));
   window.addEventListener('orientationchange', debounce(updateVh, 100));
 
-
-  // Optional: Run again after slight delay to handle iOS animation quirks
   setTimeout(updateVh, 500);
-
 } else {
   document.documentElement.style.overflow = "scroll"
   document.documentElement.style.overflowX = "hidden"
@@ -669,10 +605,8 @@ document.addEventListener('DOMContentLoaded', fetchDonations);
     main.style.filter = 'opacity(1)'
   }
 }
+
 window.addEventListener('DOMContentLoaded', () => {
-
-
-
   const navButtons = [
     { id: "gearstab", href: "./gears", img: "./imgs/AYUbTJv.png" },
     { id: "deathstab", href: "./deaths", img: "./imgs/fADZwOh.png" },
@@ -687,7 +621,6 @@ window.addEventListener('DOMContentLoaded', () => {
   function insertNavButtons() {
     const nav = document.querySelector("nav");
     if (!nav) return;
-    // Get current page filename, default to "index" if blank
     let current = location.pathname.split('/').pop();
     if (!current || current === "") current = "index";
     nav.innerHTML = navButtons
@@ -698,23 +631,18 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   insertNavButtons()
 
-
-
-
-
   const leftArrow = document.createElement("div");
   leftArrow.id = "modal-left-arrow";
   leftArrow.className = "modal-arrow";
-  leftArrow.innerHTML = "&#8592;";
+  leftArrow.innerHTML = "←";
   modalCache.modal.appendChild(leftArrow);
 
   const rightArrow = document.createElement("div");
   rightArrow.id = "modal-right-arrow";
   rightArrow.className = "modal-arrow";
-  rightArrow.innerHTML = "&#8594;";
+  rightArrow.innerHTML = "→";
   modalCache.modal.appendChild(rightArrow);
 
-  // Mobile swipe support for modal navigation
   let touchStartX = 0;
   let touchEndX = 0;
 
@@ -737,22 +665,17 @@ window.addEventListener('DOMContentLoaded', () => {
     arrowTimeout = setTimeout(() => {
       document.getElementById("modal-left-arrow").classList.remove("show");
       document.getElementById("modal-right-arrow").classList.remove("show");
-    }, 2000); // hide after 2s of inactivity
+    }, 2000);
   };
 
-  // Show arrows when modal opens
   const originalModal = Modal;
   Modal = function () {
-    originalModal.apply(this, arguments); // preserve original logic
+    originalModal.apply(this, arguments);
     showModalArrows();
   };
 
-  // Show arrows on mouse move/hover over modal
   modalCache.modal.addEventListener("mousemove", showModalArrows);
-  modalCache.modal.addEventListener("touchstart", showModalArrows); // for quick re-show on touch
-
-
-
+  modalCache.modal.addEventListener("touchstart", showModalArrows);
 
   const refreshBtn = document.getElementById('refresh-button');
   if (refreshBtn) {
@@ -763,7 +686,6 @@ window.addEventListener('DOMContentLoaded', () => {
         refreshBtn.children[0].style.animation = "rotate 0.7s ease-in-out 0s 1 alternate";
         refreshBtn.children[0].style.webkitAnimation = "rotate 0.7s ease-in-out 0s 1 alternate";
       }, 50);
-      // Only refresh random grid, not the whole page!
       randomGridPopulate(window._randomArr, window._randomCategoryColors);
     };
   }
@@ -786,7 +708,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   function handleSwipeGesture() {
     const delta = touchEndX - touchStartX;
-    const threshold = 50; // minimum px to be considered swipe
+    const threshold = 50;
 
     if (Math.abs(delta) > threshold) {
       if (delta < 0) {
@@ -798,11 +720,8 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 })
 
-
-// Simplified modal interaction logic
 let isModalOpen = false;
 
-// DRY utility for modal navigation
 function openSiblingModal(direction) {
   const currentItem = document.querySelector(".item.showing");
   if (!currentItem) return;
@@ -811,14 +730,12 @@ function openSiblingModal(direction) {
     : currentItem.previousElementSibling;
   if (sibling && sibling.classList.contains("item")) {
     isModalOpen = false;
-
     closeModalHandler();
     setTimeout(() => {
       sibling.click();
     }, 90);
   }
 }
-
 
 function Modal(event) {
   if (isModalOpen) return;
@@ -829,19 +746,15 @@ function Modal(event) {
   modalCache.premium.style.visibility = "hidden";
   modalCache.untradable.style.visibility = "hidden";
 
-  //if found untradable icon, then show untradable modal
   if (item.querySelector(".untradable")) {
     modalCache.untradable.style.visibility = "visible";
   }
-  //if found premium icon, then show premium modal
   if (item.querySelector(".premium")) {
     modalCache.premium.style.visibility = "visible";
   }
-  //if found retired icon, then show retired modal
   if (item.querySelector(".retired")) {
     modalCache.retired.style.visibility = "visible";
   }
-
 
   document.querySelectorAll(".item").forEach((el) => el.classList.remove("showing"));
   item.classList.add("showing");
@@ -859,8 +772,6 @@ function Modal(event) {
   if (existingCanvas) existingCanvas.remove();
 
   if (imageSrc) {
-
-
     const canvas = document.createElement("canvas");
     canvas.style.zIndex = "99";
     Object.assign(canvas.style, {
@@ -929,9 +840,6 @@ function Modal(event) {
   }
 
   const splitted = prcdra.split("<br>");
-
-
-  // Remove duplicates but keep the first occurrence
   const seen = new Set();
   const uniqueLines = splitted.filter(line => {
     if (seen.has(line)) return false;
@@ -1018,13 +926,11 @@ function Modal(event) {
 
   modalCache.prc.innerHTML = `<img src="./imgs/iZGLVYo.png" style="height: 37px;">${price || 0}`;
 
-  // Show the modal with animation
   const itemRect = item.getBoundingClientRect();
   modalCache.modal.style.display = "flex";
   modalCache.modal.classList.add("show");
   isModalOpen = true;
 
-  // Start with cloned size/position
   Object.assign(modalCache.content.style, {
     position: "absolute",
     top: `${itemRect.top}px`,
@@ -1054,15 +960,10 @@ function Modal(event) {
 
 let tut = false;
 
-// Add this after your Modal open logic (e.g., inside Modal() or after showing the modal)
 function showSwipeTutorial() {
-  // Only show on mobile/touch devices
   if (!('ontouchstart' in window || navigator.maxTouchPoints > 0)) return;
-
-  // Prevent multiple tutorials
   if (document.getElementById('swipe-tutorial')) return;
-
-  if (tut) return; // Prevent multiple tutorials
+  if (tut) return;
   tut = true;
   const tutorial = document.createElement('div');
   tutorial.id = 'swipe-tutorial';
@@ -1085,17 +986,12 @@ function showSwipeTutorial() {
     transition: 'opacity 0.3s'
   });
   document.body.appendChild(tutorial);
-
-  // Fade in
   setTimeout(() => { tutorial.style.opacity = '1'; }, 10);
-  // Fade out after 2.5s
   setTimeout(() => {
     tutorial.style.opacity = '0';
     setTimeout(() => tutorial.remove(), 600);
   }, 2500);
 }
-
-
 
 const closeModalHandler = () => {
   modalCache.content.classList.remove("expand");
@@ -1106,7 +1002,6 @@ const closeModalHandler = () => {
   }, 150)
 };
 
-
 window.addEventListener("click", (event) => {
   if (event.target === modalCache.modal) closeModalHandler();
 });
@@ -1114,24 +1009,21 @@ window.addEventListener("touchend", (event) => {
   if (event.target === modalCache.modal) closeModalHandler();
 });
 
-
-
 resize_to_fit();
 
 function resize_to_fit() {
-  const items = document.querySelectorAll('.catalog-grid .item'); // Define items here
+  const items = document.querySelectorAll('.catalog-grid .item');
 
   const observer = new MutationObserver((mutations, obs) => {
-    const items = document.querySelectorAll('.catalog-grid .item'); // Move query inside the function
-    if (items.length > 0) { // Check if items are generated
-      obs.disconnect(); // Stop observing
+    const items = document.querySelectorAll('.catalog-grid .item');
+    if (items.length > 0) {
+      obs.disconnect();
       items.forEach(item => {
         if (item.id != "titles") {
           return;
         }
         if (item.childNodes[1]) {
           let fontsize = parseInt(window.getComputedStyle(item.childNodes[1]).fontSize, 10);
-
           while (item.childNodes[1].offsetWidth > 150 && fontsize > 14) {
             fontsize -= 2;
             item.childNodes[1].style.fontSize = `${fontsize}px`;
@@ -1149,17 +1041,13 @@ function resize_to_fit() {
     }
     if (item.childNodes[1]) {
       let fontsize = parseInt(window.getComputedStyle(item.childNodes[1]).fontSize, 10);
-
       while (item.childNodes[1].offsetWidth > 150 && fontsize > 14) {
         fontsize -= 2;
         item.childNodes[1].style.fontSize = `${fontsize}px`;
       }
     }
-    // Decrease the font size
   });
 }
-
-
 
 function setupLazyLoading() {
   const observer = new IntersectionObserver((entries, observer) => {
@@ -1179,26 +1067,20 @@ function setupLazyLoading() {
         let items = window._randomArr;
         let color = "rgb(0, 0, 0)";
 
-        //with .html and without .html
         if (page.endsWith('.html')) {
           const pageName = page.replace('.html', '');
-
           if (pageName in categoryMap) {
             items = categoryMap[pageName].data;
             color = categoryMap[pageName].color;
-            
           }
         } else if (page in categoryMap) {
           items = categoryMap[page].data;
           color = categoryMap[page].color;
         }
         
-
         if (gridId === "random") {
- 
           randomGridPopulate(window._randomArr, window._randomCategoryColors);
-        }else if (gridId === "ctlg" && document.getElementById("itemlist")) {
-          // Pass each item's color if available, else use default color
+        } else if (gridId === "ctlg" && document.getElementById("itemlist")) {
           const itemsWithColor = Array.isArray(items)
             ? items.map(item => ({ ...item, _color: color }))
             : Object.values(items).flat().map(item => ({ ...item, _color: color }));
@@ -1214,9 +1096,6 @@ function setupLazyLoading() {
           console.log("Populated catalog grid with items2:", filteredItems);
         }
 
-
-
-        // Hide "new" container if empty
         if (gridId === "new" && entry.target.children.length === 0) {
           entry.target.parentElement.style.display = "none";
         }
@@ -1229,31 +1108,24 @@ function setupLazyLoading() {
   document.querySelectorAll('.catalog-grid').forEach(grid => observer.observe(grid));
 }
 
+let currentItems = [];
 
-let currentItems = []; // Top of your script
-
-// In script.js
-
-// Consolidated grid population function
 function populateGrid(gridId, items, limit = null) {
   const grid = document.getElementById(gridId);
   if (!grid) return;
 
-  grid.innerHTML = ""; // Clear previous content
+  grid.innerHTML = "";
 
   const itemsToDisplay = limit ? items.slice(0, limit) : items;
   itemsToDisplay.forEach(item => {
-    
     grid.appendChild(createNewItem(item, item._color));
   });
 
-  // Attach modal click handler
   grid.querySelectorAll('.item').forEach(item => {
     item.onclick = (event) => Modal(event);
   });
 }
 
-// Modified rinse function
 async function rinse() {
   try {
     const data = await fetchData();
@@ -1266,18 +1138,39 @@ async function rinse() {
       effects: "rgb(255, 177, 53)"
     };
 
-    // Prepare search data
-    let color = "rgb(0, 0, 0)";
-    let flatArray = Array.isArray(data)
-      ? data.map(item => ({ ...item, _color: color }))
-      : Object.entries(window._randomCategoryColors).flatMap(([key, color]) =>
-          data[key]?.map(item => ({ ...item, _category: key, _color: color })) || []
-        );
+    const categoryMap = {
+      gears: { data: window._randomArr.gears, color: window._randomCategoryColors.gears },
+      deaths: { data: window._randomArr.deaths, color: window._randomCategoryColors.deaths },
+      titles: { data: window._randomArr.titles, color: window._randomCategoryColors.titles },
+      pets: { data: window._randomArr.pets, color: window._randomCategoryColors.pets },
+      effects: { data: window._randomArr.effects, color: window._randomCategoryColors.effects }
+    };
 
-    flatArray.forEach(item => createNewItem(item, item._color));
+    const page = window.location.pathname.split('/').pop() || "index";
+    let items = window._randomArr;
+    let color = "rgb(0, 0, 0)";
+
+    if (page.endsWith('.html')) {
+      const pageName = page.replace('.html', '');
+      if (pageName in categoryMap) {
+        items = categoryMap[pageName].data;
+        color = categoryMap[pageName].color;
+      }
+    } else if (page in categoryMap) {
+      items = categoryMap[page].data;
+      color = categoryMap[page].color;
+    }
+
+    let flatArray = Array.isArray(items)
+      ? items.map(item => ({ ...item, _color: color }))
+      : Object.values(items).flat().map(item => ({ ...item, _color: color }));
+
     setupSearch(flatArray, color);
-    setupLazyLoading(); // Initialize lazy loading
-      
+    setupLazyLoading();
+
+    if (document.getElementById("zd")) {
+      document.getElementById("zd").innerText = `${flatArray.length} item${flatArray.length === 1 ? '' : 's'}`;
+    }
   } catch (error) {
     console.error('Error in rinse:', error);
   }
@@ -1298,23 +1191,20 @@ function randomGridPopulate(arr, categoryColors) {
   const selectedItems = [];
   for (let step = 0; step < 4; step++) {
     const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-
     const item = randomCategory.data[Math.floor(Math.random() * randomCategory.data.length)];
     selectedItems.push({ item, color: randomCategory.color });
   }
-  //clear previous items
   randomGrid.innerHTML = "";
   selectedItems.forEach(({ item, color }) => {
     createNewItem(item, color);
     const lastItem = document.querySelector("#itemlist .item:last-child");
     if (lastItem) document.getElementById("random").appendChild(lastItem);
   });
-    randomGrid.querySelectorAll('.item').forEach(item => {
+  randomGrid.querySelectorAll('.item').forEach(item => {
     item.onclick = (event) => Modal(event);
   });
 }
 
-// New fetchData function
 async function fetchData() {
   const res = await fetch('https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91');
   if (!res.ok) throw new Error('Failed to fetch data');
@@ -1324,23 +1214,13 @@ async function fetchData() {
 
 let num = 0
 
-
-
-
-rinse()
-
-
-
-
 function createNewItem(item, color) {
-
   const fragment = document.createDocumentFragment();
   const newItem = document.createElement("div");
   
   newItem.classList.add("item");
   newItem.style.overflow = "hidden";
   newItem.style.scale = "1";
-  // Untradable icon for non-titles
   if (item.weeklystar) {
     if (item["price/code/rarity"].toLowerCase().includes("60")) {
       newItem.style.outlineColor = "#b31aff";
@@ -1356,12 +1236,10 @@ function createNewItem(item, color) {
     }
   }
 
-  // Retired tag
   if (item.retired) {
     const retired = document.createElement("img");
     retired.classList.add("retired");
     retired.style.display = "none";
-    //retired.src = "./imgs/retired.png";
     retired.style.width = "17%";
     retired.style.height = "auto";
     retired.style.position = "sticky";
@@ -1370,9 +1248,8 @@ function createNewItem(item, color) {
     retired.setAttribute('draggable', false);
     newItem.appendChild(retired);
   }
-  // Premium icon
   if (item.premium) {
-    const premium = document.createElement("img");
+    const premium = document.createElement("_trigger");
     premium.classList.add("premium");
     premium.src = "./imgs/prem.png";
     premium.style.width = "17%";
@@ -1387,7 +1264,6 @@ function createNewItem(item, color) {
   if (item.tradable === false && color !== "rgb(201, 96, 254)") {
     const untradable = document.createElement("img");
     untradable.classList.add("untradable");
-    //if found premium, then make untradable icon on left instead of right
     if (item.premium) {
       untradable.style.left = "5px";
     } else {
@@ -1402,14 +1278,9 @@ function createNewItem(item, color) {
     untradable.style.bottom = "5px";
     untradable.setAttribute('draggable', false);
     newItem.appendChild(untradable);
-
   }
 
-
-
-  // New icon
   if (item.new) {
-
     const newbanner = document.createElement("img");
     newbanner.src = "./imgs/new.png";
     newbanner.style.width = "50%";
@@ -1422,7 +1293,6 @@ function createNewItem(item, color) {
     newItem.appendChild(newbanner);
   }
 
-  // Item image (canvas)
   if (item.img) {
     const canvas = document.createElement("canvas");
     newItem.dataset.image = item.img;
@@ -1452,10 +1322,8 @@ function createNewItem(item, color) {
     if (color === "rgb(201, 96, 254)") {
       canvas.style.position = "absolute";
     }
-
   }
 
-  // Name element
   let name = document.createElement("div");
   name.id = "h3";
   name.innerText = item.name;
@@ -1470,7 +1338,6 @@ function createNewItem(item, color) {
     name.style.order = "-1";
   }
 
-  // Category-specific styling
   if (color === "rgb(55, 122, 250)") {
     newItem.id = "pets";
   } else if (color === "rgb(255, 177, 53)") {
@@ -1532,7 +1399,6 @@ function createNewItem(item, color) {
     name.outerHTML = item.style3;
   }
 
-  // Untradable icon for titles
   if (item.tradable === false && color === "rgb(201, 96, 254)") {
     newItem.style.order = "1";
     newItem.style.flexDirection = "column";
@@ -1551,25 +1417,21 @@ function createNewItem(item, color) {
   const price = document.createElement("p");
   price.innerHTML = `<img src="./imgs/iZGLVYo.png" draggable="false">${item.price || 0}`;
   newItem.appendChild(price);
-  // Price element
   if (item.price == 0) {
-    price.style.display = "none"; // Hide price if it's 0
+    price.style.display = "none";
   }
-  // From element (hidden)
   const from = document.createElement("div");
   from.innerText = item.from;
   from.id = "from";
   from.style.display = "none";
   newItem.appendChild(from);
 
-  // Rarity element (hidden)
   const prcdra = document.createElement("div");
   prcdra.innerText = item["price/code/rarity"];
   prcdra.id = "pricecoderarity";
   prcdra.style.display = "none";
   newItem.appendChild(prcdra);
 
-  // Staff item styling
   if (item.from && item.from.toLowerCase().includes("staff item")) {
     newItem.classList.add('staff');
   }
@@ -1577,27 +1439,18 @@ function createNewItem(item, color) {
   newItem.style.border = "1px solid rgba(0, 0, 0, 0.2)";
   newItem.classList.add('item', 'item-refresh-animate');
 
-
-
   if (document.getElementById("itemlist")) {
     fragment.appendChild(newItem);
     document.getElementById("itemlist")?.appendChild(fragment);
-    
   }
-
-
 
   return newItem;
 }
-
-
-// Make sure Fuse.js is loaded in your HTML before this script!
 
 function setupSearch(itemList) {
   const searchInput = document.getElementById('search-bar');
   const resultsContainer = document.getElementById('search-results');
   if (!resultsContainer) return;
-  // Use Fuse.js for fuzzy search
   const fuse = new Fuse(itemList, {
     keys: ['name'],
     threshold: 0.3,
@@ -1636,7 +1489,6 @@ function setupSearch(itemList) {
     });
   });
 
-  // Keyboard navigation
   searchInput.addEventListener('keydown', (e) => {
     const items = resultsContainer.querySelectorAll('.search-item');
 
@@ -1659,7 +1511,6 @@ function setupSearch(itemList) {
     );
   });
 
-  // Click outside to close
   document.addEventListener('click', (e) => {
     if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
       resultsContainer.innerHTML = '';
@@ -1667,25 +1518,17 @@ function setupSearch(itemList) {
   });
 
   function showSelectedItem(item) {
-    // Remove all items from ctlg
     document.querySelectorAll('#itemlist .item').forEach(el => el.remove());
-    // Create and show only the selected item
     createNewItem(item, item._color || 'pink');
     document.getElementById("zd").innerText = `1 item`;
-    // Open modal for the new item
     const newItem = document.querySelector('#itemlist .item:last-child');
     if (newItem) {
       isModalOpen = false;
-      //newItem.click();
-
       newItem.onclick = (event) => Modal(event);
       newItem.click();
-
     }
   }
 }
-
-
 
 function filterItems() {
   const searchValue = document.getElementById('search-bar').value.toLowerCase();
@@ -1693,8 +1536,7 @@ function filterItems() {
 
   items.forEach(item => {
     let display = "flex";
-    if (item.id == "titles") {
-
+    if (item.id == " titles") {
       display = "flex";
     }
     const itemText = item.querySelector('#h3').textContent.toLowerCase();
@@ -1705,3 +1547,5 @@ function filterItems() {
     }
   });
 }
+
+rinse()
