@@ -124,47 +124,46 @@ if (document.querySelector('.intro')) {
 
 
 
-  async function fetchDonations() {
+  function fetchDonations() {
+  const donatorsList = document.getElementById('donators-list');
+  if (!donatorsList) return;
 
-    const donatorsList = document.getElementById('donators-list');
-    donatorsList.innerHTML = '';
-    try {
-      const res = await fetch('/api/donations');
-      if (!res.ok) throw new Error('Failed to fetch donation data');
-      const data = await res.json();
+  const loadDonations = () => {
+    fetch('/api/donations')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch donation data');
+        return res.json();
+      })
+      .then(data => {
+        donatorsList.innerHTML = '';
+        const topDonators = data.sort((a, b) => b.amount - a.amount).slice(0, 5);
+        topDonators.forEach(user => {
+          const li = document.createElement('li');
+          const img = document.createElement('img');
+          img.src = user.avatar || 'https://emwiki.site/imgs/plr.jpg';
+          img.alt = user.displayName || user.name || 'User avatar';
+          img.className = 'avatar';
+          li.appendChild(img);
+          li.appendChild(document.createTextNode(`${user.username} — ${user.amount} Robux`));
+          donatorsList.appendChild(li);
+        });
+      })
+      .catch(err => {
+        console.error('Error fetching donations:', err);
+        donatorsList.innerHTML = '<li>Error loading donators</li>';
+      });
+  };
 
-      // Display top donators
-
-      const topDonators = data.sort((a, b) => b.amount - a.amount).slice(0, 5);
-      for (const user of topDonators) {  // limit to top 5 donators
-        const tr = document.createElement('tr');
-
-        const avatarCell = document.createElement('td');
-        const img = document.createElement('img');
-        img.src = user.avatar || 'https://emwiki.site/imgs/plr.jpg';
-        img.alt = user.displayName || user.name || 'User avatar';
-        img.className = 'avatar';
-        avatarCell.appendChild(img);
-        tr.appendChild(avatarCell);
-
-        const usernameCell = document.createElement('td');
-        usernameCell.textContent = `${user.username} — ${user.amount} Robux`;
-        tr.appendChild(usernameCell);
-
-        const totalCell = document.createElement('td');
-        totalCell.textContent = user.totalSpent.toLocaleString();
-        tr.appendChild(totalCell);
-
-        donatorsList.appendChild(tr);
-      }
-
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('donations').style.display = 'table';
-    } catch (err) {
-      donatorsList.outerHTML = '';
-      console.error('Error fetching donations:', err);
-    }
+  // Use requestIdleCallback or fallback to setTimeout
+  if (window.requestIdleCallback) {
+    requestIdleCallback(loadDonations, { timeout: 2000 });
+  } else {
+    setTimeout(loadDonations, 100);
   }
+}
+
+// Call fetchDonations when DOM is ready
+document.addEventListener('DOMContentLoaded', fetchDonations);
 
 
 
@@ -758,11 +757,11 @@ window.addEventListener('DOMContentLoaded', () => {
   const refreshBtn = document.getElementById('refresh-button');
   if (refreshBtn) {
     refreshBtn.onclick = () => {
-      refreshBtn.childNodes[0].style.animation = "";
-      refreshBtn.childNodes[0].style.webkitAnimation = "";
+      refreshBtn.children[0].style.animation = "";
+      refreshBtn.children[0].style.webkitAnimation = "";
       setTimeout(() => {
-        refreshBtn.childNodes[0].style.animation = "rotate 0.7s ease-in-out 0s 1 alternate";
-        refreshBtn.childNodes[0].style.webkitAnimation = "rotate 0.7s ease-in-out 0s 1 alternate";
+        refreshBtn.children[0].style.animation = "rotate 0.7s ease-in-out 0s 1 alternate";
+        refreshBtn.children[0].style.webkitAnimation = "rotate 0.7s ease-in-out 0s 1 alternate";
       }, 50);
       // Only refresh random grid, not the whole page!
       randomGridPopulate(window._randomArr, window._randomCategoryColors);
@@ -1162,182 +1161,168 @@ function resize_to_fit() {
 
 
 
+function setupLazyLoading() {
+  const observer = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const gridId = entry.target.id;
+        
+        const categoryMap = {
+          gears: { data: window._randomArr.gears, color: window._randomCategoryColors.gears },
+          deaths: { data: window._randomArr.deaths, color: window._randomCategoryColors.deaths },
+          titles: { data: window._randomArr.titles, color: window._randomCategoryColors.titles },
+          pets: { data: window._randomArr.pets, color: window._randomCategoryColors.pets },
+          effects: { data: window._randomArr.effects, color: window._randomCategoryColors.effects }
+        };
 
+        const page = window.location.pathname.split('/').pop() || "index";
+        let items = window._randomArr;
+        let color = "rgb(0, 0, 0)";
+
+        //with .html and without .html
+        if (page.endsWith('.html')) {
+          const pageName = page.replace('.html', '');
+
+          if (pageName in categoryMap) {
+            items = categoryMap[pageName].data;
+            color = categoryMap[pageName].color;
+            
+          }
+        } else if (page in categoryMap) {
+          items = categoryMap[page].data;
+          color = categoryMap[page].color;
+        }
+        
+
+        if (gridId === "random") {
+ 
+          randomGridPopulate(window._randomArr, window._randomCategoryColors);
+        }else if (gridId === "ctlg" && document.getElementById("itemlist")) {
+          // Pass each item's color if available, else use default color
+          const itemsWithColor = Array.isArray(items)
+            ? items.map(item => ({ ...item, _color: color }))
+            : Object.values(items).flat().map(item => ({ ...item, _color: color }));
+          populateGrid(gridId, itemsWithColor);
+          console.log("Populated catalog grid with items:", itemsWithColor);
+        } else {
+          const filteredItems = Array.isArray(items)
+            ? items.filter(item => item[gridId] === true).map(item => ({ ...item, _color: color }))
+            : Object.entries(window._randomCategoryColors).flatMap(([key, catColor]) =>
+                (items[key]?.filter(item => item[gridId] === true) || []).map(item => ({ ...item, _color: catColor }))
+              );
+          populateGrid(gridId, filteredItems);
+          console.log("Populated catalog grid with items2:", filteredItems);
+        }
+
+
+
+        // Hide "new" container if empty
+        if (gridId === "new" && entry.target.children.length === 0) {
+          entry.target.parentElement.style.display = "none";
+        }
+
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { rootMargin: '100px' });
+
+  document.querySelectorAll('.catalog-grid').forEach(grid => observer.observe(grid));
+}
 
 
 let currentItems = []; // Top of your script
 
-function rinse() {
-  fetch('https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91')
-    .then(results => {
-      return results.json();
-    })
-    .then(data => {
-      document.querySelectorAll(".item").forEach((el) => el.remove());
+// In script.js
 
-      // Determine the current page and select the appropriate data
-      const page = window.location.pathname.split('/').pop(); // Get the current file name
-      let arr = JSON.parse(data.files["auto.json"].content); // Parse the JSON content
-      let color;
-      if (page.includes("gears")) {
-        //document.body.style.backgroundColor = "#24be31";
-        color = "rgb(91, 254, 106)";
-        arr = arr.gears;
-      } else if (page.includes("deaths")) {
-        //document.body.style.backgroundColor = "#be4324";
-        color = "rgb(255, 122, 94)";
-        arr = arr.deaths;
-      } else if (page.includes("titles")) {
-        // document.body.style.backgroundColor = "#7724c0";
-        color = "rgb(201, 96, 254)";
-        arr = arr.titles;
-      } else if (page.includes("pets")) {
-        // document.body.style.backgroundColor = "#2723c1";
-        color = "rgb(55, 122, 250)";
-        arr = arr.pets;
-      } else if (page.includes("effects")) {
-        // document.body.style.backgroundColor = "#c08223";
-        color = "rgb(255, 177, 53)";
-        arr = arr.effects;
-      } else {
-        arr = arr;
-        color = "rgb(0, 0, 0)";
+// Consolidated grid population function
+function populateGrid(gridId, items, limit = null) {
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
 
-      }
-      // Add this after you fetch and parse your data in rinse(), before calling showInfo(arr, color):
+  grid.innerHTML = ""; // Clear previous content
 
-      // Combined logic for #new, #weekly, #weeklystar grids
-      const gridConfigs = [
-        "new",
-        "weekly",
-        "weeklystar",
-        "random"
-      ];
+  const itemsToDisplay = limit ? items.slice(0, limit) : items;
+  itemsToDisplay.forEach(item => {
+    
+    grid.appendChild(createNewItem(item, item._color));
+  });
 
-      const categoryColors = {
-        gears: "rgb(91, 254, 106)",
-        deaths: "rgb(255, 122, 94)",
-        titles: "rgb(201, 96, 254)",
-        pets: "rgb(55, 122, 250)",
-        effects: "rgb(255, 177, 53)"
-      };
-
-      // ...inside rinse(), after you define arr and categoryColors...
-      // Save arr and categoryColors globally for refresh use
-      window._randomArr = arr;
-      window._randomCategoryColors = categoryColors;
-      if (!document.getElementById("itemlist")) return;
-
-      if (Array.isArray(arr)) {
-        arr.forEach(item => {
-
-
-          createNewItem(item, color);
-          const lastItem = document.querySelector("#itemlist .item:last-child");
-          if (lastItem) document.getElementById("ctlg").appendChild(lastItem);
-
-        });
-      }
-      document.getElementById("ctlg").addEventListener("click", (event) => {
-        Modal(event);
-      });
-
-
-
-      gridConfigs.forEach(gridId => {
-        const grid = document.getElementById(gridId);
-        if (!grid) return;
-
-        grid.innerHTML = "";
-
-        if (gridId === "random") {
-          randomGridPopulate(window._randomArr, window._randomCategoryColors);
-          return;
-        }
-
-        grid.addEventListener("click", (event) => {
-          Modal(event);
-        });
-
-        Object.entries(categoryColors).forEach(([key, color]) => {
-          if (Array.isArray(arr[key])) {
-            arr[key].forEach(item => {
-              if (item[gridId] === true) {
-                createNewItem(item, color);
-                const lastItem = document.querySelector("#itemlist .item:last-child");
-                if (lastItem) grid.appendChild(lastItem);
-              }
-            });
-          }
-        });
-      });
-
-      // Hide "new" container if no items with new tag
-      const newGrid = document.getElementById("new");
-      if (newGrid && newGrid.children.length === 0) {
-        newGrid.parentElement.style.display = "none";
-      }
-
-      currentItems = arr; // ✅ Store current items for search use
-      // After fetching and parsing arr:
-      let flatArray = [];
-      if (Array.isArray(arr)) {
-        // Category page: arr is already an array
-        flatArray = arr.map(item => ({ ...item, _color: color }));
-      } else {
-        // Main page: arr is an object of arrays
-        Object.entries(categoryColors).forEach(([key, color]) => {
-          if (Array.isArray(arr[key])) {
-            arr[key].forEach(item => {
-              flatArray.push({ ...item, _category: key, _color: color });
-            });
-          }
-        });
-      }
-      showInfo(flatArray, color);
-      setupSearch(flatArray, color);
-    })
-    .catch(error => console.error('Error fetching data:', error));
-}
-
-
-function randomGridPopulate(arr, categoryColors) {
-  let color = "rgb(0, 0, 0)";
-  let pick;
-  const randomGrid = document.getElementById("random");
-  if (!randomGrid) return;
-  randomGrid.innerHTML = ""; // Clear previous
-
-  for (let step = 0; step < 4; step++) {
-    const randomIndex = Math.floor(Math.random() * 5);
-    if (randomIndex === 0) {
-      pick = arr.gears;
-      color = categoryColors.gears;
-    } else if (randomIndex === 1) {
-      pick = arr.deaths;
-      color = categoryColors.deaths;
-    } else if (randomIndex === 2) {
-      pick = arr.titles;
-      color = categoryColors.titles;
-    } else if (randomIndex === 3) {
-      pick = arr.pets;
-      color = categoryColors.pets;
-    } else if (randomIndex === 4) {
-      pick = arr.effects;
-      color = categoryColors.effects;
-    }
-    const item = pick[Math.floor(Math.random() * pick.length)];
-    createNewItem(item, color);
-    // Move the created .item from ctlg to #random
-    const lastItem = document.querySelector("#itemlist .item:last-child");
-    if (lastItem && randomGrid) randomGrid.appendChild(lastItem);
-  }
-
-  // Attach modal click handler to random items
-  randomGrid.querySelectorAll('.item').forEach(item => {
+  // Attach modal click handler
+  grid.querySelectorAll('.item').forEach(item => {
     item.onclick = (event) => Modal(event);
   });
 }
+
+// Modified rinse function
+async function rinse() {
+  try {
+    const data = await fetchData();
+    window._randomArr = data;
+    window._randomCategoryColors = {
+      gears: "rgb(91, 254, 106)",
+      deaths: "rgb(255, 122, 94)",
+      titles: "rgb(201, 96, 254)",
+      pets: "rgb(55, 122, 250)",
+      effects: "rgb(255, 177, 53)"
+    };
+
+    // Prepare search data
+    let color = "rgb(0, 0, 0)";
+    let flatArray = Array.isArray(data)
+      ? data.map(item => ({ ...item, _color: color }))
+      : Object.entries(window._randomCategoryColors).flatMap(([key, color]) =>
+          data[key]?.map(item => ({ ...item, _category: key, _color: color })) || []
+        );
+
+    flatArray.forEach(item => createNewItem(item, item._color));
+    setupSearch(flatArray, color);
+    setupLazyLoading(); // Initialize lazy loading
+      
+  } catch (error) {
+    console.error('Error in rinse:', error);
+  }
+}
+
+function randomGridPopulate(arr, categoryColors) {
+  const randomGrid = document.getElementById("random");
+  if (!randomGrid) return;
+
+  const categories = [
+    { data: arr.gears, color: categoryColors.gears },
+    { data: arr.deaths, color: categoryColors.deaths },
+    { data: arr.titles, color: categoryColors.titles },
+    { data: arr.pets, color: categoryColors.pets },
+    { data: arr.effects, color: categoryColors.effects }
+  ];
+
+  const selectedItems = [];
+  for (let step = 0; step < 4; step++) {
+    const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+
+    const item = randomCategory.data[Math.floor(Math.random() * randomCategory.data.length)];
+    selectedItems.push({ item, color: randomCategory.color });
+  }
+  //clear previous items
+  randomGrid.innerHTML = "";
+  selectedItems.forEach(({ item, color }) => {
+    createNewItem(item, color);
+    const lastItem = document.querySelector("#itemlist .item:last-child");
+    if (lastItem) document.getElementById("random").appendChild(lastItem);
+  });
+    randomGrid.querySelectorAll('.item').forEach(item => {
+    item.onclick = (event) => Modal(event);
+  });
+}
+
+// New fetchData function
+async function fetchData() {
+  const res = await fetch('https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91');
+  if (!res.ok) throw new Error('Failed to fetch data');
+  const data = await res.json();
+  return JSON.parse(data.files["auto.json"].content);
+}
+
+let num = 0
 
 
 
@@ -1348,6 +1333,7 @@ rinse()
 
 
 function createNewItem(item, color) {
+
   const fragment = document.createDocumentFragment();
   const newItem = document.createElement("div");
   
@@ -1596,19 +1582,13 @@ function createNewItem(item, color) {
   if (document.getElementById("itemlist")) {
     fragment.appendChild(newItem);
     document.getElementById("itemlist")?.appendChild(fragment);
+    
   }
+
+
+
+  return newItem;
 }
-
-
-function showInfo(arr, color) {
-
-  arr.forEach((item, i) => {
-    document.getElementById("zd").innerHTML = `${i + 1} items`;
-    createNewItem(item, color);
-  });
-
-}
-
 
 
 // Make sure Fuse.js is loaded in your HTML before this script!
@@ -1706,3 +1686,22 @@ function setupSearch(itemList) {
 }
 
 
+
+function filterItems() {
+  const searchValue = document.getElementById('search-bar').value.toLowerCase();
+  const items = document.querySelectorAll('#ctlg .item');
+
+  items.forEach(item => {
+    let display = "flex";
+    if (item.id == "titles") {
+
+      display = "flex";
+    }
+    const itemText = item.querySelector('#h3').textContent.toLowerCase();
+    if (itemText.includes(searchValue)) {
+      item.style.display = display;
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}

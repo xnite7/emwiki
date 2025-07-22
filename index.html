@@ -438,7 +438,7 @@
 				<!-- In your HTML somewhere -->
 				<input id="search-bar" type="text" placeholder="Search items..." autocomplete="off" />
 				<div id="search-results"></div>
-				<div class="catalog-grid" id="ctlg" style="
+				<div class="catalog-grid" id="ctlg" data-loaded="false" style="
 					display: flex;
 					gap: 1.5rem;
 					display: none;
@@ -450,20 +450,20 @@
 			<section class="catalog">
 				<h2 class="title">🎈 Newest items 🎈</h2>
 				<p id="zd" style="display: none;">0</p>
-				<div class="catalog-grid" style="padding-top: 8%;" id="new">
+				<div class="catalog-grid" data-loaded="false" style="padding-top: 8%;" id="new">
 				</div>
 			</section>
 			<section class="catalog">
 				<h2 class="title">📆 Weekly Shop 📆</h2>
 				<div id="countdown2">Loading...</div>
 				<p id="zd" style="display: none;">0</p>
-				<div class="catalog-grid" id="weekly">
+				<div class="catalog-grid" data-loaded="false" id="weekly">
 				</div>
 			</section>
 			<section class="catalog">
 				<h2 class="title">⭐ Weekly Rotation ⭐</h2>
 				<div id="countdown">Loading...</div>
-				<div class="catalog-grid" id="weeklystar">
+				<div class="catalog-grid" data-loaded="false" id="weeklystar">
 				</div>
 			</section>
 			<section id="leaderboard" style="display: none;">
@@ -479,43 +479,7 @@
 					<div id="indicator"></div>
 				</div>
 				<input type="text" id="chatInput" placeholder="Type a message and hit enter..." autocomplete="off" />
-				<script>
-					const messagesDiv = document.getElementById("messages");
-					const indicatorDiv = document.getElementById("indicator");
-					const input = document.getElementById("chatInput");
-					// 🔄 Replace with your deployed Worker URL
-					const socket = new WebSocket("wss://cf-chat-backend.xnite7.workers.dev/chat");
-					socket.addEventListener("open", () => {
-						indicatorDiv.innerHTML = `🟢`;
-					});
-					socket.addEventListener("message", (event) => {
-						let data;
-						try {
-							data = JSON.parse(event.data);
-							if (data.user && data.text) {
-								messagesDiv.innerHTML += `<div><b>${data.user}:</b> ${data.text}</div>`;
-							} else if (data.type === "user" && data.name) {
-								// Optionally handle user assignment message
-							}
-						} catch {
-							// Fallback for plain text messages
-							messagesDiv.innerHTML += `<div>${event.data}</div>`;
-						}
-						messagesDiv.scrollTop = messagesDiv.scrollHeight;
-					});
-					input.addEventListener("keypress", (e) => {
-						if (e.key === "Enter") {
-							const message = input.value.trim();
-							if (message) {
-								socket.send(message);
-								input.value = "";
-							}
-						}
-					});
-					socket.addEventListener("close", () => {
-						indicatorDiv.innerHTML = `🔴`;
-					});
-				</script>
+				
 			</section>
 			<section class="catalog">
 				<div class="circlebutton" style="margin-right: 13px;" id="refresh-button" onclick="rinse();">
