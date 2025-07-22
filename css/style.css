@@ -1814,15 +1814,15 @@ html {
 
 @media (min-width:1035px) {
     .catalog:has(#weeklystar) {
-        flex: 0 0 60vw;
+        flex: 0 0 36vw;
     }
 
     .catalog:has(#weekly) {
-        flex: 0 0 32vw;
+        flex: 0 0 36vw;
     }
 
     .catalog:has(#new) {
-        flex: 0 0 32vw;
+        flex: 0 0 36vw;
     }
 
 }
