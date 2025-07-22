@@ -1827,6 +1827,56 @@ html {
 
 }
 
+@media (max-width:800px) {
+
+        .cloud,
+    .cloud2,
+    .cloud3,
+    .cloud4 {
+        width: 100px;
+    }
+
+    nav a {
+        display: flex;
+        width: calc(3vw + 60px);
+        max-height: inherit;
+        padding: .35rem;
+        border-radius: 100%;
+        transition: all 0.3s cubic-bezier(.18, .89, .32, 1.28);
+        box-shadow: inset 2px 2px 4px rgb(160 110 0 / .6), inset -2px -2px 4px rgb(255 245 200 / .5), 0 1px 2px rgb(0 0 0 / .1);
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: stretch
+    }
+
+    nav a:hover {
+        transform: none
+    }
+
+    nav a:active {
+        margin-bottom: 0;
+        transform: none
+    }
+
+        nav {
+        height: auto;
+        gap: 16px;
+        flex-wrap: wrap;
+        flex: 1;
+        margin-bottom: 20px;
+        margin-right: 15px;
+        margin-left: 15px
+    }
+
+        nav a:hover img {
+        margin-bottom: 0px;
+        padding: 0px;
+    }
+
+    
+}
+
+
 @media (max-width:600px) {
     #credits-modal {
         display: none;
@@ -2014,15 +2064,7 @@ html {
         font-size: 2em;
     }
 
-    nav {
-        height: auto;
-        gap: 16px;
-        flex-wrap: wrap;
-        flex: 1;
-        margin-bottom: 20px;
-        margin-right: 15px;
-        margin-left: 15px
-    }
+
 
     #refresh-button {
 
@@ -2070,34 +2112,7 @@ html {
         font-size: 20px;
     }
 
-    .cloud,
-    .cloud2,
-    .cloud3,
-    .cloud4 {
-        width: 100px;
-    }
 
-    nav a {
-        display: flex;
-        width: calc(3vw + 60px);
-        max-height: inherit;
-        padding: .35rem;
-        border-radius: 100%;
-        transition: all 0.3s cubic-bezier(.18, .89, .32, 1.28);
-        box-shadow: inset 2px 2px 4px rgb(160 110 0 / .6), inset -2px -2px 4px rgb(255 245 200 / .5), 0 1px 2px rgb(0 0 0 / .1);
-        flex-direction: column;
-        flex-wrap: nowrap;
-        align-items: stretch
-    }
-
-    nav a:hover {
-        transform: none
-    }
-
-    nav a:active {
-        margin-bottom: 0;
-        transform: none
-    }
 
     #indicator {
         right: 32px
@@ -2175,10 +2190,7 @@ html {
         font: 100 1.2em 'Source Sans Pro'
     }
 
-    nav a:hover img {
-        margin-bottom: 0px;
-        padding: 0px;
-    }
+
 
     .logo4 {
         width: 135px;
