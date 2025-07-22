@@ -1101,6 +1101,9 @@ function setupLazyLoading() {
   : Object.entries(window._randomCategoryColors).flatMap(([key, catColor]) =>
       (items[key] || []).map(item => ({ ...item, _color: catColor }))
     );
+        if (document.getElementById("zd")) {
+        document.getElementById("zd").innerText = `${document.querySelectorAll("#ctlg .item").length} item${document.querySelectorAll("#ctlg .item").length === 1 ? '' : 's'}`;
+      }
 
 setupSearch(flatArray, color);
 
@@ -1155,8 +1158,6 @@ async function rinse() {
     };
 
     const page = window.location.pathname.split('/').pop() || "index";
-    let items = window._randomArr;
-    let color = "rgb(0, 0, 0)";
 
     if (page.endsWith('.html')) {
       const pageName = page.replace('.html', '');
@@ -1172,9 +1173,7 @@ async function rinse() {
 
     setupLazyLoading();
 
-    if (document.getElementById("zd")) {
-      document.getElementById("zd").innerText = `${flatArray.length} item${flatArray.length === 1 ? '' : 's'}`;
-    }
+
   } catch (error) {
     console.error('Error in rinse:', error);
   }
