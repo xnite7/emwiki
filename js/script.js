@@ -127,6 +127,7 @@ if (document.querySelector('.intro')) {
             li.style.alignItems = "center";
             li.style.flexDirection = "column";
             img.style.width = "100px";
+            img.style.filter = "drop-shadow(0px 0px 6px #00000069)";
             li.appendChild(document.createTextNode(`${user.displayName}`));
             const amountSpan = document.createElement('span');
             amountSpan.textContent = `${user.totalSpent} Robux`;
