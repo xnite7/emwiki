@@ -1,14 +1,17 @@
 let imgg;
-const modal = document.getElementById("product-modal");
-const popo = document.getElementById("popo");
-const modalContent = document.getElementById("modal-content");
-const modalTitle = document.getElementById("modal-title");
-const modalPrc = document.getElementById("modal-prc");
-const modalDescription = document.getElementById("modal-description");
-const modalPrice = document.getElementById("modal-price-value");
-const modalRetired = document.getElementById("modal-retired");
-const modalPremium = document.getElementById("modal-premium");
-const modaluntradable = document.getElementById("modal-untradable");
+
+const modalCache = {
+  modal: document.getElementById("product-modal"),
+  popo: document.getElementById("popo"),
+  content: document.getElementById("modal-content"),
+  title: document.getElementById("modal-title"),
+  prc: document.getElementById("modal-prc"),
+  description: document.getElementById("modal-description"),
+  price: document.getElementById("modal-price-value"),
+  retired: document.getElementById("modal-retired"),
+  premium: document.getElementById("modal-premium"),
+  untradable: document.getElementById("modal-untradable")
+};
 
 if (document.querySelector('.intro')) {
 
@@ -26,9 +29,9 @@ if (document.querySelector('.intro')) {
   } else if (d > 0.98) {
     imgg = "./imgs/tran.webp"
   } else if (d > 0.9) {
-    imgg = "https://i.imgur.com/o7IJiwl.png"
+    imgg = "./imgs/o7IJiwl.png"
   } else {
-    imgg = "https://i.imgur.com/XRmpB1c.png"
+    imgg = "./imgs/XRmpB1c.png"
   }
   logo3.src = imgg
   window.addEventListener('DOMContentLoaded', () => {
@@ -639,10 +642,22 @@ if (document.querySelector('.intro')) {
     document.documentElement.style.setProperty('--vh', `${vh}px`);
   }
 
+  const debounce = (func, wait) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+  };
+
+
+
   // Run it after layout is ready
-  window.addEventListener('load', updateVh);
-  window.addEventListener('resize', updateVh);
-  window.addEventListener('orientationchange', updateVh);
+
+  window.addEventListener('load', debounce(updateVh, 100));
+  window.addEventListener('resize', debounce(updateVh, 100));
+  window.addEventListener('orientationchange', debounce(updateVh, 100));
+
 
   // Optional: Run again after slight delay to handle iOS animation quirks
   setTimeout(updateVh, 500);
@@ -683,7 +698,7 @@ window.addEventListener('DOMContentLoaded', () => {
       ).join('\n');
   }
   insertNavButtons()
-  document.addEventListener("DOMContentLoaded", insertNavButtons);
+
 
 
 
@@ -692,23 +707,23 @@ window.addEventListener('DOMContentLoaded', () => {
   leftArrow.id = "modal-left-arrow";
   leftArrow.className = "modal-arrow";
   leftArrow.innerHTML = "&#8592;";
-  modal.appendChild(leftArrow);
+  modalCache.modal.appendChild(leftArrow);
 
   const rightArrow = document.createElement("div");
   rightArrow.id = "modal-right-arrow";
   rightArrow.className = "modal-arrow";
   rightArrow.innerHTML = "&#8594;";
-  modal.appendChild(rightArrow);
+  modalCache.modal.appendChild(rightArrow);
 
   // Mobile swipe support for modal navigation
   let touchStartX = 0;
   let touchEndX = 0;
 
-  modalContent.addEventListener("touchstart", (e) => {
+  modalCache.content.addEventListener("touchstart", (e) => {
     touchStartX = e.changedTouches[0].screenX;
   }, false);
 
-  modalContent.addEventListener("touchend", (e) => {
+  modalCache.content.addEventListener("touchend", (e) => {
     touchEndX = e.changedTouches[0].screenX;
     handleSwipeGesture();
   }, false);
@@ -734,8 +749,8 @@ window.addEventListener('DOMContentLoaded', () => {
   };
 
   // Show arrows on mouse move/hover over modal
-  modal.addEventListener("mousemove", showModalArrows);
-  modal.addEventListener("touchstart", showModalArrows); // for quick re-show on touch
+  modalCache.modal.addEventListener("mousemove", showModalArrows);
+  modalCache.modal.addEventListener("touchstart", showModalArrows); // for quick re-show on touch
 
 
 
@@ -808,26 +823,24 @@ function openSiblingModal(direction) {
 
 function Modal(event) {
   if (isModalOpen) return;
-
   const item = event.target.closest(".item");
   if (!item) return;
 
-
-  modalRetired.style.visibility = "hidden";
-  modalPremium.style.visibility = "hidden";
-  modaluntradable.style.visibility = "hidden";
+  modalCache.retired.style.visibility = "hidden";
+  modalCache.premium.style.visibility = "hidden";
+  modalCache.untradable.style.visibility = "hidden";
 
   //if found untradable icon, then show untradable modal
   if (item.querySelector(".untradable")) {
-    modaluntradable.style.visibility = "visible";
+    modalCache.untradable.style.visibility = "visible";
   }
   //if found premium icon, then show premium modal
   if (item.querySelector(".premium")) {
-    modalPremium.style.visibility = "visible";
+    modalCache.premium.style.visibility = "visible";
   }
   //if found retired icon, then show retired modal
   if (item.querySelector(".retired")) {
-    modalRetired.style.visibility = "visible";
+    modalCache.retired.style.visibility = "visible";
   }
 
 
@@ -840,10 +853,10 @@ function Modal(event) {
   const prcdra = item.querySelector("#pricecoderarity").textContent;
   const price = item.querySelector("p img").nextSibling.textContent.trim();
 
-  modalContent.style.pointerEvents = "none";
-  modalContent.style.backgroundColor = item.style.backgroundColor;
-  modalTitle.textContent = title;
-  const existingCanvas = modalContent.querySelector("#content-area canvas");
+  modalCache.content.style.pointerEvents = "none";
+  modalCache.content.style.backgroundColor = item.style.backgroundColor;
+  modalCache.title.textContent = title;
+  const existingCanvas = modalCache.content.querySelector("#content-area canvas");
   if (existingCanvas) existingCanvas.remove();
 
   if (imageSrc) {
@@ -861,7 +874,7 @@ function Modal(event) {
       pointerEvents: "none"
     });
 
-    modalContent.querySelector("#content-area").insertBefore(canvas, modalDescription);
+    modalCache.content.querySelector("#content-area").insertBefore(canvas, modalCache.description);
 
     const ctx = canvas.getContext("2d");
     const img = new Image();
@@ -873,11 +886,11 @@ function Modal(event) {
     img.src = imageSrc;
   }
 
-  modalDescription.textContent = from;
-  modalPrice.setAttribute("draggable", false);
-  modalTitle.style.display = item.id === "titles" ? "none" : "block";
+  modalCache.description.textContent = from;
+  modalCache.price.setAttribute("draggable", false);
+  modalCache.title.style.display = item.id === "titles" ? "none" : "block";
 
-  modalContent.querySelectorAll(".font").forEach((el) => el.remove());
+  modalCache.content.querySelectorAll(".font").forEach((el) => el.remove());
 
   const bgColors = {
     pets: "rgb(39, 102, 221)",
@@ -888,7 +901,7 @@ function Modal(event) {
   };
 
   if (bgColors[item.id]) {
-    modalContent.style.backgroundColor = bgColors[item.id];
+    modalCache.content.style.backgroundColor = bgColors[item.id];
   }
 
   if (!imageSrc) {
@@ -913,7 +926,7 @@ function Modal(event) {
       });
     }
     clone.classList.add("font");
-    modalContent.querySelector("#content-area").insertBefore(clone, modalDescription);
+    modalCache.content.querySelector("#content-area").insertBefore(clone, modalCache.description);
   }
 
   const splitted = prcdra.split("<br>");
@@ -927,8 +940,8 @@ function Modal(event) {
     return true;
   });
 
-  modalPrice.src = "./imgs/trs.png";
-  const modalText = modalPrice.nextSibling;
+  modalCache.price.src = "./imgs/trs.png";
+  const modalText = modalCache.price.nextSibling;
   if (modalText) {
     modalText.textContent = uniqueLines[0];
     Object.assign(modalText.style, {
@@ -941,17 +954,17 @@ function Modal(event) {
     });
   }
 
-  popo.parentElement.querySelectorAll(".price").forEach((el, idx) => {
+  modalCache.popo.parentElement.querySelectorAll(".price").forEach((el, idx) => {
     if (idx > 0) el.remove();
   });
 
   uniqueLines.slice(1).forEach((line) => {
-    const newPrice = popo.cloneNode(true);
+    const newPrice = modalCache.popo.cloneNode(true);
     newPrice.childNodes[1].textContent = line;
-    popo.parentElement.appendChild(newPrice);
+    modalCache.popo.parentElement.appendChild(newPrice);
   });
 
-  popo.parentElement.querySelectorAll(".price").forEach((priceEl) => {
+  modalCache.popo.parentElement.querySelectorAll(".price").forEach((priceEl) => {
     const children = priceEl.children;
     if (children.length > 1) {
       const text = children[1].textContent;
@@ -965,18 +978,18 @@ function Modal(event) {
       }
 
       const iconMap = {
-        Robux: "https://i.imgur.com/cf8ZvY7.png",
+        Robux: "./imgs/cf8ZvY7.png",
         Coins: "./imgs/Coin.webp",
-        Stars: "https://i.imgur.com/WKeX5AS.png",
-        Visors: "https://i.imgur.com/7IoLZCN.png",
-        Pumpkins: "https://i.imgur.com/bHRBTrU.png",
-        Eggs: "https://i.imgur.com/qMxjgQy.png",
-        Opals: "https://i.imgur.com/wwMMAvr.png",
-        Opal: "https://i.imgur.com/wwMMAvr.png",
+        Stars: "./imgs/WKeX5AS.png",
+        Visors: "./imgs/7IoLZCN.png",
+        Pumpkins: "./imgs/bHRBTrU.png",
+        Eggs: "./imgs/qMxjgQy.png",
+        Opals: "./imgs/wwMMAvr.png",
+        Opal: "./imgs/wwMMAvr.png",
         Baubles: "./imgs/bauble.png",
         Bauble: "./imgs/bauble.png",
-        Tokens: "https://i.imgur.com/Cy9r140.png",
-        Token: "https://i.imgur.com/Cy9r140.png"
+        Tokens: "./imgs/Cy9r140.png",
+        Token: "./imgs/Cy9r140.png"
       };
 
       for (const [key, src] of Object.entries(iconMap)) {
@@ -996,7 +1009,7 @@ function Modal(event) {
       } else if (text.includes("[ACTIVE]")) {
         Object.assign(children[1].style, { fontFamily: "monospace", fontSize: "23px", color: "rgb(251 255 68)" });
       } else if (text.includes("Unobtainable")) {
-        children[0].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Red_x.svg/600px-Red_x.svg.png";
+        children[0].src = "./imgs/Red_x.png";
         children[1].style.color = "rgb(255 44 44)";
       }
 
@@ -1004,16 +1017,16 @@ function Modal(event) {
     }
   });
 
-  modalPrc.innerHTML = `<img src="https://i.imgur.com/iZGLVYo.png" style="height: 37px;">${price || 0}`;
+  modalCache.prc.innerHTML = `<img src="./imgs/iZGLVYo.png" style="height: 37px;">${price || 0}`;
 
   // Show the modal with animation
   const itemRect = item.getBoundingClientRect();
-  modal.style.display = "flex";
-  modal.classList.add("show");
+  modalCache.modal.style.display = "flex";
+  modalCache.modal.classList.add("show");
   isModalOpen = true;
 
   // Start with cloned size/position
-  Object.assign(modalContent.style, {
+  Object.assign(modalCache.content.style, {
     position: "absolute",
     top: `${itemRect.top}px`,
     left: `${itemRect.left}px`,
@@ -1025,9 +1038,9 @@ function Modal(event) {
   });
 
   requestAnimationFrame(() => {
-    modalContent.classList.add("expand");
-    modalContent.style.pointerEvents = "auto";
-    Object.assign(modalContent.style, {
+    modalCache.content.classList.add("expand");
+    modalCache.content.style.pointerEvents = "auto";
+    Object.assign(modalCache.content.style, {
       position: "relative",
       top: "0",
       left: "0",
@@ -1086,9 +1099,9 @@ function showSwipeTutorial() {
 
 
 const closeModalHandler = () => {
-  modalContent.classList.remove("expand");
-  modal.classList.remove("show");
-  modalContent.style.pointerEvents = "none";
+  modalCache.content.classList.remove("expand");
+  modalCache.modal.classList.remove("show");
+  modalCache.content.style.pointerEvents = "none";
   setTimeout(() => {
     isModalOpen = false;
   }, 150)
@@ -1096,10 +1109,10 @@ const closeModalHandler = () => {
 
 
 window.addEventListener("click", (event) => {
-  if (event.target === modal) closeModalHandler();
+  if (event.target === modalCache.modal) closeModalHandler();
 });
 window.addEventListener("touchend", (event) => {
-  if (event.target === modal) closeModalHandler();
+  if (event.target === modalCache.modal) closeModalHandler();
 });
 
 
@@ -1335,8 +1348,9 @@ rinse()
 
 
 function createNewItem(item, color) {
-  const catalog = document.getElementById("ctlg");
+  const fragment = document.createDocumentFragment();
   const newItem = document.createElement("div");
+  
   newItem.classList.add("item");
   newItem.style.overflow = "hidden";
   newItem.style.scale = "1";
@@ -1361,7 +1375,7 @@ function createNewItem(item, color) {
     const retired = document.createElement("img");
     retired.classList.add("retired");
     retired.style.display = "none";
-    retired.src = "./imgs/retired.png";
+    //retired.src = "./imgs/retired.png";
     retired.style.width = "17%";
     retired.style.height = "auto";
     retired.style.position = "sticky";
@@ -1394,7 +1408,7 @@ function createNewItem(item, color) {
       untradable.style.right = "5px";
     }
     newItem.style.order = "1";
-    untradable.src = "https://i.imgur.com/WLjbELh.png";
+    untradable.src = "./imgs/WLjbELh.png";
     untradable.style.width = "17%";
     untradable.style.height = "auto";
     untradable.style.position = "absolute";
@@ -1539,7 +1553,7 @@ function createNewItem(item, color) {
     name.style.margin = "0";
     const untradable = document.createElement("img");
     untradable.classList.add("untradable");
-    untradable.src = "https://i.imgur.com/WLjbELh.png";
+    untradable.src = "./imgs/WLjbELh.png";
     untradable.style.width = "17%";
     untradable.style.height = "auto";
     untradable.style.position = "absolute";
@@ -1549,7 +1563,7 @@ function createNewItem(item, color) {
     newItem.appendChild(untradable);
   }
   const price = document.createElement("p");
-  price.innerHTML = `<img src="https://i.imgur.com/iZGLVYo.png" draggable="false">${item.price || 0}`;
+  price.innerHTML = `<img src="./imgs/iZGLVYo.png" draggable="false">${item.price || 0}`;
   newItem.appendChild(price);
   // Price element
   if (item.price == 0) {
@@ -1580,7 +1594,8 @@ function createNewItem(item, color) {
 
 
   if (document.getElementById("itemlist")) {
-    document.getElementById("itemlist").appendChild(newItem);
+    fragment.appendChild(newItem);
+    document.getElementById("itemlist")?.appendChild(fragment);
   }
 }
 
@@ -1691,21 +1706,3 @@ function setupSearch(itemList) {
 }
 
 
-function filterItems() {
-  const searchValue = document.getElementById('search-bar').value.toLowerCase();
-  const items = document.querySelectorAll('#ctlg .item');
-
-  items.forEach(item => {
-    let display = "flex";
-    if (item.id == "titles") {
-
-      display = "flex";
-    }
-    const itemText = item.querySelector('#h3').textContent.toLowerCase();
-    if (itemText.includes(searchValue)) {
-      item.style.display = display;
-    } else {
-      item.style.display = 'none';
-    }
-  });
-}
