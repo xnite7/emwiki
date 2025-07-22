@@ -697,37 +697,41 @@ function rinse() {
         Modal(event);
       });
 
-      gridConfigs.forEach(gridId => {
-        const grid = document.getElementById(gridId);
-        if (!grid) return;
 
-        grid.innerHTML = "";
 
-        if (gridId === "random") {
-          randomGridPopulate(window._randomArr, window._randomCategoryColors);
-          return;
-        }
+    gridConfigs.forEach(gridId => {
+      const grid = document.getElementById(gridId);
+      if (!grid) return;
 
-        grid.addEventListener("click", (event) => {
-          Modal(event);
-        });
+      grid.innerHTML = "";
 
-        // If arr is an array (e.g., on gears.html), just use it directly
+      if (gridId === "random") {
+        randomGridPopulate(window._randomArr, window._randomCategoryColors);
+        return;
+      }
 
-        // If arr is an object (main page), use categoryColors
-        Object.entries(categoryColors).forEach(([key, color]) => {
-          if (Array.isArray(arr[key])) {
-            arr[key].forEach(item => {
-              if (item[gridId] === true) {
-                createNewItem(item, color);
-                const lastItem = document.querySelector("#itemlist .item:last-child");
-                if (lastItem) grid.appendChild(lastItem);
-              }
-            });
-          }
-        });
-
+      grid.addEventListener("click", (event) => {
+        Modal(event);
       });
+
+      Object.entries(categoryColors).forEach(([key, color]) => {
+        if (Array.isArray(arr[key])) {
+          arr[key].forEach(item => {
+            if (item[gridId] === true) {
+              createNewItem(item, color);
+              const lastItem = document.querySelector("#itemlist .item:last-child");
+              if (lastItem) grid.appendChild(lastItem);
+            }
+          });
+        }
+      });
+    });
+
+      // Hide "new" container if no items with new tag
+      const newGrid = document.getElementById("new");
+      if (newGrid && newGrid.children.length === 0) {
+        newGrid.parentElement.style.display = "none";
+      }
 
       currentItems = arr; // ✅ Store current items for search use
       // After fetching and parsing arr:
@@ -873,6 +877,7 @@ function createNewItem(item, color) {
 
   // New icon
   if (item.new) {
+    
     const newbanner = document.createElement("img");
     newbanner.src = "./imgs/new.png";
     newbanner.style.width = "50%";
