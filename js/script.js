@@ -123,9 +123,16 @@ if (document.querySelector('.intro')) {
             li.appendChild(img);
             console.log(user);
             li.style.listStyleType = "none";
-            li.style.display = "grid";
+            li.style.display = "flex";
+            li.style.alignItems = "center";
+            li.style.flexDirection = "column";
             img.style.width = "100px";
-            li.appendChild(document.createTextNode(`${user.displayName} — ${user.totalSpent} Robux`));
+            li.appendChild(document.createTextNode(`${user.displayName}`));
+            const amountSpan = document.createElement('span');
+            amountSpan.textContent = `${user.totalSpent} Robux`;
+            amountSpan.style.color = "#ffcc00";
+            amountSpan.style.fontWeight = "bold";
+            li.appendChild(amountSpan);
             donatorsList.appendChild(li);
         });
       })
