@@ -8,6 +8,12 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Admin Panel</title>
+    	<link href="https://fonts.cdnfonts.com/css/zekton" rel="stylesheet">
+	<link href="https://fonts.cdnfonts.com/css/highway-gothic" rel="stylesheet">
+	<link href="https://fonts.cdnfonts.com/css/comic-neue-angular" rel="stylesheet">
+	<link href="https://fonts.cdnfonts.com/css/roman-antique" rel="stylesheet">
+	<link href="https://fonts.cdnfonts.com/css/accanthis-adf-std" rel="stylesheet">
+	<link href="https://fonts.cdnfonts.com/css/bunny-flowers-outline?styles=137265" rel="stylesheet">
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Source Sans Pro&family=Playpen+Sans:wght@100..800&family=Oxanium&family=Patrick+Hand&family=Denk+One&family=Marhey:wght@700&family=Rubik+Wet+Paint&family=Irish+Grover&family=Poppins:wght@700&family=Rye&family=Eater&family=Bangers&family=Inconsolata:wght@900&family=Roboto+Mono:wght@700&family=Sedgwick+Ave+Display&family=Rubik+Marker+Hatch&family=Sarpanch:wght@700&family=Kalam&family=Are+You+Serious&family=Akronim&family=Kings&family=Permanent+Marker&family=Caesar+Dressing&family=Michroma&family=Titillium+Web&family=Grenze+Gotisch:wght@100..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Bungee+Shade&family=Frijole&family=Audiowide&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Lobster&family=Fredoka:wght@300..700&family=Codystar:wght@300;400&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Michroma&family=Jura&family=Special+Elite&family=Noto+Serif+HK:wght@200..900&family=Faster+One&family=Nosifer&family=Silkscreen&family=Finger+Paint&family=Merriweather&family=Luckiest+Guy&family=Bungee+Inline&family=Creepster&family=Indie+Flower&family=Pacifico&family=Cairo&family=Fondamento&family=Balthazar&family=Arimo:ital,wght@0,400..700;1,400..700&display=swap");
     body {
@@ -26,15 +32,17 @@
       background: #3f3f3f;
       padding: 19px 0 12px;
       color: #b7b7b7;
+      border-bottom: outset black;
       border-radius: 17px;
     }
     .title {
-      text-align: center;
-      font: 600 22px 'Segoe UI';
-      color: #d5d5d5;
-      background: #1a1a1a;
-      border-radius: 20px 20px 0 0;
-      padding: 12px 0;
+        text-align: center;
+        background: -webkit-linear-gradient(right, rgb(141 141 141), rgb(255 255 255)) text;
+        font: 600 23px 'Arimo';
+        color: #d5d5d5;
+        -webkit-text-fill-color: transparent;
+        border-radius: 20px 20px 0 0;
+        padding: 12px 0;
     }
     #save-btn {
     box-shadow: 0 0 16px black;
@@ -60,13 +68,12 @@
 
 
     .grid {
-        border-radius: 0 0 20px 20px;
-        background: #1a1a1a;
-        padding: 20px;
+        padding: 16px;
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
         gap: 22px;
         justify-items: center;
+            padding-bottom: 35px;
     }
     .gridall {
       border-radius: 20px;
@@ -82,6 +89,7 @@
         border-radius: 16px;
         padding: 10px;
         text-align: center;
+        box-shadow: 0 0 14px #00000059;
         scale: 1;
         width: 111px;
         height: 111px;
@@ -98,7 +106,7 @@
       height: 0px;
       display: block;
       font-size: 14px;
-      top: -8px;
+
       text-shadow: -1.3px -1.3px 0 #000, 0 -1.3px 0 #000, 1.3px -1.3px 0 #000, 1.3px 0 0 #000, 1.3px 1.3px 0 #000, 0 1.3px 0 #000, -1.3px 1.3px 0 #000, -1.3px 0 0 #000;
       justify-self: anchor-center;
     }
@@ -113,6 +121,8 @@
     .panel {
         display: flex;
         flex-direction: column;
+        border-radius: 20px;
+        background: #1a1a1a;
         margin: 20px;
         flex: 1 1 18%;
     }
@@ -147,20 +157,23 @@
       font-size: 14px;
       align-self: center;
     }
-    #tab-switcher {
-      text-align: center;
-      margin-bottom: 20px;
-    }
+#tab-switcher {
+    text-align: center;
+    transform: translateY(13px);
+    margin: 20px 0 0;
+}
     #tab-switcher button {
       margin: 0 5px;
-      padding: 10px 15px;
+      padding: 10px 15px 20px;
       font-weight: bold;
       font-size: 14px;
       border-radius: 8px;
       border: none;
-      background: #444;
+      background: #3f3f3f;
+      font-size: 16px;
       color: white;
       cursor: pointer;
+      transition: all 0.2s;
     }
     body {
       font-family: "Segoe UI", sans-serif;
@@ -169,26 +182,16 @@
       margin: 0;
       padding: 0;
     }
-    #tab-switcher {
-      text-align: center;
-      margin: 20px;
-    }
-    #tab-switcher button {
-      margin: 0 10px;
-      padding: 10px 20px;
-      background-color: #444;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+
+
     #tab-switcher button:hover {
-      background-color: #666;
+      background: linear-gradient(180deg, #6b6b6b, #3f3f3f, #3f3f3f);
     }
     .search-sort-controls {
         display: flex;
         margin: 18px auto;
         max-width: 600px;
+        padding: 15px;
         align-items: center;
         flex-direction: column;
     }
@@ -223,6 +226,28 @@
         background-color: #c960fe
     }
 
+    
+    #search, #price-search {
+        background: black;
+        padding: 8px;
+        width: 98%;
+        border: 2px solid #5b5b5b;
+        font-size: 20px;
+        margin-bottom: 16px;
+        font-family: monospace;
+        border-radius: 14px;
+        color: #d7d7d7;
+    }
+
+    .brod{
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        flex-direction: row;
+    }
+
     @keyframes flashOutline {
       0% {
         outline-color: #ffd80c;
@@ -242,6 +267,39 @@
         zoom: 0.56;
         flex-direction: column;
     }
+    .search-bar {
+        display: flex;
+        margin: 18px auto;
+        max-width: 600px;
+        align-items: center;
+        flex-direction: column;
+        width: -webkit-fill-available;
+        margin-bottom: 20px;
+    }
+    #search {
+        width: 98%;
+        font-size: 39px;
+        margin-bottom: 0px;
+        font-family: monospace;
+        color: rgb(215, 215, 215);
+        background: black;
+        padding: 15px;
+        border-width: 2px;
+        border-style: solid;
+        border-color: rgb(91, 91, 91);
+        border-image: initial;
+        border-radius: 14px;
+    }
+
+    #pagination-container {
+
+        zoom: 2.5;
+
+    }
+    #page-count {
+      zoom: 2;
+    }
+    
     .papapanel {
         display: flex;
         margin: 20px;
@@ -254,7 +312,7 @@
         gap: 10px;
         margin-top: 10px;
         flex-wrap: wrap;
-        zoom: 0.8;
+        zoom: 0.9;
         justify-content: flex-start;
         flex-direction: row;
     }
@@ -262,30 +320,22 @@
     #sort-select {
       margin-left: 0px;
     }
+    .title {
+        font: 600 40px 'Arimo';
+        padding-top: 12px;
+    }
+    .grid {
+        zoom: 1.2;
+    }
+    .gridall {
+    zoom: 1.5;
+    }
     }
 
 
-    .brod{
-        display: flex;
-        gap: 10px;
-        margin-top: 10px;
-        flex-wrap: wrap;
-        justify-content: flex-start;
-        flex-direction: row;
-    }
 
-    #search, #price-search {
-        background: black;
-        padding: 8px;
-        width: 98%;
-        border: 2px solid #5b5b5b;
-        font-size: 20px;
-        margin-bottom: 16px;
-        font-family: monospace;
-        border-radius: 14px;
-        color: #d7d7d7;
-    }
 
+    
     .modal {
       position: fixed;
       top: 0; left: 0;
@@ -355,7 +405,7 @@
       <div class="panel">
         <div class="search-bar">
           <input type="text"
-            style="background:black; padding:8px; width:98%; border:2px solid #5b5b5b; font-size:20px; font-family:monospace; border-radius:14px; color:#d7d7d7;"
+            
             id="search" placeholder="Search items..." />
         </div>
         <div class="gridall" id="all-items" ondrop="dropFlag(event, null)"
@@ -369,7 +419,7 @@
       </div>
     </div>
 
-    <div id="prices-tab" style="display: none; padding: 10px;">
+    <div id="prices-tab" style="display: none;">
       <div class="title1">Prices Configurator<p>Change RAP values here.</p></div>
       <div class="search-sort-controls">
         <input type="text" id="price-search" placeholder="Search item name...">
@@ -383,7 +433,7 @@
         </select>
       </div>
       <div id="price-groups"
-        style="display:flex; flex-direction:column; gap: 30px;"></div>
+        style="display:flex; flex-direction:column; gap: 30px; padding: 10px;"></div>
 
     </div>
 
@@ -595,7 +645,6 @@ function findItemType(itemToFind) {
 
     function makeCard(item, type, flag) {
       const div = document.createElement("div");
-      div.dataset.id = item.id;
       div.id = type; // 👈 Store parent type
       div.className = "item-card";
       div.draggable = !isMobile;
@@ -604,22 +653,41 @@ function findItemType(itemToFind) {
       } else {
         div.onclick = () => openChecklistModal(item);
       }
-      const name = div.querySelector("span");
+      
       const imgSrc = item.img || "./imgs/trs.png";
       div.innerHTML = `
       <span>${item.name}</span>
         <img draggable="false" src="${imgSrc}" alt="${item.name}" onerror="this.style.display='none'" />
         
       `;
+      const name = div.querySelector("span");
       
+    if (type != "titles") {
+      name.style.top = "-7px";
 
-    if (!item.img) {
+    }
+    if (type == "titles") {
+      name.style.display = "table";
+      if (item.img) {
+        name.style.display = "none";
+        const img = div.querySelector("img");
+        img.style.marginTop = "4px";
+      } else {
+        const img = div.querySelector("img");
+        img.style.display = "none";
+      }
+      name.style.height = "auto";
+      
+      name.style.top = "0px";
+      name.style.position = "static";
       name.style.font = "600 28px 'Arimo'";
       name.style.color = "rgb(255 255 255)";
       name.style.whiteSpace = "nowrap";
       name.style.bottom = "auto";
       name.style.paddingTop = "0px";
-      name.style.margin = "40px 0";
+      div.style.display = "flex";
+      div.style.justifyContent = "center";
+      div.style.alignItems = "center";
 
     }
     
@@ -627,14 +695,19 @@ function findItemType(itemToFind) {
       name.setAttribute("style", item.style);
       name.style.whiteSpace = "nowrap";
       name.style.bottom = "auto";
-      name.style.margin = "40px 0";
+
     }
     if (item.style2) {
       name.setAttribute("style", item.style2);
       name.style.whiteSpace = "nowrap";
+      name.style.height = "0";
       let clone = name.cloneNode(true);
+      clone.style.height = "auto";
+      clone.style.top = "auto";
+      clone.style.display = "table";
       name.style.bottom = "auto";
-      name.style.margin = "40px 0";
+      name.style.paddingTop = "0px";
+      name.style.display = "table";
       clone.style.position = "absolute";
       clone.style.textShadow = "none";
       clone.style.fontSize = "1em";
@@ -643,6 +716,9 @@ function findItemType(itemToFind) {
       name.appendChild(clone);
       
     }
+      if (item.style3) {
+        name.outerHTML = item.style3;
+      }
     if (item.color) {
       name.style.color = item.color;
     }
