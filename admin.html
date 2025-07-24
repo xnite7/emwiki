@@ -539,6 +539,7 @@
           }),
         });
         alert(response.ok ? "✅ Changes saved successfully." : "❌ Failed to save changes.");
+        response.ok ?? location.reload()
       } catch (err) {
         alert("⚠️ Error saving changes: " + err.message);
       }
