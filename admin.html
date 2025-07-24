@@ -472,10 +472,7 @@
         }
       }
     }
-
-    let ws;
-
-
+let ws;
 
 function initWebSocket(adminName) {
   ws = new WebSocket(`wss://admin-tracker.xnite7.workers.dev?adminName=${encodeURIComponent(adminName)}`);
@@ -488,6 +485,9 @@ function initWebSocket(adminName) {
   ws.onclose = (event) => {
     console.log(`WebSocket closed with code: ${event.code}`);
     setTimeout(() => initWebSocket(adminName), 5000);
+  };
+  ws.onerror = (error) => {
+    console.error('WebSocket error:', error);
   };
 }
 
