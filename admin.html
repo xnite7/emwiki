@@ -868,8 +868,8 @@
           const name = document.createElement("span");
           name.textContent = item.name;
           const input = document.createElement("input");
-          input.type = "number";
-          input.min = 0;
+          input.type = "text";
+          
           input.value = item.price ?? "";
           input.placeholder = "Set price";
           input.style = `
@@ -882,9 +882,9 @@
             position: relative;
           `;
           input.onchange = () => {
-            const val = Math.max(0, parseInt(input.value || 0));
-            item.price = val;
-            input.value = val;
+            
+            item.price = input.value;
+            
             renderPriceGroups();
           };
           card.appendChild(name);
@@ -918,20 +918,17 @@
       name.textContent = item.name;
       name.style = "margin-bottom: 10px; font-size:18px; font-weight:bold;";
       const input = document.createElement("input");
-      input.type = "number";
-      input.min = 0;
+      input.type = "text";
       input.value = item.price ?? "";
       input.placeholder = "Set price";
       input.style = "padding: 6px 10px;font-size: 16px;border-radius: 8px;border: none;width: 81px;background: #ffffff;";
-      input.addEventListener("input", () => {
-        let val = input.value.trim();
-        if (val !== "" && (!/^\d+$/.test(val) || parseInt(val) < 0)) {
-          input.value = "";
-          item.price = null;
-        } else {
-          item.price = val === "" ? null : parseInt(val);
-        }
-      });
+
+      input.onchange = () => {
+          item.price = input.value;
+          renderPriceGroups();
+          
+      };
+
       editor.appendChild(img);
       editor.appendChild(name);
       editor.appendChild(input);
