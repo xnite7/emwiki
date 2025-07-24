@@ -476,7 +476,7 @@
     let ws;
 
     function initWebSocket(adminName) {
-      ws = new WebSocket(`wss://admin-tracker.xnite7.workers.dev?adminName=${encodeURIComponent(adminName)}`);
+      ws = new WebSocket(`wss://admin-tracker.xnite7.workers.dev?adminKey=${encodeURIComponent(getCookie('adminKey'))}`);
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.type === "adminList") {
@@ -490,13 +490,14 @@
 
     function updateAdminOnline(admins) {
       const onlineDiv = document.getElementById("admin-online");
-      onlineDiv.textContent = admins.length ? `Online: ${admins.join(", ")}` : "";
+      onlineDiv.textContent = admins.length ? `Online: ${admins.join(", ")}` : "No admins online";
       onlineDiv.classList.add("show");
     }
 
     function showWelcome(name) {
       const welcomeDiv = document.getElementById('welcome-message');
       welcomeDiv.textContent = `Welcome, ${name}.`;
+      
       setTimeout(() => {
         welcomeDiv.style.opacity = '1';
       }, 100);
@@ -506,6 +507,7 @@
       }, 3000);
       setTimeout(() => {
         welcomeDiv.style.fontSize = '0px';
+        initWebSocket(name);
       }, 3200);
 
     }
