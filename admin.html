@@ -476,6 +476,9 @@ let ws;
 
 function initWebSocket(adminName) {
   ws = new WebSocket(`wss://admin-tracker.xnite7.workers.dev?adminName=${encodeURIComponent(adminName)}`);
+  ws.onopen = () => {
+    console.log('WebSocket connected');
+  };
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
     if (data.type === "adminList") {
@@ -483,7 +486,7 @@ function initWebSocket(adminName) {
     }
   };
   ws.onclose = (event) => {
-    console.log(`WebSocket closed with code: ${event.code}`);
+    console.log(`WebSocket closed with code: ${event.code}, reason: ${event.reason}`);
     setTimeout(() => initWebSocket(adminName), 5000);
   };
   ws.onerror = (error) => {
