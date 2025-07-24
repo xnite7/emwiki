@@ -321,12 +321,29 @@
       font-size: 1.2rem;
       margin-bottom: 1rem;
       opacity: 0;
+      transition: all 0.5s ease;
+    }
+    #admin-online {
+      text-align: center;
+      font-size: 1rem;
+      color: #6cd13a;
+      
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    #admin-online.show {
+      text-align: center;
+      font-size: 1rem;
+      color: #6cd13a;
+      
+      opacity: 1;
       transition: opacity 0.5s ease;
     }
   </style>
 </head>
 <body>
   <h1>Admin Panel</h1>
+  <div id="admin-online"></div>
   <div id="welcome-message"></div>
   <div id="tab-switcher">
     <button onclick="switchTab('main')">🧩 Item Lists</button>
@@ -456,6 +473,27 @@
       }
     }
 
+    let ws;
+
+    function initWebSocket(adminName) {
+      ws = new WebSocket(`wss://admin-tracker.xnite7.workers.dev?adminName=${encodeURIComponent(adminName)}`);
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === "adminList") {
+          updateAdminOnline(data.admins);
+        }
+      };
+      ws.onclose = () => {
+        setTimeout(() => initWebSocket(adminName), 5000);
+      };
+    }
+
+    function updateAdminOnline(admins) {
+      const onlineDiv = document.getElementById("admin-online");
+      onlineDiv.textContent = admins.length ? `Online: ${admins.join(", ")}` : "";
+      onlineDiv.classList.add("show");
+    }
+
     function showWelcome(name) {
       const welcomeDiv = document.getElementById('welcome-message');
       welcomeDiv.textContent = `Welcome, ${name}.`;
@@ -464,7 +502,12 @@
       }, 100);
       setTimeout(() => {
         welcomeDiv.style.opacity = '0';
+
       }, 3000);
+      setTimeout(() => {
+        welcomeDiv.style.fontSize = '0px';
+      }, 3200);
+
     }
 
     async function fetchHistory() {
