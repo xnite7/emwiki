@@ -523,6 +523,20 @@
     }
 
     document.getElementById("save-btn").addEventListener("click", async () => {
+      if (document.getElementById("save-btn").disabled) return;
+      if (document.getElementById("save-btn").textContent === "⬇") {
+            const blob = new Blob([JSON.stringify(jsData, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "data.json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            return;
+      }
+
       const savedKey = getCookie('adminKey');
       let adminName = "Unknown";
       if (savedKey) {
@@ -547,11 +561,19 @@
         document.getElementById("save-btn").style.transform = "translateY(-10px)";
         document.getElementById("save-btn").style.opacity = "0";
         alert(response.ok ? "✅ Changes saved successfully." : "❌ Failed to save changes.");
-        
-        
-        response.ok ?? location.reload()
+
+
+        if (response.ok) {
+            location.reload(true);
+        }
       } catch (err) {
         alert("⚠️ Error saving changes: " + err.message);
+            document.getElementById("save-btn").style.transform = "translateY(0px)";
+            document.getElementById("save-btn").style.opacity = "1";
+            document.getElementById("save-btn").textContent = "⬇";
+            document.getElementById("save-btn").disabled = false;
+            document.getElementById("save-btn").style.background = "#377bfa";
+            document.getElementById("save-btn").style.cursor = "pointer";
       }
     });
 
