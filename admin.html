@@ -478,7 +478,7 @@
 
 
 function initWebSocket(adminName) {
-  ws = new WebSocket(`wss://admin-tracker.xnite7.workers.dev?adminKey=${encodeURIComponent(getCookie('adminKey'))}`);
+  ws = new WebSocket(`wss://admin-tracker.xnite7.workers.dev?adminName=${encodeURIComponent(adminName)}`);
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
     if (data.type === "adminList") {
