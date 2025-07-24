@@ -18,7 +18,7 @@ export async function onRequestPost(context) {
           content: JSON.stringify(content, null, 2),
         },
         "history.log": {
-          content: `${historyNote}\n${JSON.stringify(content)}\n\n`, // append if needed
+          content: historyNote, // append if needed
         },
       }
     };

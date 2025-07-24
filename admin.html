@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="background: black;">
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" href="./imgs/admin.png" type="image/png" />
@@ -16,7 +16,7 @@
     @import url("https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Source+Sans+Pro&family=Playpen+Sans:wght@100..800&family=Oxanium&family=Patrick+Hand&family=Denk+One&family=Marhey:wght@700&family=Rubik+Wet+Paint&family=Irish+Grover&family=Poppins:wght@700&family=Rye&family=Eater&family=Bangers&family=Inconsolata:wght@900&family=Roboto+Mono:wght@700&family=Sedgwick+Ave+Display&family=Rubik+Marker+Hatch&family=Sarpanch:wght@700&family=Kalam&family=Are+You+Serious&family=Akronim&family=Kings&family=Permanent+Marker&family=Caesar+Dressing&family=Michroma&family=Titillium+Web&family=Grenze+Gotisch:wght@100..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Bungee+Shade&family=Frijole&family=Audiowide&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Lobster&family=Fredoka:wght@300..700&family=Codystar:wght@300;400&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Michroma&family=Jura&family=Special+Elite&family=Noto+Serif+HK:wght@200..900&family=Faster+One&family=Nosifer&family=Silkscreen&family=Finger+Paint&family=Merriweather&family=Luckiest+Guy&family=Bungee+Inline&family=Creepster&family=Indie+Flower&family=Pacifico&family=Cairo&family=Fondamento&family=Balthazar&family=Arimo:ital,wght@0,400..700;1,400..700&display=swap");
     body {
       font-family: "Segoe UI", sans-serif;
-      background: linear-gradient(180deg, #2e2e2e, #1e1e1e);
+      background: linear-gradient(180deg, #2e2e2e, #1e1e1e) no-repeat;
       margin: 0;
       color: white;
       padding: 20px;
@@ -518,38 +518,62 @@ function updateAdminOnline(admins) {
 
     }
 
-    async function fetchHistory() {
-      try {
-        const response = await fetch('https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91');
-        if (!response.ok) throw new Error('Failed to fetch history');
-        const gist = await response.json();
-        const historyLog = gist.files["history.log"]?.content || "";
-        const lines = historyLog.split('\n').filter(line => line.startsWith('Updated by')).reverse();
-        renderHistory(lines);
-      } catch (err) {
-        console.error('Error fetching history:', err);
-        document.getElementById('history-list').innerHTML = '<p>Error loading history.</p>';
-      }
+const GIST_ID = "0d0a3800287f3e7c6e5e944c8337fa91";
+
+
+
+async function fetchHistory() {
+  try {
+    const commitsRes = await fetch(`https://api.github.com/gists/${GIST_ID}/commits`);
+    if (!commitsRes.ok) throw new Error("Failed to fetch Gist commits");
+
+    const commits = await commitsRes.json();
+
+    const linesSet = new Set();
+
+    for (const commit of commits) {
+      const commitRes = await fetch(`https://api.github.com/gists/${GIST_ID}/${commit.version}`);
+      if (!commitRes.ok) break;
+
+      const commitData = await commitRes.json();
+      const content = commitData.files["history.log"]?.content;
+
+      if (!content || !content.trim()) break;
+
+      const lines = content.split('\n').filter(line => line.startsWith('Updated by'));
+      lines.forEach(line => linesSet.add(line));
     }
 
-    function renderHistory(lines) {
-      const container = document.getElementById('history-list');
-      container.innerHTML = '';
-      if (lines.length === 0) {
-        container.innerHTML = '<p>No history available.</p>';
-        return;
-      }
-      const ul = document.createElement('ul');
-      ul.style.listStyle = 'none';
-      ul.style.padding = '0';
-      lines.forEach(line => {
-        const li = document.createElement('li');
-        li.style.marginBottom = '1rem';
-        li.textContent = line;
-        ul.appendChild(li);
-      });
-      container.appendChild(ul);
-    }
+    const allLines = Array.from(linesSet); // ← no reverse
+    renderHistory(allLines);
+  } catch (err) {
+    console.error('Error fetching full history:', err);
+    document.getElementById('history-list').innerHTML = '<p>Error loading history.</p>';
+  }
+}
+
+
+
+function renderHistory(lines) {
+  const container = document.getElementById('history-list');
+  container.innerHTML = '';
+  if (lines.length === 0) {
+    container.innerHTML = '<p>No history available.</p>';
+    return;
+  }
+  const ul = document.createElement('ul');
+  ul.style.listStyle = 'none';
+  ul.style.padding = '0';
+  lines.forEach(line => {
+    const li = document.createElement('li');
+    li.style.marginBottom = '1rem';
+    li.textContent = line;
+    ul.appendChild(li);
+  });
+  container.appendChild(ul);
+}
+
+
 
     let fusePrice = null;
     let allPriceItems = [];
