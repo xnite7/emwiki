@@ -530,7 +530,12 @@
         adminName = adminKeys[hash] || "Unknown";
       }
       try {
-        document.getElementById("save-btn").style.display = "none";
+        //disable save button
+        document.getElementById("save-btn").disabled = true;
+        document.getElementById("save-btn").style.background = "orange";
+        document.getElementById("save-btn").style.cursor = "wait";
+        document.getElementById("save-btn").textContent = "🕐";
+        
         const response = await fetch("https://emwiki.site/api/update-gist", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -539,6 +544,8 @@
             content: jsData,
           }),
         });
+        document.getElementById("save-btn").style.transform = "translateY(-10px)";
+        document.getElementById("save-btn").style.opacity = "0";
         alert(response.ok ? "✅ Changes saved successfully." : "❌ Failed to save changes.");
         
         
