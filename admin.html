@@ -633,7 +633,7 @@
     function initWebSocket(adminName) {
       ws = new WebSocket(`wss://admin-tracker.xnite7.workers.dev?adminName=${encodeURIComponent(adminName)}`);
       ws.onopen = () => {
-        console.log('WebSocket connected');
+
         backoff = 1000;
       };
       ws.onmessage = (event) => {
@@ -845,7 +845,7 @@
     }
 
     function renderAllItems() {
-      console.log("Rendering all items...");
+
       const container = document.getElementById("all-items");
       container.innerHTML = "";
       const start = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -1130,8 +1130,7 @@
           document.getElementById("all-items").querySelectorAll(".item-card").forEach(card => {
             if (card.getAttribute("data-name") === evt.item.getAttribute("data-name")) {
               card.id = evt.item.id
-              console.log("evt.item", evt.item.id);
-              console.log("card", card.id);
+
             }
           });
           
