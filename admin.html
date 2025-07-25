@@ -454,7 +454,7 @@
       justify-items: center;
       bottom: 20px;
       right: 20px;
-      width: 180px;
+      width: -webkit-fill-available;
       min-height: 60px;
       padding: 10px;
       border: 2px dashed #666;
@@ -494,6 +494,9 @@
   <div id="main-tab">
     <div class="title1">List Configurator<p>Drag items to the appropriate lists below.</p>
     </div>
+        <ul id="trash-bin" class="drop-zone">
+      <li class="placeholder">🗑 Drop items here to remove</li>
+    </ul>
     <div class="papapanel">
       <div class="panel">
         <div class="title">New Items</div>
@@ -508,9 +511,7 @@
         <div class="grid" id="weeklystar-items"></div>
       </div>
     </div>
-    <ul id="trash-bin" class="drop-zone">
-      <li class="placeholder">🗑 Drop items here to remove</li>
-    </ul>
+
 
     <div class="panel">
       <div class="search-bar">
