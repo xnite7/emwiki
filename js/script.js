@@ -106,7 +106,7 @@ if (document.querySelector('.intro')) {
     if (!donatorsList) return;
 
     const loadDonations = () => {
-      fetch('/api/donations')
+      fetch('https://emwiki.site/api/donations')
         .then(res => {
           if (!res.ok) throw new Error('Failed to fetch donation data');
           return res.json();
@@ -121,7 +121,6 @@ if (document.querySelector('.intro')) {
             img.alt = user.displayName || user.name || 'User avatar';
             img.className = 'avatar';
             li.appendChild(img);
-            console.log(user);
             li.style.listStyleType = "none";
             li.style.display = "flex";
             li.style.alignItems = "center";
@@ -136,12 +135,12 @@ if (document.querySelector('.intro')) {
             amountSpan.style.fontWeight = "bold";
             li.appendChild(amountSpan);
             donatorsList.appendChild(li);
+          });
+        })
+        .catch(err => {
+          console.error('Error fetching donations:', err);
+          donatorsList.innerHTML = '<li>Error loading donators</li>';
         });
-      })
-      .catch(err => {
-        console.error('Error fetching donations:', err);
-        donatorsList.innerHTML = '<li>Error loading donators</li>';
-      });
     };
 
     if (window.requestIdleCallback) {
@@ -1022,52 +1021,43 @@ window.addEventListener("touchend", (event) => {
   if (event.target === modalCache.modal) closeModalHandler();
 });
 
-resize_to_fit();
+const customFont = new FontFace(
+  'Source Sans Pro',
+  'url(https://fonts.googleapis.com/css?family=Source Sans Pro)'
+);
+
+customFont.load()
+  .then(() => {
+    document.fonts.add(customFont);
+
+  })
+
 
 function resize_to_fit() {
-  const items = document.querySelectorAll('.catalog-grid .item');
-
-  const observer = new MutationObserver((mutations, obs) => {
-    const items = document.querySelectorAll('.catalog-grid .item');
-    if (items.length > 0) {
-      obs.disconnect();
-      items.forEach(item => {
-        if (item.id != "titles") {
-          return;
+  const items = document.querySelectorAll('.item');
+  if (items.length > 0) {
+    items.forEach(item => {
+      if (item.id == "titles") return;
+      if (item.querySelector('div')) {
+        item.querySelector('div').style.fontSize = "20px";
+        let fontsize = parseInt(window.getComputedStyle(item.querySelector('div')).fontSize, 10);
+        console.log(`font size: ${fontsize}`);
+        while (item.querySelector('div').offsetWidth > 120 && fontsize > 11) {
+          fontsize -= 2;
+          item.querySelector('div').style.fontSize = `${fontsize}px`;
         }
-        if (item.childNodes[1]) {
-          let fontsize = parseInt(window.getComputedStyle(item.childNodes[1]).fontSize, 10);
-          while (item.childNodes[1].offsetWidth > 150 && fontsize > 14) {
-            fontsize -= 2;
-            item.childNodes[1].style.fontSize = `${fontsize}px`;
-          }
-        }
-      });
-    }
-  });
-
-  observer.observe(document.querySelector('.catalog-grid'), { childList: true, subtree: true });
-
-  items.forEach(item => {
-    if (item.id != "titles") {
-      return;
-    }
-    if (item.childNodes[1]) {
-      let fontsize = parseInt(window.getComputedStyle(item.childNodes[1]).fontSize, 10);
-      while (item.childNodes[1].offsetWidth > 150 && fontsize > 14) {
-        fontsize -= 2;
-        item.childNodes[1].style.fontSize = `${fontsize}px`;
       }
-    }
-  });
-}
+    });
+  }
+};
+
 
 function setupLazyLoading() {
   const observer = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const gridId = entry.target.id;
-        
+
         const categoryMap = {
           gears: { data: window._randomArr.gears, color: window._randomCategoryColors.gears },
           deaths: { data: window._randomArr.deaths, color: window._randomCategoryColors.deaths },
@@ -1090,7 +1080,7 @@ function setupLazyLoading() {
           items = categoryMap[page].data;
           color = categoryMap[page].color;
         }
-        
+
         if (gridId === "random") {
           randomGridPopulate(window._randomArr, window._randomCategoryColors);
         } else if (gridId === "ctlg" && document.getElementById("itemlist")) {
@@ -1103,22 +1093,22 @@ function setupLazyLoading() {
           const filteredItems = Array.isArray(items)
             ? items.filter(item => item[gridId] === true).map(item => ({ ...item, _color: color }))
             : Object.entries(window._randomCategoryColors).flatMap(([key, catColor]) =>
-                (items[key]?.filter(item => item[gridId] === true) || []).map(item => ({ ...item, _color: catColor }))
-              );
+              (items[key]?.filter(item => item[gridId] === true) || []).map(item => ({ ...item, _color: catColor }))
+            );
           populateGrid(gridId, filteredItems);
-          console.log("Populated catalog grid with items2:", filteredItems);
+
         }
 
         let flatArray = Array.isArray(items)
-  ? items.map(item => ({ ...item, _color: color }))
-  : Object.entries(window._randomCategoryColors).flatMap(([key, catColor]) =>
-      (items[key] || []).map(item => ({ ...item, _color: catColor }))
-    );
+          ? items.map(item => ({ ...item, _color: color }))
+          : Object.entries(window._randomCategoryColors).flatMap(([key, catColor]) =>
+            (items[key] || []).map(item => ({ ...item, _color: catColor }))
+          );
         if (document.getElementById("zd")) {
-        document.getElementById("zd").innerText = `${document.querySelectorAll("#ctlg .item").length} item${document.querySelectorAll("#ctlg .item").length === 1 ? '' : 's'}`;
-      }
+          document.getElementById("zd").innerText = `${document.querySelectorAll("#ctlg .item").length} item${document.querySelectorAll("#ctlg .item").length === 1 ? '' : 's'}`;
+        }
 
-setupSearch(flatArray, color);
+        setupSearch(flatArray, color);
 
         if (gridId === "new" && entry.target.children.length === 0) {
           entry.target.parentElement.style.display = "none";
@@ -1148,6 +1138,7 @@ function populateGrid(gridId, items, limit = null) {
   grid.querySelectorAll('.item').forEach(item => {
     item.onclick = (event) => Modal(event);
   });
+  resize_to_fit()
 }
 
 async function rinse() {
@@ -1233,7 +1224,7 @@ let num = 0
 function createNewItem(item, color) {
   const fragment = document.createDocumentFragment();
   const newItem = document.createElement("div");
-  
+
   newItem.classList.add("item");
   newItem.style.overflow = "hidden";
   newItem.style.scale = "1";
