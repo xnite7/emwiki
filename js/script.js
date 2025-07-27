@@ -1110,7 +1110,7 @@ function setupLazyLoading() {
 
         setupSearch(flatArray, color);
 
-        if (gridId === "new" && entry.target.children.length === 0) {
+        if (entry.target.children.length === 0) {
           entry.target.parentElement.style.display = "none";
         }
 
