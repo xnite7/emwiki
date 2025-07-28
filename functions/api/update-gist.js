@@ -71,7 +71,7 @@ export async function onRequestPost(context) {
     const latestVersion = latestText.split(":")[1] || ""; // extract version from response
 
     // Compare against the client's version
-    if (CURRENT_GIST_VERSION && CURRENT_GIST_VERSION !== latestVersion) {
+    if (!body.force && CURRENT_GIST_VERSION && CURRENT_GIST_VERSION !== latestVersion) {
       return new Response(
         JSON.stringify({ 
           error: "Conflict: A newer version exists.",

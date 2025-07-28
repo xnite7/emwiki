@@ -896,7 +896,8 @@
         }
 
         if (response.status === 409) {
-          alert("❗ Another admin has saved changes since you loaded. Please reload the page and try again.");
+          const conflict = await res.json();
+          showConflictUI(conflict);
           document.getElementById("save-btn").style.transform = "translateY(0px)";
           document.getElementById("save-btn").style.opacity = "1";
           document.getElementById("save-btn").textContent = "⬇";
@@ -904,6 +905,8 @@
           document.getElementById("save-btn").style.background = "#377bfa";
           document.getElementById("save-btn").style.cursor = "pointer";
         }
+
+        if (!res.ok) throw new Error("Unexpected error during update");
 
       } catch (err) {
         alert("⚠️ Error saving changes: " + err.message);
@@ -918,6 +921,37 @@
 
     function getAllItems() {
       return Object.values(jsData).flat();
+    }
+
+    function showConflictUI({ latestVersion, latestTimestamp, latestDiff }) {
+      const container = document.getElementById('conflict-box') || document.createElement('div');
+      container.id = 'conflict-box';
+      container.style.background = '#220';
+      container.style.padding = '1rem';
+      container.style.border = '2px solid red';
+      container.style.marginTop = '1rem';
+      container.style.color = 'white';
+      container.style.fontFamily = 'monospace';
+
+      container.innerHTML = `
+        <h3>⚠️ Update Conflict</h3>
+        <p><strong>A newer version was published at:</strong> ${new Date(latestTimestamp).toLocaleString()}</p>
+        <p><strong>Latest Version:</strong> ${latestVersion}</p>
+        <p>Here’s what changed since your version:</p>
+        <pre style="max-height: 300px; overflow: auto; background: #111; padding: 1rem;">${sanitize(latestDiff)}</pre>
+        <button id="refreshBtn">🔄 Refresh and load latest</button>
+        <button id="forceSubmitBtn">🚨 Overwrite Anyway</button>
+      `;
+
+      document.body.appendChild(container);
+
+      document.getElementById('refreshBtn').onclick = () => location.reload();
+
+      document.getElementById('forceSubmitBtn').onclick = () => {
+        // override the version in payload and re-submit
+        payload.force = true;
+        submitUpdate(payload);
+      };
     }
 
     function setupSearch() {
