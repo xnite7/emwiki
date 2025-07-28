@@ -391,11 +391,13 @@ const diffText = diff
 
     if (!updateRes.ok) {
       const errorText = await updateRes.text();
+      console.error("GitHub Gist update error:", errorText);
       return new Response(errorText, {
         status: 500,
         headers: { "Content-Type": "application/json" }
       });
     }
+
 
     return new Response("Gist updated and diff logged", { status: 200 });
 
