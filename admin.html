@@ -1513,7 +1513,7 @@
         ]);
 
 
-        if (!gistRes.ok || !latestRes.ok) throw new Error("Failed to check versions");
+        if (!CURRENT_VERSION || !latestRes.ok) throw new Error("Failed to check versions");
 
         const latestText = await latestRes.text();
         console.log(CURRENT_VERSION)
