@@ -69,9 +69,12 @@ export async function onRequestPost(context) {
     }
     const latestText = await latestRes.text(); // format: "timestamp:version"
     const [latestTimestamp, latestVersion] = latestText.split(":");
+    
+    const oldContentRaw = gistData.files["auto.json"]?.content || "{}";
+    const oldContent = JSON.parse(oldContentRaw);
+
     const latestDiff = getReadableDiff(oldContent, newContent); // reuse diff function
-
-
+    
     // Compare against the client's version
     if (!body.force && CURRENT_GIST_VERSION && CURRENT_GIST_VERSION !== latestVersion) {
       return new Response(
@@ -84,10 +87,6 @@ export async function onRequestPost(context) {
         { status: 409, headers: { "Content-Type": "application/json" } }
       );
     }
-
-
-    const oldContentRaw = gistData.files["auto.json"]?.content || "{}";
-    const oldContent = JSON.parse(oldContentRaw);
 
     const readableDiff = getReadableDiff(oldContent, newContent);
     const timestamp = new Date().toISOString();
