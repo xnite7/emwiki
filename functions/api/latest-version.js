@@ -14,7 +14,7 @@ export async function onRequestGet(context) {
       return new Response(`0:`, { status: 200, headers: { "Content-Type": "text/plain", "Cache-Control": "no-cache" } });
     }
 
-    return new Response(`${row.timestamp}:${row.version}`, {
+    return new Response(`${row.timestamp}|${row.version}`, {
       headers: { "Content-Type": "text/plain", "Cache-Control": "no-cache" }
     });
 

@@ -1565,7 +1565,7 @@ async function checkVersionMatch() {
     const githubVersion = gistData.history?.[0]?.version || "";
 
     const latestText = await latestRes.text();
-    const [latestTimestamp, latestVersion] = latestText.split(":");
+    const [latestTimestamp, latestVersion] = latestText.split("|");
     console.log(latestText)
 
     console.log("GitHub version:", githubVersion);
