@@ -774,7 +774,7 @@
     function startUpdateCheck() {
       setInterval(async () => {
         try {
-          const res = await fetch("/latest-version");
+          const res = await fetch("/api/latest-version");
           if (!res.ok) return;
 
           const text = await res.text();
@@ -831,7 +831,6 @@
             version: CURRENT_GIST_VERSION
           })
         });
-        console.log(adminName,CURRENT_GIST_VERSION)
         document.getElementById("save-btn").style.transform = "translateY(-10px)";
         document.getElementById("save-btn").style.opacity = "0";
         alert(response.ok ? "✅ Changes saved successfully." : "❌ Failed to save changes.");
