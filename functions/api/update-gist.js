@@ -50,7 +50,7 @@ export default {
     });
 
     if (!latestRes.ok) {
-      return new Response("Failed to fetch Gist metadata", { status: 500 });
+      return new Response("Failed to fetch Catalog metadata", { status: 500 });
     }
 
     const latestGist = await latestRes.json();
@@ -59,7 +59,7 @@ export default {
     if (incomingVersion !== latestVersion) {
       return new Response(
         JSON.stringify({
-          error: "Conflict: another admin has updated the Gist. Please reload first."
+          error: "Conflict: another admin has updated the Catalog. Please reload first."
         }),
         { status: 409, headers: { "Content-Type": "application/json" } }
       );
@@ -92,7 +92,7 @@ export default {
     });
 
     if (!updateRes.ok) {
-      return new Response("Failed to update Gist", { status: 500 });
+      return new Response("Failed to update Catalog", { status: 500 });
     }
 
     return new Response(JSON.stringify({ success: true }), {
