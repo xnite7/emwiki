@@ -820,15 +820,18 @@
         document.getElementById("save-btn").style.cursor = "wait";
         document.getElementById("save-btn").textContent = "🕐";
 
-        const response = await fetch("https://emwiki.site/api/update-gist", {
+        await fetch("/api/update-gist", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              username: adminName,
-              content: jsData,
-              version: CURRENT_GIST_VERSION,
-            }),
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            content: jsData,
+            username: adminName,
+            version: CURRENT_GIST_VERSION
+          })
         });
+        console.log(adminName,CURRENT_GIST_VERSION)
         document.getElementById("save-btn").style.transform = "translateY(-10px)";
         document.getElementById("save-btn").style.opacity = "0";
         alert(response.ok ? "✅ Changes saved successfully." : "❌ Failed to save changes.");
