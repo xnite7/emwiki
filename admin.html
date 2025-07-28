@@ -764,14 +764,22 @@ function renderHistory(lines) {
 
     let CURRENT_GIST_VERSION = "";
 
+
+
     async function loadData() {
-      // Load auto.json content
+      // Load auto.json content from raw GitHub (safe, no auth needed)
       const res = await fetch("https://gist.githubusercontent.com/xnite7/0d0a3800287f3e7c6e5e944c8337fa91/raw/auto.json");
       jsData = await res.json();
 
-      // Load version from Gist API metadata
-      const gistMeta = await fetch("https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91").then(r => r.json());
-      CURRENT_GIST_VERSION = gistMeta.history?.[0]?.version || "";
+      // Load latest version from your own worker endpoint
+      const versionRes = await fetch("/api/latest-version");
+      if (versionRes.ok) {
+        const text = await versionRes.text();
+        const [timestamp, version] = text.split(":");
+        CURRENT_GIST_VERSION = version || "";
+      } else {
+        CURRENT_GIST_VERSION = "";
+      }
 
       cacheAllPriceItems();
       setupSearch();
@@ -780,28 +788,30 @@ function renderHistory(lines) {
     }
 
 
+
     let CURRENT_VERSION = "";
 
-    function startUpdateCheck() {
-      setInterval(async () => {
-        try {
-          const res = await fetch("/api/latest-version");
-          if (!res.ok) return;
 
-          const text = await res.text();
-          const [timestamp, newVersion] = text.split(":");
+    async function checkUpdate() {
+      try {
+        const res = await fetch("/api/latest-version");
+        if (!res.ok) return;
 
-          if (newVersion && newVersion !== CURRENT_VERSION) {
-            alert("⚠️ Another admin has updated the Catalog. Please reload to see latest changes.");
-            CURRENT_VERSION = newVersion;
-          }
-        } catch (err) {
-          console.warn("Failed to check for updates", err);
+        const text = await res.text();
+        const [timestamp, newVersion] = text.split(":");
+
+        if (newVersion && newVersion !== CURRENT_VERSION) {
+          alert("⚠️ Another admin has updated the Catalog. Please reload to see latest changes.");
+          CURRENT_VERSION = newVersion;
         }
-      }, 10000);
+      } catch (err) {
+        console.warn("Failed to check for updates", err);
+      }
     }
 
-
+    function startUpdateCheck() {
+      setInterval(checkUpdate, 10000);
+    }
 
     document.getElementById("save-btn").addEventListener("click", async () => {
       if (document.getElementById("save-btn").disabled) return;
