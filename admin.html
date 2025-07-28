@@ -738,18 +738,22 @@
 
         // Create username element
         const userEl = document.createElement('div');
-        userEl.textContent = `Updated by: ${username}`;
+        userEl.textContent = `${username}`;
         userEl.style.fontWeight = '700';
-        userEl.style.fontSize = '16px';
+        userEl.style.fontSize = '18px';
+        userEl.style.width = 'fit-content';
         userEl.style.marginBottom = '4px';
 
         // Create timestamp element
         const timeEl = document.createElement('div');
-        timeEl.textContent = `At: ${time}`;
+        timeEl.textContent = `${time}`;
         timeEl.style.fontWeight = '500';
         timeEl.style.fontSize = '14px';
-        timeEl.style.marginBottom = '8px';
         timeEl.style.color = '#666';
+        timeEl.style.float = 'right';
+        timeEl.style.position = 'relative';  
+        timeEl.style.bottom = '-5px';
+        timeEl.style.paddingLeft = '9px';
 
         // Create diff summary block with <pre> for formatting
         const diffEl = document.createElement('pre');
@@ -757,10 +761,11 @@
         diffEl.style.whiteSpace = 'pre-wrap';
         diffEl.style.fontWeight = '400';
         diffEl.style.fontSize = '14px';
-        diffEl.style.background = '#f9f9f9';
+        diffEl.style.background = '#000';
         diffEl.style.border = '1px solid #ddd';
         diffEl.style.padding = '8px';
         diffEl.style.borderRadius = '4px';
+        diffEl.style.width = 'fit-content';
 
         li.appendChild(userEl);
         li.appendChild(timeEl);
