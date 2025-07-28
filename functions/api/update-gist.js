@@ -83,6 +83,15 @@ export async function onRequestPost(context) {
       VALUES (?, ?, ?)
     `).bind(timestamp, username, readableDiff || "(No changes)").run();
 
+    await DBH.prepare(`
+      DELETE FROM history WHERE username = '__version__'
+    `).run();
+
+    await DBH.prepare(`
+      INSERT INTO history (timestamp, username, diff)
+      VALUES (?, '__version__', ?)
+    `).bind(timestamp, currentVersion).run();
+
     // Combine new diff with previous log (prepend)
     const previousLog = gistData.files["history.log"]?.content || "";
     const fullHistoryLog = readableDiff.trim()
@@ -121,6 +130,8 @@ export async function onRequestPost(context) {
       JSON.stringify({ message: "Gist updated and diff logged", readableDiff }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
+
+    
 
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message, stack: err.stack }), {

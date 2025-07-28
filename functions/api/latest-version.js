@@ -1,27 +1,24 @@
 export async function onRequestGet(context) {
-  const GITHUB_TOKEN = context.env.GITHUB_TOKEN;
-  const GIST_ID = "0d0a3800287f3e7c6e5e944c8337fa91";
-
-  const headers = {
-    "User-Agent": "emwiki-admin-version-check",
-  };
-  if (GITHUB_TOKEN) {
-    headers["Authorization"] = `Bearer ${GITHUB_TOKEN}`;
-  }
+  const DBH = context.env.DBH;
 
   try {
-    const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, { headers });
+    // Select the latest version record
+    const row = await DBH.prepare(`
+      SELECT timestamp, diff as version
+      FROM history
+      WHERE username = '__version__'
+      ORDER BY timestamp DESC
+      LIMIT 1
+    `).first();
 
-    if (!res.ok) {
-      return new Response(`Failed to fetch: ${res.statusText}`, { status: res.status });
+    if (!row) {
+      return new Response(`0:`, { status: 200, headers: { "Content-Type": "text/plain", "Cache-Control": "no-cache" } });
     }
 
-    const gist = await res.json();
-    const text = gist.files["lastupdate.txt"]?.content || "0:"; // fallback
-
-    return new Response(text, {
+    return new Response(`${row.timestamp}:${row.version}`, {
       headers: { "Content-Type": "text/plain", "Cache-Control": "no-cache" }
     });
+
   } catch (err) {
     return new Response(`Error: ${err.message}`, { status: 500 });
   }
