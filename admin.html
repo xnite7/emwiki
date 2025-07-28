@@ -975,7 +975,7 @@
           location.reload(true);
         }
 
-        
+
 
         if (!response.ok) throw new Error("Unexpected error during update");
 
@@ -995,48 +995,48 @@
     }
 
     function showConflictUI(conflict) {
-  const blocker = document.createElement("div");
-  blocker.id = "conflict-blocker";
-  blocker.style = "position:fixed;inset:0;background:#111;color:white;z-index:9999;padding:40px;font-family:monospace;overflow:auto";
-  blocker.innerHTML = `
+      const blocker = document.createElement("div");
+      blocker.id = "conflict-blocker";
+      blocker.style = "position:fixed;inset:0;background:#111;color:white;z-index:9999;padding:40px;font-family:monospace;overflow:auto";
+      blocker.innerHTML = `
     <h2>⚠️ Conflict Detected</h2>
     <p>The Gist has been updated by someone else or is out of sync with D1.</p>
     <pre style="white-space:pre-wrap;background:#222;padding:10px;border-radius:8px">${conflict.latestDiff || "(No visible changes)"}</pre>
     <button id="force-save" style="margin-top:20px;background:#e84118;color:white;padding:10px 20px;font-size:16px">Force Save Anyway</button>
     <button onclick="location.reload()" style="margin-top:20px;margin-left:10px;">Cancel</button>
   `;
-  document.body.appendChild(blocker);
+      document.body.appendChild(blocker);
 
-  document.getElementById("force-save").onclick = async () => {
-    blocker.innerHTML = "<p>⏳ Forcing save...</p>";
+      document.getElementById("force-save").onclick = async () => {
+        blocker.innerHTML = "<p>⏳ Forcing save...</p>";
 
-    const savedKey = getCookie('adminKey');
-    let adminName = "Unknown";
-    if (savedKey) {
-      const hash = await computeHash(savedKey);
-      adminName = adminKeys[hash] || "Unknown";
+        const savedKey = getCookie('adminKey');
+        let adminName = "Unknown";
+        if (savedKey) {
+          const hash = await computeHash(savedKey);
+          adminName = adminKeys[hash] || "Unknown";
+        }
+
+        const response = await fetch("/api/update-gist", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            content: jsData,
+            username: adminName,
+            version: CURRENT_GIST_VERSION,
+            force: true // 👈 this skips the conflict check on the backend
+          })
+        });
+
+        if (response.ok) {
+          location.reload(true);
+        } else {
+          blocker.innerHTML = `<p>❌ Failed to force save. <button onclick="location.reload()">Retry</button></p>`;
+        }
+      };
     }
-
-    const response = await fetch("/api/update-gist", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        content: jsData,
-        username: adminName,
-        version: CURRENT_GIST_VERSION,
-        force: true // 👈 this skips the conflict check on the backend
-      })
-    });
-
-    if (response.ok) {
-      location.reload(true);
-    } else {
-      blocker.innerHTML = `<p>❌ Failed to force save. <button onclick="location.reload()">Retry</button></p>`;
-    }
-  };
-}
 
 
     function setupSearch() {
@@ -1554,70 +1554,70 @@
 
     promptAdminKey();
 
-async function checkVersionMatch() {
-  try {
-    const [latestRes, githubRes] = await Promise.all([
-      fetch('/api/latest-version', { cache: "no-store" }),
-      fetch(`https://api.github.com/gists/${GIST_ID}`, {
-        headers: {
-          Accept: "application/vnd.github+json",
-          "User-Agent": "emwiki-checker"
+    async function checkVersionMatch() {
+      try {
+        const [latestRes, githubRes] = await Promise.all([
+          fetch('/api/latest-version', { cache: "no-store" }),
+          fetch(`https://api.github.com/gists/${GIST_ID}`, {
+            headers: {
+              Accept: "application/vnd.github+json",
+              "User-Agent": "emwiki-checker"
+            }
+          })
+        ]);
+
+        if (!githubRes.ok || !latestRes.ok) throw new Error("Failed to check versions");
+
+        const githubData = await githubRes.json();
+        const githubVersion = githubData.history?.[0]?.version || "";
+
+        const latestText = await latestRes.text();
+        const [latestTimestamp, latestVersion] = latestText.split(":");
+
+        console.log("GitHub version:", githubVersion);
+        console.log("D1 version (/api/latest-version):", latestVersion);
+
+        // ✅ If D1 version is empty, assume GitHub is newest and continue
+        if (!latestVersion || latestVersion === "") {
+          console.log("✅ No D1 version found — assuming GitHub is latest. Proceeding.");
+          document.body.style.pointerEvents = 'auto';
+          document.getElementById('version-blocker').style.display = 'none';
+          return;
         }
-      })
-    ]);
 
-    if (!githubRes.ok || !latestRes.ok) throw new Error("Failed to check versions");
+        if (githubVersion !== latestVersion) {
+          console.warn("⚠️ Version mismatch between GitHub and D1!");
 
-    const githubData = await githubRes.json();
-    const githubVersion = githubData.history?.[0]?.version || "";
+          const blocker = document.getElementById('version-blocker');
+          blocker.style.display = 'flex';
+          document.body.style.pointerEvents = 'none';
 
-    const latestText = await latestRes.text();
-    const [latestTimestamp, latestVersion] = latestText.split(":");
+          const hasReloaded = localStorage.getItem("versionReloaded");
 
-    console.log("GitHub version:", githubVersion);
-    console.log("D1 version (/api/latest-version):", latestVersion);
-
-    // ✅ If D1 version is empty, assume GitHub is newest and continue
-    if (!latestVersion || latestVersion === "") {
-      console.log("✅ No D1 version found — assuming GitHub is latest. Proceeding.");
-      document.body.style.pointerEvents = 'auto';
-      document.getElementById('version-blocker').style.display = 'none';
-      return;
-    }
-
-    if (githubVersion !== latestVersion) {
-      console.warn("⚠️ Version mismatch between GitHub and D1!");
-
-      const blocker = document.getElementById('version-blocker');
-      blocker.style.display = 'flex';
-      document.body.style.pointerEvents = 'none';
-
-      const hasReloaded = localStorage.getItem("versionReloaded");
-
-      if (!hasReloaded) {
-        console.log("🔁 First mismatch detected — reloading once...");
-        localStorage.setItem("versionReloaded", "true");
-        location.reload(); // This will reload once
-      } else {
-        console.log("❌ Mismatch persists after reload — informing admin.");
-        blocker.innerHTML = `
+          if (!hasReloaded) {
+            console.log("🔁 First mismatch detected — reloading once...");
+            localStorage.setItem("versionReloaded", "true");
+            location.reload(); // This will reload once
+          } else {
+            console.log("❌ Mismatch persists after reload — informing admin.");
+            blocker.innerHTML = `
           <p>The update is still processing. Please try refreshing again in a few minutes.</p>
         `;
+          }
+
+        } else {
+          // Versions match
+          localStorage.removeItem("versionReloaded"); // Clear flag for future checks
+          document.body.style.pointerEvents = 'auto';
+          document.getElementById('version-blocker').style.display = 'none';
+        }
+
+      } catch (err) {
+        console.error("Version check failed:", err);
+        document.body.style.pointerEvents = 'none';
+        document.getElementById('version-blocker').style.display = 'flex';
       }
-
-    } else {
-      // Versions match
-      localStorage.removeItem("versionReloaded"); // Clear flag for future checks
-      document.body.style.pointerEvents = 'auto';
-      document.getElementById('version-blocker').style.display = 'none';
     }
-
-  } catch (err) {
-    console.error("Version check failed:", err);
-    document.body.style.pointerEvents = 'none';
-    document.getElementById('version-blocker').style.display = 'flex';
-  }
-}
 
 
 
