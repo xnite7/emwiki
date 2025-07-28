@@ -1006,7 +1006,7 @@
         <p><strong>A newer version was published at:</strong> ${new Date(latestTimestamp).toLocaleString()}</p>
         <p><strong>Latest Version:</strong> ${latestVersion}</p>
         <p>Here’s what changed since your version:</p>
-        <pre style="max-height: 300px; overflow: auto; background: #111; padding: 1rem;">${sanitize(latestDiff)}</pre>
+        <pre style="max-height: 300px; overflow: auto; background: #111; padding: 1rem;">${latestDiff}</pre>
         <button id="refreshBtn">🔄 Refresh and load latest</button>
         <button id="forceSubmitBtn">🚨 Overwrite Anyway</button>
       `;
