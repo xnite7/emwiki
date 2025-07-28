@@ -744,9 +744,6 @@ function renderHistory(lines) {
   container.appendChild(ul);
 }
 
-
-
-
     let fusePrice = null;
     let allPriceItems = [];
     let jsData = {};
@@ -841,7 +838,7 @@ function renderHistory(lines) {
         document.getElementById("save-btn").style.cursor = "wait";
         document.getElementById("save-btn").textContent = "🕐";
 
-        await fetch("/api/update-gist", {
+        const response = await fetch("/api/update-gist", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -852,6 +849,7 @@ function renderHistory(lines) {
             version: CURRENT_GIST_VERSION
           })
         });
+
         document.getElementById("save-btn").style.transform = "translateY(-10px)";
         document.getElementById("save-btn").style.opacity = "0";
         alert(response.ok ? "✅ Changes saved successfully." : "❌ Failed to save changes.");
