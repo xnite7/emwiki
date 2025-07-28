@@ -939,7 +939,7 @@
           document.getElementById("save-btn").style.cursor = "pointer";
         }
 
-        if (!res.ok) throw new Error("Unexpected error during update");
+        if (!response.ok) throw new Error("Unexpected error during update");
 
       } catch (err) {
         alert("⚠️ Error saving changes: " + err.message);
