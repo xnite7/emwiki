@@ -63,7 +63,7 @@ export async function onRequestPost(context) {
     const currentVersion = gistData.history?.[0]?.version;
 
     // Fetch the latest recorded version from your D1 history
-    const latestRes = await fetch('https://yourdomain.com/api/latest-version');
+    const latestRes = await fetch('https://emwiki.site/api/latest-version');
     if (!latestRes.ok) {
       return new Response("Failed to fetch latest version", { status: 500 });
     }
@@ -73,7 +73,12 @@ export async function onRequestPost(context) {
     // Compare against the client's version
     if (CURRENT_GIST_VERSION && CURRENT_GIST_VERSION !== latestVersion) {
       return new Response(
-        JSON.stringify({ error: "Conflict: A newer version exists." }),
+        JSON.stringify({ 
+          error: "Conflict: A newer version exists.",
+          latestVersion,
+          latestTimestamp,
+          latestDiff
+        }),
         { status: 409, headers: { "Content-Type": "application/json" } }
       );
     }
