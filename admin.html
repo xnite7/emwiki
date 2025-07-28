@@ -192,6 +192,22 @@
       margin: 20px 0 0;
     }
 
+    .loader {
+      width: 40px;
+      height: 40px;
+      border: 5px solid #fff;
+      border-top: 5px solid #f09;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
     #tab-switcher button {
       margin: 0 5px;
       padding: 10px 15px 20px;
@@ -494,7 +510,7 @@
   <div id="main-tab">
     <div class="title1">List Configurator<p>Drag items to the appropriate lists below.</p>
     </div>
-        <ul id="trash-bin" class="drop-zone">
+    <ul id="trash-bin" class="drop-zone">
       <li class="placeholder">🗑 Drop items here to remove</li>
     </ul>
     <div class="papapanel">
@@ -563,11 +579,28 @@
       </div>
     </div>
   </div>
+  <div id="version-blocker" style="
+  position: fixed;
+  inset: 0;
+  background: black;
+  color: white;
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: monospace;
+  font-size: 1.2rem;
+  text-align: center;
+">
+    <div class="loader"></div>
+    <p style="margin-top: 20px;">Waiting for new catalog version to upload...</p>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
   <script>
 
 
-
+    let res = null
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const adminKeys = {
       '00cc75b3c354bd864d646cc1a790268c33916bd2a32b78b502151640596f7702': 'xnite',
@@ -751,7 +784,7 @@
         timeEl.style.fontSize = '14px';
         timeEl.style.color = '#666';
         timeEl.style.float = 'right';
-        timeEl.style.position = 'relative';  
+        timeEl.style.position = 'relative';
         timeEl.style.bottom = '-5px';
         timeEl.style.paddingLeft = '9px';
 
@@ -799,7 +832,7 @@
 
     async function loadData() {
       // Load auto.json content from raw GitHub (safe, no auth needed)
-      const res = await fetch("https://gist.githubusercontent.com/xnite7/0d0a3800287f3e7c6e5e944c8337fa91/raw/auto.json");
+      res = await fetch("https://gist.githubusercontent.com/xnite7/0d0a3800287f3e7c6e5e944c8337fa91/raw/auto.json");
       jsData = await res.json();
 
       // Load latest version from your own worker endpoint
@@ -1183,7 +1216,7 @@
         if (!flagToClear) {
           evt.item.remove();
           renderLists();
-          return; 
+          return;
         }
 
 
@@ -1214,8 +1247,8 @@
       new Sortable(el, {
         group: {
           name: "shared-flags",
-          pull: true, 
-          put: true 
+          pull: true,
+          put: true
         },
         animation: 150,
         sort: false,
@@ -1235,17 +1268,17 @@
             document.getElementById("trash-bin").classList.add("drag-over");
             document.getElementById("trash-bin").getElementsByClassName("placeholder")[0].style.display = "none";
           }
-          return true; 
+          return true;
         },
         onLeave(evt) {
 
-            document.getElementById("trash-bin").classList.remove("drag-over");
-            document.getElementById("trash-bin").getElementsByClassName("placeholder")[0].style.display = "block";
+          document.getElementById("trash-bin").classList.remove("drag-over");
+          document.getElementById("trash-bin").getElementsByClassName("placeholder")[0].style.display = "block";
 
         },
         onEnd(evt) {
-            document.getElementById("trash-bin").classList.remove("drag-over");
-            document.getElementById("trash-bin").getElementsByClassName("placeholder")[0].style.display = "block";
+          document.getElementById("trash-bin").classList.remove("drag-over");
+          document.getElementById("trash-bin").getElementsByClassName("placeholder")[0].style.display = "block";
         }
       });
     });
@@ -1255,7 +1288,7 @@
       group: {
         name: "shared-flags",
         pull: "clone",
-        put: false  
+        put: false
       },
       animation: 150,
       sort: false,
@@ -1271,9 +1304,9 @@
 
             }
           });
-          
+
         }, 100);
-        
+
       },
       onMove: function (evt) {
         if (evt.related.closest('#trash-bin')) {
@@ -1468,6 +1501,72 @@
     }, 250));
 
     promptAdminKey();
+
+
+
+
+
+    async function checkVersionMatch() {
+      try {
+        const [gistRes, latestRes] = await Promise.all([
+          res,
+          fetch('/api/latest-version',{ cache: "no-store" }) // Your Worker endpoint
+        ]);
+
+        if (!gistRes.ok || !latestRes.ok) throw new Error("Failed to check versions");
+
+        const gist = await gistRes.json();
+        const latestText = await latestRes.text();
+        const [latestTimestamp, latestVersion] = latestText.split(":");
+
+        if (gist.version !== latestVersion) {
+          // Show blocker until it matches
+          const blocker = document.getElementById('version-blocker');
+          blocker.style.display = 'flex';
+          document.body.style.pointerEvents = 'none';
+
+
+          // Poll every 3s until match
+          const interval = setInterval(async () => {
+            const res = await fetch(`https://gist.githubusercontent.com/${GIST_ID}/raw/auto.json`, { cache: "no-store" });
+            const data = await res.json();
+
+            retries++;
+            if (retries > 20) {
+              clearInterval(interval);
+              document.getElementById('version-blocker').innerHTML = `
+                <p>Update is taking too long. <button onclick="location.reload()">Retry</button></p>
+              `;
+              return;
+            }
+
+            if (data.version === latestVersion) {
+              clearInterval(interval);
+              blocker.style.display = 'none';
+              document.body.style.pointerEvents = 'auto';
+            }
+
+          }, 3000);
+        } else {
+          document.body.style.pointerEvents = 'auto';
+          document.getElementById('version-blocker').style.display = 'none';
+        }
+      } catch (err) {
+        console.error("Version check failed:", err);
+        document.body.style.pointerEvents = 'none';
+        document.getElementById('version-blocker').style.display = 'flex';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', checkVersionMatch);
+
+
+
+
+
+
+
+
   </script>
 </body>
 
