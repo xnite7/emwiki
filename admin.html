@@ -1566,6 +1566,7 @@ async function checkVersionMatch() {
 
     const latestText = await latestRes.text();
     const [latestTimestamp, latestVersion] = latestText.split(":");
+    console.log(latestText)
 
     console.log("GitHub version:", githubVersion);
     console.log("D1 version (/api/latest-version):", latestVersion);
