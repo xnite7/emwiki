@@ -65,7 +65,7 @@ export async function onRequestPost(context) {
       return new Response("Failed to fetch latest version", { status: 500 });
     }
     const latestText = await latestRes.text(); // format: "timestamp:version"
-    const [latestTimestamp, latestVersion] = latestText.split(":");
+    const [latestTimestamp, latestVersion] = latestText.split("|");
 
     const oldContentRaw = gistData.files["auto.json"]?.content || "{}";
     const oldContent = JSON.parse(oldContentRaw);
