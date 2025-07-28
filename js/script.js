@@ -1023,7 +1023,7 @@ window.addEventListener("touchend", (event) => {
 
 const customFont = new FontFace(
   'Source Sans Pro',
-  'url(https://fonts.googleapis.com/css?family=Source Sans Pro)'
+  'url(https://fonts.googleapis.com/css?family=Source%20Sans%20Pro)'
 );
 
 customFont.load()
@@ -1121,6 +1121,18 @@ function setupLazyLoading() {
 
   document.querySelectorAll('.catalog-grid').forEach(grid => observer.observe(grid));
 }
+function shortenThousands(text) {
+  text = String(text); // Force to string
+  return text.replace(/\b\d{4,}\b/g, match => {
+    const num = parseInt(match, 10);
+    if (num >= 1000) {
+      return (num / 1000).toString().replace(/\.0$/, '') + 'k';
+    }
+    return match;
+  });
+}
+
+
 
 let currentItems = [];
 
@@ -1422,8 +1434,9 @@ function createNewItem(item, color) {
     newItem.appendChild(untradable);
   }
   const price = document.createElement("p");
-  price.innerHTML = `<img src="./imgs/iZGLVYo.png" draggable="false">${item.price || 0}`;
+  price.innerHTML = `<img src="./imgs/iZGLVYo.png" draggable="false">${shortenThousands(item.price) || 0}`;
   newItem.appendChild(price);
+
   if (item.price == 0) {
     price.style.display = "none";
   }
