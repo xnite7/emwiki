@@ -683,69 +683,95 @@
 
 
 
-async function fetchHistory() {
-  try {
-    // Fetch history entries from your own Cloudflare Worker endpoint
-    const res = await fetch('/api/history');
-    if (!res.ok) throw new Error('Failed to fetch Catalog History');
+    async function fetchHistory() {
+      try {
+        const res = await fetch('/api/history');
+        if (!res.ok) throw new Error('Failed to fetch Catalog History');
 
-    // Assuming your /api/history returns JSON array like:
-    // [{ id, timestamp, username, diff }, ...]
-    const entries = await res.json();
+        const entries = await res.json();
 
-    if (!Array.isArray(entries) || entries.length === 0) {
-      renderHistory([]);
-      return;
+        if (!Array.isArray(entries) || entries.length === 0) {
+          renderHistory([]);
+          return;
+        }
+
+        // Instead of one string per entry, pass an object with separate fields
+        const formattedEntries = entries.map(entry => {
+          return {
+            username: entry.username,
+            time: new Date(entry.timestamp).toLocaleString(),
+            diffSummary: summarizeDiff(entry.diff)
+          };
+        });
+
+        renderHistory(formattedEntries);
+      } catch (err) {
+        console.error('Error fetching full history:', err);
+        document.getElementById('history-list').innerHTML = '<p>Error loading history.</p>';
+      }
     }
 
-    // Format lines nicely combining user, timestamp, and diff summary
-    const lines = entries.map(entry => {
-      const time = new Date(entry.timestamp).toLocaleString();
-      // Show username and timestamp + a brief diff summary
-      const diffSummary = summarizeDiff(entry.diff);
-      return `Updated by ${entry.username} at ${time}\n${diffSummary}`;
-    });
+    function summarizeDiff(diffText) {
+      if (!diffText) return "(no diff available)";
+      const lines = diffText.split('\n').slice(0, 5); // first 5 lines max
+      return lines.join('\n') + (lines.length >= 5 ? '\n...' : '');
+    }
 
-    renderHistory(lines);
-  } catch (err) {
-    console.error('Error fetching full history:', err);
-    document.getElementById('history-list').innerHTML = '<p>Error loading history.</p>';
-  }
-}
 
-// Simple helper to summarize diff text to 1-2 lines or first few changes
-function summarizeDiff(diffText) {
-  if (!diffText) return "(no diff available)";
-  const lines = diffText.split('\n').slice(0, 5); // first 5 lines max
-  return lines.join('\n') + (lines.length >= 5 ? '\n...' : '');
-}
+    function renderHistory(entries) {
+      const container = document.getElementById('history-list');
+      container.innerHTML = '';
 
-function renderHistory(lines) {
-  const container = document.getElementById('history-list');
-  container.innerHTML = '';
-  if (lines.length === 0) {
-    container.innerHTML = '<p>No history available.</p>';
-    return;
-  }
-  const ul = document.createElement('ul');
-  ul.style.listStyle = 'none';
-  ul.style.padding = '0';
-  lines.forEach(line => {
-    console.log(line)
-    const li = document.createElement('li');
-    li.style.marginBottom = '1rem';
-    li.style.font = '200 14px monospace';
+      if (entries.length === 0) {
+        container.innerHTML = '<p>No history available.</p>';
+        return;
+      }
 
-    // To preserve multi-line diff formatting, use <pre>
-    const pre = document.createElement('pre');
-    pre.style.font = '600 18px Arimo'
-    pre.textContent = line;
-    li.appendChild(pre);
+      const ul = document.createElement('ul');
+      ul.style.listStyle = 'none';
+      ul.style.padding = '0';
 
-    ul.appendChild(li);
-  });
-  container.appendChild(ul);
-}
+      entries.forEach(({ username, time, diffSummary }) => {
+        const li = document.createElement('li');
+        li.style.marginBottom = '1.5rem';
+        li.style.fontFamily = 'monospace';
+
+        // Create username element
+        const userEl = document.createElement('div');
+        userEl.textContent = `Updated by: ${username}`;
+        userEl.style.fontWeight = '700';
+        userEl.style.fontSize = '16px';
+        userEl.style.marginBottom = '4px';
+
+        // Create timestamp element
+        const timeEl = document.createElement('div');
+        timeEl.textContent = `At: ${time}`;
+        timeEl.style.fontWeight = '500';
+        timeEl.style.fontSize = '14px';
+        timeEl.style.marginBottom = '8px';
+        timeEl.style.color = '#666';
+
+        // Create diff summary block with <pre> for formatting
+        const diffEl = document.createElement('pre');
+        diffEl.textContent = diffSummary;
+        diffEl.style.whiteSpace = 'pre-wrap';
+        diffEl.style.fontWeight = '400';
+        diffEl.style.fontSize = '14px';
+        diffEl.style.background = '#f9f9f9';
+        diffEl.style.border = '1px solid #ddd';
+        diffEl.style.padding = '8px';
+        diffEl.style.borderRadius = '4px';
+
+        li.appendChild(userEl);
+        li.appendChild(timeEl);
+        li.appendChild(diffEl);
+
+        ul.appendChild(li);
+      });
+
+      container.appendChild(ul);
+    }
+
 
     let fusePrice = null;
     let allPriceItems = [];
