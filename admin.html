@@ -839,7 +839,7 @@
 
       if (versionRes.ok) {
         const text = await versionRes.text();
-        const [, v] = text.split(":");
+        const [, v] = text.split("|");
         latestVersion = v || "";
       }
 
@@ -884,22 +884,20 @@
 
 async function checkUpdate() {
   try {
-    const [res, gistRes] = await Promise.all([
-      fetch("/api/latest-version", { cache: "no-store" }),
-      fetch("/api/gist-version", { cache: "no-store" })
+    const [res] = await Promise.all([
+      fetch("/api/latest-version", { cache: "no-store" })
     ]);
 
-    if (!res.ok || !gistRes.ok) return;
+    if (!res.ok) return;
 
     const text = await res.text();
     const [timestamp, d1Version] = text.split("|"); // assuming you use "|" delimiter
 
-    const gistData = await gistRes.json();
-    const githubVersion = gistData.history?.[0]?.version || "";
 
     // Check your local CURRENT_VERSION against both
-    if (CURRENT_VERSION !== d1Version || CURRENT_VERSION !== githubVersion) {
-      alert("⚠️ Your local version is out of sync with D1 or GitHub!");
+    console.log(CURRENT_VERSION, d1Version)
+    if (CURRENT_VERSION !== d1Version) {
+      alert("⚠️ Your local version is out of sync with D1!");
       CURRENT_VERSION = d1Version;  // update local version to latest known D1 version
     }
   } catch (err) {
