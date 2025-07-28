@@ -877,7 +877,7 @@
 
 
 
-    
+
 
 
     async function checkUpdate() {
@@ -1537,83 +1537,79 @@
 
     promptAdminKey();
 
-
-
-
-
-    async function checkVersionMatch() {
-      try {
-        const [latestRes, githubRes] = await Promise.all([
-          fetch('/api/latest-version', { cache: "no-store" }),
-          fetch(`https://api.github.com/gists/${GIST_ID}`, {
-            headers: {
-              Accept: "application/vnd.github+json",
-              "User-Agent": "emwiki-checker"
-            }
-          })
-        ]);
-
-        if (!githubRes.ok || !latestRes.ok) throw new Error("Failed to check versions");
-
-        const githubData = await githubRes.json();
-        const githubVersion = githubData.history?.[0]?.version || "";
-
-        const latestText = await latestRes.text();
-        const [latestTimestamp, latestVersion] = latestText.split(":");
-
-        console.log("GitHub version:", githubVersion);
-        console.log("D1 version (/api/latest-version):", latestVersion);
-
-        if (githubVersion !== latestVersion) {
-          console.warn("⚠️ Version mismatch between GitHub and D1!");
-          const blocker = document.getElementById('version-blocker');
-          blocker.style.display = 'flex';
-          document.body.style.pointerEvents = 'none';
-
-          let retries = 0;
-
-          const interval = setInterval(async () => {
-            const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, { cache: "no-store" });
-            const data = await res.json();
-            const newVersion = data.history?.[0]?.version || "";
-
-            retries++;
-            if (retries > 20) {
-              clearInterval(interval);
-              document.getElementById('version-blocker').innerHTML = `
-                <p>Update is taking too long. <button onclick="location.reload()">Retry</button></p>
-              `;
-              return;
-            }
-
-            if (newVersion === latestVersion) {
-              clearInterval(interval);
-              blocker.style.display = 'none';
-              document.body.style.pointerEvents = 'auto';
-            }
-
-          }, 3000);
-        } else {
-          document.body.style.pointerEvents = 'auto';
-          document.getElementById('version-blocker').style.display = 'none';
+async function checkVersionMatch() {
+  try {
+    const [latestRes, githubRes] = await Promise.all([
+      fetch('/api/latest-version', { cache: "no-store" }),
+      fetch(`https://api.github.com/gists/${GIST_ID}`, {
+        headers: {
+          Accept: "application/vnd.github+json",
+          "User-Agent": "emwiki-checker"
         }
-      } catch (err) {
-        console.error("Version check failed:", err);
-        document.body.style.pointerEvents = 'none';
-        document.getElementById('version-blocker').style.display = 'flex';
-      }
+      })
+    ]);
+
+    if (!githubRes.ok || !latestRes.ok) throw new Error("Failed to check versions");
+
+    const githubData = await githubRes.json();
+    const githubVersion = githubData.history?.[0]?.version || "";
+
+    const latestText = await latestRes.text();
+    const [latestTimestamp, latestVersion] = latestText.split(":");
+
+    console.log("GitHub version:", githubVersion);
+    console.log("D1 version (/api/latest-version):", latestVersion);
+
+    // ✅ If D1 version is empty, assume GitHub is newest and continue
+    if (!latestVersion || latestVersion === "") {
+      console.log("✅ No D1 version found — assuming GitHub is latest. Proceeding.");
+      document.body.style.pointerEvents = 'auto';
+      document.getElementById('version-blocker').style.display = 'none';
+      return;
     }
+
+    if (githubVersion !== latestVersion) {
+      console.warn("⚠️ Version mismatch between GitHub and D1!");
+      const blocker = document.getElementById('version-blocker');
+      blocker.style.display = 'flex';
+      document.body.style.pointerEvents = 'none';
+
+      let retries = 0;
+
+      const interval = setInterval(async () => {
+        const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, { cache: "no-store" });
+        const data = await res.json();
+        const newVersion = data.history?.[0]?.version || "";
+
+        retries++;
+        if (retries > 20) {
+          clearInterval(interval);
+          document.getElementById('version-blocker').innerHTML = `
+            <p>Update is taking too long. <button onclick="location.reload()">Retry</button></p>
+          `;
+          return;
+        }
+
+        if (newVersion === latestVersion) {
+          clearInterval(interval);
+          blocker.style.display = 'none';
+          document.body.style.pointerEvents = 'auto';
+        }
+
+      }, 3000);
+    } else {
+      document.body.style.pointerEvents = 'auto';
+      document.getElementById('version-blocker').style.display = 'none';
+    }
+  } catch (err) {
+    console.error("Version check failed:", err);
+    document.body.style.pointerEvents = 'none';
+    document.getElementById('version-blocker').style.display = 'flex';
+  }
+}
 
 
     window.addEventListener('DOMContentLoaded', checkVersionMatch);
-
-
-
-
-
-
-
-
   </script>
 </body>
 
