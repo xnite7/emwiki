@@ -1587,43 +1587,38 @@ async function checkVersionMatch() {
 
     if (githubVersion !== latestVersion) {
       console.warn("⚠️ Version mismatch between GitHub and D1!");
+
       const blocker = document.getElementById('version-blocker');
       blocker.style.display = 'flex';
       document.body.style.pointerEvents = 'none';
 
-      let retries = 0;
+      const hasReloaded = localStorage.getItem("versionReloaded");
 
-      const interval = setInterval(async () => {
-        const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, { cache: "no-store" });
-        const data = await res.json();
-        const newVersion = data.history?.[0]?.version || "";
+      if (!hasReloaded) {
+        console.log("🔁 First mismatch detected — reloading once...");
+        localStorage.setItem("versionReloaded", "true");
+        location.reload(); // This will reload once
+      } else {
+        console.log("❌ Mismatch persists after reload — informing admin.");
+        blocker.innerHTML = `
+          <p>The update is still processing. Please try refreshing again in a few minutes.</p>
+        `;
+      }
 
-        retries++;
-        if (retries > 20) {
-          clearInterval(interval);
-          document.getElementById('version-blocker').innerHTML = `
-            <p>Update is taking too long. <button onclick="location.reload()">Retry</button></p>
-          `;
-          return;
-        }
-
-        if (newVersion === latestVersion) {
-          clearInterval(interval);
-          blocker.style.display = 'none';
-          document.body.style.pointerEvents = 'auto';
-        }
-
-      }, 3000);
     } else {
+      // Versions match
+      localStorage.removeItem("versionReloaded"); // Clear flag for future checks
       document.body.style.pointerEvents = 'auto';
       document.getElementById('version-blocker').style.display = 'none';
     }
+
   } catch (err) {
     console.error("Version check failed:", err);
     document.body.style.pointerEvents = 'none';
     document.getElementById('version-blocker').style.display = 'flex';
   }
 }
+
 
 
     window.addEventListener('DOMContentLoaded', checkVersionMatch);
