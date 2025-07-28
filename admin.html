@@ -731,11 +731,14 @@ function renderHistory(lines) {
   ul.style.listStyle = 'none';
   ul.style.padding = '0';
   lines.forEach(line => {
+    console.log(line)
     const li = document.createElement('li');
     li.style.marginBottom = '1rem';
+    li.style.font = '200 14px monospace';
 
     // To preserve multi-line diff formatting, use <pre>
     const pre = document.createElement('pre');
+    pre.style.font = '600 18px Arimo'
     pre.textContent = line;
     li.appendChild(pre);
 
