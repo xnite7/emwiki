@@ -1512,11 +1512,11 @@
           fetch('/api/latest-version',{ cache: "no-store" }) // Your Worker endpoint
         ]);
 
-
+        console.log(CURRENT_VERSION)
         if (!CURRENT_VERSION || !latestRes.ok) throw new Error("Failed to check versions");
 
         const latestText = await latestRes.text();
-        console.log(CURRENT_VERSION)
+
         console.log(latestText)
         const [latestTimestamp, latestVersion] = latestText.split(":");
 
