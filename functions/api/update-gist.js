@@ -317,15 +317,17 @@ function canonicalize(obj, stack, replacementStack, replacer, key) {
   return canonicalizedObj;
 }
 
-// emwiki/functions/api/update-gist.js
-async function onRequestPost(context) {
+export async function onRequestPost(context) {
   const GITHUB_TOKEN = context.env.GITHUB_TOKEN;
   const GIST_ID = "0d0a3800287f3e7c6e5e944c8337fa91";
   const DBH = context.env.DBH;
+
   try {
     const body = await context.request.json();
     const username = body.username || "unknown";
     const newContent = body.content;
+
+    // Get current gist data
     const gistRes = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
       headers: {
         Authorization: `Bearer ${GITHUB_TOKEN}`,
@@ -333,30 +335,38 @@ async function onRequestPost(context) {
         "User-Agent": "emwiki-site-worker"
       }
     });
+
     if (!gistRes.ok) throw new Error("Failed to fetch current gist content");
     const gistData = await gistRes.json();
-    const oldContentRaw = gistData.files["auto.json"].content || "{}";
+    const oldContentRaw = gistData.files["auto.json"]?.content || "{}";
     const oldContent = JSON.parse(oldContentRaw);
+
+    // Compute JSON diff
     const diff = diffJson(oldContent, newContent);
-    const diffText = diff.map((part) => {
+    const diffText = diff.map(part => {
       const prefix = part.added ? "+" : part.removed ? "-" : " ";
-      return prefix + JSON.stringify(part.value);
-    }).join("\n");
+      return prefix + part.value;
+    }).join("");
+
+    // Log the diff in the database
     await DBH.prepare(`
       INSERT INTO history (timestamp, username, diff)
       VALUES (?, ?, ?)
-    `).bind((/* @__PURE__ */ new Date()).toISOString(), username, diffText).run();
+    `).bind(new Date().toISOString(), username, diffText).run();
+
+    // Update the Gist
     const updatedGist = {
       files: {
         "auto.json": {
           content: JSON.stringify(newContent, null, 2)
         },
         "history.log": {
-          content: `Updated by ${username} at ${(/* @__PURE__ */ new Date()).toISOString()}`
+          content: `Updated by ${username} at ${new Date().toISOString()}`
         }
       }
     };
-    const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+
+    const updateRes = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
       method: "PATCH",
       headers: {
         Authorization: `Bearer ${GITHUB_TOKEN}`,
@@ -366,14 +376,17 @@ async function onRequestPost(context) {
       },
       body: JSON.stringify(updatedGist)
     });
-    if (!response.ok) {
-      const errorText = await response.text();
+
+    if (!updateRes.ok) {
+      const errorText = await updateRes.text();
       return new Response(errorText, {
         status: 500,
         headers: { "Content-Type": "application/json" }
       });
     }
+
     return new Response("Gist updated and diff logged", { status: 200 });
+
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message, stack: err.stack }), {
       status: 500,
@@ -381,6 +394,3 @@ async function onRequestPost(context) {
     });
   }
 }
-export {
-  onRequestPost
-};
