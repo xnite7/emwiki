@@ -750,14 +750,20 @@
       if (tab === "history") fetchHistory();
     }
 
+
+    let CURRENT_GIST_VERSION = "";
+
     async function loadData() {
       const res = await fetch("https://gist.githubusercontent.com/xnite7/0d0a3800287f3e7c6e5e944c8337fa91/raw/auto.json");
-      jsData = await res.json();
+      const gist = await res.json();
+      CURRENT_GIST_VERSION = gist.history?.[0]?.version || "";
+      jsData = JSON.parse(gist.files["auto.json"].content);
       cacheAllPriceItems();
       setupSearch();
       renderLists();
       renderPriceGroups();
     }
+
 
     document.getElementById("save-btn").addEventListener("click", async () => {
       if (document.getElementById("save-btn").disabled) return;
@@ -790,10 +796,11 @@
         const response = await fetch("https://emwiki.site/api/update-gist", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username: adminName,
-            content: jsData,
-          }),
+            body: JSON.stringify({
+              username: adminName,
+              content: jsData,
+              version: CURRENT_GIST_VERSION,  // include version!
+            }),
         });
         document.getElementById("save-btn").style.transform = "translateY(-10px)";
         document.getElementById("save-btn").style.opacity = "0";
@@ -803,6 +810,17 @@
         if (response.ok) {
           location.reload(true);
         }
+
+        if (response.status === 409) {
+          alert("❗ Another admin has saved changes since you loaded. Please reload the page and try again.");
+          document.getElementById("save-btn").style.transform = "translateY(0px)";
+          document.getElementById("save-btn").style.opacity = "1";
+          document.getElementById("save-btn").textContent = "⬇";
+          document.getElementById("save-btn").disabled = false;
+          document.getElementById("save-btn").style.background = "#377bfa";
+          document.getElementById("save-btn").style.cursor = "pointer";
+        }
+
       } catch (err) {
         alert("⚠️ Error saving changes: " + err.message);
         document.getElementById("save-btn").style.transform = "translateY(0px)";
