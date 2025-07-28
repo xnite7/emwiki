@@ -24,6 +24,7 @@ export default {
         headers: { "Content-Type": "text/plain", "Cache-Control": "no-cache" }
       });
     }
+    console.log(request.method)
 
     if (request.method !== "POST") {
       return new Response("Method Not Allowed", { status: 405 });
