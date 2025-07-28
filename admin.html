@@ -1566,10 +1566,9 @@ async function checkVersionMatch() {
 
     const latestText = await latestRes.text();
     const [latestTimestamp, latestVersion] = latestText.split("|");
-    console.log(latestText)
 
     console.log("GitHub version:", githubVersion);
-    console.log("D1 version (/api/latest-version):", latestVersion);
+    console.log("D1 version:", latestVersion);
 
     if (!latestVersion || latestVersion === "") {
       console.log("✅ No D1 version found — assuming GitHub is latest. Proceeding.");
