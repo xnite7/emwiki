@@ -317,6 +317,7 @@ function canonicalize(obj, stack, replacementStack, replacer, key) {
   return canonicalizedObj;
 }
 
+
 export async function onRequestPost(context) {
   const GITHUB_TOKEN = context.env.GITHUB_TOKEN;
   const GIST_ID = "0d0a3800287f3e7c6e5e944c8337fa91";
@@ -345,8 +346,11 @@ export async function onRequestPost(context) {
     const diff = diffJson(oldContent, newContent);
     const diffText = diff.map(part => {
       const prefix = part.added ? "+" : part.removed ? "-" : " ";
-      return prefix + part.value;
-    }).join("");
+      return part.value
+        .split("\n")
+        .map(line => (line ? `${prefix} ${line}` : ""))
+        .join("\n");
+    }).join("\n");
 
     // Log the diff in the database
     await DBH.prepare(`
