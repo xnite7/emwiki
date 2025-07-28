@@ -892,14 +892,15 @@ async function checkUpdate() {
     if (!res.ok || !gistRes.ok) return;
 
     const text = await res.text();
-    const [timestamp, newVersion] = text.split(":");
+    const [timestamp, d1Version] = text.split("|"); // assuming you use "|" delimiter
 
     const gistData = await gistRes.json();
     const githubVersion = gistData.history?.[0]?.version || "";
 
-    if (newVersion !== CURRENT_VERSION || githubVersion !== newVersion) {
-      alert("⚠️ Another admin has updated the Catalog or GitHub and D1 are out of sync.");
-      CURRENT_VERSION = newVersion;
+    // Check your local CURRENT_VERSION against both
+    if (CURRENT_VERSION !== d1Version || CURRENT_VERSION !== githubVersion) {
+      alert("⚠️ Your local version is out of sync with D1 or GitHub!");
+      CURRENT_VERSION = d1Version;  // update local version to latest known D1 version
     }
   } catch (err) {
     console.warn("Failed to check for updates", err);
@@ -908,8 +909,9 @@ async function checkUpdate() {
 
 
 
+
     function startUpdateCheck() {
-      setInterval(checkUpdate, 24000);
+      setInterval(checkUpdate, 10000);
     }
 
     document.getElementById("save-btn").addEventListener("click", async () => {
