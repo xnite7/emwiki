@@ -1512,6 +1512,8 @@
           res,
           fetch('/api/latest-version',{ cache: "no-store" }) // Your Worker endpoint
         ]);
+        console.log(gistRes)
+        console.log(latestRes)
 
         if (!gistRes.ok || !latestRes.ok) throw new Error("Failed to check versions");
 
