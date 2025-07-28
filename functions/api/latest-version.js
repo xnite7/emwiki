@@ -2,11 +2,10 @@ export async function onRequestGet(context) {
   const DBH = context.env.DBH;
 
   try {
-    // Select the latest version record
+    // Select the latest record overall (regardless of username)
     const row = await DBH.prepare(`
-      SELECT timestamp, diff as version
+      SELECT timestamp, version
       FROM history
-      WHERE username = '__version__'
       ORDER BY timestamp DESC
       LIMIT 1
     `).first();

@@ -3,13 +3,18 @@ export async function onRequestGet(context) {
 
   try {
     const result = await DBH.prepare(`
-      SELECT id, timestamp, username, diff
+      SELECT id, timestamp, username, diff, version
       FROM history
       ORDER BY timestamp DESC
       LIMIT 50
     `).all();
 
-    return Response.json(result.results);
+    const data = result?.results ?? [];
+
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message, stack: err.stack }), {
       status: 500,

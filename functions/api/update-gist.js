@@ -77,20 +77,15 @@ export async function onRequestPost(context) {
     const readableDiff = getReadableDiff(oldContent, newContent);
     const timestamp = new Date().toISOString();
 
-    // Insert readable diff log into database
+    // Insert readable diff log into database, including version
     await DBH.prepare(`
-      INSERT INTO history (timestamp, username, diff)
-      VALUES (?, ?, ?)
-    `).bind(timestamp, username, readableDiff || "(No changes)").run();
+      INSERT INTO history (timestamp, username, diff, version)
+      VALUES (?, ?, ?, ?)
+    `).bind(timestamp, username, readableDiff || "(No changes)", currentVersion).run();
 
-    await DBH.prepare(`
-      DELETE FROM history WHERE username = '__version__'
-    `).run();
 
-    await DBH.prepare(`
-      INSERT INTO history (timestamp, username, diff)
-      VALUES (?, '__version__', ?)
-    `).bind(timestamp, currentVersion).run();
+
+
 
     // Combine new diff with previous log (prepend)
     const previousLog = gistData.files["history.log"]?.content || "";

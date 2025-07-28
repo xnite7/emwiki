@@ -774,8 +774,10 @@ function renderHistory(lines) {
         const text = await versionRes.text();
         const [timestamp, version] = text.split(":");
         CURRENT_GIST_VERSION = version || "";
+        CURRENT_VERSION = CURRENT_GIST_VERSION; // sync baseline for update polling
       } else {
         CURRENT_GIST_VERSION = "";
+        CURRENT_VERSION = "";
       }
 
       cacheAllPriceItems();
