@@ -342,15 +342,23 @@ export async function onRequestPost(context) {
     const oldContentRaw = gistData.files["auto.json"]?.content || "{}";
     const oldContent = JSON.parse(oldContentRaw);
 
-    // Compute JSON diff
-    const diff = diffJson(oldContent, newContent);
-    const diffText = diff.map(part => {
-      const prefix = part.added ? "+" : part.removed ? "-" : " ";
-      return part.value
-        .split("\n")
-        .map(line => (line ? `${prefix} ${line}` : ""))
-        .join("\n");
-    }).join("\n");
+    const oldStr = JSON.stringify(oldContent, null, 2);
+    const newStr = JSON.stringify(newContent, null, 2);
+    const diff = diffLines(oldStr, newStr);
+
+const diffText = diff
+  .filter(part => part.added || part.removed) // skip unchanged
+  .map(part => {
+    const prefix = part.added ? "+ " : "- ";
+    return part.value
+      .split("\n")
+      .filter(line => line.trim() !== "")
+      .map(line => prefix + line)
+      .join("\n");
+  })
+  .join("\n")
+  .slice(0, 50000); // optional: cap length to avoid overly long logs
+
 
     // Log the diff in the database
     await DBH.prepare(`
