@@ -62,14 +62,22 @@ export async function onRequestPost(context) {
     // Get latest gist version from GitHub API response
     const currentVersion = gistData.history?.[0]?.version;
 
-        // Check if client's version matches the current gist version
-    if (CURRENT_GIST_VERSION && CURRENT_GIST_VERSION !== currentVersion) {
-      // A newer version exists on GitHub, reject update
+    // Fetch the latest recorded version from your D1 history
+    const latestRes = await fetch('https://yourdomain.com/api/latest-version');
+    if (!latestRes.ok) {
+      return new Response("Failed to fetch latest version", { status: 500 });
+    }
+    const latestText = await latestRes.text(); // format: "timestamp:version"
+    const latestVersion = latestText.split(":")[1] || ""; // extract version from response
+
+    // Compare against the client's version
+    if (CURRENT_GIST_VERSION && CURRENT_GIST_VERSION !== latestVersion) {
       return new Response(
         JSON.stringify({ error: "Conflict: A newer version exists." }),
         { status: 409, headers: { "Content-Type": "application/json" } }
       );
     }
+
 
     const oldContentRaw = gistData.files["auto.json"]?.content || "{}";
     const oldContent = JSON.parse(oldContentRaw);
