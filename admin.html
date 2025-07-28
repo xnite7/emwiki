@@ -954,15 +954,6 @@
           })
         });
 
-        document.getElementById("save-btn").style.transform = "translateY(-10px)";
-        document.getElementById("save-btn").style.opacity = "0";
-        alert(response.ok ? "✅ Changes saved successfully." : "❌ Failed to save changes.");
-
-
-        if (response.ok) {
-          location.reload(true);
-        }
-
         if (response.status === 409) {
           const conflict = await response.json();
           showConflictUI(conflict);
@@ -972,7 +963,19 @@
           document.getElementById("save-btn").disabled = false;
           document.getElementById("save-btn").style.background = "#377bfa";
           document.getElementById("save-btn").style.cursor = "pointer";
+          return;
         }
+
+        document.getElementById("save-btn").style.transform = "translateY(-10px)";
+        document.getElementById("save-btn").style.opacity = "0";
+        alert(response.ok ? "✅ Changes saved successfully." : "❌ Failed to save changes.");
+
+
+        if (response.ok) {
+          location.reload(true);
+        }
+
+        
 
         if (!response.ok) throw new Error("Unexpected error during update");
 
