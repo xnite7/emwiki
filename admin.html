@@ -1508,19 +1508,29 @@
 
     async function checkVersionMatch() {
       try {
-        const [latestRes] = await Promise.all([
-          fetch('/api/latest-version',{ cache: "no-store" }) // Your Worker endpoint
+        const [latestRes, githubRes] = await Promise.all([
+          fetch('/api/latest-version',{ cache: "no-store" }), // Your Worker endpoint
+          fetch(`https://api.github.com/gists/${GIST_ID}`),
+          {  headers: {
+              Accept: "application/vnd.github+json",
+              "User-Agent": "emwiki-checker"
+            }}
         ]);
 
-        console.log(CURRENT_VERSION)
-        if (!CURRENT_VERSION || !latestRes.ok) throw new Error("Failed to check versions");
+        if (!githubRes.ok || !latestRes.ok) throw new Error("Failed to check versions");
+
+        const githubData = await githubRes.json();
+        const githubVersion = githubData.history?.[0]?.version || "";
+
+        console.log("GitHub version:", githubVersion);
+        console.log("D1 version (/api/latest-version):", latestVersion);
 
         const latestText = await latestRes.text();
 
-        console.log(latestText)
         const [latestTimestamp, latestVersion] = latestText.split(":");
 
-        if (CURRENT_VERSION !== latestVersion) {
+        if (githubVersion !== latestVersion) {
+          console.warn("⚠️ Version mismatch between GitHub and D1!");
           // Show blocker until it matches
           const blocker = document.getElementById('version-blocker');
           blocker.style.display = 'flex';
@@ -1529,7 +1539,7 @@
 
           // Poll every 3s until match
           const interval = setInterval(async () => {
-            const res = await fetch(`https://gist.githubusercontent.com/${GIST_ID}/raw/auto.json`, { cache: "no-store" });
+            const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, { cache: "no-store" });
             const data = await res.json();
 
             retries++;
