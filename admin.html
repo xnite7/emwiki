@@ -754,15 +754,20 @@
     let CURRENT_GIST_VERSION = "";
 
     async function loadData() {
+      // Load auto.json content
       const res = await fetch("https://gist.githubusercontent.com/xnite7/0d0a3800287f3e7c6e5e944c8337fa91/raw/auto.json");
-      const gist = await res.json();
-      CURRENT_GIST_VERSION = gist.history?.[0]?.version || "";
-      jsData = JSON.parse(gist.files["auto.json"].content);
+      jsData = await res.json();
+
+      // Load version from Gist API metadata
+      const gistMeta = await fetch("https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91").then(r => r.json());
+      CURRENT_GIST_VERSION = gistMeta.history?.[0]?.version || "";
+
       cacheAllPriceItems();
       setupSearch();
       renderLists();
       renderPriceGroups();
     }
+
 
     let CURRENT_VERSION = "";
 
