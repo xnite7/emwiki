@@ -68,7 +68,9 @@ export async function onRequestPost(context) {
       return new Response("Failed to fetch latest version", { status: 500 });
     }
     const latestText = await latestRes.text(); // format: "timestamp:version"
-    const latestVersion = latestText.split(":")[1] || ""; // extract version from response
+    const [latestTimestamp, latestVersion] = latestText.split(":");
+    const latestDiff = getReadableDiff(oldContent, newContent); // reuse diff function
+
 
     // Compare against the client's version
     if (!body.force && CURRENT_GIST_VERSION && CURRENT_GIST_VERSION !== latestVersion) {
