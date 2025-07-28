@@ -683,56 +683,67 @@
 
 
 
-    async function fetchHistory() {
-      try {
-        const commitsRes = await fetch(`https://api.github.com/gists/${GIST_ID}/commits`);
-        if (!commitsRes.ok) throw new Error("Failed to fetch Catalog History");
+async function fetchHistory() {
+  try {
+    // Fetch history entries from your own Cloudflare Worker endpoint
+    const res = await fetch('/api/history');
+    if (!res.ok) throw new Error('Failed to fetch Catalog History');
 
-        const commits = await commitsRes.json();
+    // Assuming your /api/history returns JSON array like:
+    // [{ id, timestamp, username, diff }, ...]
+    const entries = await res.json();
 
-        const linesSet = new Set();
-
-        for (const commit of commits) {
-          const commitRes = await fetch(`https://api.github.com/gists/${GIST_ID}/${commit.version}`);
-          if (!commitRes.ok) break;
-
-          const commitData = await commitRes.json();
-          const content = commitData.files["history.log"]?.content;
-
-          if (!content || !content.trim()) break;
-
-          const lines = content.split('\n').filter(line => line.startsWith('Updated by'));
-          lines.forEach(line => linesSet.add(line));
-        }
-
-        const allLines = Array.from(linesSet);
-        renderHistory(allLines);
-      } catch (err) {
-        console.error('Error fetching full history:', err);
-        document.getElementById('history-list').innerHTML = '<p>Error loading history.</p>';
-      }
+    if (!Array.isArray(entries) || entries.length === 0) {
+      renderHistory([]);
+      return;
     }
 
+    // Format lines nicely combining user, timestamp, and diff summary
+    const lines = entries.map(entry => {
+      const time = new Date(entry.timestamp).toLocaleString();
+      // Show username and timestamp + a brief diff summary
+      const diffSummary = summarizeDiff(entry.diff);
+      return `Updated by ${entry.username} at ${time}\n${diffSummary}`;
+    });
 
+    renderHistory(lines);
+  } catch (err) {
+    console.error('Error fetching full history:', err);
+    document.getElementById('history-list').innerHTML = '<p>Error loading history.</p>';
+  }
+}
 
-    function renderHistory(lines) {
-      const container = document.getElementById('history-list');
-      container.innerHTML = '';
-      if (lines.length === 0) {
-        container.innerHTML = '<p>No history available.</p>';
-        return;
-      }
-      const ul = document.createElement('ul');
-      ul.style.listStyle = 'none';
-      ul.style.padding = '0';
-      lines.forEach(line => {
-        const li = document.createElement('li');
-        li.style.marginBottom = '1rem';
-        li.textContent = line;
-        ul.appendChild(li);
-      });
-      container.appendChild(ul);
-    }
+// Simple helper to summarize diff text to 1-2 lines or first few changes
+function summarizeDiff(diffText) {
+  if (!diffText) return "(no diff available)";
+  const lines = diffText.split('\n').slice(0, 5); // first 5 lines max
+  return lines.join('\n') + (lines.length >= 5 ? '\n...' : '');
+}
+
+function renderHistory(lines) {
+  const container = document.getElementById('history-list');
+  container.innerHTML = '';
+  if (lines.length === 0) {
+    container.innerHTML = '<p>No history available.</p>';
+    return;
+  }
+  const ul = document.createElement('ul');
+  ul.style.listStyle = 'none';
+  ul.style.padding = '0';
+  lines.forEach(line => {
+    const li = document.createElement('li');
+    li.style.marginBottom = '1rem';
+
+    // To preserve multi-line diff formatting, use <pre>
+    const pre = document.createElement('pre');
+    pre.textContent = line;
+    li.appendChild(pre);
+
+    ul.appendChild(li);
+  });
+  container.appendChild(ul);
+}
+
 
 
 
