@@ -1,30 +1,19 @@
 export async function onRequestGet(context) {
-  const GITHUB_TOKEN = context.env.GITHUB_TOKEN;
-  const GIST_ID = "0d0a3800287f3e7c6e5e944c8337fa91";
+  const DBH = context.env.DBH;
 
   try {
-    const response = await fetch(`https://api.github.com/gists/${GIST_ID}/commits`, {
-      headers: {
-        Authorization: `Bearer ${GITHUB_TOKEN}`,
-        Accept: "application/vnd.github+json",
-      },
-    });
+    const result = await DBH.prepare(`
+      SELECT id, timestamp, username, diff
+      FROM history
+      ORDER BY timestamp DESC
+      LIMIT 50
+    `).all();
 
-    if (!response.ok) {
-      return new Response("Failed to fetch history", { status: 500 });
-    }
-
-    const commits = await response.json();
-
-    // Return only basic info per commit
-    const simplified = commits.map(commit => ({
-      version: commit.version,
-      committed_at: commit.committed_at,
-      user: commit.user?.login || "Unknown",
-    }));
-
-    return Response.json(simplified);
+    return Response.json(result.results);
   } catch (err) {
-    return new Response("Error: " + err.message, { status: 500 });
+    return new Response(JSON.stringify({ error: err.message, stack: err.stack }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
   }
 }
