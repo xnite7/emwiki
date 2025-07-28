@@ -343,12 +343,9 @@ export async function onRequestPost(context) {
     // Parse old content (string)
     const oldContentRaw = gistData.files["auto.json"]?.content || "{}";
 
-    // Convert both old and new to JSON strings for diffing
-    const oldStr = oldContentRaw;
-    const newStr = JSON.stringify(newContent, null, 2);
 
-    // Compute JSON diff (returns an array of change objects)
-    const diff = diffJson(oldStr, newStr);
+    const oldContent = JSON.parse(oldContentRaw);
+    const diff = diffJson(oldContent, newContent);
 
     // Format diff for logging: add + or - at start of each changed line
     const diffText = diff.map(part => {
@@ -359,6 +356,7 @@ export async function onRequestPost(context) {
         .join("\n");
     }).join("\n");
 
+
     // Insert diff log into database
     await DBH.prepare(`
       INSERT INTO history (timestamp, username, diff)
@@ -368,7 +366,7 @@ export async function onRequestPost(context) {
     // Prepare gist update payload
     const updatedGist = {
       files: {
-        "auto.json": { content: newStr },
+        "auto.json": { content: JSON.stringify(newContent, null, 2) },
         "history.log": { content: `Updated by ${username} at ${new Date().toISOString()}` }
       }
     };
