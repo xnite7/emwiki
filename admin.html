@@ -831,20 +831,41 @@
 
 
     async function loadData() {
-      // Load auto.json content from raw GitHub (safe, no auth needed)
-      rese = await fetch("https://gist.githubusercontent.com/xnite7/0d0a3800287f3e7c6e5e944c8337fa91/raw/auto.json");
+      // Load auto.json content
+      const rese = await fetch("https://gist.githubusercontent.com/xnite7/0d0a3800287f3e7c6e5e944c8337fa91/raw/auto.json");
       jsData = await rese.json();
 
-      // Load latest version from your own worker endpoint
-      const versionRes = await fetch("/api/latest-version");
+      const [versionRes, githubRes] = await Promise.all([
+        fetch("/api/latest-version", { cache: "no-store" }),
+        fetch(`https://api.github.com/gists/${GIST_ID}`, {
+          headers: {
+            Accept: "application/vnd.github+json",
+            "User-Agent": "emwiki-site"
+          }
+        })
+      ]);
+
+      let githubVersion = "", latestVersion = "";
+
       if (versionRes.ok) {
         const text = await versionRes.text();
-        const [timestamp, version] = text.split(":");
-        CURRENT_GIST_VERSION = version || "";
-        CURRENT_VERSION = CURRENT_GIST_VERSION; // sync baseline for update polling
-      } else {
-        CURRENT_GIST_VERSION = "";
-        CURRENT_VERSION = "";
+        const [, v] = text.split(":");
+        latestVersion = v || "";
+      }
+
+      if (githubRes.ok) {
+        const githubData = await githubRes.json();
+        githubVersion = githubData.history?.[0]?.version || "";
+      }
+
+      // Set both global versions
+      CURRENT_GIST_VERSION = githubVersion;
+      CURRENT_VERSION = latestVersion;
+
+      // Optional: alert if mismatch
+      if (githubVersion !== latestVersion) {
+        console.warn("⚠️ D1 version is outdated compared to GitHub. The Gist was updated but not yet logged.");
+        // Optionally trigger checkVersionMatch() here or auto-repair
       }
 
       cacheAllPriceItems();
@@ -855,19 +876,32 @@
 
 
 
+
     
 
 
     async function checkUpdate() {
       try {
-        const res = await fetch("/api/latest-version");
-        if (!res.ok) return;
+        const [res, githubRes] = await Promise.all([
+          fetch("/api/latest-version", { cache: "no-store" }),
+          fetch(`https://api.github.com/gists/${GIST_ID}`, {
+            headers: {
+              Accept: "application/vnd.github+json",
+              "User-Agent": "emwiki-checker"
+            }
+          })
+        ]);
+
+        if (!res.ok || !githubRes.ok) return;
 
         const text = await res.text();
         const [timestamp, newVersion] = text.split(":");
+        const githubData = await githubRes.json();
+        const githubVersion = githubData.history?.[0]?.version || "";
 
-        if (newVersion && newVersion !== CURRENT_VERSION) {
-          alert("⚠️ Another admin has updated the Catalog. Please reload to see latest changes.");
+        // Compare against both latest and GitHub version
+        if (newVersion !== CURRENT_VERSION || githubVersion !== newVersion) {
+          alert("⚠️ Another admin has updated the Catalog or Gist and D1 are out of sync.");
           CURRENT_VERSION = newVersion;
         }
       } catch (err) {
@@ -875,8 +909,9 @@
       }
     }
 
+
     function startUpdateCheck() {
-      setInterval(checkUpdate, 10000);
+      setInterval(checkUpdate, 24000);
     }
 
     document.getElementById("save-btn").addEventListener("click", async () => {
@@ -929,7 +964,7 @@
         }
 
         if (response.status === 409) {
-          const conflict = await res.json();
+          const conflict = await response.json();
           showConflictUI(conflict);
           document.getElementById("save-btn").style.transform = "translateY(0px)";
           document.getElementById("save-btn").style.opacity = "1";
@@ -1509,12 +1544,13 @@
     async function checkVersionMatch() {
       try {
         const [latestRes, githubRes] = await Promise.all([
-          fetch('/api/latest-version',{ cache: "no-store" }), // Your Worker endpoint
-          fetch(`https://api.github.com/gists/${GIST_ID}`),
-          {  headers: {
+          fetch('/api/latest-version', { cache: "no-store" }),
+          fetch(`https://api.github.com/gists/${GIST_ID}`, {
+            headers: {
               Accept: "application/vnd.github+json",
               "User-Agent": "emwiki-checker"
-            }}
+            }
+          })
         ]);
 
         if (!githubRes.ok || !latestRes.ok) throw new Error("Failed to check versions");
@@ -1522,25 +1558,24 @@
         const githubData = await githubRes.json();
         const githubVersion = githubData.history?.[0]?.version || "";
 
+        const latestText = await latestRes.text();
+        const [latestTimestamp, latestVersion] = latestText.split(":");
+
         console.log("GitHub version:", githubVersion);
         console.log("D1 version (/api/latest-version):", latestVersion);
 
-        const latestText = await latestRes.text();
-
-        const [latestTimestamp, latestVersion] = latestText.split(":");
-
         if (githubVersion !== latestVersion) {
           console.warn("⚠️ Version mismatch between GitHub and D1!");
-          // Show blocker until it matches
           const blocker = document.getElementById('version-blocker');
           blocker.style.display = 'flex';
           document.body.style.pointerEvents = 'none';
 
+          let retries = 0;
 
-          // Poll every 3s until match
           const interval = setInterval(async () => {
             const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, { cache: "no-store" });
             const data = await res.json();
+            const newVersion = data.history?.[0]?.version || "";
 
             retries++;
             if (retries > 20) {
@@ -1551,7 +1586,7 @@
               return;
             }
 
-            if (data.version === latestVersion) {
+            if (newVersion === latestVersion) {
               clearInterval(interval);
               blocker.style.display = 'none';
               document.body.style.pointerEvents = 'auto';
@@ -1568,6 +1603,7 @@
         document.getElementById('version-blocker').style.display = 'flex';
       }
     }
+
 
     window.addEventListener('DOMContentLoaded', checkVersionMatch);
 
