@@ -600,7 +600,7 @@
   <script>
 
 
-    let res = null
+    let rese = null
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const adminKeys = {
       '00cc75b3c354bd864d646cc1a790268c33916bd2a32b78b502151640596f7702': 'xnite',
@@ -832,8 +832,8 @@
 
     async function loadData() {
       // Load auto.json content from raw GitHub (safe, no auth needed)
-      res = await fetch("https://gist.githubusercontent.com/xnite7/0d0a3800287f3e7c6e5e944c8337fa91/raw/auto.json");
-      jsData = await res.json();
+      rese = await fetch("https://gist.githubusercontent.com/xnite7/0d0a3800287f3e7c6e5e944c8337fa91/raw/auto.json");
+      jsData = await rese.json();
 
       // Load latest version from your own worker endpoint
       const versionRes = await fetch("/api/latest-version");
@@ -1509,16 +1509,17 @@
     async function checkVersionMatch() {
       try {
         const [gistRes, latestRes] = await Promise.all([
-          res,
+          rese,
           fetch('/api/latest-version',{ cache: "no-store" }) // Your Worker endpoint
         ]);
-        console.log(gistRes)
-        console.log(latestRes)
+
 
         if (!gistRes.ok || !latestRes.ok) throw new Error("Failed to check versions");
 
-        const gist = await gistRes.json();
+        const gist = rese;
         const latestText = await latestRes.text();
+        console.log(gist)
+        console.log(latestText)
         const [latestTimestamp, latestVersion] = latestText.split(":");
 
         if (gist.version !== latestVersion) {
