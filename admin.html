@@ -544,7 +544,7 @@
     <div id="price-groups" style="display:flex; flex-direction:column; gap: 30px; padding: 10px;"></div>
   </div>
   <div id="history-tab" style="display: none;">
-    <div class="title1">Update History<p>Recent updates to the Gist.</p>
+    <div class="title1">Update History<p>Recent updates to the Catalog.</p>
     </div>
     <div id="history-list" style="padding: 20px; background: #1a1a1a; border-radius: 20px;"></div>
   </div>
@@ -686,7 +686,7 @@
     async function fetchHistory() {
       try {
         const commitsRes = await fetch(`https://api.github.com/gists/${GIST_ID}/commits`);
-        if (!commitsRes.ok) throw new Error("Failed to fetch Gist commits");
+        if (!commitsRes.ok) throw new Error("Failed to fetch Catalog History");
 
         const commits = await commitsRes.json();
 
@@ -705,7 +705,7 @@
           lines.forEach(line => linesSet.add(line));
         }
 
-        const allLines = Array.from(linesSet); // ← no reverse
+        const allLines = Array.from(linesSet);
         renderHistory(allLines);
       } catch (err) {
         console.error('Error fetching full history:', err);
@@ -764,6 +764,28 @@
       renderPriceGroups();
     }
 
+    let CURRENT_VERSION = "";
+
+    function startUpdateCheck() {
+      setInterval(async () => {
+        try {
+          const res = await fetch("/latest-version");
+          if (!res.ok) return;
+
+          const text = await res.text();
+          const [timestamp, newVersion] = text.split(":");
+
+          if (newVersion && newVersion !== CURRENT_VERSION) {
+            alert("⚠️ Another admin has updated the Catalog. Please reload to see latest changes.");
+            CURRENT_VERSION = newVersion;
+          }
+        } catch (err) {
+          console.warn("Failed to check for updates", err);
+        }
+      }, 10000);
+    }
+
+
 
     document.getElementById("save-btn").addEventListener("click", async () => {
       if (document.getElementById("save-btn").disabled) return;
@@ -799,7 +821,7 @@
             body: JSON.stringify({
               username: adminName,
               content: jsData,
-              version: CURRENT_GIST_VERSION,  // include version!
+              version: CURRENT_GIST_VERSION,
             }),
         });
         document.getElementById("save-btn").style.transform = "translateY(-10px)";
@@ -1060,15 +1082,15 @@
       onAdd(evt) {
         const itemName = evt.item.getAttribute("data-name");
         const fromListId = evt.from.id;
-        const flagToClear = FLAG_PANELS[fromListId]; // "new", "weekly", etc.
+        const flagToClear = FLAG_PANELS[fromListId];
 
         if (!flagToClear) {
-          evt.item.remove(); // remove from DOM
+          evt.item.remove();
           renderLists();
-          return; // ignore drops from all-items or unknown sources
+          return; 
         }
 
-        // Remove only the relevant flag
+
         for (const type in jsData) {
           const item = jsData[type].find(i => i.name === itemName);
           if (item) {
@@ -1076,7 +1098,7 @@
           }
         }
 
-        evt.item.remove(); // remove from DOM
+        evt.item.remove();
         renderLists();
       },
 
@@ -1089,15 +1111,15 @@
 
 
 
-    // Make all flag panels Sortable
+
     Object.entries(FLAG_PANELS).forEach(([elementId, flagKey]) => {
       const el = document.getElementById(elementId);
 
       new Sortable(el, {
         group: {
           name: "shared-flags",
-          pull: true,         // can drag from this list
-          put: true            // allow drops INTO this list
+          pull: true, 
+          put: true 
         },
         animation: 150,
         sort: false,
@@ -1117,7 +1139,7 @@
             document.getElementById("trash-bin").classList.add("drag-over");
             document.getElementById("trash-bin").getElementsByClassName("placeholder")[0].style.display = "none";
           }
-          return true; // allow move
+          return true; 
         },
         onLeave(evt) {
 
@@ -1132,12 +1154,12 @@
       });
     });
     let previd = null;
-    // Master list (all items) — drag FROM here as a clone
+
     new Sortable(document.getElementById("all-items"), {
       group: {
         name: "shared-flags",
-        pull: "clone", // drag clone only
-        put: false     // cannot drop into master
+        pull: "clone",
+        put: false  
       },
       animation: 150,
       sort: false,
