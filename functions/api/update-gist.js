@@ -328,7 +328,7 @@ export async function onRequestPost(context) {
     const username = body.username || "unknown";
     const newContent = body.content;
 
-    // Get current gist data
+    // Fetch current gist content
     const gistRes = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
       headers: {
         Authorization: `Bearer ${GITHUB_TOKEN}`,
@@ -339,45 +339,41 @@ export async function onRequestPost(context) {
 
     if (!gistRes.ok) throw new Error("Failed to fetch current gist content");
     const gistData = await gistRes.json();
+
+    // Parse old content (string)
     const oldContentRaw = gistData.files["auto.json"]?.content || "{}";
-    const oldContent = JSON.parse(oldContentRaw);
 
-    const oldStr = JSON.stringify(oldContent, null, 2);
+    // Convert both old and new to JSON strings for diffing
+    const oldStr = oldContentRaw;
     const newStr = JSON.stringify(newContent, null, 2);
-    const diff = diffLines(oldStr, newStr);
 
-const diffText = diff
-  .filter(part => part.added || part.removed) // skip unchanged
-  .map(part => {
-    const prefix = part.added ? "+ " : "- ";
-    return part.value
-      .split("\n")
-      .filter(line => line.trim() !== "")
-      .map(line => prefix + line)
-      .join("\n");
-  })
-  .join("\n")
-  .slice(0, 50000); // optional: cap length to avoid overly long logs
+    // Compute JSON diff (returns an array of change objects)
+    const diff = diffJson(oldStr, newStr);
 
+    // Format diff for logging: add + or - at start of each changed line
+    const diffText = diff.map(part => {
+      const prefix = part.added ? "+" : part.removed ? "-" : " ";
+      return part.value
+        .split("\n")
+        .map(line => line ? `${prefix} ${line}` : "")
+        .join("\n");
+    }).join("\n");
 
-    // Log the diff in the database
+    // Insert diff log into database
     await DBH.prepare(`
       INSERT INTO history (timestamp, username, diff)
       VALUES (?, ?, ?)
     `).bind(new Date().toISOString(), username, diffText).run();
 
-    // Update the Gist
+    // Prepare gist update payload
     const updatedGist = {
       files: {
-        "auto.json": {
-          content: JSON.stringify(newContent, null, 2)
-        },
-        "history.log": {
-          content: `Updated by ${username} at ${new Date().toISOString()}`
-        }
+        "auto.json": { content: newStr },
+        "history.log": { content: `Updated by ${username} at ${new Date().toISOString()}` }
       }
     };
 
+    // Update the gist with new content
     const updateRes = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
       method: "PATCH",
       headers: {
@@ -391,15 +387,13 @@ const diffText = diff
 
     if (!updateRes.ok) {
       const errorText = await updateRes.text();
-      console.error("GitHub Gist update error:", errorText);
-      return new Response(errorText, {
+      return new Response(JSON.stringify({ error: errorText }), {
         status: 500,
         headers: { "Content-Type": "application/json" }
       });
     }
 
-
-    return new Response("Gist updated and diff logged", { status: 200 });
+    return new Response(JSON.stringify({ message: "Gist updated and diff logged" }), { status: 200, headers: { "Content-Type": "application/json" } });
 
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message, stack: err.stack }), {
