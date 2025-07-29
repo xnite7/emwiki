@@ -899,7 +899,7 @@ async function checkUpdate() {
     console.log(CURRENT_VERSION, d1Version)
     if (CURRENT_VERSION !== d1Version) {
       alert(`⚠️ New update to Catalog Detected by ${user.slice(0, -1)}`);
-      location.reload()
+      location.reload(true)
     }
   } catch (err) {
     console.warn("Failed to check for updates", err);
@@ -1590,7 +1590,7 @@ async function checkVersionMatch() {
       if (!hasReloaded) {
         console.log("🔁 First mismatch detected — reloading once...");
         localStorage.setItem("versionReloaded", "true");
-        location.reload();
+        location.reload(true);
       } else {
         console.log("❌ Mismatch persists after reload — informing admin.");
         blocker.innerHTML = `
