@@ -911,7 +911,7 @@ async function checkUpdate() {
     function startUpdateCheck() {
       setInterval(checkUpdate, 10000);
     }
-
+startUpdateCheck()
     document.getElementById("save-btn").addEventListener("click", async () => {
       if (document.getElementById("save-btn").disabled) return;
       if (document.getElementById("save-btn").textContent === "⬇") {
