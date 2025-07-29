@@ -891,13 +891,14 @@ async function checkUpdate() {
     if (!res.ok) return;
 
     const text = await res.text();
-    const [timestamp, d1Version] = text.split("|"); // assuming you use "|" delimiter
+    const [user, textuah] = text.split("@")
+    const [timestamp, d1Version] = textuah.split("|"); // assuming you use "|" delimiter
 
 
     // Check your local CURRENT_VERSION against both
     console.log(CURRENT_VERSION, d1Version)
     if (CURRENT_VERSION !== d1Version) {
-      alert("⚠️ Your local version is out of sync with D1!");
+      alert(`⚠️ New update to Catalog Detected by ${user}`);
       CURRENT_VERSION = d1Version;  // update local version to latest known D1 version
     }
   } catch (err) {
