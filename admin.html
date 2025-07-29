@@ -898,8 +898,8 @@ async function checkUpdate() {
     // Check your local CURRENT_VERSION against both
     console.log(CURRENT_VERSION, d1Version)
     if (CURRENT_VERSION !== d1Version) {
-      alert(`⚠️ New update to Catalog Detected by ${user}`);
-      CURRENT_VERSION = d1Version;  // update local version to latest known D1 version
+      alert(`⚠️ New update to Catalog Detected by ${user.slice(0, -1)}`);
+      location.reload()
     }
   } catch (err) {
     console.warn("Failed to check for updates", err);
