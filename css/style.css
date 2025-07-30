@@ -2109,7 +2109,7 @@ html {
     }
 
     #ctlg {
-        zoom: .57
+        zoom: 0.8;
     }
 
     .welcome h1 {
