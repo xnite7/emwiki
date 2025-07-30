@@ -13,7 +13,10 @@ export async function onRequestGet({ env }) {
   if (!response.ok) {
     return new Response(JSON.stringify({ error: "Failed to fetch Gist", status: response.status }), {
       status: response.status,
-      headers: { "Content-Type": "application/json" }
+      headers: {
+         "Content-Type": "application/json",
+         "Access-Control-Allow-Origin": "*"
+        }
     });
   }
 
@@ -22,7 +25,8 @@ export async function onRequestGet({ env }) {
     status: 200,
     headers: {
       'Content-Type': 'application/json',
-      'Cache-Control': 's-maxage=60' // optional caching
+      'Cache-Control': 's-maxage=60',
+      "Access-Control-Allow-Origin": "*"
     }
   });
 }

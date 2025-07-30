@@ -15,7 +15,8 @@ export async function onRequestGet(context) {
         status: 200,
         headers: {
           "Content-Type": "text/plain",
-          "Cache-Control": "no-cache"
+          "Cache-Control": "no-cache",
+          "Access-Control-Allow-Origin": "*"
         }
       });
     }
@@ -23,7 +24,8 @@ export async function onRequestGet(context) {
     return new Response(`${row.username}"@"${row.timestamp}|${row.version}`, {
       headers: {
         "Content-Type": "text/plain",
-        "Cache-Control": "no-cache"
+        "Cache-Control": "no-cache",
+        "Access-Control-Allow-Origin": "*"
       }
     });
 
