@@ -1455,6 +1455,9 @@ startUpdateCheck()
 
             renderPriceGroups();
           };
+          if (card.id == "titles") {
+            input.style.top = "28px"
+          }
 
           card.appendChild(input);
           itemGrid.appendChild(card);
