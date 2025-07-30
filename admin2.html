@@ -1437,7 +1437,6 @@ startUpdateCheck()
           
           const input = document.createElement("input");
           input.type = "text";
-
           input.value = item.price ?? "";
           input.placeholder = "Set price";
           input.style = `
@@ -1446,7 +1445,6 @@ startUpdateCheck()
             border-radius: 6px;
             border: none;
             font-size: 13px;
-            top: -28px;
             position: relative;
           `;
           input.onchange = () => {
@@ -1456,11 +1454,9 @@ startUpdateCheck()
             renderPriceGroups();
           };
           if (card.id == "titles") {
-            input.style.top = "28px"
+            input.style.bottom = "11px"
             card.style.flexDirection = "column"
-            if (card.querySelector("img")) {
-                input.style.top = "-8px"
-            }
+            input.style.position = "absolute"
           }
 
           card.appendChild(input);
