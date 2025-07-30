@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="en" style="background: black;">
+
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+  <meta charset="UTF-8" />
+  <link rel="icon" href="./imgs/admin.png" type="image/png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Panel</title>
+  <link href="https://fonts.cdnfonts.com/css/zekton" rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/highway-gothic" rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/comic-neue-angular" rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/roman-antique" rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/accanthis-adf-std" rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/bunny-flowers-outline?styles=137265" rel="stylesheet">
+
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Source+Sans+Pro&family=Playpen+Sans:wght@100..800&family=Oxanium&family=Patrick+Hand&family=Denk+One&family=Marhey:wght@700&family=Rubik+Wet+Paint&family=Irish+Grover&family=Poppins:wght@700&family=Rye&family=Eater&family=Bangers&family=Inconsolata:wght@900&family=Roboto+Mono:wght@700&family=Sedgwick+Ave+Display&family=Rubik+Marker+Hatch&family=Sarpanch:wght@700&family=Kalam&family=Are+You+Serious&family=Akronim&family=Kings&family=Permanent+Marker&family=Caesar+Dressing&family=Michroma&family=Titillium+Web&family=Grenze+Gotisch:wght@100..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Bungee+Shade&family=Frijole&family=Audiowide&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Lobster&family=Fredoka:wght@300..700&family=Codystar:wght@300;400&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Michroma&family=Jura&family=Special+Elite&family=Noto+Serif+HK:wght@200..900&family=Faster+One&family=Nosifer&family=Silkscreen&family=Finger+Paint&family=Merriweather&family=Luckiest+Guy&family=Bungee+Inline&family=Creepster&family=Indie+Flower&family=Pacifico&family=Cairo&family=Fondamento&family=Balthazar&family=Arimo:ital,wght@0,400..700;1,400..700&display=swap");
+
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #2e2e2e, #1e1e1e) no-repeat;
+      margin: 0;
+      color: white;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .title1 {
+      text-align: center;
+      background: #3f3f3f;
+      padding: 19px 0 12px;
+      color: #b7b7b7;
+      border-bottom: outset black;
+      border-radius: 17px;
+    }
+
+    .title {
+      text-align: center;
+      background: -webkit-linear-gradient(right, rgb(141 141 141), rgb(255 255 255)) text;
+      font: 600 23px 'Arimo';
+      color: #d5d5d5;
+      -webkit-text-fill-color: transparent;
+      border-radius: 20px 20px 0 0;
+      padding: 12px 0;
+    }
+
+    #save-btn {
+      box-shadow: 0 0 16px black;
+      background: #6cd13a;
+      position: fixed;
+      padding: 10px 11px;
+      border-radius: 24px;
+      bottom: 56px;
+      width: 55px;
+      height: 55px;
+      font-size: 24px;
+      left: 20px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    #save-btn:hover {
+      background: #5cbf2a;
+      transform: scale(1.1);
+    }
+
+    .grid {
+      min-height: 100px;
+      /* enough height to accept drops */
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 22px;
+      justify-items: center;
+      padding-bottom: 35px;
+    }
+
+    .gridall {
+      border-radius: 20px;
+      background: #1a1a1a;
+      padding: 20px;
+      width: -webkit-fill-available;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 16px;
+    }
+
+    .item-card {
+      background: #3a3a3a;
+      border-radius: 16px;
+      padding: 10px;
+      text-align: center;
+      box-shadow: 0 0 14px #00000059;
+      scale: 1;
+      width: 111px;
+      height: 111px;
+      cursor: grab;
+      transition: background 0.2s;
+    }
+
+    .panel.hovered {
+      outline: 5px solid rgb(0, 225, 255);
+    }
+
+    .panel.flash {
+      outline: 5px solid rgba(0, 225, 255, 0);
+      animation: flashOutlineGrid 0.4s ease;
+    }
+
+
+    .item-card img {
+      max-height: 100px;
+      margin-top: 10px;
+      user-select: none;
+    }
+
+    .item-card span {
+      position: relative;
+      height: 0px;
+      display: block;
+      font-size: 14px;
+      text-shadow: -1.3px -1.3px 0 #000, 0 -1.3px 0 #000, 1.3px -1.3px 0 #000, 1.3px 0 0 #000, 1.3px 1.3px 0 #000, 0 1.3px 0 #000, -1.3px 1.3px 0 #000, -1.3px 0 0 #000;
+      justify-self: anchor-center;
+    }
+
+    .papapanel {
+      display: flex;
+      margin: 20px;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .panel {
+      transition: all 0.2s;
+      outline: 5px solid transparent;
+      display: flex;
+      flex-direction: column;
+      border-radius: 20px;
+      background: #1a1a1a;
+      margin: 20px;
+      flex: 1 1 18%;
+    }
+
+    .search-bar {
+      width: -webkit-fill-available;
+      margin-bottom: 20px;
+    }
+
+    #pagination-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    #pagination-container button,
+    #page-select {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      background: #444;
+      color: white;
+      cursor: pointer;
+    }
+
+    #pagination-container button:disabled {
+      background: #222;
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    #page-count {
+      margin-left: 16px;
+      font-weight: 600;
+      opacity: 0.7;
+      font-size: 14px;
+      align-self: center;
+    }
+
+    #tab-switcher {
+      text-align: center;
+      transform: translateY(13px);
+      margin: 20px 0 0;
+    }
+
+    .loader {
+      width: 40px;
+      height: 40px;
+      border: 5px solid #fff;
+      border-top: 5px solid #f09;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    #tab-switcher button {
+      margin: 0 5px;
+      padding: 10px 15px 20px;
+      font-weight: bold;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      background: #3f3f3f;
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    #tab-switcher button:hover {
+      background: linear-gradient(180deg, #6b6b6b, #3f3f3f, #3f3f3f);
+    }
+
+    .search-sort-controls {
+      display: flex;
+      margin: 18px auto;
+      max-width: 600px;
+      padding: 15px;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .search-sort-controls input,
+    .search-sort-controls select {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 14px;
+    }
+
+    .item-card.flash {
+      outline: 2px solid #ffd80c;
+      animation: flashOutline 0.4s ease;
+    }
+
+    .item-card.dragging {
+      opacity: 0.6;
+      transform: scale(0.8);
+    }
+
+    #pets {
+      background-color: #377bfa;
+    }
+
+    #effects {
+      background-color: #ffb135;
+    }
+
+    #gears {
+      background-color: #5bfe6a;
+    }
+
+    #deaths {
+      background-color: #ff7a5e;
+    }
+
+    #titles {
+      background-color: #c960fe;
+    }
+
+    #search,
+    #price-search {
+      background: black;
+      padding: 8px;
+      width: 98%;
+      border: 2px solid #5b5b5b;
+      font-size: 20px;
+      margin-bottom: 16px;
+      font-family: monospace;
+      border-radius: 14px;
+      color: #d7d7d7;
+    }
+
+    .brod {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      flex-direction: row;
+    }
+
+    @keyframes flashOutline {
+      0% {
+        outline-color: #ffd80c;
+        outline-offset: 0px;
+      }
+
+      100% {
+        outline-color: transparent;
+        outline-offset: 6px;
+      }
+    }
+
+    @keyframes flashOutlineGrid {
+      0% {
+        outline-color: #0cf7ff;
+        outline-offset: 0px;
+      }
+
+      99% {
+        outline-color: transparent;
+        outline-offset: 6px;
+      }
+    }
+
+    @media (max-width:600px) {
+      .panel {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: space-evenly;
+        zoom: 0.56;
+        flex-direction: column;
+      }
+
+      .search-bar {
+        display: flex;
+        margin: 18px auto;
+        max-width: 600px;
+        align-items: center;
+        flex-direction: column;
+        width: -webkit-fill-available;
+        margin-bottom: 20px;
+      }
+
+      #search {
+        width: 98%;
+        font-size: 39px;
+        margin-bottom: 0px;
+        font-family: monospace;
+        color: rgb(215, 215, 215);
+        background: black;
+        padding: 15px;
+        border-width: 2px;
+        border-style: solid;
+        border-color: rgb(91, 91, 91);
+        border-image: initial;
+        border-radius: 14px;
+      }
+
+      #pagination-container {
+        zoom: 2.5;
+      }
+
+      #page-count {
+        zoom: 2;
+      }
+
+      .papapanel {
+        display: flex;
+        margin: 20px;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: stretch;
+      }
+
+      .brod {
+        gap: 10px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+        zoom: 0.9;
+        justify-content: flex-start;
+        flex-direction: row;
+      }
+
+      #sort-select {
+        margin-left: 0px;
+      }
+
+      .title {
+        font: 600 40px 'Arimo';
+        padding-top: 12px;
+      }
+
+      .grid {
+        zoom: 1.2;
+      }
+
+      .gridall {
+        zoom: 1.5;
+      }
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-content {
+      background: #222;
+      color: white;
+      padding: 20px;
+      border-radius: 14px;
+      max-width: 300px;
+      width: 90%;
+      font-size: 16px;
+      transform: scale(0.95);
+      transition: transform 0.2s ease;
+    }
+
+    .modal.show .modal-content {
+      transform: scale(1);
+    }
+
+    #welcome-message {
+      text-align: center;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      opacity: 0;
+      transition: all 0.5s ease;
+    }
+
+    #admin-online {
+      text-align: center;
+      font-size: 1rem;
+      color: #6cd13a;
+
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    #admin-online.show {
+      text-align: center;
+      font-size: 1rem;
+      color: #6cd13a;
+
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+
+    .dragging {
+      opacity: 0.5;
+    }
+
+    .sortable-ghost {
+      opacity: 0.2;
+    }
+
+    #trash-bin {
+      justify-items: center;
+      bottom: 20px;
+      right: 20px;
+      width: -webkit-fill-available;
+      min-height: 60px;
+      padding: 10px;
+      border: 2px dashed #666;
+      border-radius: 10px;
+      background: #222;
+      color: white;
+      opacity: 0.6;
+      transition: all 0.2s ease;
+      z-index: 1000;
+      list-style: none;
+    }
+
+    #trash-bin.drag-over {
+      background-color: #8b0000;
+      border-color: red;
+      opacity: 1;
+    }
+
+    #trash-bin .placeholder {
+      pointer-events: none;
+      color: #bbb;
+      font-size: 14px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Admin Panel</h1>
+  <div id="admin-online"></div>
+  <div id="welcome-message"></div>
+  <div id="tab-switcher">
+    <button onclick="switchTab('main')">🧩 Item Lists</button>
+    <button onclick="switchTab('prices')">💰 Prices</button>
+    <button onclick="switchTab('history')">📜 History</button>
+  </div>
+  <div id="main-tab">
+    <div class="title1">List Configurator<p>Drag items to the appropriate lists below.</p>
+    </div>
+    <ul id="trash-bin" class="drop-zone">
+      <li class="placeholder">🗑 Drop items here to remove</li>
+    </ul>
+    <div class="papapanel">
+      <div class="panel">
+        <div class="title">New Items</div>
+        <div class="grid" id="new-items"></div>
+      </div>
+      <div class="panel">
+        <div class="title">Weekly Shop</div>
+        <div class="grid" id="weekly-items"></div>
+      </div>
+      <div class="panel">
+        <div class="title">Weekly Star Shop</div>
+        <div class="grid" id="weeklystar-items"></div>
+      </div>
+    </div>
+
+
+    <div class="panel">
+      <div class="search-bar">
+        <input type="text" id="search" placeholder="Search items..." />
+      </div>
+      <div class="gridall" id="all-items"></div>
+      <div id="page-count">Page 1 of 1</div>
+      <div id="pagination-container">
+        <button id="prev-btn">
+          < Prev</button>
+            <select id="page-select"></select>
+            <button id="next-btn">Next ></button>
+      </div>
+    </div>
+  </div>
+  <div id="prices-tab" style="display: none;">
+    <div class="title1">Prices Configurator<p>Change RAP values here.</p>
+    </div>
+    <div class="search-sort-controls">
+      <input type="text" id="price-search" placeholder="Search item name...">
+      <select id="sort-select" onchange="renderPriceGroups()">
+        <option value="group">Sort by Price Group</option>
+        <option value="category">Sort by Category</option>
+        <option value="az">A → Z</option>
+        <option value="za">Z → A</option>
+        <option value="high">$$$ → $</option>
+        <option value="low">$ → $$$</option>
+      </select>
+    </div>
+    <div id="price-groups" style="display:flex; flex-direction:column; gap: 30px; padding: 10px;"></div>
+  </div>
+  <div id="history-tab" style="display: none;">
+    <div class="title1">Update History<p>Recent updates to the Catalog.</p>
+    </div>
+    <div id="history-list" style="padding: 20px; background: #1a1a1a; border-radius: 20px;"></div>
+  </div>
+  <button id="save-btn">✔</button>
+  <div id="checklist-modal" class="modal">
+    <div class="modal-content">
+      <h3 id="checklist-title"></h3>
+      <label><input type="checkbox" id="check-new"> New</label><br>
+      <label><input type="checkbox" id="check-weekly"> Weekly</label><br>
+      <label><input type="checkbox" id="check-star"> Weekly Star</label><br><br>
+      <div style="display:flex; justify-content:flex-start;">
+        <button onclick="saveChecklist()"
+          style="padding:6px 12px; border:none; border-radius:8px; background:#5cbf2a; color:white;">Save</button>
+        <button onclick="closeChecklistModal()"
+          style="padding:6px 12px; border:none; border-radius:8px; background:#666;">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <div id="version-blocker" style="
+  position: fixed;
+  inset: 0;
+  background: black;
+  color: white;
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: monospace;
+  font-size: 1.2rem;
+  text-align: center;
+">
+    <div class="loader"></div>
+    <p style="margin-top: 20px;">Waiting for new catalog version to upload...</p>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+  <script>
+
+
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const adminKeys = {
+      '00cc75b3c354bd864d646cc1a790268c33916bd2a32b78b502151640596f7702': 'xnite',
+      'd8d8c58d2c8c173f8de0ff61081d77210367d00eabcc76a04cf3d2d5b1cb3ab4': 'harvestmoon',
+      '0fc6b5fe21bb973ec350831217401b643eee63a6c29c74fb4fe6606b28ba7f8b': 'ivan',
+      '499b66dcc2946daa0c2ff49b05902dd1152d1a21208ca42fc2c9eb23281cb623': 'bagel',
+      'b7a6aa6f564e2e8617ea4e3d443c781d5f890377a584b8d46491d2bcc33e5f36': 'wavetechnic'
+    };
+
+    async function computeHash(key) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(key);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+      return '';
+    }
+
+    function setCookie(name, value, days) {
+      const date = new Date();
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      const expires = "; expires=" + date.toUTCString();
+      document.cookie = name + "=" + (value || "") + expires + "; path=/";
+    }
+
+    async function promptAdminKey() {
+      const savedKey = getCookie('adminKey');
+      if (savedKey) {
+        const hash = await computeHash(savedKey);
+        if (adminKeys[hash]) {
+          showWelcome(adminKeys[hash]);
+          loadData();
+          window.addEventListener("load", renderPriceGroups);
+          return;
+        }
+      }
+      while (true) {
+        const enteredKey = prompt("Enter admin key:");
+        if (enteredKey === null) {
+          document.body.innerHTML = "<h2 style='color:red; text-align:center; margin-top: 40px;'>Access denied.</h2>";
+          throw new Error("Login cancelled");
+        }
+        const hash = await computeHash(enteredKey);
+        if (adminKeys[hash]) {
+          setCookie('adminKey', enteredKey, 30);
+          showWelcome(adminKeys[hash]);
+          loadData();
+          window.addEventListener("load", renderPriceGroups);
+          break;
+        } else {
+          alert("❌ Invalid admin key, please try again.");
+        }
+      }
+    }
+
+    let ws;
+    let backoff = 1000;
+
+    function initWebSocket(adminName) {
+      ws = new WebSocket(`wss://admin-tracker.xnite7.workers.dev?adminName=${encodeURIComponent(adminName)}`);
+      ws.onopen = () => {
+
+        backoff = 1000;
+      };
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === "adminList") {
+          updateAdminOnline(data.admins);
+        }
+      };
+      ws.onclose = (event) => {
+
+        console.log(`WebSocket closed with code: ${event.code}, reason: ${event.reason}`);
+        setTimeout(() => initWebSocket(adminName), backoff);
+        backoff = Math.min(backoff * 2, 30000);
+      };
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+    }
+
+    function updateAdminOnline(admins) {
+      const onlineDiv = document.getElementById("admin-online");
+      onlineDiv.textContent = admins.length ? `Online: ${admins.join(", ")}` : "No admins online";
+      onlineDiv.classList.add("show");
+    }
+
+    function showWelcome(name) {
+      const welcomeDiv = document.getElementById('welcome-message');
+      welcomeDiv.textContent = `Welcome, ${name}.`;
+
+      setTimeout(() => {
+        welcomeDiv.style.opacity = '1';
+      }, 100);
+      setTimeout(() => {
+        welcomeDiv.style.opacity = '0';
+
+      }, 3000);
+      setTimeout(() => {
+        welcomeDiv.style.fontSize = '0px';
+        initWebSocket(name);
+      }, 3200);
+
+    }
+
+    const GIST_ID = "0d0a3800287f3e7c6e5e944c8337fa91";
+
+
+
+    async function fetchHistory() {
+      try {
+        const res = await fetch('/api/history');
+        if (!res.ok) throw new Error('Failed to fetch Catalog History');
+
+        const entries = await res.json();
+
+        if (!Array.isArray(entries) || entries.length === 0) {
+          renderHistory([]);
+          return;
+        }
+
+        // Instead of one string per entry, pass an object with separate fields
+        const formattedEntries = entries.map(entry => {
+          return {
+            username: entry.username,
+            time: new Date(entry.timestamp).toLocaleString(),
+            diffSummary: summarizeDiff(entry.diff)
+          };
+        });
+
+        renderHistory(formattedEntries);
+      } catch (err) {
+        console.error('Error fetching full history:', err);
+        document.getElementById('history-list').innerHTML = '<p>Error loading history.</p>';
+      }
+    }
+
+    function summarizeDiff(diffText) {
+      if (!diffText) return "(no diff available)";
+      const lines = diffText.split('\n').slice(0, 5); // first 5 lines max
+      return lines.join('\n') + (lines.length >= 5 ? '\n...' : '');
+    }
+
+
+    function renderHistory(entries) {
+      const container = document.getElementById('history-list');
+      container.innerHTML = '';
+
+      if (entries.length === 0) {
+        container.innerHTML = '<p>No history available.</p>';
+        return;
+      }
+
+      const ul = document.createElement('ul');
+      ul.style.listStyle = 'none';
+      ul.style.padding = '0';
+
+      entries.forEach(({ username, time, diffSummary }) => {
+        const li = document.createElement('li');
+        li.style.marginBottom = '1.5rem';
+        li.style.fontFamily = 'monospace';
+
+        // Create username element
+        const userEl = document.createElement('div');
+        userEl.textContent = `${username}`;
+        userEl.style.fontWeight = '700';
+        userEl.style.fontSize = '18px';
+        userEl.style.width = 'fit-content';
+        userEl.style.marginBottom = '4px';
+
+        // Create timestamp element
+        const timeEl = document.createElement('div');
+        timeEl.textContent = `${time}`;
+        timeEl.style.fontWeight = '500';
+        timeEl.style.fontSize = '14px';
+        timeEl.style.color = '#666';
+        timeEl.style.float = 'right';
+        timeEl.style.position = 'relative';
+        timeEl.style.bottom = '-5px';
+        timeEl.style.paddingLeft = '9px';
+
+        // Create diff summary block with <pre> for formatting
+        const diffEl = document.createElement('pre');
+        diffEl.textContent = diffSummary;
+        diffEl.style.whiteSpace = 'pre-wrap';
+        diffEl.style.fontWeight = '400';
+        diffEl.style.fontSize = '14px';
+        diffEl.style.background = '#000';
+        diffEl.style.border = '1px solid #ddd';
+        diffEl.style.padding = '8px';
+        diffEl.style.borderRadius = '4px';
+        diffEl.style.width = 'fit-content';
+
+        li.appendChild(userEl);
+        userEl.appendChild(timeEl);
+        li.appendChild(diffEl);
+
+        ul.appendChild(li);
+      });
+
+      container.appendChild(ul);
+    }
+
+
+    let fusePrice = null;
+    let allPriceItems = [];
+    let jsData = {};
+    let filteredItems = [];
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = isMobile ? 9 : 16;
+
+    function switchTab(tab) {
+      document.getElementById("main-tab").style.display = tab === "main" ? "block" : "none";
+      document.getElementById("prices-tab").style.display = tab === "prices" ? "block" : "none";
+      document.getElementById("history-tab").style.display = tab === "history" ? "block" : "none";
+      if (tab === "history") fetchHistory();
+    }
+
+
+    let CURRENT_GIST_VERSION = "";
+    let CURRENT_VERSION = "";
+
+
+    async function loadData() {
+      const [versionRes, gistRes] = await Promise.all([
+        fetch("/api/latest-version", { cache: "no-store" }),
+        fetch("/api/gist-version", { cache: "no-store" })
+      ]);
+
+      let githubVersion = "", latestVersion = "";
+
+      if (versionRes.ok) {
+        const text = await versionRes.text();
+        const [, v] = text.split("|");
+        latestVersion = v || "";
+      }
+
+      if (!gistRes.ok) {
+        console.error("Failed to load Gist data.");
+        return;
+      }
+
+      const gistData = await gistRes.json();
+      githubVersion = gistData.history?.[0]?.version || "";
+
+      const autoJsonRaw = gistData.files?.["auto.json"]?.content;
+      if (!autoJsonRaw) {
+        console.error("auto.json not found in Gist.");
+        return;
+      }
+
+      jsData = JSON.parse(autoJsonRaw); // same as before
+
+      // Set both global versions
+      CURRENT_GIST_VERSION = githubVersion;
+      CURRENT_VERSION = latestVersion;
+
+      // Optional warning
+      if (githubVersion !== latestVersion) {
+        console.warn("⚠️ D1 version is outdated compared to GitHub.");
+        // optionally auto-fix or trigger checkVersionMatch()
+      }
+
+      cacheAllPriceItems();
+      setupSearch();
+      renderLists();
+      renderPriceGroups();
+    }
+
+
+
+
+
+
+
+
+async function checkUpdate() {
+  try {
+    const [res] = await Promise.all([
+      fetch("/api/latest-version", { cache: "no-store" })
+    ]);
+
+    if (!res.ok) return;
+
+    const text = await res.text();
+    const [user, textuah] = text.split("@")
+    const [timestamp, d1Version] = textuah.split("|"); // assuming you use "|" delimiter
+
+
+    // Check your local CURRENT_VERSION against both
+    console.log(CURRENT_VERSION, d1Version)
+    if (CURRENT_VERSION !== d1Version) {
+      alert(`⚠️ New update to Catalog Detected by ${user.slice(0, -1)}`);
+      location.reload(true)
+    }
+  } catch (err) {
+    console.warn("Failed to check for updates", err);
+  }
+}
+
+
+
+
+    function startUpdateCheck() {
+      setInterval(checkUpdate, 10000);
+    }
+startUpdateCheck()
+    document.getElementById("save-btn").addEventListener("click", async () => {
+      if (document.getElementById("save-btn").disabled) return;
+      if (document.getElementById("save-btn").textContent === "⬇") {
+        const blob = new Blob([JSON.stringify(jsData, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "data.json";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        return;
+      }
+
+      const savedKey = getCookie('adminKey');
+      let adminName = "Unknown";
+      if (savedKey) {
+        const hash = await computeHash(savedKey);
+        adminName = adminKeys[hash] || "Unknown";
+      }
+      try {
+        //disable save button
+        document.getElementById("save-btn").disabled = true;
+        document.getElementById("save-btn").style.background = "orange";
+        document.getElementById("save-btn").style.cursor = "wait";
+        document.getElementById("save-btn").textContent = "🕐";
+
+        const response = await fetch("/api/update-gist", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            content: jsData,
+            username: adminName,
+            version: CURRENT_GIST_VERSION
+          })
+        });
+
+        if (response.status === 409) {
+          const conflict = await response.json();
+          showConflictUI(conflict);
+          document.getElementById("save-btn").style.transform = "translateY(0px)";
+          document.getElementById("save-btn").style.opacity = "1";
+          document.getElementById("save-btn").textContent = "⬇";
+          document.getElementById("save-btn").disabled = false;
+          document.getElementById("save-btn").style.background = "#377bfa";
+          document.getElementById("save-btn").style.cursor = "pointer";
+          return;
+        }
+
+        document.getElementById("save-btn").style.transform = "translateY(-10px)";
+        document.getElementById("save-btn").style.opacity = "0";
+        alert(response.ok ? "✅ Changes saved successfully." : "❌ Failed to save changes.");
+
+
+        if (response.ok) {
+          location.reload(true);
+        }
+
+
+
+        if (!response.ok) throw new Error("Unexpected error during update");
+
+      } catch (err) {
+        alert("⚠️ Error saving changes: " + err.message);
+        document.getElementById("save-btn").style.transform = "translateY(0px)";
+        document.getElementById("save-btn").style.opacity = "1";
+        document.getElementById("save-btn").textContent = "⬇";
+        document.getElementById("save-btn").disabled = false;
+        document.getElementById("save-btn").style.background = "#377bfa";
+        document.getElementById("save-btn").style.cursor = "pointer";
+      }
+    });
+
+    function getAllItems() {
+      return Object.values(jsData).flat();
+    }
+
+    function showConflictUI(conflict) {
+      const blocker = document.createElement("div");
+      blocker.id = "conflict-blocker";
+      blocker.style = "position:fixed;inset:0;background:#111;color:white;z-index:9999;padding:40px;font-family:monospace;overflow:auto";
+      blocker.innerHTML = `
+    <h2>⚠️ Conflict Detected</h2>
+    <p>The Gist has been updated by someone else or is out of sync with D1.</p>
+    <pre style="white-space:pre-wrap;background:#222;padding:10px;border-radius:8px">${conflict.latestDiff || "(No visible changes)"}</pre>
+    <button id="force-save" style="margin-top:20px;background:#e84118;color:white;padding:10px 20px;font-size:16px">Force Save Anyway</button>
+    <button onclick="location.reload()" style="margin-top:20px;margin-left:10px;">Cancel</button>
+  `;
+      document.body.appendChild(blocker);
+
+      document.getElementById("force-save").onclick = async () => {
+        blocker.innerHTML = "<p>⏳ Forcing save...</p>";
+
+        const savedKey = getCookie('adminKey');
+        let adminName = "Unknown";
+        if (savedKey) {
+          const hash = await computeHash(savedKey);
+          adminName = adminKeys[hash] || "Unknown";
+        }
+
+        const response = await fetch("/api/update-gist", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            content: jsData,
+            username: adminName,
+            version: CURRENT_GIST_VERSION,
+            force: true // 👈 this skips the conflict check on the backend
+          })
+        });
+
+        if (response.ok) {
+          location.reload(true);
+        } else {
+          blocker.innerHTML = `<p>❌ Failed to force save. <button onclick="location.reload()">Retry</button></p>`;
+        }
+      };
+    }
+
+
+    function setupSearch() {
+      const allItems = getAllItems();
+      const fuse = new Fuse(allItems, { keys: ["name"], threshold: 0.4 });
+      const input = document.getElementById("search");
+      input.addEventListener("input", () => {
+        const query = input.value.trim();
+        filteredItems = query ? fuse.search(query).map(r => r.item) : allItems;
+        currentPage = 1;
+        renderAllItems();
+      });
+      filteredItems = allItems;
+      renderAllItems();
+    }
+
+    function renderLists() {
+      const newEl = document.getElementById("new-items");
+      const weeklyEl = document.getElementById("weekly-items");
+      const starEl = document.getElementById("weeklystar-items");
+      newEl.innerHTML = weeklyEl.innerHTML = starEl.innerHTML = "";
+      for (const type in jsData) {
+        jsData[type].forEach(item => {
+          if (item.new) newEl.appendChild(makeCard(item, type));
+          if (item.weekly) weeklyEl.appendChild(makeCard(item, type));
+          if (item.weeklystar) starEl.appendChild(makeCard(item, type));
+        });
+      }
+    }
+
+    function renderAllItems() {
+
+      const container = document.getElementById("all-items");
+      container.innerHTML = "";
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      const end = start + ITEMS_PER_PAGE;
+      filteredItems.slice(start, end).forEach(item => {
+        const type = findItemType(item);
+        container.appendChild(makeCard(item, type));
+      });
+      renderPagination();
+    }
+
+    function findItemType(itemToFind) {
+      for (const type in jsData) {
+        if (jsData[type].includes(itemToFind)) return type;
+      }
+      return "Other";
+    }
+
+    const prevBtn = document.getElementById("prev-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const pageSelect = document.getElementById("page-select");
+    const pageCount = document.getElementById("page-count");
+
+    function populatePageSelect(totalPages) {
+      pageSelect.innerHTML = "";
+      for (let i = 1; i <= totalPages; i++) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = `${i}`;
+        pageSelect.appendChild(option);
+      }
+    }
+
+    function updatePaginationUI() {
+      const totalPages = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE));
+      if (currentPage > totalPages) currentPage = totalPages;
+      pageSelect.value = currentPage;
+      pageCount.textContent = `Page ${currentPage} of ${totalPages}`;
+      prevBtn.disabled = currentPage === 1;
+      nextBtn.disabled = currentPage === totalPages;
+    }
+
+    function cacheAllPriceItems() {
+      allPriceItems = [];
+      for (const type in jsData) {
+        allPriceItems.push(...jsData[type]);
+      }
+      fusePrice = new Fuse(allPriceItems, {
+        keys: ["name"],
+        threshold: 0.4,
+        ignoreLocation: true,
+      });
+    }
+
+    function renderPagination() {
+      const totalPages = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE));
+      if (pageSelect.options.length !== totalPages) populatePageSelect(totalPages);
+      updatePaginationUI();
+    }
+
+    prevBtn.onclick = () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderAllItems();
+      }
+    };
+    nextBtn.onclick = () => {
+      const totalPages = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE));
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderAllItems();
+      }
+    };
+    pageSelect.onchange = e => {
+      currentPage = Number(e.target.value);
+      renderAllItems();
+    };
+
+    function makeCard(item, type) {
+      const div = document.createElement("div");
+      div.setAttribute("data-name", item.name);
+      div.id = type;
+      div.className = "item-card";
+      div.draggable = !isMobile;
+      if (!isMobile) {
+
+      } else {
+        div.onclick = () => openChecklistModal(item);
+      }
+      const imgSrc = item.img || "./imgs/trs.png";
+      div.innerHTML = `
+        <span>${item.name}</span>
+        <img draggable="false" src="${imgSrc}" alt="${item.name}" onerror="this.style.display='none'" />
+      `;
+      const name = div.querySelector("span");
+      if (type != "titles") {
+        name.style.top = "-7px";
+      }
+      if (type == "titles") {
+        name.style.display = "table";
+        if (item.img) {
+          name.style.display = "none";
+          const img = div.querySelector("img");
+          img.style.marginTop = "4px";
+        } else {
+          const img = div.querySelector("img");
+          img.style.display = "none";
+        }
+        name.style.height = "auto";
+        name.style.top = "0px";
+        name.style.position = "static";
+        name.style.font = "600 28px 'Arimo'";
+        name.style.color = "rgb(255 255 255)";
+        name.style.whiteSpace = "nowrap";
+        name.style.bottom = "auto";
+        name.style.paddingTop = "0px";
+        div.style.display = "flex";
+        div.style.justifyContent = "center";
+        div.style.alignItems = "center";
+      }
+      if (item.style) {
+        name.setAttribute("style", item.style);
+        name.style.whiteSpace = "nowrap";
+        name.style.bottom = "auto";
+      }
+      if (item.style2) {
+        name.setAttribute("style", item.style2);
+        name.style.whiteSpace = "nowrap";
+        name.style.height = "0";
+        let clone = name.cloneNode(true);
+        clone.style.height = "auto";
+        clone.style.top = "auto";
+        clone.style.display = "table";
+        name.style.bottom = "auto";
+        name.style.paddingTop = "0px";
+        name.style.display = "table";
+        clone.style.position = "absolute";
+        clone.style.textShadow = "none";
+        clone.style.fontSize = "1em";
+        clone.style.whiteSpace = "nowrap";
+        name.appendChild(clone);
+      }
+      if (item.style3) {
+        name.outerHTML = item.style3;
+      }
+      if (item.color) {
+        name.style.color = item.color;
+      }
+      if (item.stroke) {
+        let stroke = item.stroke.split(" ");
+        name.style.textShadow = `-${stroke[0]} -${stroke[0]} 0 ${stroke[1]}, 0 -${stroke[0]} 0 ${stroke[1]}, ${stroke[0]} -${stroke[0]} 0 ${stroke[1]}, ${stroke[0]} 0 0 ${stroke[1]}, ${stroke[0]} ${stroke[0]} 0 ${stroke[1]}, 0 ${stroke[0]} 0 ${stroke[1]}, -${stroke[0]} ${stroke[0]} 0 ${stroke[1]}, -${stroke[0]} 0 0 ${stroke[1]}`;
+      }
+      if (item.font) {
+        name.style.font = item.font;
+        if (name.children.length > 0) {
+          name.childNodes[1].style.font = item.font;
+          name.childNodes[1].style.fontSize = "1em";
+        }
+      }
+      if (item.rotate) {
+        name.style.transform = "rotate(" + item.rotate + "deg)";
+      }
+
+      return div;
+    }
+
+
+    const FLAG_PANELS = {
+      "new-items": "new",
+      "weekly-items": "weekly",
+      "weeklystar-items": "weeklystar"
+    };
+
+    function clearFlags(item) {
+      item.new = false;
+      item.weekly = false;
+      item.weeklystar = false;
+    }
+
+
+    new Sortable(document.getElementById("trash-bin"), {
+      group: {
+        name: "shared",
+        pull: false,
+        put: true
+      },
+      animation: 150,
+      onAdd(evt) {
+        const itemName = evt.item.getAttribute("data-name");
+        const fromListId = evt.from.id;
+        const flagToClear = FLAG_PANELS[fromListId];
+
+        if (!flagToClear) {
+          evt.item.remove();
+          renderLists();
+          return;
+        }
+
+
+        for (const type in jsData) {
+          const item = jsData[type].find(i => i.name === itemName);
+          if (item) {
+            item[flagToClear] = false;
+          }
+        }
+
+        evt.item.remove();
+        renderLists();
+      },
+
+
+      onEnd() {
+        document.getElementById("trash-bin").classList.remove("drag-over");
+      }
+    });
+
+
+
+
+
+    Object.entries(FLAG_PANELS).forEach(([elementId, flagKey]) => {
+      const el = document.getElementById(elementId);
+
+      new Sortable(el, {
+        group: {
+          name: "shared-flags",
+          pull: true,
+          put: true
+        },
+        animation: 150,
+        sort: false,
+        onAdd(evt) {
+          const itemName = evt.item.getAttribute("data-name");
+
+          for (const type in jsData) {
+            const item = jsData[type].find(i => i.name === itemName);
+            if (item) {
+              item[flagKey] = true;
+            }
+          }
+          renderLists();
+        },
+        onMove(evt) {
+          if (evt.related.closest('#trash-bin')) {
+            document.getElementById("trash-bin").classList.add("drag-over");
+            document.getElementById("trash-bin").getElementsByClassName("placeholder")[0].style.display = "none";
+          }
+          return true;
+        },
+        onLeave(evt) {
+
+          document.getElementById("trash-bin").classList.remove("drag-over");
+          document.getElementById("trash-bin").getElementsByClassName("placeholder")[0].style.display = "block";
+
+        },
+        onEnd(evt) {
+          document.getElementById("trash-bin").classList.remove("drag-over");
+          document.getElementById("trash-bin").getElementsByClassName("placeholder")[0].style.display = "block";
+        }
+      });
+    });
+    let previd = null;
+
+    new Sortable(document.getElementById("all-items"), {
+      group: {
+        name: "shared-flags",
+        pull: "clone",
+        put: false
+      },
+      animation: 150,
+      sort: false,
+      onStart(evt) {
+        evt.item.classList.add("dragging");
+      },
+      onEnd(evt) {
+        evt.item.classList.remove("dragging");
+        setTimeout(() => {
+          document.getElementById("all-items").querySelectorAll(".item-card").forEach(card => {
+            if (card.getAttribute("data-name") === evt.item.getAttribute("data-name")) {
+              card.id = evt.item.id
+
+            }
+          });
+
+        }, 100);
+
+      },
+      onMove: function (evt) {
+        if (evt.related.closest('#trash-bin')) {
+          return false;
+        }
+        return true;
+      }
+    });
+
+
+
+    function renderPriceGroups() {
+      const container = document.getElementById("price-groups");
+      const search = document.getElementById("price-search").value.toLowerCase();
+      const sort = document.getElementById("sort-select").value;
+      container.innerHTML = "";
+      let items = allPriceItems;
+      let topMatch = null;
+      if (search) {
+        const fuseResults = fusePrice.search(search, { limit: 50 });
+        items = fuseResults.map(r => r.item);
+        topMatch = items.length > 0 ? items[0] : null;
+        renderTopMatchEditor(topMatch);
+        if (topMatch) {
+          items = items.filter(i => i !== topMatch);
+        }
+      } else {
+        renderTopMatchEditor(null);
+      }
+      if (!search) {
+        if (sort === "az") items.sort((a, b) => a.name.localeCompare(b.name));
+        else if (sort === "za") items.sort((a, b) => b.name.localeCompare(b.name));
+        else if (sort === "high") items.sort((a, b) => (b.price || 0) - (a.price || 0));
+        else if (sort === "low") items.sort((a, b) => (a.price || 0) - (b.price || 0));
+      }
+      let groups = { All: items };
+      if (sort === "group") {
+        groups = {
+          "1000+": [],
+          "500–999": [],
+          "1–499": [],
+          "0 (unpriced)": []
+        };
+        for (const item of items) {
+          const price = parseInt(item.price || 0);
+          if (isNaN(price) || price === 0) groups["0 (unpriced)"].push(item);
+          else if (price >= 1000) groups["1000+"].push(item);
+          else if (price >= 500) groups["500–999"].push(item);
+          else groups["1–499"].push(item);
+        }
+      } else if (sort === "category") {
+        groups = {};
+        for (const item of items) {
+          const type = findItemType(item);
+          if (!groups[type]) groups[type] = [];
+          groups[type].push(item);
+        }
+      }
+      for (const label in groups) {
+        const section = document.createElement("div");
+        section.innerHTML = `
+          <div style="font-weight:bold; font-size:20px; color:#ffd80c;">${label}</div>
+          <div style="width: 100%; height: 4px; background: #ffd80c;"></div>
+          <div class="brod"></div>
+        `;
+        const itemGrid = section.querySelector("div:last-child");
+        for (const item of groups[label]) {
+
+          const type = findItemType(item);
+          const card = makeCard(item, type)
+
+          card.draggable = false;
+          card.style.cursor = "none";
+
+          card.onclick = () => {
+            renderTopMatchEditor(item);
+            const allCards = document.querySelectorAll(".item-card");
+            allCards.forEach(c => c.classList.remove("flash"));
+            card.classList.add("flash");
+          };
+          
+          const input = document.createElement("input");
+          input.type = "text";
+
+          input.value = item.price ?? "";
+          input.placeholder = "Set price";
+          input.style = `
+            width: 80px;
+            padding: 3px 6px;
+            border-radius: 6px;
+            border: none;
+            font-size: 13px;
+            top: -28px;
+            position: relative;
+          `;
+          input.onchange = () => {
+
+            item.price = input.value;
+
+            renderPriceGroups();
+          };
+
+          card.appendChild(input);
+          itemGrid.appendChild(card);
+        }
+        container.appendChild(section);
+        if (sort !== "group" && sort !== "category") {
+          break;
+        }
+      }
+    }
+
+    function renderTopMatchEditor(item) {
+      let editor = document.getElementById("top-price-editor");
+      if (!editor) {
+        editor = document.createElement("div");
+        editor.id = "top-price-editor";
+        editor.style = "display: flex;flex-direction: column;align-items: center;margin: 20px auto;padding: 15px;background: rgb(42, 42, 42);border: 7px dashed rgb(85, 85, 85);box-sizing: border-box;border-radius: 16px;max-width: 161px;";
+        document.querySelector(".search-sort-controls").after(editor);
+      }
+      editor.innerHTML = "";
+      if (!item) return;
+      const img = document.createElement("img");
+      img.src = item.img || "./imgs/trs.png";
+      img.alt = item.name;
+      img.style = "width:100px; height:100px; object-fit:contain; margin-bottom:10px;";
+      img.onerror = () => (img.style.display = "none");
+      const name = document.createElement("div");
+      name.textContent = item.name;
+      name.style = "margin-bottom: 10px; font-size:18px; font-weight:bold;";
+      const input = document.createElement("input");
+      input.type = "text";
+      input.value = item.price ?? "";
+      input.placeholder = "Set price";
+      input.style = "padding: 6px 10px;font-size: 16px;border-radius: 8px;border: none;width: 81px;background: #ffffff;";
+
+      input.onchange = () => {
+        item.price = input.value;
+        renderPriceGroups();
+
+      };
+
+      editor.appendChild(img);
+      editor.appendChild(name);
+      editor.appendChild(input);
+    }
+
+    let currentModalItem = null;
+
+    function openChecklistModal(item) {
+      currentModalItem = item;
+      document.getElementById("checklist-title").textContent = item.name;
+      document.getElementById("check-new").checked = !!item.new;
+      document.getElementById("check-weekly").checked = !!item.weekly;
+      document.getElementById("check-star").checked = !!item.weeklystar;
+      const modal = document.getElementById("checklist-modal");
+      modal.classList.add("show");
+    }
+
+    function closeChecklistModal() {
+      currentModalItem = null;
+      const modal = document.getElementById("checklist-modal");
+      modal.classList.remove("show");
+    }
+
+    function saveChecklist() {
+      if (!currentModalItem) return;
+      currentModalItem.new = document.getElementById("check-new").checked;
+      currentModalItem.weekly = document.getElementById("check-weekly").checked;
+      currentModalItem.weeklystar = document.getElementById("check-star").checked;
+      closeChecklistModal();
+      renderLists();
+    }
+
+    function debounce(func, delay = 250) {
+      let timer;
+      return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => func.apply(this, args), delay);
+      };
+    }
+
+    const priceSearchInput = document.getElementById("price-search");
+    priceSearchInput.removeAttribute("oninput");
+    priceSearchInput.addEventListener("input", debounce(() => {
+      renderPriceGroups();
+    }, 250));
+
+    promptAdminKey();
+
+async function checkVersionMatch() {
+  try {
+    const [latestRes, gistRes] = await Promise.all([
+      fetch('/api/latest-version', { cache: "no-store" }),
+      fetch('/api/gist-version', { cache: "no-store" })
+    ]);
+
+    if (!gistRes.ok || !latestRes.ok) throw new Error("Failed to check versions");
+
+    const gistData = await gistRes.json();
+    const githubVersion = gistData.history?.[0]?.version || "";
+
+    const latestText = await latestRes.text();
+    const [latestTimestamp, latestVersion] = latestText.split("|");
+
+    console.log("GitHub version:", githubVersion);
+    console.log("D1 version:", latestVersion);
+
+    if (!latestVersion || latestVersion === "") {
+      console.log("✅ No D1 version found — assuming GitHub is latest. Proceeding.");
+      document.body.style.pointerEvents = 'auto';
+      document.getElementById('version-blocker').style.display = 'none';
+      return;
+    }
+
+    if (githubVersion !== latestVersion) {
+      console.warn("⚠️ Version mismatch between GitHub and D1!");
+
+      const blocker = document.getElementById('version-blocker');
+      blocker.style.display = 'flex';
+      document.body.style.pointerEvents = 'none';
+
+      const hasReloaded = localStorage.getItem("versionReloaded");
+
+      if (!hasReloaded) {
+        console.log("🔁 First mismatch detected — reloading once...");
+        localStorage.setItem("versionReloaded", "true");
+        location.reload(true);
+      } else {
+        console.log("❌ Mismatch persists after reload — informing admin.");
+        blocker.innerHTML = `
+          <p>The update is still processing. Please try refreshing again in a few minutes.</p>
+        `;
+      }
+
+    } else {
+      localStorage.removeItem("versionReloaded");
+      document.body.style.pointerEvents = 'auto';
+      document.getElementById('version-blocker').style.display = 'none';
+    }
+
+  } catch (err) {
+    console.error("Version check failed:", err);
+    document.body.style.pointerEvents = 'none';
+    document.getElementById('version-blocker').style.display = 'flex';
+  }
+}
+
+
+
+
+    window.addEventListener('DOMContentLoaded', checkVersionMatch);
+  </script>
+</body>
+
+</html>
+<script src="./js/pet.js"></script>
