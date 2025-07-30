@@ -2180,7 +2180,7 @@ html {
         z-index: 22
     }
 
-        .half {
+    .half {
         zoom: 1;
         background: #666;
         border: 15px 0 0 0 solid #555;
