@@ -1895,8 +1895,6 @@ html {
         top: 0
     }
 
-
-
     #credits-content>h2 {
         color: #fc0;
         font-size: 3rem;
@@ -2062,6 +2060,7 @@ html {
 
     #ctlg {
         padding: 4rem 0;
+        border-radius: 0px;
     }
 
     .parallax-bg {
