@@ -1152,6 +1152,9 @@ startUpdateCheck()
       div.id = type;
       div.className = "item-card";
       div.draggable = !isMobile;
+
+
+
       if (!isMobile) {
 
       } else {
@@ -1184,9 +1187,6 @@ startUpdateCheck()
         name.style.whiteSpace = "nowrap";
         name.style.bottom = "auto";
         name.style.paddingTop = "0px";
-        div.style.display = "flex";
-        div.style.justifyContent = "center";
-        div.style.alignItems = "center";
       }
       if (item.style) {
         name.setAttribute("style", item.style);
@@ -1230,6 +1230,11 @@ startUpdateCheck()
       if (item.rotate) {
         name.style.transform = "rotate(" + item.rotate + "deg)";
       }
+
+        div.style.display = "flex";
+        div.style.flexDirection = "column"
+        div.style.justifyContent = "center";
+        div.style.alignItems = "center";
 
       return div;
     }
@@ -1453,11 +1458,12 @@ startUpdateCheck()
 
             renderPriceGroups();
           };
-          if (card.id == "titles") {
+
             input.style.bottom = "11px"
-            card.style.flexDirection = "column"
+            
             input.style.position = "absolute"
-          }
+            
+
 
           card.appendChild(input);
           itemGrid.appendChild(card);
