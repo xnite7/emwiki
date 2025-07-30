@@ -1958,6 +1958,7 @@ html {
 
     section:first-of-type {
         margin-bottom: 64px;
+        margin: 0px;
         padding: 0rem
     }
 
