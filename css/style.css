@@ -1958,8 +1958,7 @@ html {
 
     section:first-of-type {
         margin-bottom: 64px;
-        margin: 0px;
-        padding: 0rem
+        padding: 0rem 0rem 9rem
     }
 
     .butts {
@@ -2036,9 +2035,8 @@ html {
     section {
         zoom: 1;
         background: #666;
-        border: 0px solid #555;
-        border-top: 15px solid #555;
-        border-radius: 0px;
+        border: 15px solid #555;
+        border-radius: 33px;
         box-shadow: 0 5px 15px rgba(0, 0, 0, .3);
         flex: 1 20030px;
         padding: 1vw;
@@ -2047,8 +2045,8 @@ html {
     }
 
     #search-bar {
-        font-size: 20px;
-        width: 9%
+        font-size: 18px;
+        width: 7%
     }
 
     #indicator {
@@ -2065,9 +2063,7 @@ html {
     }
 
     #ctlg {
-        padding: 2rem;
-        border-radius: 0px;
-        zoom: 0.63
+        padding: 4rem
     }
 
     .parallax-bg {
@@ -2100,7 +2096,8 @@ html {
 
     #new,
     #weekly,
-    #weeklystar {
+    #weeklystar,
+    #random {
         zoom: .56;
         display: flex;
         flex-flow: row;
@@ -2109,11 +2106,18 @@ html {
         justify-content: center
     }
 
+    #random {
+        width: 383px;
+        justify-self: anchor-center;
+    }
 
+    #ctlg {
+        zoom: .53
+    }
 
     .welcome h1 {
         font-family: BuilderSans;
-        font-size: 3em
+        font-size: 2.7em;
     }
 
     #h3 {
@@ -2163,7 +2167,34 @@ html {
     }
 
     .catalog {
-        padding: 2rem
+        zoom: 1;
+        background: #666;
+        border: 15px 0 0 0 solid #555;
+        border-radius: 0px;
+        border-left: 0px;
+        border-right: 0px;
+        margin: 0px;
+        margin-bottom: 30px;
+        padding: 1rem;
+        position: sticky;
+        z-index: 22
+    }
+
+        .half {
+        zoom: 1;
+        background: #666;
+        border: 15px 0 0 0 solid #555;
+        border-radius: 0px;
+        border-left: 0px;
+        border-right: 0px;
+        margin: 0px;
+        margin-bottom: 30px;
+        padding: 1rem;
+        position: sticky;
+        z-index: 22
+    }
+    #donators-list{
+            zoom: 0.7;
     }
 }
 
