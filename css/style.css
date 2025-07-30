@@ -675,8 +675,8 @@ div.logo-container {
     display: flex;
     display: flow;
     justify-content: center;
-    padding-bottom: 33px;
-    padding-top: 30px;
+    padding-bottom: 27px;
+    padding-top: 18px;
     text-align: center;
     z-index: auto
 }
