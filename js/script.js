@@ -1335,7 +1335,8 @@ function createNewItem(item, color) {
     img.src = item.img;
 
     if (item.new) {
-      canvas.style.paddingTop = "15px";
+      canvas.style.paddingTop = "9px";
+      
     }
     newItem.appendChild(canvas);
     if (color === "rgb(201, 96, 254)") {
@@ -1355,6 +1356,7 @@ function createNewItem(item, color) {
 
   if (item.new) {
     name.style.order = "-1";
+    name.style.paddingTop = "0px";
   }
 
   if (color === "rgb(55, 122, 250)") {
