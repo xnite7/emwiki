@@ -1458,8 +1458,8 @@ startUpdateCheck()
           if (card.id == "titles") {
             input.style.top = "28px"
             card.style.flexDirection = "column"
-            if (card.querySelector("img")) {
-                input.style.top = "8px"
+            if (card.childNodes[1].classList.contains("img")) {
+                input.style.top = "-8px"
             }
           }
 
