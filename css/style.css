@@ -1929,11 +1929,7 @@ html {
         margin: 0 0 17px
     }
 
-    .catalog p {
-        color: #fff;
-        font-size: .9rem;
-        margin-bottom: 30px
-    }
+
 
     #credits-content>div:last-child {
         gap: 8px 5px
