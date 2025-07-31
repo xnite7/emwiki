@@ -1217,16 +1217,7 @@ window.addEventListener("touchend", (event) => {
   if (event.target === modalCache.modal) closeModalHandler();
 });
 
-const customFont = new FontFace(
-  'Source Sans Pro',
-  'url(https://fonts.googleapis.com/css?family=Source%20Sans%20Pro)'
-);
 
-customFont.load()
-  .then(() => {
-    document.fonts.add(customFont);
-
-  })
 
 
 function resize_to_fit() {
