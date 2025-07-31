@@ -1,4 +1,5 @@
-@import url('https://fonts.cdnfonts.com/css/source-sans-pro?styles=14484,14483,14488,14493');           
+@import url('https://fonts.cdnfonts.com/css/source-sans-pro?styles=14484,14483,14488,14493');
+
 body {
     background-color: #000;
     color: #fff;
@@ -57,58 +58,65 @@ body {
 }
 
 @property --wave-shift {
-  syntax: '<percentage>';
-  inherits: false;
-  initial-value: 0%;
+    syntax: '<percentage>';
+    inherits: false;
+    initial-value: 0%;
 }
 
 @keyframes rgbWave {
-  0%   { --wave-shift: 0%; }
-  100% { --wave-shift: 100%; }
+    0% {
+        --wave-shift: 0%;
+    }
+
+    100% {
+        --wave-shift: 100%;
+    }
 }
+
 .dnt {
     background: #ffffff2b;
     border-radius: 15px;
     transition: all 0.1s;
 }
+
 .dnt a {
-  border-style: solid;
-  transition: all 0.18s;
-  padding: 6px 25px;
-  display: inline-block;
-  font: bold 20px 'BuilderSans';
-  border-radius: 8px;
-  text-shadow: 0 0 5px black;
-  color: white;
-  text-decoration: none;
+    border-style: solid;
+    transition: all 0.18s;
+    padding: 6px 25px;
+    display: inline-block;
+    font: bold 20px 'BuilderSans';
+    border-radius: 8px;
+    text-shadow: 0 0 5px black;
+    color: white;
+    text-decoration: none;
 
 }
 
 #thous a {
-  outline: auto 1px white;
-  background: linear-gradient(
-    90deg,
-    color(display-p3 1 0 0) 0%,
-    color(display-p3 1 1 0) 16%,
-    color(display-p3 0 1 0) 33%,
-    color(display-p3 0 1 1) 50%,
-    color(display-p3 0 0 1) 66%,
-    color(display-p3 1 0 1) 83%,
-    color(display-p3 1 0 0) 100%
-  );
-  background-size: 400%;
-  background-position: var(--wave-shift) 50%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: rgbWave 6s linear infinite;
+    outline: auto 1px white;
+    background: linear-gradient(90deg,
+            color(display-p3 1 0 0) 0%,
+            color(display-p3 1 1 0) 16%,
+            color(display-p3 0 1 0) 33%,
+            color(display-p3 0 1 1) 50%,
+            color(display-p3 0 0 1) 66%,
+            color(display-p3 1 0 1) 83%,
+            color(display-p3 1 0 0) 100%);
+    background-size: 400%;
+    background-position: var(--wave-shift) 50%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: rgbWave 6s linear infinite;
 }
+
 .dnt:has(a:hover) {
-  transform: scale(1.1);
-  
+    transform: scale(1.1);
+
 }
+
 .dnt a:hover {
-  text-shadow: 0 0 222px color(display-p3 1 0 1), 0 0 222px color(display-p3 0 1 1), 0 0 222px color(display-p3 1 1 0);
+    text-shadow: 0 0 222px color(display-p3 1 0 1), 0 0 222px color(display-p3 0 1 1), 0 0 222px color(display-p3 1 1 0);
 }
 
 
@@ -990,8 +998,6 @@ p {
     -webkit-animation: glow 3s linear 0s infinite alternate;
     animation: glow 3s linear 0s infinite alternate;
     border-radius: 50%;
-    left: 81%;
-    top: 31%;
     width: 40px
 }
 
@@ -1934,6 +1940,7 @@ html {
     #donate-btn {
         font-size: 1.8rem;
     }
+
     #search-bar {
         font-size: 18px;
     }
@@ -2009,7 +2016,7 @@ html {
 
     #credits-content>div:last-child div {
         padding: 9px;
-        width: 130px
+        width: 120px
     }
 
     #credits-content>div:last-child div p {
@@ -2031,15 +2038,15 @@ html {
 
     .butts {
         align-items: center;
-        display: flex;
-        flex-direction: row;
+        display: inline-flex;
+        flex-direction: column;
         flex-wrap: nowrap;
         float: right;
-        gap: 9px;
+        gap: 20px;
+        top: 16px;
+        right: 8px;
         height: 0;
-        margin: 0 2000px;
         position: relative;
-        top: 149px;
     }
 
     .logo-container {
