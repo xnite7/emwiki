@@ -1808,9 +1808,10 @@ html {
     flex-direction: column;
     flex-wrap: nowrap;
     float: right;
-    gap: 9px;
+    gap: 17px;
     height: 0;
-    position: relative
+    top: 21px;
+    position: relative;
 }
 
 .bn {
@@ -1834,6 +1835,10 @@ html {
 }
 
 @media (max-width:800px) {
+
+    .welcome h1 {
+        font-size: 2em;
+    }
 
     .cloud,
     .cloud2,
@@ -2007,7 +2012,9 @@ html {
         margin: 0 0 17px
     }
 
-
+    #donate-modal{
+        zoom: 0.8;
+    }
 
     #credits-content>div:last-child {
         gap: 8px 5px
@@ -2037,15 +2044,15 @@ html {
 
     .butts {
         align-items: center;
-        display: inline-flex;
-        flex-direction: column;
+        display: flex;
+        flex-direction: row;
         flex-wrap: nowrap;
         float: right;
-        gap: 20px;
-        top: 16px;
-        right: 8px;
+        gap: 9px;
         height: 0;
+        margin: 0 2000px;
         position: relative;
+        top: 149px;
     }
 
     .logo-container {
@@ -2176,7 +2183,7 @@ html {
 
     .welcome h1 {
         font-family: BuilderSans;
-        font-size: 2.7em;
+        font-size: 3em;
     }
 
     #h3 {
