@@ -665,19 +665,20 @@
 </script>
 
 <!-- Donate options modal -->
-<div id="donate-modal" style="display:none; position:fixed; top:50%; left:50%; transform: translate(-50%, -50%);
+<div id="donate-modal" style="width: 33vw;display:none; position:fixed; top:50%; left:50%; transform: translate(-50%, -50%);
      background:#333; padding:20px; border-radius:10px; box-shadow: 0 0 15px black; color:#fff; z-index:1000;">
-	<h3 style="font-size: 28px;">Choose Donation Amount</h3>
+	<button id="close-donate-modal" style="right: 2px;top: 2px;font: 900 36px 'Arimo';position: absolute;padding: 4px 11px;color: #ffffff45;background: transparent;">✕</button>
+	<h3 style="font-size: 28px;text-emphasis-style: '❤️';margin: 6px 0 21px;">Choose Donation Amount:</h3>
 	<img src="./imgs/cat-kiss.gif" alt="Thank you for ur donations <3" style="width: 42%;">
-	<ul style="list-style: none;padding: 0;gap: 35px;display: flex;flex-wrap: wrap;flex-direction: row-reverse;">
-		<li class="dnt"><a href="https://www.roblox.com/developer-product/7469027374/product/3306391883" target="_blank">10000</a></li>
+	<ul style="list-style: none;padding: 0;gap: 8px;display: flex;flex-wrap: wrap;flex-direction: row;">
+		<li class="dnt" id="thous"><a href="https://www.roblox.com/developer-product/7469027374/product/3306391883" target="_blank">10000</a></li>
 		<li class="dnt"><a href="https://www.roblox.com/developer-product/7469027374/product/3306391406" target="_blank">2500</a></li>
 		<li class="dnt"><a href="https://www.roblox.com/developer-product/7469027374/product/3306391272" target="_blank">500</a></li>
 		<li class="dnt"><a href="https://www.roblox.com/developer-product/7469027374/product/3306385668" target="_blank">200</a></li>
 		<li class="dnt"><a href="https://www.roblox.com/developer-product/7469027374/product/3306385516" target="_blank">100</a></li>
 		<li class="dnt"><a href="https://www.roblox.com/developer-product/7469027374/product/3306385370" target="_blank">50</a></li>
 	</ul>
-	<button id="close-donate-modal" style="margin-top:10px; padding:5px 10px;">Close</button>
+	
 </div>
 
 <!-- Modal background overlay -->

@@ -66,14 +66,26 @@ body {
   0%   { --wave-shift: 0%; }
   100% { --wave-shift: 100%; }
 }
-
+.dnt {
+    background: #ffffff2b;
+    border-radius: 15px;
+    transition: all 0.1s;
+}
 .dnt a {
+  border-style: solid;
+  transition: all 0.18s;
+  padding: 6px 25px;
   display: inline-block;
-  padding: 10px 20px;
-  font-weight: bold;
+  font: bold 20px 'BuilderSans';
   border-radius: 8px;
   text-shadow: 0 0 5px black;
   color: white;
+  text-decoration: none;
+
+}
+
+#thous a {
+  outline: auto 1px white;
   background: linear-gradient(
     90deg,
     color(display-p3 1 0 0) 0%,
@@ -89,22 +101,16 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-
   animation: rgbWave 6s linear infinite;
-  transition: transform 0.2s ease;
 }
-
+.dnt:has(a:hover) {
+  transform: scale(1.1);
+  
+}
 .dnt a:hover {
-  transform: scale(1.05);
+  text-shadow: 0 0 222px color(display-p3 1 0 1), 0 0 222px color(display-p3 0 1 1), 0 0 222px color(display-p3 1 1 0);
 }
 
-.dnt a {
-  /* ...above styles... */
-  text-shadow:
-    0 0 5px color(display-p3 1 0 1),
-    0 0 10px color(display-p3 0 1 1),
-    0 0 15px color(display-p3 1 1 0);
-}
 
 
 #donate-btn {
