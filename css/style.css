@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap");
 body {
     background-color: #000;
     color: #fff;
@@ -589,7 +589,7 @@ section {
 }
 
 .title {
-    font: 600 2.3rem Source Sans Pro;
+    font: 600 2.3rem Source Sans 3;
     margin: 0;
     text-shadow: 2px 3px 9px #0006;
     top: -65px
@@ -693,7 +693,7 @@ p {
 
 .catalog p {
     color: #fff;
-    font: 600 1.25rem Source Sans Pro
+    font: 600 1.25rem Source Sans 3
 }
 
 .search-item.active,
@@ -786,7 +786,7 @@ p {
     bottom: 43px;
     display: none;
     font-size: 22px;
-    font: 100 24px Source Sans Pro;
+    font: 100 24px Source Sans 3;
     left: 16px;
     position: relative;
     text-align: left;
@@ -845,7 +845,7 @@ p {
 
 #h3 {
     bottom: 0;
-    font: 100 clamp(.7rem, 1vw, .9rem) Source Sans Pro;
+    font: 100 clamp(.7rem, 1vw, .9rem) Source Sans 3;
     height: 21px;
     padding-top: 4px;
     text-shadow: -1.3px -1.3px 0 #000, 0 -1.3px 0 #000, 1.3px -1.3px 0 #000, 1.3px 0 0 #000, 1.3px 1.3px 0 #000, 0 1.3px 0 #000, -1.3px 1.3px 0 #000, -1.3px 0 0 #000;
@@ -1353,7 +1353,7 @@ html {
 }
 
 .modal-title {
-    font: 900 36px Source Sans Pro;
+    font: 900 36px Source Sans 3;
     left: 23px;
     text-align: left;
     top: -23px;
@@ -2112,7 +2112,7 @@ html {
     }
 
     #h3 {
-        font: 100 1.2em Source Sans Pro
+        font: 100 1.2em Source Sans 3
     }
 
     .logo4 {
