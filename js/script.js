@@ -277,11 +277,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     var d = Math.random();
 
-    if (d > 0.99) {
+    if (d > 0.97) {
       imgg = "./imgs/burrito.png"
-    } else if (d > 0.98) {
+    } else if (d > 0.93) {
       imgg = "./imgs/tran.webp"
-    } else if (d > 0.9) {
+    } else if (d > 0.87) {
       imgg = "./imgs/o7IJiwl.png"
     } else {
       imgg = "./imgs/XRmpB1c.png"
