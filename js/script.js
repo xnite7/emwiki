@@ -1480,12 +1480,22 @@ function setupSearch(itemList, defaultColor) {
 
   let activeIndex = -1;
 
+  const maxHistory = 4;
+  const historyKey = "searchHistory";
+
   function searcha() {
     const query = searchInput.value.trim();
     resultsContainer.innerHTML = '';
     activeIndex = -1;
 
-    if (!query) return;
+    if (!query) {
+
+
+      const history = JSON.parse(localStorage.getItem(historyKey) || "[]");
+
+
+      renderHistory(history)
+      return};
 
     const results = fuse.search(query).slice(0, 6);
 
@@ -1556,16 +1566,9 @@ function setupSearch(itemList, defaultColor) {
     }
   }
 
-  const maxHistory = 4;
-  const historyKey = "searchHistory";
 
-  // Load and show history when search is focused with no text
-  searchInput.addEventListener('focus', () => {
-    if (searchInput.value.trim() === "") {
-      const history = JSON.parse(localStorage.getItem(historyKey) || "[]");
-      renderHistory(history);
-    }
-  });
+
+
 
   // Store search when user clicks result
   function saveSearchHistory(name) {
@@ -1584,14 +1587,17 @@ function setupSearch(itemList, defaultColor) {
 
       const div = document.createElement('div');
       div.className = 'search-item';
-      div.textContent = item.name;
+      div.textContent = `↩ ${item.name}`;
+      div.style.textShadow = "-2px -2px 0 #000, 0 -2px 0 #000, 2px -2px 0 #000, 2px 0 0 #000, 2px 2px 0 #000, 0 2px 0 #000, -2px 2px 0 #000, -2px 0 0 #000";
       div.style.padding = "8px 14px";
       div.style.cursor = "pointer";
       div.style.borderBottom = "1px solid #333";
       div.style.backgroundColor = item._color || defaultColor;
 
-      div.addEventListener('mouseenter', () => div.style.backgroundColor = "#444");
+      div.addEventListener('mouseenter', () => div.style.backgroundColor = item._color ? `rgba(${parseInt(item._color.split('(')[1].split(',')[0])}, ${parseInt(item._color.split(',')[1])}, ${parseInt(item._color.split(',')[2].split(')')[0])}, 0.8)` : "#444");
       div.addEventListener('mouseleave', () => div.style.backgroundColor = item._color || defaultColor);
+
+
       div.addEventListener('click', () => {
         searchInput.value = item.name;
         resultsContainer.innerHTML = '';
