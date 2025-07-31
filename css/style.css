@@ -533,7 +533,8 @@ nav #scammerstab>img {
 #countdown,
 #countdown2 {
     color: #ccc;
-    font-weight: 700
+    font-weight: 700;
+    font-size: 15;
 }
 
 nav a:hover {
@@ -730,7 +731,7 @@ div.logo-container {
 }
 
 .catalog {
-    zoom: .85;
+    zoom: .87;
     display: flex;
     display: flow;
     justify-content: center;
@@ -745,7 +746,7 @@ div.logo-container {
     gap: 21px;
     grid-template-columns: repeat(auto-fill, 194px);
     padding: 2%;
-    zoom: 1;
+    zoom: 1.2;
     flex-wrap: wrap;
     justify-content: center;
     justify-items: center
@@ -1622,7 +1623,7 @@ html {
 #new,
 #weekly,
 #weeklystar {
-    zoom: 1;
+    zoom: 1.1;
     display: flex;
     flex-flow: row;
     flex-wrap: wrap;
@@ -2073,10 +2074,7 @@ html {
         transition: background .15s
     }
 
-    #countdown,
-    #countdown2 {
-        font-size: 15;
-    }
+
 
     #refresh-button {
         background: #888;
