@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
-
 	<style>
 		.intro {
 			opacity: 0;
@@ -1038,8 +1035,7 @@
 		countdownEl.textContent = formatTime(timeLeft);
 		countdownEl2.textContent = formatTime(timeLeft2);
 	}
-
-	updateCountdown();
+	setInterval(updateCountdown, 1000);
 
 	window.addEventListener('load', () => {
 		const container = document.getElementById('top-donators');
