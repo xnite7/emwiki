@@ -222,6 +222,10 @@ footer p {
     width: -webkit-fill-available
 }
 
+#refresh-button {
+    margin-right: 13px;
+}
+
 .grad {
     background: linear-gradient(0deg, #fff0 7%, rgba(16, 73, 102, .77) 55%, #000);
     height: 24vh;
@@ -2018,7 +2022,7 @@ html {
         margin: 0 0 17px
     }
 
-    #donate-modal{
+    #donate-modal {
         zoom: 0.8;
     }
 
@@ -2082,6 +2086,7 @@ html {
 
 
     #refresh-button {
+
         background: #888;
         border-radius: 50%;
         box-shadow: 0 0 10px hsla(0, 0%, 100%, 0);
@@ -2095,7 +2100,8 @@ html {
         position: absolute;
         right: 13px;
         text-align: center;
-        top: 12px;
+        margin-right: 13px;
+        top: 50px;
         transition: .5s;
         user-select: none;
         width: 40px;
