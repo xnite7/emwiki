@@ -1415,7 +1415,7 @@ html {
     display: flex;
     flex-direction: column;
     inset: 14px;
-    justify-content: space-around;
+    justify-content: space-evenly;
     overflow: hidden;
     z-index: 5
 }

@@ -75,7 +75,7 @@ function createProductModal() {
   contentArea.setAttribute("data-tilt-transform-element", "");
   contentArea.style.cssText = `
     align-items: normal;
-    padding: 100px 22px 51px 22px;
+    padding: 60px 22px 51px;
   `;
 
   const overlay = document.createElement("div");
@@ -87,6 +87,7 @@ function createProductModal() {
   description.style.cssText = `
     white-space: pre-wrap;
     z-index: 34;
+    margin:0px;
     margin-bottom: 15px;
     width: 100%;
     align-self: anchor-center;
@@ -1119,7 +1120,7 @@ function Modal(event) {
         children[1].style.fontWeight = 500;
         children[1].style.textShadow = "0 0 6px rgb(199 0 255)";
       } else if (text.includes("[EXPIRED]")) {
-        Object.assign(children[1].style, { fontFamily: "monospace", fontSize: "23px", color: "#cd1f1f" });
+        Object.assign(children[1].style, { textShadow:  "0 0 10px black", fontFamily: "monospace", fontSize: "23px", color: "#cd1f1f" });
       } else if (text.includes("[ACTIVE]")) {
         Object.assign(children[1].style, { fontFamily: "monospace", fontSize: "23px", color: "rgb(251 255 68)" });
       } else if (text.includes("Unobtainable")) {
