@@ -1651,8 +1651,8 @@ html {
     border: 1px solid #353535;
     background: #3e3e3e;
     padding: 10px;
-    font-size: 24px;
-    padding-inline-start: 21px;
+    font-size: 22px;
+    padding-inline-start: 15px;
     width: 100%;
     box-sizing: border-box;
 }
