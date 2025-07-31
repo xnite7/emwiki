@@ -501,6 +501,8 @@ function Modal(event) {
   const item = event.target.closest(".item");
   if (!item) return;
 
+  document.getElementsByTagName('html')[0].style.overflowY = "hidden";
+
   modalCache.retired.style.visibility = "hidden";
   modalCache.premium.style.visibility = "hidden";
   modalCache.untradable.style.visibility = "hidden";
@@ -764,6 +766,7 @@ const closeModalHandler = () => {
   modalCache.content.classList.remove("expand");
   modalCache.modal.classList.remove("show");
   modalCache.content.style.pointerEvents = "none";
+  document.getElementsByTagName('html')[0].style.overflowY = "scroll";
   setTimeout(() => {
     isModalOpen = false;
   }, 150)
