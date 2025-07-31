@@ -1293,7 +1293,6 @@ html {
     color: #fff;
     font: 1000 16px Arimo;
     letter-spacing: 2px;
-    margin-top: 20px;
     max-width: max-content;
     padding: 5px;
     width: fit-content
@@ -1306,7 +1305,8 @@ html {
     position: relative;
     transform: translateZ(30px);
     visibility: hidden;
-    z-index: 22
+    z-index: 22;
+    margin: 0px;
 }
 
 .modal-icon {

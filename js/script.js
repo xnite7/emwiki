@@ -44,6 +44,8 @@ function createProductModal() {
     bottom: 0px;
     width: -webkit-fill-available;
     justify-content: space-around;
+    align-items: flex-start;
+    height: 47px;
   `;
 
   const premIcon = document.createElement("img");
@@ -60,9 +62,9 @@ function createProductModal() {
   untradableIcon.id = "modal-untradable";
   untradableIcon.className = "modal-icon";
 
-  dock.append(premIcon.cloneNode(), retiredText.cloneNode(true), untradableIcon.cloneNode());
+  dock.append(premIcon, retiredText, untradableIcon);
 
-  borderOverlay.append(prc, dock, retiredText, premIcon, untradableIcon);
+  borderOverlay.append(prc, dock);
 
   const title = document.createElement("h3");
   title.id = "modal-title";
