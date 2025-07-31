@@ -700,3 +700,519 @@
 <style>
 	@import url("https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Playpen+Sans:wght@100..800&family=Oxanium&family=Patrick+Hand&family=Denk+One&family=Marhey:wght@700&family=Rubik+Wet+Paint&family=Irish+Grover&family=Poppins:wght@700&family=Rye&family=Eater&family=Bangers&family=Inconsolata:wght@900&family=Roboto+Mono:wght@700&family=Sedgwick+Ave+Display&family=Rubik+Marker+Hatch&family=Sarpanch:wght@700&family=Kalam&family=Are+You+Serious&family=Akronim&family=Kings&family=Permanent+Marker&family=Caesar+Dressing&family=Michroma&family=Titillium+Web&family=Grenze+Gotisch:wght@100..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Bungee+Shade&family=Frijole&family=Audiowide&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Lobster&family=Fredoka:wght@300..700&family=Codystar:wght@300;400&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Michroma&family=Jura&family=Special+Elite&family=Noto+Serif+HK:wght@200..900&family=Faster+One&family=Nosifer&family=Silkscreen&family=Finger+Paint&family=Merriweather&family=Luckiest+Guy&family=Bungee+Inline&family=Creepster&family=Indie+Flower&family=Pacifico&family=Cairo&family=Fondamento&family=Balthazar&family=Arimo:ital,wght@0,400..700;1,400..700&display=swap");
 </style>
+
+<script>
+
+	function fetchDonations() {
+		const donatorsList = document.getElementById('donators-list');
+		if (!donatorsList) return;
+
+		const loadDonations = () => {
+			fetch('https://emwiki.site/api/donations')
+				.then(res => {
+					if (!res.ok) throw new Error('Failed to fetch donation data');
+					return res.json();
+				})
+				.then(data => {
+					donatorsList.innerHTML = '';
+					const topDonators = data.sort((a, b) => b.amount - a.amount).slice(0, 5);
+					topDonators.forEach(user => {
+						const li = document.createElement('li');
+						const img = document.createElement('img');
+						img.src = user.avatar || 'https://emwiki.site/imgs/plr.jpg';
+						img.alt = user.displayName || user.name || 'User avatar';
+						img.className = 'avatar';
+						li.appendChild(img);
+						li.style.listStyleType = "none";
+						li.style.display = "flex";
+						li.style.alignItems = "center";
+						li.style.flexDirection = "column";
+						li.style.fontWeight = "300";
+						img.style.width = "100px";
+						img.style.filter = "drop-shadow(0px 0px 6px #00000069)";
+						li.appendChild(document.createTextNode(`${user.displayName}`));
+						const amountSpan = document.createElement('span');
+						amountSpan.textContent = `${user.totalSpent} Robux`;
+						amountSpan.style.color = "#ffcc00";
+						amountSpan.style.fontWeight = "bold";
+						li.appendChild(amountSpan);
+						donatorsList.appendChild(li);
+					});
+				})
+				.catch(err => {
+					console.error('Error fetching donations:', err);
+					donatorsList.innerHTML = '<li>Error loading donators</li>';
+				});
+		};
+
+		if (window.requestIdleCallback) {
+			requestIdleCallback(loadDonations, { timeout: 2000 });
+		} else {
+			setTimeout(loadDonations, 100);
+		}
+	}
+
+	document.addEventListener('DOMContentLoaded', fetchDonations);
+
+	const donateBtn = document.getElementById('donate-btn');
+	const donateModal = document.getElementById('donate-modal');
+	const closeModalBtn = document.getElementById('close-donate-modal');
+	const modalOverlay = document.getElementById('modal-overlay');
+
+	donateBtn.onclick = () => {
+		setTimeout(() => {
+			donateModal.style.display = 'block';
+			modalOverlay.style.display = 'block';
+		}, 250)
+
+	};
+
+	closeModalBtn.onclick = () => {
+		donateModal.style.display = 'none';
+		modalOverlay.style.display = 'none';
+	};
+
+	modalOverlay.onclick = () => {
+		donateModal.style.display = 'none';
+		modalOverlay.style.display = 'none';
+	};
+
+	const installBtn = document.getElementById('installBtn');
+	const iosPopup = document.getElementById('iosInstallPopup');
+	const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+	const isStandalone = window.navigator.standalone === true;
+	let deferredPrompt;
+
+	if (!(isIOS && isStandalone)) {
+		installBtn.style.display = 'inline';
+	}
+
+	window.addEventListener('beforeinstallprompt', (e) => {
+		e.preventDefault();
+		deferredPrompt = e;
+
+		if (!isIOS) {
+			installBtn.style.display = 'inline';
+		}
+
+		installBtn.addEventListener('click', async () => {
+			if (deferredPrompt) {
+				installBtn.style.display = 'none';
+				deferredPrompt.prompt();
+				const { outcome } = await deferredPrompt.userChoice;
+				console.log(`Install outcome: ${outcome}`);
+				deferredPrompt = null;
+
+				if (outcome === 'dismissed') {
+					installBtn.style.display = 'inline';
+				} else {
+					installBtn.style.display = 'none';
+				}
+			}
+		});
+	});
+
+	if (isIOS && !isStandalone) {
+		installBtn.addEventListener('click', () => {
+			iosPopup.style.display = 'block';
+			requestAnimationFrame(() => {
+				iosPopup.style.bottom = '20px';
+				iosPopup.style.opacity = '1';
+			});
+
+			setTimeout(() => {
+				hideIosPopup();
+			}, 8000);
+		});
+	}
+
+	function hideIosPopup() {
+		iosPopup.style.bottom = '-150px';
+		iosPopup.style.opacity = '0';
+		setTimeout(() => {
+			iosPopup.style.display = 'none';
+		}, 600);
+	}
+
+	const creditsmodal = document.getElementById("credits-modal");
+	const content = document.getElementById("credits-content");
+	const button = document.getElementById("credits-button");
+	const close = document.getElementById("close-credits");
+
+	const isTouche = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+	function showModal(e) {
+		creditsmodal.style.display = "block";
+		creditsmodal.style.pointerEvents = "auto";
+
+		if (!isTouche) {
+			const x = button.getBoundingClientRect().left - content.getBoundingClientRect().width;
+			const y = button.getBoundingClientRect().top - 30;
+			content.style.position = "absolute";
+			content.style.left = `${x}px`;
+			content.style.top = `${y}px`;
+			close.style.display = "none";
+			creditsmodal.style.padding = "0";
+		} else {
+			creditsmodal.style.position = "fixed";
+			creditsmodal.style.top = "0";
+			creditsmodal.style.left = "0";
+			creditsmodal.style.width = "-webkit-fill-available";
+			creditsmodal.style.height = "-webkit-fill-available";
+			creditsmodal.style.backdropFilter = "blur(6px)";
+			creditsmodal.style.backgroundColor = "rgba(0,0,0,0.5)";
+			content.style.position = "relative";
+			content.style.margin = "60px auto";
+		}
+	}
+
+	function hideModal() {
+		creditsmodal.style.display = "none";
+		creditsmodal.style.pointerEvents = "none";
+	}
+
+	button.addEventListener("touchend", (e) => {
+		showModal(e);
+	});
+	button.addEventListener("mouseover", (e) => {
+		if (!isTouche) showModal(e);
+	});
+	button.addEventListener("mouseout", (e) => {
+		if (!isTouche) hideModal();
+	});
+	close.addEventListener("click", hideModal);
+	creditsmodal.addEventListener("click", (e) => {
+		if (e.target === creditsmodal) hideModal();
+	});
+
+	const bg = document.querySelector('.parallax-bg');
+	const isTouchr = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+	if (!isTouchr) {
+		window.addEventListener('scroll', () => {
+			const scrollY = window.scrollY;
+			bg.style.transform = `translateY(${scrollY * -0.4}px)`;
+			const fadePoint = 2500;
+			const opacity = Math.max(0, 1 - scrollY / fadePoint);
+			bg.style.opacity = opacity.toFixed(2);
+		});
+	}
+
+	const API_URL = 'https://emwiki-poll.xnite7.workers.dev/api/poll';
+	const pollResult = document.getElementById('pollResult');
+	const pollTotals = document.getElementById('pollTotals');
+	const voteButtons = document.querySelectorAll('.vote-button');
+
+	const alreadyVoted = localStorage.getItem('hasVoted') === 'true';
+
+	function disableVoting(message) {
+		voteButtons.forEach(btn => { btn.style.display = "none"; btn.disabled = true });
+		pollResult.textContent = message;
+		pollResult.style.display = 'block';
+	}
+
+	async function fetchResults() {
+		try {
+			const res = await fetch(API_URL);
+			const data = await res.json();
+			pollTotals.textContent = `👍 ${data.like} · 👎 ${data.dislike}`;
+		} catch {
+			pollTotals.textContent = '⚠️ Error loading poll results.';
+		}
+	}
+
+	async function submitVote(vote) {
+		if (alreadyVoted) return;
+
+		try {
+			const res = await fetch(API_URL, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ vote })
+			});
+
+			if (res.status === 403) {
+				disableVoting('You have already voted.');
+				document.querySelector('.poll-box').style.display = 'none'
+			} else if (res.ok) {
+				disableVoting('Thanks for voting!');
+			} else {
+				pollResult.textContent = 'Error submitting vote.';
+				pollResult.style.display = 'block';
+				return;
+			}
+
+			localStorage.setItem('hasVoted', 'true');
+			await fetchResults();
+		} catch {
+			pollResult.textContent = 'Network error.';
+			pollResult.style.display = 'block';
+		}
+	}
+
+	voteButtons.forEach(button => {
+		button.addEventListener('click', () => {
+			const vote = button.getAttribute('data-vote');
+			submitVote(vote);
+		});
+	});
+
+	if (alreadyVoted) {
+		disableVoting('You have already voted.');
+		document.querySelector('.poll-box').style.display = 'none'
+	}
+
+	const countdownEl = document.getElementById("countdown");
+	const countdownEl2 = document.getElementById("countdown2");
+
+	const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
+	const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+	const baseStart = new Date(Date.UTC(2025, 4, 24, 24));
+	const baseStart2 = new Date(Date.UTC(2025, 4, 29, 24));
+
+	let cachedUTC = null;
+	let cachedAt = 0;
+
+	async function getAccurateUTC() {
+		const now = Date.now();
+		if (cachedUTC && (now - cachedAt < 5 * 60 * 1000)) {
+			return new Date(cachedUTC.getTime() + (now - cachedAt));
+		}
+		try {
+			const res = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
+			const text = await res.text();
+			let data;
+			try {
+				data = JSON.parse(text);
+			} catch {
+				throw new Error(text);
+			}
+			cachedUTC = new Date(data.utc_datetime);
+			cachedAt = Date.now();
+			return cachedUTC;
+		} catch (e) {
+			console.warn("Falling back to device UTC time:", e);
+			return new Date(Date.now());
+		}
+	}
+
+	let lastUTC = null;
+	let lastUTCAt = 0;
+
+	async function syncUTC() {
+		lastUTC = await getAccurateUTC();
+		lastUTCAt = Date.now();
+	}
+
+	function getCurrentUTC() {
+		if (!lastUTC) return new Date(Date.now());
+		const now = Date.now();
+		return new Date(lastUTC.getTime() + (now - lastUTCAt));
+	}
+
+	function updateCountdown() {
+		const utcNow = getCurrentUTC();
+
+		const elapsed = utcNow - baseStart;
+		const elapsed2 = utcNow - baseStart2;
+		const timeIntoCurrentCycle = elapsed % WEEK_MS;
+		const timeIntoCurrentCycle2 = elapsed2 % WEEK_MS;
+
+		const timeLeft = WEEK_MS - timeIntoCurrentCycle;
+		const timeLeft2 = WEEK_MS - timeIntoCurrentCycle2;
+
+		countdownEl.style.color = timeLeft < SIX_HOURS_MS ? "#ff9999" : "#cccccc";
+		countdownEl2.style.color = timeLeft2 < SIX_HOURS_MS ? "#ff9999" : "#cccccc";
+
+		const formatTime = (ms) => {
+			const totalSeconds = Math.floor(ms / 1000);
+			const days = Math.floor(totalSeconds / (24 * 3600));
+			const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+			const minutes = Math.floor((totalSeconds % 3600) / 60);
+			const seconds = totalSeconds % 60;
+			const pad = (n) => n.toString().padStart(2, '0');
+			return `${pad(days)}:${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+		};
+
+		countdownEl.textContent = formatTime(timeLeft);
+		countdownEl2.textContent = formatTime(timeLeft2);
+	}
+
+	updateCountdown();
+
+	window.addEventListener('load', () => {
+		const container = document.getElementById('top-donators');
+		const canvas = document.getElementById('tentacles-canvas');
+		const ctx = canvas.getContext('2d');
+		const btn = document.getElementById('donate-btn');
+
+		let w, h;
+		let centerX, centerY;
+
+		const tentaclesCount = 8;
+		const maxTentacleLength = 120;
+		const suckerCount = 6;
+
+		let animationProgress = 0;
+		let targetProgress = 0;
+
+		let isActive = false;
+
+		function resize() {
+			w = canvas.width = container.clientWidth;
+			h = canvas.height = container.clientHeight;
+			canvas.style.width = w + 'px';
+			canvas.style.height = h + 'px';
+
+			centerX = w / 2;
+			centerY = h / 2;
+		}
+
+		window.addEventListener('resize', resize);
+		resize();
+
+		function cubicBezier(p0, p1, p2, p3, t) {
+			const mt = 1 - t;
+			return mt * mt * mt * p0 + 3 * mt * mt * t * p1 + 3 * mt * t * t * p2 + t * t * t * p3;
+		}
+
+		function getBezierPoint(path, t) {
+			const { startX, startY, cp1X, cp1Y, cp2X, cp2Y, endX, endY } = path;
+			const x = cubicBezier(startX, cp1X, cp2X, endX, t);
+			const y = cubicBezier(startY, cp1Y, cp2Y, endY, t);
+			return { x, y };
+		}
+
+		function getTentaclePath(baseAngle, progress, time) {
+			const length = maxTentacleLength * progress;
+
+			const startX = centerX;
+			const startY = centerY;
+
+			const endX = centerX + Math.cos(baseAngle) * length;
+			const endY = centerY + Math.sin(baseAngle) * length;
+
+			const waveAmplitude = progress > 0 ? 15 : 0;
+			const waveFreq = 3;
+
+			const cp1Dist = length * 0.4 * progress;
+			const cp2Dist = length * 0.7 * progress;
+
+			const cp1Angle = baseAngle - Math.PI / 4 + (progress * Math.sin(time * waveFreq) * 0.3);
+			const cp2Angle = baseAngle + Math.PI / 4 + (progress * Math.cos(time * waveFreq + Math.PI / 2) * 0.3);
+
+			const cp1X = centerX + Math.cos(cp1Angle) * cp1Dist + Math.sin(time * waveFreq) * waveAmplitude * progress;
+			const cp1Y = centerY + Math.sin(cp1Angle) * cp1Dist + Math.cos(time * waveFreq) * waveAmplitude * progress;
+
+			const cp2X = centerX + Math.cos(cp2Angle) * cp2Dist + Math.cos(time * waveFreq) * waveAmplitude * progress;
+			const cp2Y = centerY + Math.sin(cp2Angle) * cp2Dist + Math.sin(time * waveFreq) * waveAmplitude * progress;
+
+			return { startX, startY, cp1X, cp1Y, cp2X, cp2Y, endX, endY };
+		}
+
+		function drawTentacle(path, time) {
+			ctx.lineWidth = 6;
+
+			if (isActive) {
+				ctx.shadowColor = 'gold';
+				ctx.shadowBlur = 15;
+				ctx.strokeStyle = 'rgba(255, 215, 0, 0.9)';
+			} else {
+				ctx.shadowColor = 'rgba(150, 100, 255, 0.6)';
+				ctx.shadowBlur = 6;
+				const grad = ctx.createLinearGradient(path.startX, path.startY, path.endX, path.endY);
+				grad.addColorStop(0, 'rgba(128,0,128,0.8)');
+				grad.addColorStop(1, 'rgba(255,0,255,0.5)');
+				ctx.strokeStyle = grad;
+			}
+
+			ctx.lineCap = 'round';
+
+			ctx.beginPath();
+			ctx.moveTo(path.startX, path.startY);
+			ctx.bezierCurveTo(path.cp1X, path.cp1Y, path.cp2X, path.cp2Y, path.endX, path.endY);
+			ctx.stroke();
+
+			for (let i = 1; i <= suckerCount; i++) {
+				const t = i / (suckerCount + 1);
+				const pos = getBezierPoint(path, t);
+				const suckerRadius = 4 + Math.sin(time * 10 + i) * 1;
+
+				ctx.beginPath();
+				ctx.fillStyle = isActive ? 'rgba(255, 223, 100, 0.8)' : 'rgba(200,150,255,0.7)';
+				ctx.shadowColor = isActive ? 'rgba(255, 215, 0, 0.8)' : 'rgba(150,100,255,0.6)';
+				ctx.shadowBlur = isActive ? 10 : 4;
+				ctx.arc(pos.x, pos.y, suckerRadius, 0, 2 * Math.PI);
+				ctx.fill();
+				ctx.shadowBlur = 0;
+			}
+		}
+
+		function animate(time = 0) {
+			ctx.clearRect(0, 0, w, h);
+
+			const speed = 0.05;
+			animationProgress += (targetProgress - animationProgress) * speed;
+
+			if (animationProgress > 0.01) {
+				for (let i = 0; i < tentaclesCount; i++) {
+					const baseAngle = (i / tentaclesCount) * Math.PI * 2;
+					const path = getTentaclePath(baseAngle, animationProgress, time / 1000);
+					drawTentacle(path, time / 1000);
+				}
+			}
+
+			requestAnimationFrame(animate);
+		}
+
+		animate();
+
+		btn.addEventListener('mouseenter', () => {
+			targetProgress = 1;
+		});
+
+		btn.addEventListener('mouseleave', () => {
+			targetProgress = 0;
+		});
+
+		btn.addEventListener('mousedown', () => {
+			isActive = true;
+		});
+
+		btn.addEventListener('mouseup', () => {
+			isActive = false;
+		});
+
+		btn.addEventListener('mouseleave', () => {
+			isActive = false;
+		});
+	});
+
+	document.querySelector('a[href="#patchnotes"]').addEventListener("click", (e) => {
+		const patch = document.getElementById("patchnotes");
+		patch.classList.remove("animate");
+		void patch.offsetWidth;
+		patch.classList.add("animate");
+	});
+
+	function updateVh() {
+		const vh = window.innerHeight * 0.01;
+		document.documentElement.style.setProperty('--vh', `${vh}px`);
+	}
+
+	const debounce = (func, wait) => {
+		let timeout;
+		return (...args) => {
+			clearTimeout(timeout);
+			timeout = setTimeout(() => func.apply(this, args), wait);
+		};
+	};
+
+	window.addEventListener('load', debounce(updateVh, 100));
+	window.addEventListener('resize', debounce(updateVh, 100));
+	window.addEventListener('orientationchange', debounce(updateVh, 100));
+
+	setTimeout(updateVh, 500);
+
+</script>
