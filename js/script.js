@@ -140,6 +140,7 @@ function createProductModal() {
 
   const tourButton = document.createElement("button");
   tourButton.className = "tour-button";
+  tourButton.id = "tour-button"
   tourButton.setAttribute("data-tilt-transform-element", "");
   tourButton.style.display = "none";
   tourButton.innerHTML = `
@@ -208,7 +209,8 @@ const modalCache = {
   price: document.getElementById("modal-price-value"),
   retired: document.getElementById("modal-retired"),
   premium: document.getElementById("modal-premium"),
-  untradable: document.getElementById("modal-untradable")
+  untradable: document.getElementById("modal-untradable"),
+  button: document.getElementById("tour-button")
 };
 
 if (document.querySelector('.intro')) {
@@ -1067,10 +1069,11 @@ function Modal(event) {
       fontWeight: 400,
       textStroke: "",
       webkitTextStroke: "",
-      textShadow: ""
+      textShadow: "",
+      display: "block"
     });
   }
-
+  modalCache.button.style.display = "none";
   modalCache.popo.parentElement.querySelectorAll(".price").forEach((el, idx) => {
     if (idx > 0) el.remove();
   });
@@ -1128,6 +1131,13 @@ function Modal(event) {
       } else if (text.includes("Unobtainable")) {
         children[0].src = "./imgs/Red_x.png";
         children[1].style.color = "rgb(255 44 44)";
+      } else if (text.includes("www.")) {
+        children[1].style.display = "none";
+        modalCache.button.style.display = "block";
+        modalCache.button.innerText = "Visit"
+        modalCache.button.onclick = () => {
+          window.open(text)
+        }
       }
 
       priceEl.style.display = children[1].textContent ? "flex" : "none";
