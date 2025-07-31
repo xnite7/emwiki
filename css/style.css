@@ -1376,8 +1376,7 @@ html {
 .modal-icon {
     filter: drop-shadow(0 2px 6px #00000069);
     height: 35px;
-    margin-bottom: 18px;
-    margin-top: 18px
+
 }
 
 .modal.show {

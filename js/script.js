@@ -1189,7 +1189,7 @@ function createNewItem(item, color) {
     price.style.display = "none";
   }
   const from = document.createElement("div");
-  from.innerHTML = item.from;
+  from.innerText = item.from;
   from.id = "from";
   from.style.display = "none";
   newItem.appendChild(from);
