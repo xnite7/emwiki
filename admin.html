@@ -1030,14 +1030,7 @@
         });
 
         function getAllItems() {
-            const all = [];
-            for (const [cat, list] of Object.entries(jsData)) {
-                for (const item of list) {
-                    item.category = cat; // 🔑 store category directly on item
-                    all.push(item);
-                }
-            }
-            return all;
+            return Object.values(jsData).flat();
         }
 
 
@@ -1481,8 +1474,6 @@
             renderDescPagination();
         }
 
-
-
         function updateItemFromInputs(container, item) {
             const inputs = Array.from(container.querySelectorAll("input"));
             const newFrom = inputs.map(input => input.value.trim()).filter(Boolean).join("<br>");
@@ -1497,9 +1488,6 @@
                 }
             }
         }
-
-
-
 
         function createLineInput(text, item) {
             const wrapper = document.createElement("div");
