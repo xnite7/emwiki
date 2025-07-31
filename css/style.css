@@ -2073,6 +2073,11 @@ html {
         transition: background .15s
     }
 
+    #countdown,
+    #countdown2 {
+        font-size: 15;
+    }
+
     #refresh-button {
         background: #888;
         border-radius: 50%;
