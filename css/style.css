@@ -385,14 +385,6 @@ nav {
     user-select: none
 }
 
-#search-bar {
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-    margin-bottom: 20px;
-    padding: 10px;
-    width: 80%
-}
 
 nav a>img {
     max-width: inherit;
@@ -590,7 +582,7 @@ section {
     box-shadow: 0 5px 15px rgba(0, 0, 0, .3);
     flex: 1 20030px;
     margin: 0 5vw 50px;
-    padding: 1vw;
+    padding: 1vw 1vw 27px;
     position: sticky;
     z-index: 22
 }
@@ -635,7 +627,7 @@ input {
     border-radius: 10px;
     font-size: 1rem;
     padding: .7rem;
-    width: 200px
+
 }
 
 .welcome h2 {
@@ -1019,7 +1011,7 @@ input {
     border: 1px solid #555;
     color: #fff;
     padding: 10px;
-    width: calc(100% - 22px)
+
 }
 
 #messages::-webkit-scrollbar {
@@ -1649,19 +1641,33 @@ html {
     text-align: center
 }
 
+#search-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+#search-bar {
+    border: 1px solid #353535;
+    background: #3e3e3e;
+    padding: 10px;
+    font-size: 24px;
+    padding-inline-start: 21px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
 #search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
     background: #222;
     border-radius: 0;
     box-shadow: 0 2px 12px #0008;
     color: #fff;
-    margin: 0 9%;
     max-height: 350px;
     overflow-y: auto;
-    position: absolute;
-    top: 157px;
-    width: 80%;
-    z-index: 1000;
-    z-index: 9999
+    z-index: 9999;
 }
 
 #search-results::-webkit-scrollbar {
@@ -1865,6 +1871,9 @@ html {
         font-size: 26px;
         justify-self: anchor-center
     }
+    #search-bar {
+        font-size: 18px;
+    }
 
     input {
         font-size: 2rem
@@ -1983,7 +1992,7 @@ html {
     }
 
     .search-item {
-        font-size: 2em;
+        font-size: 1.6em;
         text-align: left;
         transition: background .15s
     }
@@ -2013,20 +2022,7 @@ html {
         zoom: .88
     }
 
-    #search-results {
-        background: #222;
-        border-radius: 0;
-        box-shadow: 0 2px 12px #0008;
-        color: #fff;
-        margin: 0 44.8%;
-        max-height: 350px;
-        overflow-y: auto;
-        position: absolute;
-        top: 144px;
-        width: 9.5%;
-        z-index: 1000;
-        z-index: 9999
-    }
+
 
     section {
         zoom: 1;
@@ -2040,10 +2036,7 @@ html {
         z-index: 22
     }
 
-    #search-bar {
-        font-size: 18px;
-        width: 7%
-    }
+
 
     #indicator {
         right: 32px
@@ -2190,8 +2183,9 @@ html {
         position: sticky;
         z-index: 22
     }
-    #donators-list{
-            zoom: 0.7;
+
+    #donators-list {
+        zoom: 0.7;
     }
 }
 

@@ -1480,14 +1480,14 @@ function setupSearch(itemList, defaultColor) {
 
   let activeIndex = -1;
 
-  searchInput.addEventListener('input', () => {
+  function searcha() {
     const query = searchInput.value.trim();
     resultsContainer.innerHTML = '';
     activeIndex = -1;
 
     if (!query) return;
 
-    const results = fuse.search(query).slice(0, 12);
+    const results = fuse.search(query).slice(0, 6);
 
     results.forEach((result) => {
       const item = result.item;
@@ -1507,11 +1507,14 @@ function setupSearch(itemList, defaultColor) {
         searchInput.value = item.name;
         resultsContainer.innerHTML = '';
         showSelectedItem(item);
+        saveSearchHistory(item.name);
       });
 
       resultsContainer.appendChild(div);
     });
-  });
+  };
+  searchInput.addEventListener('focus', (searcha))
+  searchInput.addEventListener('input', (searcha))
 
   searchInput.addEventListener('keydown', (e) => {
     const items = resultsContainer.querySelectorAll('.search-item');
@@ -1552,6 +1555,55 @@ function setupSearch(itemList, defaultColor) {
       newItem.click();
     }
   }
+
+  const maxHistory = 4;
+  const historyKey = "searchHistory";
+
+  // Load and show history when search is focused with no text
+  searchInput.addEventListener('focus', () => {
+    if (searchInput.value.trim() === "") {
+      const history = JSON.parse(localStorage.getItem(historyKey) || "[]");
+      renderHistory(history);
+    }
+  });
+
+  // Store search when user clicks result
+  function saveSearchHistory(name) {
+    let history = JSON.parse(localStorage.getItem(historyKey) || "[]");
+    history = history.filter(item => item !== name); // Remove duplicates
+    history.unshift(name); // Add to top
+    if (history.length > maxHistory) history = history.slice(0, maxHistory);
+    localStorage.setItem(historyKey, JSON.stringify(history));
+  }
+
+  function renderHistory(history) {
+    resultsContainer.innerHTML = '';
+    history.forEach(name => {
+      const item = itemList.find(i => i.name === name);
+      if (!item) return;
+
+      const div = document.createElement('div');
+      div.className = 'search-item';
+      div.textContent = item.name;
+      div.style.padding = "8px 14px";
+      div.style.cursor = "pointer";
+      div.style.borderBottom = "1px solid #333";
+      div.style.backgroundColor = item._color || defaultColor;
+
+      div.addEventListener('mouseenter', () => div.style.backgroundColor = "#444");
+      div.addEventListener('mouseleave', () => div.style.backgroundColor = item._color || defaultColor);
+      div.addEventListener('click', () => {
+        searchInput.value = item.name;
+        resultsContainer.innerHTML = '';
+        showSelectedItem(item);
+        saveSearchHistory(item.name);
+      });
+
+      resultsContainer.appendChild(div);
+    });
+  }
+
+
 }
 
 function filterItems() {

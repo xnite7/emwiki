@@ -194,7 +194,7 @@
 	<link href="https://fonts.cdnfonts.com/css/roman-antique" rel="stylesheet">
 	<link href="https://fonts.cdnfonts.com/css/accanthis-adf-std" rel="stylesheet">
 	<link href="https://fonts.cdnfonts.com/css/bunny-flowers-outline?styles=137265" rel="stylesheet">
-                
+
 	<link rel="icon" href="./imgs/favicon.png" type="image/png">
 
 	<meta name="theme-color" content="#000000">
@@ -262,7 +262,8 @@
 				<div id="pricecoderarity"
 					style="margin-top: -18px;text-align-last: center;background: #333333d9;/* margin-left: 70px; *//* margin-top: -21px; *//* padding: 4%; */font-weight: 700;position: relative;right: 0;/* padding-top: 0px; */place-self: flex-end;padding-bottom: 10px;width: 36%;border-radius: 32%;">
 					<img src="./imgs/cf8ZvY7.png"
-						style="width: 27%;position: relative;top: 5px;margin: 4px 3px 0 0;">299</div>
+						style="width: 27%;position: relative;top: 5px;margin: 4px 3px 0 0;">299
+				</div>
 				<img id="img" src=".\imgs\gears\50btZsI.png" width="512" height="512"
 					style="max-width: 70%;max-height: 70%;display: block;margin: 0px auto;user-select: none;pointer-events: none;">
 				<div id="h3" style="font-size: 123%;text-align: -webkit-center;">Berry
@@ -327,8 +328,7 @@
 							height: auto;
 							position: absolute;
 						">
-				<img src="./imgs/clood.webp"
-					style="
+				<img src="./imgs/clood.webp" style="
 				position: absolute;
 				justify-self: anchor-center;
 				top: 3vw;
@@ -338,8 +338,7 @@
 				width: 66vw;
 				pointer-events: none;
 				">
-				<img src="./imgs/clood.webp"
-					style="
+				<img src="./imgs/clood.webp" style="
 					position: absolute;
 					pointer-events:none ;
 					justify-self: anchor-center;
@@ -436,8 +435,11 @@
 				<h1 style="margin-top: 10px;">Welcome to Epic Catalogue!</h1>
 
 				<!-- In your HTML somewhere -->
-				<input id="search-bar" type="text" placeholder="Search items..." autocomplete="off" />
-				<div id="search-results"></div>
+				<div id="search-wrapper">
+					<input id="search-bar" type="text" placeholder="Search items..." autocomplete="off" />
+					<div id="search-results"></div>
+				</div>
+
 				<div class="catalog-grid" id="ctlg" data-loaded="false" style="
 					display: flex;
 					gap: 1.5rem;
@@ -479,7 +481,7 @@
 					<div id="indicator"></div>
 				</div>
 				<input type="text" id="chatInput" placeholder="Type a message and hit enter..." autocomplete="off" />
-				
+
 			</section>
 			<section class="catalog">
 				<div class="circlebutton" style="margin-right: 13px;" id="refresh-button" onclick="rinse();">
@@ -643,33 +645,37 @@
 		</div>
 	</div>
 
-<div id="product-modal" class="modal" style="display: none;">
-	<div id="modal-content" class="modal-content expand" data-tilt="" data-tilt-max="10" data-tilt-speed="500" data-tilt-perspective="1800" data-tilt-glare="" data-tilt-max-glare="0.1" data-tilt-scale="1.03" data-tilt-reset="true" style="will-change: transform; background-color: rgb(91, 254, 106); position: relative; top: 0px; left: 0px; transform: perspective(1800px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1);">
-		<div class="inner-border-overlay">
-			<h3 id="modal-prc" class="modal-prc">500</h3>
-			<div class="dock" style="
+	<div id="product-modal" class="modal" style="display: none;">
+		<div id="modal-content" class="modal-content expand" data-tilt="" data-tilt-max="10" data-tilt-speed="500"
+			data-tilt-perspective="1800" data-tilt-glare="" data-tilt-max-glare="0.1" data-tilt-scale="1.03"
+			data-tilt-reset="true"
+			style="will-change: transform; background-color: rgb(91, 254, 106); position: relative; top: 0px; left: 0px; transform: perspective(1800px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1);">
+			<div class="inner-border-overlay">
+				<h3 id="modal-prc" class="modal-prc">500</h3>
+				<div class="dock" style="
 				display: flex;
 				position: absolute;
 				bottom: 0px;
 				width: -webkit-fill-available;
 				justify-content: space-around;
 			">
-				<img src="./imgs/prem.png" id="modal-premium" class="modal-icon">
-				<h3 id="modal-retired">Retired</h3>
-				<img src="./imgs/WLjbELh.png" id="modal-untradable" class="modal-icon">
-			</div>
+					<img src="./imgs/prem.png" id="modal-premium" class="modal-icon">
+					<h3 id="modal-retired">Retired</h3>
+					<img src="./imgs/WLjbELh.png" id="modal-untradable" class="modal-icon">
+				</div>
 
-		</div>
-		<h3 id="modal-title" class="modal-title" data-tilt-transform-element=""></h3>
-        
-		<div id="content-area" class="content-area p-4 sm:p-5 lg:p-7" data-tilt-transform-element="" style="align-items: normal;padding: 100px 22px 51px 22px;">
-            <div class="gradient-overlay"></div>
-		
-		<p id="modal-description" data-tilt-transform-element="" style="white-space: pre-wrap; z-index: 34;margin-bottom: 15px;width: 100%;align-self: anchor-center;font-size: 18px;background: -webkit-linear-gradient(#fff, #999999);
+			</div>
+			<h3 id="modal-title" class="modal-title" data-tilt-transform-element=""></h3>
+
+			<div id="content-area" class="content-area p-4 sm:p-5 lg:p-7" data-tilt-transform-element=""
+				style="align-items: normal;padding: 100px 22px 51px 22px;">
+				<div class="gradient-overlay"></div>
+
+				<p id="modal-description" data-tilt-transform-element="" style="white-space: pre-wrap; z-index: 34;margin-bottom: 15px;width: 100%;align-self: anchor-center;font-size: 18px;background: -webkit-linear-gradient(#fff, #999999);
 		-webkit-background-clip: text;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;"></p>
-		<div class="price" id="popo"style="
+				<div class="price" id="popo" style="
 		display: flex;
 		flex-wrap: nowrap;
 		height: 35px;
@@ -678,7 +684,8 @@
 		justify-content: center;
 		align-items: center;
 		"><img src="" id="modal-price-value" data-tilt-transform-element="" style="position: relative;
-        height: 37px; right: 13px; z-index: 34;"><p style="
+        height: 37px; right: 13px; z-index: 34;">
+					<p style="
             right: 6px;	
 			white-space: pre-wrap;
             z-index: 222;
@@ -687,22 +694,33 @@
 			font-family: BuilderSans;
 			font-size: 32px;
             font-weight: 400;
-			">0</p></div>
-	  
-			<button class="tour-button" data-tilt-transform-element="" style="display: none;">
-                Take the tour
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 5l7 7-7 7"></path>
-                    <path d="M5 12h14"></path>
-                </svg>
-            </button>
+			">0</p>
+				</div>
+
+				<button class="tour-button" data-tilt-transform-element="" style="display: none;">
+					Take the tour
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+						stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M12 5l7 7-7 7"></path>
+						<path d="M5 12h14"></path>
+					</svg>
+				</button>
+			</div>
+			<span class="close-btn" id="close-modal"></span>
+			<div class="js-tilt-glare"
+				style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; overflow: hidden; pointer-events: none; border-radius: inherit;">
+				<div class="js-tilt-glare-inner"
+					style="position: absolute; top: 50%; left: 50%; pointer-events: none; background-image: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgb(255, 255, 255) 100%); transform: rotate(180deg) translate(-50%, -50%); transform-origin: 0% 0%; opacity: 0; width: 1388px; height: 1388px;">
+				</div>
+			</div>
+			<div class="js-tilt-glare">
+				<div class="js-tilt-glare-inner"></div>
+			</div>
 		</div>
-		<span class="close-btn" id="close-modal"></span>
-	<div class="js-tilt-glare" style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; overflow: hidden; pointer-events: none; border-radius: inherit;"><div class="js-tilt-glare-inner" style="position: absolute; top: 50%; left: 50%; pointer-events: none; background-image: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgb(255, 255, 255) 100%); transform: rotate(180deg) translate(-50%, -50%); transform-origin: 0% 0%; opacity: 0; width: 1388px; height: 1388px;"></div></div><div class="js-tilt-glare"><div class="js-tilt-glare-inner"></div></div></div>
 
 
 
-</div>
+	</div>
 
 	<!-- Parallax and fade script at bottom -->
 </body>
