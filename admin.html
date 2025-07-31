@@ -783,7 +783,7 @@
 
         function summarizeDiff(diffText) {
             if (!diffText) return "(no diff available)";
-            const lines = diffText.split('\n').slice(0, 5); // first 5 lines max
+            const lines = diffText.split('\n').slice(0, 100); // first 100 lines max
             return lines.join('\n') + (lines.length >= 5 ? '\n...' : '');
         }
 
