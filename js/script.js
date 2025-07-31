@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let main = document.querySelector("main");
       main.style.scale = "1"
       main.style.filter = 'opacity(1)'
-
+      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
       if (!isTouch) {
         document.querySelector(".parallax-bg").style.transition = "none";
         document.querySelector(".parallax-bg").style.backgroundSize = "124vw auto"
