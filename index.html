@@ -498,13 +498,13 @@
 			</section>
 			<!-- Add somewhere in your HTML for top donators -->
 			<section class="half" style="overflow: hidden;" id="top-donators">
-				<h1>Donations</h1>
+				<h1 class="title">Donations</h1>
 
 				<div id="donators-list" style="
-    display: inline-flex;
-    flex-direction: row-reverse;
-    gap: 50px;
-    padding: 3px;">
+					display: inline-flex;
+					flex-direction: row-reverse;
+					gap: 50px;
+					padding: 3px;">
 					<li>Loading...</li>
 				</div>
 
@@ -667,17 +667,21 @@
 <!-- Donate options modal -->
 <div id="donate-modal" style="display:none; position:fixed; top:50%; left:50%; transform: translate(-50%, -50%);
      background:#333; padding:20px; border-radius:10px; box-shadow: 0 0 15px black; color:#fff; z-index:1000;">
-	<h3>Choose Donation Amount</h3>
-	<ul style="list-style:none; padding:0;">
-		<li><a href="https://www.roblox.com/developer-product/7469027374/product/3306385668" target="_blank"
-				style="color:#0af; text-decoration:none; font-size:1.1rem;">Donate 200
-				Robux</a></li>
-		<li><a href="https://www.roblox.com/developer-product/7469027374/product/3306385516" target="_blank"
-				style="color:#0af; text-decoration:none; font-size:1.1rem;">Donate 100
-				Robux</a></li>
-		<li><a href="https://www.roblox.com/developer-product/7469027374/product/3306385370" target="_blank"
-				style="color:#0af; text-decoration:none; font-size:1.1rem;">Donate 50
-				Robux</a></li>
+	<h3 style="font-size: 28px;">Choose Donation Amount</h3>
+	<img src="./imgs/cat-kiss.gif" alt="Thank you for ur donations <3" style="width: 90%;">
+	<ul style="list-style: none;padding: 0;gap: 35px;display: flex;flex-wrap: wrap;flex-direction: row-reverse;">
+		<li class="dnt"><a href="https://www.roblox.com/developer-product/7469027374/product/3306391883" target="_blank"
+				style="color:#0af; text-decoration:none; font-size:1.1rem;">10000</a></li>
+		<li class="dnt"><a href="https://www.roblox.com/developer-product/7469027374/product/3306391406" target="_blank"
+				style="color:#0af; text-decoration:none; font-size:1.1rem;">2500</a></li>
+		<li class="dnt"><a href="https://www.roblox.com/developer-product/7469027374/product/3306391272" target="_blank"
+				style="color:#0af; text-decoration:none; font-size:1.1rem;">500</a></li>
+		<li class="dnt"><a href="https://www.roblox.com/developer-product/7469027374/product/3306385668" target="_blank"
+				style="color:#0af; text-decoration:none; font-size:1.1rem;">200</a></li>
+		<li class="dnt"><a href="https://www.roblox.com/developer-product/7469027374/product/3306385516" target="_blank"
+				style="color:#0af; text-decoration:none; font-size:1.1rem;">100</a></li>
+		<li class="dnt"><a href="https://www.roblox.com/developer-product/7469027374/product/3306385370" target="_blank"
+				style="color:#0af; text-decoration:none; font-size:1.1rem;">50</a></li>
 	</ul>
 	<button id="close-donate-modal" style="margin-top:10px; padding:5px 10px;">Close</button>
 </div>

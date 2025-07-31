@@ -358,8 +358,11 @@ if (document.querySelector('.intro')) {
   const modalOverlay = document.getElementById('modal-overlay');
 
   donateBtn.onclick = () => {
-    donateModal.style.display = 'block';
-    modalOverlay.style.display = 'block';
+    setTimeout(() => {
+      donateModal.style.display = 'block';
+      modalOverlay.style.display = 'block';
+    }, 250)
+
   };
 
   closeModalBtn.onclick = () => {
@@ -1125,7 +1128,7 @@ function Modal(event) {
         children[1].style.fontWeight = 500;
         children[1].style.textShadow = "0 0 6px rgb(199 0 255)";
       } else if (text.includes("[EXPIRED]")) {
-        Object.assign(children[1].style, { textShadow:  "0 0 10px black", fontFamily: "monospace", fontSize: "23px", color: "#cd1f1f" });
+        Object.assign(children[1].style, { textShadow: "0 0 10px black", fontFamily: "monospace", fontSize: "23px", color: "#cd1f1f" });
       } else if (text.includes("[ACTIVE]")) {
         Object.assign(children[1].style, { fontFamily: "monospace", fontSize: "23px", color: "rgb(251 255 68)" });
       } else if (text.includes("Unobtainable")) {
@@ -1535,7 +1538,7 @@ function createNewItem(item, color) {
 
     if (item.new) {
       canvas.style.paddingTop = "9px";
-      
+
     }
     newItem.appendChild(canvas);
     if (color === "rgb(201, 96, 254)") {
@@ -1694,7 +1697,8 @@ function setupSearch(itemList, defaultColor) {
 
 
       renderHistory(history)
-      return};
+      return
+    };
 
     const results = fuse.search(query).slice(0, 6);
 

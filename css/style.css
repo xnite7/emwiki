@@ -56,17 +56,69 @@ body {
     }
 }
 
+@property --wave-shift {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+@keyframes rgbWave {
+  0%   { --wave-shift: 0%; }
+  100% { --wave-shift: 100%; }
+}
+
+.dnt a {
+  display: inline-block;
+  padding: 10px 20px;
+  font-weight: bold;
+  border-radius: 8px;
+  text-shadow: 0 0 5px black;
+  color: white;
+  background: linear-gradient(
+    90deg,
+    color(display-p3 1 0 0) 0%,
+    color(display-p3 1 1 0) 16%,
+    color(display-p3 0 1 0) 33%,
+    color(display-p3 0 1 1) 50%,
+    color(display-p3 0 0 1) 66%,
+    color(display-p3 1 0 1) 83%,
+    color(display-p3 1 0 0) 100%
+  );
+  background-size: 400%;
+  background-position: var(--wave-shift) 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  animation: rgbWave 6s linear infinite;
+  transition: transform 0.2s ease;
+}
+
+.dnt a:hover {
+  transform: scale(1.05);
+}
+
+.dnt a {
+  /* ...above styles... */
+  text-shadow:
+    0 0 5px color(display-p3 1 0 1),
+    0 0 10px color(display-p3 0 1 1),
+    0 0 15px color(display-p3 1 1 0);
+}
+
+
 #donate-btn {
-    color: #000;
+    color: #ffffff;
     cursor: pointer;
     font-family: Playpen Sans;
     font-size: 1.5rem;
     font-weight: 600;
-    margin: 20px 36%;
+    text-shadow: -1.3px -1.3px 0 #000, 0 -1.3px 0 #000, 1.3px -1.3px 0 #000, 1.3px 0 0 #000, 1.3px 1.3px 0 #000, 0 1.3px 0 #000, -1.3px 1.3px 0 #000, -1.3px 0 0 #000;
+    margin: 16px 34% 0px;
     padding: 10px 20px;
-    text-shadow: 0 0 0 #fff;
+
     transform: rotateX(30deg);
-    transition: all .2s cubic-bezier(.215, .61, .355, 1)
+    transition: all .2s cubic-bezier(.215, .61, .355, 1);
 }
 
 #donate-btn:hover {
@@ -589,7 +641,7 @@ section {
 }
 
 .title {
-    font: 600 2.3rem 'Source Sans Pro';
+    font: 700 2.3rem 'Source Sans Pro';
     margin: 0;
     text-shadow: 2px 3px 9px #0006;
     top: -65px
@@ -610,7 +662,7 @@ section {
 }
 
 button {
-    background-color: #f9ca24;
+    background: linear-gradient(154deg, #ffd91e, #ffb200, #c48900);
     border: none;
     border-radius: 12px;
     cursor: pointer;
@@ -1871,6 +1923,10 @@ html {
     .catalog:has(#ctlg) .title {
         font-size: 26px;
         justify-self: anchor-center
+    }
+
+    #donate-btn {
+        font-size: 1.8rem;
     }
     #search-bar {
         font-size: 18px;
