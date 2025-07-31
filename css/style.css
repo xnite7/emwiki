@@ -1977,7 +1977,7 @@ html {
         height: 0;
         margin: 0 2000px;
         position: relative;
-        top: 165px
+        top: 149px;
     }
 
     .logo-container {
@@ -2160,15 +2160,18 @@ html {
     .catalog {
         zoom: 1;
         background: #666;
-        border: 15px 0 0 0 solid #555;
         border-radius: 0px;
         border-left: 0px;
+        display: flex;
         border-right: 0px;
         margin: 0px;
         margin-bottom: 30px;
         padding: 1rem;
         position: sticky;
-        z-index: 22
+        z-index: 22;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
     }
 
     .half {
