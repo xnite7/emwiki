@@ -534,7 +534,7 @@ nav #scammerstab>img {
 #countdown2 {
     color: #ccc;
     font-weight: 700;
-    font-size: 15;
+    font-size: 1.7rem;
 }
 
 nav a:hover {
@@ -746,7 +746,7 @@ div.logo-container {
     gap: 21px;
     grid-template-columns: repeat(auto-fill, 194px);
     padding: 2%;
-    zoom: 1.2;
+    zoom: 1.1;
     flex-wrap: wrap;
     justify-content: center;
     justify-items: center
@@ -1942,6 +1942,11 @@ html {
         justify-self: anchor-center
     }
 
+    .title {
+        font: 700 3rem 'Source Sans Pro';
+        text-shadow: 2px 3px 9px rgba(0, 0, 0, 0.255);
+    }
+
     #donate-btn {
         font-size: 1.8rem;
     }
@@ -2167,7 +2172,7 @@ html {
     #weekly,
     #weeklystar,
     #random {
-        zoom: .56;
+        zoom: .8;
         display: flex;
         flex-flow: row;
         flex-wrap: wrap;
