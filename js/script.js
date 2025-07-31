@@ -1,5 +1,200 @@
 let imgg;
 
+function createProductModal() {
+  const modal = document.createElement("div");
+  modal.id = "product-modal";
+  modal.className = "modal";
+  modal.style.display = "none";
+
+  const modalContent = document.createElement("div");
+  modalContent.id = "modal-content";
+  modalContent.className = "modal-content expand";
+  Object.assign(modalContent.dataset, {
+    tilt: "",
+    tiltMax: "10",
+    tiltSpeed: "500",
+    tiltPerspective: "1800",
+    tiltGlare: "",
+    tiltMaxGlare: "0.1",
+    tiltScale: "1.03",
+    tiltReset: "true"
+  });
+  modalContent.style.cssText = `
+    will-change: transform;
+    background-color: rgb(91, 254, 106);
+    position: relative;
+    top: 0px;
+    left: 0px;
+    transform: perspective(1800px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1);
+  `;
+
+  const borderOverlay = document.createElement("div");
+  borderOverlay.className = "inner-border-overlay";
+
+  const prc = document.createElement("h3");
+  prc.id = "modal-prc";
+  prc.className = "modal-prc";
+  prc.textContent = "500";
+
+  const dock = document.createElement("div");
+  dock.className = "dock";
+  dock.style.cssText = `
+    display: flex;
+    position: absolute;
+    bottom: 0px;
+    width: -webkit-fill-available;
+    justify-content: space-around;
+  `;
+
+  const premIcon = document.createElement("img");
+  premIcon.src = "./imgs/prem.png";
+  premIcon.id = "modal-premium";
+  premIcon.className = "modal-icon";
+
+  const retiredText = document.createElement("h3");
+  retiredText.id = "modal-retired";
+  retiredText.textContent = "Retired";
+
+  const untradableIcon = document.createElement("img");
+  untradableIcon.src = "https://i.imgur.com/WLjbELh.png";
+  untradableIcon.id = "modal-untradable";
+  untradableIcon.className = "modal-icon";
+
+  dock.append(premIcon.cloneNode(), retiredText.cloneNode(true), untradableIcon.cloneNode());
+
+  borderOverlay.append(prc, dock, retiredText, premIcon, untradableIcon);
+
+  const title = document.createElement("h3");
+  title.id = "modal-title";
+  title.className = "modal-title";
+  title.setAttribute("data-tilt-transform-element", "");
+
+  const contentArea = document.createElement("div");
+  contentArea.id = "content-area";
+  contentArea.className = "content-area p-4 sm:p-5 lg:p-7";
+  contentArea.setAttribute("data-tilt-transform-element", "");
+  contentArea.style.cssText = `
+    align-items: normal;
+    padding: 100px 22px 51px 22px;
+  `;
+
+  const overlay = document.createElement("div");
+  overlay.className = "gradient-overlay";
+
+  const description = document.createElement("p");
+  description.id = "modal-description";
+  description.setAttribute("data-tilt-transform-element", "");
+  description.style.cssText = `
+    white-space: pre-wrap;
+    z-index: 34;
+    margin-bottom: 15px;
+    width: 100%;
+    align-self: anchor-center;
+    font-size: 18px;
+    background: -webkit-linear-gradient(#fff, #999999);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  `;
+
+  const priceDiv = document.createElement("div");
+  priceDiv.className = "price";
+  priceDiv.id = "popo";
+  priceDiv.style.cssText = `
+    display: flex;
+    flex-wrap: nowrap;
+    height: 35px;
+    flex-direction: row;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+  `;
+
+  const priceImg = document.createElement("img");
+  priceImg.id = "modal-price-value";
+  priceImg.setAttribute("data-tilt-transform-element", "");
+  priceImg.style.cssText = `
+    position: relative;
+    height: 37px;
+    right: 13px;
+    z-index: 34;
+  `;
+
+  const priceText = document.createElement("p");
+  priceText.textContent = "0";
+  priceText.style.cssText = `
+    right: 6px;
+    white-space: pre-wrap;
+    z-index: 222;
+    margin: 13px 0;
+    position: relative;
+    font-family: BuilderSans;
+    font-size: 32px;
+    font-weight: 400;
+  `;
+
+  priceDiv.append(priceImg, priceText);
+
+  const tourButton = document.createElement("button");
+  tourButton.className = "tour-button";
+  tourButton.setAttribute("data-tilt-transform-element", "");
+  tourButton.style.display = "none";
+  tourButton.innerHTML = `
+    Take the tour
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 5l7 7-7 7"></path>
+      <path d="M5 12h14"></path>
+    </svg>
+  `;
+
+  contentArea.append(overlay, description, priceDiv, tourButton);
+
+  const closeBtn = document.createElement("span");
+  closeBtn.className = "close-btn";
+  closeBtn.id = "close-modal";
+
+  const glareWrap1 = document.createElement("div");
+  glareWrap1.className = "js-tilt-glare";
+  glareWrap1.style.cssText = `
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    border-radius: inherit;
+  `;
+  const glareInner1 = document.createElement("div");
+  glareInner1.className = "js-tilt-glare-inner";
+  glareInner1.style.cssText = `
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    pointer-events: none;
+    background-image: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgb(255, 255, 255) 100%);
+    transform: rotate(180deg) translate(-50%, -50%);
+    transform-origin: 0% 0%;
+    opacity: 0;
+    width: 1388px;
+    height: 1388px;
+  `;
+  glareWrap1.appendChild(glareInner1);
+
+  const glareWrap2 = document.createElement("div");
+  glareWrap2.className = "js-tilt-glare";
+  const glareInner2 = document.createElement("div");
+  glareInner2.className = "js-tilt-glare-inner";
+  glareWrap2.appendChild(glareInner2);
+
+  modalContent.append(borderOverlay, title, contentArea, closeBtn, glareWrap1, glareWrap2);
+  modal.appendChild(modalContent);
+  document.body.appendChild(modal);
+}
+
+createProductModal();
+
+
 const modalCache = {
   modal: document.getElementById("product-modal"),
   popo: document.getElementById("popo"),
