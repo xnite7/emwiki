@@ -1488,12 +1488,16 @@
             const newFrom = inputs.map(input => input.value.trim()).filter(Boolean).join("<br>");
             item.from = newFrom;
 
-            // also update the jsData object directly
-            const index = jsData[item.category].findIndex(i => i.name === item.name);
-            if (index !== -1) {
-                jsData[item.category][index].from = newFrom;
+            // 🔍 Find and update the item inside jsData by name
+            for (const list of Object.values(jsData)) {
+                const match = list.find(i => i.name === item.name);
+                if (match) {
+                    match.from = newFrom;
+                    break;
+                }
             }
         }
+
 
 
 
