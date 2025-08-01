@@ -830,7 +830,7 @@ function resize_to_fit() {
   let i = 0;
 
   function processChunk() {
-    const chunkSize = 10; // Adjust for smoothness vs. speed
+    const chunkSize = 5; // Adjust for smoothness vs. speed
     const end = Math.min(i + chunkSize, items.length);
 
     for (; i < end; i++) {
