@@ -705,8 +705,31 @@ function Modal(event) {
     }
   });
 
-  modalCache.prc.innerHTML = `<img src="./imgs/rap.png" style="filter: drop-shadow(0px 1px 5px #49444454);margin-top:4px;height:44px;float:left;">${price || 0}`;
+  modalCache.prc.innerHTML = `<img src="./imgs/rap.png" style="filter: drop-shadow(0px 1px 5px #49444454);height:44px;float:left;">${price || 0}`;
 
+
+  function resize_modal_prc() {
+
+
+    const img = modalCache.prc.querySelector('img');
+
+    // Reset font size to max starting point
+    modalCache.prc.style.fontSize = "42px";
+    let fontsize = parseInt(window.getComputedStyle(modalCache.prc).fontSize, 10);
+
+    while (modalCache.prc.offsetWidth > 150 && fontsize > 18) {
+      
+      fontsize -= 2;
+      modalCache.prc.style.fontSize = `${fontsize}px`;
+    }
+
+    // Adjust image height to match font size
+    if (img) {
+      img.style.height = `${fontsize + 2}px`; // Slightly bigger to match vertically
+      img.style.marginTop = `${Math.max(fontsize - 38, 0)}px`; // Adjust top margin if needed
+    }
+  }
+  resize_modal_prc()
   if (price!=0) {
     modalCache.prc.style.display= "flex"
   } else {

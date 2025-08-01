@@ -1436,12 +1436,14 @@ html {
 }
 
 .modal-prc {
+    height: fit-content;
+    align-items: center;
     display: none;
     font: 700 42px BuilderSans;
     justify-self: right;
+    margin-right: 9px;
+    white-space: nowrap;
     margin-top: 15px;
-    max-width: max-content;
-    right: 18px;
     transform: translateZ(30px);
     width: fit-content;
 }
