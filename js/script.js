@@ -781,10 +781,13 @@ function Modal(event) {
       boxShadow: ""
     });
   });
-  if (!popped) {
-    const h3 = item.querySelector("#h3");
-    const slug = h3.textContent.toLowerCase().replace(/\s+/g, '-');
-    history.pushState(null, "", `/item/${slug}`);
+if (!popped) {
+    const name = item.querySelector("#h3")?.textContent;
+    if (!name) return;
+    const slug = slugify(name);
+    const url = new URL(window.location);
+    url.searchParams.set("item", slug);
+    history.pushState(null, "", url.toString());
   }
 
 };
@@ -1648,25 +1651,18 @@ if (isTouch) {
 rinse()
 
 function openModalFromURL() {
-  let itemName = null;
+  const params = new URLSearchParams(window.location.search);
+  let itemSlug = params.get("item");
+  if (!itemSlug) return;
 
-  const pathMatch = window.location.pathname.match(/^\/item\/([^\/?#]+)/i);
-  if (pathMatch) {
-    itemName = pathMatch[1];
-  } else {
-    const params = new URLSearchParams(window.location.search);
-    itemName = params.get("item");
-  }
+  // Decode twice just in case
+  itemSlug = decodeURIComponent(decodeURIComponent(itemSlug));
 
-  if (!itemName) return;
-
-  // Decode twice to handle double-encoding
-  itemName = decodeURIComponent(decodeURIComponent(itemName));
   const allItems = Array.from(document.querySelectorAll('.item'));
-
-  const foundItem = allItems.find(item =>
-    item.querySelector('#h3')?.textContent.toLowerCase().replace(/\s+/g, '-') === itemName.toLowerCase()
-  );
+  const foundItem = allItems.find(item => {
+    const name = item.querySelector('#h3')?.textContent || "";
+    return slugify(name) === itemSlug;
+  });
 
   if (foundItem) {
     popped = true;
@@ -1680,10 +1676,6 @@ window.addEventListener("popstate", () => {
   openModalFromURL()
 });
 
-const params = new URLSearchParams(window.location.search);
-const legacy = params.get("item");
-if (legacy) {
-  const slug = legacy.toLowerCase().replace(/\s+/g, '-');
-  history.replaceState(null, "", `/item/${slug}`);
+function slugify(text) {
+  return text.toLowerCase().replace(/\s+/g, '-');
 }
-
