@@ -2309,9 +2309,16 @@ html {
   opacity: 0;
   transition: opacity 0.2s ease;
 }
-.item:hover .heart-button {
-  opacity: 1;
+
+@media (hover: hover) and (pointer: fine) {
+  /* Only apply hover on desktops */
+  .item:hover .heart-button {
+    opacity: 1;
+  }
 }
+
+
+
 
 .item .heart-button {
   opacity: 0;
@@ -2320,5 +2327,5 @@ html {
 
 .item:hover .heart-button,
 .heart-button.favorited {
-  opacity: 1;
+  opacity: 1!important;
 }
