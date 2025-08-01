@@ -942,12 +942,10 @@
                     location.reload(true)
                 }
             } catch (err) {
-                console.warn("Failed to check for updates", err);
+                alert(`Failed to check for updates ${err}`);
+                location.reload(true)
             }
         }
-
-
-
 
         function startUpdateCheck() {
             setInterval(checkUpdate, 10000);
