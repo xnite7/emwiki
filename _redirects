@@ -1,5 +1,8 @@
-# Ensure API functions work
-/api/*  /api/:splat  200
+# ✅ Let /api/embed/* go to Worker
+/api/embed/*    404
 
-# Fallback to index.html for SPA routes like /about, /scammers, etc.
-/*      /index.html  200
+# ✅ Other API routes can still fallback to static files if needed
+/api/*          /api/:splat    200
+
+# ✅ Catch-all SPA fallback for frontend
+/*              /index.html    200
