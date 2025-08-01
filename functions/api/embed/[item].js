@@ -22,24 +22,33 @@ export async function onRequestGet(context) {
     );
 
     const title = escapeHtml(match?.name || "EMWiki Item");
-    const desc = escapeHtml(match?.from ? match.from.replace(/<br>/g, ' • ') : "View item info on EMWiki");
+    const fullTitle = `${title} - EMWiki Catalog`;
+
+    let desc = match?.from ? match.from.replace(/<br>/g, ' • ') : "View item info on EMWiki";
+    if (desc.length > 160) desc = desc.slice(0, 157) + '…';
+    desc = `📘 Info: ${desc}`;
+
     const img = match?.img ? `${base}/${match.img}` : fallbackImage;
+    const imgResized = img + "?w=600&h=315&fit=cover"; // example if your CDN supports resizing
+
     const url = `${base}/?item=${encodeURIComponent(match?.name || item)}`;
 
     return new Response(`<!DOCTYPE html>
 <html>
 <head>
-  <title>${title}</title>
-  <meta property="og:title" content="${title}" />
+  <title>${fullTitle}</title>
+  <meta property="og:title" content="${fullTitle}" />
   <meta property="og:description" content="${desc}" />
-  <meta property="og:image" content="${img}" />
+  <meta property="og:image" content="${imgResized}" />
   <meta property="og:url" content="${url}" />
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@YourTwitterHandle" />
+  <meta name="twitter:creator" content="@YourTwitterHandle" />
   <meta name="theme-color" content="#b07fff" />
   <script>location.href = "${url}"</script>
 </head>
 <body>
-  Redirecting to <a href="${url}">${title}</a>...
+  Redirecting to <a href="${url}">${fullTitle}</a>...
 </body>
 </html>`, { headers: { 'Content-Type': 'text/html' } });
   } catch (e) {
