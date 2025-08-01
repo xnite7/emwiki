@@ -805,7 +805,7 @@ function showSwipeTutorial() {
 }
 
 const closeModalHandler = () => {
-  document.body.classList.add("modal-open");
+  document.body.classList.remove("modal-open");
   modalCache.content.classList.remove("expand");
   modalCache.modal.classList.remove("show");
   modalCache.content.style.pointerEvents = "none";
