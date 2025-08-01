@@ -756,189 +756,130 @@
 
 
 
-        async function fetchHistory() {
-            try {
-                const res = await fetch('https://emwiki.site/api/history');
-                if (!res.ok) throw new Error('Failed to fetch Catalog History');
+async function loadAndRenderHistory() {
+    const container = document.getElementById('history-list');
+    container.innerHTML = 'Loading…';
 
-                const entries = await res.json();
-
-                if (!Array.isArray(entries) || entries.length === 0) {
-                    renderHistory([]);
-                    return;
-                }
-
-                // Instead of one string per entry, pass an object with separate fields
-                const formattedEntries = entries.map(entry => {
-                    return {
-                        username: entry.username,
-                        time: new Date(entry.timestamp).toLocaleString(),
-                        diffSummary: summarizeDiff(entry.diff)
-                    };
-                });
-
-                renderHistory(formattedEntries);
-            } catch (err) {
-                console.error('Error fetching full history:', err);
-                document.getElementById('history-list').innerHTML = '<p>Error loading history.</p>';
-            }
+    try {
+        const res = await fetch('https://emwiki.site/api/history');
+        if (!res.ok) throw new Error('Failed to fetch Catalog History');
+        const entries = await res.json();
+        if (!Array.isArray(entries) || entries.length === 0) {
+            container.innerHTML = '<p>No history available.</p>';
+            return;
         }
 
-        function summarizeDiff(diffText) {
-            if (!diffText) return "(no diff available)";
-            const lines = diffText.split('\n').slice(0, 50);
-            return lines.join('\n') + (lines.length >= 50 ? '\n...' : '');
-        }
+        container.innerHTML = '';
+        const ul = document.createElement('ul');
+        ul.style.cssText = 'list-style:none; padding:0; margin:0; font-family: monospace; color:#ddd;';
 
-        function parseDiffLines(diffText) {
-            if (!diffText) return null;
+        for (const e of entries) {
+            const li = document.createElement('li');
+            li.style.marginBottom = '1.2rem';
 
-            const lines = diffText.split('\n');
+            // Header: username + time
+            const header = document.createElement('div');
+            header.style.cssText = 'font-weight:700; font-size:18px; margin-bottom:4px; display:flex; justify-content: space-between; align-items: baseline;';
+            header.textContent = e.username;
+            const timeDiv = document.createElement('div');
+            timeDiv.style.cssText = 'font-weight:500; font-size:14px; color:#666;';
+            timeDiv.textContent = new Date(e.timestamp).toLocaleString();
+            header.appendChild(timeDiv);
+            li.appendChild(header);
 
-            const changes = {
-                weekly: [],
-                new: [],
-                price: []
-            };
+            // Diff container
+            const diffDiv = document.createElement('div');
+            diffDiv.style.cssText = `
+                font-family: monospace;
+                font-weight:400;
+                font-size:15px;
+                background:#000;
+                border:1px solid #ddd;
+                padding:8px;
+                border-radius:4px;
+                max-width: 100%;
+                white-space: normal;
+                color: #ddd;
+            `;
 
-            lines.forEach(line => {
-                const match = line.match(/^\[(.+?)\] (\w+): (.+) → (.+)$/);
-                if (!match) return;
+            // Parse diff lines
+            const lines = e.diff?.split('\n') || [];
+            const changes = { weeklystar: [], weekly: [], new: [], expired: [], price: [], from: [] };
 
-                const [, item, field, oldValRaw, newValRaw] = match;
-                const fieldLower = field.toLowerCase();
+            for (const line of lines) {
+                const m = line.match(/^\[(.+?)\] (\w+): (.+) → (.+)$/);
+                if (!m) continue;
+                const [, item, fieldRaw, oldRaw, newRaw] = m;
+                const field = fieldRaw.toLowerCase();
+                const oldVal = oldRaw === 'undefined' ? undefined : oldRaw;
+                const newVal = newRaw === 'undefined' ? undefined : newRaw;
 
-                const oldVal = oldValRaw === 'undefined' ? undefined : oldValRaw;
-                const newVal = newValRaw === 'undefined' ? undefined : newValRaw;
-
-                if (fieldLower === 'weekly' || fieldLower === 'new') {
+                if (['weeklystar','weekly','new','expired'].includes(field)) {
                     if (newVal === 'true' || newVal === 'false') {
-                        changes[fieldLower].push({
-                            item,
-                            value: newVal === 'true'
-                        });
+                        changes[field].push({ item, value: newVal === 'true' });
                     }
-                } else if (fieldLower === 'price') {
-                    changes.price.push({
-                        item,
-                        oldPrice: oldVal,
-                        newPrice: newVal
-                    });
+                } else if (field === 'price') {
+                    changes.price.push({ item, oldPrice: oldVal, newPrice: newVal });
+                } else if (field === 'from') {
+                    changes.from.push({ item, oldDesc: oldVal, newDesc: newVal });
                 }
-            });
-
-            return changes;
-        }
-
-
-        function renderParsedChanges(changes) {
-            const fragment = document.createDocumentFragment();
-
-            function createSection(title, items, formatItemFn) {
-                if (!items.length) return;
-
-                const section = document.createElement('div');
-                const titleEl = document.createElement('h4');
-                titleEl.textContent = title;
-                titleEl.style.margin = '8px 0 4px 0';
-                section.appendChild(titleEl);
-
-                const ul = document.createElement('ul');
-                ul.style.margin = '0 0 8px 16px';
-                ul.style.padding = '0';
-                ul.style.listStyle = 'none';
-
-                items.forEach(item => {
-                    const li = document.createElement('li');
-                    li.style.marginBottom = '3px';
-                    li.innerHTML = formatItemFn(item);
-                    ul.appendChild(li);
-                });
-
-                section.appendChild(ul);
-                fragment.appendChild(section);
             }
 
-            createSection('Weekly:', changes.weekly, ({ item, value }) =>
-                `- [${item}] ${value ? '✅' : '❌'}`
-            );
-            createSection('New:', changes.new, ({ item, value }) =>
-                `- [${item}] ${value ? '✅' : '❌'}`
-            );
-            createSection('Price:', changes.price, ({ item, oldPrice, newPrice }) =>
-                `- [${item}] <span style="color:red">${oldPrice}</span> → <span style="color:green">${newPrice}</span>`
-            );
+            function createSection(title, items, format) {
+                if (!items.length) return null;
+                const sec = document.createElement('div');
+                const h4 = document.createElement('h4');
+                h4.textContent = title;
+                h4.style.margin = '8px 0 4px 0';
+                h4.style.fontWeight = '600';
+                sec.appendChild(h4);
 
-            return fragment;
-        }
-
-
-
-        function renderHistory(entries) {
-            const container = document.getElementById('history-list');
-            container.innerHTML = '';
-
-            if (entries.length === 0) {
-                container.innerHTML = '<p>No history available.</p>';
-                return;
+                const ul2 = document.createElement('ul');
+                ul2.style.cssText = 'margin:0 0 8px 16px; padding:0; list-style:none; font-size:14px; color:#ddd;';
+                for (const i of items) {
+                    const li2 = document.createElement('li');
+                    li2.style.marginBottom = '3px';
+                    li2.innerHTML = format(i);
+                    ul2.appendChild(li2);
+                }
+                sec.appendChild(ul2);
+                return sec;
             }
 
-            const ul = document.createElement('ul');
-            ul.style.listStyle = 'none';
-            ul.style.padding = '0';
+            const sections = [
+                ['Star shop:', changes.weeklystar, i =>  `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong> `],
+                ['Weekly:', changes.weekly, i => `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong>`],
+                ['New:', changes.new, i =>  `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong> `],
+                ['Expired:', changes.expired, i =>  `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong> `],
+                ['Price:', changes.price, i => `<span style="display:inline-block;width:1.2em;text-align:center;color:#fa4;font-weight:bolder;">$</span> <strong>[${i.item}]</strong> <span style="color:#f66">${i.oldPrice}</span> → <span style="color:#6f6">${i.newPrice}</span>`],
+                ['Description:', changes.from, i => 
+                    `<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span> <strong>[${i.item}]</strong> ${i.oldDesc}<br><span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span> <strong>[${i.item}]</strong> ${i.newDesc}`
+                ],
+            ];
 
-            entries.forEach(({ username, time, diffSummary }) => {
-                const li = document.createElement('li');
-                li.style.marginBottom = '1.5rem';
-                li.style.fontFamily = 'monospace';
-
-                // Create username element
-                const userEl = document.createElement('div');
-                userEl.textContent = `${username}`;
-                userEl.style.fontWeight = '700';
-                userEl.style.fontSize = '18px';
-                userEl.style.width = 'fit-content';
-                userEl.style.marginBottom = '4px';
-
-                // Create timestamp element
-                const timeEl = document.createElement('div');
-                timeEl.textContent = `${time}`;
-                timeEl.style.fontWeight = '500';
-                timeEl.style.fontSize = '14px';
-                timeEl.style.color = '#666';
-                timeEl.style.float = 'right';
-                timeEl.style.position = 'relative';
-                timeEl.style.bottom = '-5px';
-                timeEl.style.paddingLeft = '9px';
-                const diffEl = document.createElement('div');
-                diffEl.style.fontFamily = 'monospace';
-                diffEl.style.fontWeight = '400';
-                diffEl.style.fontSize = '14px';
-                diffEl.style.background = '#000';
-                diffEl.style.border = '1px solid #ddd';
-                diffEl.style.padding = '8px';
-                diffEl.style.borderRadius = '4px';
-                diffEl.style.width = 'fit-content';
-                diffEl.style.color = '#ddd'; // light text on black background
-
-                const parsed = parseDiffLines(diffSummary);
-                if (parsed) {
-                    diffEl.appendChild(renderParsedChanges(parsed));
-                } else {
-                    // fallback to plain text if parsing fails or no changes
-                    diffEl.textContent = diffSummary;
+            let anySectionAdded = false;
+            for (const [title, items, fmt] of sections) {
+                const sectionEl = createSection(title, items, fmt);
+                if (sectionEl) {
+                    diffDiv.appendChild(sectionEl);
+                    anySectionAdded = true;
                 }
+            }
 
+            if (!anySectionAdded) {
+                diffDiv.textContent = e.diff || '(no diff available)';
+            }
 
-                li.appendChild(userEl);
-                userEl.appendChild(timeEl);
-                li.appendChild(diffEl);
-
-                ul.appendChild(li);
-            });
-
-            container.appendChild(ul);
+            li.appendChild(diffDiv);
+            ul.appendChild(li);
         }
+        container.appendChild(ul);
+    } catch (err) {
+        container.innerHTML = `<p>Error loading history: ${err.message}</p>`;
+    }
+}
+
+
 
 
         let fusePrice = null;
@@ -953,7 +894,7 @@
             document.getElementById("prices-tab").style.display = tab === "prices" ? "block" : "none";
             document.getElementById("desc-tab").style.display = tab === "desc" ? "block" : "none";
             document.getElementById("history-tab").style.display = tab === "history" ? "block" : "none";
-            if (tab === "history") fetchHistory();
+            if (tab === "history") loadAndRenderHistory();
             if (tab === "desc") renderDescEditor(); // add this
             if (tab === "prices") renderPriceGroups(); // add this
         }
