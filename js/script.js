@@ -1272,23 +1272,35 @@ function createNewItem(item, color) {
   const heartBtn = document.createElement("div");
   heartBtn.className = "heart-button";
   heartBtn.style.cssText = `
-  position: absolute;
-  top: -14px;
-  right: -18px;
-  z-index: 999;
-  font-size: 28px;
-  cursor: pointer;
-  user-select: none;
-  border-radius: 50%;
-  padding: 2px 6px;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  `;
+      position: absolute;
+      top: -14px;
+      right: -18px;
+      z-index: 999;
+      font-size: 28px;
+      cursor: pointer;
+      user-select: none;
+      border-radius: 50%;
+      padding: 2px 6px;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      `;
+  if (isFavorited(item.name)) {
+    heartBtn.classList.add("favorited");
+  }
+
   heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
   heartBtn.onclick = (e) => {
     e.stopPropagation(); // Prevent opening modal
     toggleFavorite(item.name);
     heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
+
+    // Toggle class
+    if (isFavorited(item.name)) {
+      heartBtn.classList.add("favorited");
+    } else {
+      heartBtn.classList.remove("favorited");
+    }
+
     heartBtn.classList.add("heart-pulsing");
     setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 500);
   };
@@ -1296,27 +1308,27 @@ function createNewItem(item, color) {
   newItem.appendChild(heartBtn);
 
   let touchTimer;
-const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-if (isTouchDevice) {
-  newItem.addEventListener("touchstart", (e) => {
-    touchTimer = setTimeout(() => {
-      toggleFavorite(item.name);
-      heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
-      heartBtn.classList.add("heart-pulsing");
-      setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 500);
-      e.preventDefault()
-    }, 500); // 500ms long press
-  });
+  if (isTouchDevice) {
+    newItem.addEventListener("touchstart", (e) => {
+      touchTimer = setTimeout(() => {
+        toggleFavorite(item.name);
+        heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
+        heartBtn.classList.add("heart-pulsing");
+        setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 500);
+        e.preventDefault()
+      }, 500); // 500ms long press
+    });
 
-  newItem.addEventListener("touchend", () => {
-    clearTimeout(touchTimer);
-  });
+    newItem.addEventListener("touchend", () => {
+      clearTimeout(touchTimer);
+    });
 
-  newItem.addEventListener("touchmove", () => {
-    clearTimeout(touchTimer); // Cancel if they move finger
-  });
-}
+    newItem.addEventListener("touchmove", () => {
+      clearTimeout(touchTimer); // Cancel if they move finger
+    });
+  }
 
 
   return newItem;

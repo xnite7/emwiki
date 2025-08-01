@@ -1429,30 +1429,8 @@ html {
     max-width: 90%;
 }
 
-@keyframes heart-pulse {
-  0% { transform: scale(1); }
-  20% { transform: scale(1.2); }
-  40% { transform: scale(0.95); }
-  60% { transform: scale(1.15); }
-  80% { transform: scale(0.98); }
-  100% { transform: scale(1); }
-}
-
-.heart-pulsing {
-  animation: heart-pulse 0.5s ease;
-}
 
 
-.heart-button:hover {
-  transform: scale(1.2);
-}
-.item .heart-button {
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-.item:hover .heart-button {
-  opacity: 1;
-}
 
 .modal-prc,
 .modal-title {
@@ -2311,4 +2289,40 @@ html {
     .modal-arrow {
         display: none !important
     }
+}
+
+
+@keyframes heart-pulse {
+  0% { transform: scale(1); }
+  20% { transform: scale(1.2); }
+  40% { transform: scale(0.95); }
+  60% { transform: scale(1.15); }
+  80% { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+
+.heart-pulsing {
+  animation: heart-pulse 0.5s ease;
+}
+
+
+.heart-button:hover {
+  transform: scale(1.2);
+}
+.item .heart-button {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.item:hover .heart-button {
+  opacity: 1;
+}
+
+.item .heart-button {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.item:hover .heart-button,
+.heart-button.favorited {
+  opacity: 1;
 }
