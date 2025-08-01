@@ -28,9 +28,9 @@
     <link href="https://fonts.cdnfonts.com/css/accanthis-adf-std" rel="stylesheet">
     <link href="https://fonts.cdnfonts.com/css/bunny-flowers-outline?styles=137265" rel="stylesheet">
 
-	<meta name="theme-color" content="#000000">
-	<link rel="apple-touch-icon" href="./imgs/eng192.png">
-	<link rel="manifest" href="/dev.webmanifest">
+    <meta name="theme-color" content="#000000">
+    <link rel="apple-touch-icon" href="./imgs/eng192.png">
+    <link rel="manifest" href="/dev.webmanifest">
     <style>
         @import url("https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Playpen+Sans:wght@100..800&family=Oxanium&family=Patrick+Hand&family=Denk+One&family=Marhey:wght@700&family=Rubik+Wet+Paint&family=Irish+Grover&family=Poppins:wght@700&family=Rye&family=Eater&family=Bangers&family=Inconsolata:wght@900&family=Roboto+Mono:wght@700&family=Sedgwick+Ave+Display&family=Rubik+Marker+Hatch&family=Sarpanch:wght@700&family=Kalam&family=Are+You+Serious&family=Akronim&family=Kings&family=Permanent+Marker&family=Caesar+Dressing&family=Michroma&family=Titillium+Web&family=Grenze+Gotisch:wght@100..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Bungee+Shade&family=Frijole&family=Audiowide&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Lobster&family=Fredoka:wght@300..700&family=Codystar:wght@300;400&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Michroma&family=Jura&family=Special+Elite&family=Noto+Serif+HK:wght@200..900&family=Faster+One&family=Nosifer&family=Silkscreen&family=Finger+Paint&family=Merriweather&family=Luckiest+Guy&family=Bungee+Inline&family=Creepster&family=Indie+Flower&family=Pacifico&family=Cairo&family=Fondamento&family=Balthazar&family=Arimo:ital,wght@0,400..700;1,400..700&display=swap");
 
@@ -786,9 +786,92 @@
 
         function summarizeDiff(diffText) {
             if (!diffText) return "(no diff available)";
-            const lines = diffText.split('\n').slice(0, 100); // first 100 lines max
-            return lines.join('\n') + (lines.length >= 5 ? '\n...' : '');
+            const lines = diffText.split('\n').slice(0, 50);
+            return lines.join('\n') + (lines.length >= 50 ? '\n...' : '');
         }
+
+        function parseDiffLines(diffText) {
+            if (!diffText) return null;
+
+            const lines = diffText.split('\n');
+
+            const changes = {
+                weekly: [],
+                new: [],
+                price: []
+            };
+
+            lines.forEach(line => {
+                const match = line.match(/^\[(.+?)\] (\w+): (.+) → (.+)$/);
+                if (!match) return;
+
+                const [, item, field, oldValRaw, newValRaw] = match;
+                const fieldLower = field.toLowerCase();
+
+                const oldVal = oldValRaw === 'undefined' ? undefined : oldValRaw;
+                const newVal = newValRaw === 'undefined' ? undefined : newValRaw;
+
+                if (fieldLower === 'weekly' || fieldLower === 'new') {
+                    if (newVal === 'true' || newVal === 'false') {
+                        changes[fieldLower].push({
+                            item,
+                            value: newVal === 'true'
+                        });
+                    }
+                } else if (fieldLower === 'price') {
+                    changes.price.push({
+                        item,
+                        oldPrice: oldVal,
+                        newPrice: newVal
+                    });
+                }
+            });
+
+            return changes;
+        }
+
+
+        function renderParsedChanges(changes) {
+            const fragment = document.createDocumentFragment();
+
+            function createSection(title, items, formatItemFn) {
+                if (!items.length) return;
+
+                const section = document.createElement('div');
+                const titleEl = document.createElement('h4');
+                titleEl.textContent = title;
+                titleEl.style.margin = '8px 0 4px 0';
+                section.appendChild(titleEl);
+
+                const ul = document.createElement('ul');
+                ul.style.margin = '0 0 8px 16px';
+                ul.style.padding = '0';
+                ul.style.listStyle = 'none';
+
+                items.forEach(item => {
+                    const li = document.createElement('li');
+                    li.style.marginBottom = '3px';
+                    li.innerHTML = formatItemFn(item);
+                    ul.appendChild(li);
+                });
+
+                section.appendChild(ul);
+                fragment.appendChild(section);
+            }
+
+            createSection('Weekly:', changes.weekly, ({ item, value }) =>
+                `- [${item}] ${value ? '✅' : '❌'}`
+            );
+            createSection('New:', changes.new, ({ item, value }) =>
+                `- [${item}] ${value ? '✅' : '❌'}`
+            );
+            createSection('Price:', changes.price, ({ item, oldPrice, newPrice }) =>
+                `- [${item}] <span style="color:red">${oldPrice}</span> → <span style="color:green">${newPrice}</span>`
+            );
+
+            return fragment;
+        }
+
 
 
         function renderHistory(entries) {
@@ -827,11 +910,8 @@
                 timeEl.style.position = 'relative';
                 timeEl.style.bottom = '-5px';
                 timeEl.style.paddingLeft = '9px';
-
-                // Create diff summary block with <pre> for formatting
-                const diffEl = document.createElement('pre');
-                diffEl.textContent = diffSummary;
-                diffEl.style.whiteSpace = 'pre-wrap';
+                const diffEl = document.createElement('div');
+                diffEl.style.fontFamily = 'monospace';
                 diffEl.style.fontWeight = '400';
                 diffEl.style.fontSize = '14px';
                 diffEl.style.background = '#000';
@@ -839,6 +919,16 @@
                 diffEl.style.padding = '8px';
                 diffEl.style.borderRadius = '4px';
                 diffEl.style.width = 'fit-content';
+                diffEl.style.color = '#ddd'; // light text on black background
+
+                const parsed = parseDiffLines(diffSummary);
+                if (parsed) {
+                    diffEl.appendChild(renderParsedChanges(parsed));
+                } else {
+                    // fallback to plain text if parsing fails or no changes
+                    diffEl.textContent = diffSummary;
+                }
+
 
                 li.appendChild(userEl);
                 userEl.appendChild(timeEl);

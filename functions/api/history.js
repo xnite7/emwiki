@@ -13,12 +13,14 @@ export async function onRequestGet(context) {
 
     return new Response(JSON.stringify(data), {
       status: 200,
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*" }
     });
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message, stack: err.stack }), {
       status: 500,
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*" }
     });
   }
 }
