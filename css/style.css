@@ -2031,7 +2031,8 @@ html {
     #zd {
         font-size: 1.6rem;
         font-weight: 100;
-        margin: 0 0 17px
+        margin: 0 0 17px;
+        color: #ffffff40;
     }
 
     #donate-modal {

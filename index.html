@@ -638,6 +638,8 @@
 				href="https://docs.google.com/spreadsheets/d/11qKj8UTf2-x0Z7bNMuguEFKALCWI1v7QtkDbNlBzy9M/edit?gid=0#gid=0">Original
 				item list Google Doc by @Kypsus</a>
 		</p>
+		<button onclick="requestGyroPermission()">Enable Gyro</button>
+
 	</footer>
 
 </body>
@@ -645,8 +647,19 @@
 </html>
 
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js">
+
 	VanillaTilt.init(document.querySelectorAll("[data-tilt]"), {
+		max: 15,
+		speed: 400,
+		glare: true,
+		"max-glare": 0.4,
+		gyroscope: true,
+		gyroscopeMinAngleX: -45,
+		gyroscopeMaxAngleX: 45,
+		gyroscopeMinAngleY: -45,
+		gyroscopeMaxAngleY: 45,
 	});
+
 </script>
 
 

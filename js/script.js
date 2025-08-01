@@ -419,6 +419,7 @@ window.addEventListener('DOMContentLoaded', () => {
   let touchEndX = 0;
 
   modalCache.content.addEventListener("touchstart", (e) => {
+    e.preventDefault();
     touchStartX = e.changedTouches[0].screenX;
   }, false);
 
@@ -508,6 +509,20 @@ function openSiblingModal(direction) {
     }, 90);
   }
 }
+
+function requestGyroPermission() {
+  if (typeof DeviceMotionEvent !== "undefined" &&
+      typeof DeviceMotionEvent.requestPermission === "function") {
+    DeviceMotionEvent.requestPermission()
+      .then(response => {
+        if (response === "granted") {
+          // Now VanillaTilt can use gyroscope
+        }
+      })
+      .catch(console.error);
+  }
+}
+
 
 function Modal(event) {
   if (document.body.classList.contains("modal-open")) return;
