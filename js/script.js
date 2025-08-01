@@ -514,6 +514,8 @@ function Modal(event) {
   const item = event.target.closest(".item");
   if (!item) return;
 
+  console.log(document.getElementsByTagName('main'))
+  document.getElementsByTagName('main').style.pointerEvents = "none";
   document.getElementsByTagName('html')[0].style.overflowY = "hidden";
 
   modalCache.retired.style.visibility = "hidden";
