@@ -1025,11 +1025,12 @@ function randomGridPopulate(arr, categoryColors) {
 }
 
 async function fetchData() {
-  const res = await fetch('https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91');
+  const res = await fetch('https://emwiki.site/api/gist-version');
   if (!res.ok) throw new Error('Failed to fetch data');
   const data = await res.json();
-  return JSON.parse(data.files["auto.json"].content);
+  return JSON.parse(data.files?.["auto.json"]?.content);
 }
+
 
 let num = 0
 
