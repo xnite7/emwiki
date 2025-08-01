@@ -513,9 +513,7 @@ function Modal(event) {
   if (isModalOpen) return;
   const item = event.target.closest(".item");
   if (!item) return;
-
-  console.log(document.getElementsByTagName('main'))
-  document.getElementsByTagName('main').style.pointerEvents = "none";
+  document.body.classList.add("modal-open");
   document.getElementsByTagName('html')[0].style.overflowY = "hidden";
 
   modalCache.retired.style.visibility = "hidden";
@@ -807,6 +805,7 @@ function showSwipeTutorial() {
 }
 
 const closeModalHandler = () => {
+  document.body.classList.add("modal-open");
   modalCache.content.classList.remove("expand");
   modalCache.modal.classList.remove("show");
   modalCache.content.style.pointerEvents = "none";
