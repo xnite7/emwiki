@@ -813,10 +813,17 @@ const closeModalHandler = () => {
 };
 
 window.addEventListener("click", (event) => {
-  if (event.target === modalCache.modal) closeModalHandler();
+  if (event.target === modalCache.modal) {
+    closeModalHandler();
+    
+  }
 });
 window.addEventListener("touchend", (event) => {
-  if (event.target === modalCache.modal) closeModalHandler();
+  if (event.target === modalCache.modal) {
+    closeModalHandler();
+    event.preventDefault()
+    
+  }
 });
 
 

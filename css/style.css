@@ -2326,22 +2326,9 @@ html {
   }
 }
 
-body.modal-open .item {
-  pointer-events: none;
-}
-
-body.modal-open .modal,
-body.modal-open .modal * {
-  pointer-events: auto !important;
-}
-
-body.modal-open main > *:not(#product-modal) {
-  pointer-events: none;
-}
-
-
 
 
 .favorited {
   opacity: 1!important;
 }
+
