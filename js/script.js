@@ -730,12 +730,13 @@ function Modal(event) {
       img.style.marginTop = `${Math.max(fontsize - 38, 0)}px`; // Adjust top margin if needed
     }
   }
-  resize_modal_prc()
+  
   if (price != 0) {
     modalCache.prc.style.display = "flex"
   } else {
     modalCache.prc.style.display = "none"
   }
+  
   const itemRect = item.getBoundingClientRect();
   modalCache.modal.style.display = "flex";
   modalCache.modal.classList.add("show");
@@ -751,7 +752,7 @@ function Modal(event) {
     transform: "scale(0.9)",
     boxShadow: "0 0 0 rgba(0,0,0,0)"
   });
-
+  resize_modal_prc()
   requestAnimationFrame(() => {
     modalCache.content.classList.add("expand");
     modalCache.content.style.pointerEvents = "auto";

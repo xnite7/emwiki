@@ -975,6 +975,7 @@ p {
 }
 
 .item p {
+    white-space: nowrap;
     backdrop-filter: blur(12px);
     background: #00000040;
     border-radius: 9px;
