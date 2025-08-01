@@ -1295,11 +1295,7 @@ function createNewItem(item, color) {
 
   newItem.appendChild(heartBtn);
 
-
-  return newItem;
-}
-
-let touchTimer;
+  let touchTimer;
 const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
 if (isTouchDevice) {
@@ -1320,6 +1316,12 @@ if (isTouchDevice) {
     clearTimeout(touchTimer); // Cancel if they move finger
   });
 }
+
+
+  return newItem;
+}
+
+
 
 
 function setupSearch(itemList, defaultColor) {
