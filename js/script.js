@@ -1118,16 +1118,26 @@ function createNewItem(item, color) {
   }
 
   if (item.new) {
-    const newbanner = document.createElement("img");
-    newbanner.src = "./imgs/new.png";
-    newbanner.style.width = "50%";
-    newbanner.style.height = "auto";
-    newbanner.style.position = "absolute";
-    newbanner.style.top = "0";
-    newbanner.style.zIndex = "9";
-    newbanner.style.left = "0";
-    newbanner.setAttribute('draggable', false);
-    newItem.appendChild(newbanner);
+    const canvas = document.createElement("canvas");
+    canvas.setAttribute("id", "img");
+    Object.assign(canvas.style, {
+      width: "50%",
+      height: "auto",
+      position: "absolute",
+      top: "0",
+      zIndex: "9",
+      left: "0",
+      pointerEvents: "none"
+    });
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+    img.onload = function () {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+    };
+    img.src = './imgs/new.png';
+    newItem.appendChild(canvas);
   }
 
   if (item.img) {
