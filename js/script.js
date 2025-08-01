@@ -244,6 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let xnite = document.querySelector('.credit');
     let logoSpan = document.querySelectorAll('.logo');
     let header = document.querySelector('.headersheet');
+    
     setTimeout(() => {
       xnite.style.color = "#ffffff00";
     }, 5000)
@@ -251,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (lastShown == today) {
       window.scrollTo(0, 0);
 
-
+      header.style.transition = "0.1s"
       logo3.src = ranimg || "./imgs/XRmpB1c.png"
 
       document.body.classList.add('fonts-loaded');
