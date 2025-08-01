@@ -2193,6 +2193,7 @@ html {
 
     #ctlg {
         zoom: 0.8;
+        width: -webkit-fill-available;
     }
 
     .welcome h1 {
