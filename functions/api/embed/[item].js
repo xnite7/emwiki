@@ -6,11 +6,32 @@ function escapeHtml(text) {
     .replace(/'/g, "&#39;") || "";
 }
 
+function isBot(userAgent) {
+  if (!userAgent) return false;
+  const bots = [
+    'facebookexternalhit', 'twitterbot', 'linkedinbot',
+    'discordbot', 'googlebot', 'bingbot', 'yandexbot',
+    'slackbot', 'applebot'
+  ];
+  const ua = userAgent.toLowerCase();
+  return bots.some(bot => ua.includes(bot));
+}
+
 export async function onRequestGet(context) {
   const { item } = context.params;
   const base = 'https://emwiki.site';
   const fallbackImage = `${base}/imgs/trs.png`;
+  const userAgent = context.request.headers.get('user-agent') || '';
 
+  // Redirect URL to SPA with item param
+  const redirectUrl = `${base}/?item=${encodeURIComponent(item)}`;
+
+  if (!isBot(userAgent)) {
+    // Real user — 302 redirect immediately, no content
+    return Response.redirect(redirectUrl, 302);
+  }
+
+  // Bot — serve preview HTML
   try {
     const res = await fetch(`${base}/api/gist-version`);
     if (!res.ok) throw new Error("Failed to fetch gist");
@@ -23,22 +44,26 @@ export async function onRequestGet(context) {
 
     if (!match) throw new Error("Item not found");
 
-    // Sanitize data for injection
     const title = escapeHtml(match.name || "EMWiki Item");
     const descriptionRaw = match.from || "";
-    // Replace <br> tags with real line breaks in HTML
     const descriptionHtml = escapeHtml(descriptionRaw).replace(/&lt;br&gt;/g, "<br>");
     const imageUrl = match.img ? `${base}/${match.img}` : fallbackImage;
 
-    // Return minimal HTML rendering the modal card style
     return new Response(`<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=600, initial-scale=1" />
   <title>${title} - EMWiki Preview</title>
+
+  <!-- OG meta tags -->
+  <meta property="og:title" content="${title} - EMWiki Catalog" />
+  <meta property="og:description" content="${descriptionRaw.replace(/<br>/g, ' ')}" />
+  <meta property="og:image" content="${imageUrl}" />
+  <meta property="og:url" content="${redirectUrl}" />
+  <meta name="twitter:card" content="summary_large_image" />
+
   <style>
-    /* Reset and basic styling */
     body {
       margin: 0; padding: 0;
       background: #1a1a1a;
@@ -47,7 +72,7 @@ export async function onRequestGet(context) {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 800px; /* fixed viewport for screenshot */
+      height: 800px;
     }
     .modal-card {
       background: #222;
@@ -93,8 +118,8 @@ export async function onRequestGet(context) {
   </style>
 </head>
 <body>
-  <div class="modal-card">
-    <div class="modal-image" role="img" aria-label="${title} image"></div>
+  <div class="modal-card" role="main" aria-label="${title} preview">
+    <div class="modal-image" aria-hidden="true"></div>
     <div class="modal-info">
       <div class="modal-title">${title}</div>
       <div class="modal-description">${descriptionHtml}</div>
