@@ -2331,7 +2331,7 @@ html {
   transition: opacity 0.2s ease;
 }
 
-.item:hover .heart-button,
+
 .heart-button.favorited {
   opacity: 1!important;
 }
