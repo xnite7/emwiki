@@ -121,7 +121,9 @@ body {
 
 
 
+
 #donate-btn {
+    
     color: #ffffff;
     cursor: pointer;
     font-family: Playpen Sans;
@@ -133,6 +135,14 @@ body {
 
     transform: rotateX(30deg);
     transition: all .2s cubic-bezier(.215, .61, .355, 1);
+
+    background: linear-gradient(154deg, #ffd91e, #ffb200, #c48900);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 1rem 2rem;
+    transition: transform .2s
 }
 
 #donate-btn:hover {
@@ -678,20 +688,6 @@ section {
 .hide {
     opacity: 0;
     visibility: hidden
-}
-
-button {
-    background: linear-gradient(154deg, #ffd91e, #ffb200, #c48900);
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 1.2rem;
-    padding: 1rem 2rem;
-    transition: transform .2s
-}
-
-button:hover {
-    transform: scale(1.1)
 }
 
 input {
@@ -2200,7 +2196,7 @@ html {
 
     .welcome h1 {
         font-family: BuilderSans;
-        font-size: 3em;
+        font-size: 2.7em;
     }
 
     #h3 {

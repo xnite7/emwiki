@@ -2,7 +2,7 @@
   "name": "Epic Catalogue",
   "short_name": "EpicCatalog",
   "description": "A Epic Minigames wiki and item list. by @xnite",
-  "start_url": "/",
+  "start_url": "/index",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
