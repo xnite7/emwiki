@@ -2324,16 +2324,7 @@ html {
   }
 }
 
-.modal-open > *:not(#product-modal) {
-  pointer-events: none !important;
-  user-select: none !important;
-  filter: blur(2px);
-}
 
-#product-modal {
-  pointer-events: auto !important;
-  filter: none;
-}
 
 .item .heart-button {
   opacity: 0;
