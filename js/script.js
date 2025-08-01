@@ -902,10 +902,7 @@ function setupLazyLoading() {
           document.getElementById("zd").innerText = `${document.querySelectorAll("#ctlg .item").length} item${document.querySelectorAll("#ctlg .item").length === 1 ? '' : 's'}`;
           document.getElementById("zd").insertAdjacentHTML('beforebegin', '<button id="favorite-toggle" style="margin-bottom:10px;" onclick="filterFavorites()">❤️ Show Favorites</button>')
 
-          if (getFavorites().length === 0) {
-            console.log(getFavorites().length)
-            document.getElementById("favorite-toggle").style.display = "none";
-          }
+          checkVisibleFavoritesOnPage();
         }
 
         setupSearch(flatArray, color);
@@ -1543,5 +1540,26 @@ function filterFavorites() {
     showingFavoritesOnly = false;
   }
 }
+
+
+
+
+ function checkVisibleFavoritesOnPage() {
+    const favorites = getFavorites();
+    const allItems = document.querySelectorAll('#itemlist .item');
+    const toggleBtn = document.getElementById("favorite-toggle");
+    let found = false;
+
+    allItems.forEach(item => {
+      const name = item.querySelector('#h3')?.textContent;
+      if (favorites.includes(name)) {
+        found = true;
+      }
+    });
+
+    if (toggleBtn) {
+      toggleBtn.style.display = found ? "inline-block" : "none";
+    }
+  }
 
 rinse()
