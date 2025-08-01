@@ -895,7 +895,8 @@ p {
     background-color: red;
     box-shadow: 0 4px 10px rgba(0, 0, 0, .4);
     filter: grayscale(0) brightness(1.12);
-    transform: scale(1.05)
+    transform: scale(1.05);
+    z-index: 1;
 }
 
 
