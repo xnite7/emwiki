@@ -80,7 +80,7 @@ function createProductModal() {
     justify-content: space-between;
   `;
 
-  titlepricecontainer.append(title,prc)
+  titlepricecontainer.append(title, prc)
 
   const contentArea = document.createElement("div");
   contentArea.id = "content-area";
@@ -202,7 +202,7 @@ function createProductModal() {
   glareInner2.className = "js-tilt-glare-inner";
   glareWrap2.appendChild(glareInner2);
 
-  
+
   modalContent.append(borderOverlay, titlepricecontainer, contentArea, closeBtn, glareWrap1, glareWrap2);
   modal.appendChild(modalContent);
   document.body.appendChild(modal);
@@ -240,12 +240,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let intro = document.querySelector('.intro');
     let logo = document.querySelector('.logo-header');
     let logo3 = document.querySelector('.logo3');
-    
+
     let xnite = document.querySelector('.credit');
     let logoSpan = document.querySelectorAll('.logo');
     let header = document.querySelector('.headersheet');
     setTimeout(() => {
-        xnite.style.color = "#ffffff00";
+      xnite.style.color = "#ffffff00";
     }, 5000)
 
     if (lastShown == today) {
@@ -718,7 +718,7 @@ function Modal(event) {
     let fontsize = parseInt(window.getComputedStyle(modalCache.prc).fontSize, 10);
 
     while (modalCache.prc.offsetWidth > 150 && fontsize > 18) {
-      
+
       fontsize -= 2;
       modalCache.prc.style.fontSize = `${fontsize}px`;
     }
@@ -730,10 +730,10 @@ function Modal(event) {
     }
   }
   resize_modal_prc()
-  if (price!=0) {
-    modalCache.prc.style.display= "flex"
+  if (price != 0) {
+    modalCache.prc.style.display = "flex"
   } else {
-    modalCache.prc.style.display= "none"
+    modalCache.prc.style.display = "none"
   }
   const itemRect = item.getBoundingClientRect();
   modalCache.modal.style.display = "flex";
@@ -840,6 +840,11 @@ function resize_to_fit() {
   }
 };
 
+function getFavorites() {
+  const match = document.cookie.match(/(?:^|; )favorites=([^;]*)/);
+  return match ? decodeURIComponent(match[1]).split("|") : [];
+}
+
 
 function setupLazyLoading() {
   const observer = new IntersectionObserver((entries, observer) => {
@@ -895,6 +900,12 @@ function setupLazyLoading() {
           );
         if (document.getElementById("zd")) {
           document.getElementById("zd").innerText = `${document.querySelectorAll("#ctlg .item").length} item${document.querySelectorAll("#ctlg .item").length === 1 ? '' : 's'}`;
+          document.getElementById("zd").insertAdjacentHTML('beforebegin', '<button id="favorite-toggle" style="margin-bottom:10px;" onclick="filterFavorites()">❤️ Show Favorites</button>')
+
+          if (getFavorites().length === 0) {
+            console.log(getFavorites().length)
+            document.getElementById("favorite-toggle").style.display = "none";
+          }
         }
 
         setupSearch(flatArray, color);
@@ -1027,7 +1038,7 @@ function createNewItem(item, color) {
   const newItem = document.createElement("div");
 
   newItem.classList.add("item");
-  newItem.style.overflow = "hidden";
+
   newItem.style.scale = "1";
   if (item.weeklystar) {
     if (item["price/code/rarity"].toLowerCase().includes("60")) {
@@ -1255,8 +1266,60 @@ function createNewItem(item, color) {
     document.getElementById("itemlist")?.appendChild(fragment);
   }
 
+
+
+  const heartBtn = document.createElement("div");
+  heartBtn.className = "heart-button";
+  heartBtn.style.cssText = `
+  position: absolute;
+  top: -14px;
+  right: -18px;
+  z-index: 999;
+  font-size: 28px;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 50%;
+  padding: 2px 6px;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  `;
+  heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
+  heartBtn.onclick = (e) => {
+    e.stopPropagation(); // Prevent opening modal
+    toggleFavorite(item.name);
+    heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
+    heartBtn.classList.add("heart-pulsing");
+    setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 500);
+  };
+
+  newItem.appendChild(heartBtn);
+
+
   return newItem;
 }
+
+let touchTimer;
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+if (isTouchDevice) {
+  newItem.addEventListener("touchstart", (e) => {
+    touchTimer = setTimeout(() => {
+      toggleFavorite(item.name);
+      heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
+      heartBtn.classList.add("heart-pulsing");
+      setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 500);
+    }, 500); // 500ms long press
+  });
+
+  newItem.addEventListener("touchend", () => {
+    clearTimeout(touchTimer);
+  });
+
+  newItem.addEventListener("touchmove", () => {
+    clearTimeout(touchTimer); // Cancel if they move finger
+  });
+}
+
 
 function setupSearch(itemList, defaultColor) {
   const searchInput = document.getElementById('search-bar');
@@ -1418,6 +1481,51 @@ function filterItems() {
       item.style.display = 'none';
     }
   });
+}
+
+
+
+function saveFavorites(list) {
+  const value = encodeURIComponent(list.join("|"));
+  document.cookie = `favorites=${value}; path=/; max-age=31536000`; // 1 year
+  console.log(document.cookie)// printing nothing
+}
+
+function isFavorited(name) {
+  return getFavorites().includes(name);
+}
+
+function toggleFavorite(name) {
+  let favorites = getFavorites();
+  if (favorites.includes(name)) {
+    favorites = favorites.filter(n => n !== name);
+  } else {
+    favorites.push(name);
+  }
+  console.log(name)// printing item name
+  saveFavorites(favorites);
+}
+let showingFavoritesOnly = false;
+
+function filterFavorites() {
+  const btn = document.getElementById("favorite-toggle");
+  const favorites = getFavorites();
+  const items = document.querySelectorAll('.item');
+
+  if (!showingFavoritesOnly) {
+    items.forEach(item => {
+      const name = item.querySelector('#h3')?.textContent;
+      item.style.display = favorites.includes(name) ? "flex" : "none";
+    });
+    btn.textContent = "🔁 Show All";
+    showingFavoritesOnly = true;
+  } else {
+    items.forEach(item => {
+      item.style.display = "flex";
+    });
+    btn.textContent = "❤️ Show Favorites";
+    showingFavoritesOnly = false;
+  }
 }
 
 rinse()
