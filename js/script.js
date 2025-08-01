@@ -210,7 +210,7 @@ function createProductModal() {
 
 createProductModal();
 
-
+let popped = false
 const modalCache = {
   modal: document.getElementById("product-modal"),
   popo: document.getElementById("popo"),
@@ -512,7 +512,7 @@ function openSiblingModal(direction) {
 
 function requestGyroPermission() {
   if (typeof DeviceMotionEvent !== "undefined" &&
-      typeof DeviceMotionEvent.requestPermission === "function") {
+    typeof DeviceMotionEvent.requestPermission === "function") {
     DeviceMotionEvent.requestPermission()
       .then(response => {
         if (response === "granted") {
@@ -781,6 +781,11 @@ function Modal(event) {
       boxShadow: ""
     });
   });
+  if (!popped) {
+    const url = new URL(window.location);
+    url.searchParams.set("item", encodeURIComponent(item.querySelector("#h3").textContent));
+    history.pushState(null, "", url);
+  }
 };
 
 let tut = false;
@@ -982,7 +987,9 @@ function populateGrid(gridId, items, limit = null) {
   grid.querySelectorAll('.item').forEach(item => {
     item.onclick = (event) => Modal(event);
   });
-  resize_to_fit()
+  resize_to_fit();
+
+  openModalFromURL();
 }
 
 async function rinse() {
@@ -1025,6 +1032,8 @@ async function rinse() {
   } catch (error) {
     console.error('Error in rinse:', error);
   }
+
+
 }
 
 function randomGridPopulate(arr, categoryColors) {
@@ -1054,6 +1063,7 @@ function randomGridPopulate(arr, categoryColors) {
   randomGrid.querySelectorAll('.item').forEach(item => {
     item.onclick = (event) => Modal(event);
   });
+
 }
 
 async function fetchData() {
@@ -1635,3 +1645,22 @@ if (isTouch) {
 
 
 rinse()
+
+function openModalFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  let itemName = params.get("item");
+  if (!itemName) return;
+  // Decode twice to handle double-encoding
+  itemName = decodeURIComponent(decodeURIComponent(itemName));
+  const allItems = Array.from(document.querySelectorAll('.item'));
+  const foundItem = allItems.find(item => item.querySelector('#h3')?.textContent.toLowerCase() === itemName.toLowerCase());
+  if (foundItem) {
+    popped=true
+    Modal({ target: foundItem });
+    popped=false
+  }
+}
+window.addEventListener("popstate", () => {
+  closeModalHandler()
+  openModalFromURL()
+});
