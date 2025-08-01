@@ -826,22 +826,35 @@ window.addEventListener("touchend", (event) => {
 
 
 function resize_to_fit() {
-  const items = document.querySelectorAll('.item');
-  if (items.length > 0) {
-    items.forEach(item => {
-      if (item.id == "titles") return;
-      if (item.querySelector('div')) {
-        item.querySelector('div').style.fontSize = "20px";
-        let fontsize = parseInt(window.getComputedStyle(item.querySelector('div')).fontSize, 10);
-        console.log(`font size: ${fontsize}`);
-        while (item.querySelector('div').offsetWidth > 120 && fontsize > 11) {
+  const items = Array.from(document.querySelectorAll('.item')).filter(item => item.id !== "titles");
+  let i = 0;
+
+  function processChunk() {
+    const chunkSize = 10; // Adjust for smoothness vs. speed
+    const end = Math.min(i + chunkSize, items.length);
+
+    for (; i < end; i++) {
+      const item = items[i];
+      const div = item.querySelector('div');
+      if (div) {
+        div.style.fontSize = "20px";
+        let width = div.offsetWidth;
+        let fontsize = 20;
+        while (width > 120 && fontsize > 11) {
           fontsize -= 2;
-          item.querySelector('div').style.fontSize = `${fontsize}px`;
+          div.style.fontSize = `${fontsize}px`;
+          width = div.offsetWidth;
         }
       }
-    });
+    }
+
+    if (i < items.length) {
+      requestAnimationFrame(processChunk);
+    }
   }
-};
+
+  requestAnimationFrame(processChunk);
+}
 
 function getFavorites() {
   const match = document.cookie.match(/(?:^|; )favorites=([^;]*)/);
