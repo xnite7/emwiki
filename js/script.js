@@ -782,10 +782,11 @@ function Modal(event) {
     });
   });
   if (!popped) {
-    const url = new URL(window.location);
-    url.searchParams.set("item", encodeURIComponent(item.querySelector("#h3").textContent));
-    history.pushState(null, "", url);
+    const h3 = item.querySelector("#h3");
+    const slug = h3.textContent.toLowerCase().replace(/\s+/g, '-');
+    history.pushState(null, "", `/item/${slug}`);
   }
+
 };
 
 let tut = false;
@@ -1647,20 +1648,42 @@ if (isTouch) {
 rinse()
 
 function openModalFromURL() {
-  const params = new URLSearchParams(window.location.search);
-  let itemName = params.get("item");
+  let itemName = null;
+
+  const pathMatch = window.location.pathname.match(/^\/item\/([^\/?#]+)/i);
+  if (pathMatch) {
+    itemName = pathMatch[1];
+  } else {
+    const params = new URLSearchParams(window.location.search);
+    itemName = params.get("item");
+  }
+
   if (!itemName) return;
+
   // Decode twice to handle double-encoding
   itemName = decodeURIComponent(decodeURIComponent(itemName));
   const allItems = Array.from(document.querySelectorAll('.item'));
-  const foundItem = allItems.find(item => item.querySelector('#h3')?.textContent.toLowerCase() === itemName.toLowerCase());
+
+  const foundItem = allItems.find(item =>
+    item.querySelector('#h3')?.textContent.toLowerCase().replace(/\s+/g, '-') === itemName.toLowerCase()
+  );
+
   if (foundItem) {
-    popped=true
+    popped = true;
     Modal({ target: foundItem });
-    popped=false
+    popped = false;
   }
 }
+
 window.addEventListener("popstate", () => {
   closeModalHandler()
   openModalFromURL()
 });
+
+const params = new URLSearchParams(window.location.search);
+const legacy = params.get("item");
+if (legacy) {
+  const slug = legacy.toLowerCase().replace(/\s+/g, '-');
+  history.replaceState(null, "", `/item/${slug}`);
+}
+
