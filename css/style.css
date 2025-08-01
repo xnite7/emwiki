@@ -2191,7 +2191,7 @@ html {
         justify-self: anchor-center;
     }
 
-    .modal-prc, .modal-title {
+    .modal-title {
         text-wrap-style: balance;
         text-align-last: center;
         font: 900 41px 'Source Sans Pro';
