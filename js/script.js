@@ -1501,7 +1501,7 @@ function filterItems() {
 function saveFavorites(list) {
   const value = encodeURIComponent(list.join("|"));
   document.cookie = `favorites=${value}; path=/; max-age=31536000`; // 1 year
-  console.log(document.cookie)// printing nothing
+  checkVisibleFavoritesOnPage();
 }
 
 function isFavorited(name) {
@@ -1515,7 +1515,7 @@ function toggleFavorite(name) {
   } else {
     favorites.push(name);
   }
-  console.log(name)// printing item name
+
   saveFavorites(favorites);
 }
 let showingFavoritesOnly = false;
