@@ -1312,6 +1312,12 @@ function createNewItem(item, color) {
       touchTimer = setTimeout(() => {
         toggleFavorite(item.name);
         heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
+            // Toggle class
+    if (isFavorited(item.name)) {
+      heartBtn.classList.add("favorited");
+    } else {
+      heartBtn.classList.remove("favorited");
+    }
         heartBtn.classList.add("heart-pulsing");
         setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 500);
         e.preventDefault()
