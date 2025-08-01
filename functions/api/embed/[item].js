@@ -21,37 +21,90 @@ export async function onRequestGet(context) {
       (i?.name || '').toLowerCase().replace(/\s+/g, '-') === item.toLowerCase()
     );
 
-    const title = escapeHtml(match?.name || "EMWiki Item");
-    const fullTitle = `${title} - EMWiki Catalog`;
+    if (!match) throw new Error("Item not found");
 
-    let desc = match?.from ? match.from.replace(/<br>/g, ' • ') : "View item info on EMWiki";
-    if (desc.length > 160) desc = desc.slice(0, 157) + '…';
-    desc = `📘 Info: ${desc}`;
+    // Sanitize data for injection
+    const title = escapeHtml(match.name || "EMWiki Item");
+    const descriptionRaw = match.from || "";
+    // Replace <br> tags with real line breaks in HTML
+    const descriptionHtml = escapeHtml(descriptionRaw).replace(/&lt;br&gt;/g, "<br>");
+    const imageUrl = match.img ? `${base}/${match.img}` : fallbackImage;
 
-    const img = match?.img ? `${base}/${match.img}` : fallbackImage;
-    const imgResized = img + "?w=600&h=315&fit=cover"; // example if your CDN supports resizing
-
-    const url = `${base}/?item=${encodeURIComponent(match?.name || item)}`;
-
+    // Return minimal HTML rendering the modal card style
     return new Response(`<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>${fullTitle}</title>
-  <meta property="og:title" content="${fullTitle}" />
-  <meta property="og:description" content="${desc}" />
-  <meta property="og:image" content="${imgResized}" />
-  <meta property="og:url" content="${url}" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:site" content="@YourTwitterHandle" />
-  <meta name="twitter:creator" content="@YourTwitterHandle" />
-  <meta name="theme-color" content="#b07fff" />
-  <script>location.href = "${url}"</script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=600, initial-scale=1" />
+  <title>${title} - EMWiki Preview</title>
+  <style>
+    /* Reset and basic styling */
+    body {
+      margin: 0; padding: 0;
+      background: #1a1a1a;
+      color: #eee;
+      font-family: 'Arimo', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 800px; /* fixed viewport for screenshot */
+    }
+    .modal-card {
+      background: #222;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(180, 127, 255, 0.7);
+      width: 600px;
+      padding: 20px;
+      box-sizing: border-box;
+      display: flex;
+      gap: 20px;
+      color: #eee;
+    }
+    .modal-image {
+      flex-shrink: 0;
+      width: 220px;
+      height: 220px;
+      border-radius: 10px;
+      background: #333;
+      background-image: url('${imageUrl}');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      box-shadow: 0 0 8px #b07fff88;
+    }
+    .modal-info {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .modal-title {
+      font-weight: 700;
+      font-size: 2.2rem;
+      margin-bottom: 12px;
+      text-shadow: 0 0 10px #b07fff88;
+    }
+    .modal-description {
+      font-size: 1.1rem;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      color: #ccc;
+    }
+  </style>
 </head>
 <body>
-  Redirecting to <a href="${url}">${fullTitle}</a>...
+  <div class="modal-card">
+    <div class="modal-image" role="img" aria-label="${title} image"></div>
+    <div class="modal-info">
+      <div class="modal-title">${title}</div>
+      <div class="modal-description">${descriptionHtml}</div>
+    </div>
+  </div>
 </body>
-</html>`, { headers: { 'Content-Type': 'text/html' } });
+</html>`, {
+      headers: { 'Content-Type': 'text/html' }
+    });
   } catch (e) {
-    return new Response(`Item not found.`, { status: 404 });
+    return new Response(`Item not found or error: ${e.message}`, { status: 404 });
   }
 }
