@@ -1305,6 +1305,7 @@ if (isTouchDevice) {
       heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
       heartBtn.classList.add("heart-pulsing");
       setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 500);
+      e.preventDefault()
     }, 500); // 500ms long press
   });
 
