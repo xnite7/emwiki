@@ -492,7 +492,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 })
 
-
+let isModalOpen = false;
 
 function openSiblingModal(direction) {
   const currentItem = document.querySelector(".item.showing");
@@ -501,7 +501,7 @@ function openSiblingModal(direction) {
     ? currentItem.nextElementSibling
     : currentItem.previousElementSibling;
   if (sibling && sibling.classList.contains("item")) {
-
+    isModalOpen = false;
     closeModalHandler();
     setTimeout(() => {
       sibling.click();
@@ -510,7 +510,7 @@ function openSiblingModal(direction) {
 }
 
 function Modal(event) {
-
+  if (isModalOpen) return;
   const item = event.target.closest(".item");
   if (!item) return;
 
@@ -739,7 +739,7 @@ function Modal(event) {
   const itemRect = item.getBoundingClientRect();
   modalCache.modal.style.display = "flex";
   modalCache.modal.classList.add("show");
-
+  isModalOpen = true;
 
   Object.assign(modalCache.content.style, {
     position: "absolute",
@@ -808,9 +808,9 @@ const closeModalHandler = () => {
   modalCache.modal.classList.remove("show");
   modalCache.content.style.pointerEvents = "none";
   document.getElementsByTagName('html')[0].style.overflowY = "scroll";
-  e.preventDefault()
-
-
+  setTimeout(() => {
+    isModalOpen = false;
+  }, 150)
 };
 
 window.addEventListener("click", (event) => {
@@ -1287,6 +1287,7 @@ function createNewItem(item, color) {
   }
 
   heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
+  
   heartBtn.onclick = (e) => {
     e.stopPropagation(); // Prevent opening modal
     toggleFavorite(item.name);
@@ -1321,7 +1322,7 @@ function createNewItem(item, color) {
     }
         heartBtn.classList.add("heart-pulsing");
         setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 500);
-        e.preventDefault()
+           e.stopPropagation(); // Prevent opening modal
       }, 500); // 500ms long press
     });
 
@@ -1433,7 +1434,7 @@ function setupSearch(itemList, defaultColor) {
     document.getElementById("zd").innerText = `1 item`;
     const newItem = document.querySelector('#itemlist .item:last-child');
     if (newItem) {
-
+      isModalOpen = false;
       newItem.onclick = (event) => Modal(event);
       newItem.click();
     }
