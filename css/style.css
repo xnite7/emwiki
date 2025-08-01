@@ -1421,30 +1421,29 @@ html {
 }
 
 .modal-title {
-    font: 900 36px 'Source Sans Pro';
-    left: 23px;
+    font: 900 45px 'Source Sans Pro';
+    left: 19px;
     text-align: left;
-    top: -23px;
+    top: -36px;
     transform: translateZ(20px);
-    width: 88%
 }
 
 .modal-prc,
 .modal-title {
     position: relative;
-    text-shadow: -1px 4px 6px #494444;
+    text-shadow: 0px 1px 5px #49444499;
     z-index: 22
 }
 
 .modal-prc {
     display: none;
-    font: 700 50px BuilderSans;
+    font: 700 42px BuilderSans;
     justify-self: right;
-    margin-top: 20px;
+    margin-top: 15px;
     max-width: max-content;
-    right: 24px;
+    right: 18px;
     transform: translateZ(30px);
-    width: fit-content
+    width: fit-content;
 }
 
 .modal-content:hover {

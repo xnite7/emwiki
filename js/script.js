@@ -64,12 +64,23 @@ function createProductModal() {
 
   dock.append(premIcon, retiredText, untradableIcon);
 
-  borderOverlay.append(prc, dock);
+  borderOverlay.append(dock);
 
   const title = document.createElement("h3");
   title.id = "modal-title";
   title.className = "modal-title";
   title.setAttribute("data-tilt-transform-element", "");
+
+  const titlepricecontainer = document.createElement("div");
+  titlepricecontainer.style.cssText = `
+    display: flex;
+    gap: 33px;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  `;
+
+  titlepricecontainer.append(title,prc)
 
   const contentArea = document.createElement("div");
   contentArea.id = "content-area";
@@ -191,7 +202,8 @@ function createProductModal() {
   glareInner2.className = "js-tilt-glare-inner";
   glareWrap2.appendChild(glareInner2);
 
-  modalContent.append(borderOverlay, title, contentArea, closeBtn, glareWrap1, glareWrap2);
+  
+  modalContent.append(borderOverlay, titlepricecontainer, contentArea, closeBtn, glareWrap1, glareWrap2);
   modal.appendChild(modalContent);
   document.body.appendChild(modal);
 }
@@ -693,8 +705,13 @@ function Modal(event) {
     }
   });
 
-  modalCache.prc.innerHTML = `<img src="./imgs/iZGLVYo.png" style="height: 37px;">${price || 0}`;
+  modalCache.prc.innerHTML = `<img src="./imgs/rap.png" style="filter: drop-shadow(0px 1px 5px #49444454);margin-top:4px;height:44px;float:left;">${price || 0}`;
 
+  if (price!=0) {
+    modalCache.prc.style.display= "flex"
+  } else {
+    modalCache.prc.style.display= "none"
+  }
   const itemRect = item.getBoundingClientRect();
   modalCache.modal.style.display = "flex";
   modalCache.modal.classList.add("show");
