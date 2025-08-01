@@ -1426,6 +1426,7 @@ html {
     text-align: left;
     top: -36px;
     transform: translateZ(20px);
+    max-width: 90%;
 }
 
 .modal-prc,

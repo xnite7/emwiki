@@ -101,7 +101,7 @@ function createProductModal() {
     white-space: pre-wrap;
     z-index: 34;
     margin:0px;
-    margin-bottom: 15px;
+    margin-bottom: 4px;
     width: 100%;
     align-self: anchor-center;
     font-size: 18px;
