@@ -2191,6 +2191,12 @@ html {
         justify-self: anchor-center;
     }
 
+    .modal-prc, .modal-title {
+        text-wrap-style: balance;
+        text-align-last: center;
+        font: 900 41px 'Source Sans Pro';
+    }
+
     #ctlg {
         zoom: 0.8;
         width: -webkit-fill-available;
