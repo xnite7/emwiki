@@ -123,7 +123,7 @@ body {
 
 
 #donate-btn {
-    
+
     color: #ffffff;
     cursor: pointer;
     font-family: Playpen Sans;
@@ -898,12 +898,21 @@ p {
     transform: scale(1.05)
 }
 
+
 .item:active {
     background-color: rgba(0, 0, 0, .349);
     box-shadow: 0 4px 10px transparent;
     filter: grayscale(0) brightness(.88);
     transform: scale(.95)
 }
+
+body.pressing-heart .item:active {
+
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .4);
+    filter: grayscale(0) brightness(1.12);
+    transform: scale(1.05)
+}
+
 
 .staff {
     filter: grayscale(1) brightness(1);
@@ -2297,38 +2306,56 @@ html {
 
 
 @keyframes heart-pulse {
-  0% { transform: scale(1); }
-  20% { transform: scale(1.2); }
-  40% { transform: scale(0.95); }
-  60% { transform: scale(1.15); }
-  80% { transform: scale(0.98); }
-  100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+
+    20% {
+        transform: scale(1.2);
+    }
+
+    40% {
+        transform: scale(0.95);
+    }
+
+    60% {
+        transform: scale(1.15);
+    }
+
+    80% {
+        transform: scale(0.98);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 .heart-pulsing {
-  animation: heart-pulse 0.5s ease;
+    animation: heart-pulse 0.5s ease;
 }
 
 
 .heart-button:hover {
-  transform: scale(1.2);
+    transform: scale(1.2);
 }
+
 .heart-button {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .item:hover .heart-button {
-    opacity: 1;
-    pointer-events: auto;
-  }
+    .item:hover .heart-button {
+        opacity: 1;
+        pointer-events: auto;
+    }
 }
 
 
 
 .favorited {
-  opacity: 1!important;
+    opacity: 1 !important;
 }
 

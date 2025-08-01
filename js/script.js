@@ -815,14 +815,14 @@ const closeModalHandler = () => {
 window.addEventListener("click", (event) => {
   if (event.target === modalCache.modal) {
     closeModalHandler();
-    
+
   }
 });
 window.addEventListener("touchend", (event) => {
   if (event.target === modalCache.modal) {
     closeModalHandler();
     event.preventDefault()
-    
+
   }
 });
 
@@ -1303,6 +1303,7 @@ function createNewItem(item, color) {
       top: -14px;
       right: -18px;
       z-index: 999;
+      height: fit-content;
       font-size: 28px;
       cursor: pointer;
       user-select: none;
@@ -1319,6 +1320,7 @@ function createNewItem(item, color) {
 
   heartBtn.onclick = (e) => {
     e.stopPropagation(); // Prevent opening modal
+    e.preventDefault();
     toggleFavorite(item.name);
     heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
 
@@ -1332,6 +1334,18 @@ function createNewItem(item, color) {
     heartBtn.classList.add("heart-pulsing");
     setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 500);
   };
+
+  heartBtn.addEventListener('mousedown', e => {
+    e.stopPropagation();
+    document.body.classList.add('pressing-heart');
+  });
+  heartBtn.addEventListener('mouseup', () => {
+    document.body.classList.remove('pressing-heart');
+  });
+  heartBtn.addEventListener('mouseleave', () => {
+    document.body.classList.remove('pressing-heart');
+  });
+
 
   newItem.appendChild(heartBtn);
 
