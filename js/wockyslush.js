@@ -1,4 +1,4 @@
-fetch('https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91')
+fetch('https://emwiki.site/api/gist-version')
 
   .then(results => {
 

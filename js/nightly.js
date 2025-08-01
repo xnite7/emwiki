@@ -1,11 +1,15 @@
-fetch('https://api.github.com/gists/0d0a3800287f3e7c6e5e944c8337fa91')
+fetch('https://emwiki.site/api/gist-version')
   .then(results => results.json())
   .then(data => {
-    let arr = JSON.parse(data.files["auto.json"].content);
+    let arr = JSON.parse(data?.files["auto.json"]?.content);
     let color;
     showInfo(arr, color);
   })
   .catch(error => console.error('Error fetching data:', error));
+
+
+
+
 
 function createNewItem(item, color, list, date) {
   const newItem = document.createElement("div");
