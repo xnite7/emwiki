@@ -2313,33 +2313,35 @@ html {
 .heart-button:hover {
   transform: scale(1.2);
 }
-.item .heart-button {
+.heart-button {
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.2s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .item:hover .heart-button {
     opacity: 1;
+    pointer-events: auto;
   }
 }
 
-.item .heart-button {
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.heart-button.favorited {
-  opacity: 1!important;
-}
-
-body.modal-open {
+body.modal-open .item {
   pointer-events: none;
 }
 
-body.modal-open #product-modal,
 body.modal-open .modal,
-body.modal-open .modal-content {
+body.modal-open .modal * {
   pointer-events: auto !important;
-  user-select: auto !important;
+}
+
+body.modal-open main > *:not(#product-modal) {
+  pointer-events: none;
+}
+
+
+
+
+.favorited {
+  opacity: 1!important;
 }

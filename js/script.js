@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let xnite = document.querySelector('.credit');
     let logoSpan = document.querySelectorAll('.logo');
     let header = document.querySelector('.headersheet');
-    
+
     setTimeout(() => {
       xnite.style.color = "#ffffff00";
     }, 5000)
@@ -492,7 +492,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 })
 
-let isModalOpen = false;
+
 
 function openSiblingModal(direction) {
   const currentItem = document.querySelector(".item.showing");
@@ -501,7 +501,7 @@ function openSiblingModal(direction) {
     ? currentItem.nextElementSibling
     : currentItem.previousElementSibling;
   if (sibling && sibling.classList.contains("item")) {
-    isModalOpen = false;
+
     closeModalHandler();
     setTimeout(() => {
       sibling.click();
@@ -510,7 +510,7 @@ function openSiblingModal(direction) {
 }
 
 function Modal(event) {
-  if (isModalOpen) return;
+  if (document.body.classList.contains("modal-open")) return;
   const item = event.target.closest(".item");
   if (!item) return;
   document.body.classList.add("modal-open");
@@ -730,17 +730,16 @@ function Modal(event) {
       img.style.marginTop = `${Math.max(fontsize - 38, 0)}px`; // Adjust top margin if needed
     }
   }
-  
+
   if (price != 0) {
     modalCache.prc.style.display = "flex"
   } else {
     modalCache.prc.style.display = "none"
   }
-  
+
   const itemRect = item.getBoundingClientRect();
   modalCache.modal.style.display = "flex";
   modalCache.modal.classList.add("show");
-  isModalOpen = true;
 
   Object.assign(modalCache.content.style, {
     position: "absolute",
@@ -810,9 +809,7 @@ const closeModalHandler = () => {
   modalCache.modal.classList.remove("show");
   modalCache.content.style.pointerEvents = "none";
   document.getElementsByTagName('html')[0].style.overflowY = "scroll";
-  setTimeout(() => {
-    isModalOpen = false;
-  }, 150)
+
 };
 
 window.addEventListener("click", (event) => {
@@ -1302,7 +1299,7 @@ function createNewItem(item, color) {
   }
 
   heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
-  
+
   heartBtn.onclick = (e) => {
     e.stopPropagation(); // Prevent opening modal
     toggleFavorite(item.name);
@@ -1329,15 +1326,15 @@ function createNewItem(item, color) {
       touchTimer = setTimeout(() => {
         toggleFavorite(item.name);
         heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
-            // Toggle class
-    if (isFavorited(item.name)) {
-      heartBtn.classList.add("favorited");
-    } else {
-      heartBtn.classList.remove("favorited");
-    }
+        // Toggle class
+        if (isFavorited(item.name)) {
+          heartBtn.classList.add("favorited");
+        } else {
+          heartBtn.classList.remove("favorited");
+        }
         heartBtn.classList.add("heart-pulsing");
         setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 500);
-           e.stopPropagation(); // Prevent opening modal
+        e.stopPropagation(); // Prevent opening modal
       }, 500); // 500ms long press
     });
 
@@ -1449,7 +1446,7 @@ function setupSearch(itemList, defaultColor) {
     document.getElementById("zd").innerText = `1 item`;
     const newItem = document.querySelector('#itemlist .item:last-child');
     if (newItem) {
-      isModalOpen = false;
+
       newItem.onclick = (event) => Modal(event);
       newItem.click();
     }
@@ -1567,22 +1564,28 @@ function filterFavorites() {
 
 
 
- function checkVisibleFavoritesOnPage() {
-    const favorites = getFavorites();
-    const allItems = document.querySelectorAll('#itemlist .item');
-    const toggleBtn = document.getElementById("favorite-toggle");
-    let found = false;
+function checkVisibleFavoritesOnPage() {
+  const favorites = getFavorites();
+  const allItems = document.querySelectorAll('#itemlist .item');
+  const toggleBtn = document.getElementById("favorite-toggle");
+  let found = false;
 
-    allItems.forEach(item => {
-      const name = item.querySelector('#h3')?.textContent;
-      if (favorites.includes(name)) {
-        found = true;
-      }
-    });
-
-    if (toggleBtn) {
-      toggleBtn.style.display = found ? "inline-block" : "none";
+  allItems.forEach(item => {
+    const name = item.querySelector('#h3')?.textContent;
+    if (favorites.includes(name)) {
+      found = true;
     }
+  });
+
+  if (toggleBtn) {
+    toggleBtn.style.display = found ? "inline-block" : "none";
   }
+}
+
+const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+if (isTouch) {
+  document.body.classList.add("is-touch");
+}
+
 
 rinse()
