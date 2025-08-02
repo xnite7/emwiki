@@ -51,9 +51,31 @@ export async function onRequest(context) {
 
         // Build SVG string
         const svg = `
-      <svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
-        <rect width="1200" height="630" fill="${bgColor}" />
-        <text x="600" y="315" font-family="Arial, sans-serif" font-size="70" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="middle" filter="url(#shadow)">
+      <svg width="600" height="800" xmlns="http://www.w3.org/2000/svg">
+    <style>
+  @font-face {
+      font-family: 'Bunny Flowers';
+      font-style: normal;
+      font-weight: normal;
+      src: url("https://emwiki.site/fonts/BunnyFlowers-Regular.woff") format('woff');
+  }
+    .sign {
+     -webkit-text-fill-color: rgba(255, 255, 255, 0);
+      color: rgb(255, 255, 255);
+      left: 0px;
+      opacity: 1;
+      text-shadow: none;
+      top: 0px;
+      background: -webkit-linear-gradient(bottom, rgb(255, 255, 0), rgb(36, 255, 90)) text;
+      font: 200 160px "Bunny Flowers";
+    }
+
+
+
+  </style>
+        <rect x="10" y="10" width="580" rx="20" ry="20" height="780" fill="${bgColor}" stroke="white" stroke-width="10" />
+        <text class="sign" x="440" y="150" font-family="Bunny Flowers" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="middle" filter="url(#shadow)">EC</text>
+        <text x="300" y="655" font-family="Bunny Flowers" font-size="50" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="middle" filter="url(#shadow)">
           ${escapeXml(text)}
         </text>
         <defs>
