@@ -1385,9 +1385,11 @@ function createNewItem(item, color) {
   if (isTouchDevice) {
     newItem.addEventListener("touchstart", (e) => {
       touchTimer = setTimeout(() => {
+        e.stopPropagation();
+        e.preventDefault();
         toggleFavorite(item.name);
         heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
-        // Toggle class
+
         if (isFavorited(item.name)) {
           heartBtn.classList.add("favorited");
         } else {
@@ -1395,8 +1397,8 @@ function createNewItem(item, color) {
         }
         heartBtn.classList.add("heart-pulsing");
         setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 500);
-        e.stopPropagation(); // Prevent opening modal
-      }, 500); // 500ms long press
+
+      }, 500);
     });
 
     newItem.addEventListener("touchend", () => {
