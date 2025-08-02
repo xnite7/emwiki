@@ -1,4 +1,6 @@
 import { createCanvas } from '@napi-rs/canvas';
+import fetch from 'node-fetch';
+
 
 const categoryColors = {
   gears: "rgb(91, 254, 106)",
