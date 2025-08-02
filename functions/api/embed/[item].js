@@ -70,7 +70,7 @@ export async function onRequestGet(context) {
   <meta property="og:title" content="${title} - Epic Catalogue" />
 
   <meta property="og:image" content="${imageUrl}" />
-    <meta property="og:description" content="${descriptionRaw.replace(/<br>/g, ' ')}" />
+    <meta property="og:description" content="${descriptionRaw}" />
   <meta property="og:url" content="${redirectUrl}" />
   <meta name="twitter:card" content="summary_large_image" />
 
