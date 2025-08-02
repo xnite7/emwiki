@@ -33,7 +33,6 @@ export async function onRequest(context) {
                 break;
             }
         }
-        console.log("All normalized item names:", normalizedNames);
 
 
 
