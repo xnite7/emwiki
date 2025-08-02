@@ -5,12 +5,16 @@ export async function onRequest({ request }) {
   const userAgent = request.headers.get("user-agent")?.toLowerCase() || "";
   const isBot = userAgent.includes("discordbot") || userAgent.includes("bot");
 
-  // ✅ Only redirect if it's a bot AND not an API route
-  const isApiRequest = pathname.startsWith("/api/");
+  // ✅ Let API embed routes always pass through, even for bots
+  const isApiEmbed = pathname.startsWith("/api/embed/");
+  if (isApiEmbed) {
+    return fetch(request); // allow access, skip redirect
+  }
 
-  if (item && isBot && !isApiRequest) {
+  // ✅ Redirect bots only if ?item exists and it's not an API route
+  if (item && isBot) {
     return Response.redirect(`https://emwiki.site/embed/${encodeURIComponent(item)}`, 302);
   }
 
-  return await fetch(request);
+  return fetch(request); // default: just serve the original request
 }
