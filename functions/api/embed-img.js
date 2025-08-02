@@ -19,16 +19,26 @@ export async function onRequest(context) {
 
     let match = null;
     let category = null;
+    const normalizedNames = [];
+
     for (const [cat, items] of Object.entries(data)) {
       const found = items.find(i =>
         (i?.name || '').toLowerCase().replace(/\s+/g, '-') === item.toLowerCase()
       );
+      items.array.forEach(element => {
+        
+        normalizedNames.push(element);
+      });
+      
       if (found) {
         category = cat;
         match = found;
         break;
       }
     }
+
+    console.log("All normalized item names:", normalizedNames);
+
     if (!match) throw new Error("Item not found");
 
     const categoryColors = {
