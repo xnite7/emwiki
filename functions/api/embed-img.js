@@ -33,9 +33,9 @@ export async function onRequest(context) {
                 break;
             }
         }
-
+        
         if (!match) throw new Error("Item not found");
-
+        
         const categoryColors = {
             gears: "#5BFE6A",
             deaths: "#FF7A5E",
