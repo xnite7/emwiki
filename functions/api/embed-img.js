@@ -1,14 +1,14 @@
 export async function onRequest(context) {
     const { params, request } = context;
-    const item = params.item;
+    const url = new URL(request.url);
+    const item = url.searchParams.get("item");
+
     const base = 'https://emwiki.site';
 
 
     function normalize(str) {
         return (str || '').toLowerCase().replace(/\s+/g, '-');
     }
-
-
 
     try {
         const res = await fetch(`${base}/api/gist-version`);
