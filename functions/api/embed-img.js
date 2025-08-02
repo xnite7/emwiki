@@ -109,12 +109,27 @@ export async function onRequest(context) {
 
       
 
-        return new Response(svg, {
-            headers: {
-                "Content-Type": "image/svg+xml",
-                "Cache-Control": "public, max-age=31536000"
-            }
+        // At the end, instead of return new Response(svg)...
+
+        const workerUrl = 'https://converter.xnite7.workers.dev/'; // your real Worker URL
+        const pngRes = await fetch(workerUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'image/svg+xml'
+        },
+        body: svg
         });
+
+        if (!pngRes.ok) throw new Error("Worker PNG conversion failed");
+        const pngBuffer = await pngRes.arrayBuffer();
+
+        return new Response(pngBuffer, {
+        headers: {
+            "Content-Type": "image/png",
+            "Cache-Control": "public, max-age=31536000"
+        }
+        });
+
 
     } catch (e) {
         return new Response(`Error: ${e.message}`, { status: 404 });
