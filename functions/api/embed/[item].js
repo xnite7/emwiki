@@ -3,6 +3,7 @@ function escapeHtmlExceptBr(text) {
   return text
     .replace(/&/g, "&amp;")
     .replace(/</g, (match, offset, str) => {
+      // Allow <br> tags unescaped
       if (str.substr(offset, 4).toLowerCase() === "<br>") return "<br>";
       return "&lt;";
     })
@@ -35,9 +36,11 @@ export async function onRequestGet(context) {
   const redirectUrl = `${base}/?item=${encodeURIComponent(item)}`;
 
   if (!isBot(userAgent)) {
+    // Human visitor — redirect to site
     return Response.redirect(redirectUrl, 302);
   }
 
+  // Bot — serve embed HTML
   try {
     const res = await fetch(`${base}/api/gist-version`);
     if (!res.ok) throw new Error("Failed to fetch gist");
@@ -53,36 +56,8 @@ export async function onRequestGet(context) {
 
     const title = escapeHtmlExceptBr(match.name || "EMWiki Item");
     const descriptionRaw = match.from || "";
-    const descriptionHtml = escapeHtmlExceptBr(descriptionRaw).replace(/<br\s*\/?>/gi, "<br>");
-    let imageUrl = match.img ? `${base}/imgs/${match.img}` : fallbackImage;
-
-
-    // Use Cloudflare Image Resizing with draw overlay for signature
-const signatureOverlayUrl = 'https://emwiki.site/imgs/by-me.png'; // Your watermark/signature image
-const signaturedImageResponse = await fetch(imageUrl, {
-  cf: {
-    image: {
-      fit: 'contain',
-      width: 512, // Resize if needed
-      draw: [
-        {
-          url: signatureOverlayUrl,
-          bottom: 5,
-          right: 5,
-          width: 80,
-          height: 30,
-          opacity: 0.85,
-        },
-      ],
-    },
-  },
-});
-
-const imageBuffer = await signaturedImageResponse.arrayBuffer();
-const base64Image = Buffer.from(imageBuffer).toString('base64');
-const mimeType = signaturedImageResponse.headers.get("content-type") || 'image/png';
-const imageUrlWithSignature = `data:${mimeType};base64,${base64Image}`;
-
+    const descriptionHtml = escapeHtmlExceptBr(descriptionRaw);
+    const imageUrl = match.img ? `${base}/${match.img}` : fallbackImage;
 
     return new Response(`<!DOCTYPE html>
 <html lang="en">
@@ -91,91 +66,13 @@ const imageUrlWithSignature = `data:${mimeType};base64,${base64Image}`;
   <meta name="viewport" content="width=600, initial-scale=1" />
   <title>${title} - EMWiki Preview</title>
 
+  <!-- OG meta tags -->
   <meta property="og:title" content="${title} - Epic Catalogue" />
-  <meta property="og:image" content="${imageUrlWithSignature}" />
-  <meta property="og:description" content="${descriptionRaw.replace(/<br\s*\/?>/gi, '\\n')}" />
+
+  <meta property="og:image" content="${imageUrl}" />
+    <meta property="og:description" content="${descriptionRaw.replace(/<br>/g, '\n')}" />
   <meta property="og:url" content="${redirectUrl}" />
   <meta name="twitter:card" content="summary_large_image" />
-
-  <style>
-    body {
-      margin: 0; padding: 0;
-      background: #1a1a1a;
-      color: #eee;
-      font-family: 'Arimo', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 800px;
-    }
-    .modal-card {
-      background: #222;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(180, 127, 255, 0.7);
-      width: 600px;
-      padding: 20px;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      color: #eee;
-    }
-    .modal-body {
-      display: flex;
-      gap: 20px;
-    }
-    .modal-image {
-      flex-shrink: 0;
-      width: 220px;
-      height: 220px;
-      border-radius: 10px;
-      background: #333;
-      background-image: url('${imageUrl}');
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-      box-shadow: 0 0 8px #b07fff88;
-    }
-    .modal-info {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-    .modal-title {
-      font-weight: 700;
-      font-size: 2.2rem;
-      margin-bottom: 12px;
-      text-shadow: 0 0 10px #b07fff88;
-    }
-    .modal-description {
-      font-size: 1.1rem;
-      line-height: 1.4;
-      white-space: pre-wrap;
-      color: #ccc;
-    }
-    .modal-footer {
-      text-align: right;
-      font-size: 0.9rem;
-      margin-top: 12px;
-      color: #888;
-      border-top: 1px solid #333;
-      padding-top: 8px;
-    }
-  </style>
-</head>
-<body>
-  <div class="modal-card" role="main" aria-label="${title} preview">
-    <div class="modal-body">
-      <div class="modal-image" aria-hidden="true"></div>
-      <div class="modal-info">
-        <div class="modal-title">${title}</div>
-        <div class="modal-description">${descriptionHtml}</div>
-      </div>
-    </div>
-    <div class="modal-footer">— EMWiki</div>
-  </div>
-</body>
 </html>`, {
       headers: { 'Content-Type': 'text/html' }
     });
