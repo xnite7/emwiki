@@ -1,70 +1,79 @@
-import { createCanvas } from '@napi-rs/canvas';
-
-
-const categoryColors = {
-  gears: "rgb(91, 254, 106)",
-  deaths: "rgb(255, 122, 94)",
-  titles: "rgb(201, 96, 254)",
-  pets: "rgb(55, 122, 250)",
-  effects: "rgb(255, 177, 53)"
-};
-
-const BASE_URL = 'https://emwiki.site';
-
-async function fetchItemData(item) {
-  const res = await fetch(`${BASE_URL}/api/gist-version`);
-  if (!res.ok) throw new Error("Failed to fetch gist data");
-
-  const gist = await res.json();
-  const data = JSON.parse(gist.files?.["auto.json"]?.content);
-
-  for (const [category, items] of Object.entries(data)) {
-    const found = items.find(i =>
-      (i?.name || '').toLowerCase().replace(/\s+/g, '-') === item.toLowerCase()
-    );
-    if (found) {
-      return { category, item: found };
-    }
-  }
-  throw new Error("Item not found");
-}
-
-export async function onRequestGet({ params }) {
+export async function onRequest(context) {
+  const { params, request } = context;
   const item = params.item;
+  const base = 'https://emwiki.site';
+
+  // Bot detection to redirect browsers
+  function isBot(ua) {
+    return /bot|crawler|spider|facebookexternalhit|twitterbot|slackbot/i.test(ua);
+  }
+  if (!isBot(request.headers.get('user-agent') || '')) {
+    return Response.redirect(`${base}/?item=${encodeURIComponent(item)}`, 302);
+  }
+
   try {
-    const { category, item: match } = await fetchItemData(item);
+    const res = await fetch(`${base}/api/gist-version`);
+    if (!res.ok) throw new Error("Failed to fetch gist data");
+    const gist = await res.json();
+    const data = JSON.parse(gist.files?.["auto.json"]?.content);
 
-    const width = 1200;
-    const height = 630;
-    const canvas = createCanvas(width, height);
-    const ctx = canvas.getContext('2d');
+    let match = null;
+    let category = null;
+    for (const [cat, items] of Object.entries(data)) {
+      const found = items.find(i =>
+        (i?.name || '').toLowerCase().replace(/\s+/g, '-') === item.toLowerCase()
+      );
+      if (found) {
+        category = cat;
+        match = found;
+        break;
+      }
+    }
+    if (!match) throw new Error("Item not found");
 
-    // Background
-    ctx.fillStyle = categoryColors[category] || "rgb(128,128,128)";
-    ctx.fillRect(0, 0, width, height);
+    const categoryColors = {
+      gears: "#5BFE6A",
+      deaths: "#FF7A5E",
+      titles: "#C160FE",
+      pets: "#377AFA",
+      effects: "#FFB135"
+    };
+    const bgColor = categoryColors[category] || "#808080";
+    const text = (match.name || "EMWiki Item").replace(/-/g, ' ');
 
-    // Text styling
-    ctx.font = 'bold 70px sans-serif';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'black';
-    ctx.shadowBlur = 8;
-    ctx.shadowOffsetX = 2;
-    ctx.shadowOffsetY = 2;
+    // Build SVG string
+    const svg = `
+      <svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+        <rect width="1200" height="630" fill="${bgColor}" />
+        <text x="600" y="315" font-family="Arial, sans-serif" font-size="70" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="middle" filter="url(#shadow)">
+          ${escapeXml(text)}
+        </text>
+        <defs>
+          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="2" dy="2" stdDeviation="4" flood-color="black" flood-opacity="0.6"/>
+          </filter>
+        </defs>
+      </svg>`;
 
-    const overlayText = (match.name || "EMWiki Item").replace(/-/g, ' ');
-    ctx.fillText(overlayText, width / 2, height / 2);
-
-    const buffer = canvas.toBuffer('image/png');
-
-    return new Response(buffer, {
+    return new Response(svg, {
       headers: {
-        'Content-Type': 'image/png',
-        'Cache-Control': 'public, max-age=31536000', // Cache for 1 year
-      },
+        "Content-Type": "image/svg+xml",
+        "Cache-Control": "public, max-age=31536000"
+      }
     });
+
   } catch (e) {
     return new Response(`Error: ${e.message}`, { status: 404 });
   }
+}
+
+// Simple XML escape helper for safe output in SVG
+function escapeXml(unsafe) {
+  return unsafe.replace(/[<>&'"]/g, c => ({
+    '<': '&lt;',
+    '>': '&gt;',
+    '&': '&amp;',
+    '\'': '&apos;',
+    '"': '&quot;'
+  })[c]);
 }
