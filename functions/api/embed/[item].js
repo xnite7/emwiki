@@ -44,7 +44,7 @@ export async function onRequest(context) {
     const descriptionText = descriptionRaw.replace(/<br\s*\/?>(\s*)?/gi, '\n');
 
     // Your image URL points to the Worker (deployed separately)
-    const imageUrl = `${base}/api/embed-img?=${encodeURIComponent(item)}`;
+    const imageUrl = `${base}/api/embed-img?item=${encodeURIComponent(item)}`;
 
     return new Response(`<!DOCTYPE html>
 <html lang="en">
