@@ -1,20 +1,18 @@
 export async function onRequest({ request }) {
   const url = new URL(request.url);
-  const item = url.searchParams.get("item");
   const pathname = url.pathname;
+  const item = url.searchParams.get("item");
   const userAgent = request.headers.get("user-agent")?.toLowerCase() || "";
   const isBot = userAgent.includes("discordbot") || userAgent.includes("bot");
 
-  // ✅ Let API embed routes always pass through, even for bots
-  const isApiEmbed = pathname.startsWith("/api/embed/");
-  if (isApiEmbed) {
-    return fetch(request); // allow access, skip redirect
+  // ✅ Allow all /api/* routes to pass through, not just /api/embed/
+  if (pathname.startsWith("/api/")) {
+    return fetch(request);
   }
 
-  // ✅ Redirect bots only if ?item exists and it's not an API route
   if (item && isBot) {
     return Response.redirect(`https://emwiki.site/embed/${encodeURIComponent(item)}`, 302);
   }
 
-  return fetch(request); // default: just serve the original request
+  return fetch(request);
 }
