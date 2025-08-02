@@ -18,23 +18,24 @@ function isBot(userAgent) {
 }
 
 export async function onRequestGet(context) {
-  const { item } = context.params;
+  const { request, params } = context;
+  const userAgent = request.headers.get('user-agent') || '';
+  const item = params.item;
   const base = 'https://emwiki.site';
   const fallbackImage = `${base}/imgs/trs.png`;
-  const userAgent = context.request.headers.get('user-agent') || '';
 
-  // Redirect URL to SPA with item param
   const redirectUrl = `${base}/?item=${encodeURIComponent(item)}`;
 
   if (!isBot(userAgent)) {
-    // Real user — 302 redirect immediately, no content
+    // Human visitor — redirect to site
     return Response.redirect(redirectUrl, 302);
   }
 
-  // Bot — serve preview HTML
+  // Bot — serve embed HTML
   try {
     const res = await fetch(`${base}/api/gist-version`);
     if (!res.ok) throw new Error("Failed to fetch gist");
+
     const gist = await res.json();
     const data = JSON.parse(gist.files?.["auto.json"]?.content);
     const allItems = Object.values(data).flat();
@@ -129,6 +130,7 @@ export async function onRequestGet(context) {
 </html>`, {
       headers: { 'Content-Type': 'text/html' }
     });
+
   } catch (e) {
     return new Response(`Item not found or error: ${e.message}`, { status: 404 });
   }
