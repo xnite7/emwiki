@@ -1,18 +1,18 @@
-export async function onRequest({ request }) {
-  const url = new URL(request.url);
-  const pathname = url.pathname;
-  const item = url.searchParams.get("item");
-  const userAgent = request.headers.get("user-agent")?.toLowerCase() || "";
-  const isBot = userAgent.includes("discordbot") || userAgent.includes("bot");
+export async function onRequest(context) {
+  const url = new URL(context.request.url);
 
-  // ✅ Allow all /api/* routes to pass through, not just /api/embed/
-  if (pathname.startsWith("/api/")) {
-    return fetch(request);
+  // Allow all /api/* through without rerouting
+  if (url.pathname.startsWith("/api/")) {
+    return await context.next();
   }
+
+  const item = url.searchParams.get("item");
+  const userAgent = context.request.headers.get("user-agent")?.toLowerCase() || "";
+  const isBot = userAgent.includes("discordbot") || userAgent.includes("bot");
 
   if (item && isBot) {
     return Response.redirect(`https://emwiki.site/embed/${encodeURIComponent(item)}`, 302);
   }
 
-  return fetch(request);
+  return await context.next();
 }
