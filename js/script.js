@@ -882,6 +882,7 @@ function resize_to_fit() {
   }
 
   requestAnimationFrame(processChunk);
+    openModalFromURL();
 }
 
 function getFavorites() {
@@ -993,7 +994,7 @@ function populateGrid(gridId, items, limit = null) {
   });
   resize_to_fit();
 
-  openModalFromURL();
+
 }
 
 async function rinse() {
