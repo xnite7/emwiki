@@ -1,8 +1,11 @@
-# ✅ Let /api/embed/* go to Worker
-/api/embed/*    404
+# Let /api/embed/* be handled by your Worker — no redirect here
+# (Remove the invalid 404 redirect line)
 
-# ✅ Other API routes can still fallback to static files if needed
-/api/*          /api/:splat    200
+/api/embed/*    /api/embed/:splat    200
 
-# ✅ Catch-all SPA fallback for frontend
-/*              /index.html    200
+# Other API routes fallback (if you want static files or Worker routing)
+# Adjust or remove as needed depending on your setup
+/api/*          /api/:splat          200
+
+# Catch-all SPA fallback for frontend — use rewrite (!) to avoid loops
+/*              /index.html          200!
