@@ -54,7 +54,35 @@ export async function onRequestGet(context) {
     const title = escapeHtmlExceptBr(match.name || "EMWiki Item");
     const descriptionRaw = match.from || "";
     const descriptionHtml = escapeHtmlExceptBr(descriptionRaw).replace(/<br\s*\/?>/gi, "<br>");
-    const imageUrl = match.img ? `${base}/imgs/${match.img}` : fallbackImage;
+    let imageUrl = match.img ? `${base}/imgs/${match.img}` : fallbackImage;
+
+
+    // Use Cloudflare Image Resizing with draw overlay for signature
+const signatureOverlayUrl = 'https://emwiki.site/imgs/by-me.png'; // Your watermark/signature image
+const signaturedImageResponse = await fetch(imageUrl, {
+  cf: {
+    image: {
+      fit: 'contain',
+      width: 512, // Resize if needed
+      draw: [
+        {
+          url: signatureOverlayUrl,
+          bottom: 5,
+          right: 5,
+          width: 80,
+          height: 30,
+          opacity: 0.85,
+        },
+      ],
+    },
+  },
+});
+
+const imageBuffer = await signaturedImageResponse.arrayBuffer();
+const base64Image = Buffer.from(imageBuffer).toString('base64');
+const mimeType = signaturedImageResponse.headers.get("content-type") || 'image/png';
+const imageUrlWithSignature = `data:${mimeType};base64,${base64Image}`;
+
 
     return new Response(`<!DOCTYPE html>
 <html lang="en">
@@ -64,7 +92,7 @@ export async function onRequestGet(context) {
   <title>${title} - EMWiki Preview</title>
 
   <meta property="og:title" content="${title} - Epic Catalogue" />
-  <meta property="og:image" content="${imageUrl}" />
+  <meta property="og:image" content="${imageUrlWithSignature}" />
   <meta property="og:description" content="${descriptionRaw.replace(/<br\s*\/?>/gi, '\\n')}" />
   <meta property="og:url" content="${redirectUrl}" />
   <meta name="twitter:card" content="summary_large_image" />
