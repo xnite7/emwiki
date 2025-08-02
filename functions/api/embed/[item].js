@@ -44,7 +44,7 @@ export async function onRequest(context) {
     const descriptionText = descriptionRaw.replace(/<br\s*\/?>(\s*)?/gi, '\n');
 
     // Your image URL points to the Worker (deployed separately)
-    const imageUrl = `${base}/embedimg/${encodeURIComponent(item)}`;
+    const imageUrl = `https://route-embed.xnite7.workers.dev/${encodeURIComponent(item)}`;
 
     return new Response(`<!DOCTYPE html>
 <html lang="en">
