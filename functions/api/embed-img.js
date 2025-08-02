@@ -90,7 +90,7 @@ export async function onRequest(context) {
 
         </style>
         <rect x="10" y="10" width="580" rx="20" ry="20" height="600" fill="${bgColor}" stroke="white" stroke-width="10"/>
-    <image href="../imgs/app.png" x="100" y="80" width="400" height="400"/>
+    <image href="${img}" x="100" y="80" width="400" height="400"/>
         <text xmlns="http://www.w3.org/2000/svg" class="sign" x="485" y="70" font-family="Bunny Flowers" font-weight="bold" fill="url(#textGradient)" text-anchor="middle" dominant-baseline="middle" filter="url(#shadow)">EC</text>
         <text xmlns="http://www.w3.org/2000/svg" x="300" y="535" font-family="Sans" font-size="50" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="middle">
           ${escapeXml(text)}
