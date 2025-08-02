@@ -781,7 +781,7 @@ function Modal(event) {
       boxShadow: ""
     });
   });
-if (!popped) {
+  if (!popped) {
     const name = item.querySelector("#h3")?.textContent;
     if (!name) return;
     const slug = slugify(name);
@@ -882,7 +882,7 @@ function resize_to_fit() {
   }
 
   requestAnimationFrame(processChunk);
-    openModalFromURL();
+
 }
 
 function getFavorites() {
@@ -1557,6 +1557,34 @@ function setupSearch(itemList, defaultColor) {
   }
 
 
+  function openModalFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    let itemSlug = params.get("item");
+    if (!itemSlug) return;
+
+    // Decode twice just in case
+    itemSlug = decodeURIComponent(decodeURIComponent(itemSlug));
+
+    const foundItem = itemList.find(item => {
+      const name = item.name || "";
+      return slugify(name) === itemSlug;
+    });
+
+    if (foundItem) {
+      popped = true;
+
+      showSelectedItem(foundItem)
+      popped = false;
+    }
+  }
+
+  window.addEventListener("popstate", () => {
+    closeModalHandler()
+    openModalFromURL()
+  });
+
+
+  openModalFromURL()
 }
 
 function filterItems() {
@@ -1651,31 +1679,6 @@ if (isTouch) {
 
 rinse()
 
-function openModalFromURL() {
-  const params = new URLSearchParams(window.location.search);
-  let itemSlug = params.get("item");
-  if (!itemSlug) return;
-
-  // Decode twice just in case
-  itemSlug = decodeURIComponent(decodeURIComponent(itemSlug));
-
-  const allItems = Array.from(document.querySelectorAll('.item'));
-  const foundItem = allItems.find(item => {
-    const name = item.querySelector('#h3')?.textContent || "";
-    return slugify(name) === itemSlug;
-  });
-
-  if (foundItem) {
-    popped = true;
-    Modal({ target: foundItem });
-    popped = false;
-  }
-}
-
-window.addEventListener("popstate", () => {
-  closeModalHandler()
-  openModalFromURL()
-});
 
 function slugify(text) {
   return text.toLowerCase().replace(/\s+/g, '-');
