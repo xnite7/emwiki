@@ -433,7 +433,7 @@ window.addEventListener('DOMContentLoaded', () => {
   function showModalArrows() {
     document.getElementById("modal-left-arrow").classList.add("show");
     document.getElementById("modal-right-arrow").classList.add("show");
-    
+
     clearTimeout(arrowTimeout);
     arrowTimeout = setTimeout(() => {
       document.getElementById("modal-left-arrow").classList.remove("show");
@@ -562,7 +562,7 @@ function Modal(event) {
   modalCache.title.textContent = title;
 
 
-  
+
 
   modalCache.description.textContent = from;
   modalCache.price.setAttribute("draggable", false);
@@ -837,7 +837,11 @@ const closeModalHandler = () => {
   modalCache.modal.classList.remove("show");
   modalCache.content.style.pointerEvents = "none";
   document.getElementsByTagName('html')[0].style.overflowY = "scroll";
-
+  if (!popped) {
+    const url = new URL(window.location);
+    url.searchParams.delete("item"); // Remove the item param
+    history.pushState(null, "", url.toString());
+  }
 };
 
 window.addEventListener("click", (event) => {
@@ -1420,7 +1424,7 @@ function createNewItem(item, color) {
 
 
 
-
+let openedFromURL = false;
 function setupSearch(itemList, defaultColor) {
   const searchInput = document.getElementById('search-bar');
   const resultsContainer = document.getElementById('search-results');
@@ -1507,17 +1511,7 @@ function setupSearch(itemList, defaultColor) {
     }
   });
 
-  function showSelectedItem(item) {
-    document.querySelectorAll('#itemlist .item').forEach(el => el.remove());
-    createNewItem(item, item._color);
 
-    const newItem = document.querySelector('#itemlist .item:last-child');
-    if (newItem) {
-
-      newItem.onclick = (event) => Modal(event);
-      newItem.click();
-    }
-  }
 
 
 
@@ -1562,35 +1556,52 @@ function setupSearch(itemList, defaultColor) {
     });
   }
 
-
-  function openModalFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    let itemSlug = params.get("item");
-    if (!itemSlug) return;
-
-    // Decode twice just in case
-    itemSlug = decodeURIComponent(decodeURIComponent(itemSlug));
-
-    const foundItem = itemList.find(item => {
-      const name = item.name || "";
-      return slugify(name) === itemSlug;
-    });
-
-    if (foundItem) {
-      popped = true;
-
-      showSelectedItem(foundItem)
-      popped = false;
-    }
-  }
-
   window.addEventListener("popstate", () => {
     closeModalHandler()
-    openModalFromURL()
+    openModalFromURL(itemList)
   });
 
 
-  openModalFromURL()
+
+  if (!openedFromURL) {
+    openModalFromURL(itemList);
+  }
+
+}
+
+function showSelectedItem(item) {
+  document.querySelectorAll('#itemlist .item').forEach(el => el.remove());
+  createNewItem(item, item._color);
+
+  const newItem = document.querySelector('#itemlist .item:last-child');
+  if (newItem) {
+
+    newItem.onclick = (event) => Modal(event);
+    newItem.click();
+  }
+}
+
+
+function openModalFromURL(itemList) {
+  openedFromURL = true;
+  const params = new URLSearchParams(window.location.search);
+  let itemSlug = params.get("item");
+  if (!itemSlug) return;
+
+  // Decode twice just in case
+  itemSlug = decodeURIComponent(decodeURIComponent(itemSlug));
+
+  const foundItem = itemList.find(item => {
+    const name = item.name || "";
+    return slugify(name) === itemSlug;
+  });
+
+  if (foundItem) {
+    popped = true;
+    console.log(foundItem)
+    showSelectedItem(foundItem)
+    popped = false;
+  }
 }
 
 function filterItems() {
