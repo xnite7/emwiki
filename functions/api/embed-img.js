@@ -34,8 +34,6 @@ export async function onRequest(context) {
             }
         }
 
-
-
         if (!match) throw new Error("Item not found");
 
         const categoryColors = {
