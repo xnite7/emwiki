@@ -123,46 +123,37 @@ body {
 
 
 #donate-btn {
-
-    color: #ffffff;
-    cursor: pointer;
     font-family: Playpen Sans;
-    font-size: 1.5rem;
     font-weight: 600;
-    text-shadow: -1.3px -1.3px 0 #000, 0 -1.3px 0 #000, 1.3px -1.3px 0 #000, 1.3px 0 0 #000, 1.3px 1.3px 0 #000, 0 1.3px 0 #000, -1.3px 1.3px 0 #000, -1.3px 0 0 #000;
     margin: 16px 34% 0px;
-    padding: 10px 20px;
-
-    transform: rotateX(30deg);
     transition: all .2s cubic-bezier(.215, .61, .355, 1);
-
     background: linear-gradient(154deg, #ffd91e, #ffb200, #c48900);
     border: none;
     border-radius: 12px;
     cursor: pointer;
     font-size: 1.2rem;
-    padding: 1rem 2rem;
-    transition: transform .2s
-}
-
-#donate-btn:hover {
-    box-shadow: inset 0 1px 9px #fff, inset 0 -8px 0 0 #793800;
+    box-shadow: 1px 5px 4px 3px #0000002b, inset 0px -8px 0 0 #ae7631bf, inset 0px -8px 7px 0 #745022, inset 1px 7px 17px 0 #ffffff73;
     color: #fff;
     padding: 10px 20px 15px;
-    text-shadow: 0 0 5px #fff
+    text-shadow: 0 0 2px #fff;
+    transform: translateY(0px) rotateX(20deg);
 }
 
-#donate-btn:active,
 #donate-btn:hover {
-    transform: translateY(-5px) rotateX(30deg)
+    box-shadow: 1px 5px 10px 1px #0000004a, inset 0px -15px 3px 0 #8f633dbd, inset 0px -6px 5px 0 #000000, inset 1px 7px 17px 0 #ffffffd4;
+    color: #fff;
+    padding: 10px 20px 22px;
+    text-shadow: 0 0 5px #fff;
+    transform: translateY(-5px) rotateX(30deg);
 }
 
 #donate-btn:active {
-    background-color: #aa8400;
-    box-shadow: inset 0 1px 9px #313131, inset 0 13px 9px #313131e6, inset 0 10px 0 #dd7920;
-    color: #000;
-    padding: 15px 20px 5px;
-    text-shadow: 0 0 5px #000
+    transform: translateY(2px) rotateX(30deg);
+    box-shadow: 0px 3px 4px 1px #00000042, inset 0px -8px 10px 0 #00000038, inset 0px -8px 11px 7px #583a12a3, inset 1px 7px 20px 0px #ffffffa6;
+    color: #ffffff21;
+    padding: 14px 20px 15px;
+    background: linear-gradient(179deg, #733f04, #79530c, #a37713, #755100, #b97000);
+    text-shadow: 0 0 3px #ffffffbd;
 }
 
 #patchnotes.animate {

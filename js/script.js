@@ -433,7 +433,7 @@ window.addEventListener('DOMContentLoaded', () => {
   function showModalArrows() {
     document.getElementById("modal-left-arrow").classList.add("show");
     document.getElementById("modal-right-arrow").classList.add("show");
-    showSwipeTutorial()
+    
     clearTimeout(arrowTimeout);
     arrowTimeout = setTimeout(() => {
       document.getElementById("modal-left-arrow").classList.remove("show");
@@ -448,7 +448,7 @@ window.addEventListener('DOMContentLoaded', () => {
   };
 
   modalCache.modal.addEventListener("mousemove", showModalArrows);
-  modalCache.modal.addEventListener("touchstart", showModalArrows);
+  modalCache.modal.addEventListener("touchstart", showSwipeTutorial);
 
   const refreshBtn = document.getElementById('refresh-button');
   if (refreshBtn) {
@@ -554,36 +554,15 @@ function Modal(event) {
   const prcdra = item.querySelector("#pricecoderarity").textContent;
   const price = item.querySelector("p img").nextSibling.textContent.trim();
 
-  modalCache.content.style.pointerEvents = "none";
-  modalCache.content.style.backgroundColor = item.style.backgroundColor;
-  modalCache.title.textContent = title;
   const existingCanvas = modalCache.content.querySelector("#content-area canvas");
   if (existingCanvas) existingCanvas.remove();
 
-  if (imageSrc) {
-    const canvas = document.createElement("canvas");
-    canvas.style.zIndex = "99";
-    Object.assign(canvas.style, {
-      width: "100%",
-      height: "auto",
-      placeSelf: "center",
-      display: "block",
-      userSelect: "none",
-      webkitUserSelect: "none",
-      pointerEvents: "none"
-    });
+  modalCache.content.style.pointerEvents = "none";
+  modalCache.content.style.backgroundColor = item.style.backgroundColor;
+  modalCache.title.textContent = title;
 
-    modalCache.content.querySelector("#content-area").insertBefore(canvas, modalCache.description);
 
-    const ctx = canvas.getContext("2d");
-    const img = new Image();
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
-    };
-    img.src = imageSrc;
-  }
+  
 
   modalCache.description.textContent = from;
   modalCache.price.setAttribute("draggable", false);
@@ -750,6 +729,31 @@ function Modal(event) {
     modalCache.prc.style.display = "flex"
   } else {
     modalCache.prc.style.display = "none"
+  }
+
+  if (imageSrc) {
+    const canvas = document.createElement("canvas");
+    canvas.style.zIndex = "99";
+    Object.assign(canvas.style, {
+      width: "100%",
+      height: "auto",
+      placeSelf: "center",
+      display: "block",
+      userSelect: "none",
+      webkitUserSelect: "none",
+      pointerEvents: "none"
+    });
+
+    modalCache.content.querySelector("#content-area").insertBefore(canvas, modalCache.description);
+
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+    };
+    img.src = imageSrc;
   }
 
   const itemRect = item.getBoundingClientRect();
