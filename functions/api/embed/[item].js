@@ -1,9 +1,18 @@
-function escapeHtml(text) {
-  return text?.replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
+function escapeHtmlExceptBr(text) {
+  if (!text) return "";
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, (match, offset, str) => {
+      // Allow <br> tags unescaped
+      if (str.substr(offset, 4).toLowerCase() === "<br>") return "<br>";
+      return "&lt;";
+    })
+    .replace(/>/g, (match, offset, str) => {
+      if (str.substr(offset - 3, 4).toLowerCase() === "<br>") return ">";
+      return "&gt;";
+    })
     .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;") || "";
+    .replace(/'/g, "&#39;");
 }
 
 function isBot(userAgent) {
@@ -45,9 +54,9 @@ export async function onRequestGet(context) {
 
     if (!match) throw new Error("Item not found");
 
-    const title = escapeHtml(match.name || "EMWiki Item");
+    const title = escapeHtmlExceptBr(match.name || "EMWiki Item");
     const descriptionRaw = match.from || "";
-    const descriptionHtml = escapeHtml(descriptionRaw).replace(/&lt;br&gt;/g, "<br>");
+    const descriptionHtml = escapeHtmlExceptBr(descriptionRaw);
     const imageUrl = match.img ? `${base}/${match.img}` : fallbackImage;
 
     return new Response(`<!DOCTYPE html>
