@@ -44,7 +44,7 @@ export async function onRequest(context) {
     const descriptionText = descriptionRaw.replace(/<br\s*\/?>(\s*)?/gi, '\n');
 
     // Your image URL points to the Worker (deployed separately)
-    const ogImageUrl = `${base}/embedimg/${encodeURIComponent(item)}`;
+    const imageUrl = `${base}/embedimg/${encodeURIComponent(item)}`;
 
     return new Response(`<!DOCTYPE html>
 <html lang="en">
@@ -54,7 +54,7 @@ export async function onRequest(context) {
 <title>${title} - EMWiki Preview</title>
 
 <meta property="og:title" content="${title} - Epic Catalogue" />
-<meta property="og:image" content="${ogImageUrl}" />
+<meta property="og:image" content="${imageUrl}" />
 <meta property="og:description" content="${descriptionText}" />
 <meta property="og:url" content="${base}/?item=${encodeURIComponent(item)}" />
 <meta name="twitter:card" content="summary_large_image" />
