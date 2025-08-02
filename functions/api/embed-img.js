@@ -8,17 +8,7 @@ export async function onRequest(context) {
         return (str || '').toLowerCase().replace(/\s+/g, '-');
     }
 
-    
 
-
-
-    // Bot detection to redirect browsers
-    function isBot(ua) {
-        return /bot|crawler|spider|facebookexternalhit|twitterbot|slackbot/i.test(ua);
-    }
-    if (!isBot(request.headers.get('user-agent') || '')) {
-        return Response.redirect(`${base}/?item=${encodeURIComponent(item)}`, 302);
-    }
 
     try {
         const res = await fetch(`${base}/api/gist-version`);
