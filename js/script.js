@@ -1503,7 +1503,7 @@ function setupSearch(itemList, defaultColor) {
   function showSelectedItem(item) {
     document.querySelectorAll('#itemlist .item').forEach(el => el.remove());
     createNewItem(item, item._color);
-    document.getElementById("zd").innerText = `1 item`;
+
     const newItem = document.querySelector('#itemlist .item:last-child');
     if (newItem) {
 
