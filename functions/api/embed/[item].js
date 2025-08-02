@@ -3,7 +3,6 @@ function escapeHtmlExceptBr(text) {
   return text
     .replace(/&/g, "&amp;")
     .replace(/</g, (match, offset, str) => {
-      // Allow <br> tags unescaped
       if (str.substr(offset, 4).toLowerCase() === "<br>") return "<br>";
       return "&lt;";
     })
@@ -36,11 +35,9 @@ export async function onRequestGet(context) {
   const redirectUrl = `${base}/?item=${encodeURIComponent(item)}`;
 
   if (!isBot(userAgent)) {
-    // Human visitor — redirect to site
     return Response.redirect(redirectUrl, 302);
   }
 
-  // Bot — serve embed HTML
   try {
     const res = await fetch(`${base}/api/gist-version`);
     if (!res.ok) throw new Error("Failed to fetch gist");
@@ -56,8 +53,8 @@ export async function onRequestGet(context) {
 
     const title = escapeHtmlExceptBr(match.name || "EMWiki Item");
     const descriptionRaw = match.from || "";
-    const descriptionHtml = escapeHtmlExceptBr(descriptionRaw);
-    const imageUrl = match.img ? `${base}/${match.img}` : fallbackImage;
+    const descriptionHtml = escapeHtmlExceptBr(descriptionRaw).replace(/<br\s*\/?>/gi, "<br>");
+    const imageUrl = match.img ? `${base}/imgs/${match.img}` : fallbackImage;
 
     return new Response(`<!DOCTYPE html>
 <html lang="en">
@@ -66,11 +63,9 @@ export async function onRequestGet(context) {
   <meta name="viewport" content="width=600, initial-scale=1" />
   <title>${title} - EMWiki Preview</title>
 
-  <!-- OG meta tags -->
   <meta property="og:title" content="${title} - Epic Catalogue" />
-
   <meta property="og:image" content="${imageUrl}" />
-    <meta property="og:description" content="${descriptionRaw}" />
+  <meta property="og:description" content="${descriptionRaw.replace(/<br\s*\/?>/gi, '\\n')}" />
   <meta property="og:url" content="${redirectUrl}" />
   <meta name="twitter:card" content="summary_large_image" />
 
@@ -93,8 +88,13 @@ export async function onRequestGet(context) {
       padding: 20px;
       box-sizing: border-box;
       display: flex;
+      flex-direction: column;
       gap: 20px;
       color: #eee;
+    }
+    .modal-body {
+      display: flex;
+      gap: 20px;
     }
     .modal-image {
       flex-shrink: 0;
@@ -126,15 +126,26 @@ export async function onRequestGet(context) {
       white-space: pre-wrap;
       color: #ccc;
     }
+    .modal-footer {
+      text-align: right;
+      font-size: 0.9rem;
+      margin-top: 12px;
+      color: #888;
+      border-top: 1px solid #333;
+      padding-top: 8px;
+    }
   </style>
 </head>
 <body>
   <div class="modal-card" role="main" aria-label="${title} preview">
-    <div class="modal-image" aria-hidden="true"></div>
-    <div class="modal-info">
-      <div class="modal-title">${title}</div>
-      <div class="modal-description">${descriptionHtml}</div>
+    <div class="modal-body">
+      <div class="modal-image" aria-hidden="true"></div>
+      <div class="modal-info">
+        <div class="modal-title">${title}</div>
+        <div class="modal-description">${descriptionHtml}</div>
+      </div>
     </div>
+    <div class="modal-footer">— EMWiki</div>
   </div>
 </body>
 </html>`, {
