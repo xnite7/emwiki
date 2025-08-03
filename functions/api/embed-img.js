@@ -63,20 +63,12 @@ export async function onRequest(context) {
         <svg xmlns="http://www.w3.org/2000/svg" width="500" height="520">
             
 
-            
-            <image href="${img}" x="45" y="65" width="400" height="400"/>
-            <text class="sign" x="425" y="40" font-size="160" fill="url(#textGradient)" text-anchor="middle" dominant-baseline="middle">EC</text>
-            <text x="246" y="465" font-size="160" fill="white" text-anchor="middle" dominant-baseline="middle">${escapeXml(text)}</text>
             <rect x="10" y="20" width="470" rx="20" ry="20" height="490" fill="${bgColor}" stroke="white" stroke-width="10"/>
-            <defs>
-                <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="2" dy="2" stdDeviation="4" flood-color="black" flood-opacity="0.6"/>
-                </filter>
-                <linearGradient id="textGradient" x1="33%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stop-color="#ffff00"/>
-                    <stop offset="100%" stop-color="#24ff5a"/>
-                </linearGradient>
-            </defs>
+            <image href="${img}" x="45" y="65" width="400" height="400"/>
+            <text class="sign" x="425" y="40" font-size="160" fill="white" text-anchor="middle" dominant-baseline="middle">EC</text>
+            <text x="246" y="465" font-size="160" fill="white" text-anchor="middle" dominant-baseline="middle">awda</text>
+            
+
         </svg>`;
 
       
