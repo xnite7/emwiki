@@ -64,9 +64,10 @@ export async function onRequest(context) {
             
 
             <rect x="10" y="20" width="470" rx="20" ry="20" height="490" fill="${bgColor}" stroke="white" stroke-width="10"/>
-            <image href="${img}" x="45" y="65" width="400" height="400"/>
             <text class="sign" x="425" y="40" font-size="160" fill="white" text-anchor="middle" dominant-baseline="middle">EC</text>
             <text x="246" y="465" font-size="160" fill="white" text-anchor="middle" dominant-baseline="middle">awda</text>
+            <image href="${img}" x="45" y="65" width="400" height="400"/>
+
             
 
         </svg>`;
