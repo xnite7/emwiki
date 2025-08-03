@@ -55,7 +55,7 @@ export async function onRequest(context) {
         };
         const bgColor = categoryColors[category] || "#808080";
         const text = (match.name || "EMWiki Item").replace(/-/g, ' ');
-        const img = match.img ? `${base}${match.img}` : `${base}/imgs/trs.png`;
+        const img = match.img ? `${base}/${match.img}` : `${base}/imgs/trs.png`;
 
 
         // Build SVG string
