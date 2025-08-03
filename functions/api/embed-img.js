@@ -58,38 +58,14 @@ export async function onRequest(context) {
         const img = match.img ? `${base}/${match.img}` : `${base}/imgs/trs.png`;
 
 
-        // Build SVG string
+        // Build SVG strings
         const svg = `
         <svg xmlns="http://www.w3.org/2000/svg" width="500" height="520">
-            <style>
-                @font-face {
-                    font-family: 'Bunny Flowers';
-                    font-style: normal;
-                    font-weight: normal;
-                    src: url("https://emwiki.site/fonts/BunnyFlowers-Regular.woff") format('woff');
-                }
-
-                @font-face {
-                    font-family: 'Source Sans Pro';
-                    font-style: normal;
-                    font-weight: 400;
-                    src: local('Source Sans Pro'), url('https://fonts.cdnfonts.com/s/12183/SourceSansPro-Regular.woff') format('woff');
-                }
-
-                text {
-                    font-family: 'Source Sans Pro';
-                    text-shadow: -2px -2px 0 #000, 0 -2px 0 #000, 2px -2px 0 #000, 2px 0 0 #000, 2px 2px 0 #000, 0 2px 0 #000, -2px 2px 0 #000, -2px 0 0 #000;
-                }
-                .sign {
-                    font: 200 160px "Bunny Flowers";
-                    transform: rotate(7deg);
-                    text-shadow: -7px -7px 0 #000, 0 -7px 0 #000, 7px -7px 0 #000, 7px 0 0 #000, 7px 7px 0 #000, 0 7px 0 #000, -7px 7px 0 #000, -7px 0 0 #000;
-                }
-            </style>
+            
 
             <rect x="10" y="20" width="470" rx="20" ry="20" height="490" fill="${bgColor}" stroke="white" stroke-width="10"/>
             <image href="${img}" x="45" y="65" width="400" height="400"/>
-            <text class="sign" x="425" y="40" font-size="160" fill="url(#textGradient)" text-anchor="middle" dominant-baseline="middle" filter="url(#shadow)">EC</text>
+            <text class="sign" x="425" y="40" font-size="160" fill="url(#textGradient)" text-anchor="middle" dominant-baseline="middle">EC</text>
             <text x="246" y="465" font-size="160" fill="white" text-anchor="middle" dominant-baseline="middle">${escapeXml(text)}</text>
             
             <defs>
