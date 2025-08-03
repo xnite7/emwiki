@@ -756,40 +756,40 @@
 
 
 
-async function loadAndRenderHistory() {
-    const container = document.getElementById('history-list');
-    container.innerHTML = 'Loading…';
+        async function loadAndRenderHistory() {
+            const container = document.getElementById('history-list');
+            container.innerHTML = 'Loading…';
 
-    try {
-        const res = await fetch('https://emwiki.site/api/history');
-        if (!res.ok) throw new Error('Failed to fetch Catalog History');
-        const entries = await res.json();
-        if (!Array.isArray(entries) || entries.length === 0) {
-            container.innerHTML = '<p>No history available.</p>';
-            return;
-        }
+            try {
+                const res = await fetch('https://emwiki.site/api/history');
+                if (!res.ok) throw new Error('Failed to fetch Catalog History');
+                const entries = await res.json();
+                if (!Array.isArray(entries) || entries.length === 0) {
+                    container.innerHTML = '<p>No history available.</p>';
+                    return;
+                }
 
-        container.innerHTML = '';
-        const ul = document.createElement('ul');
-        ul.style.cssText = 'list-style:none; padding:0; margin:0; font-family: monospace; color:#ddd;';
+                container.innerHTML = '';
+                const ul = document.createElement('ul');
+                ul.style.cssText = 'list-style:none; padding:0; margin:0; font-family: monospace; color:#ddd;';
 
-        for (const e of entries) {
-            const li = document.createElement('li');
-            li.style.marginBottom = '1.2rem';
+                for (const e of entries) {
+                    const li = document.createElement('li');
+                    li.style.marginBottom = '1.2rem';
 
-            // Header: username + time
-            const header = document.createElement('div');
-            header.style.cssText = 'font-weight:700; font-size:18px; margin-bottom:4px; display:flex; justify-content: space-between; align-items: baseline;';
-            header.textContent = e.username;
-            const timeDiv = document.createElement('div');
-            timeDiv.style.cssText = 'font-weight:500; font-size:14px; color:#666;';
-            timeDiv.textContent = new Date(e.timestamp).toLocaleString();
-            header.appendChild(timeDiv);
-            li.appendChild(header);
+                    // Header: username + time
+                    const header = document.createElement('div');
+                    header.style.cssText = 'font-weight:700; font-size:18px; margin-bottom:4px; display:flex; justify-content: space-between; align-items: baseline;';
+                    header.textContent = e.username;
+                    const timeDiv = document.createElement('div');
+                    timeDiv.style.cssText = 'font-weight:500; font-size:14px; color:#666;';
+                    timeDiv.textContent = new Date(e.timestamp).toLocaleString();
+                    header.appendChild(timeDiv);
+                    li.appendChild(header);
 
-            // Diff container
-            const diffDiv = document.createElement('div');
-            diffDiv.style.cssText = `
+                    // Diff container
+                    const diffDiv = document.createElement('div');
+                    diffDiv.style.cssText = `
                 font-family: monospace;
                 font-weight:400;
                 font-size:15px;
@@ -802,82 +802,82 @@ async function loadAndRenderHistory() {
                 color: #ddd;
             `;
 
-            // Parse diff lines
-            const lines = e.diff?.split('\n') || [];
-            const changes = { weeklystar: [], weekly: [], new: [], expired: [], price: [], from: [] };
+                    // Parse diff lines
+                    const lines = e.diff?.split('\n') || [];
+                    const changes = { weeklystar: [], weekly: [], new: [], expired: [], price: [], from: [] };
 
-            for (const line of lines) {
-                const m = line.match(/^\[(.+?)\] (\w+): (.+) → (.+)$/);
-                if (!m) continue;
-                const [, item, fieldRaw, oldRaw, newRaw] = m;
-                const field = fieldRaw.toLowerCase();
-                const oldVal = oldRaw === 'undefined' ? undefined : oldRaw;
-                const newVal = newRaw === 'undefined' ? undefined : newRaw;
+                    for (const line of lines) {
+                        const m = line.match(/^\[(.+?)\] (\w+): (.+) → (.+)$/);
+                        if (!m) continue;
+                        const [, item, fieldRaw, oldRaw, newRaw] = m;
+                        const field = fieldRaw.toLowerCase();
+                        const oldVal = oldRaw === 'undefined' ? undefined : oldRaw;
+                        const newVal = newRaw === 'undefined' ? undefined : newRaw;
 
-                if (['weeklystar','weekly','new','expired'].includes(field)) {
-                    if (newVal === 'true' || newVal === 'false') {
-                        changes[field].push({ item, value: newVal === 'true' });
+                        if (['weeklystar', 'weekly', 'new', 'expired'].includes(field)) {
+                            if (newVal === 'true' || newVal === 'false') {
+                                changes[field].push({ item, value: newVal === 'true' });
+                            }
+                        } else if (field === 'price') {
+                            changes.price.push({ item, oldPrice: oldVal, newPrice: newVal });
+                        } else if (field === 'from') {
+                            changes.from.push({ item, oldDesc: oldVal, newDesc: newVal });
+                        }
                     }
-                } else if (field === 'price') {
-                    changes.price.push({ item, oldPrice: oldVal, newPrice: newVal });
-                } else if (field === 'from') {
-                    changes.from.push({ item, oldDesc: oldVal, newDesc: newVal });
+
+                    function createSection(title, items, format) {
+                        if (!items.length) return null;
+                        const sec = document.createElement('div');
+                        const h4 = document.createElement('h4');
+                        h4.textContent = title;
+                        h4.style.margin = '8px 0 4px 0';
+                        h4.style.fontWeight = '600';
+                        sec.appendChild(h4);
+
+                        const ul2 = document.createElement('ul');
+                        ul2.style.cssText = 'margin:0 0 8px 16px; padding:0; list-style:none; font-size:14px; color:#ddd;';
+                        for (const i of items) {
+                            const li2 = document.createElement('li');
+                            li2.style.marginBottom = '3px';
+                            li2.innerHTML = format(i);
+                            ul2.appendChild(li2);
+                        }
+                        sec.appendChild(ul2);
+                        return sec;
+                    }
+
+                    const sections = [
+                        ['Star shop:', changes.weeklystar, i => `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong> `],
+                        ['Weekly:', changes.weekly, i => `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong>`],
+                        ['New:', changes.new, i => `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong> `],
+                        ['Expired:', changes.expired, i => `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong> `],
+                        ['Price:', changes.price, i => `<span style="display:inline-block;width:1.2em;text-align:center;color:#fa4;font-weight:bolder;">$</span> <strong>[${i.item}]</strong> <span style="color:#f66">${i.oldPrice}</span> → <span style="color:#6f6">${i.newPrice}</span>`],
+                        ['Description:', changes.from, i =>
+                            `<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span> <strong>[${i.item}]</strong> ${i.oldDesc}<br><span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span> <strong>[${i.item}]</strong> ${i.newDesc}`
+                        ],
+                    ];
+
+                    let anySectionAdded = false;
+                    for (const [title, items, fmt] of sections) {
+                        const sectionEl = createSection(title, items, fmt);
+                        if (sectionEl) {
+                            diffDiv.appendChild(sectionEl);
+                            anySectionAdded = true;
+                        }
+                    }
+
+                    if (!anySectionAdded) {
+                        diffDiv.textContent = e.diff || '(no diff available)';
+                    }
+
+                    li.appendChild(diffDiv);
+                    ul.appendChild(li);
                 }
+                container.appendChild(ul);
+            } catch (err) {
+                container.innerHTML = `<p>Error loading history: ${err.message}</p>`;
             }
-
-            function createSection(title, items, format) {
-                if (!items.length) return null;
-                const sec = document.createElement('div');
-                const h4 = document.createElement('h4');
-                h4.textContent = title;
-                h4.style.margin = '8px 0 4px 0';
-                h4.style.fontWeight = '600';
-                sec.appendChild(h4);
-
-                const ul2 = document.createElement('ul');
-                ul2.style.cssText = 'margin:0 0 8px 16px; padding:0; list-style:none; font-size:14px; color:#ddd;';
-                for (const i of items) {
-                    const li2 = document.createElement('li');
-                    li2.style.marginBottom = '3px';
-                    li2.innerHTML = format(i);
-                    ul2.appendChild(li2);
-                }
-                sec.appendChild(ul2);
-                return sec;
-            }
-
-            const sections = [
-                ['Star shop:', changes.weeklystar, i =>  `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong> `],
-                ['Weekly:', changes.weekly, i => `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong>`],
-                ['New:', changes.new, i =>  `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong> `],
-                ['Expired:', changes.expired, i =>  `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong> `],
-                ['Price:', changes.price, i => `<span style="display:inline-block;width:1.2em;text-align:center;color:#fa4;font-weight:bolder;">$</span> <strong>[${i.item}]</strong> <span style="color:#f66">${i.oldPrice}</span> → <span style="color:#6f6">${i.newPrice}</span>`],
-                ['Description:', changes.from, i => 
-                    `<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span> <strong>[${i.item}]</strong> ${i.oldDesc}<br><span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span> <strong>[${i.item}]</strong> ${i.newDesc}`
-                ],
-            ];
-
-            let anySectionAdded = false;
-            for (const [title, items, fmt] of sections) {
-                const sectionEl = createSection(title, items, fmt);
-                if (sectionEl) {
-                    diffDiv.appendChild(sectionEl);
-                    anySectionAdded = true;
-                }
-            }
-
-            if (!anySectionAdded) {
-                diffDiv.textContent = e.diff || '(no diff available)';
-            }
-
-            li.appendChild(diffDiv);
-            ul.appendChild(li);
         }
-        container.appendChild(ul);
-    } catch (err) {
-        container.innerHTML = `<p>Error loading history: ${err.message}</p>`;
-    }
-}
 
 
 
@@ -1235,9 +1235,9 @@ async function loadAndRenderHistory() {
             }
             const imgSrc = item.img || "./imgs/trs.png";
             div.innerHTML = `
-        <span>${item.name}</span>
-        <img draggable="false" src="${imgSrc}" alt="${item.name}" onerror="this.style.display='none'" />
-      `;
+                <span>${item.name}</span>
+                <img draggable="false" src="${imgSrc}" alt="${item.name}" onerror="this.style.display='none'" />
+            `;
             const name = div.querySelector("span");
             if (type != "titles") {
                 name.style.top = "-7px";
@@ -1477,6 +1477,71 @@ async function loadAndRenderHistory() {
                 img.style = "width:80px;height:auto;";
                 box.appendChild(img);
 
+                if (type != "titles") {
+                    name.style.top = "-7px";
+                }
+                if (type == "titles") {
+                    name.style.display = "table";
+                    if (item.img) {
+                        name.style.display = "none";
+                        const img = div.querySelector("img");
+                        img.style.marginTop = "4px";
+                    } else {
+                        const img = div.querySelector("img");
+                        img.style.display = "none";
+                    }
+                    name.style.height = "auto";
+                    name.style.top = "0px";
+                    name.style.position = "static";
+                    name.style.font = "600 28px 'Arimo'";
+                    name.style.color = "rgb(255 255 255)";
+                    name.style.whiteSpace = "nowrap";
+                    name.style.bottom = "auto";
+                    name.style.paddingTop = "0px";
+                }
+                if (item.style) {
+                    name.setAttribute("style", item.style);
+                    name.style.whiteSpace = "nowrap";
+                    name.style.bottom = "auto";
+                }
+                if (item.style2) {
+                    name.setAttribute("style", item.style2);
+                    name.style.whiteSpace = "nowrap";
+                    name.style.height = "0";
+                    let clone = name.cloneNode(true);
+                    clone.style.height = "auto";
+                    clone.style.top = "auto";
+                    clone.style.display = "table";
+                    name.style.bottom = "auto";
+                    name.style.paddingTop = "0px";
+                    name.style.display = "table";
+                    clone.style.position = "absolute";
+                    clone.style.textShadow = "none";
+                    clone.style.fontSize = "1em";
+                    clone.style.whiteSpace = "nowrap";
+                    name.appendChild(clone);
+                }
+                if (item.style3) {
+                    name.outerHTML = item.style3;
+                }
+                if (item.color) {
+                    name.style.color = item.color;
+                }
+                if (item.stroke) {
+                    let stroke = item.stroke.split(" ");
+                    name.style.textShadow = `-${stroke[0]} -${stroke[0]} 0 ${stroke[1]}, 0 -${stroke[0]} 0 ${stroke[1]}, ${stroke[0]} -${stroke[0]} 0 ${stroke[1]}, ${stroke[0]} 0 0 ${stroke[1]}, ${stroke[0]} ${stroke[0]} 0 ${stroke[1]}, 0 ${stroke[0]} 0 ${stroke[1]}, -${stroke[0]} ${stroke[0]} 0 ${stroke[1]}, -${stroke[0]} 0 0 ${stroke[1]}`;
+                }
+                if (item.font) {
+                    name.style.font = item.font;
+                    if (name.children.length > 0) {
+                        name.childNodes[1].style.font = item.font;
+                        name.childNodes[1].style.fontSize = "1em";
+                    }
+                }
+                if (item.rotate) {
+                    name.style.transform = "rotate(" + item.rotate + "deg)";
+                }
+
                 const inputBox = document.createElement("div");
                 inputBox.className = "inputs-container";
 
@@ -1535,8 +1600,9 @@ async function loadAndRenderHistory() {
             delBtn.innerHTML = "X";
             delBtn.style = "display:none;background:#d12a2a; color:white; border:none; padding:4px 8px; border-radius:6px; cursor:pointer;";
             delBtn.onclick = () => {
-                wrapper.remove();
+                input.value = "";
                 updateItemFromInputs(wrapper.parentElement, item);
+                wrapper.remove();
             };
 
             input.addEventListener("focus", () => {
