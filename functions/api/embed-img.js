@@ -6,6 +6,16 @@ export async function onRequest(context) {
     const base = 'https://emwiki.site';
 
 
+    // Simple XML escape helper for safe output in SVG
+    function escapeXml(unsafe) {
+        return unsafe.replace(/[<>&'"]/g, c => ({
+            '<': '&lt;',
+            '>': '&gt;',
+            '&': '&amp;',
+            '\'': '&apos;',
+            '"': '&quot;'
+        })[c]);
+    }
     function normalize(str) {
         return (str || '').toLowerCase().replace(/\s+/g, '-');
     }
