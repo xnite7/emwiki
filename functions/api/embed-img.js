@@ -1,5 +1,4 @@
 import { Canvg } from "canvg";
-import svg2img from "svg2img";
 
 export async function onRequest(context) {
   const { request } = context;
@@ -93,12 +92,17 @@ export async function onRequest(context) {
         </defs>
       </svg>`;
 
-    const buffer = await new Promise((resolve, reject) => {
-      svg2img(svg, { width: 500, height: 520 }, (error, buffer) => {
-        if (error) reject(error);
-        else resolve(buffer);
-      });
+    // Create an offscreen canvas for browser-like environment
+    const canvas = new OffscreenCanvas(500, 520);
+    const ctx = canvas.getContext("2d");
+    const v = await Canvg.from(ctx, svg, {
+      enableCssParsing: true,
+      ignoreFonts: false // Ensure fonts are loaded
     });
+    await v.render();
+
+    const blob = await canvas.convertToBlob({ type: "image/png" });
+    const buffer = await blob.arrayBuffer();
 
     return new Response(buffer, {
       headers: {
