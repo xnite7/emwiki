@@ -61,9 +61,24 @@ export async function onRequest(context) {
         // Build SVG strings
         const svg = `
         <svg xmlns="http://www.w3.org/2000/svg" width="300" height="200">
+  <defs>
+    <style type="text/css">
+      @font-face {
+        font-family: 'DejaVuSans';
+        src: url("data:font/ttf;base64,AAEAAAARAQAABAAgR0RFRrRCsIIAAAC8AAAAVE9TLzIa6S+aAAABHAAAAFRjbWFw7LzVJwAAAXgAAABYY3Z0IAAAAAAAAAZQAAAFOmhlYWQyGHYFAAAU3AAAADZoaGVhBuwD+gAAFGQAAAAkaG10eD5bAAAABUwAAAAMbG9jYQAAAAAAAAAUeAAAAA5tYXhwAAEAAAAABWgAAAAgbmFtZcni48YAAAVMAAABKnBvc3QAAYABAABWkAAAACBwcmVw9k0I/gAABZwAAACMZ2x5ZlFS3HAAAAbkAAAEWeJxjYGRgYOBi0GHgYWBkCGAAAGsACQ==");
+      }
+      text {
+        font-family: 'DejaVuSans';
+      }
+    </style>
+  </defs>
+
   <rect x="10" y="10" width="280" height="180" rx="20" ry="20" fill="#3498db" stroke="black" stroke-width="4"/>
-  <text x="150" y="105" font-size="40" fill="white" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif">Hello</text>
+  <text x="150" y="105" font-size="40" fill="white" text-anchor="middle" dominant-baseline="middle">
+    Hello
+  </text>
 </svg>
+
 `;
 
       
