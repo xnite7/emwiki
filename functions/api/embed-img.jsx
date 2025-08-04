@@ -1,64 +1,10 @@
 import React from "react";
 import { ImageResponse } from "@vercel/og";
 
-export const config = {
-  runtime: "edge",
-};
-
-function escapeXml(unsafe) {
-  return unsafe.replace(/[<>&'"]/g, (c) =>
-    ({
-      "<": "&lt;",
-      ">": "&gt;",
-      "&": "&amp;",
-      "'": "&apos;",
-      '"': "&quot;",
-    }[c])
-  );
-}
-
-function normalize(str) {
-  return (str || "").toLowerCase().replace(/\s+/g, "-");
-}
+export const config = { runtime: "edge" };
 
 export default async function handler(req) {
   try {
-    const url = new URL(req.url);
-    const item = url.searchParams.get("item");
-
-    const base = "https://emwiki.site";
-
-    // Fetch gist data
-    const res = await fetch(`${base}/api/gist-version`);
-    if (!res.ok) throw new Error("Failed to fetch gist data");
-    const gist = await res.json();
-    const data = JSON.parse(gist.files?.["auto.json"]?.content);
-
-    let match = null;
-    let category = null;
-
-    for (const [cat, items] of Object.entries(data)) {
-      const found = items.find((i) => normalize(i?.name) === normalize(item));
-      if (found) {
-        category = cat;
-        match = found;
-        break;
-      }
-    }
-    if (!match) throw new Error("Item not found");
-
-    const categoryColors = {
-      gears: "#5BFE6A",
-      deaths: "#FF7A5E",
-      titles: "#C160FE",
-      pets: "#377AFA",
-      effects: "#FFB135",
-    };
-    const bgColor = categoryColors[category] || "#808080";
-    const text = (match.name || "EMWiki Item").replace(/-/g, " ");
-    const img = match.img ? `${base}/${match.img}` : `${base}/imgs/trs.png`;
-
-    // Load fonts as ArrayBuffers
     const bunnyFont = await fetch(
       "https://emwiki.site/fonts/BunnyFlowers-Regular.woff"
     ).then((r) => r.arrayBuffer());
@@ -72,19 +18,16 @@ export default async function handler(req) {
           style={{
             width: 500,
             height: 520,
-            backgroundColor: bgColor,
+            backgroundColor: "#FFB135",
             borderRadius: 20,
             border: "10px solid white",
+            fontFamily: "'Source Sans Pro'",
+            color: "white",
             position: "relative",
-            overflow: "hidden",
-            fontFamily: '"Source Sans Pro", sans-serif',
           }}
         >
-          {/* Background Rect is implicit by div */}
-
-          {/* Embedded Image */}
           <img
-            src={img}
+            src="https://emwiki.site/imgs/trs.png"
             width={400}
             height={400}
             alt=""
@@ -96,8 +39,6 @@ export default async function handler(req) {
               objectFit: "cover",
             }}
           />
-
-          {/* Rotated "EC" text with gradient fill and heavy shadow */}
           <svg
             width={500}
             height={520}
@@ -146,7 +87,6 @@ export default async function handler(req) {
             </text>
           </svg>
 
-          {/* Main text */}
           <div
             style={{
               position: "absolute",
@@ -163,7 +103,7 @@ export default async function handler(req) {
               whiteSpace: "nowrap",
             }}
           >
-            {escapeXml(text)}
+            Hello
           </div>
         </div>
       ),
@@ -184,12 +124,9 @@ export default async function handler(req) {
             weight: 400,
           },
         ],
-        headers: {
-          "Content-Type": "image/png"
-        }
       }
     );
   } catch (e) {
-    return new Response(`Error: ${e.message}`, { status: 404 });
+    return new Response(`Error: ${e.message}`, { status: 500 });
   }
 }
