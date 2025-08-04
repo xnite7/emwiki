@@ -184,6 +184,9 @@ export default async function handler(req) {
             weight: 400,
           },
         ],
+        headers: {
+          "Content-Type": "image/png"
+        }
       }
     );
   } catch (e) {
