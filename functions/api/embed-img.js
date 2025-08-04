@@ -60,17 +60,11 @@ export async function onRequest(context) {
 
         // Build SVG strings
         const svg = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="500" height="520">
-            
-
-            <rect x="10" y="20" width="470" rx="20" ry="20" height="490" fill="${bgColor}" stroke="white" stroke-width="10"/>
-            <text class="sign" x="425" y="40" font-size="160" fill="white" text-anchor="middle" dominant-baseline="middle">EC</text>
-            <text x="246" y="465" font-size="160" fill="white" text-anchor="middle" dominant-baseline="middle">awda</text>
-            
-
-            
-
-        </svg>`;
+        <svg xmlns="http://www.w3.org/2000/svg" width="300" height="200">
+  <rect x="10" y="10" width="280" height="180" rx="20" ry="20" fill="#3498db" stroke="black" stroke-width="4"/>
+  <text x="150" y="105" font-size="40" fill="white" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif">Hello</text>
+</svg>
+`;
 
       
 
