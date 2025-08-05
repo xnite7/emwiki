@@ -44,7 +44,7 @@ export async function onRequest(context) {
     const descriptionText = descriptionRaw.replace(/<br\s*\/?>(\s*)?/gi, '\n');
 
     // Your image URL points to the Worker (deployed separately)
-    const imageUrl = `https://converter.xnite7.workers.dev?item=${encodeURIComponent(item)}`;
+    const imageUrl = `https://images-eight-theta.vercel.app/api/image?item=${encodeURIComponent(item)}`;
 
     return new Response(`<!DOCTYPE html>
 <html lang="en">
