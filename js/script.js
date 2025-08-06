@@ -1387,7 +1387,8 @@ function createNewItem(item, color) {
         }
         heartBtn.classList.add("heart-pulsing");
         setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 500);
-
+        e.stopPropagation();
+        e.preventDefault();
       }, 500);
     });
 
