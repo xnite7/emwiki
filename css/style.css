@@ -14,8 +14,8 @@ body {
     background-image: url(../imgs/bg.jpg);
     background-position: top;
     background-repeat: no-repeat;
-    background-size: 100vw auto;
-    height: 1000vw;
+    background-size: cover;
+    height: 100vh;
     left: 0;
     opacity: 0;
     position: fixed;

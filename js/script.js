@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (!isTouch) {
         document.querySelector(".parallax-bg").style.transition = "none";
-        document.querySelector(".parallax-bg").style.backgroundSize = "124vw auto"
+        document.querySelector(".parallax-bg").style.backgroundSize = "cover"
       } else {
         document.querySelector(".parallax-bg").style.transition = "transform 0.1s ease-out, opacity 0.2s ease";
       }
@@ -332,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
           window.scrollTo(0, 0);
           
           if (!isTouch) {
-            document.querySelector(".parallax-bg").style.backgroundSize = "124vw auto"
+            document.querySelector(".parallax-bg").style.backgroundSize = "cover"
           }
           intro.style['transition'] = "0.5s"
         }, 2000)
