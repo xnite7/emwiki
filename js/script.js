@@ -1386,18 +1386,15 @@ function createNewItem(item, color) {
           heartBtn.classList.remove("favorited");
         }
         heartBtn.classList.add("heart-pulsing");
-        setTimeout(() => {
-          heartBtn.classList.remove("heart-pulsing")
-          e.stopPropagation();
-          e.preventDefault();
-        },500);
-        e.stopPropagation();
-        e.preventDefault();
+        setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 500);
+
       }, 400);
     });
 
     newItem.addEventListener("touchend", () => {
       clearTimeout(touchTimer);
+      e.stopPropagation();
+      e.preventDefault();
     });
 
     newItem.addEventListener("touchmove", () => {
