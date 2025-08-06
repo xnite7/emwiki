@@ -223,8 +223,14 @@ const modalCache = {
   button: document.getElementById("tour-button")
 };
 document.addEventListener('DOMContentLoaded', () => {
-  
+
   document.querySelector('.blackscreen').style.background = 'rgba(0,0,0,0)'
+
+  document.querySelector('.blackscreen').addEventListener('transitionend', (event) => {
+    document.querySelector('.blackscreen').style.display = 'none';
+  });
+
+
   const today = new Date().toISOString().split("T")[0]; // e.g., "2025-07-31"
   const lastShown = localStorage.getItem("lastShownDate");
   const ranimg = localStorage.getItem("ranimg");
@@ -518,7 +524,7 @@ function openSiblingModal(direction) {
         modalCache.content.classList.add('swipeRight')
       }
     }, 100)
-    
+
     setTimeout(() => {
       modalCache.content.classList.remove('forceSwipe')
 
@@ -586,7 +592,7 @@ function Modal(event) {
   const existingCanvas = modalCache.content.querySelector("#content-area canvas");
   if (existingCanvas) existingCanvas.remove();
 
-  
+
   modalCache.content.style.pointerEvents = "none";
   modalCache.content.style.backgroundColor = item.style.backgroundColor;
   modalCache.title.textContent = title;
