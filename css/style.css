@@ -2015,9 +2015,6 @@ html {
         font: 600 1.45em BuilderSans
     }
 
-    .parallax-bg {
-        height: 100%
-    }
 
     #zd {
         font-size: 1.6rem;
@@ -2149,7 +2146,7 @@ html {
     }
 
     .parallax-bg {
-        background-size: auto 124vh
+        background-size: auto 104vh
     }
 
     .item:hover {

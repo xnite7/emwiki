@@ -278,7 +278,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector(".parallax-bg").style.transition = "none";
         document.querySelector(".parallax-bg").style.backgroundSize = "124vw auto"
       } else {
-        document.querySelector(".parallax-bg").style.backgroundSize = "auto 104vh"
         document.querySelector(".parallax-bg").style.transition = "transform 0.1s ease-out, opacity 0.2s ease";
       }
 
@@ -332,9 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
           window.scrollTo(0, 0);
           
-          if (isTouch) {
-            document.querySelector(".parallax-bg").style.backgroundSize = "auto 104vh"
-          } else {
+          if (!isTouch) {
             document.querySelector(".parallax-bg").style.backgroundSize = "124vw auto"
           }
           intro.style['transition'] = "0.5s"
