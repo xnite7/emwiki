@@ -1037,11 +1037,20 @@ async function rinse() {
 
 
     setupLazyLoading();
+
     let flatArray = Object.entries(window._randomCategoryColors).flatMap(([key, catColor]) =>
         (data[key] || []).map(item => ({ ...item, _color: catColor }))
     );
-    
-    setupSearch(flatArray, _randomCategoryColors);
+
+    setupSearch(flatArray, _randomCategoryColors)
+
+    window.addEventListener("popstate", () => {
+      openModalFromURL(flatArray)
+    });
+
+    if (!openedFromURL) {
+      openModalFromURL(flatArray);
+    }
 
 
   } catch (error) {
@@ -1358,9 +1367,6 @@ function createNewItem(item, color) {
 
   heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
 
-
-
-
   newItem.appendChild(heartBtn);
 
   let touchTimer;
@@ -1390,16 +1396,15 @@ function createNewItem(item, color) {
     });
 
     newItem.addEventListener("touchmove", () => {
-      clearTimeout(touchTimer); // Cancel if they move finger
+      clearTimeout(touchTimer);
     });
   } else {
       heartBtn.onclick = (e) => {
-        e.stopPropagation(); // Prevent opening modal
+        e.stopPropagation();
         e.preventDefault();
         toggleFavorite(item.name);
         heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
 
-        // Toggle class
         if (isFavorited(item.name)) {
           heartBtn.classList.add("favorited");
         } else {
@@ -1560,17 +1565,6 @@ function setupSearch(itemList, defaultColor) {
     });
   }
 
-  window.addEventListener("popstate", () => {
-    closeModalHandler()
-    openModalFromURL(itemList)
-  });
-
-
-
-  if (!openedFromURL) {
-    openModalFromURL(itemList);
-  }
-
 }
 
 function showSelectedItem(item) {
@@ -1587,6 +1581,7 @@ function showSelectedItem(item) {
 
 
 function openModalFromURL(itemList) {
+  document.body.classList.remove("modal-open");
   openedFromURL = true;
   const params = new URLSearchParams(window.location.search);
   let itemSlug = params.get("item");
@@ -1602,7 +1597,6 @@ function openModalFromURL(itemList) {
 
   if (foundItem) {
     popped = true;
-    console.log(foundItem)
     showSelectedItem(foundItem)
     popped = false;
   }
