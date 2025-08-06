@@ -1400,9 +1400,9 @@ function createNewItem(item, color) {
     newItem.addEventListener("touchend", (e) => {
       const TouchUpTime = new Date().getTime(); // Record the timestamp
       const duration = TouchUpTime - TouchDownTime; // Calculate the duration
-      console.log(duration)
+
       if (duration<400) {
-        newItem.click;
+        newItem.click();
       }
 
       clearTimeout(touchTimer);
