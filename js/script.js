@@ -445,7 +445,6 @@ window.addEventListener('DOMContentLoaded', () => {
   };
 
   modalCache.modal.addEventListener("mousemove", showModalArrows);
-  modalCache.modal.addEventListener("touchstart", showSwipeTutorial);
 
   const refreshBtn = document.getElementById('refresh-button');
   if (refreshBtn) {
@@ -802,7 +801,6 @@ function Modal(event) {
 let tut = false;
 
 function showSwipeTutorial() {
-  if (!('ontouchstart' in window || navigator.maxTouchPoints > 0)) return;
   if (document.getElementById('swipe-tutorial')) return;
   if (tut) return;
   tut = true;
@@ -1578,7 +1576,12 @@ function showSelectedItem(item) {
   const newItem = document.querySelector('#itemlist .item:last-child');
   if (newItem) {
 
-    newItem.onclick = (event) => Modal(event);
+    newItem.onclick = (event) => {
+      Modal(event)
+      if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+        showSwipeTutorial();
+      }
+    };
     newItem.click();
   }
 }
