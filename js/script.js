@@ -223,7 +223,8 @@ const modalCache = {
   button: document.getElementById("tour-button")
 };
 document.addEventListener('DOMContentLoaded', () => {
-
+  
+  document.querySelector('.blackscreen').style.background = 'rgba(0,0,0,0)'
   const today = new Date().toISOString().split("T")[0]; // e.g., "2025-07-31"
   const lastShown = localStorage.getItem("lastShownDate");
   const ranimg = localStorage.getItem("ranimg");
@@ -551,6 +552,8 @@ function Modal(event) {
   if (document.body.classList.contains("modal-open")) return;
   const item = event.target.closest(".item");
   if (!item) return;
+  modalCache.content.style.transform = "perspective(1800px) rotateX(0deg) rotateY(90deg) scale3d(1, 1, 1)";
+
   document.body.classList.add("modal-open");
   document.getElementsByTagName('html')[0].style.overflowY = "hidden";
 
@@ -583,6 +586,7 @@ function Modal(event) {
   const existingCanvas = modalCache.content.querySelector("#content-area canvas");
   if (existingCanvas) existingCanvas.remove();
 
+  
   modalCache.content.style.pointerEvents = "none";
   modalCache.content.style.backgroundColor = item.style.backgroundColor;
   modalCache.title.textContent = title;

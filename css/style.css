@@ -1398,26 +1398,24 @@ html {
     display: block;
     max-height: 90vh;
     max-width: 380px;
-    opacity: 0;
+    
     padding: 20px;
     position: absolute;
     text-align: center;
-    transform: scale(1);
-    transform: translateY(1000px);
-    transform-origin: bottom center;
+    opacity: 1;
+    transform-origin: center;
     transform-style: preserve-3d;
     left: 0vw;
-    transition: transform .3s cubic-bezier(.25, .8, .25, 1), opacity .3s ease, left .2s ease;
+    transition: transform .4s cubic-bezier(.25, .8, .25, 1), opacity .3s ease, left .2s ease;
     width: 100%;
-    will-change: transform, box-shadow, background-size
+    will-change: transform, box-shadow, background-size;
+    transform: perspective(1800px) rotateY(0deg) scale(1) !important;
+    @starting-style{
+        opacity: 0;
+        transform: perspective(1800px) rotateY(90deg) scale(1) !important;
+    }
 }
 
-.modal-content.expand {
-    opacity: 1;
-    transform: scale(1);
-    transform: translateY(0);
-    transform-origin: center
-}
 
 .modal-title {
     font: 900 45px 'Source Sans Pro';
@@ -2193,7 +2191,6 @@ html {
 
     .modal-title {
         text-wrap-style: balance;
-        text-align-last: center;
         font: 900 39px 'Source Sans Pro';
     }
 

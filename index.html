@@ -4,6 +4,11 @@
 	<link rel="apple-touch-startup-image" href="./imgs/cat-kiss.gif">
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<style>
+		.blackscreen{ 
+			background:rgb(0, 0, 0);
+			transition: all 500ms cubic-bezier(1,-0.01,.65,1.04) 600ms;
+		}
+
 		.intro {
 			opacity: 0;
 		}
@@ -208,7 +213,9 @@
 	🛠️ Site updated May 31 — <a style="color: #33c5ff;" href="#patchnotes">See
 		what's new</a> — All the items have been added!
 </div>
-
+<div class="blackscreen"
+	style="display:block;position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:999;">
+</div>
 <body id="body">
 	<div class="grad"></div>
 	<div class="parallax-bg"></div>
@@ -704,7 +711,7 @@
 
 <!-- Modal background overlay -->
 <div id="modal-overlay"
-	style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:999;">
+	style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5s); z-index:999;">
 </div>
 
 <script src="./js/script.js"></script>
