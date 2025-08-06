@@ -1374,7 +1374,7 @@ function createNewItem(item, color) {
 
 
 
-  if (!isTouch) {
+  if (isTouch) {
     newItem.addEventListener("touchstart", (e) => {
       TouchDownTime = new Date().getTime(); // Record the timestamp
       touchTimer = setTimeout(() => {
