@@ -273,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let main = document.querySelector("main");
       main.style.scale = "1"
       main.style.filter = 'opacity(1)'
-      
+
       if (!isTouch) {
         document.querySelector(".parallax-bg").style.transition = "none";
         document.querySelector(".parallax-bg").style.backgroundSize = "cover"
@@ -330,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2100)
         setTimeout(() => {
           window.scrollTo(0, 0);
-          
+
           if (!isTouch) {
             document.querySelector(".parallax-bg").style.backgroundSize = "cover"
           }
@@ -353,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
           main.style.filter = 'opacity(1)'
         }, 2800)
         setTimeout(() => {
-          
+
           if (!isTouch) {
             document.querySelector(".parallax-bg").style.transition = "none";
           } else {
@@ -499,7 +499,7 @@ function openSiblingModal(direction) {
     : currentItem.previousElementSibling;
   if (sibling && sibling.classList.contains("item")) {
 
-    
+
     setTimeout(() => {
       document.body.classList.remove("modal-open")
       sibling.click();
@@ -513,7 +513,7 @@ function requestGyroPermission() {
     DeviceMotionEvent.requestPermission()
       .then(response => {
         if (response === "granted") {
-          gyro.style.display= 'none';
+          gyro.style.display = 'none';
         }
       })
       .catch(console.error);
@@ -522,7 +522,7 @@ function requestGyroPermission() {
 const gyro = document.querySelector('.gyro')
 
 if (gyro && !isTouch) {
-  gyro.style.display= 'none';
+  gyro.style.display = 'none';
 }
 
 
@@ -946,7 +946,7 @@ function setupLazyLoading() {
           populateGrid(gridId, filteredItems);
 
         }
-        
+
 
         if (document.getElementById("zd")) {
           document.getElementById("zd").innerText = `${document.querySelectorAll("#ctlg .item").length} item${document.querySelectorAll("#ctlg .item").length === 1 ? '' : 's'}`;
@@ -955,7 +955,7 @@ function setupLazyLoading() {
           checkVisibleFavoritesOnPage();
         }
 
-        
+
 
         if (entry.target.children.length === 0) {
           entry.target.parentElement.style.display = "none";
@@ -1039,7 +1039,7 @@ async function rinse() {
     setupLazyLoading();
 
     let flatArray = Object.entries(window._randomCategoryColors).flatMap(([key, catColor]) =>
-        (data[key] || []).map(item => ({ ...item, _color: catColor }))
+      (data[key] || []).map(item => ({ ...item, _color: catColor }))
     );
 
     setupSearch(flatArray, _randomCategoryColors)
@@ -1370,7 +1370,7 @@ function createNewItem(item, color) {
   newItem.appendChild(heartBtn);
 
   let touchTimer;
-  
+
 
   if (isTouch) {
     newItem.addEventListener("touchstart", (e) => {
@@ -1392,6 +1392,12 @@ function createNewItem(item, color) {
     });
 
     newItem.addEventListener("touchend", (e) => {
+      
+      if (touchTimer<400) {
+        newItem.click;
+        console.log(touchTimer)
+
+      }
       clearTimeout(touchTimer);
       e.stopPropagation();
       e.preventDefault();
@@ -1401,32 +1407,32 @@ function createNewItem(item, color) {
       clearTimeout(touchTimer);
     });
   } else {
-      heartBtn.onclick = (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        toggleFavorite(item.name);
-        heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
+    heartBtn.onclick = (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      toggleFavorite(item.name);
+      heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
 
-        if (isFavorited(item.name)) {
-          heartBtn.classList.add("favorited");
-        } else {
-          heartBtn.classList.remove("favorited");
-        }
+      if (isFavorited(item.name)) {
+        heartBtn.classList.add("favorited");
+      } else {
+        heartBtn.classList.remove("favorited");
+      }
 
-        heartBtn.classList.add("heart-pulsing");
-        setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 500);
-      };
+      heartBtn.classList.add("heart-pulsing");
+      setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 500);
+    };
 
-      heartBtn.addEventListener('mousedown', e => {
-        e.stopPropagation();
-        document.body.classList.add('pressing-heart');
-      });
-      heartBtn.addEventListener('mouseup', () => {
-        document.body.classList.remove('pressing-heart');
-      });
-      heartBtn.addEventListener('mouseleave', () => {
-        document.body.classList.remove('pressing-heart');
-      });
+    heartBtn.addEventListener('mousedown', e => {
+      e.stopPropagation();
+      document.body.classList.add('pressing-heart');
+    });
+    heartBtn.addEventListener('mouseup', () => {
+      document.body.classList.remove('pressing-heart');
+    });
+    heartBtn.addEventListener('mouseleave', () => {
+      document.body.classList.remove('pressing-heart');
+    });
   }
 
 
