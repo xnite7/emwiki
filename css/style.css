@@ -980,7 +980,7 @@ body.pressing-heart .item:active {
     backdrop-filter: blur(12px);
     background: #00000040;
     border-radius: 9px;
-    bottom: -5px;
+    bottom: -7px;
     font: 200 20px BuilderSans;
     left: -7px;
     padding: 0 5px;
