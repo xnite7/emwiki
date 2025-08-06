@@ -23,8 +23,6 @@ function createProductModal() {
     will-change: transform;
     background-color: rgb(91, 254, 106);
     position: relative;
-    top: 0px;
-    left: 0px;
     transform: perspective(1800px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1);
   `;
 
@@ -491,19 +489,42 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 
+
 function openSiblingModal(direction) {
   const currentItem = document.querySelector(".item.showing");
   if (!currentItem) return;
   const sibling = direction === "next"
     ? currentItem.nextElementSibling
     : currentItem.previousElementSibling;
+
   if (sibling && sibling.classList.contains("item")) {
-
-
+    if (direction === "next") {
+      modalCache.content.classList.add('swipeLeft')
+    } else {
+      modalCache.content.classList.add('swipeRight')
+    }
     setTimeout(() => {
       document.body.classList.remove("modal-open")
       sibling.click();
     }, 90);
+    setTimeout(() => {
+      modalCache.content.classList.add('forceSwipe')
+      if (modalCache.content.classList.contains('swipeRight')) {
+        modalCache.content.classList.remove('swipeRight')
+        modalCache.content.classList.add('swipeLeft')
+      } else if (modalCache.content.classList.contains('swipeLeft')) {
+        modalCache.content.classList.remove('swipeLeft')
+        modalCache.content.classList.add('swipeRight')
+      }
+    }, 100)
+    
+    setTimeout(() => {
+      modalCache.content.classList.remove('forceSwipe')
+
+      modalCache.content.classList.remove('swipeLeft')
+      modalCache.content.classList.remove('swipeRight')
+
+    }, 200);
   }
 }
 
@@ -532,6 +553,9 @@ function Modal(event) {
   if (!item) return;
   document.body.classList.add("modal-open");
   document.getElementsByTagName('html')[0].style.overflowY = "hidden";
+
+  document.getElementById("modal-left-arrow").style.display = item.previousElementSibling ? "block" : "none";
+  document.getElementById("modal-right-arrow").style.display = item.nextElementSibling ? "block" : "none";
 
   modalCache.retired.style.visibility = "hidden";
   modalCache.premium.style.visibility = "hidden";
@@ -764,8 +788,6 @@ function Modal(event) {
 
   Object.assign(modalCache.content.style, {
     position: "absolute",
-    top: `${itemRect.top}px`,
-    left: `${itemRect.left}px`,
     width: `${itemRect.width}px`,
     height: `${itemRect.height}px`,
     opacity: "0",
@@ -778,8 +800,6 @@ function Modal(event) {
     modalCache.content.style.pointerEvents = "auto";
     Object.assign(modalCache.content.style, {
       position: "relative",
-      top: "0",
-      left: "0",
       width: "",
       height: "",
       opacity: "",
@@ -1380,8 +1400,8 @@ function createNewItem(item, color) {
       touchTimer = setTimeout(() => {
         e.stopPropagation();
         e.preventDefault();
-        
-        
+
+
 
         toggleFavorite(item.name);
         heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
@@ -1401,7 +1421,7 @@ function createNewItem(item, color) {
       const TouchUpTime = new Date().getTime(); // Record the timestamp
       const duration = TouchUpTime - TouchDownTime; // Calculate the duration
 
-      if (duration<400) {
+      if (duration < 400) {
         newItem.click();
       }
 

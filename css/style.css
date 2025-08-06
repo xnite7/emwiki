@@ -1406,7 +1406,8 @@ html {
     transform: translateY(1000px);
     transform-origin: bottom center;
     transform-style: preserve-3d;
-    transition: transform .3s cubic-bezier(.25, .8, .25, 1), opacity .3s ease;
+    left: 0vw;
+    transition: transform .3s cubic-bezier(.25, .8, .25, 1), opacity .3s ease, left .2s ease;
     width: 100%;
     will-change: transform, box-shadow, background-size
 }
@@ -2343,9 +2344,22 @@ html {
     }
 }
 
-
-
 .favorited {
     opacity: 1 !important;
+}
+
+
+.modal-content.swipeRight {
+    left: 100vw;
+    
+}
+
+.modal-content.swipeLeft {
+    left: -100vw;
+    
+}
+.modal-content.forceSwipe {
+    transition: left 0s ease;
+    
 }
 
