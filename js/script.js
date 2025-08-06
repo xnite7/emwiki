@@ -1370,13 +1370,19 @@ function createNewItem(item, color) {
   newItem.appendChild(heartBtn);
 
   let touchTimer;
+  let TouchDownTime;
 
 
-  if (isTouch) {
+
+  if (!isTouch) {
     newItem.addEventListener("touchstart", (e) => {
+      TouchDownTime = new Date().getTime(); // Record the timestamp
       touchTimer = setTimeout(() => {
         e.stopPropagation();
         e.preventDefault();
+        
+        
+
         toggleFavorite(item.name);
         heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
 
@@ -1386,18 +1392,19 @@ function createNewItem(item, color) {
           heartBtn.classList.remove("favorited");
         }
         heartBtn.classList.add("heart-pulsing");
-        setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 500);
+        setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 400);
 
       }, 400);
     });
 
     newItem.addEventListener("touchend", (e) => {
-      
-      if (touchTimer<400) {
+      const TouchUpTime = new Date().getTime(); // Record the timestamp
+      const duration = TouchUpTime - TouchDownTime; // Calculate the duration
+      console.log(duration)
+      if (duration<400) {
         newItem.click;
-        console.log(touchTimer)
-
       }
+
       clearTimeout(touchTimer);
       e.stopPropagation();
       e.preventDefault();
