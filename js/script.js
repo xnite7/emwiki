@@ -1578,7 +1578,7 @@ function showSelectedItem(item) {
 
     newItem.onclick = (event) => {
       Modal(event)
-      if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+      if (isTouch) {
         showSwipeTutorial();
       }
     };
