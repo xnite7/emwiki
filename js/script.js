@@ -503,8 +503,9 @@ function openSiblingModal(direction) {
     : currentItem.previousElementSibling;
   if (sibling && sibling.classList.contains("item")) {
 
-    closeModalHandler();
+    
     setTimeout(() => {
+      document.body.classList.remove("modal-open")
       sibling.click();
     }, 90);
   }
@@ -945,12 +946,8 @@ function setupLazyLoading() {
           populateGrid(gridId, filteredItems);
 
         }
+        
 
-        let flatArray = Array.isArray(items)
-          ? items.map(item => ({ ...item, _color: color }))
-          : Object.entries(window._randomCategoryColors).flatMap(([key, catColor]) =>
-            (items[key] || []).map(item => ({ ...item, _color: catColor }))
-          );
         if (document.getElementById("zd")) {
           document.getElementById("zd").innerText = `${document.querySelectorAll("#ctlg .item").length} item${document.querySelectorAll("#ctlg .item").length === 1 ? '' : 's'}`;
           document.getElementById("zd").insertAdjacentHTML('beforebegin', '<button id="favorite-toggle" style="margin-bottom:10px;" onclick="filterFavorites()">❤️ Show Favorites</button>')
@@ -958,7 +955,7 @@ function setupLazyLoading() {
           checkVisibleFavoritesOnPage();
         }
 
-        setupSearch(flatArray, color);
+        
 
         if (entry.target.children.length === 0) {
           entry.target.parentElement.style.display = "none";
@@ -1040,6 +1037,11 @@ async function rinse() {
 
 
     setupLazyLoading();
+    let flatArray = Object.entries(window._randomCategoryColors).flatMap(([key, catColor]) =>
+        (data[key] || []).map(item => ({ ...item, _color: catColor }))
+    );
+    
+    setupSearch(flatArray, _randomCategoryColors);
 
 
   } catch (error) {
