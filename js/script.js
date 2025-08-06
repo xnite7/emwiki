@@ -1,5 +1,5 @@
 let imgg;
-
+const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 function createProductModal() {
   const modal = document.createElement("div");
   modal.id = "product-modal";
@@ -273,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let main = document.querySelector("main");
       main.style.scale = "1"
       main.style.filter = 'opacity(1)'
-      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      
       if (!isTouch) {
         document.querySelector(".parallax-bg").style.transition = "none";
         document.querySelector(".parallax-bg").style.backgroundSize = "124vw auto"
@@ -331,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2100)
         setTimeout(() => {
           window.scrollTo(0, 0);
-          const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+          
           if (isTouch) {
             document.querySelector(".parallax-bg").style.backgroundSize = "auto 104vh"
           } else {
@@ -356,7 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
           main.style.filter = 'opacity(1)'
         }, 2800)
         setTimeout(() => {
-          const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+          
           if (!isTouch) {
             document.querySelector(".parallax-bg").style.transition = "none";
           } else {
@@ -517,11 +517,16 @@ function requestGyroPermission() {
     DeviceMotionEvent.requestPermission()
       .then(response => {
         if (response === "granted") {
-          // Now VanillaTilt can use gyroscope
+          gyro.style.display= 'none';
         }
       })
       .catch(console.error);
   }
+}
+const gyro = document.querySelector('.gyro')
+
+if (gyro && !isTouch) {
+  gyro.style.display= 'none';
 }
 
 
@@ -1370,9 +1375,9 @@ function createNewItem(item, color) {
   newItem.appendChild(heartBtn);
 
   let touchTimer;
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  
 
-  if (isTouchDevice) {
+  if (isTouch) {
     newItem.addEventListener("touchstart", (e) => {
       touchTimer = setTimeout(() => {
         e.stopPropagation();
@@ -1688,7 +1693,7 @@ function checkVisibleFavoritesOnPage() {
   }
 }
 
-const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
 if (isTouch) {
   document.body.classList.add("is-touch");
 }
