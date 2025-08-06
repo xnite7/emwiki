@@ -1358,33 +1358,7 @@ function createNewItem(item, color) {
 
   heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
 
-  heartBtn.onclick = (e) => {
-    e.stopPropagation(); // Prevent opening modal
-    e.preventDefault();
-    toggleFavorite(item.name);
-    heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
 
-    // Toggle class
-    if (isFavorited(item.name)) {
-      heartBtn.classList.add("favorited");
-    } else {
-      heartBtn.classList.remove("favorited");
-    }
-
-    heartBtn.classList.add("heart-pulsing");
-    setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 500);
-  };
-
-  heartBtn.addEventListener('mousedown', e => {
-    e.stopPropagation();
-    document.body.classList.add('pressing-heart');
-  });
-  heartBtn.addEventListener('mouseup', () => {
-    document.body.classList.remove('pressing-heart');
-  });
-  heartBtn.addEventListener('mouseleave', () => {
-    document.body.classList.remove('pressing-heart');
-  });
 
 
   newItem.appendChild(heartBtn);
@@ -1418,6 +1392,34 @@ function createNewItem(item, color) {
     newItem.addEventListener("touchmove", () => {
       clearTimeout(touchTimer); // Cancel if they move finger
     });
+  } else {
+      heartBtn.onclick = (e) => {
+        e.stopPropagation(); // Prevent opening modal
+        e.preventDefault();
+        toggleFavorite(item.name);
+        heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
+
+        // Toggle class
+        if (isFavorited(item.name)) {
+          heartBtn.classList.add("favorited");
+        } else {
+          heartBtn.classList.remove("favorited");
+        }
+
+        heartBtn.classList.add("heart-pulsing");
+        setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 500);
+      };
+
+      heartBtn.addEventListener('mousedown', e => {
+        e.stopPropagation();
+        document.body.classList.add('pressing-heart');
+      });
+      heartBtn.addEventListener('mouseup', () => {
+        document.body.classList.remove('pressing-heart');
+      });
+      heartBtn.addEventListener('mouseleave', () => {
+        document.body.classList.remove('pressing-heart');
+      });
   }
 
 
