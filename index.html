@@ -540,7 +540,7 @@
 			</section>
 			<!-- Add somewhere in your HTML for top donators -->
 			<section class="half" style="overflow: hidden;" id="top-donators">
-				<h1 class="title">Donators 🧡</h1>
+				<h1 class="title">🧡 Donators 🧡</h1>
 
 				<div id="donators-list" style="
 				display: inline-flex;
@@ -728,7 +728,7 @@
 				})
 				.then(data => {
 					donatorsList.innerHTML = '';
-					const topDonators = data.sort((a, b) => b.amount - a.amount).slice(0, 3);
+					const topDonators = data.sort((a, b) => b.amount - a.amount).slice(0, 4);
 					topDonators.forEach(user => {
 						const li = document.createElement('li');
 						const img = document.createElement('img');
