@@ -1391,7 +1391,7 @@ function createNewItem(item, color) {
       }, 400);
     });
 
-    newItem.addEventListener("touchend", () => {
+    newItem.addEventListener("touchend", (e) => {
       clearTimeout(touchTimer);
       e.stopPropagation();
       e.preventDefault();
