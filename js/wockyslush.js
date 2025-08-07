@@ -553,10 +553,10 @@ if (isTouch) {
     let threshold = window.innerHeight * 0.38; // 30% of screen height
     let isDragging = false;
 
-    modal.addEventListener('click', (e) => {
+    modal.addEventListener('touchend', (e) => {
       if (e.target === modal) {
 
-
+        
         // User dragged far enough, trigger full close
         isDragging = false;
         inner.style.transition = 'transform 0.25s ease';
@@ -569,10 +569,11 @@ if (isTouch) {
     });
 
     inner.addEventListener('touchstart', (e) => {
-      inner.style.animation = 'unset'
+      
       startY = e.touches[0].clientY;
       inner.style.transition = 'none'; // Disable transition while dragging
       isDragging = true;
+      console.log(e.target)
     });
 
     inner.addEventListener('touchmove', (e) => {

@@ -456,15 +456,18 @@ div .psp {
   background: #1b1b1b;
   color: white;
   border-radius: 16px 16px 0 0;
-  max-height: 85vh;
+  max-height: 69vh;
   width: 100%;
   overflow-y: auto;
   position: fixed;
   bottom: 0;
   z-index: 9999;
   padding: 16px;
-  animation: slideUp 0.35s ease forwards;
+  transform: translateY(0%);
   box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.5);
+  @starting-style{
+    transform: translateY(100%);
+  }
 }
 
 .chest-panel {
@@ -507,16 +510,6 @@ div .psp {
 
   to {
     opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(100%);
-  }
-
-  to {
-    transform: translateY(0);
   }
 }
 
