@@ -542,13 +542,31 @@ if (isTouch) {
     inner.appendChild(container);
     modal.appendChild(inner);
     modalRoot.appendChild(modal);
-    
+
+
+
+
 
     let startY = 0;
     let currentY = 0;
     let deltaY = 0;
     let threshold = window.innerHeight * 0.38; // 30% of screen height
     let isDragging = false;
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+
+
+        // User dragged far enough, trigger full close
+        isDragging = false;
+        inner.style.transition = 'transform 0.25s ease';
+        inner.style.transform = `translateY(100%)`; // Animate fully down
+
+        inner.addEventListener('transitionend', () => {
+          modal.remove();
+        }, { once: true });
+      }
+    });
 
     inner.addEventListener('touchstart', (e) => {
       inner.style.animation = 'unset'
@@ -558,17 +576,17 @@ if (isTouch) {
     });
 
     inner.addEventListener('touchmove', (e) => {
-      
+
       if (!isDragging) return;
       currentY = e.touches[0].clientY;
       deltaY = currentY - startY;
-      
+
       if (inner.scrollTop > 5 || deltaY < 0) return; // Allow only if not scrolling up and not swiping up
 
       // Move modal down by deltaY
       inner.style.transform = `translateY(${deltaY}px)`;
-      
-      
+
+
     });
 
     inner.addEventListener('touchend', () => {
@@ -580,7 +598,7 @@ if (isTouch) {
       isDragging = false;
 
       if (deltaY > threshold) {
-        
+
         // User dragged far enough, trigger full close
         isDragging = false;
         inner.style.transition = 'transform 0.25s ease';
