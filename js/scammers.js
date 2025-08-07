@@ -7,7 +7,7 @@ if (document.querySelector('.blackscreen')) {
 }
 document.documentElement.style.overflow = "scroll"
 document.documentElement.style.overflowX = "hidden"
-document.querySelector("main").style.filter = 'opacity(1)'
+document.querySelector("main").style.filter = 'unset'
 document.querySelector("main").style.scale = '1'
 
 // Filter function
