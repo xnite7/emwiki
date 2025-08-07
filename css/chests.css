@@ -206,6 +206,7 @@ section h2 {
   width: 190px;
   color: white;
   cursor: pointer;
+      scale: 1;
 }
 
 .itemname {
@@ -215,8 +216,8 @@ section h2 {
 #h3 {
   height: 0px;
   padding-top: 0px;
-  position: relative;
-  bottom: 135px;
+  position: absolute;
+  top: 5px;
   margin-top: 5px;
   z-index: 99999;
   font: 100 24px 'Source Sans Pro';
@@ -232,6 +233,7 @@ section h2 {
 }
 
 .item>canvas {
+  position: absolute;
   top: 30px;
   position: relative;
   width: 135px;
@@ -291,12 +293,6 @@ div .psp {
 }
 
 
-
-
-
-
-
-
 .retired-badge {
   background: linear-gradient(180deg, #ff3c3c, #9f0000);
   color: #ffffff;
@@ -306,9 +302,12 @@ div .psp {
   font-family: monospace;
   font-weight: bolder;
   border-radius: 6px;
-  position: relative;
-  top: 34px;
+    position: absolute;
+    top: unset;
+    bottom: -8px;
+    left: 60px;
 }
+
 
 
 

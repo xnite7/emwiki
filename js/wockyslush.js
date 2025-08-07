@@ -210,9 +210,7 @@ function createNewItem(item, color, list) {
     newItem.appendChild(retiredTag)
     newItem.style.order = "10"
 
-    if (!item.img) {
-      retiredTag.style.top = "42%";
-    }
+
   }
 
 
