@@ -24,7 +24,7 @@ export async function onRequestGet({ request, env }) {
       name: userData.name,
       displayName: userData.displayName,
       avatar: avatarData?.data?.[0]?.imageUrl || null
-    }), { headers: { "Content-Type": "application/json" } });
+    }), { headers: { "Content-Type": "application/json","Access-Control-Allow-Origin": "*" } });
   }
 
 
@@ -45,7 +45,7 @@ export async function onRequestGet({ request, env }) {
         name: userData.name,
         displayName: userData.displayName,
         avatar: avatarData?.data?.[0]?.imageUrl || null
-      }), { headers: { "Content-Type": "application/json" } });
+      }), { headers: { "Content-Type": "application/json","Access-Control-Allow-Origin": "*" } });
 
     } catch (err) {
       return new Response(JSON.stringify({ error: err.message }), { status: 500 });
@@ -81,7 +81,7 @@ export async function onRequestGet({ request, env }) {
 
         if (now - existing.updated_at < CACHE_TTL_MS && latestMessageId === cachedLastMessageId) {
           return new Response(JSON.stringify({ lastUpdated: existing.updated_at, scammers: cachedData.scammers, partials: cachedData.partials }), {
-            headers: { "Content-Type": "application/json", "X-Cache": "D1-HIT-EARLY" },
+            headers: { "Content-Type": "application/json", "X-Cache": "D1-HIT-EARLY","Access-Control-Allow-Origin": "*" },
           });
         }
       }
@@ -114,7 +114,7 @@ export async function onRequestGet({ request, env }) {
           if (results.length > 0) {
             const enriched = JSON.parse(results[0].value);
             return new Response(JSON.stringify({ lastUpdated: results[0].updated_at, scammers: enriched.scammers, partials: enriched.partials }), {
-              headers: { "Content-Type": "application/json", "X-Cache": "D1-WAIT" },
+              headers: { "Content-Type": "application/json", "X-Cache": "D1-WAIT","Access-Control-Allow-Origin": "*" },
             });
           }
           await new Promise(r => setTimeout(r, waitStep));
@@ -291,7 +291,7 @@ export async function onRequestGet({ request, env }) {
       await env.DB.prepare("DELETE FROM scammer_cache_locks WHERE key = ?").bind(LOCK_KEY).run();
 
       return new Response(JSON.stringify({ lastUpdated: now, scammers, partials: partialScammers }), {
-        headers: { "Content-Type": "application/json", "X-Cache": "D1-MISS" },
+        headers: { "Content-Type": "application/json", "X-Cache": "D1-MISS","Access-Control-Allow-Origin": "*" },
       });
 
     } catch (err) {

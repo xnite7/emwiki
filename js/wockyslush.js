@@ -6,14 +6,43 @@ fetch('https://emwiki.site/api/gist-version')
   })
   .then(data => {
 
+    if (document.querySelector('.blackscreen')) {
+      document.querySelector('.blackscreen').style.background = 'rgba(0,0,0,0)'
+
+      document.querySelector('.blackscreen').addEventListener('transitionend', () => {
+        document.querySelector('.blackscreen').style.display = 'none';
+      });
+    }
+
+
+    document.documentElement.style.overflow = "scroll"
+    document.documentElement.style.overflowX = "hidden"
+    document.querySelector("main").style.filter = 'opacity(1)'
+    document.querySelector("main").style.scale = '1'
+
+
     // Determine the current page and select the appropriate data
     let arr = JSON.parse(data.files["auto.json"].content); // Parse the JSON content
     let color;
 
+
+
     showInfo(arr, color); // Pass the color to the showInfo function
+
+
 
   })
   .catch(error => console.error('Error fetching data:', error));
+
+
+
+
+
+
+
+
+
+
 
 function createNewItem(item, color, list) {
 

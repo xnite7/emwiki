@@ -5,9 +5,14 @@ body {
     color: #fff;
     font-family: 'Source Sans Pro', cursive, sans-serif;
     margin: 0;
-    overflow-x: hidden;
+    overflow-x: unset;
     padding: 0;
     width: -webkit-fill-available
+}
+
+.blackscreen {
+    background: rgb(0, 0, 0);
+    transition: all 500ms cubic-bezier(1, -0.01, .65, 1.04) 600ms;
 }
 
 .parallax-bg {
@@ -598,7 +603,7 @@ nav #cheststab:hover {
 nav #scammerstab:hover {
     background: linear-gradient(145deg, #6d4949, #e44d4d);
     box-shadow: inset 2px 2px 5px rgba(160, 110, 0, .5), inset -2px -2px 5px rgba(255, 245, 200, .6), 0 2px 4px rgba(0, 0, 0, .15);
-    filter: drop-shadow(0 0 9px red)
+    filter: drop-shadow(0 0 4px red)
 }
 
 nav a:active {
@@ -1398,7 +1403,7 @@ html {
     display: block;
     max-height: 90vh;
     max-width: 380px;
-    
+
     padding: 20px;
     position: absolute;
     text-align: center;
@@ -1410,7 +1415,8 @@ html {
     width: 100%;
     will-change: transform, box-shadow, background-size;
     transform: perspective(1800px) rotateY(0deg) scale(1) !important;
-    @starting-style{
+
+    @starting-style {
         opacity: 0;
         transform: perspective(1800px) rotateY(90deg) scale(1) !important;
     }
@@ -2348,15 +2354,15 @@ html {
 
 .modal-content.swipeRight {
     left: 100vw;
-    
+
 }
 
 .modal-content.swipeLeft {
     left: -100vw;
-    
-}
-.modal-content.forceSwipe {
-    transition: left 0s ease;
-    
+
 }
 
+.modal-content.forceSwipe {
+    transition: left 0s ease;
+
+}
