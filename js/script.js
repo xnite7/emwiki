@@ -224,7 +224,6 @@ const modalCache = {
 };
 document.addEventListener('DOMContentLoaded', () => {
 
-
   if (document.querySelector('.blackscreen')) {
     document.querySelector('.blackscreen').style.background = 'rgba(0,0,0,0)'
 
@@ -232,8 +231,6 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelector('.blackscreen').style.display = 'none';
     });
   }
-
-
 
   const today = new Date().toISOString().split("T")[0]; // e.g., "2025-07-31"
   const lastShown = localStorage.getItem("lastShownDate");
@@ -382,9 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
       main.style.filter = 'opacity(1)'
     }
   }
-})
 
-window.addEventListener('DOMContentLoaded', () => {
   const navButtons = [
     { id: "gearstab", href: "./gears", img: "./imgs/AYUbTJv.png" },
     { id: "deathstab", href: "./deaths", img: "./imgs/fADZwOh.png" },
@@ -1402,10 +1397,6 @@ function createNewItem(item, color) {
   heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
 
   newItem.appendChild(heartBtn);
-
-  let touchTimer;
-  let TouchDownTime;
-
 
 
   if (isTouch) {
