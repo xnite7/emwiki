@@ -413,11 +413,8 @@ function reorderChestsIfMobile() {
       containers[0].appendChild(chest)
     });
 
-    chests.forEach((chest) => {
-      chest.style.display = 'none'
-    });
 
-    document.querySelector('.papi').remove()
+    document.querySelector('.papi').style.display = 'none'
   } else {
     document.querySelector('.chest-panel').remove()
     // If not mobile, ensure the original order is restored
