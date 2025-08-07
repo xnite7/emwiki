@@ -379,7 +379,8 @@ document.addEventListener('DOMContentLoaded', () => {
       main.style.filter = 'opacity(1)'
     }
   }
-
+})
+window.addEventListener('DOMContentLoaded', () => {
   const navButtons = [
     { id: "gearstab", href: "./gears", img: "./imgs/AYUbTJv.png" },
     { id: "deathstab", href: "./deaths", img: "./imgs/fADZwOh.png" },

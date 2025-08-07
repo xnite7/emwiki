@@ -5,7 +5,7 @@ body {
     color: #fff;
     font-family: 'Source Sans Pro', cursive, sans-serif;
     margin: 0;
-    overflow-x: unset;
+    overflow-x: hidden;
     padding: 0;
     width: -webkit-fill-available
 }
