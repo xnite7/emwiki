@@ -10,6 +10,10 @@ body {
     width: -webkit-fill-available
 }
 
+button{
+    border: 0;
+}
+
 .blackscreen {
     background: rgb(0, 0, 0);
     transition: all 500ms cubic-bezier(1, -0.01, .65, 1.04) 600ms;

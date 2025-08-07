@@ -847,7 +847,7 @@ function showSwipeTutorial() {
     color: '#fff',
     padding: '14px 22px',
     borderRadius: '16px',
-    fontSize: '1.2em',
+    fontSize: '1.4em',
     zIndex: 99999,
     boxShadow: '0 4px 16px #000a',
     textAlign: 'center',
