@@ -1,4 +1,14 @@
+if (document.querySelector('.blackscreen')) {
+  document.querySelector('.blackscreen').style.background = 'rgba(0,0,0,0)'
 
+  document.querySelector('.blackscreen').addEventListener('transitionend', () => {
+    document.querySelector('.blackscreen').style.display = 'none';
+  });
+}
+document.documentElement.style.overflow = "scroll"
+document.documentElement.style.overflowX = "hidden"
+document.querySelector("main").style.filter = 'opacity(1)'
+document.querySelector("main").style.scale = '1'
 
 // Filter function
 function filterItems() {
@@ -23,7 +33,7 @@ async function createScammerBlock(scammer, container) {
     itemsScammed = null,
     robloxAlts = null
   } = scammer;
-  
+
   console.log(scammer);
 
   const block = document.createElement('section');
