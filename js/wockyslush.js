@@ -415,11 +415,9 @@ function reorderChestsIfMobile() {
 
     chests.forEach((chest) => {
       chest.style.display = 'none'
-
-
-
     });
 
+    document.querySelector('.papi').remove()
   } else {
     document.querySelector('.chest-panel').remove()
     // If not mobile, ensure the original order is restored
@@ -550,7 +548,7 @@ if (isTouch) {
     let startY = 0;
     let currentY = 0;
     let deltaY = 0;
-    let threshold = window.innerHeight * 0.38; // 30% of screen height
+    let threshold = window.innerHeight * 0.32; // 30% of screen height
     let isDragging = false;
 
     modal.addEventListener('touchend', (e) => {
