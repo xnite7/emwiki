@@ -349,9 +349,9 @@ function showInfo(arr, color) {
     gridContainer.style.display = "flex";
     gridContainer.style.flexDirection = "row";
     gridContainer.style.width = "auto";
-    gridContainer.style.margin = "0px 6vw";
+    gridContainer.style.margin = "0px 34px";
     gridContainer.style.justifyItems = "center";
-    gridContainer.style.gap = "65px";
+    gridContainer.style.gap = "32px";
     gridContainer.style.alignItems = "baseline";
     gridContainer.style.alignContent = "space-around";
     gridContainer.style.justifyContent = "start";
