@@ -35,15 +35,6 @@ fetch('https://emwiki.site/api/gist-version')
   .catch(error => console.error('Error fetching data:', error));
 
 
-
-
-
-
-
-
-
-
-
 function createNewItem(item, color, list) {
 
   // Create a new item element
@@ -53,18 +44,12 @@ function createNewItem(item, color, list) {
   newItem.style.backgroundColor = color;
   newItem.id = item.listName;
 
-
-
-
-
   // Create and set the name element
   const name = document.createElement("div");
   name.id = "h3";
   name.classList.add('itemname')
   name.innerText = item.name;
   name.style.pointerEvents = "none";
-
-
 
   if (!item.img) {
 
@@ -133,7 +118,7 @@ function createNewItem(item, color, list) {
     }
     const canvas = document.createElement("canvas");
 
-    canvas.setAttribute("id", "img");
+    canvas.setAttribute("id", item.img);
     canvas.style.maxWidth = "100%";
     canvas.style.maxHeight = "100%";
     canvas.style.display = "block";
@@ -159,13 +144,19 @@ function createNewItem(item, color, list) {
   }
 
   // Adjust font size based on name length
-  if (item.name.length > 28) {
-    name.style.fontSize = "16px";
-  } else if (item.name.length > 18) {
-    name.style.fontSize = "18px";
+  if (newItem.id != "titles") {
+
+    if (item.name.length > 18) {
+      name.style.fontSize = "110%";
+    } else if (item.name.length > 10) {
+      name.style.fontSize = "160%";
+    } else {
+      name.style.fontSize = "200%";
+    }
   } else {
     name.style.fontSize = "24px";
   }
+
 
   newItem.appendChild(name);
 
@@ -260,21 +251,20 @@ function createNewItem(item, color, list) {
   // Append the new item to the catalog
   list.appendChild(newItem);
 }
-
+const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
 var shelfs = document.querySelectorAll(".shelf-oppener")
 
 shelfs.forEach((e) => {
   e.innerText = 'V'
   e.addEventListener("click", function () {
-    console.log(e.style.rotate)
     if (e.style.rotate == '-180deg') {
       // e.parentElement.querySelector('.psp').style.display="block";
       e.parentElement.querySelector('.psp').style.width = "auto"
       e.parentElement.querySelector('.catalog-grid').style.display = "grid";
       e.style.rotate = '0deg'
     } else {
-      //  e.parentElement.querySelector('.psp').style.display="none";
+      // e.parentElement.querySelector('.psp').style.display="none";
       e.parentElement.querySelector('.psp').style.width = "-webkit-fill-available"
       e.parentElement.querySelector('.catalog-grid').style.display = "none";
       e.style.rotate = '-180deg'
@@ -299,8 +289,6 @@ function showInfo(arr, color) {
   const drsecretItems = [];
   const staffitems = [];
   for (const [listName, list] of Object.entries(arr)) {
-
-
     list.forEach(item => {
       item.listName = listName;
       if (item.from && item.from.toLowerCase().includes("steel chest")) {
@@ -388,13 +376,29 @@ function showInfo(arr, color) {
     });
   });
 };
+
+const chestsNames = {
+  steelchest: document.getElementById("steelchest"),
+  elusivebag: document.getElementById("elusivebag"),
+  legendarychest: document.getElementById("legendarychest"),
+  luckychest: document.getElementById("luckychest"),
+  epicchest: document.getElementById("epicchest"),
+  itemcrate: document.getElementById("itemcrate"),
+  mysterybag: document.getElementById("mysterybag"),
+  typicalchest: document.getElementById("typicalchest"),
+  premiumchest: document.getElementById("premiumchest"),
+  hrplaytimerewards: document.getElementById("1hrplaytimerewards"),
+  gamenightitems: document.getElementById("gamenightitems"),
+  drsecretitems: document.getElementById("drsecretitems"),
+  staffitems: document.getElementById("staffitems")
+};
+
+
+
 function reorderChestsIfMobile() {
   const containers = document.querySelectorAll('.grid'); // all grid wrappers
 
-  console.log(containers);
-  console.log(window.innerWidth);
-
-  if (window.innerWidth < 600 && containers.length) {
+  if (isTouch) {
     // Collect all .catalog elements from all .grid containers
     const chests = [];
     containers.forEach(container => {
@@ -407,8 +411,19 @@ function reorderChestsIfMobile() {
     });
 
     // Append in sorted order to the first .grid container
-    chests.forEach(chest => containers[0].appendChild(chest));
+    chests.forEach(chest => {
+      containers[0].appendChild(chest)
+    });
+
+    chests.forEach((chest) => {
+      chest.style.display = 'none'
+
+
+
+    });
+
   } else {
+    document.querySelector('.chest-panel').remove()
     // If not mobile, ensure the original order is restored
     containers.forEach(container => {
       const chests = container.querySelectorAll('.catalog');
@@ -419,6 +434,169 @@ function reorderChestsIfMobile() {
     });
   }
 }
+
+if (isTouch) {
+  const chestDisplayNames = {
+    steelchest: "Steel Chest",
+    elusivebag: "Elusive Bag",
+    legendarychest: "Legendary Chest",
+    luckychest: "Lucky Chest",
+    epicchest: "Epic Chest",
+    itemcrate: "Item Crate",
+    mysterybag: "Mystery Bag",
+    typicalchest: "Typical Chest",
+    premiumchest: "Premium Chest",
+    hrplaytimerewards: "1hr Playtime",
+    gamenightitems: "Gamenight",
+    drsecretitems: "Daily Rewards",
+    staffitems: "Staff Items"
+  };
+
+  const modalRoot = document.getElementById("modalRoot");
+  const panel = document.getElementById("chestPanel");
+
+  Object.entries(chestsNames).forEach(([id, element]) => {
+    const btn = document.createElement("button");
+    btn.className = "chest-button";
+
+    if (element.parentElement.querySelector('img')) {
+      const icon = document.createElement('img');
+      icon.src = element.parentElement.querySelector('img').src;
+      icon.style.width = '100px'
+      btn.appendChild(icon);
+      icon.insertAdjacentHTML('afterend', chestDisplayNames[id] || id)
+    } else {
+      const p = element.parentElement.querySelector('p').cloneNode(true)
+      p.style.fontSize = '24px'
+      btn.appendChild(p)
+    }
+
+    btn.style.display = 'grid';
+    btn.addEventListener("click", () => openChestModal(id, element));
+    panel.appendChild(btn);
+
+    // Hide original chest grid
+    element.style.display = "none";
+  });
+
+  function openChestModal(id, contentElement) {
+
+    // Clone all .item nodes
+    const items = contentElement.querySelectorAll('.item');
+    const modal = document.createElement('div');
+    modal.className = 'modal-backdrop';
+
+    const inner = document.createElement('div');
+    inner.className = 'modal-cont';
+
+
+    const title = document.createElement('h2');
+    title.innerText = chestDisplayNames[id];
+    title.style.textAlign = "center";
+    title.style.marginBottom = "12px";
+    title.style.font = "600 20px 'Arimo'";
+    inner.appendChild(title);
+
+
+    if (contentElement.parentElement.querySelector('.psp').querySelector(':scope > img')) {
+      const icon = document.createElement('img');
+      icon.src = contentElement.parentElement.querySelector('img').src;
+      icon.style.width = '140px'
+      inner.appendChild(icon);
+    }
+
+    const container = document.createElement('div');
+    container.style.display = 'grid';
+    container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(125px, 1fr))';
+    container.style.gap = '12px';
+    container.style.zoom = '0.69';
+    container.style.margin = '60px';
+    container.style.width = '-webkit-fill-available';
+
+    items.forEach(item => {
+
+      if (item.querySelector("canvas")) {
+        const canvas = item.querySelector("canvas");
+
+        const skib = canvas.id;
+
+        const canvasnew = document.createElement("img");
+
+        canvasnew.setAttribute("id", skib);
+        canvasnew.style.maxWidth = "75%";
+        canvasnew.style.maxHeight = "75%";
+        canvasnew.style.display = "block";
+        canvasnew.style.margin = "16px 0 0";
+        canvasnew.style.userSelect = "none";
+        canvasnew.style.webkitUserSelect = "none";
+        canvasnew.style.pointerEvents = "none"; // Optional: block interactions
+
+        canvasnew.src = `https://emwiki.site/${skib}`;
+        item.insertBefore(canvasnew, canvas);
+        canvas.remove();
+      }
+      const clone = item.cloneNode(true);
+      clone.style.pointerEvents = "none"; // avoid interaction
+      clone.style.scale = "1";
+      container.appendChild(clone);
+    });
+
+    inner.appendChild(container);
+    modal.appendChild(inner);
+    modalRoot.appendChild(modal);
+    
+
+    let startY = 0;
+    let currentY = 0;
+    let deltaY = 0;
+    let threshold = window.innerHeight * 0.38; // 30% of screen height
+    let isDragging = false;
+
+    inner.addEventListener('touchstart', (e) => {
+      inner.style.animation = 'unset'
+      startY = e.touches[0].clientY;
+      inner.style.transition = 'none'; // Disable transition while dragging
+      isDragging = true;
+    });
+
+    inner.addEventListener('touchmove', (e) => {
+      
+      if (!isDragging) return;
+      currentY = e.touches[0].clientY;
+      deltaY = currentY - startY;
+      
+      if (inner.scrollTop > 5 || deltaY < 0) return; // Allow only if not scrolling up and not swiping up
+
+      // Move modal down by deltaY
+      inner.style.transform = `translateY(${deltaY}px)`;
+      
+      
+    });
+
+    inner.addEventListener('touchend', () => {
+      if (!isDragging) return;
+
+      // Didn't reach threshold — snap back
+      inner.style.transition = 'transform 0.2s ease';
+      inner.style.transform = 'translateY(0)';
+      isDragging = false;
+
+      if (deltaY > threshold) {
+        
+        // User dragged far enough, trigger full close
+        isDragging = false;
+        inner.style.transition = 'transform 0.25s ease';
+        inner.style.transform = `translateY(100%)`; // Animate fully down
+
+        inner.addEventListener('transitionend', () => {
+          modal.remove();
+        }, { once: true });
+      }
+    });
+
+  }
+}
+
 
 
 window.addEventListener('load', reorderChestsIfMobile);
@@ -436,7 +614,6 @@ const navButtons = [
 ];
 function insertNavButtons() {
   const nav = document.querySelector("nav");
-  console.log(nav);
   if (!nav) return;
   // Get current page filename, default to "index" if blank
   let current = location.pathname.split('/').pop();

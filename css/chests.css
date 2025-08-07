@@ -105,7 +105,7 @@ section {
   box-shadow: 0 5px 15px rgb(0 0 0 / 30%);
   position: sticky;
   z-index: 22;
-    
+
   margin: 0 0vw 39px 0vw;
 }
 
@@ -125,9 +125,7 @@ footer {
   position-anchor: --a;
   top: anchor(bottom);
   transform: translate(-50%, 8px);
-
   color: #fff;
-
   padding: 12px 18px;
   inset: auto;
   position: absolute;
@@ -137,32 +135,20 @@ footer {
   z-index: 9999;
   margin: 0;
   pointer-events: none;
-  opacity: 0;
+  opacity: 1;
   transition: opacity 0.15s;
   position-area: inline-end span-block-end;
   position-try-fallbacks: flip-inline;
-
-
+  transition: all 100ms ease;
   white-space: nowrap;
-
   background: linear-gradient(0deg, #000000, #00000063);
   border: 1px solid #ffffff45;
   border-radius: 18px;
+
+  @starting-style {
+    opacity: 0;
+  }
 }
-
-
-
-
-
-
-
-
-#tooltip[popover]:popover-open {
-  opacity: 1;
-  pointer-events: none;
-}
-
-
 
 .catalog {
   /* margin-top: 2rem; */
@@ -177,7 +163,6 @@ section p {
   color: #ffffff;
 
 }
-
 
 section h2 {
   margin-top: 1px;
@@ -194,7 +179,7 @@ section h2 {
   grid-template-columns: repeat(auto-fit, minmax(206px, 0fr));
   justify-items: center;
   width: -webkit-fill-available;
-    justify-content: space-evenly;
+  justify-content: space-evenly;
 
 }
 
@@ -424,14 +409,14 @@ div .psp {
   }
 
 
- section h2 {
+  section h2 {
     margin-top: 17px;
     text-shadow: 2px 3px 9px #00000066;
     font-size: 3rem;
     margin-bottom: 0rem;
   }
 
-section p {
+  section p {
     font-size: 2rem;
     color: #ffffff;
     margin-bottom: 35px;
@@ -445,4 +430,113 @@ section p {
   }
 
 
+}
+
+
+
+/* Base modal/backdrop styling */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  z-index: 9998;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+
+
+
+.modal-cont {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #1b1b1b;
+  color: white;
+  border-radius: 16px 16px 0 0;
+  max-height: 85vh;
+  width: 100%;
+  overflow-y: auto;
+  position: fixed;
+  bottom: 0;
+  z-index: 9999;
+  padding: 16px;
+  animation: slideUp 0.35s ease forwards;
+  box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.5);
+}
+
+.chest-panel {
+
+  bottom: 0;
+  width: 100%;
+  background: #111;
+  z-index: 9997;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 12px;
+  gap: 10px;
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.chest-button {
+  flex: 0 0 auto;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: #222;
+  border: 2px solid #333;
+  font-size: 14px;
+  color: white;
+  white-space: nowrap;
+  font-family: 'Arimo', sans-serif;
+  transition: transform 0.2s ease;
+}
+
+.chest-button:hover {
+  transform: scale(1.05);
+  background: #2a2a2a;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+
+.modal-cont div .item,
+.modal-cont div #gears,
+.modal-cont div #titles,
+.modal-cont div #pets,
+.modal-cont div #effects,
+.modal-cont div #deaths {
+  height: 120px;
+  width: 120px;
+}
+
+.modal-cont div .item #h3,
+.modal-cont div #gears #h3,
+.modal-cont div #titles #h3,
+.modal-cont div #pets #h3,
+.modal-cont div #effects #h3,
+.modal-cont div #deaths #h3 {
+  bottom: 107px;
 }
