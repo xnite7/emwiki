@@ -563,6 +563,7 @@ if (isTouch) {
         inner.style.transform = `translateY(100%)`; // Animate fully down
 
         inner.addEventListener('transitionend', () => {
+          document.documentElement.style.overflow = 'scroll';
           modal.remove();
         }, { once: true });
       }
@@ -577,7 +578,7 @@ if (isTouch) {
     });
 
     inner.addEventListener('touchmove', (e) => {
-
+      document.documentElement.style.overflow = 'hidden';
       if (!isDragging) return;
       currentY = e.touches[0].clientY;
       deltaY = currentY - startY;
@@ -606,6 +607,7 @@ if (isTouch) {
         inner.style.transform = `translateY(100%)`; // Animate fully down
 
         inner.addEventListener('transitionend', () => {
+          document.documentElement.style.overflow = 'scroll';
           modal.remove();
         }, { once: true });
       }
