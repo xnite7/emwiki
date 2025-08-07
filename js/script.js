@@ -224,11 +224,15 @@ const modalCache = {
 };
 document.addEventListener('DOMContentLoaded', () => {
 
-  document.querySelector('.blackscreen').style.background = 'rgba(0,0,0,0)'
 
-  document.querySelector('.blackscreen').addEventListener('transitionend', (event) => {
-    document.querySelector('.blackscreen').style.display = 'none';
-  });
+  if (document.querySelector('.blackscreen')) {
+    document.querySelector('.blackscreen').style.background = 'rgba(0,0,0,0)'
+
+    document.querySelector('.blackscreen').addEventListener('transitionend', (event) => {
+      document.querySelector('.blackscreen').style.display = 'none';
+    });
+  }
+
 
 
   const today = new Date().toISOString().split("T")[0]; // e.g., "2025-07-31"
@@ -1405,13 +1409,17 @@ function createNewItem(item, color) {
 
 
   if (isTouch) {
+    let TouchDownTime;
+    let touchTimer;
+    let moved = false;
+
     newItem.addEventListener("touchstart", (e) => {
-      TouchDownTime = new Date().getTime(); // Record the timestamp
+      moved = false; // Reset moved flag
+      TouchDownTime = new Date().getTime();
+
       touchTimer = setTimeout(() => {
         e.stopPropagation();
         e.preventDefault();
-
-
 
         toggleFavorite(item.name);
         heartBtn.innerHTML = isFavorited(item.name) ? "❤️" : "🤍";
@@ -1421,28 +1429,33 @@ function createNewItem(item, color) {
         } else {
           heartBtn.classList.remove("favorited");
         }
+
         heartBtn.classList.add("heart-pulsing");
         setTimeout(() => heartBtn.classList.remove("heart-pulsing"), 400);
-
       }, 400);
     });
 
+    newItem.addEventListener("touchmove", () => {
+      moved = true;
+      clearTimeout(touchTimer);
+    });
+
     newItem.addEventListener("touchend", (e) => {
-      const TouchUpTime = new Date().getTime(); // Record the timestamp
-      const duration = TouchUpTime - TouchDownTime; // Calculate the duration
+      clearTimeout(touchTimer);
+
+      if (moved) return; // Skip if user moved their finger
+
+      const TouchUpTime = new Date().getTime();
+      const duration = TouchUpTime - TouchDownTime;
 
       if (duration < 400) {
         newItem.click();
       }
 
-      clearTimeout(touchTimer);
       e.stopPropagation();
       e.preventDefault();
     });
 
-    newItem.addEventListener("touchmove", () => {
-      clearTimeout(touchTimer);
-    });
   } else {
     heartBtn.onclick = (e) => {
       e.stopPropagation();
