@@ -831,6 +831,7 @@ function Modal(event) {
 let tut = false;
 
 function showSwipeTutorial() {
+  console.log("showing")
   if (document.getElementById('swipe-tutorial')) return;
   if (tut) return;
   tut = true;
@@ -1442,6 +1443,9 @@ function createNewItem(item, color) {
 
       if (duration < 400) {
         newItem.click();
+        if (isTouch) {
+          showSwipeTutorial();
+        }
       }
 
       e.stopPropagation();
@@ -1626,9 +1630,6 @@ function showSelectedItem(item) {
 
     newItem.onclick = (event) => {
       Modal(event)
-      if (isTouch) {
-        showSwipeTutorial();
-      }
     };
     newItem.click();
   }
