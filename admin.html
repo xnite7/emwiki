@@ -584,7 +584,14 @@
             <button id="toggle-gamenight" style="margin-top: 10px;">🎮 Gamenight Only: OFF</button>
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;" id="desc-editor-container"></div>
-        <div id="desc-pagination-container"></div>
+        <div id="desc-page-count">Page 1 of 1</div>
+        <div id="desc-pagination-container">
+            <button id="desc-prev-btn">
+                < Prev</button>
+                    <select id="desc-page-select"></select>
+                    <button id="desc-next-btn">Next ></button>
+        </div>
+
     </div>
     <div id="history-tab" style="display: none;">
         <div class="title1">Update History<p>Recent updates to the Catalog.</p>
@@ -1452,6 +1459,7 @@
 
             descFiltered = allItems.filter(i => {
                 const match = i.name.toLowerCase().includes(query);
+
                 const gnMatch = !gamenightOnly || (i.from && i.from.toLowerCase().includes("gamenight"));
                 return match && gnMatch;
             });
@@ -1464,6 +1472,7 @@
             container.innerHTML = "";
 
             for (const item of items) {
+                const type = findItemType(item);
                 const box = document.createElement("div");
                 box.style = "flex:1 1 23%; margin: 0px 0; padding: 15px; background: rgb(22 22 22); border-radius: 12px;";
 
@@ -1478,68 +1487,70 @@
                 box.appendChild(img);
 
                 if (type != "titles") {
-                    name.style.top = "-7px";
+                    title.style.top = "-7px";
                 }
                 if (type == "titles") {
-                    name.style.display = "table";
+                    title.style.display = "table";
                     if (item.img) {
-                        name.style.display = "none";
-                        const img = div.querySelector("img");
+                        title.style.display = "none";
+                        const img = box.querySelector("img");
                         img.style.marginTop = "4px";
                     } else {
-                        const img = div.querySelector("img");
+                        const img = box.querySelector("img");
                         img.style.display = "none";
                     }
-                    name.style.height = "auto";
-                    name.style.top = "0px";
-                    name.style.position = "static";
-                    name.style.font = "600 28px 'Arimo'";
-                    name.style.color = "rgb(255 255 255)";
-                    name.style.whiteSpace = "nowrap";
-                    name.style.bottom = "auto";
-                    name.style.paddingTop = "0px";
+                    title.style.height = "auto";
+                    title.style.top = "0px";
+                    title.style.position = "static";
+                    title.style.font = "600 28px 'Arimo'";
+                    title.style.color = "rgb(255 255 255)";
+                    title.style.whiteSpace = "nowrap";
+                    title.style.bottom = "auto";
+                    title.style.paddingTop = "0px";
                 }
                 if (item.style) {
-                    name.setAttribute("style", item.style);
-                    name.style.whiteSpace = "nowrap";
-                    name.style.bottom = "auto";
+                    title.setAttribute("style", item.style);
+                    title.style.whiteSpace = "nowrap";
+                    title.style.bottom = "auto";
                 }
                 if (item.style2) {
-                    name.setAttribute("style", item.style2);
-                    name.style.whiteSpace = "nowrap";
-                    name.style.height = "0";
-                    let clone = name.cloneNode(true);
+                    title.setAttribute("style", item.style2);
+                    title.style.whiteSpace = "nowrap";
+                    title.style.height = "0";
+                    title.style.scale = '1';
+                    let clone = title.cloneNode(true);
                     clone.style.height = "auto";
-                    clone.style.top = "auto";
+                    clone.style.top = "0";
                     clone.style.display = "table";
-                    name.style.bottom = "auto";
-                    name.style.paddingTop = "0px";
-                    name.style.display = "table";
+                    clone.style.bottom = "0";
+                    title.style.bottom = "auto";
+                    title.style.paddingTop = "0px";
+                    title.style.display = "table";
                     clone.style.position = "absolute";
                     clone.style.textShadow = "none";
                     clone.style.fontSize = "1em";
                     clone.style.whiteSpace = "nowrap";
-                    name.appendChild(clone);
+                    title.appendChild(clone);
                 }
                 if (item.style3) {
-                    name.outerHTML = item.style3;
+                    title.outerHTML = item.style3;
                 }
                 if (item.color) {
-                    name.style.color = item.color;
+                    title.style.color = item.color;
                 }
                 if (item.stroke) {
                     let stroke = item.stroke.split(" ");
-                    name.style.textShadow = `-${stroke[0]} -${stroke[0]} 0 ${stroke[1]}, 0 -${stroke[0]} 0 ${stroke[1]}, ${stroke[0]} -${stroke[0]} 0 ${stroke[1]}, ${stroke[0]} 0 0 ${stroke[1]}, ${stroke[0]} ${stroke[0]} 0 ${stroke[1]}, 0 ${stroke[0]} 0 ${stroke[1]}, -${stroke[0]} ${stroke[0]} 0 ${stroke[1]}, -${stroke[0]} 0 0 ${stroke[1]}`;
+                    title.style.textShadow = `-${stroke[0]} -${stroke[0]} 0 ${stroke[1]}, 0 -${stroke[0]} 0 ${stroke[1]}, ${stroke[0]} -${stroke[0]} 0 ${stroke[1]}, ${stroke[0]} 0 0 ${stroke[1]}, ${stroke[0]} ${stroke[0]} 0 ${stroke[1]}, 0 ${stroke[0]} 0 ${stroke[1]}, -${stroke[0]} ${stroke[0]} 0 ${stroke[1]}, -${stroke[0]} 0 0 ${stroke[1]}`;
                 }
                 if (item.font) {
-                    name.style.font = item.font;
-                    if (name.children.length > 0) {
-                        name.childNodes[1].style.font = item.font;
-                        name.childNodes[1].style.fontSize = "1em";
+                    title.style.font = item.font;
+                    if (title.children.length > 0) {
+                        title.childNodes[1].style.font = item.font;
+                        title.childNodes[1].style.fontSize = "1em";
                     }
                 }
                 if (item.rotate) {
-                    name.style.transform = "rotate(" + item.rotate + "deg)";
+                    title.style.transform = "rotate(" + item.rotate + "deg)";
                 }
 
                 const inputBox = document.createElement("div");
@@ -1624,17 +1635,61 @@
         }
 
 
-        function renderDescPagination() {
-            const container = document.getElementById("desc-pagination-container");
-            const totalPages = Math.ceil(descFiltered.length / 8);
-            container.innerHTML = `
-    <div style="text-align:center;margin-top:10px;">
-      <button ${descPage <= 1 ? "disabled" : ""} onclick="descPage--; renderDescEditor(); scrolldown();">Prev</button>
-      Page ${descPage} of ${totalPages}
-      <button ${descPage >= totalPages ? "disabled" : ""} onclick="descPage++; renderDescEditor(); scrolldown();">Next</button>
-    </div>
-  `;
+        const descPrevBtn = document.getElementById("desc-prev-btn");
+        const descNextBtn = document.getElementById("desc-next-btn");
+        const descPageSelect = document.getElementById("desc-page-select");
+        const descPageCount = document.getElementById("desc-page-count");
+
+        const DESC_ITEMS_PER_PAGE = 12; // your old system used 8
+
+        function populateDescPageSelect(totalPages) {
+            descPageSelect.innerHTML = "";
+            for (let i = 1; i <= totalPages; i++) {
+                const option = document.createElement("option");
+                option.value = i;
+                option.textContent = `${i}`;
+                descPageSelect.appendChild(option);
+            }
         }
+
+        function updateDescPaginationUI() {
+            const totalPages = Math.max(1, Math.ceil(descFiltered.length / DESC_ITEMS_PER_PAGE));
+            if (descPage > totalPages) descPage = totalPages;
+            descPageSelect.value = descPage;
+            descPageCount.textContent = `Page ${descPage} of ${totalPages}`;
+            descPrevBtn.disabled = descPage === 1;
+            descNextBtn.disabled = descPage === totalPages;
+        }
+
+        function renderDescPagination() {
+            const totalPages = Math.max(1, Math.ceil(descFiltered.length / DESC_ITEMS_PER_PAGE));
+            if (descPageSelect.options.length !== totalPages) populateDescPageSelect(totalPages);
+            updateDescPaginationUI();
+        }
+
+        descPrevBtn.onclick = () => {
+            if (descPage > 1) {
+                descPage--;
+                renderDescEditor();
+                scrolldown();
+            }
+        };
+
+        descNextBtn.onclick = () => {
+            const totalPages = Math.max(1, Math.ceil(descFiltered.length / DESC_ITEMS_PER_PAGE));
+            if (descPage < totalPages) {
+                descPage++;
+                renderDescEditor();
+                scrolldown();
+            }
+        };
+
+        descPageSelect.onchange = e => {
+            descPage = Number(e.target.value);
+            renderDescEditor();
+            scrolldown();
+        };
+
 
         document.getElementById("toggle-gamenight").addEventListener("click", () => {
             gamenightOnly = !gamenightOnly;
