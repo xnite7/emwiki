@@ -66,6 +66,20 @@
             padding: 12px 0;
         }
 
+        .rmv::after{
+            content: "×";
+            position: absolute;
+            right: 6px;
+            top: 44%;
+            transform: translateY(-50%);
+            color: #ffb1b1;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
         #save-btn {
             box-shadow: 0 0 16px black;
             background: #6cd13a;
@@ -170,7 +184,7 @@
             margin-bottom: 20px;
         }
 
-        #pagination-container {
+        .pagination-container {
             display: flex;
             align-items: center;
             gap: 12px;
@@ -178,8 +192,8 @@
             margin-top: 10px;
         }
 
-        #pagination-container button,
-        #page-select {
+        .pagination-container button,
+        .page-select {
             padding: 6px 12px;
             border: none;
             border-radius: 6px;
@@ -188,13 +202,13 @@
             cursor: pointer;
         }
 
-        #pagination-container button:disabled {
+        .pagination-container button:disabled {
             background: #222;
             opacity: 0.5;
             cursor: default;
         }
 
-        #page-count {
+        .page-count {
             margin-left: 16px;
             font-weight: 600;
             opacity: 0.7;
@@ -368,11 +382,11 @@
                 border-radius: 14px;
             }
 
-            #pagination-container {
+            .pagination-container {
                 zoom: 2.5;
             }
 
-            #page-count {
+            .page-count {
                 zoom: 2;
             }
 
@@ -551,12 +565,12 @@
                 <input type="text" id="search" placeholder="Search items..." />
             </div>
             <div class="gridall" id="all-items"></div>
-            <div id="page-count">Page 1 of 1</div>
-            <div id="pagination-container">
-                <button id="prev-btn">
+            <div class="page-count" id="page-count">Page 1 of 1</div>
+            <div class="pagination-container" id="pagination-container">
+                <button class="prev-btn" id="prev-btn">
                     < Prev</button>
-                        <select id="page-select"></select>
-                        <button id="next-btn">Next ></button>
+                        <select class="page-select" id="page-select"></select>
+                        <button class="next-btn" id="next-btn">Next ></button>
             </div>
         </div>
     </div>
@@ -584,12 +598,12 @@
             <button id="toggle-gamenight" style="margin-top: 10px;">🎮 Gamenight Only: OFF</button>
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;" id="desc-editor-container"></div>
-        <div id="desc-page-count">Page 1 of 1</div>
-        <div id="desc-pagination-container">
-            <button id="desc-prev-btn">
+        <div class="page-count" id="desc-page-count">Page 1 of 1</div>
+        <div class="pagination-container" id="desc-pagination-container">
+            <button class="prev-btn" id="desc-prev-btn">
                 < Prev</button>
-                    <select id="desc-page-select"></select>
-                    <button id="desc-next-btn">Next ></button>
+                    <select class="page-select" id="desc-page-select"></select>
+                    <button class="next-btn" id="desc-next-btn">Next ></button>
         </div>
 
     </div>
@@ -1562,22 +1576,204 @@
                     inputBox.appendChild(row);
                 });
 
-                const addLine = document.createElement("button");
-                addLine.textContent = "+ Add Text";
-                addLine.style = "cursor:pointer;margin-top: 6px; background:#444;color:white;border:none;padding:5px 10px;border-radius:5px;";
-                addLine.onclick = () => inputBox.appendChild(createLineInput("", item));
+
+                // --- TAGS SYSTEM ---
+                const ALL_TAGS = [
+                    { key: "tradable", label: "Untradable", inverted: true },
+                    { key: "retired", label: "Retired", inverted: false },
+                    { key: "premium", label: "Premium", inverted: false }
+                ];
+
+                if (!Array.isArray(item.tags)) item.tags = [];
+
+                item.tags = ALL_TAGS.filter(t => {
+                    const val = item[t.key];
+                    return t.inverted ? val === false : val === true;
+                }).map(t => t.label);
+
+                const tagsContainer = document.createElement("div");
+                tagsContainer.style = "display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;margin-bottom:8px;";
+
+                function createTagPill(label) {
+                    const tagEl = document.createElement("span");
+                    tagEl.classList.add('rmv')
+                    tagEl.style = `
+                        background:rgb(255 118 118 / 53%); 
+                        padding:4px 8px; 
+                        border-radius:12px; 
+                        display:inline-flex; 
+                        align-items:center; 
+                        border: solid 1px #ffaeae;
+                        gap:4px; 
+                        font-size:13px;
+                        color: rgb(255 210 210);
+                        user-select: none;
+                        position: relative;
+                        padding-right: 18px; /* make room for the × */
+                        cursor: pointer;
+                        user-select: none;
+                    `;
+                    tagEl.textContent = label;
+
+                    
+                    tagEl.onmouseenter = () => tagEl.style.background = "rgba(255, 118, 118, 0.8)";
+                    tagEl.onmouseleave = () => tagEl.style.background = "rgba(255, 118, 118, 0.53)";
+
+                    tagEl.onclick = () => {
+                        // Remove label from item.tags array
+                        item.tags = item.tags.filter(t => t !== label);
+
+                        // Update booleans accordingly:
+                        const tagDef = ALL_TAGS.find(t => t.label === label);
+                        if (tagDef) {
+                            if (tagDef.inverted) {
+                                item[tagDef.key] = true;  // Inverted means "Untradable" true => tradable false, so remove tag means tradable true
+                            } else {
+                                item[tagDef.key] = false;
+                            }
+                        }
+
+                        // Remove pill from DOM
+                        tagsContainer.removeChild(tagEl);
+
+                        // Show addTagBtn again if it was hidden (because not all tags present now)
+                        if (!btnRow.contains(addTagBtn)) {
+                            btnRow.appendChild(addTagBtn);
+                        }
+                    };
+
+                    return tagEl;
+                }
+
+                // Render all current tags
+                item.tags.forEach(label => {
+                    tagsContainer.appendChild(createTagPill(label));
+                });
+                box.appendChild(tagsContainer);
+
                 box.appendChild(inputBox);
-                box.appendChild(addLine);
+                // --- BUTTONS ---
 
-                //const addGNBtn = document.createElement("button");
-                //addGNBtn.textContent = "+ Add Gamenight";
-                //addGNBtn.style = "cursor:pointer;margin-top: 6px; margin-left: 10px; background:#444;color:white;border:none;padding:5px 10px;border-radius:5px;";
-                //addGNBtn.onclick = () => openMonthPicker(inputBox);
-                //box.appendChild(addGNBtn);
+                const btnRow = document.createElement("div");
+                btnRow.style = "display:flex;gap:6px;margin-top:6px;margin-bottom: 8px";
 
+                const addLine = document.createElement("button");
+                addLine.textContent = "+ Text";
+                addLine.style = "margin-top: 8px;cursor:pointer;background:#444;color:white;border:none;padding:5px 10px;border-radius:5px;";
+                addLine.onclick = () => inputBox.appendChild(createLineInput("", item));
+                btnRow.appendChild(addLine);
+
+                const addTagBtn = document.createElement("button");
+                addTagBtn.textContent = "+ Tag";
+                addTagBtn.style = "margin-top: 8px;cursor:pointer;background:#444;color:white;border:none;padding:5px 10px;border-radius:5px;";
+
+                // Create dropdown container, hidden by default
+                const dropdown = document.createElement("div");
+                dropdown.style = `
+                    position: absolute;
+                    top: 100%;
+                    left: 50px;
+                    background: #222;
+                    border: 1px solid #555;
+                    border-radius: 6px;
+                    margin-top: 4px;
+                    min-width: 120px;
+                    z-index: 9999;
+                    display: none;
+                    max-height: 200px;
+                    overflow-y: auto;
+                    font-size: 14px;
+                `;
+
+                function closeDropdown() {
+                    dropdown.style.display = "none";
+                }
+
+                function openDropdown() {
+                    // Clear old items
+                    dropdown.innerHTML = "";
+
+                    // Find missing tags
+                    const missingTags = ALL_TAGS.filter(t => !item.tags.includes(t.label));
+                    if (missingTags.length === 0) {
+                        closeDropdown();
+                        // Remove button if all tags present
+                        if (btnRow.contains(addTagBtn)) btnRow.removeChild(addTagBtn);
+                        return;
+                    }
+
+                    // Add each missing tag as an option
+                    missingTags.forEach(t => {
+                        const option = document.createElement("div");
+                        option.textContent = t.label;
+                        option.style = `
+                            padding: 6px 10px;
+                            cursor: pointer;
+                            user-select: none;
+                        `;
+                        option.onmouseenter = () => option.style.background = "#333";
+                        option.onmouseleave = () => option.style.background = "transparent";
+                        option.onclick = () => {
+                            // Add tag to item.tags
+                            item.tags.push(t.label);
+
+                            // Update boolean
+                            if (t.inverted) {
+                                item[t.key] = false;
+                            } else {
+                                item[t.key] = true;
+                            }
+
+                            // Add pill visually
+                            tagsContainer.appendChild(createTagPill(t.label));
+
+                            // Hide dropdown and maybe remove addTagBtn if done
+                            closeDropdown();
+                            if (item.tags.length >= ALL_TAGS.length) {
+                                btnRow.removeChild(addTagBtn);
+                            }
+                        };
+                        dropdown.appendChild(option);
+                    });
+
+                    dropdown.style.display = "block";
+                }
+
+                addTagBtn.onclick = (e) => {
+                    e.stopPropagation(); // prevent outside click handler from immediately closing
+                    if (dropdown.style.display === "block") {
+                        closeDropdown();
+                    } else {
+                        openDropdown();
+                    }
+                };
+
+                btnRow.appendChild(addTagBtn);
+                btnRow.style.position = "relative"; // For dropdown absolute positioning
+                btnRow.appendChild(dropdown);
+
+                // Close dropdown on outside click
+                document.addEventListener("click", () => {
+                    closeDropdown();
+                });
+
+                // Hide addTagBtn initially if all tags present
+                if (item.tags.length < ALL_TAGS.length) {
+                    btnRow.appendChild(addTagBtn);
+                }
+
+                box.appendChild(btnRow);
 
                 container.appendChild(box);
             }
+
+            //const addGNBtn = document.createElement("button");
+            //addGNBtn.textContent = "+ Add Gamenight";
+            //addGNBtn.style = "cursor:pointer;margin-top: 6px; margin-left: 10px; background:#444;color:white;border:none;padding:5px 10px;border-radius:5px;";
+            //addGNBtn.onclick = () => openMonthPicker(inputBox);
+            //box.appendChild(addGNBtn);
+
+
 
             renderDescPagination();
         }
