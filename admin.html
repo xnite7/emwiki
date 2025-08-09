@@ -1619,20 +1619,18 @@
                     tagEl.onmouseleave = () => tagEl.style.background = "rgba(255, 118, 118, 0.53)";
 
                     tagEl.onclick = () => {
-                        // Remove label from item.tags array
-                        item.tags = item.tags.filter(t => t !== label);
-
                         // Update booleans accordingly:
-                        const tagDef = ALL_TAGS.find(t => t.label === tagLabel);
+                        const tagDef = ALL_TAGS.find(t => t.label === label);
                         if (tagDef) {
                             if (tagDef.inverted) {
                                 item[tagDef.key] = true;
                             } else {
                                 item[tagDef.key] = false;
                             }
+                            const idx = activeTags.indexOf(label);
+                            if (idx !== -1) activeTags.splice(idx, 1);
+                            console.log(activeTags)
                         }
-
-
 
                         // Remove pill from DOM
                         tagsContainer.removeChild(tagEl);
@@ -1695,7 +1693,7 @@
                     dropdown.innerHTML = "";
 
                     // Find missing tags
-                    const missingTags = ALL_TAGS.filter(t => !item.tags.includes(t.label));
+                    const missingTags = ALL_TAGS.filter(t => !activeTags.includes(t.label));
                     if (missingTags.length === 0) {
                         closeDropdown();
                         // Remove button if all tags present
@@ -1716,13 +1714,15 @@
                         option.onmouseleave = () => option.style.background = "transparent";
                         option.onclick = () => {
                             // Add tag to item.tags
-                            const tagDef = ALL_TAGS.find(t => t.label === tagLabel);
+                            const tagDef = ALL_TAGS.find(t2 => t2.label === t.label);
                             if (tagDef) {
                                 if (tagDef.inverted) {
                                     item[tagDef.key] = false;
                                 } else {
                                     item[tagDef.key] = true;
                                 }
+                                activeTags.push(t.label);
+                                console.log(activeTags)
                             }
 
 
@@ -1731,7 +1731,7 @@
 
                             // Hide dropdown and maybe remove addTagBtn if done
                             closeDropdown();
-                            if (item.tags.length >= ALL_TAGS.length) {
+                            if (activeTags.length >= ALL_TAGS.length) {
                                 btnRow.removeChild(addTagBtn);
                             }
                         };
@@ -1761,7 +1761,7 @@
 
                 // Hide addTagBtn initially if all tags present
 
-    
+
                 if (activeTags.length < ALL_TAGS.length) {
                     btnRow.appendChild(addTagBtn);
                 }
