@@ -66,7 +66,7 @@
             padding: 12px 0;
         }
 
-        .rmv::after{
+        .rmv::after {
             content: "×";
             position: absolute;
             right: 6px;
@@ -1584,9 +1584,8 @@
                     { key: "premium", label: "Premium", inverted: false }
                 ];
 
-                if (!Array.isArray(item.tags)) item.tags = [];
-
-                item.tags = ALL_TAGS.filter(t => {
+                const activeTags = ALL_TAGS.filter(t => {
+                    if (!(t.key in item)) return false; // skip if property missing
                     const val = item[t.key];
                     return t.inverted ? val === false : val === true;
                 }).map(t => t.label);
@@ -1615,7 +1614,7 @@
                     `;
                     tagEl.textContent = label;
 
-                    
+
                     tagEl.onmouseenter = () => tagEl.style.background = "rgba(255, 118, 118, 0.8)";
                     tagEl.onmouseleave = () => tagEl.style.background = "rgba(255, 118, 118, 0.53)";
 
@@ -1624,14 +1623,16 @@
                         item.tags = item.tags.filter(t => t !== label);
 
                         // Update booleans accordingly:
-                        const tagDef = ALL_TAGS.find(t => t.label === label);
+                        const tagDef = ALL_TAGS.find(t => t.label === tagLabel);
                         if (tagDef) {
                             if (tagDef.inverted) {
-                                item[tagDef.key] = true;  // Inverted means "Untradable" true => tradable false, so remove tag means tradable true
+                                item[tagDef.key] = true;
                             } else {
                                 item[tagDef.key] = false;
                             }
                         }
+
+
 
                         // Remove pill from DOM
                         tagsContainer.removeChild(tagEl);
@@ -1646,7 +1647,7 @@
                 }
 
                 // Render all current tags
-                item.tags.forEach(label => {
+                activeTags.forEach(label => {
                     tagsContainer.appendChild(createTagPill(label));
                 });
                 box.appendChild(tagsContainer);
@@ -1715,14 +1716,15 @@
                         option.onmouseleave = () => option.style.background = "transparent";
                         option.onclick = () => {
                             // Add tag to item.tags
-                            item.tags.push(t.label);
-
-                            // Update boolean
-                            if (t.inverted) {
-                                item[t.key] = false;
-                            } else {
-                                item[t.key] = true;
+                            const tagDef = ALL_TAGS.find(t => t.label === tagLabel);
+                            if (tagDef) {
+                                if (tagDef.inverted) {
+                                    item[tagDef.key] = false;
+                                } else {
+                                    item[tagDef.key] = true;
+                                }
                             }
+
 
                             // Add pill visually
                             tagsContainer.appendChild(createTagPill(t.label));
