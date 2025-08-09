@@ -1760,7 +1760,9 @@
                 });
 
                 // Hide addTagBtn initially if all tags present
-                if (item.tags.length < ALL_TAGS.length) {
+
+    
+                if (activeTags.length < ALL_TAGS.length) {
                     btnRow.appendChild(addTagBtn);
                 }
 
