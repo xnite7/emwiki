@@ -612,7 +612,7 @@
         </div>
         <div id="history-list" style="padding: 20px; background: #1a1a1a; border-radius: 20px;"></div>
     </div>
-    <button id="save-btn">✔</button>
+    <button id="save-btn" onclick="handleSave()">✔</button>
     <div id="checklist-modal" class="modal">
         <div class="modal-content">
             <h3 id="checklist-title"></h3>
@@ -873,9 +873,7 @@
                         ['New:', changes.new, i => `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong> `],
                         ['Expired:', changes.expired, i => `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong> `],
                         ['Price:', changes.price, i => `<span style="display:inline-block;width:1.2em;text-align:center;color:#fa4;font-weight:bolder;">$</span> <strong>[${i.item}]</strong> <span style="color:#f66">${i.oldPrice}</span> → <span style="color:#6f6">${i.newPrice}</span>`],
-                        ['Description:', changes.from, i =>
-                            `<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span> <strong>[${i.item}]</strong> ${i.oldDesc}<br><span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span> <strong>[${i.item}]</strong> ${i.newDesc}`
-                        ],
+                        ['Description:', changes.from, i => `<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span> <strong>[${i.item}]</strong> ${i.oldDesc}<br><span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span> <strong>[${i.item}]</strong> ${i.newDesc}`],
                     ];
 
                     let anySectionAdded = false;
@@ -1006,14 +1004,23 @@
             setInterval(checkUpdate, 10000);
         }
         startUpdateCheck()
-        document.getElementById("save-btn").addEventListener("click", async () => {
-            if (document.getElementById("save-btn").disabled) return;
-            if (document.getElementById("save-btn").textContent === "⬇") {
+        const saveBtn = document.getElementById("save-btn");
+
+        async function handleSave() {
+            if (saveBtn.disabled) return;
+
+            // Disable during request
+            saveBtn.disabled = true;
+            saveBtn.style.background = "orange";
+            saveBtn.style.cursor = "wait";
+            saveBtn.textContent = "🕐";
+
+            if (saveBtn.textContent === "⬇") {
                 const blob = new Blob([JSON.stringify(jsData, null, 2)], { type: "application/json" });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url;
-                a.download = "data.json";
+                a.download = "send_to_xnite.json";
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -1021,66 +1028,60 @@
                 return;
             }
 
-            const savedKey = getCookie('adminKey');
-            let adminName = "Unknown";
-            if (savedKey) {
-                const hash = await computeHash(savedKey);
-                adminName = adminKeys[hash] || "Unknown";
-            }
             try {
-                //disable save button
-                document.getElementById("save-btn").disabled = true;
-                document.getElementById("save-btn").style.background = "orange";
-                document.getElementById("save-btn").style.cursor = "wait";
-                document.getElementById("save-btn").textContent = "🕐";
+                const savedKey = getCookie('adminKey');
+                let adminName = "Unknown";
+                if (savedKey) {
+                    const hash = await computeHash(savedKey);
+                    adminName = adminKeys[hash] || "Unknown";
+                }
 
                 const response = await fetch("https://emwiki.site/api/update-gist", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         content: jsData,
                         username: adminName,
                         version: CURRENT_GIST_VERSION
                     })
                 });
+                // Restore button first
+                saveBtn.disabled = false;
+                saveBtn.style.background = "#377bfa";
+                saveBtn.style.cursor = "pointer";
+                saveBtn.textContent = "✔";
 
                 if (response.status === 409) {
-                    const conflict = await response.json();
-                    showConflictUI(conflict);
-                    document.getElementById("save-btn").style.transform = "translateY(0px)";
-                    document.getElementById("save-btn").style.opacity = "1";
-                    document.getElementById("save-btn").textContent = "⬇";
-                    document.getElementById("save-btn").disabled = false;
-                    document.getElementById("save-btn").style.background = "#377bfa";
-                    document.getElementById("save-btn").style.cursor = "pointer";
+                    showConflictUI(await response.json());
+                    saveBtn.style.transform = "translateY(0px)";
+                    saveBtn.style.opacity = "1";
+                    saveBtn.textContent = "⬇";
+                    saveBtn.disabled = false;
+                    saveBtn.style.background = "#377bfa";
+                    saveBtn.style.cursor = "pointer";
                     return;
                 }
 
-                document.getElementById("save-btn").style.transform = "translateY(-10px)";
-                document.getElementById("save-btn").style.opacity = "0";
-                alert(response.ok ? "✅ Changes saved successfully." : "❌ Failed to save changes.");
-
-
                 if (response.ok) {
+                    alert("✅ Changes saved successfully.");
                     location.reload(true);
+                } else {
+                    alert("❌ Failed to save changes.");
                 }
 
-
-
-                if (!response.ok) throw new Error("Unexpected error during update");
-
             } catch (err) {
+                // Restore state on error
+                saveBtn.style.transform = "translateY(0px)";
+                saveBtn.style.opacity = "1";
+                saveBtn.textContent = "⬇";
+                saveBtn.disabled = false;
+                saveBtn.style.background = "#377bfa";
+                saveBtn.style.cursor = "pointer";
                 alert("⚠️ Error saving changes: " + err.message);
-                document.getElementById("save-btn").style.transform = "translateY(0px)";
-                document.getElementById("save-btn").style.opacity = "1";
-                document.getElementById("save-btn").textContent = "⬇";
-                document.getElementById("save-btn").disabled = false;
-                document.getElementById("save-btn").style.background = "#377bfa";
-                document.getElementById("save-btn").style.cursor = "pointer";
             }
-        });
+        }
+
+
 
         function getAllItems() {
             return Object.values(jsData).flat();

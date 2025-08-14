@@ -1,0 +1,1768 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Admin Panel — Remastered (Single Page)</title>
+    <link rel="icon" href="./imgs/admin.png" />
+    <style>
+        :root {
+            --bg: #0f1720;
+            --bg2: #000000;
+            --font: #f6f7fb;
+            --ghost: rgba(255, 255, 255, 0.04);
+            --panel: #12171c;
+            --muted: #9aa4ad;
+            --accent: #37a6ff;
+            --success: #6cd13a;
+            --danger: #e14b4b;
+            --card: #1b2228;
+            --glass: rgba(255, 255, 255, 0.03);
+
+        }
+
+        [data-theme="light"] {
+            --bg: #f6f7fb;
+            --bg2: #dddddd;
+            --font: #000;
+            --ghost: rgba(0, 0, 0, 0.04);
+            --panel: #dbdbdb;
+            --muted: #4b5563;
+            --accent: #0b5cff;
+            --card: #fbfbfb;
+            --glass: rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, Segoe UI, Arial;
+            background: linear-gradient(180deg, var(--bg), #071018);
+            color: var(--muted);
+        }
+
+        header {
+            position: fixed;
+            inset: 0 0 auto 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            background: linear-gradient(180deg, var(--bg), var(--bg2));
+            z-index: 50
+        }
+
+        .rap::before {
+            content: url('./imgs/rap_tag.png');
+            padding-right: 45px;
+            zoom: 0.3;
+        }
+
+        header h1 {
+            margin: 0;
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 18px
+        }
+
+        #top-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center
+        }
+
+        #settings-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: var(--panel);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 18px var(--ghost);
+        }
+
+        #settings-menu {
+            position: fixed;
+            right: 18px;
+            top: 64px;
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 10px 40px var(--ghost);
+            display: none;
+            min-width: 220px
+        }
+
+        #settings-menu.show {
+            display: block
+        }
+
+        select::-webkit-scrollbar {
+            width: 8px;
+            background: var(--panel);
+        }
+
+        #settings-menu label,
+        #settings-menu button {
+            display: block;
+            margin-bottom: 8px
+        }
+
+        select {
+            background: var(--panel);
+            color: var(--accent);
+            border-radius: 8px;
+            padding: 8px;
+            border: 1px solid var(--accent);
+        }
+
+        option {
+            background: var(--card);
+            color: var(--muted);
+        }
+
+        main {
+            padding: 96px 20px 80px;
+            gap: 23px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-evenly;
+            flex-direction: row;
+            align-items: flex-start;
+        }
+
+        #tutorial {
+            display: none;
+        }
+
+        #tutorial p {
+            margin: 4px;
+        }
+
+        #tutorial h1 {
+            font-variant: all-small-caps;
+
+            margin-bottom: 13px;
+            text-shadow: -1px 4px 20px #ffffff;
+        }
+
+        .initial {
+            pointer-events: none !important;
+            display: none !important;
+        }
+
+        .initial * {
+            pointer-events: none;
+            opacity: 0;
+            filter: blur(10px);
+        }
+
+        .initial .tag-left {
+            filter: opacity(0.6) blur(10px) !important;
+        }
+
+        .initial #tutorial {
+            opacity: 1;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 89%;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            filter: unset;
+        }
+
+        .initial #tutorial * {
+            opacity: 1;
+            filter: unset;
+        }
+
+        #quick-editor-content {
+            pointer-events: all;
+            position: fixed;
+            width: min(400px, 100vw);
+            max-width: 92vw;
+            flex-wrap: wrap;
+            height: auto;
+            z-index: 9999;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+            color: var(--font);
+            transition: left 320ms cubic-bezier(.2, .9, .2, 1), top 320ms cubic-bezier(.2, .9, .2, 1),
+                transform 220ms cubic-bezier(.2, .9, .2, 1);
+            touch-action: none;
+            gap: 6px;
+            user-select: none;
+            overflow: visible;
+            padding: 12px;
+            background: #4254622e;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(60px);
+        }
+
+
+
+
+        #quick-editor-modal.show {
+            transform: translateX(0);
+        }
+
+        #quick-editor-content img {
+            max-width: 100%;
+            max-height: 140px;
+            object-fit: contain;
+            filter: drop-shadow(2px 4px 12px #00000069);
+            border-radius: 8px;
+        }
+
+        #quick-editor-close {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: transparent;
+            border: none;
+            font-size: 28px;
+            color: var(--muted);
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        #quick-editor-content label {
+            scale: 1;
+            display: block;
+            font-size: 19px;
+            margin-bottom: 8px;
+        }
+
+        @font-face {
+            font-family: BuilderSans;
+            font-weight: 500;
+            src: url('https://emwiki.site/fonts/BuilderSans-Medium-500.woff2') format('woff2')
+        }
+
+        @font-face {
+            font-family: BuilderSans;
+            font-weight: 700;
+            src: url('https://emwiki.site/fonts/BuilderSans-Bold-700.woff2') format('woff2')
+        }
+
+        #quick-editor-content input {
+            width: 75%;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--ghost);
+            background: transparent;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        #quick-editor-price {
+            font-family: 'BuilderSans' !important;
+            color: #000000 !important;
+            text-align: left !important;
+            padding: 0px 0px !important;
+            font-size: 26px !important;
+        }
+
+        .price-label {
+            font-family: 'BuilderSans';
+            font-size: 16px;
+            font-weight: 1000;
+            position: absolute;
+            top: 7px;
+            left: 13px;
+        }
+
+        .price-label::before {
+            content: url(./imgs/iZGLVYo.png);
+            display: inline-block;
+            width: 221px;
+            zoom: 0.069;
+            opacity: 0.7;
+            margin-right: 2px;
+        }
+
+        #quick-editor-price:focus {
+            font-family: 'BuilderSans' !important;
+            color: #000000 !important;
+            text-align: left !important;
+            padding: 0px 0px !important;
+            font-size: 26px !important;
+        }
+
+        /*.price-area:focus-within {
+            filter: drop-shadow(0px 0px 5px yellow);
+        }*/
+
+        #quick-editor-price::placeholder {
+            color: #00000073 !important;
+            text-align: left !important;
+            padding: 0px 0px !important;
+            font-size: 26px !important;
+        }
+
+        #quick-editor-price:autofill {
+            background-color: light-dark(rgba(232, 240, 254, 0), rgba(70, 90, 126, 0)) !important;
+        }
+
+
+        .section {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 16px;
+            width: -webkit-fill-available;
+            max-width: 1100px;
+            margin-bottom: 18px;
+            box-shadow: 0 6px 24px var(--ghost);
+        }
+
+        .section h2 {
+            margin: 0 0 12px 0;
+            color: var(--accent);
+            font-size: 16px
+        }
+
+        .flex {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            min-width: -webkit-fill-available;
+            min-height: 88%;
+        }
+
+        .panel {
+            background: var(--panel);
+            padding: 12px;
+            border-radius: 10px
+        }
+
+        .item-card {
+            background: linear-gradient(180deg, var(--ghost), transparent);
+            border-radius: 10px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            height: 120px;
+            width: 120px;
+            scale: 1;
+            cursor: grab
+        }
+
+        .item-card img {
+            max-width: 92px;
+            max-height: 92px;
+            object-fit: contain
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: var(--font);
+            text-align: center;
+            font-size: 13px
+        }
+
+        .inputs-row {
+            display: flex;
+            gap: 6px;
+            width: 100%;
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .inputs-row input,
+        .inputs-row select {
+            flex: 1;
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid var(--ghost);
+            background: transparent;
+            color: var(--muted)
+        }
+
+        .small-btn {
+            padding: 6px 8px;
+            border-radius: 8px;
+            border: none;
+            background: var(--accent);
+            color: var(--font);
+            cursor: pointer;
+            transition: filter 0.2s ease, scale 0.1s ease;
+        }
+
+
+
+        .small-btn:hover {
+            filter: brightness(0.9) saturate(1.5);
+            scale: 1.1;
+        }
+
+        .ghost {
+            background: transparent;
+            border: 1px solid var(--ghost);
+        }
+
+        .tag {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: var(--glass);
+            color: var(--muted)
+        }
+
+        #save-btn {
+            position: fixed;
+            left: 18px;
+            bottom: 18px;
+            background: var(--success);
+            border: none;
+            padding: 12px 14px;
+            border-radius: 12px;
+            color: #042;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4)
+        }
+
+        #logout {
+            background: var(--danger);
+            color: white;
+            padding: 8px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer
+        }
+
+        .collapsible {
+            cursor: pointer;
+            padding: 8px 10px;
+            border-radius: 8px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap
+        }
+
+        .note {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        @media(min-width:2123px) {
+            #history-section {
+                max-width: 450px;
+            }
+        }
+
+        @media(min-width:1650px) {
+            .initial {
+                display: flex !important;
+            }
+        }
+
+
+
+        .history-item {
+            background: #0b0f12;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            color: var(--muted);
+            font-family: monospace
+        }
+
+        @media(max-width:720px) {
+            .grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr))
+            }
+
+            header {
+                padding: 10px
+            }
+
+            main {
+                padding: 84px 12px
+            }
+        }
+
+        .tag-pill {
+            display: inline-block;
+            padding: 3px 8px;
+            margin: 2px;
+            white-space: nowrap;
+            border: 1px solid;
+            border-radius: 999px;
+            font-size: 0.85em;
+        }
+
+        .tag-option {
+            display: block;
+            width: 100%;
+            background: transparent;
+            border: none;
+            padding: 5px;
+            color: white;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .tag-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Modal basics — keep your .hidden class logic */
+        #quick-editor-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        /* The draggable panel */
+        .desc-list~button {
+            float: right;
+            margin-left: 8px;
+            background: transparent;
+            border: 0px;
+            margin-bottom: 20px;
+            color: #66daff;
+            cursor: pointer;
+            font-variant: all-small-caps;
+            padding: 11px;
+            transition: all 220ms cubic-bezier(.2, .9, .2, 1), font-size 220ms cubic-bezier(.2, .9, .2, 1);
+        }
+
+
+        .desc-list~button::before {
+            content: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='3 5 18 18' fill='rgb(102 218 255)'><path d='M19 15h-6v7h-3v-7H4v-3h6V6h3v6h6v2z'/></svg>");
+            display: inline-block;
+            width: 9px;
+            margin-right: 2px;
+        }
+
+
+        .desc-list~button:hover {
+            color: #24b8e9;
+            letter-spacing: 1px;
+        }
+
+
+
+        /* A visible handle style so user knows they can drag */
+        #quick-editor-title {
+            cursor: grab;
+            margin: 0 0 8px;
+            padding: 6px 8px;
+            display: inline-block;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            font-size: 23px;
+        }
+
+        #quick-editor-title:active {
+            cursor: grabbing;
+        }
+
+        /* while dragging remove transitions for immediate follow */
+        #quick-editor-content.dragging {
+            transition: none;
+        }
+
+        /* Close button sits on top-right of the content */
+        #quick-editor-close {
+            position: absolute;
+            right: 17px;
+            top: 12px;
+            background: transparent;
+            border: none;
+            color: #ffffff91;
+            font-size: 36px;
+            cursor: pointer;
+            transition: color 220ms cubic-bezier(.2, .9, .2, 1);
+            user-select: none;
+        }
+
+        #quick-editor-close:hover {
+
+            color: #ffffffe0;
+
+        }
+
+        /* Keep inprgba(255, 255, 255, 0.555)e */
+        #quick-editor-content input,
+        #quick-editor-content button {
+            user-select: text;
+        }
+
+        #quick-editor-code {
+            width: 95%;
+            margin-top: 11px;
+        }
+
+        hr {
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #ffffffb5, transparent);
+            margin: 9px 0 12px;
+            border: 0;
+        }
+
+        .price-tag {
+            margin: 8px auto;
+            transition: all 0.2s ease;
+            filter: invert(0.63);
+            display: flex;
+            align-items: center;
+            height: 52px;
+            background: none;
+            user-select: none;
+            font-family: Arial, sans-serif;
+        }
+
+        #quick-editor-content label {
+            font-size: 22px;
+            font-variant: all-petite-caps;
+            font-weight: 500;
+            color: #ffffff7a;
+        }
+
+        .price-tag+hr+div label::before {
+            content: "?";
+            font-size: 16px;
+            color: #ffffff7a;
+            font-weight: 900;
+            font-size: 14px;
+            text-align: center;
+            font-family: 'BuilderSans';
+            border: 3px solid;
+            float: right;
+            border-radius: 100%;
+            width: 18px;
+            height: 18px;
+            font-variant: normal;
+            display: block;
+            transition: color 0.2s ease;
+        }
+
+        .price-tag+hr+div label:hover::before {
+            color: #ffffffc4;
+        }
+
+        .price-tag+hr+div label p {
+            display: none;
+            position: absolute;
+            background: #595f6a86;
+            font: 400 15px 'Source Sans Pro';
+            font-family: 'BuilderSans';
+            padding: 11px;
+            border-radius: 10px;
+            margin-top: -93px;
+            filter: drop-shadow(2px 4px 3px black) drop-shadow(2px 4px 3px #333);
+            border: 1px solid #555555;
+            font-variant-caps: all-petite-caps;
+            opacity: 1;
+            transition: opacity 0.2s ease;
+
+            @starting-style {
+                opacity: 0;
+            }
+        }
+
+        .price-tag+hr+div label p:before {
+            position: absolute;
+            content: '';
+            width: 0;
+            height: 0;
+            border: 6px solid transparent;
+            border-bottom-color: #3a3d43;
+            right: 0px;
+            bottom: -13px;
+            rotate: 180deg;
+        }
+
+        .price-tag+hr+div label p:after {
+            /* Prevents the tooltip from being hidden */
+            width: 100%;
+            height: 40px;
+            content: '';
+            position: absolute;
+            top: -40px;
+            left: 0;
+        }
+
+
+        .price-tag+hr+div label:hover p {
+            position: absolute;
+            display: inline-block;
+        }
+
+        .prc-list {
+            margin-bottom: -5px;
+            padding-left: 16px;
+            font-variant: contextual;
+            font-size: 14px;
+            font-weight: 400;
+            margin-top: 11px;
+        }
+
+
+        .desc-list {
+            margin-bottom: -5px;
+            padding-left: 16px;
+            font-variant: contextual;
+            font-size: 15px;
+            font-weight: 400;
+            margin-top: 11px;
+        }
+
+        .price-tag:has(.price-area:focus-within) {
+            filter: invert(0);
+        }
+
+        /* Left part of the tag: fixed shape (excluding white part) */
+        .tag-left {
+            transition: all 0.2s ease;
+            filter: opacity(0.6);
+            flex-shrink: 0;
+            width: 60px;
+            height: 100%;
+            background: url('./imgs/rap_tag.png') no-repeat center / contain;
+        }
+
+
+
+
+        /*.tag-left:has(+ .price-area:focus-within) {
+                    filter: opacity(0.6) drop-shadow(0px 0px 5px yellow);
+                    flex-shrink: 0;
+                    width: 69px;
+                    height: 100%;
+                    background: url(./imgs/rap_tag.png) no-repeat center / contain;
+                }/*
+
+                /* Right part: white area that expands */
+        .price-area {
+            transition: all 0.2s ease;
+            flex-grow: 1;
+            height: 100%;
+            background: linear-gradient(90deg, #ffffff99, #ffffff5e, #ffffff21);
+            border-radius: 0 20px 20px 0;
+            /* rounded right edges */
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            box-sizing: border-box;
+            min-width: 50px;
+            transition: width 0.2s ease;
+        }
+
+
+        /* When the input is focused, expand the right area */
+        .price-area:focus-within {
+            flex-grow: 2;
+            width: 200px;
+            /* Adjust as needed */
+
+        }
+
+        /* The input */
+        .price-area input {
+            width: 100%;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            outline: none;
+            background: transparent;
+            text-align: center;
+            /* prevent input from shrinking */
+            min-width: 1ch;
+        }
+
+        /* Optional: hide default input spinner for number */
+        .price-area input::-webkit-inner-spin-button,
+        .price-area input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        #admin-online {
+            cursor: default;
+            user-select: none;
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+</head>
+
+<body data-theme="dark">
+    <header>
+        <h1>Admin Panel — Remastered</h1>
+        <div id="top-controls">
+            <div class="tag" id="admin-online">connecting...</div>
+            <div id="settings-btn">⚙</div>
+        </div>
+        <div id="settings-menu" aria-hidden="true">
+            <label>Theme
+                <select id="theme-select">
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
+                </select>
+            </label>
+            <label>Quick actions</label>
+            <button id="download-json" class="small-btn ghost">Download JSON</button>
+            <button id="logout" title="Logout (clear admin key)">Logout</button>
+            <div style="height:8px"></div>
+            <div class="note">Tip: edits modify the loaded auto.json in memory. Click SAVE to push to Gist.</div>
+        </div>
+
+    </header>
+
+    <main>
+
+        <div class="section" id="lists-section">
+            <h2>🧩 Lists</h2>
+            <div style="display:flex;gap:12px;margin-bottom:28px;flex-wrap:wrap">
+                <div class="panel" style="flex:1;min-width:180px">
+                    <div
+                        style="font-weight:700;margin-bottom:8px;font-variant-caps: all-small-caps;margin-top: -10px;font-size: 20px;">
+                        Weekly Shop</div>
+                    <div id="weekly-items" class="grid"></div>
+                </div>
+                <div class="panel" style="flex:1;min-width:180px">
+                    <div
+                        style="font-weight:700;margin-bottom:8px;font-variant-caps: all-small-caps;margin-top: -10px;font-size: 20px;">
+                        Star Shop</div>
+                    <div id="weeklystar-items" class="grid"></div>
+                </div>
+            </div>
+
+            <div class="panel" style="margin-top:8px">
+                <div class="flex" style="margin-bottom:8px">
+                    <input id="search" placeholder="Search items..."
+                        style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--muted)">
+                    <select id="category-filter"
+                        style="color: white;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)">
+                        <option value="all">All categories</option>
+
+                    </select>
+                    <button id="gamenight-toggle" class="small-btn ghost">🎮 Gamenight Only: OFF</button>
+                    <select id="sort-select"
+                        style="padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)">
+                        <option value="default">Default</option>
+                        <option value="az">A → Z</option>
+                        <option value="za">Z → A</option>
+                        <option value="high">$$$ → $</option>
+                        <option value="low">$ → $$$</option>
+                    </select>
+                    <button class="small-btn" id="toggle-prices">Show prices</button>
+                </div>
+                <div id="all-items" class="grid"></div>
+                <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;align-items:center">
+                    <button id="prev-btn" class="small-btn ghost">◀ Prev</button>
+                    <div id="page-count" class="note">Page 1 of 1</div>
+                    <button id="next-btn" class="small-btn ghost">Next ▶</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section" id="history-section">
+            <h2>📜 History</h2>
+            <div id="history-list"></div>
+        </div>
+
+    </main>
+
+    <!-- Quick Editor Side Modal -->
+    <div id="quick-editor-modal" class="hidden">
+        <div id="quick-editor-content" class="initial">
+            <div id='tutorial'>
+                <h1>Quick Editor</h1>
+                <p style="color: #f0f8ff;">Double Click a item to Start editing.</p>
+                <p style="color: #f0f8ffc9;">Drag the panel to move it around.</p>
+                <p style="color: #f0f8ff8f;">Use the "Save" button to apply changes.</p>
+                <p style="color: #f0f8ff6e;">Click the "Close" button to hide.</p>
+            </div>
+            <button id="quick-editor-close" title="Close">&times;</button>
+            <h2 id="quick-editor-title"></h2>
+            <img id="quick-editor-img" src="" alt="" />
+
+
+            <div class="flag-row"
+                style="flex-wrap: wrap;margin-top: 56px;display: flex; gap: 6px; width: 100%; justify-content: center;">
+            </div>
+
+
+            <div class="price-tag">
+                <div class="tag-left"></div>
+                <div class="price-area">
+                    <input id="quick-editor-price" style="caret-color: #ffffff30; border: 0px;" type="text"
+                        placeholder="OwO" />
+                </div>
+            </div>
+
+            <hr>
+            <div>
+                <label>Code / Rarity / Price↴<p>Coins, Stars, %, Opals, Baubles, Tokens, Eggs, Pumpkins, Visors, Robux
+                    </p>
+                    <ul class="prc-list">
+                        <li>
+                            <input id="quick-editor-prc-item" type="text" />
+                        </li>
+                    </ul>
+                </label>
+            </div>
+
+            <div>
+                <label style="margin-top: 5px;">Descriptions↴<br>
+                    <ul class="desc-list">
+                        <li>
+                            <input id="quick-editor-description-item" type="text" />
+                        </li>
+                    </ul>
+                    <button id="new-desc-btn">Text</button>
+                    <button id="new-gn-btn">Gamenight Date</button>
+                </label>
+            </div>
+
+            <button id="quick-editor-save" class="small-btn">Save</button>
+
+        </div>
+    </div>
+
+
+    <button id="save-btn">💾 Save</button>
+
+    <script>
+        // --- Admin keys (kept from original) ---
+        const adminKeys = {
+            '00cc75b3c354bd864d646cc1a790268c33916bd2a32b78b502151640596f7702': 'xnite',
+            'd8d8c58d2c8c173f8de0ff61081d77210367d00eabcc76a04cf3d2d5b1cb3ab4': 'harvestmoon',
+            '0fc6b5fe21bb973ec350831217401b643eee63a6c29c74fb4fe6606b28ba7f8b': 'ivan',
+            '499b66dcc2946daa0c2ff49b05902dd1152d1a21208ca42fc2c9eb23281cb623': 'bagel',
+            'b7a6aa6f564e2e8617ea4e3d443c781d5f890377a584b8d46491d2bcc33e5f36': 'wavetechnic'
+        };
+
+        async function computeHash(key) {
+            const enc = new TextEncoder();
+            const data = enc.encode(key);
+            const h = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function getCookie(n) { const v = '; ' + document.cookie; const p = v.split('; ' + n + '='); return p.length === 2 ? p.pop().split(';').shift() : '' }
+        function setCookie(n, v, d) { const date = new Date(); date.setTime(date.getTime() + (d * 24 * 60 * 60 * 1000)); document.cookie = n + '=' + v + '; expires=' + date.toUTCString() + '; path=/'; }
+        function clearCookie(n) { document.cookie = n + '=; Max-Age=0; path=/'; }
+
+        // UI refs
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsMenu = document.getElementById('settings-menu');
+        const themeSelect = document.getElementById('theme-select');
+        const downloadJson = document.getElementById('download-json');
+        const logoutBtn = document.getElementById('logout');
+        const adminOnline = document.getElementById('admin-online');
+
+        settingsBtn.addEventListener('click', () => settingsMenu.classList.toggle('show'));
+        themeSelect.addEventListener('change', () => document.body.setAttribute('data-theme', themeSelect.value));
+        downloadJson.addEventListener('click', () => { const b = new Blob([JSON.stringify(jsData, null, 2)], { type: 'application/json' }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = 'auto.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(u); });
+        logoutBtn.addEventListener('click', () => { clearCookie('adminKey'); alert('Logged out. Reloading...'); location.reload(); });
+
+        // Data holders
+        let jsData = {};
+        let allItems = [];
+        let fuseAll = null;
+        let fusePrice = null;
+
+        // Pagination
+        let filteredItems = [];
+        let currentPage = 1;
+        const ITEMS_PER_PAGE = window.innerWidth < 720 ? 9 : 14;
+
+        // Init
+        (async function init() {
+            await promptAdminKey();
+            await loadData();
+            setupDragDrop();
+            startUpdateCheck();
+        })();
+
+        // --- Prompt admin key (same logic) ---
+        async function promptAdminKey() {
+            const saved = getCookie('adminKey');
+            if (saved) {
+                const h = await computeHash(saved);
+                if (adminKeys[h]) { showWelcome(adminKeys[h]); return; }
+            }
+            let tries = 0;
+            while (true) {
+                const entered = prompt('Enter admin key:');
+                if (entered === null) { document.body.innerHTML = '<h2 style="color:red;text-align:center;margin-top:40px">Access denied.</h2>'; throw new Error('login cancelled'); }
+                const hash = await computeHash(entered);
+                if (adminKeys[hash]) { setCookie('adminKey', entered, 30); showWelcome(adminKeys[hash]); break; } else { alert('Invalid key'); tries++; if (tries > 5) { alert('Too many tries'); location.reload(); return; } }
+            }
+        }
+        function showWelcome(name) { const welcomeEl = document.getElementById('welcome'); if (welcomeEl) welcomeEl.remove(); adminOnline.textContent = `Online: ${name}`; }
+
+        // --- Load data from Gist endpoint ---
+        async function loadData() {
+            try {
+                const gistRes = await fetch('https://emwiki.site/api/gist-version', { cache: 'no-store' });
+                if (!gistRes.ok) throw new Error('Failed loading gist');
+                const gistJson = await gistRes.json();
+                const raw = gistJson.files?.['auto.json']?.content;
+                jsData = raw ? JSON.parse(raw) : {};
+                rebuildCaches();
+                renderAll();
+            } catch (err) { console.error(err); alert('Failed to load data: ' + err.message) }
+        }
+
+        function rebuildCaches() {
+            allItems = Object.values(jsData).flat();
+            fuseAll = new Fuse(allItems, { keys: ['name'], threshold: 0.35 });
+            fusePrice = new Fuse(allItems, { keys: ['name'], threshold: 0.35 });
+            filteredItems = allItems.slice();
+        }
+
+        function renderAll() {
+
+            const weeklyEl = document.getElementById('weekly-items');
+            const starEl = document.getElementById('weeklystar-items');
+
+            weeklyEl.innerHTML = '';
+            starEl.innerHTML = '';
+            allItems.forEach(item => {
+
+                if (item.weekly) weeklyEl.appendChild(makeItemCard(item));
+                if (item.weeklystar) starEl.appendChild(makeItemCard(item));
+            });
+
+
+
+            const sort = document.getElementById('sort-select').value;
+            if (sort === 'default') filteredItems = allItems.slice()
+            else if (sort === 'az') filteredItems.sort((a, b) => a.name.localeCompare(b.name));
+            else if (sort === 'za') filteredItems.sort((a, b) => b.name.localeCompare(a.name));
+            else if (sort === 'high') filteredItems.sort((a, b) => (parseInt(b.price || 0) || 0) - (parseInt(a.price || 0) || 0));
+            else if (sort === 'low') filteredItems.sort((a, b) => (parseInt(a.price || 0) || 0) - (parseInt(b.price || 0) || 0));
+            // All items grid
+            const allEl = document.getElementById('all-items');
+            allEl.innerHTML = '';
+            filteredItems.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).forEach(item => {
+                allEl.appendChild(makeItemCard(item));
+            });
+
+
+            loadHistory();
+            populateCategoryFilter();
+        }
+
+        document.getElementById('sort-select').addEventListener('change', () => renderAll());
+
+
+        // --- Renderers ---
+        function renderAllSections() {
+            renderListPanels();
+            renderAllItems();
+            renderDescGrid();
+            loadHistory();
+            populateCategoryFilter();
+        }
+
+        document.getElementById('toggle-prices').addEventListener('click', () => {
+            const priceTags = document.querySelectorAll('.price-label');
+            priceTags.forEach(tag => {
+                tag.classList.toggle('hidden');
+            });
+
+        });
+
+        function findItemType(item) { for (const k in jsData) if (jsData[k].includes(item)) return k; return 'unknown'; }
+
+        function makeItemCard(item) {
+            const el = document.createElement('div'); el.className = 'item-card'; el.dataset.name = item.name;
+            const img = document.createElement('img'); img.src = item.img || './imgs/trs.png'; img.alt = item.name; img.onerror = () => img.style.display = 'none';
+            const name = document.createElement('div'); name.className = 'item-name'; name.textContent = item.name;
+            el.appendChild(img); el.appendChild(name);
+
+            // editable inputs: price, code, rarity
+            const inputs = document.createElement('div'); inputs.style.width = '100%'; inputs.className = 'inputs-row';
+            if (item.price > 0) {
+                const priceIn = document.createElement('label'); priceIn.className = 'price-label'; priceIn.textContent = item.price || '';
+                inputs.appendChild(priceIn);
+            }
+            el.appendChild(inputs);
+
+            // click to open quick editor
+            el.addEventListener('dblclick', (e) => {
+                e.preventDefault();
+                openQuickEditor(item);
+            });
+
+            return el;
+        }
+
+        function renderListPanels() {
+            const weeklyEl = document.getElementById('weekly-items'); const starEl = document.getElementById('weeklystar-items');
+            weeklyEl.innerHTML = ''; starEl.innerHTML = '';
+            for (const k in jsData) { jsData[k].forEach(i => { if (i.weekly) weeklyEl.appendChild(makeItemCard(i)); if (i.weeklystar) starEl.appendChild(makeItemCard(i)); }) }
+        }
+
+        // --- All items with pagination ---
+        function renderAllItems() {
+            const container = document.getElementById('all-items'); container.innerHTML = '';
+            const start = (currentPage - 1) * ITEMS_PER_PAGE; const pageItems = filteredItems.slice(start, start + ITEMS_PER_PAGE);
+            pageItems.forEach(i => container.appendChild(makeItemCard(i)));
+            const totalPages = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE));
+            document.getElementById('page-count').textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('prev-btn').disabled = currentPage === 1; document.getElementById('next-btn').disabled = currentPage === totalPages;
+
+
+
+        }
+        document.getElementById('prev-btn').addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderAllItems(); } });
+        document.getElementById('next-btn').addEventListener('click', () => { const totalPages = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE)); if (currentPage < totalPages) { currentPage++; renderAllItems(); } });
+
+        document.getElementById('search').addEventListener('input', (e) => { const q = e.target.value.trim(); filteredItems = q ? fuseAll.search(q).map(r => r.item) : allItems.slice(); currentPage = 1; renderAllItems(); });
+
+
+
+
+        //document.getElementById('desc-search').addEventListener('input', () => { descPage = 1; renderDescGrid(); });
+        let gamenightOnly = false; document.getElementById('gamenight-toggle').addEventListener('click', () => { gamenightOnly = !gamenightOnly; document.getElementById('gamenight-toggle').textContent = `🎮 Gamenight Only: ${gamenightOnly ? 'ON' : 'OFF'}`; renderDescGrid(); });
+
+        // --- History ---
+        async function loadHistory() {
+            const el = document.getElementById('history-list'); el.innerHTML = 'Loading...';
+            try {
+                //only get top 6 and put a load more button by slicing the array
+                const res = await fetch('https://emwiki.site/api/history'); if (!res.ok) throw new Error('history fetch failed'); const data = await res.json(); el.innerHTML = ''; data.slice(0, 4).forEach(e => { const h = document.createElement('div'); h.className = 'history-item'; h.innerHTML = `<div style="display:flex;justify-content:space-between"><strong>${e.username}</strong><span>${new Date(e.timestamp).toLocaleString()}</span></div><div style="margin-top:8px;white-space:pre-wrap">${e.diff || '(no diff)'}</div>`; el.appendChild(h); }); if (data.length > 6) { const loadMoreBtn = document.createElement('button'); loadMoreBtn.textContent = 'Load more history'; loadMoreBtn.className = 'small-btn ghost'; loadMoreBtn.onclick = () => { el.innerHTML = ''; data.forEach(e => { const h = document.createElement('div'); h.className = 'history-item'; h.innerHTML = `<div style="display:flex;justify-content:space-between"><strong>${e.username}</strong><span>${new Date(e.timestamp).toLocaleString()}</span></div><div style="margin-top:8px;white-space:pre-wrap">${e.diff || '(no diff)'}</div>`; el.appendChild(h); }); }; el.appendChild(loadMoreBtn); }
+            } catch (err) { el.innerHTML = 'Failed to load history: ' + err.message }
+        }
+
+        // --- Drag & drop with Sortable (clone from original) ---
+        function setupDragDrop() {
+            const FLAG_PANELS = { 'weekly-items': 'weekly', 'weeklystar-items': 'weeklystar' };
+            new Sortable(document.getElementById('all-items'), { group: { name: 'shared-flags', pull: 'clone', put: false }, animation: 150, sort: false });
+            Object.entries(FLAG_PANELS).forEach(([id, key]) => {
+                new Sortable(document.getElementById(id), { group: { name: 'shared-flags', pull: true, put: true }, animation: 150, sort: false, onAdd(evt) { const name = evt.item.dataset.name; for (const arr of Object.values(jsData)) { const it = arr.find(x => x.name === name); if (it) { it[key] = true; } } renderListPanels(); } });
+            });
+        }
+
+        // --- Save to Gist endpoint ---
+        document.getElementById('save-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('save-btn'); btn.disabled = true; btn.textContent = 'Saving...';
+            try {
+                const saved = getCookie('adminKey'); let adminName = 'Unknown'; if (saved) { const h = await computeHash(saved); adminName = adminKeys[h] || adminName; }
+                const res = await fetch('https://emwiki.site/api/update-gist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: jsData, username: adminName, version: '' }) });
+                if (res.status === 409) { alert('Conflict detected — a newer version exists. Consider downloading and merging.'); btn.disabled = false; btn.textContent = '💾 Save'; return; }
+                if (!res.ok) throw new Error('save failed'); alert('Saved successfully'); location.reload();
+            } catch (err) { alert('Save error: ' + err.message); btn.disabled = false; btn.textContent = '💾 Save'; }
+        });
+        //descFiltered = allItems.filter(i => (!gamenightOnly || (i.from || '').toLowerCase().includes('gamenight')));
+        // --- Helpers ---
+        let currentEditingItem = null;
+
+
+
+
+        function openQuickEditor(item) {
+            currentEditingItem = item;
+            const modal = document.getElementById('quick-editor-modal');
+            document.getElementById('quick-editor-content').classList.remove('initial');
+            document.getElementById('quick-editor-title').textContent = item.name;
+            const imgEl = document.getElementById('quick-editor-img');
+            if (item.img) {
+                imgEl.src = item.img;
+                imgEl.style.display = 'block';
+            } else {
+                imgEl.style.display = 'none';
+            }
+            document.getElementById('quick-editor-price').placeholder = "RAP";
+            document.getElementById('quick-editor-price').value = item.price || '';
+
+            const desccontainer = document.querySelector('.desc-list');
+            desccontainer.innerHTML = '';
+            const prccontainer = document.querySelector('.prc-list');
+            prccontainer.innerHTML = '';
+
+
+            const TAG_COLORS = { New: "#1abc9c", Weekly: "#3498db", Star: "#f1c40f", Retired: "#9b59b6", Premium: "#e67e22", Untradable: "#e74c3c" };
+            let tags = Object.entries({ New: item.new, Weekly: item.weekly, Star: item.weeklystar, Retired: item.retired, Premium: item.premium, Untradable: !item.tradable })
+                .filter(([k, v]) => v).map(([k]) => k);
+
+            const flagRow = document.querySelector('.flag-row'), modalContent = document.getElementById('quick-editor-content');
+            let tagMenu = null;
+
+            const renderTags = () => {
+                flagRow.querySelectorAll('.tag-pill').forEach(e => e.remove());
+                tags.forEach(tag => {
+                    const el = document.createElement('span');
+                    Object.assign(el, { className: 'tag-pill', textContent: tag, style: `border-color:${TAG_COLORS[tag] || '#aaa'};background:${(TAG_COLORS[tag] || '#aaa')}33;color:${TAG_COLORS[tag] || '#aaa'}` });
+                    const x = document.createElement('span'); x.textContent = ' ×'; x.style.cursor = 'pointer';
+                    x.onclick = () => { tags = tags.filter(t => t !== tag); renderTags(); renderListPanels(); };
+                    el.appendChild(x); flagRow.appendChild(el);
+                });
+            };
+
+            const openTagSelector = () => {
+                if (tagMenu) tagMenu.remove();
+                tagMenu = document.createElement('div');
+                Object.assign(tagMenu.style, { position: 'absolute', background: '#1e293b', padding: '10px', border: '1px solid #555', borderRadius: '8px', zIndex: 1000 });
+                Object.keys(TAG_COLORS).forEach(tag => {
+                    const b = document.createElement('button'); b.textContent = tag; b.className = 'tag-option';
+                    if (tags.includes(tag)) Object.assign(b.style, { background: TAG_COLORS[tag] + '36', color: '#5c5c5c' });
+                    b.onclick = () => { if (!tags.includes(tag)) tags.push(tag); tagMenu.remove(); tagMenu = null; renderTags(); renderListPanels(); };
+                    tagMenu.appendChild(b);
+                });
+                flagRow.appendChild(tagMenu);
+            };
+
+            flagRow.querySelectorAll('.tag-pill,.small-btn.ghost').forEach(e => e.remove());
+            renderTags();
+            const btn = document.createElement('button'); btn.className = 'small-btn ghost'; btn.textContent = 'Tags'; btn.style.marginTop = '-40px'; btn.style.fontVariant = 'all-petite-caps'; btn.style.position = "absolute"; btn.onclick = e => {
+                e.stopPropagation();
+                openTagSelector();
+            };
+            flagRow.appendChild(btn);
+
+            // Close tag menu when clicking anywhere else in modal
+            modalContent.addEventListener('click', e => {
+                if (tagMenu && !tagMenu.contains(e.target) && !e.target.classList.contains('tag-option') && e.target !== btn) {
+                    tagMenu.remove();
+                    tagMenu = null;
+                }
+            });
+
+
+
+
+
+
+            // flags
+
+
+
+            function createDesc(value = '', date = false) {
+                const months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.']
+                const s = new Set()
+                const li = Object.assign(document.createElement('li'), { className: 'desc-item', style: 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:#555;color:#fff;border-radius:6px;padding:5px 11px;margin-bottom:6px;cursor:grab;user-select:none' })
+                const label = Object.assign(document.createElement('span'), { style: 'flex-grow:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;', textContent: value || 'Description...' })
+                const input = Object.assign(document.createElement('input'), { type: 'text', value: value || '', style: 'flex-grow:1;display:none;border:none;border-radius:4px;padding:6px 8px' })
+                const monthswrapper = Object.assign(document.createElement('div'), { style: 'cursor: initial;justify-content: space-evenly;display:none;flex-wrap:wrap;gap:4px;flex-grow:1' })
+                const yearinput = Object.assign(document.createElement('input'), { min: 2016, max: new Date().getFullYear(), type: 'number', placeholder: 'Year', style: 'font-weight: 700;font-size: 15px;width:50px;display:none;border:none;border-radius:4px;padding:4px 6px' })
+                const editButton = Object.assign(document.createElement('button'), { textContent: 'ᴇᴅɪᴛ', className: 'small-btn ghost' })
+                const deleteButton = Object.assign(document.createElement('button'), { textContent: '🗙', style: 'padding:0px 3px 3px;background:#f66', className: 'small-btn ghost' });
+                const okbutton = Object.assign(document.createElement('button'), { textContent: '✔', style: 'background: rgb(95 193 95);padding: 1px 8px 3px;text-shadow: 0 0 5px #00000057;display:none;font-weight: 700;', className: 'small-btn ghost' });
+
+                months.forEach(month => {
+                    const button = document.createElement('span');
+                    button.textContent = month; button.style.cssText = 'padding:4px 8px;border-radius:4px;background:#777;cursor:pointer;user-select:none;transition:all .15s';
+                    button.onclick = () => {
+                        (s.has(month) ? s.delete(month) : s.add(month)),
+                            button.style.background = s.has(month) ? 'var(--accent)' : '#777';
+                        button.style.transform = 'scale(1.05)';
+                        setTimeout(() => button.style.transform = '', 100);
+                    };
+                    monthswrapper.appendChild(button);
+                });
+
+                if (date) {
+                    monthswrapper.append(yearinput, okbutton);
+                    li.append(label, input, monthswrapper, editButton, deleteButton);
+                } else {
+                    li.append(label, input, yearinput, monthswrapper, editButton, deleteButton, okbutton);
+                }
+
+                desccontainer.appendChild(li); Sortable.create(desccontainer, { animation: 150, handle: '.desc-item' });
+
+                li.ondragstart = e => { e.dataTransfer.setData('text/plain', item.name); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setDragImage(li, 70, 20); li.style.opacity = '0.5'; }
+                li.ondragend = () => { li.style.opacity = '1'; }
+
+                if (date && /\(.+\)/.test(value)) { let [_, months, year] = value.match(/\((.+)\s(\d{4})\)/) || []; months && months.split(',').map(z => z.trim()).forEach(z => { s.add(z);[...monthswrapper.children].forEach(t => t.textContent == z && (t.style.background = 'var(--accent)')) }); yearinput.value = year || '' }
+
+                const edit = () => { deleteButton.style.display = 'none'; okbutton.style.display = 'inline-block'; label.style.display = 'none'; editButton.style.display = 'none'; (date ? (monthswrapper.style.display = 'flex', yearinput.style.display = 'inline-block') : (input.style.display = 'inline-block', input.focus())) }
+
+                const done = () => {
+                    deleteButton.style.display = 'inline-block'; okbutton.style.display = 'none'; value = date ? `Gamenight (${[...s].join(', ')}${yearinput.value ? ' ' + yearinput.value : ''})` : (input.value.trim() || 'Description...'); label.textContent = value; label.style.display = 'inline';
+                    input.style.display = monthswrapper.style.display = yearinput.style.display = 'none'; editButton.style.display = 'inline-block'
+                };
+
+                editButton.onclick = e => { e.stopPropagation(); edit() };
+                label.ondblclick = edit;[input, yearinput].forEach(i => i.onblur = done);
+                input.onkeydown = e => { if (e.key == 'Enter' || e.key == 'Escape') done() };
+                deleteButton.onclick = () => li.remove();
+                okbutton.onclick = () => done();
+                updateWidth()
+            }
+
+
+            function createPrc(value = '') {
+                const s = new Set()
+                const li = Object.assign(document.createElement('li'), { className: 'desc-item', style: 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:#555;color:#fff;border-radius:6px;padding:5px 11px;margin-bottom:6px;cursor:grab;user-select:none' })
+                const icon = Object.assign(document.createElement('img'), { src: './imgs/trs.png', style: 'display:inline-block;width: 20px; height: 20px; margin-right: 6px; vertical-align: middle;' })
+                const label = Object.assign(document.createElement('span'), { className: 'prc-label', style: 'flex-grow:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;', textContent: value || 'Price...' })
+                const input = Object.assign(document.createElement('input'), { type: 'text', value: value || '', style: 'flex-grow:1;display:none;border:none;border-radius:4px;padding:6px 8px' })
+                const editButton = Object.assign(document.createElement('button'), { textContent: 'ᴇᴅɪᴛ', className: 'small-btn ghost' })
+                const deleteButton = Object.assign(document.createElement('button'), { textContent: '🗙', style: 'padding:0px 3px 3px;background:#f66', className: 'small-btn ghost' });
+                const okbutton = Object.assign(document.createElement('button'), { textContent: '✔', style: 'background: rgb(95 193 95);padding: 1px 8px 3px;text-shadow: 0 0 5px #00000057;display:none;font-weight: 700;', className: 'small-btn ghost' });
+
+                function formatify() {
+                    const text = input.value.trim();
+
+                    icon.style.display = 'inline-block';
+                    icon.src = `./imgs/trs.png`;
+
+                    label.style.color = "#fff";
+                    label.style.fontWeight = "normal";
+                    label.style.textShadow = "";
+
+                    if (text.includes("Tokens")) {
+                        Object.assign(label.style, { fontWeight: 500, textStroke: "1px rgb(255, 83, 219)", webkitTextStroke: "1px rgb(255, 83, 219)" });
+                    }
+                    if (text.includes("Robux")) {
+                        Object.assign(label.style, { fontWeight: 700 });
+                    }
+
+                    const iconMap = {
+                        Robux: "./imgs/cf8ZvY7.png",
+                        Coins: "./imgs/Coin.webp",
+                        Stars: "./imgs/WKeX5AS.png",
+                        Visors: "./imgs/7IoLZCN.png",
+                        Pumpkins: "./imgs/bHRBTrU.png",
+                        Eggs: "./imgs/qMxjgQy.png",
+                        Opals: "./imgs/wwMMAvr.png",
+                        Opal: "./imgs/wwMMAvr.png",
+                        Baubles: "./imgs/bauble.png",
+                        Bauble: "./imgs/bauble.png",
+                        Tokens: "./imgs/Cy9r140.png",
+                        Token: "./imgs/Cy9r140.png"
+                    };
+
+                    for (const [key, src] of Object.entries(iconMap)) {
+                        if (text.includes(key)) {
+                            label.textContent = text.replace(` ${key}`, "");
+                            icon.src = `${src}`;
+                            break;
+                        }
+                    }
+                    Object.assign(label.style, { fontFamily: "BuilderSans" });
+                    if (text.includes("%")) {
+                        label.style.color = "rgb(193 68 255)";
+                        label.style.fontWeight = 500;
+                        label.style.textShadow = "0 0 6px rgb(199 0 255)";
+                    } else if (text.includes("[EXPIRED]")) {
+                        Object.assign(label.style, { textShadow: "0 0 10px black", fontSize: "16px", fontVariant: "unicase", fontFamily: "cursive", color: "rgb(255 31 31)" });
+                    } else if (text.includes("[ACTIVE]")) {
+                        Object.assign(label.style, { fontFamily: "cursive", color: "rgb(251 255 68)" });
+                    } else if (text.includes("Unobtainable")) {
+                        icon.src = `./imgs/Red_x.png`;
+                        label.style.color = "rgb(255 44 44)";
+                    }
+
+                    if (icon.src.includes('trs.png')) {
+
+                        icon.style.display = 'none';
+                    }
+                }
+                formatify()
+
+                input.oninput = () => formatify();
+
+
+                li.append(icon, label, input, editButton, deleteButton, okbutton);
+
+
+                prccontainer.appendChild(li); Sortable.create(prccontainer, { animation: 150, handle: '.desc-item' });
+
+                li.ondragstart = e => { e.dataTransfer.setData('text/plain', item.name); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setDragImage(li, 1200, 20); li.style.opacity = '0.5'; }
+                li.ondragend = () => { li.style.opacity = '1'; }
+
+                const edit = () => { deleteButton.style.display = 'none'; okbutton.style.display = 'inline-block'; label.style.display = 'none'; editButton.style.display = 'none'; (input.style.display = 'inline-block', input.focus()) }
+
+                const done = () => {
+                    deleteButton.style.display = 'inline-block';
+                    okbutton.style.display = 'none';
+                    label.textContent = (input.value.trim() || 'Price...');
+                    label.style.display = 'inline';
+                    input.style.display = 'none';
+                    editButton.style.display = 'inline-block'
+                    formatify();
+                };
+
+                editButton.onclick = e => { e.stopPropagation(); edit() };
+                label.ondblclick = edit; input.onblur = done;
+                input.onkeydown = e => { if (e.key == 'Enter' || e.key == 'Escape') done() };
+                deleteButton.onclick = () => li.remove();
+                okbutton.onclick = () => done();
+                updateWidth()
+            }
+
+
+            const descriptions = (item.from || '').split('<br>').map(x => x.trim()).filter(Boolean).forEach(v => createDesc(v, /\([A-Z][a-z]{2}\./.test(v)));
+            const prc = (item['price/code/rarity'] || '').split('<br>').map(x => x.trim()).filter(Boolean).forEach(v => createPrc(v));
+
+            // Add a new input button
+            document.getElementById('new-desc-btn').onclick = () => {
+                createDesc('');
+            };
+
+            document.getElementById('new-gn-btn').onclick = () => {
+                createDesc(`Gamenight (${formattedDate}. ${formattedYear})`, true);
+            };
+
+            const now = new Date();
+            const month = { month: 'short' };
+            const year = { year: 'numeric' };
+            const formattedDate = now.toLocaleDateString('en-US', month);
+            const formattedYear = now.toLocaleDateString('en-US', year);
+            // Show the modal
+            modal.classList.add('show');
+            modal.classList.remove('hidden');
+        }
+
+        document.getElementById('quick-editor-save').addEventListener('click', () => {
+            if (!currentEditingItem) return;
+            currentEditingItem.price = document.getElementById('quick-editor-price').value.trim();
+
+            const prcInputs = document.querySelectorAll('#quick-editor-prc-item');
+            const prcs = Array.from(prcInputs).map(input => input.value.trim()).filter(v => v).join('<br>');
+            currentEditingItem['price/code/rarity'] = prcs || currentEditingItem['price/code/rarity'] || '';
+            //get descriptions from the inputs and combine them and add <br> between each
+            const descInputs = document.querySelectorAll('#quick-editor-description-item');
+            const descriptions = Array.from(descInputs).map(input => input.value.trim()).filter(v => v).join('<br>');
+            currentEditingItem.from = descriptions || currentEditingItem.from || '';
+            // Optionally also update rarity if you want, or handle that differently
+            rebuildCaches();
+            renderAll();
+            alert(`Updated ${currentEditingItem.name}`);
+            closeQuickEditor();
+        });
+
+        document.getElementById('quick-editor-close').addEventListener('click', () => {
+            closeQuickEditor();
+        });
+
+        function closeQuickEditor() {
+            const modal = document.getElementById('quick-editor-modal');
+            modal.classList.remove('show');
+            modal.classList.add('hidden');
+            currentEditingItem = null;
+        }
+
+
+        window.addEventListener('message', (ev) => {
+            if (ev.data?.cmd === 'quick-update') {
+                const itName = ev.data.name; for (const arr
+                    of Object.values(jsData)) {
+                    const m = arr.find(x => x.name === itName); if (m) {
+                        m.price = ev.data.price;
+                        m['price/code/rarity'] = ev.data.code;
+                        m.from = ev.data.from;
+                    }
+                } rebuildCaches(); renderAllSections(); alert('Updated ' + itName);
+            }
+        });
+
+        // --- Search caches ---
+        function populateCategoryFilter() {
+            const sel = document.getElementById('category-filter'); sel.innerHTML = '';
+            const keys = Object.keys(jsData);
+            sel.appendChild(new Option('All categories', 'all'));
+            keys.forEach(k => sel.appendChild(new Option(k, k)));
+        }
+
+        document.getElementById('category-filter').addEventListener('change', function (e) {
+            const v = e.target.value;
+            if (v === 'all') { filteredItems = allItems.slice(); } else { filteredItems = jsData[v] ? jsData[v].slice() : []; }
+
+            const sort = document.getElementById('sort-select').value;
+            if (sort === 'default') filteredItems = filteredItems.slice()
+            else if (sort === 'az') filteredItems.sort((a, b) => a.name.localeCompare(b.name));
+            else if (sort === 'za') filteredItems.sort((a, b) => b.name.localeCompare(a.name));
+            else if (sort === 'high') filteredItems.sort((a, b) => (parseInt(b.price || 0) || 0) - (parseInt(a.price || 0) || 0));
+            else if (sort === 'low') filteredItems.sort((a, b) => (parseInt(a.price || 0) || 0) - (parseInt(b.price || 0) || 0));
+
+            currentPage = 1; renderAllItems();
+        });
+
+        // --- Simple update checking (poll) ---
+        async function checkUpdate() {
+            try {
+                const res = await fetch('https://emwiki.site/api/latest-version', { cache: 'no-store' });
+                if (!res.ok) return; const txt = await res.text(); /* parse if needed */
+            } catch (e) { }
+        }
+        function startUpdateCheck() { setInterval(checkUpdate, 15000); }
+
+
+        (() => {
+            const modal = document.getElementById('quick-editor-modal');
+            const panel = document.getElementById('quick-editor-content');
+            const handle = document.getElementById('quick-editor-title');
+            const closeBtn = document.getElementById('quick-editor-close');
+
+            const mainEl = document.querySelector('main');
+
+            const WIDTH_THRESHOLD = 1650;
+
+            // Remember original position so we can put it back
+            const originalParent = panel.parentNode;
+
+            // Move panel based on width
+
+            if (!modal || !panel || !handle) return;
+
+            // config
+            const SNAP_MARGIN = 12;
+            const STORAGE_KEY = 'quickEditorPosV1';
+
+            // helpers
+            const vw = () => window.innerWidth;
+            const vh = () => window.innerHeight;
+            const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+
+
+            const restorePosition = () => {
+                try {
+                    // If viewport is wide enough, lock to right of main page
+
+                    if (vw() > WIDTH_THRESHOLD) {
+                        if (mainEl.contains(panel)) return; // already in place
+                        mainEl.insertBefore(panel, mainEl.firstChild);
+                        panel.style.position = 'unset';
+                        panel.style.left = ''; // let CSS handle placement
+                        panel.style.top = '';  // let CSS handle placement
+                        panel.style.transform = 'none';
+                        closeBtn.style.display = 'none'; // hide close button in wide mode
+                        panel.style.boxShadow = '0 6px 24px var(--ghost)';
+                        return;
+                    } else {
+                        if (!modal.contains(panel)) {
+                            modal.appendChild(panel);
+                            panel.style.position = ''; // reset for modal
+                            panel.style.position = 'fixed';
+                            closeBtn.style.display = 'unset'; // show close button in modal
+                            panel.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.45)';
+                        }
+                    }
+
+
+
+                    // Otherwise restore saved or center
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (!raw) return centerPanel();
+                    const { left, top } = JSON.parse(raw);
+                    setPanelPos(left, top);
+                } catch {
+                    centerPanel();
+                }
+            };
+            // Also run this check on resize
+
+
+            const centerPanel = () => {
+                const w = panel.offsetWidth;
+                setPanelPos(Math.round((vw() - w) / 2), Math.round(vh() * 0.1));
+            };
+
+            const setPanelPos = (left, top) => {
+                // keep panel inside viewport (with margin)
+                const W = panel.offsetWidth, H = panel.offsetHeight;
+                const maxLeft = vw() - W - SNAP_MARGIN;
+                const maxTop = vh() - H - SNAP_MARGIN;
+                left = clamp(Math.round(left), SNAP_MARGIN, Math.max(SNAP_MARGIN, maxLeft));
+                top = clamp(Math.round(top), SNAP_MARGIN, Math.max(SNAP_MARGIN, maxTop));
+
+                panel.style.left = left + 'px';
+                panel.style.top = top + 'px';
+                panel.style.transform = 'none';
+            };
+
+            const savePosition = () => {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                        left: parseInt(panel.style.left || 0, 10),
+                        top: parseInt(panel.style.top || 0, 10)
+                    }));
+                } catch { }
+            };
+
+            // pointer dragging
+            let dragging = false;
+            let startX = 0, startY = 0;
+            let startLeft = 0, startTop = 0;
+
+            // Use the whole panel as handle
+
+            panel.addEventListener('pointerdown', onPointerDown);
+
+            function onPointerDown(e) {
+                if (['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT', 'SPAN', 'LI'].includes(e.target.tagName)) return;
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+                dragging = true;
+                panel.classList.add('dragging');
+                panel.setPointerCapture(e.pointerId);
+
+                const rect = panel.getBoundingClientRect();
+                startX = e.clientX;
+                startY = e.clientY;
+                startLeft = rect.left;
+                startTop = rect.top;
+
+                document.body.style.userSelect = 'none';
+                e.preventDefault();
+            }
+
+            function onPointerMove(e) {
+                if (!dragging) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                setPanelPos(startLeft + dx, startTop + dy);
+            }
+
+            function onPointerUp(e) {
+                if (!dragging) return;
+                dragging = false;
+                panel.classList.remove('dragging');
+
+                const rect = panel.getBoundingClientRect();
+                const leftDist = rect.left;
+                const rightDist = vw() - (rect.left + rect.width);
+
+                // Snap horizontally only, but to CORNERS vertically
+                let finalLeft = leftDist < rightDist ? SNAP_MARGIN : vw() - rect.width - SNAP_MARGIN;
+
+                // For corners: pick top or bottom based on closest
+                const topDist = rect.top;
+                const bottomDist = vh() - (rect.top + rect.height);
+                let finalTop = topDist < bottomDist ? SNAP_MARGIN : vh() - rect.height - SNAP_MARGIN;
+
+                // But if you want vertical to remain unchanged:
+                // let finalTop = rect.top;
+
+                setPanelPos(finalLeft, finalTop);
+                savePosition();
+
+                document.body.style.userSelect = '';
+                try { panel.releasePointerCapture(e.pointerId); } catch { }
+            }
+
+
+            // attach pointer events
+
+            window.addEventListener('pointermove', onPointerMove);
+            window.addEventListener('pointerup', onPointerUp);
+
+            // keep inside on resize
+            window.addEventListener('resize', () => {
+                if (vw() > WIDTH_THRESHOLD) {
+                    if (mainEl.contains(panel)) return; // already in place
+                    mainEl.insertBefore(panel, mainEl.firstChild);
+                    panel.style.position = 'unset';
+                    panel.style.left = ''; // let CSS handle placement
+                    panel.style.top = '';  // let CSS handle placement
+                    panel.style.transform = 'none';
+                    panel.style.boxShadow = '0 6px 24px var(--ghost)';
+                    closeBtn.style.display = 'none'; // hide close button in wide mode
+                } else {
+
+                    if (!modal.contains(panel)) {
+                        modal.appendChild(panel);
+                        panel.style.position = ''; // reset for modal
+                        panel.style.position = 'fixed';
+                        closeBtn.style.display = 'unset'; // show close button in modal
+                        panel.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.45)';
+                    }
+                    // Keep it clamped inside view
+                    const rect = panel.getBoundingClientRect();
+                    const finalLeft = clamp(rect.left, SNAP_MARGIN, Math.max(SNAP_MARGIN, vw() - rect.width - SNAP_MARGIN));
+                    const finalTop = clamp(rect.top, SNAP_MARGIN, Math.max(SNAP_MARGIN, vh() - rect.height - SNAP_MARGIN));
+                    setPanelPos(finalLeft, finalTop);
+                    savePosition();
+
+                }
+
+            });
+
+
+
+            // optional: close button & Esc to close
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+            }
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') modal.classList.add('hidden');
+            });
+
+            // init when visible
+            const observer = new MutationObserver(() => {
+                if (!modal.classList.contains('hidden')) {
+                    // slight delay to ensure layout computed
+                    requestAnimationFrame(() => restorePosition());
+                }
+            });
+            observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
+
+            // initial restore if already visible
+            if (!modal.classList.contains('hidden')) restorePosition();
+        })();
+
+        const input = document.getElementById('quick-editor-price');
+        const priceArea = document.querySelector('.price-tag');
+
+        // Create a hidden span for measuring text width
+        const span = document.createElement('span');
+        span.style.position = 'absolute';
+        span.style.visibility = 'hidden';
+        span.style.height = 'auto';
+        span.style.width = 'auto';
+        span.style.whiteSpace = 'nowrap';
+        span.style.fontSize = getComputedStyle(input).fontSize;
+        span.style.fontWeight = getComputedStyle(input).fontWeight;
+        span.style.fontFamily = getComputedStyle(input).fontFamily;
+        document.body.appendChild(span);
+
+        function updateWidth() {
+            span.textContent = input.value || input.placeholder;
+            const width = span.offsetWidth + 104; // 20px padding for comfort
+            priceArea.style.width = width + 'px';
+        }
+
+        input.addEventListener('input', updateWidth);
+        updateWidth(); // init width on page load
+
+    </script>
+
+</body>
+
+</html>
