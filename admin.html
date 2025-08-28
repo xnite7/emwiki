@@ -532,6 +532,9 @@
     <h1>Admin Panel</h1>
     <div id="admin-online"></div>
     <div id="welcome-message"></div>
+    <button id="logout-btn"
+        style="position:absolute;top:20px;right:20px;z-index:9999;background:#e14b4b;color:white;border:none;padding:10px 18px;border-radius:12px;cursor:pointer;font-size:16px;">Log
+        Out</button>
     <div id="tab-switcher">
         <button onclick="switchTab('main')">🧩 Item Lists</button>
         <button onclick="switchTab('prices')">💰 Prices</button>
@@ -666,11 +669,13 @@
 
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         const adminKeys = {
-            '00cc75b3c354bd864d646cc1a790268c33916bd2a32b78b502151640596f7702': 'xnite',
+            '18bf488290cdb42cc9c6a6228661dcc2882e2cff3b983c0daa4cf42c8556ba8f': 'xnite',
             'd8d8c58d2c8c173f8de0ff61081d77210367d00eabcc76a04cf3d2d5b1cb3ab4': 'harvestmoon',
             '0fc6b5fe21bb973ec350831217401b643eee63a6c29c74fb4fe6606b28ba7f8b': 'ivan',
             '499b66dcc2946daa0c2ff49b05902dd1152d1a21208ca42fc2c9eb23281cb623': 'bagel',
-            'b7a6aa6f564e2e8617ea4e3d443c781d5f890377a584b8d46491d2bcc33e5f36': 'wavetechnic'
+            'b7a6aa6f564e2e8617ea4e3d443c781d5f890377a584b8d46491d2bcc33e5f36': 'wavetechnic',
+            '715add203d5f8c33f00a056b8b72a3df30168607822855ed014a4bc071ca8c83': 'mason',
+            'c6cb970822a655e879bcb82cb58ad5e3711f1bfe2fa0c2307d4a48495913590d': 'nap',
         };
 
         async function computeHash(key) {
@@ -811,17 +816,17 @@
                     // Diff container
                     const diffDiv = document.createElement('div');
                     diffDiv.style.cssText = `
-                font-family: monospace;
-                font-weight:400;
-                font-size:15px;
-                background:#000;
-                border:1px solid #ddd;
-                padding:8px;
-                border-radius:4px;
-                max-width: 100%;
-                white-space: normal;
-                color: #ddd;
-            `;
+                        font-family: monospace;
+                        font-weight:400;
+                        font-size:15px;
+                        background:#000;
+                        border:1px solid #ddd;
+                        padding:8px;
+                        border-radius:4px;
+                        max-width: 100%;
+                        white-space: normal;
+                        color: #ddd;
+                    `;
 
                     // Parse diff lines
                     const lines = e.diff?.split('\n') || [];
@@ -1797,7 +1802,15 @@
                 }
             }
         }
-
+        document.getElementById("logout-btn").onclick = function () {
+            // Remove the adminKey cookie
+            document.cookie = "adminKey=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            // Optionally clear localStorage/sessionStorage if you use them
+            localStorage.clear();
+            sessionStorage.clear();
+            // Reload the page (will prompt for login again)
+            location.reload();
+        };
         function createLineInput(text, item) {
             const wrapper = document.createElement("div");
             wrapper.style = "display:flex; align-items:center; margin-bottom:6px;";

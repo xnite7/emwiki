@@ -128,10 +128,26 @@
             gap: 23px;
             margin: 0 auto;
             display: flex;
-            flex-wrap: wrap;
+
             justify-content: space-evenly;
             flex-direction: row;
             align-items: flex-start;
+            position: relative;
+        }
+
+        #quick-editor-spacer {
+            min-width: 420px;
+
+            height: 100%;
+
+        }
+
+        #main-content {
+            flex: auto;
+            display: flex;
+            flex-direction: row;
+            gap: 23px;
+            flex-wrap: wrap;
         }
 
         #tutorial {
@@ -256,7 +272,7 @@
         }
 
         #quick-editor-content input {
-            width: 75%;
+            width: 95%;
             padding: 6px 8px;
             border-radius: 6px;
             border: 1px solid var(--ghost);
@@ -278,8 +294,13 @@
             font-size: 16px;
             font-weight: 1000;
             position: absolute;
-            top: 7px;
-            left: 13px;
+            top: 8px;
+            left: 8px;
+            color: #ffffff94;
+            background: #ffffff2e;
+            padding: 1px 4px;
+            border-radius: 6px;
+            backdrop-filter: blur(5px);
         }
 
         .price-label::before {
@@ -328,7 +349,12 @@
         .section h2 {
             margin: 0 0 12px 0;
             color: var(--accent);
-            font-size: 16px
+            font-variant: all-petite-caps;
+            font-size: 35px;
+            color: #f0f8ff24;
+            margin-top: -20px;
+            height: 42px;
+            /* -webkit-text-stroke: 2px #0000001a; */
         }
 
         .flex {
@@ -397,6 +423,40 @@
             color: var(--muted)
         }
 
+
+
+        @media(min-width:2500px) {
+            #lists-section {
+                max-width: 644px;
+            }
+        }
+
+        @media(min-width:1173px) {
+
+            #lists-section,
+            #history-section {
+                max-width: 1076px;
+            }
+        }
+
+        @media(min-width:1300px) {
+
+            #lists-section,
+            #history-section {
+                max-width: 953px;
+            }
+        }
+
+        @media(min-width:1620px) {
+
+            #lists-section,
+            #history-section {
+                max-width: 1077px;
+            }
+
+        }
+
+
         .small-btn {
             padding: 6px 8px;
             border-radius: 8px;
@@ -417,6 +477,13 @@
         .ghost {
             background: transparent;
             border: 1px solid var(--ghost);
+
+        }
+
+        .ghost:hover {
+
+            filter: brightness(0.8) saturate(1);
+            scale: 1;
         }
 
         .tag {
@@ -429,15 +496,38 @@
 
         #save-btn {
             position: fixed;
-            left: 18px;
+            right: -129px;
+            font-variant: all-petite-caps;
+            font-size: 27px;
+            word-spacing: 11px;
+            text-shadow: 0 0 2px #44769f;
+            letter-spacing: 0px;
             bottom: 18px;
-            background: var(--success);
+            background: linear-gradient(137deg, #4e99c5, #28a97b);
+            filter: saturate(0);
             border: none;
             padding: 12px 14px;
+            border-bottom: 3px solid #225a74;
+            border-top: 1px solid #ffffff6b;
             border-radius: 12px;
             color: #042;
             cursor: pointer;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4)
+            box-shadow: 0px 0px 8px 4px rgb(0 0 0);
+            padding-left: 20px;
+            padding-right: 30px;
+            transition: all 0.3s ease, letter-spacing 1s ease;
+        }
+
+        input#search:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        #save-btn:hover {
+            letter-spacing: 2px;
+            filter: saturate(1.5);
+            background: linear-gradient(137deg, #4e99c5, #28a97b);
+            right: -8px;
         }
 
         #logout {
@@ -474,13 +564,15 @@
             color: var(--muted);
         }
 
-        @media(min-width:2123px) {
+
+        @media(min-width:2100px) {
             #history-section {
                 max-width: 450px;
             }
         }
 
-        @media(min-width:1650px) {
+        /*1076px*/
+        @media(min-width:1300px) {
             .initial {
                 display: flex !important;
             }
@@ -489,6 +581,7 @@
 
 
         .history-item {
+            white-space: break-spaces;
             background: #0b0f12;
             padding: 10px;
             border-radius: 8px;
@@ -549,7 +642,8 @@
         }
 
         /* The draggable panel */
-        .desc-list~button {
+        .desc-list~button,
+        .prc-list~button {
             float: right;
             margin-left: 8px;
             background: transparent;
@@ -563,7 +657,8 @@
         }
 
 
-        .desc-list~button::before {
+        .desc-list~button::before,
+        .prc-list~button::before {
             content: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='3 5 18 18' fill='rgb(102 218 255)'><path d='M19 15h-6v7h-3v-7H4v-3h6V6h3v6h6v2z'/></svg>");
             display: inline-block;
             width: 9px;
@@ -571,7 +666,8 @@
         }
 
 
-        .desc-list~button:hover {
+        .desc-list~button:hover,
+        .prc-list~button:hover {
             color: #24b8e9;
             letter-spacing: 1px;
         }
@@ -632,13 +728,12 @@
         hr {
             height: 3px;
             background: linear-gradient(90deg, transparent, #ffffffb5, transparent);
-            margin: 9px 0 12px;
+            margin: 5px 0 12px;
             border: 0;
         }
 
         .price-tag {
-            margin: 8px auto;
-            transition: all 0.2s ease;
+            margin: 7px auto 5px;
             filter: invert(0.63);
             display: flex;
             align-items: center;
@@ -648,6 +743,8 @@
             font-family: Arial, sans-serif;
         }
 
+
+
         #quick-editor-content label {
             font-size: 22px;
             font-variant: all-petite-caps;
@@ -655,7 +752,7 @@
             color: #ffffff7a;
         }
 
-        .price-tag+hr+div label::before {
+        .quick-editor-body+hr+div label::before {
             content: "?";
             font-size: 16px;
             color: #ffffff7a;
@@ -673,11 +770,11 @@
             transition: color 0.2s ease;
         }
 
-        .price-tag+hr+div label:hover::before {
+        .quick-editor-body+hr+div label:hover::before {
             color: #ffffffc4;
         }
 
-        .price-tag+hr+div label p {
+        .quick-editor-body+hr+div label p {
             display: none;
             position: absolute;
             background: #595f6a86;
@@ -697,7 +794,7 @@
             }
         }
 
-        .price-tag+hr+div label p:before {
+        .quick-editor-body+hr+div label p:before {
             position: absolute;
             content: '';
             width: 0;
@@ -709,7 +806,7 @@
             rotate: 180deg;
         }
 
-        .price-tag+hr+div label p:after {
+        .quick-editor-body+hr+div label p:after {
             /* Prevents the tooltip from being hidden */
             width: 100%;
             height: 40px;
@@ -720,7 +817,7 @@
         }
 
 
-        .price-tag+hr+div label:hover p {
+        .quick-editor-body+hr+div label:hover p {
             position: absolute;
             display: inline-block;
         }
@@ -734,6 +831,12 @@
             margin-top: 11px;
         }
 
+        .quick-editor-body {
+            display: inline-flex;
+            align-items: center;
+            flex-wrap: wrap;
+            flex-direction: row;
+        }
 
         .desc-list {
             margin-bottom: -5px;
@@ -771,7 +874,7 @@
 
                 /* Right part: white area that expands */
         .price-area {
-            transition: all 0.2s ease;
+
             flex-grow: 1;
             height: 100%;
             background: linear-gradient(90deg, #ffffff99, #ffffff5e, #ffffff21);
@@ -782,7 +885,24 @@
             padding: 0 10px;
             box-sizing: border-box;
             min-width: 50px;
-            transition: width 0.2s ease;
+
+        }
+
+        .blur {
+
+            animation: quick-editor-price-fade-out 0.5s ease forwards;
+        }
+
+        @keyframes quick-editor-price-fade-out {
+            0% {
+                filter: brightness(5);
+            }
+
+
+
+            100% {
+                filter: brightness(1);
+            }
         }
 
 
@@ -842,64 +962,65 @@
             <button id="download-json" class="small-btn ghost">Download JSON</button>
             <button id="logout" title="Logout (clear admin key)">Logout</button>
             <div style="height:8px"></div>
-            <div class="note">Tip: edits modify the loaded auto.json in memory. Click SAVE to push to Gist.</div>
+            <div class="note">Tip: edits modify the loaded list in memory. Click SAVE to publish to website.</div>
         </div>
 
     </header>
 
     <main>
-
-        <div class="section" id="lists-section">
-            <h2>🧩 Lists</h2>
-            <div style="display:flex;gap:12px;margin-bottom:28px;flex-wrap:wrap">
-                <div class="panel" style="flex:1;min-width:180px">
-                    <div
-                        style="font-weight:700;margin-bottom:8px;font-variant-caps: all-small-caps;margin-top: -10px;font-size: 20px;">
-                        Weekly Shop</div>
-                    <div id="weekly-items" class="grid"></div>
+        <div id="quick-editor-spacer" style="visibility: hidden;width: 424px;" class="initial"></div>
+        <div id="main-content">
+            <div class="section" id="lists-section">
+                <h2>Shops</h2>
+                <div style="display:flex;gap:12px;margin-bottom:28px;flex-wrap:wrap">
+                    <div class="panel" style="flex:1;min-width:180px">
+                        <div
+                            style="font-weight:700;margin-bottom:8px;font-variant-caps: all-small-caps;margin-top: -10px;font-size: 20px;">
+                            Weekly Shop</div>
+                        <div id="weekly-items" class="grid"></div>
+                    </div>
+                    <div class="panel" style="flex:1;min-width:180px">
+                        <div
+                            style="font-weight:700;margin-bottom:8px;font-variant-caps: all-small-caps;margin-top: -10px;font-size: 20px;">
+                            Star Shop</div>
+                        <div id="weeklystar-items" class="grid"></div>
+                    </div>
                 </div>
-                <div class="panel" style="flex:1;min-width:180px">
-                    <div
-                        style="font-weight:700;margin-bottom:8px;font-variant-caps: all-small-caps;margin-top: -10px;font-size: 20px;">
-                        Star Shop</div>
-                    <div id="weeklystar-items" class="grid"></div>
+
+                <div class="panel" style="margin-top:8px">
+                    <div class="flex" style="margin-bottom:8px">
+                        <input id="search" placeholder="Search items..."
+                            style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--muted)">
+                        <select id="category-filter"
+                            style="color: white;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)">
+                            <option value="all">All categories</option>
+
+                        </select>
+                        <button id="gamenight-toggle" class="small-btn ghost">🎮 Gamenight Only</button>
+                        <select id="sort-select"
+                            style="padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)">
+                            <option value="default">Default</option>
+                            <option value="az">A → Z</option>
+                            <option value="za">Z → A</option>
+                            <option value="high">$$$ → $</option>
+                            <option value="low">$ → $$$</option>
+                        </select>
+                        <button class="small-btn" id="toggle-prices">Show prices</button>
+                    </div>
+                    <div id="all-items" class="grid"></div>
+                    <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;align-items:center">
+                        <button id="prev-btn" class="small-btn ghost">◀ Prev</button>
+                        <div id="page-count" class="note">Page 1 of 1</div>
+                        <button id="next-btn" class="small-btn ghost">Next ▶</button>
+                    </div>
                 </div>
             </div>
 
-            <div class="panel" style="margin-top:8px">
-                <div class="flex" style="margin-bottom:8px">
-                    <input id="search" placeholder="Search items..."
-                        style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--muted)">
-                    <select id="category-filter"
-                        style="color: white;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)">
-                        <option value="all">All categories</option>
-
-                    </select>
-                    <button id="gamenight-toggle" class="small-btn ghost">🎮 Gamenight Only: OFF</button>
-                    <select id="sort-select"
-                        style="padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)">
-                        <option value="default">Default</option>
-                        <option value="az">A → Z</option>
-                        <option value="za">Z → A</option>
-                        <option value="high">$$$ → $</option>
-                        <option value="low">$ → $$$</option>
-                    </select>
-                    <button class="small-btn" id="toggle-prices">Show prices</button>
-                </div>
-                <div id="all-items" class="grid"></div>
-                <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;align-items:center">
-                    <button id="prev-btn" class="small-btn ghost">◀ Prev</button>
-                    <div id="page-count" class="note">Page 1 of 1</div>
-                    <button id="next-btn" class="small-btn ghost">Next ▶</button>
-                </div>
+            <div class="section" id="history-section">
+                <h2>History</h2>
+                <div id="history-list"></div>
             </div>
         </div>
-
-        <div class="section" id="history-section">
-            <h2>📜 History</h2>
-            <div id="history-list"></div>
-        </div>
-
     </main>
 
     <!-- Quick Editor Side Modal -->
@@ -914,36 +1035,41 @@
             </div>
             <button id="quick-editor-close" title="Close">&times;</button>
             <h2 id="quick-editor-title"></h2>
-            <img id="quick-editor-img" src="" alt="" />
+            <div class="quick-editor-body">
+                <img id="quick-editor-img" src="" alt="" />
 
 
-            <div class="flag-row"
-                style="flex-wrap: wrap;margin-top: 56px;display: flex; gap: 6px; width: 100%; justify-content: center;">
-            </div>
-
-
-            <div class="price-tag">
-                <div class="tag-left"></div>
-                <div class="price-area">
-                    <input id="quick-editor-price" style="caret-color: #ffffff30; border: 0px;" type="text"
-                        placeholder="OwO" />
+                <div class="price-tag">
+                    <div class="tag-left"></div>
+                    <div class="price-area">
+                        <input id="quick-editor-price" style="caret-color: #ffffff30; border: 0px;" type="text"
+                            placeholder="OwO" />
+                    </div>
                 </div>
-            </div>
 
+
+                <div class="flag-row"
+                    style="flex-wrap: wrap;margin-top: 50px;display: flex; gap: 6px; width: 100%; justify-content: center;">
+                </div>
+
+            </div>
             <hr>
             <div>
-                <label>Code / Rarity / Price↴<p>Coins, Stars, %, Opals, Baubles, Tokens, Eggs, Pumpkins, Visors, Robux
+                <label style="margin-top: -9px;position: relative;z-index: 1;">Code / Rarity / Price↴<p>Coins,
+                        Stars, %, Opals, Baubles, Tokens, Eggs, Pumpkins, Visors, Robux
                     </p>
                     <ul class="prc-list">
                         <li>
                             <input id="quick-editor-prc-item" type="text" />
                         </li>
                     </ul>
+                    <button style="padding-bottom: 8px;margin-bottom: 0px;" id="new-prc-btn">Code / Rarity /
+                        Price</button>
                 </label>
             </div>
 
             <div>
-                <label style="margin-top: 5px;">Descriptions↴<br>
+                <label style="margin-top: -31px;">Descriptions↴<br>
                     <ul class="desc-list">
                         <li>
                             <input id="quick-editor-description-item" type="text" />
@@ -960,9 +1086,12 @@
     </div>
 
 
-    <button id="save-btn">💾 Save</button>
+    <button id="save-btn"><b>✔</b> Publish</button>
 
     <script>
+        const input = document.getElementById('quick-editor-price');
+        const priceArea = document.querySelector('.price-tag');
+        let gamenightOnly = false;
         // --- Admin keys (kept from original) ---
         const adminKeys = {
             '00cc75b3c354bd864d646cc1a790268c33916bd2a32b78b502151640596f7702': 'xnite',
@@ -1007,13 +1136,8 @@
         let currentPage = 1;
         const ITEMS_PER_PAGE = window.innerWidth < 720 ? 9 : 14;
 
-        // Init
-        (async function init() {
-            await promptAdminKey();
-            await loadData();
-            setupDragDrop();
-            startUpdateCheck();
-        })();
+
+
 
         // --- Prompt admin key (same logic) ---
         async function promptAdminKey() {
@@ -1032,27 +1156,15 @@
         }
         function showWelcome(name) { const welcomeEl = document.getElementById('welcome'); if (welcomeEl) welcomeEl.remove(); adminOnline.textContent = `Online: ${name}`; }
 
-        // --- Load data from Gist endpoint ---
-        async function loadData() {
-            try {
-                const gistRes = await fetch('https://emwiki.site/api/gist-version', { cache: 'no-store' });
-                if (!gistRes.ok) throw new Error('Failed loading gist');
-                const gistJson = await gistRes.json();
-                const raw = gistJson.files?.['auto.json']?.content;
-                jsData = raw ? JSON.parse(raw) : {};
-                rebuildCaches();
-                renderAll();
-            } catch (err) { console.error(err); alert('Failed to load data: ' + err.message) }
-        }
 
-        function rebuildCaches() {
-            allItems = Object.values(jsData).flat();
-            fuseAll = new Fuse(allItems, { keys: ['name'], threshold: 0.35 });
-            fusePrice = new Fuse(allItems, { keys: ['name'], threshold: 0.35 });
-            filteredItems = allItems.slice();
-        }
 
         function renderAll() {
+            const allEl = document.getElementById('all-items');
+            allEl.innerHTML = '';
+
+            if (gamenightOnly) {
+                filteredItems = filteredItems.filter(i => (i.from && i.from.toLowerCase().includes("gamenight")));
+            }
 
             const weeklyEl = document.getElementById('weekly-items');
             const starEl = document.getElementById('weeklystar-items');
@@ -1060,7 +1172,6 @@
             weeklyEl.innerHTML = '';
             starEl.innerHTML = '';
             allItems.forEach(item => {
-
                 if (item.weekly) weeklyEl.appendChild(makeItemCard(item));
                 if (item.weeklystar) starEl.appendChild(makeItemCard(item));
             });
@@ -1074,35 +1185,52 @@
             else if (sort === 'high') filteredItems.sort((a, b) => (parseInt(b.price || 0) || 0) - (parseInt(a.price || 0) || 0));
             else if (sort === 'low') filteredItems.sort((a, b) => (parseInt(a.price || 0) || 0) - (parseInt(b.price || 0) || 0));
             // All items grid
-            const allEl = document.getElementById('all-items');
-            allEl.innerHTML = '';
+
             filteredItems.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).forEach(item => {
                 allEl.appendChild(makeItemCard(item));
             });
 
 
-            loadHistory();
             populateCategoryFilter();
         }
 
-        document.getElementById('sort-select').addEventListener('change', () => renderAll());
+        
 
 
         // --- Renderers ---
         function renderAllSections() {
             renderListPanels();
             renderAllItems();
-            renderDescGrid();
-            loadHistory();
             populateCategoryFilter();
         }
+        let priceson = true;
 
         document.getElementById('toggle-prices').addEventListener('click', () => {
             const priceTags = document.querySelectorAll('.price-label');
-            priceTags.forEach(tag => {
-                tag.classList.toggle('hidden');
-            });
+            priceson = !priceson;
+            if (!priceson) {
+                document.getElementById('toggle-prices').classList.add('ghost');
+                priceTags.forEach(tag => {
+                    tag.classList.add('hidden');
+                });
+            } else {
+                document.getElementById('toggle-prices').classList.remove('ghost');
+                priceTags.forEach(tag => {
+                    tag.classList.remove('hidden');
+                });
+            }
+        });
+        const quickEditorPrice = document.getElementById('quick-editor-price');
 
+        //on clicked outside quickeditorprice unfocus
+        document.addEventListener('click', (e) => {
+            if (!quickEditorPrice.contains(e.target)) {
+                quickEditorPrice.parentElement.classList.add('blur');
+            }
+        });
+        quickEditorPrice.parentElement.addEventListener('animationend', () => {
+            quickEditorPrice.parentElement.classList.remove('blur');
+            quickEditorPrice.blur();
         });
 
         function findItemType(item) { for (const k in jsData) if (jsData[k].includes(item)) return k; return 'unknown'; }
@@ -1115,7 +1243,7 @@
 
             // editable inputs: price, code, rarity
             const inputs = document.createElement('div'); inputs.style.width = '100%'; inputs.className = 'inputs-row';
-            if (item.price > 0) {
+            if (item.price > 0 || item.price != 0) {
                 const priceIn = document.createElement('label'); priceIn.className = 'price-label'; priceIn.textContent = item.price || '';
                 inputs.appendChild(priceIn);
             }
@@ -1144,9 +1272,6 @@
             const totalPages = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE));
             document.getElementById('page-count').textContent = `Page ${currentPage} of ${totalPages}`;
             document.getElementById('prev-btn').disabled = currentPage === 1; document.getElementById('next-btn').disabled = currentPage === totalPages;
-
-
-
         }
         document.getElementById('prev-btn').addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderAllItems(); } });
         document.getElementById('next-btn').addEventListener('click', () => { const totalPages = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE)); if (currentPage < totalPages) { currentPage++; renderAllItems(); } });
@@ -1154,19 +1279,197 @@
         document.getElementById('search').addEventListener('input', (e) => { const q = e.target.value.trim(); filteredItems = q ? fuseAll.search(q).map(r => r.item) : allItems.slice(); currentPage = 1; renderAllItems(); });
 
 
-
-
-        //document.getElementById('desc-search').addEventListener('input', () => { descPage = 1; renderDescGrid(); });
-        let gamenightOnly = false; document.getElementById('gamenight-toggle').addEventListener('click', () => { gamenightOnly = !gamenightOnly; document.getElementById('gamenight-toggle').textContent = `🎮 Gamenight Only: ${gamenightOnly ? 'ON' : 'OFF'}`; renderDescGrid(); });
+        /* ========== EVENTS ========== */
+        document.getElementById('gamenight-toggle').addEventListener('click', () => {
+            gamenightOnly = !gamenightOnly;
+            if (!gamenightOnly) {
+                document.getElementById('gamenight-toggle').classList.add('ghost');
+            } else {
+                document.getElementById('gamenight-toggle').classList.remove('ghost');
+            }
+            renderAll();
+        });
 
         // --- History ---
         async function loadHistory() {
             const el = document.getElementById('history-list'); el.innerHTML = 'Loading...';
             try {
                 //only get top 6 and put a load more button by slicing the array
-                const res = await fetch('https://emwiki.site/api/history'); if (!res.ok) throw new Error('history fetch failed'); const data = await res.json(); el.innerHTML = ''; data.slice(0, 4).forEach(e => { const h = document.createElement('div'); h.className = 'history-item'; h.innerHTML = `<div style="display:flex;justify-content:space-between"><strong>${e.username}</strong><span>${new Date(e.timestamp).toLocaleString()}</span></div><div style="margin-top:8px;white-space:pre-wrap">${e.diff || '(no diff)'}</div>`; el.appendChild(h); }); if (data.length > 6) { const loadMoreBtn = document.createElement('button'); loadMoreBtn.textContent = 'Load more history'; loadMoreBtn.className = 'small-btn ghost'; loadMoreBtn.onclick = () => { el.innerHTML = ''; data.forEach(e => { const h = document.createElement('div'); h.className = 'history-item'; h.innerHTML = `<div style="display:flex;justify-content:space-between"><strong>${e.username}</strong><span>${new Date(e.timestamp).toLocaleString()}</span></div><div style="margin-top:8px;white-space:pre-wrap">${e.diff || '(no diff)'}</div>`; el.appendChild(h); }); }; el.appendChild(loadMoreBtn); }
-            } catch (err) { el.innerHTML = 'Failed to load history: ' + err.message }
+                const res = await fetch('https://emwiki.site/api/history');
+                if (!res.ok) throw new Error('history fetch failed');
+                const data = await res.json();
+                if (!Array.isArray(data) || data.length === 0) {
+                    el.innerHTML = '<p>No history available.</p>';
+                    return;
+                }
+                el.innerHTML = '';
+
+                function renderHistoryItem(e) {
+                    // Header: username + time
+                    const header = document.createElement('div');
+                    header.style.cssText = 'background: linear-gradient(rgb(34 34 34), rgb(8 8 8));padding: 7px;border-radius: 6px;margin-bottom: 1.2rem; font-weight:700; font-size:19px; margin-bottom:4px; display:flex; justify-content: space-between; align-items: baseline;';
+                    header.textContent = e.username;
+                    const timeDiv = document.createElement('div');
+                    timeDiv.style.cssText = 'font-weight:900; font-size:14px; color:#666;';
+                    timeDiv.textContent = new Date(e.timestamp).toLocaleString();
+                    header.appendChild(timeDiv);
+
+
+
+                    // Diff container
+                    const h = document.createElement('div');
+                    h.className = 'history-item';
+                    h.style.cssText = `
+                        font-family: monospace;
+                        font-weight:400;
+                        font-size:15px;
+                        background:rgb(16 16 16);
+                        padding:8px;
+                        border-radius:14px;
+                        max-width: 100%;
+                        white-space: normal;
+                        color: #ddd;
+                    `;
+
+                    h.appendChild(header);
+
+                    const lines = e.diff?.split('\n') || [];
+                    const changes = { weeklystar: [], weekly: [], new: [], price: [], from: [], retired: [], premium: [], tradable: [] };
+                    for (const line of lines) {
+
+                        const m = line.match(/^\[(.+?)\] (\w+): (.*) → (.*)$/);
+                        if (!m) continue;
+                        const [, item, fieldRaw, oldRaw, newRaw] = m;
+                        const field = fieldRaw.toLowerCase();
+                        const oldVal = oldRaw === 'undefined' || oldRaw === '' ? undefined : oldRaw;
+                        const newVal = newRaw === 'undefined' || newRaw === '' ? undefined : newRaw;
+
+
+                        if (['weeklystar', 'weekly', 'new', 'retired', 'premium', 'tradable'].includes(field)) {
+                            if (newVal === 'true' || newVal === 'false') {
+                                changes[field].push({ item, value: newVal === 'true' });
+                            }
+                        } else if (field === 'price') {
+                            const parsePrice = v => (!v || v === 'undefined' ? "0" : v);
+                            changes.price.push({
+                                item,
+                                oldPrice: parsePrice(oldRaw),
+                                newPrice: parsePrice(newRaw)
+                            });
+                        } else if (field === 'from') {
+                            changes.from.push({ item, oldDesc: oldVal, newDesc: newVal });
+                        }
+                    }
+
+                    function createSection(title, items, format) {
+
+                        if (!items.length) return null;
+                        const sec = document.createElement('div');
+                        const h4 = document.createElement('h4');
+                        h4.textContent = title;
+                        h4.style.margin = '8px 0 4px 0';
+                        h4.style.fontWeight = '600';
+                        h4.style.fontSize = '21px';
+                        h4.style.color = '#9f9790';
+                        h4.style.fontVariant = 'all-petite-caps';
+                        sec.appendChild(h4);
+                        sec.style.marginLeft = '18px';
+
+                        const ul2 = document.createElement('ul');
+                        ul2.style.cssText = 'margin:0 0 8px 16px; padding:0; list-style:none; font-size:14px; color:#ddd;';
+                        for (const i of items) {
+                            const li2 = document.createElement('li');
+                            li2.style.marginBottom = '3px';
+                            if (title == 'Description:') {
+
+                                li2.style.marginBottom = '16px';
+                            }
+
+                            li2.innerHTML = format(i);
+                            ul2.appendChild(li2);
+                        }
+
+                        sec.appendChild(ul2);
+                        return sec;
+                    }
+
+                    const sections = [
+                        ['Star shop:', changes.weeklystar, i => `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong> `],
+                        ['Weekly:', changes.weekly, i => `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong>`],
+                        ['New:', changes.new, i => `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong> `],
+                        ['Retired:', changes.retired, i => `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong> `],
+                        ['Premium:', changes.premium, i => `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong> `],
+                        ['Tradable:', changes.tradable, i => `${i.value ? '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>' : '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>'} <strong>[${i.item}]</strong> `],
+                        ['Price:', changes.price, i => `<span style="display:inline-block;width:1.2em;text-align:center;color:#fa4;font-weight:bolder;">$</span> <strong>[${i.item}]</strong> <span style="color:#f66">${i.oldPrice}</span> → <span style="color:#6f6">${i.newPrice}</span>`],
+                        ['Description:', changes.from, i => {
+                            // split into lines
+
+                            const oldLines = (i.oldDesc || "").split(/<br>|\n/).map(s => s.trim()).filter(Boolean);
+                            const newLines = (i.newDesc || "").split(/<br>|\n/).map(s => s.trim()).filter(Boolean);
+
+                            // zip longest length
+                            const max = Math.max(oldLines.length, newLines.length);
+                            let out = `<strong>[${i.item}]</strong><br>`;
+                            for (let j = 0; j < max; j++) {
+                                const oldL = oldLines[j];
+                                const newL = newLines[j];
+                                if (oldL === newL) {
+                                    out += `&nbsp;&nbsp;⨽&nbsp;${oldL}<br>`;
+                                } else if (oldL && newL) {
+                                    out += `&nbsp;&nbsp;⨽&nbsp;<span style="color:#fa4">${oldL}</span> → <span style="color:#fa4">${newL}</span><br>`;
+                                } else if (oldL && !newL) {
+                                    out += `&nbsp;&nbsp;⨽&nbsp;<span style="color:#f66">${oldL} 🗙</span><br>`;
+                                } else if (!oldL && newL) {
+                                    out += `&nbsp;&nbsp;⨽&nbsp;<span style="color:#6f6">${newL} +</span><br>`;
+                                }
+                            }
+                            return out;
+                        }],
+
+                    ];
+
+                    let anySectionAdded = false;
+                    for (const [title, items, fmt] of sections) {
+
+                        const sectionEl = createSection(title, items, fmt);
+                        if (sectionEl) {
+                            h.appendChild(sectionEl);
+                            anySectionAdded = true;
+                        }
+                    }
+
+                    if (!anySectionAdded) {
+                        h.textContent = e.diff || '(no diff available)';
+                    }
+
+                    el.appendChild(h);
+                }
+
+                for (const e of data) {
+                    if (el.children.length >= 4) continue;
+                    renderHistoryItem(e);
+                }
+
+                if (el.children.length >= 4) {
+                    const loadMoreBtn = document.createElement('button');
+                    loadMoreBtn.textContent = 'Load more history';
+                    loadMoreBtn.className = 'small-btn ghost';
+                    loadMoreBtn.onclick = () => {
+                        el.innerHTML = '';
+                        data.forEach(e => {
+                            renderHistoryItem(e);
+                        });
+                    };
+                    loadMoreBtn.style.marginTop = '8px';
+                    el.appendChild(loadMoreBtn);
+                }
+
+            } catch (err) {
+                el.innerHTML = 'Failed to load history: ' + err.message
+                console.error(err);
+            }
         }
+        loadHistory();
 
         // --- Drag & drop with Sortable (clone from original) ---
         function setupDragDrop() {
@@ -1179,13 +1482,13 @@
 
         // --- Save to Gist endpoint ---
         document.getElementById('save-btn').addEventListener('click', async () => {
-            const btn = document.getElementById('save-btn'); btn.disabled = true; btn.textContent = 'Saving...';
+            const btn = document.getElementById('save-btn'); btn.disabled = true; btn.textContent = 'Publish...';
             try {
                 const saved = getCookie('adminKey'); let adminName = 'Unknown'; if (saved) { const h = await computeHash(saved); adminName = adminKeys[h] || adminName; }
                 const res = await fetch('https://emwiki.site/api/update-gist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: jsData, username: adminName, version: '' }) });
-                if (res.status === 409) { alert('Conflict detected — a newer version exists. Consider downloading and merging.'); btn.disabled = false; btn.textContent = '💾 Save'; return; }
+                if (res.status === 409) { alert('Conflict detected — a newer version exists. Consider downloading and merging.'); btn.disabled = false; btn.innerHTML = '<b>✔</b> Publish'; return; }
                 if (!res.ok) throw new Error('save failed'); alert('Saved successfully'); location.reload();
-            } catch (err) { alert('Save error: ' + err.message); btn.disabled = false; btn.textContent = '💾 Save'; }
+            } catch (err) { alert('Save error: ' + err.message); btn.disabled = false; btn.innerHTML = '<b>✔</b> Publish'; }
         });
         //descFiltered = allItems.filter(i => (!gamenightOnly || (i.from || '').toLowerCase().includes('gamenight')));
         // --- Helpers ---
@@ -1280,8 +1583,8 @@
                 const monthswrapper = Object.assign(document.createElement('div'), { style: 'cursor: initial;justify-content: space-evenly;display:none;flex-wrap:wrap;gap:4px;flex-grow:1' })
                 const yearinput = Object.assign(document.createElement('input'), { min: 2016, max: new Date().getFullYear(), type: 'number', placeholder: 'Year', style: 'font-weight: 700;font-size: 15px;width:50px;display:none;border:none;border-radius:4px;padding:4px 6px' })
                 const editButton = Object.assign(document.createElement('button'), { textContent: 'ᴇᴅɪᴛ', className: 'small-btn ghost' })
-                const deleteButton = Object.assign(document.createElement('button'), { textContent: '🗙', style: 'padding:0px 3px 3px;background:#f66', className: 'small-btn ghost' });
-                const okbutton = Object.assign(document.createElement('button'), { textContent: '✔', style: 'background: rgb(95 193 95);padding: 1px 8px 3px;text-shadow: 0 0 5px #00000057;display:none;font-weight: 700;', className: 'small-btn ghost' });
+                const deleteButton = Object.assign(document.createElement('button'), { textContent: '🗙', style: 'padding:0px 3px 3px;background:#f66', className: 'small-btn' });
+                const okbutton = Object.assign(document.createElement('button'), { textContent: '✔', style: 'background: rgb(95 193 95);padding: 1px 8px 3px;text-shadow: 0 0 5px #00000057;display:none;font-weight: 700;', className: 'small-btn' });
 
                 months.forEach(month => {
                     const button = document.createElement('span');
@@ -1317,7 +1620,8 @@
                 };
 
                 editButton.onclick = e => { e.stopPropagation(); edit() };
-                label.ondblclick = edit;[input, yearinput].forEach(i => i.onblur = done);
+                label.ondblclick = edit;
+                input.onblur = done;
                 input.onkeydown = e => { if (e.key == 'Enter' || e.key == 'Escape') done() };
                 deleteButton.onclick = () => li.remove();
                 okbutton.onclick = () => done();
@@ -1332,8 +1636,8 @@
                 const label = Object.assign(document.createElement('span'), { className: 'prc-label', style: 'flex-grow:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;', textContent: value || 'Price...' })
                 const input = Object.assign(document.createElement('input'), { type: 'text', value: value || '', style: 'flex-grow:1;display:none;border:none;border-radius:4px;padding:6px 8px' })
                 const editButton = Object.assign(document.createElement('button'), { textContent: 'ᴇᴅɪᴛ', className: 'small-btn ghost' })
-                const deleteButton = Object.assign(document.createElement('button'), { textContent: '🗙', style: 'padding:0px 3px 3px;background:#f66', className: 'small-btn ghost' });
-                const okbutton = Object.assign(document.createElement('button'), { textContent: '✔', style: 'background: rgb(95 193 95);padding: 1px 8px 3px;text-shadow: 0 0 5px #00000057;display:none;font-weight: 700;', className: 'small-btn ghost' });
+                const deleteButton = Object.assign(document.createElement('button'), { textContent: '🗙', style: 'padding:0px 3px 3px;background:#f66', className: 'small-btn' });
+                const okbutton = Object.assign(document.createElement('button'), { textContent: '✔', style: 'background: rgb(95 193 95);padding: 1px 8px 3px;text-shadow: 0 0 5px #00000057;display:none;font-weight: 700;', className: 'small-btn' });
 
                 function formatify() {
                     const text = input.value.trim();
@@ -1439,6 +1743,10 @@
                 createDesc(`Gamenight (${formattedDate}. ${formattedYear})`, true);
             };
 
+            document.getElementById('new-prc-btn').onclick = () => {
+                createPrc('');
+            };
+
             const now = new Date();
             const month = { month: 'short' };
             const year = { year: 'numeric' };
@@ -1479,25 +1787,17 @@
         }
 
 
-        window.addEventListener('message', (ev) => {
-            if (ev.data?.cmd === 'quick-update') {
-                const itName = ev.data.name; for (const arr
-                    of Object.values(jsData)) {
-                    const m = arr.find(x => x.name === itName); if (m) {
-                        m.price = ev.data.price;
-                        m['price/code/rarity'] = ev.data.code;
-                        m.from = ev.data.from;
-                    }
-                } rebuildCaches(); renderAllSections(); alert('Updated ' + itName);
-            }
-        });
+
 
         // --- Search caches ---
         function populateCategoryFilter() {
-            const sel = document.getElementById('category-filter'); sel.innerHTML = '';
+            const sel = document.getElementById('category-filter');
+            const selectedCategory = sel.value;
+            sel.innerHTML = '';
             const keys = Object.keys(jsData);
             sel.appendChild(new Option('All categories', 'all'));
             keys.forEach(k => sel.appendChild(new Option(k, k)));
+            sel.value = selectedCategory;
         }
 
         document.getElementById('category-filter').addEventListener('change', function (e) {
@@ -1532,7 +1832,7 @@
 
             const mainEl = document.querySelector('main');
 
-            const WIDTH_THRESHOLD = 1650;
+            const WIDTH_THRESHOLD = 1300;
 
             // Remember original position so we can put it back
             const originalParent = panel.parentNode;
@@ -1552,42 +1852,7 @@
 
 
 
-            const restorePosition = () => {
-                try {
-                    // If viewport is wide enough, lock to right of main page
 
-                    if (vw() > WIDTH_THRESHOLD) {
-                        if (mainEl.contains(panel)) return; // already in place
-                        mainEl.insertBefore(panel, mainEl.firstChild);
-                        panel.style.position = 'unset';
-                        panel.style.left = ''; // let CSS handle placement
-                        panel.style.top = '';  // let CSS handle placement
-                        panel.style.transform = 'none';
-                        closeBtn.style.display = 'none'; // hide close button in wide mode
-                        panel.style.boxShadow = '0 6px 24px var(--ghost)';
-                        return;
-                    } else {
-                        if (!modal.contains(panel)) {
-                            modal.appendChild(panel);
-                            panel.style.position = ''; // reset for modal
-                            panel.style.position = 'fixed';
-                            closeBtn.style.display = 'unset'; // show close button in modal
-                            panel.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.45)';
-                        }
-                    }
-
-
-
-                    // Otherwise restore saved or center
-                    const raw = localStorage.getItem(STORAGE_KEY);
-                    if (!raw) return centerPanel();
-                    const { left, top } = JSON.parse(raw);
-                    setPanelPos(left, top);
-                } catch {
-                    centerPanel();
-                }
-            };
-            // Also run this check on resize
 
 
             const centerPanel = () => {
@@ -1627,6 +1892,8 @@
             panel.addEventListener('pointerdown', onPointerDown);
 
             function onPointerDown(e) {
+                //if parent of modal is main then do nothing
+                if (panel.parentNode === mainEl) return;
                 if (['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT', 'SPAN', 'LI'].includes(e.target.tagName)) return;
                 if (e.pointerType === 'mouse' && e.button !== 0) return;
                 dragging = true;
@@ -1685,23 +1952,32 @@
 
             // keep inside on resize
             window.addEventListener('resize', () => {
+                resizePanel()
+
+            });
+            const spacer = document.getElementById('quick-editor-spacer');
+            function resizePanel() {
                 if (vw() > WIDTH_THRESHOLD) {
-                    if (mainEl.contains(panel)) return; // already in place
                     mainEl.insertBefore(panel, mainEl.firstChild);
-                    panel.style.position = 'unset';
-                    panel.style.left = ''; // let CSS handle placement
-                    panel.style.top = '';  // let CSS handle placement
+                    panel.style.position = 'fixed';
+                    panel.style.left = spacer.offsetLeft + 'px';
+                    panel.style.top = '96px';
                     panel.style.transform = 'none';
                     panel.style.boxShadow = '0 6px 24px var(--ghost)';
-                    closeBtn.style.display = 'none'; // hide close button in wide mode
+                    closeBtn.style.display = 'none';
+                    spacer.style.display = 'unset';
+                    spacer.style.width = panel.offsetWidth + 'px';
+                    //set spacer height to main's height
+                    if (vh() < panel.offsetHeight + 96) {
+                        panel.style.position = 'absolute';
+                    }
                 } else {
-
                     if (!modal.contains(panel)) {
                         modal.appendChild(panel);
-                        panel.style.position = ''; // reset for modal
                         panel.style.position = 'fixed';
                         closeBtn.style.display = 'unset'; // show close button in modal
                         panel.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.45)';
+                        spacer.style.display = 'none';
                     }
                     // Keep it clamped inside view
                     const rect = panel.getBoundingClientRect();
@@ -1709,36 +1985,31 @@
                     const finalTop = clamp(rect.top, SNAP_MARGIN, Math.max(SNAP_MARGIN, vh() - rect.height - SNAP_MARGIN));
                     setPanelPos(finalLeft, finalTop);
                     savePosition();
-
                 }
-
-            });
-
-
+            }
+            resizePanel()
 
             // optional: close button & Esc to close
             if (closeBtn) {
                 closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
             }
-            window.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') modal.classList.add('hidden');
-            });
+            
 
             // init when visible
             const observer = new MutationObserver(() => {
                 if (!modal.classList.contains('hidden')) {
                     // slight delay to ensure layout computed
-                    requestAnimationFrame(() => restorePosition());
+                    requestAnimationFrame(() => resizePanel());
                 }
             });
             observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
 
             // initial restore if already visible
-            if (!modal.classList.contains('hidden')) restorePosition();
+            if (!modal.classList.contains('hidden')) resizePanel();
         })();
 
-        const input = document.getElementById('quick-editor-price');
-        const priceArea = document.querySelector('.price-tag');
+        document.getElementById('sort-select').addEventListener('change', () => renderAll());
+
 
         // Create a hidden span for measuring text width
         const span = document.createElement('span');
@@ -1754,12 +2025,30 @@
 
         function updateWidth() {
             span.textContent = input.value || input.placeholder;
-            const width = span.offsetWidth + 104; // 20px padding for comfort
+            const width = span.offsetWidth + 94; // 20px padding for comfort
             priceArea.style.width = width + 'px';
         }
 
         input.addEventListener('input', updateWidth);
         updateWidth(); // init width on page load
+
+
+
+        /* ========== INIT ========== */
+        (async function init() {
+            //await promptAdminKey();
+            //setupDragDrop();
+            //startUpdateCheck();
+            try {
+                const res = await fetch('https://emwiki.site/api/gist-version', { cache: 'no-store' });
+                const data = await res.json();
+                const raw = data.files?.['auto.json']?.content;
+                jsData = raw ? JSON.parse(raw) : {};
+                allItems = Object.values(jsData).flat();
+                fuse = new Fuse(allItems, { keys: ['name'], threshold: 0.35 });
+                renderAll();
+            } catch (e) { console.error(e); alert('Failed to load data'); }
+        })();
 
     </script>
 
