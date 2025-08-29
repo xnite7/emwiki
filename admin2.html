@@ -300,7 +300,7 @@
             background: #ffffff2e;
             padding: 1px 4px;
             border-radius: 6px;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(5px) brightness(0.4);
         }
 
         .price-label::before {
@@ -352,9 +352,14 @@
             font-variant: all-petite-caps;
             font-size: 35px;
             color: #f0f8ff24;
+            user-select: none;
             margin-top: -20px;
             height: 42px;
             /* -webkit-text-stroke: 2px #0000001a; */
+        }
+
+        * {
+            user-select: none;
         }
 
         .flex {
@@ -461,7 +466,7 @@
             padding: 6px 8px;
             border-radius: 8px;
             border: none;
-            
+
             background: var(--accent);
             color: var(--font);
             cursor: pointer;
@@ -649,8 +654,8 @@
         }
 
         /* The draggable panel */
-        .desc-list~button,
-        .prc-list~button {
+        
+        label~button {
             float: right;
             margin-left: 8px;
             background: transparent;
@@ -664,8 +669,7 @@
         }
 
 
-        .desc-list~button::before,
-        .prc-list~button::before {
+        label~button::before {
             content: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='3 5 18 18' fill='rgb(102 218 255)'><path d='M19 15h-6v7h-3v-7H4v-3h6V6h3v6h6v2z'/></svg>");
             display: inline-block;
             width: 9px;
@@ -673,8 +677,7 @@
         }
 
 
-        .desc-list~button:hover,
-        .prc-list~button:hover {
+        label~button:hover {
             color: #24b8e9;
             letter-spacing: 1px;
         }
@@ -1070,21 +1073,23 @@
                             <input id="quick-editor-prc-item" type="text" />
                         </li>
                     </ul>
-                    <button style="padding-bottom: 8px;margin-bottom: 0px;" id="new-prc-btn">Code / Rarity /
-                        Price</button>
+
                 </label>
+                <button style="padding-bottom: 8px;margin-bottom: 0px;" id="new-prc-btn">Code / Rarity /
+                    Price</button>
             </div>
 
-            <div>
+            <div style="margin-top: 21px;">
                 <label style="margin-top: -31px;">Descriptions↴<br>
                     <ul class="desc-list">
                         <li>
                             <input id="quick-editor-description-item" type="text" />
                         </li>
                     </ul>
-                    <button id="new-desc-btn">Text</button>
-                    <button id="new-gn-btn">Gamenight Date</button>
+
                 </label>
+                <button id="new-desc-btn">Text</button>
+                <button id="new-gn-btn">Gamenight Date</button>
             </div>
         </div>
     </div>
@@ -1166,9 +1171,7 @@
             const allEl = document.getElementById('all-items');
             allEl.innerHTML = '';
 
-            if (gamenightOnly) {
-                filteredItems = filteredItems.filter(i => (i.from && i.from.toLowerCase().includes("gamenight")));
-            }
+
 
             const weeklyEl = document.getElementById('weekly-items');
             const starEl = document.getElementById('weeklystar-items');
@@ -1180,33 +1183,51 @@
                 if (item.weeklystar) starEl.appendChild(makeItemCard(item));
             });
 
+            filteredItems = allItems.slice();
+            const sel = document.getElementById('category-filter');
+            const selectedCategory = sel.value;
+            sel.innerHTML = '';
+            const keys = Object.keys(jsData);
+            sel.appendChild(new Option('All categories', 'all'));
+            keys.forEach(k => sel.appendChild(new Option(k, k)));
+            sel.value = selectedCategory;
+            if (selectedCategory !== 'all') { filteredItems = jsData[selectedCategory] ? jsData[selectedCategory].slice() : []; }
 
 
             const sort = document.getElementById('sort-select').value;
-            if (sort === 'default') filteredItems = allItems.slice()
+            if (sort === 'default') filteredItems = filteredItems
             else if (sort === 'az') filteredItems.sort((a, b) => a.name.localeCompare(b.name));
             else if (sort === 'za') filteredItems.sort((a, b) => b.name.localeCompare(a.name));
             else if (sort === 'high') filteredItems.sort((a, b) => (parseInt(b.price || 0) || 0) - (parseInt(a.price || 0) || 0));
             else if (sort === 'low') filteredItems.sort((a, b) => (parseInt(a.price || 0) || 0) - (parseInt(b.price || 0) || 0));
             // All items grid
 
+            if (gamenightOnly) {
+                filteredItems = filteredItems.filter(i => (i.from && i.from.toLowerCase().includes("gamenight")));
+            }
+            currentPage = 1;
             filteredItems.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).forEach(item => {
                 allEl.appendChild(makeItemCard(item));
             });
 
+            const start = (currentPage - 1) * ITEMS_PER_PAGE; const pageItems = filteredItems.slice(start, start + ITEMS_PER_PAGE);
+            const totalPages = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE));
+            document.getElementById('page-count').textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('prev-btn').disabled = currentPage === 1; document.getElementById('next-btn').disabled = currentPage === totalPages;
+            if (currentPage === 1) {
+                document.getElementById('prev-btn').style.opacity = '0.5';
+            } else {
+                document.getElementById('prev-btn').style.opacity = '1';
+            }
+            if (currentPage === totalPages) {
+                document.getElementById('next-btn').style.opacity = '0.5';
+            } else {
+                document.getElementById('next-btn').style.opacity = '1';
+            }
 
-            populateCategoryFilter();
         }
 
 
-
-
-        // --- Renderers ---
-        function renderAllSections() {
-            renderListPanels();
-            renderAllItems();
-            populateCategoryFilter();
-        }
         let priceson = true;
 
         document.getElementById('toggle-prices').addEventListener('click', () => {
@@ -1248,12 +1269,23 @@
             // editable inputs: price, code, rarity
             const inputs = document.createElement('div'); inputs.style.width = '100%'; inputs.className = 'inputs-row';
 
-            const priceIn = document.createElement('label'); priceIn.className = 'price-label'; priceIn.textContent = item.price || '';
+            const priceIn = document.createElement('label'); priceIn.className = 'price-label'; priceIn.textContent = shortenThousands(item.price) || '';
             inputs.appendChild(priceIn);
             if (item.price <= 0 || item.price == 'N/A') {
-                priceIn.classList.add('hidden');
+                priceIn.style.display = 'none';
             }
-            
+
+            function shortenThousands(text) {
+                text = String(text); // Force to string
+                return text.replace(/\b\d{4,}\b/g, match => {
+                    const num = parseInt(match, 10);
+                    if (num >= 1000) {
+                        return (num / 1000).toString().replace(/\.0$/, '') + 'k';
+                    }
+                    return match;
+                });
+            }
+
             el.appendChild(inputs);
 
             // click to open quick editor
@@ -1278,7 +1310,20 @@
             pageItems.forEach(i => container.appendChild(makeItemCard(i)));
             const totalPages = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE));
             document.getElementById('page-count').textContent = `Page ${currentPage} of ${totalPages}`;
-            document.getElementById('prev-btn').disabled = currentPage === 1; document.getElementById('next-btn').disabled = currentPage === totalPages;
+            document.getElementById('prev-btn').disabled = currentPage === 1;
+            document.getElementById('next-btn').disabled = currentPage === totalPages;
+
+            if (currentPage === 1) {
+                document.getElementById('prev-btn').style.opacity = '0.5';
+            } else {
+                document.getElementById('prev-btn').style.opacity = '1';
+            }
+            if (currentPage === totalPages) {
+                document.getElementById('next-btn').style.opacity = '0.5';
+            } else {
+                document.getElementById('next-btn').style.opacity = '1';
+            }
+
         }
         document.getElementById('prev-btn').addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderAllItems(); } });
         document.getElementById('next-btn').addEventListener('click', () => { const totalPages = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE)); if (currentPage < totalPages) { currentPage++; renderAllItems(); } });
@@ -1483,24 +1528,27 @@
             const FLAG_PANELS = { 'weekly-items': 'weekly', 'weeklystar-items': 'weeklystar' };
             new Sortable(document.getElementById('all-items'), { group: { name: 'shared-flags', pull: 'clone', put: false }, animation: 150, sort: false, onStart: evt => { evt.item.style.opacity = '0.25'; }, onEnd: evt => { evt.item.style.opacity = ''; } });
             Object.entries(FLAG_PANELS).forEach(([id, key]) => {
-                new Sortable(document.getElementById(id), { 
-                    group: { name: 'shared-flags', 
-                    pull: 'clone', 
-                    put: true }, 
+                new Sortable(document.getElementById(id), {
+                    group: {
+                        name: 'shared-flags',
+                        pull: 'clone',
+                        put: true
+                    },
 
-                    animation: 150, 
-                    sort: false, 
-                    onAdd(evt) { 
-                        const name = evt.item.dataset.name; 
-                        for (const arr of Object.values(jsData)) { 
-                            const it = arr.find(x => x.name === name); 
-                            
-                            if (it) { it[key] = true; }; 
-                            if (it==currentEditingItem) { openQuickEditor(it)} 
+                    animation: 150,
+                    sort: false,
+                    onAdd(evt) {
+                        const name = evt.item.dataset.name;
+                        for (const arr of Object.values(jsData)) {
+                            const it = arr.find(x => x.name === name);
+
+                            if (it) { it[key] = true; };
+                            if (it == currentEditingItem) { openQuickEditor(it) }
                             renderAll();
-                        } 
-                        renderListPanels(); 
-                    }, onStart: evt => { evt.item.style.opacity = '0.25'; }, onEnd: evt => { evt.item.style.opacity = ''; } });
+                        }
+                        renderListPanels();
+                    }, onStart: evt => { evt.item.style.opacity = '0.25'; }, onEnd: evt => { evt.item.style.opacity = ''; }
+                });
             });
         }
 
@@ -1601,6 +1649,21 @@
                 }
             });
 
+
+            // Add a new input button
+            document.getElementById('new-desc-btn').onclick = (e) => {
+
+                createDesc('');
+            };
+
+            document.getElementById('new-gn-btn').onclick = () => {
+                createDesc(`Gamenight (${formattedDate}. ${formattedYear})`, true);
+            };
+
+            document.getElementById('new-prc-btn').onclick = () => {
+                createPrc('');
+            };
+
             // flags
             function createDesc(value = '', date = false) {
                 const months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.']
@@ -1645,14 +1708,20 @@
                 const done = () => {
                     deleteButton.style.display = 'inline-block'; okbutton.style.display = 'none'; value = date ? `Gamenight (${[...s].join(', ')}${yearinput.value ? ' ' + yearinput.value : ''})` : (input.value.trim() || 'Description...'); label.textContent = value; label.style.display = 'inline';
                     input.style.display = monthswrapper.style.display = yearinput.style.display = 'none'; editButton.style.display = 'inline-block'
-                    currentEditingItem.from = Array.from(document.querySelectorAll('#quick-editor-description-item')).map(input => input.value.trim()).filter(v => v).join('<br>') || currentEditingItem.from || '';
+                    currentEditingItem.from = Array.from(document.querySelectorAll('.desc-item input')).map(input => input.value.trim()).filter(v => v).join('<br>') || currentEditingItem.from || '';
                 };
 
                 editButton.onclick = e => { e.stopPropagation(); edit() };
                 label.ondblclick = edit;
                 input.onblur = done;
                 input.onkeydown = e => { if (e.key == 'Enter' || e.key == 'Escape') done() };
-                deleteButton.onclick = () => li.remove();
+                deleteButton.onclick = () => {
+                    li.remove();
+                    currentEditingItem.from = Array.from(document.querySelectorAll('.desc-item input'))
+                        .map(input => input.value.trim())
+                        .filter(v => v)
+                        .join('<br>') || '';
+                };
                 okbutton.onclick = () => done();
                 updateWidth()
             }
@@ -1660,7 +1729,7 @@
 
             function createPrc(value = '') {
                 const s = new Set()
-                const li = Object.assign(document.createElement('li'), { className: 'desc-item', style: 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:#555;color:#fff;border-radius:6px;padding:5px 11px;margin-bottom:6px;cursor:grab;user-select:none' })
+                const li = Object.assign(document.createElement('li'), { className: 'prc-item', style: 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:#555;color:#fff;border-radius:6px;padding:5px 11px;margin-bottom:6px;cursor:grab;user-select:none' })
                 const icon = Object.assign(document.createElement('img'), { src: './imgs/trs.png', style: 'display:inline-block;width: 20px; height: 20px; margin-right: 6px; vertical-align: middle;' })
                 const label = Object.assign(document.createElement('span'), { className: 'prc-label', style: 'flex-grow:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;', textContent: value || 'Price...' })
                 const input = Object.assign(document.createElement('input'), { type: 'text', value: value || '', style: 'flex-grow:1;display:none;border:none;border-radius:4px;padding:6px 8px' })
@@ -1734,7 +1803,7 @@
                 li.append(icon, label, input, editButton, deleteButton, okbutton);
 
 
-                prccontainer.appendChild(li); Sortable.create(prccontainer, { animation: 150, handle: '.desc-item' });
+                prccontainer.appendChild(li); Sortable.create(prccontainer, { animation: 150, handle: '.prc-item' });
 
                 li.ondragstart = e => { e.dataTransfer.setData('text/plain', item.name); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setDragImage(li, 1200, 20); li.style.opacity = '0.5'; }
                 li.ondragend = () => { li.style.opacity = '1'; }
@@ -1749,13 +1818,21 @@
                     input.style.display = 'none';
                     editButton.style.display = 'inline-block'
                     formatify();
-                    currentEditingItem['price/code/rarity'] = Array.from(document.querySelectorAll('#quick-editor-prc-item')).map(input => input.value.trim()).filter(v => v).join('<br>') || currentEditingItem['price/code/rarity'] || '';
+
+
+                    currentEditingItem['price/code/rarity'] = Array.from(document.querySelectorAll('.prc-item input')).map(input => input.value.trim()).filter(v => v).join('<br>') || currentEditingItem['price/code/rarity'] || '';
                 };
 
                 editButton.onclick = e => { e.stopPropagation(); edit() };
                 label.ondblclick = edit; input.onblur = done;
                 input.onkeydown = e => { if (e.key == 'Enter' || e.key == 'Escape') done() };
-                deleteButton.onclick = () => li.remove();
+                deleteButton.onclick = () => {
+                    li.remove();
+                    currentEditingItem['price/code/rarity'] = Array.from(document.querySelectorAll('.prc-item input'))
+                        .map(input => input.value.trim())
+                        .filter(v => v)
+                        .join('<br>') || '';
+                };
                 okbutton.onclick = () => done();
                 updateWidth()
 
@@ -1769,18 +1846,7 @@
             const descriptions = (item.from || '').split('<br>').map(x => x.trim()).filter(Boolean).forEach(v => createDesc(v, /\([A-Z][a-z]{2}\./.test(v)));
             const prc = (item['price/code/rarity'] || '').split('<br>').map(x => x.trim()).filter(Boolean).forEach(v => createPrc(v));
 
-            // Add a new input button
-            document.getElementById('new-desc-btn').onclick = () => {
-                createDesc('');
-            };
 
-            document.getElementById('new-gn-btn').onclick = () => {
-                createDesc(`Gamenight (${formattedDate}. ${formattedYear})`, true);
-            };
-
-            document.getElementById('new-prc-btn').onclick = () => {
-                createPrc('');
-            };
 
             const now = new Date();
             const month = { month: 'short' };
@@ -1808,29 +1874,9 @@
 
 
 
-        // --- Search caches ---
-        function populateCategoryFilter() {
-            const sel = document.getElementById('category-filter');
-            const selectedCategory = sel.value;
-            sel.innerHTML = '';
-            const keys = Object.keys(jsData);
-            sel.appendChild(new Option('All categories', 'all'));
-            keys.forEach(k => sel.appendChild(new Option(k, k)));
-            sel.value = selectedCategory;
-        }
 
         document.getElementById('category-filter').addEventListener('change', function (e) {
-            const v = e.target.value;
-            if (v === 'all') { filteredItems = allItems.slice(); } else { filteredItems = jsData[v] ? jsData[v].slice() : []; }
-
-            const sort = document.getElementById('sort-select').value;
-            if (sort === 'default') filteredItems = filteredItems.slice()
-            else if (sort === 'az') filteredItems.sort((a, b) => a.name.localeCompare(b.name));
-            else if (sort === 'za') filteredItems.sort((a, b) => b.name.localeCompare(a.name));
-            else if (sort === 'high') filteredItems.sort((a, b) => (parseInt(b.price || 0) || 0) - (parseInt(a.price || 0) || 0));
-            else if (sort === 'low') filteredItems.sort((a, b) => (parseInt(a.price || 0) || 0) - (parseInt(b.price || 0) || 0));
-
-            currentPage = 1; renderAllItems();
+            renderAll();
         });
 
         // --- Simple update checking (poll) ---
