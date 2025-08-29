@@ -1347,7 +1347,7 @@ function createNewItem(item, color) {
   price.innerHTML = `<img src="./imgs/iZGLVYo.png" draggable="false">${shortenThousands(item.price) || 0}`;
   newItem.appendChild(price);
 
-  if (item.price == 0) {
+  if (item.price == 0 || item.price == 'N/A') {
     price.style.display = "none";
   }
   const from = document.createElement("div");
