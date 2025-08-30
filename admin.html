@@ -974,12 +974,6 @@
         }
 
 
-
-
-
-
-
-
         async function checkUpdate() {
             try {
                 const [res] = await Promise.all([
@@ -1010,6 +1004,10 @@
         }
         startUpdateCheck()
         const saveBtn = document.getElementById("save-btn");
+
+        function getAllItems() {
+            return Object.values(jsData).flat();
+        }
 
         async function handleSave() {
             if (saveBtn.disabled) return;
@@ -1086,11 +1084,6 @@
             }
         }
 
-
-
-        function getAllItems() {
-            return Object.values(jsData).flat();
-        }
 
 
         function showConflictUI(conflict) {

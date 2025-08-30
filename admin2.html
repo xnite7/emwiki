@@ -4,14 +4,15 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Admin Panel — Remastered (Single Page)</title>
+    <title>Epic Catalogue - Admin Panel</title>
     <link rel="icon" href="./imgs/admin.png" />
     <style>
         :root {
             --bg: #0f1720;
             --bg2: #000000;
             --font: #f6f7fb;
-            --ghost: rgba(255, 255, 255, 0.04);
+            --ghost: rgba(255, 255, 255, 0.2);
+            --shade: rgba(255, 255, 255, 0.04);
             --panel: #12171c;
             --muted: #9aa4ad;
             --accent: #37a6ff;
@@ -26,7 +27,8 @@
             --bg: #f6f7fb;
             --bg2: #dddddd;
             --font: #000;
-            --ghost: rgba(0, 0, 0, 0.04);
+            --ghost: rgba(0, 0, 0, 0.2);
+            --shade: rgba(0, 0, 0, 0.04);
             --panel: #dbdbdb;
             --muted: #4b5563;
             --accent: #0b5cff;
@@ -60,9 +62,12 @@
 
         header h1 {
             margin: 0;
-            color: var(--accent);
+            gap: 11px;
+            display: flex;
+            align-items: center;
+            color: var(--muted);
             font-weight: 700;
-            font-size: 18px
+            font-size: 24px;
         }
 
         #top-controls {
@@ -80,19 +85,22 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 4px 18px var(--ghost);
+            box-shadow: 0 4px 18px var(--shade);
         }
 
         #settings-menu {
             position: fixed;
             right: 18px;
             top: 64px;
-            background: var(--panel);
+            background: linear-gradient(175deg, #43465361, #434653d1, #43465391);
+            border: 1px solid #ffffff21;
+            border-style: outset;
+            backdrop-filter: blur(25px);
             border-radius: 12px;
             padding: 12px;
-            box-shadow: 0 10px 40px var(--ghost);
+            box-shadow: 0 10px 40px var(--shade);
             display: none;
-            min-width: 220px
+            min-width: 220px;
         }
 
         #settings-menu.show {
@@ -107,14 +115,16 @@
         #settings-menu label,
         #settings-menu button {
             display: block;
-            margin-bottom: 8px
+            font-variant: all-petite-caps;
+            text-box: auto;
+            margin-bottom: 8px;
         }
 
         select {
             background: var(--panel);
             color: var(--accent);
             border-radius: 8px;
-            padding: 8px;
+            padding: 2px 6px;
             border: 1px solid var(--accent);
         }
 
@@ -272,7 +282,7 @@
         }
 
         #quick-editor-content input {
-            width: 95%;
+
             padding: 6px 8px;
             border-radius: 6px;
             border: 1px solid var(--ghost);
@@ -343,7 +353,7 @@
             width: -webkit-fill-available;
             max-width: 1100px;
             margin-bottom: 18px;
-            box-shadow: 0 6px 24px var(--ghost);
+            box-shadow: 0 6px 24px var(--shade);
         }
 
         .section h2 {
@@ -358,6 +368,16 @@
             /* -webkit-text-stroke: 2px #0000001a; */
         }
 
+        #settings-menu h2 {
+            margin: -13px 0px 12px 0px;
+            color: var(--ghost);
+            font-variant: all-petite-caps;
+            font-size: 35px;
+            user-select: none;
+            height: 42px;
+            /* -webkit-text-stroke: 2px #0000001a; */
+        }
+
         * {
             user-select: none;
         }
@@ -367,6 +387,9 @@
             gap: 12px;
             align-items: center;
             flex-wrap: wrap;
+            position: relative;
+
+            margin-bottom: 8px;
         }
 
         .grid {
@@ -384,7 +407,8 @@
         }
 
         .item-card {
-            background: linear-gradient(180deg, var(--ghost), transparent);
+            outline: 1px solid #313131;
+            background: linear-gradient(180deg, var(--shade), var(--glass));
             border-radius: 10px;
             padding: 8px;
             display: flex;
@@ -394,7 +418,8 @@
             height: 120px;
             width: 120px;
             scale: 1;
-            cursor: grab
+            cursor: grab;
+            justify-content: flex-end;
         }
 
         .item-card img {
@@ -406,6 +431,7 @@
         .item-name {
             font-weight: 600;
             color: var(--font);
+            white-space: nowrap;
             text-align: center;
             font-size: 13px
         }
@@ -535,6 +561,28 @@
             outline-offset: 2px;
         }
 
+        #search {
+            padding-left: 30px;
+            /* Adjust based on icon size and desired spacing */
+            width: 200px;
+            height: 30px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+
+        }
+
+        #search~i {
+            mask-image: url('data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3C!--%20License%3A%20PD.%20Made%20by%20mono-company%3A%20https%3A%2F%2Fgithub.com%2Fmono-company%2Fmono-icons%20--%3E%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M10%204a6%206%200%201%200%200%2012%206%206%200%200%200%200-12zm-8%206a8%208%200%201%201%2014.32%204.906l5.387%205.387a1%201%200%200%201-1.414%201.414l-5.387-5.387A8%208%200%200%201%202%2010z%22%2F%3E%3C%2Fsvg%3E');
+            position: absolute;
+            left: 8px;
+            background: var(--ghost);
+            /* Adjust for icon positioning */
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            font-size: 16px;
+        }
+
         #save-btn:hover {
             letter-spacing: 2px;
             filter: saturate(1.5);
@@ -543,12 +591,12 @@
         }
 
         #logout {
-            background: var(--danger);
+            background: linear-gradient(180deg, var(--danger), #890000);
+            border: 1px solid #810000;
             color: white;
-            padding: 8px;
+            padding: 4px 8px;
             border-radius: 8px;
-            border: none;
-            cursor: pointer
+            cursor: pointer;
         }
 
         .collapsible {
@@ -654,8 +702,8 @@
         }
 
         /* The draggable panel */
-        
-        label~button {
+
+        #quick-editor-content div label~button {
             float: right;
             margin-left: 8px;
             background: transparent;
@@ -669,15 +717,24 @@
         }
 
 
-        label~button::before {
+        #quick-editor-content div label~button::before {
             content: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='3 5 18 18' fill='rgb(102 218 255)'><path d='M19 15h-6v7h-3v-7H4v-3h6V6h3v6h6v2z'/></svg>");
             display: inline-block;
             width: 9px;
             margin-right: 2px;
         }
 
+        .icon {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            float: left;
+            margin-right: 7px;
+            background: var(--font);
 
-        label~button:hover {
+        }
+
+        #quick-editor-content div label~button:hover {
             color: #24b8e9;
             letter-spacing: 1px;
         }
@@ -687,11 +744,12 @@
         /* A visible handle style so user knows they can drag */
         #quick-editor-title {
             cursor: grab;
+            color: var(--muted);
             margin: 0 0 8px;
             padding: 6px 8px;
             display: inline-block;
             border-radius: 8px;
-            background: rgba(255, 255, 255, 0.03);
+            background: linear-gradient(90deg, rgb(255 255 255 / 9%), transparent);
             font-size: 23px;
         }
 
@@ -762,11 +820,12 @@
             color: #ffffff7a;
         }
 
-        .quick-editor-body+hr+div label::before {
-            content: "?";
-            font-size: 16px;
+        .quick-editor-body+hr+div label h1 {
             color: #ffffff7a;
+            position: absolute;
             font-weight: 900;
+            right: 0;
+            top: 0;
             font-size: 14px;
             text-align: center;
             font-family: 'BuilderSans';
@@ -780,19 +839,22 @@
             transition: color 0.2s ease;
         }
 
-        .quick-editor-body+hr+div label:hover::before {
+        .quick-editor-body+hr+div label h1:hover {
             color: #ffffffc4;
         }
 
         .quick-editor-body+hr+div label p {
             display: none;
             position: absolute;
-            background: #595f6a86;
+            background: linear-gradient(179deg, #43474f8f, #3b3b3bc9);
+            backdrop-filter: blur(14px);
             font: 400 15px 'Source Sans Pro';
+            color: #858585;
             font-family: 'BuilderSans';
             padding: 11px;
             border-radius: 10px;
-            margin-top: -93px;
+            margin-top: -95px;
+            margin-left: 21px;
             filter: drop-shadow(2px 4px 3px black) drop-shadow(2px 4px 3px #333);
             border: 1px solid #555555;
             font-variant-caps: all-petite-caps;
@@ -804,30 +866,10 @@
             }
         }
 
-        .quick-editor-body+hr+div label p:before {
-            position: absolute;
-            content: '';
-            width: 0;
-            height: 0;
-            border: 6px solid transparent;
-            border-bottom-color: #3a3d43;
-            right: 0px;
-            bottom: -13px;
-            rotate: 180deg;
-        }
-
-        .quick-editor-body+hr+div label p:after {
-            /* Prevents the tooltip from being hidden */
-            width: 100%;
-            height: 40px;
-            content: '';
-            position: absolute;
-            top: -40px;
-            left: 0;
-        }
 
 
-        .quick-editor-body+hr+div label:hover p {
+
+        .quick-editor-body+hr+div label h1:hover~p {
             position: absolute;
             display: inline-block;
         }
@@ -949,28 +991,42 @@
             user-select: none;
         }
     </style>
-
+    <link rel="manifest" href="/dev.webmanifest">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
 </head>
 
 <body data-theme="dark">
     <header>
-        <h1>Admin Panel — Remastered</h1>
+
+        <h1><img src="./imgs/eng.png" style="width: 52px;">Epic Catalogue<strong style="
+    font-variant-caps: all-petite-caps;
+">Admin Panel</strong></h1>
         <div id="top-controls">
             <div class="tag" id="admin-online">connecting...</div>
             <div id="settings-btn">⚙</div>
         </div>
         <div id="settings-menu" aria-hidden="true">
+            <h2>Settings</h2>
             <label>Theme
                 <select id="theme-select">
                     <option value="dark">Dark</option>
-                    <option value="light">Light</option>
+                    <!--     <option value="light">Light</option> -->
                 </select>
             </label>
             <label>Quick actions</label>
-            <button id="download-json" class="small-btn ghost">Download JSON</button>
-            <button id="logout" title="Logout (clear admin key)">Logout</button>
+            <button id="download-json" class="small-btn ghost">
+                <p class="icon"
+                    style="mask-image: url('data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3C!--%20License%3A%20PD.%20Made%20by%20mono-company%3A%20https%3A%2F%2Fgithub.com%2Fmono-company%2Fmono-icons%20--%3E%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12%202a1%201%200%200%201%201%201v10.586l2.293-2.293a1%201%200%200%201%201.414%201.414l-4%204a1%201%200%200%201-1.414%200l-4-4a1%201%200%201%201%201.414-1.414L11%2013.586V3a1%201%200%200%201%201-1zM5%2017a1%201%200%200%201%201%201v2h12v-2a1%201%200%201%201%202%200v2a2%202%200%200%201-2%202H6a2%202%200%200%201-2-2v-2a1%201%200%200%201%201-1z%22%2F%3E%3C%2Fsvg%3E');">
+                </p>
+                Download JSON
+            </button>
+            <button id="logout" title="Logout (clear admin key)">
+                <p class="icon"
+                    style="mask-image: url('data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3C!--%20License%3A%20PD.%20Made%20by%20mono-company%3A%20https%3A%2F%2Fgithub.com%2Fmono-company%2Fmono-icons%20--%3E%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M2%206a2%202%200%200%201%202-2h9a2%202%200%200%201%202%202v2a1%201%200%201%201-2%200V6H4v12h9v-2a1%201%200%201%201%202%200v2a2%202%200%200%201-2%202H4a2%202%200%200%201-2-2V6zm15.293%202.293a1%201%200%200%201%201.414%200l3%203a1%201%200%200%201%200%201.414l-3%203a1%201%200%200%201-1.414-1.414L18.586%2013H9a1%201%200%201%201%200-2h9.586l-1.293-1.293a1%201%200%200%201%200-1.414z%22%2F%3E%3C%2Fsvg%3E');">
+                </p>
+                Logout
+            </button>
             <div style="height:8px"></div>
             <div class="note">Tip: edits modify the loaded list in memory. Click SAVE to publish to website.</div>
         </div>
@@ -1000,15 +1056,16 @@
                 <div class="panel" style="margin-top:8px">
                     <div class="flex" style="margin-bottom:8px">
                         <input id="search" placeholder="Search items..."
-                            style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--muted)">
+                            style="flex:1;border-radius:8px;border:1px solid var(--ghost);background:transparent;color:var(--muted)">
+                        <i class="icon"></i>
                         <select id="category-filter"
-                            style="color: white;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)">
+                            style="color: white;padding:8px;border-radius:8px;background:transparent;border:1px solid var(--ghost)">
                             <option value="all">All categories</option>
 
                         </select>
                         <button id="gamenight-toggle" class="small-btn ghost">🎮 Gamenight Only</button>
                         <select id="sort-select"
-                            style="padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)">
+                            style="padding:8px;border-radius:8px;background:transparent;border:1px solid var(--ghost)">
                             <option value="default">Default</option>
                             <option value="az">A → Z</option>
                             <option value="za">Z → A</option>
@@ -1065,8 +1122,9 @@
             </div>
             <hr>
             <div>
-                <label style="margin-top: -9px;position: relative;z-index: 1;">Code / Rarity / Price↴<p>Coins,
-                        Stars, %, Opals, Baubles, Tokens, Eggs, Pumpkins, Visors, Robux
+                <label style="margin-top: -9px;position: relative;z-index: 1;">Code / Rarity / Price↴<h1>?</h1>
+                    <p>Coins,
+                        Stars, %, Opals, Baubles, Tokens, Eggs, Pumpkins, Visors, Robux, Unobtainable
                     </p>
                     <ul class="prc-list">
                         <li>
@@ -1098,6 +1156,57 @@
     <button id="save-btn"><b>✔</b> Publish</button>
 
     <script>
+
+        let ws;
+        let backoff = 1000;
+
+        function initWebSocket(adminName) {
+            ws = new WebSocket(`wss://admin-tracker.xnite7.workers.dev?adminName=${encodeURIComponent(adminName)}`);
+            ws.onopen = () => {
+
+                backoff = 1000;
+            };
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === "adminList") {
+                    updateAdminOnline(data.admins);
+                }
+            };
+            ws.onclose = (event) => {
+
+                console.log(`WebSocket closed with code: ${event.code}, reason: ${event.reason}`);
+                setTimeout(() => initWebSocket(adminName), backoff);
+                backoff = Math.min(backoff * 2, 30000);
+            };
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        function updateAdminOnline(admins) {
+            const onlineDiv = document.getElementById("admin-online");
+            onlineDiv.textContent = admins.length ? `Online: ${admins.join(", ")}` : "No admins online";
+            onlineDiv.classList.add("show");
+        }
+
+        function showWelcome(name) {
+            const welcomeDiv = document.getElementById('welcome-message');
+            welcomeDiv.textContent = `Welcome, ${name}.`;
+
+            setTimeout(() => {
+                welcomeDiv.style.opacity = '1';
+            }, 100);
+            setTimeout(() => {
+                welcomeDiv.style.opacity = '0';
+
+            }, 3000);
+            setTimeout(() => {
+                welcomeDiv.style.fontSize = '0px';
+                initWebSocket(name);
+            }, 3200);
+        }
+
+
         const input = document.getElementById('quick-editor-price');
         const priceArea = document.querySelector('.price-tag');
         let gamenightOnly = false;
@@ -1137,8 +1246,6 @@
         // Data holders
         let jsData = {};
         let allItems = [];
-        let fuseAll = null;
-        let fusePrice = null;
 
         // Pagination
         let filteredItems = [];
@@ -1146,7 +1253,9 @@
         const ITEMS_PER_PAGE = window.innerWidth < 720 ? 9 : 14;
 
 
-
+        var dragImgEl = document.createElement('span');
+        dragImgEl.setAttribute('style', 'position: absolute; display: block; top: 0; left: 0; width: 0; height: 0;');
+        document.body.appendChild(dragImgEl);
 
         // --- Prompt admin key (same logic) ---
         async function promptAdminKey() {
@@ -1170,12 +1279,10 @@
         function renderAll() {
             const allEl = document.getElementById('all-items');
             allEl.innerHTML = '';
-
-
-
+            currentPage = 1;
+            // First handle weekly/star panels
             const weeklyEl = document.getElementById('weekly-items');
             const starEl = document.getElementById('weeklystar-items');
-
             weeklyEl.innerHTML = '';
             starEl.innerHTML = '';
             allItems.forEach(item => {
@@ -1183,48 +1290,56 @@
                 if (item.weeklystar) starEl.appendChild(makeItemCard(item));
             });
 
-            filteredItems = allItems.slice();
-            const sel = document.getElementById('category-filter');
-            const selectedCategory = sel.value;
-            sel.innerHTML = '';
-            const keys = Object.keys(jsData);
-            sel.appendChild(new Option('All categories', 'all'));
-            keys.forEach(k => sel.appendChild(new Option(k, k)));
-            sel.value = selectedCategory;
-            if (selectedCategory !== 'all') { filteredItems = jsData[selectedCategory] ? jsData[selectedCategory].slice() : []; }
+            // Start with all items
+            let filtered = allItems.slice();
 
+            // Apply category filter first
+            const selectedCategory = document.getElementById('category-filter').value;
+            if (selectedCategory !== 'all') {
+                filtered = jsData[selectedCategory] ? jsData[selectedCategory].slice() : [];
+            }
 
-            const sort = document.getElementById('sort-select').value;
-            if (sort === 'default') filteredItems = filteredItems
-            else if (sort === 'az') filteredItems.sort((a, b) => a.name.localeCompare(b.name));
-            else if (sort === 'za') filteredItems.sort((a, b) => b.name.localeCompare(a.name));
-            else if (sort === 'high') filteredItems.sort((a, b) => (parseInt(b.price || 0) || 0) - (parseInt(a.price || 0) || 0));
-            else if (sort === 'low') filteredItems.sort((a, b) => (parseInt(a.price || 0) || 0) - (parseInt(b.price || 0) || 0));
-            // All items grid
-
+            // Apply gamenight filter
             if (gamenightOnly) {
-                filteredItems = filteredItems.filter(i => (i.from && i.from.toLowerCase().includes("gamenight")));
+                filtered = filtered.filter(i => (i.from && i.from.toLowerCase().includes("gamenight")));
             }
-            currentPage = 1;
-            filteredItems.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).forEach(item => {
-                allEl.appendChild(makeItemCard(item));
-            });
 
-            const start = (currentPage - 1) * ITEMS_PER_PAGE; const pageItems = filteredItems.slice(start, start + ITEMS_PER_PAGE);
-            const totalPages = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE));
+            // Apply search filter
+            const searchQuery = document.getElementById('search').value.trim();
+            if (searchQuery) {
+                // Create new Fuse instance with currently filtered items
+                const tempFuse = new Fuse(filtered, {
+                    keys: ['name'],
+                    threshold: 0.35
+                });
+                filtered = tempFuse.search(searchQuery).map(r => r.item);
+            }
+
+            // Apply sorting
+            const sort = document.getElementById('sort-select').value;
+            if (sort === 'az') filtered.sort((a, b) => a.name.localeCompare(b.name));
+            else if (sort === 'za') filtered.sort((a, b) => b.name.localeCompare(a.name));
+            else if (sort === 'high') filtered.sort((a, b) => (parseInt(b.price || 0) || 0) - (parseInt(a.price || 0) || 0));
+            else if (sort === 'low') filtered.sort((a, b) => (parseInt(a.price || 0) || 0) - (parseInt(b.price || 0) || 0));
+
+            // Update filteredItems for pagination
+            filteredItems = filtered;
+
+            // Render current page
+            filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                .forEach(item => allEl.appendChild(makeItemCard(item)));
+
+            // Update pagination
+            const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
             document.getElementById('page-count').textContent = `Page ${currentPage} of ${totalPages}`;
-            document.getElementById('prev-btn').disabled = currentPage === 1; document.getElementById('next-btn').disabled = currentPage === totalPages;
-            if (currentPage === 1) {
-                document.getElementById('prev-btn').style.opacity = '0.5';
-            } else {
-                document.getElementById('prev-btn').style.opacity = '1';
-            }
-            if (currentPage === totalPages) {
-                document.getElementById('next-btn').style.opacity = '0.5';
-            } else {
-                document.getElementById('next-btn').style.opacity = '1';
-            }
 
+            // Update pagination buttons
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+            prevBtn.style.opacity = currentPage === 1 ? '0.5' : '1';
+            nextBtn.style.opacity = currentPage === totalPages ? '0.5' : '1';
         }
 
 
@@ -1266,6 +1381,11 @@
             const name = document.createElement('div'); name.className = 'item-name'; name.textContent = item.name;
             el.appendChild(img); el.appendChild(name);
 
+            if (img.src.includes('trs.png')) {
+                el.style.justifyContent = 'center';
+            }
+            item.new ? el.style.zIndex = 0 : null
+
             // editable inputs: price, code, rarity
             const inputs = document.createElement('div'); inputs.style.width = '100%'; inputs.className = 'inputs-row';
 
@@ -1288,10 +1408,36 @@
 
             el.appendChild(inputs);
 
+            requestAnimationFrame(() => {
+                name.style.fontSize = "13px";
+                let fontsize = parseInt(window.getComputedStyle(name).fontSize, 10);
+
+                while (name.offsetWidth > el.offsetWidth - 18 && fontsize > 8) {
+                    fontsize -= 1;
+                    name.style.fontSize = `${fontsize}px`;
+                }
+            });
+
             // click to open quick editor
-            el.addEventListener('dblclick', (e) => {
+            el.addEventListener('click', (e) => {
                 e.preventDefault();
+                // Add scale animation
+                el.style.transition = 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                el.style.transform = 'scale(0.9)';
+                el.style.filter = 'opacity(0.5)'
+
+                // Reset scale after animation
+                setTimeout(() => {
+                    el.style.transform = '';
+                    el.style.filter = ''
+
+                    // Remove transition after animation completes
+                    setTimeout(() => {
+                        el.style.transition = '';
+                    }, 200);
+                }, 200);
                 openQuickEditor(item);
+
             });
 
             return el;
@@ -1328,7 +1474,10 @@
         document.getElementById('prev-btn').addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderAllItems(); } });
         document.getElementById('next-btn').addEventListener('click', () => { const totalPages = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE)); if (currentPage < totalPages) { currentPage++; renderAllItems(); } });
 
-        document.getElementById('search').addEventListener('input', (e) => { const q = e.target.value.trim(); filteredItems = q ? fuseAll.search(q).map(r => r.item) : allItems.slice(); currentPage = 1; renderAllItems(); });
+        document.getElementById('search').addEventListener('input', () => {
+
+            renderAll();
+        });
 
 
         /* ========== EVENTS ========== */
@@ -1526,31 +1675,50 @@
         // --- Drag & drop with Sortable (clone from original) ---
         function setupDragDrop() {
             const FLAG_PANELS = { 'weekly-items': 'weekly', 'weeklystar-items': 'weeklystar' };
-            new Sortable(document.getElementById('all-items'), { group: { name: 'shared-flags', pull: 'clone', put: false }, animation: 150, sort: false, onStart: evt => { evt.item.style.opacity = '0.25'; }, onEnd: evt => { evt.item.style.opacity = ''; } });
+
+            // master list
+            new Sortable(document.getElementById('all-items'), {
+                group: { name: 'shared-flags', pull: 'clone', put: false },
+                animation: 150,
+                sort: false,
+                onStart: evt => { evt.item.style.opacity = '0.25'; },
+                onEnd: evt => { evt.item.style.opacity = ''; }
+            });
+
+            // helper to check duplicates
+            function alreadyInList(toEl, dragEl) {
+                const name = dragEl.dataset.name;
+                return Array.from(toEl.children).some(el => el.dataset.name === name);
+            }
+
             Object.entries(FLAG_PANELS).forEach(([id, key]) => {
                 new Sortable(document.getElementById(id), {
                     group: {
                         name: 'shared-flags',
                         pull: 'clone',
-                        put: true
+                        put: (to, from, dragEl) => {
+                            // prevent if already exists in this list
+                            return !alreadyInList(to.el, dragEl);
+                        }
                     },
-
                     animation: 150,
                     sort: false,
                     onAdd(evt) {
                         const name = evt.item.dataset.name;
                         for (const arr of Object.values(jsData)) {
                             const it = arr.find(x => x.name === name);
-
-                            if (it) { it[key] = true; };
-                            if (it == currentEditingItem) { openQuickEditor(it) }
+                            if (it) { it[key] = true; }
+                            if (it === currentEditingItem) { openQuickEditor(it); }
                             renderAll();
                         }
                         renderListPanels();
-                    }, onStart: evt => { evt.item.style.opacity = '0.25'; }, onEnd: evt => { evt.item.style.opacity = ''; }
+                    },
+                    onStart: evt => { evt.item.style.opacity = '0.25'; },
+                    onEnd: evt => { evt.item.style.opacity = ''; }
                 });
             });
         }
+
 
         // --- Save to Gist endpoint ---
         document.getElementById('save-btn').addEventListener('click', async () => {
@@ -1673,9 +1841,9 @@
                 const input = Object.assign(document.createElement('input'), { type: 'text', value: value || '', style: 'flex-grow:1;display:none;border:none;border-radius:4px;padding:6px 8px' })
                 const monthswrapper = Object.assign(document.createElement('div'), { style: 'cursor: initial;justify-content: space-evenly;display:none;flex-wrap:wrap;gap:4px;flex-grow:1' })
                 const yearinput = Object.assign(document.createElement('input'), { min: 2016, max: new Date().getFullYear(), type: 'number', placeholder: 'Year', style: 'font-weight: 700;font-size: 15px;width:50px;display:none;border:none;border-radius:4px;padding:4px 6px' })
-                const editButton = Object.assign(document.createElement('button'), { textContent: 'ᴇᴅɪᴛ', className: 'small-btn ghost' })
-                const deleteButton = Object.assign(document.createElement('button'), { textContent: '🗙', style: 'padding:0px 3px 3px;background:#f66', className: 'small-btn' });
-                const okbutton = Object.assign(document.createElement('button'), { textContent: '✔', style: 'background: rgb(95 193 95);padding: 1px 8px 3px;text-shadow: 0 0 5px #00000057;display:none;font-weight: 700;', className: 'small-btn' });
+                const editButton = Object.assign(document.createElement('button'), { innerHTML: '<div class="icon" style="mask-image: url(\'data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3C!--%20License%3A%20PD.%20Made%20by%20mono-company%3A%20https%3A%2F%2Fgithub.com%2Fmono-company%2Fmono-icons%20--%3E%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M16.293%203.293a1%201%200%200%201%201.414%200l3%203a1%201%200%200%201%200%201.414l-9%209A1%201%200%200%201%2011%2017H8a1%201%200%200%201-1-1v-3a1%201%200%200%201%20.293-.707l9-9zM9%2013.414V15h1.586l8-8L17%205.414l-8%208zM3%207a2%202%200%200%201%202-2h5a1%201%200%201%201%200%202H5v12h12v-5a1%201%200%201%201%202%200v5a2%202%200%200%201-2%202H5a2%202%200%200%201-2-2V7z%22%20%2F%3E%3C%2Fsvg%3E\');"></div>ᴇᴅɪᴛ', className: 'small-btn ghost' })
+                const deleteButton = Object.assign(document.createElement('button'), { innerHTML: '<div class="icon" style="mask-image: url(\'data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3C!--%20License%3A%20PD.%20Made%20by%20mono-company%3A%20https%3A%2F%2Fgithub.com%2Fmono-company%2Fmono-icons%20--%3E%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%204a2%202%200%200%201%202-2h6a2%202%200%200%201%202%202v2h4a1%201%200%201%201%200%202h-1.069l-.867%2012.142A2%202%200%200%201%2017.069%2022H6.93a2%202%200%200%201-1.995-1.858L4.07%208H3a1%201%200%200%201%200-2h4V4zm2%202h6V4H9v2zM6.074%208l.857%2012H17.07l.857-12H6.074zM10%2010a1%201%200%200%201%201%201v6a1%201%200%201%201-2%200v-6a1%201%200%200%201%201-1zm4%200a1%201%200%200%201%201%201v6a1%201%200%201%201-2%200v-6a1%201%200%200%201%201-1z%22%20%2F%3E%3C%2Fsvg%3E\');"></div>', style: 'padding: 6px 0px 6px 6px;background:#f66', className: 'small-btn' });
+                const okbutton = Object.assign(document.createElement('button'), { innerHTML: '<div class="icon" style="mask-image: url(\'data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3C!--%20License%3A%20OFL.%20Made%20by%20govicons%3A%20https%3A%2F%2Fgithub.com%2F540co%2Fgovicons%20--%3E%3Csvg%20viewBox%3D%220%20-8%2072%2072%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M61.07%2C12.9%2C57%2C8.84a2.93%2C2.93%2C0%2C0%2C0-4.21%2C0L28.91%2C32.73%2C19.2%2C23A3%2C3%2C0%2C0%2C0%2C15%2C23l-4.06%2C4.07a2.93%2C2.93%2C0%2C0%2C0%2C0%2C4.21L26.81%2C47.16a2.84%2C2.84%2C0%2C0%2C0%2C2.1.89A2.87%2C2.87%2C0%2C0%2C0%2C31%2C47.16l30.05-30a2.93%2C2.93%2C0%2C0%2C0%2C0-4.21Z%22%2F%3E%3C%2Fsvg%3E\');"></div>', style: 'background: rgb(95 193 95);padding: 6px 0px 6px 6px;text-shadow: 0 0 5px #00000057;display:none;font-weight: 700;', className: 'small-btn' });
 
                 months.forEach(month => {
                     const button = document.createElement('span');
@@ -1696,9 +1864,9 @@
                     li.append(label, input, yearinput, monthswrapper, editButton, deleteButton, okbutton);
                 }
 
-                desccontainer.appendChild(li); Sortable.create(desccontainer, { animation: 150, handle: '.desc-item' });
+                desccontainer.appendChild(li); Sortable.create(desccontainer, { animation: 150, handle: '.desc-item', group: { name: 'desc', pull: false, put: false }, sort: true });
 
-                li.ondragstart = e => { e.dataTransfer.setData('text/plain', item.name); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setDragImage(li, 70, 20); li.style.opacity = '0.5'; }
+                li.ondragstart = e => { e.dataTransfer.setData('text/plain', item.name); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setDragImage(dragImgEl, 0, 0); li.style.opacity = '0.5'; }
                 li.ondragend = () => { li.style.opacity = '1'; }
 
                 if (date && /\(.+\)/.test(value)) { let [_, months, year] = value.match(/\((.+)\s(\d{4})\)/) || []; months && months.split(',').map(z => z.trim()).forEach(z => { s.add(z);[...monthswrapper.children].forEach(t => t.textContent == z && (t.style.background = 'var(--accent)')) }); yearinput.value = year || '' }
@@ -1733,9 +1901,9 @@
                 const icon = Object.assign(document.createElement('img'), { src: './imgs/trs.png', style: 'display:inline-block;width: 20px; height: 20px; margin-right: 6px; vertical-align: middle;' })
                 const label = Object.assign(document.createElement('span'), { className: 'prc-label', style: 'flex-grow:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;', textContent: value || 'Price...' })
                 const input = Object.assign(document.createElement('input'), { type: 'text', value: value || '', style: 'flex-grow:1;display:none;border:none;border-radius:4px;padding:6px 8px' })
-                const editButton = Object.assign(document.createElement('button'), { textContent: 'ᴇᴅɪᴛ', className: 'small-btn ghost' })
-                const deleteButton = Object.assign(document.createElement('button'), { textContent: '🗙', style: 'padding:0px 3px 3px;background:#f66', className: 'small-btn' });
-                const okbutton = Object.assign(document.createElement('button'), { textContent: '✔', style: 'background: rgb(95 193 95);padding: 1px 8px 3px;text-shadow: 0 0 5px #00000057;display:none;font-weight: 700;', className: 'small-btn' });
+                const editButton = Object.assign(document.createElement('button'), { innerHTML: '<div class="icon" style="mask-image: url(\'data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3C!--%20License%3A%20PD.%20Made%20by%20mono-company%3A%20https%3A%2F%2Fgithub.com%2Fmono-company%2Fmono-icons%20--%3E%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M16.293%203.293a1%201%200%200%201%201.414%200l3%203a1%201%200%200%201%200%201.414l-9%209A1%201%200%200%201%2011%2017H8a1%201%200%200%201-1-1v-3a1%201%200%200%201%20.293-.707l9-9zM9%2013.414V15h1.586l8-8L17%205.414l-8%208zM3%207a2%202%200%200%201%202-2h5a1%201%200%201%201%200%202H5v12h12v-5a1%201%200%201%201%202%200v5a2%202%200%200%201-2%202H5a2%202%200%200%201-2-2V7z%22%20%2F%3E%3C%2Fsvg%3E\');"></div>ᴇᴅɪᴛ', className: 'small-btn ghost' })
+                const deleteButton = Object.assign(document.createElement('button'), { innerHTML: '<div class="icon" style="mask-image: url(\'data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3C!--%20License%3A%20PD.%20Made%20by%20mono-company%3A%20https%3A%2F%2Fgithub.com%2Fmono-company%2Fmono-icons%20--%3E%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%204a2%202%200%200%201%202-2h6a2%202%200%200%201%202%202v2h4a1%201%200%201%201%200%202h-1.069l-.867%2012.142A2%202%200%200%201%2017.069%2022H6.93a2%202%200%200%201-1.995-1.858L4.07%208H3a1%201%200%200%201%200-2h4V4zm2%202h6V4H9v2zM6.074%208l.857%2012H17.07l.857-12H6.074zM10%2010a1%201%200%200%201%201%201v6a1%201%200%201%201-2%200v-6a1%201%200%200%201%201-1zm4%200a1%201%200%200%201%201%201v6a1%201%200%201%201-2%200v-6a1%201%200%200%201%201-1z%22%20%2F%3E%3C%2Fsvg%3E\');"></div>', style: 'padding: 6px 0px 6px 6px;background:#f66', className: 'small-btn' });
+                const okbutton = Object.assign(document.createElement('button'), { innerHTML: '<div class="icon" style="mask-image: url(\'data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3C!--%20License%3A%20OFL.%20Made%20by%20govicons%3A%20https%3A%2F%2Fgithub.com%2F540co%2Fgovicons%20--%3E%3Csvg%20viewBox%3D%220%20-8%2072%2072%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M61.07%2C12.9%2C57%2C8.84a2.93%2C2.93%2C0%2C0%2C0-4.21%2C0L28.91%2C32.73%2C19.2%2C23A3%2C3%2C0%2C0%2C0%2C15%2C23l-4.06%2C4.07a2.93%2C2.93%2C0%2C0%2C0%2C0%2C4.21L26.81%2C47.16a2.84%2C2.84%2C0%2C0%2C0%2C2.1.89A2.87%2C2.87%2C0%2C0%2C0%2C31%2C47.16l30.05-30a2.93%2C2.93%2C0%2C0%2C0%2C0-4.21Z%22%2F%3E%3C%2Fsvg%3E\');"></div>', style: 'background: rgb(95 193 95);padding: 6px 0px 6px 6px;text-shadow: 0 0 5px #00000057;display:none;font-weight: 700;', className: 'small-btn' });
 
                 function formatify() {
                     const text = input.value.trim();
@@ -1803,9 +1971,9 @@
                 li.append(icon, label, input, editButton, deleteButton, okbutton);
 
 
-                prccontainer.appendChild(li); Sortable.create(prccontainer, { animation: 150, handle: '.prc-item' });
+                prccontainer.appendChild(li); Sortable.create(prccontainer, { animation: 150, handle: '.prc-item', group: { name: 'desc', pull: false, put: false }, sort: true });
 
-                li.ondragstart = e => { e.dataTransfer.setData('text/plain', item.name); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setDragImage(li, 1200, 20); li.style.opacity = '0.5'; }
+                li.ondragstart = e => { e.dataTransfer.setData('text/plain', item.name); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setDragImage(dragImgEl, 0, 0); li.style.opacity = '0.5'; }
                 li.ondragend = () => { li.style.opacity = '1'; }
 
                 const edit = () => { deleteButton.style.display = 'none'; okbutton.style.display = 'inline-block'; label.style.display = 'none'; editButton.style.display = 'none'; (input.style.display = 'inline-block', input.focus()) }
@@ -2028,7 +2196,7 @@
                     panel.style.left = spacer.offsetLeft + 'px';
                     panel.style.top = '96px';
                     panel.style.transform = 'none';
-                    panel.style.boxShadow = '0 6px 24px var(--ghost)';
+                    panel.style.boxShadow = '0 6px 24px var(--shade)';
                     closeBtn.style.display = 'none';
                     spacer.style.display = 'unset';
                     spacer.style.width = panel.offsetWidth + 'px';
@@ -2110,7 +2278,12 @@
                 const raw = data.files?.['auto.json']?.content;
                 jsData = raw ? JSON.parse(raw) : {};
                 allItems = Object.values(jsData).flat();
-                fuse = new Fuse(allItems, { keys: ['name'], threshold: 0.35 });
+
+                // Add category options to select
+                const sel = document.getElementById('category-filter');
+                const keys = Object.keys(jsData);
+                keys.forEach(k => sel.appendChild(new Option(k.charAt(0).toUpperCase() + k.slice(1), k)));
+
                 renderAll();
             } catch (e) { console.error(e); alert('Failed to load data'); }
         })();
