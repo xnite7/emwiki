@@ -1415,7 +1415,7 @@ html {
     transform-origin: center;
     transform-style: preserve-3d;
     left: 0vw;
-    transition: transform .4s cubic-bezier(.25, .8, .25, 1), opacity .3s ease, left .2s ease;
+    transition: transform .4s cubic-bezier(.25, .8, .25, 1), opacity .3s ease, left .18s cubic-bezier(.08,-0.01,0,1);
     width: 100%;
     will-change: transform, box-shadow, background-size;
     transform: perspective(1800px) rotateY(0deg) scale(1) !important;
@@ -1441,7 +1441,6 @@ html {
 
 .modal-prc,
 .modal-title {
-    position: relative;
     text-shadow: 0px 1px 5px #49444499;
     z-index: 22
 }
@@ -1452,9 +1451,11 @@ html {
     display: none;
     font: 700 42px BuilderSans;
     justify-self: right;
-    margin-right: 13px;
+    margin-left: -32px;
+    margin-bottom: 0px;
+        margin-top: 7px;
     white-space: nowrap;
-    margin-top: 15px;
+        margin-right: 8px;
     transform: translateZ(30px);
     width: fit-content;
 }

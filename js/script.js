@@ -73,9 +73,9 @@ function createProductModal() {
   titlepricecontainer.style.cssText = `
     display: flex;
     gap: 33px;
-    flex-direction: row;
-    flex-wrap: nowrap;
+    flex-flow: row;
     justify-content: space-between;
+    align-items: flex-start;
   `;
 
   titlepricecontainer.append(title, prc)
@@ -495,15 +495,16 @@ window.addEventListener('DOMContentLoaded', () => {
 })
 
 
-
+let swiping = false
 
 function openSiblingModal(direction) {
   const currentItem = document.querySelector(".item.showing");
   if (!currentItem) return;
+  if (swiping) return;
   const sibling = direction === "next"
     ? currentItem.nextElementSibling
     : currentItem.previousElementSibling;
-
+  swiping = true
   if (sibling && sibling.classList.contains("item")) {
     if (direction === "next") {
       modalCache.content.classList.add('swipeLeft')
@@ -530,7 +531,7 @@ function openSiblingModal(direction) {
 
       modalCache.content.classList.remove('swipeLeft')
       modalCache.content.classList.remove('swipeRight')
-
+      swiping = false
     }, 200);
   }
 }
@@ -596,6 +597,10 @@ function Modal(event) {
   modalCache.content.style.pointerEvents = "none";
   modalCache.content.style.backgroundColor = item.style.backgroundColor;
   modalCache.title.textContent = title;
+  modalCache.title.style.marginTop = '5px';
+  modalCache.title.style.marginLeft = '15px';
+  modalCache.title.style.marginBottom = '0px';
+  modalCache.title.style.width = "min-content";
 
 
 
@@ -739,31 +744,8 @@ function Modal(event) {
   modalCache.prc.innerHTML = `<img src="./imgs/rap.png" style="filter: drop-shadow(0px 1px 5px #49444454);height:44px;float:left;">${price || 0}`;
 
 
-  function resize_modal_prc() {
-
-
-    const img = modalCache.prc.querySelector('img');
-
-    // Reset font size to max starting point
-    modalCache.prc.style.fontSize = "42px";
-    let fontsize = parseInt(window.getComputedStyle(modalCache.prc).fontSize, 10);
-
-    while (modalCache.prc.offsetWidth > 150 && fontsize > 18) {
-
-      fontsize -= 2;
-      modalCache.prc.style.fontSize = `${fontsize}px`;
-    }
-
-    // Adjust image height to match font size
-    if (img) {
-      img.style.height = `${fontsize + 2}px`; // Slightly bigger to match vertically
-      img.style.marginTop = `${Math.max(fontsize - 38, 0)}px`; // Adjust top margin if needed
-    }
-  }
-
-  if (price != 0) {
-    modalCache.prc.style.display = "flex"
-  } else {
+  modalCache.prc.style.display = "flex"
+  if (price == 0 || price == 'N/A') {
     modalCache.prc.style.display = "none"
   }
 
@@ -804,8 +786,37 @@ function Modal(event) {
     transform: "scale(0.9)",
     boxShadow: "0 0 0 rgba(0,0,0,0)"
   });
-  resize_modal_prc()
+
   requestAnimationFrame(() => {
+
+    const img = modalCache.prc.querySelector('img');
+
+    // Reset font size to max starting point
+
+      // Start with maximum font size
+      modalCache.title.style.fontSize = '50px';
+      let fontSize = 50;
+
+
+      // Set initial width based on text length
+      modalCache.title.style.width = modalCache.title.textContent.length < 7
+        ? 'min-content'
+        : 'fit-content';
+
+      // Get available width (space for title)
+      const containerWidth = modalCache.prc.parentElement.offsetWidth;
+      const priceWidth = modalCache.prc.offsetWidth;
+      const padding = modalCache.title.textContent.length < 12 ? 10 : 52;
+      const availableWidth = containerWidth - priceWidth - padding;
+
+      // Get minimum font size based on text length  
+      const minFontSize = modalCache.title.textContent.length < 11 ? 24 : 34;
+      // Reduce font size until title fits
+      while (modalCache.title.offsetWidth > availableWidth && fontSize > minFontSize) {
+        fontSize -= 2;
+        modalCache.title.style.fontSize = `${fontSize}px`;
+      }
+
     modalCache.content.classList.add("expand");
     modalCache.content.style.pointerEvents = "auto";
     Object.assign(modalCache.content.style, {
@@ -831,7 +842,7 @@ function Modal(event) {
 let tut = false;
 
 function showSwipeTutorial() {
-  console.log("showing")
+
   if (document.getElementById('swipe-tutorial')) return;
   if (tut) return;
   tut = true;
@@ -865,6 +876,7 @@ function showSwipeTutorial() {
 
 const closeModalHandler = () => {
   document.body.classList.remove("modal-open");
+  swiping = false
   modalCache.content.classList.remove("expand");
   modalCache.modal.classList.remove("show");
   modalCache.content.style.pointerEvents = "none";
