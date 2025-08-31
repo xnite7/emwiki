@@ -504,19 +504,22 @@ function openSiblingModal(direction) {
   const sibling = direction === "next"
     ? currentItem.nextElementSibling
     : currentItem.previousElementSibling;
-  swiping = true
+  
   if (sibling && sibling.classList.contains("item")) {
     if (direction === "next") {
       modalCache.content.classList.add('swipeLeft')
     } else {
       modalCache.content.classList.add('swipeRight')
     }
+    swiping = true
     setTimeout(() => {
       document.body.classList.remove("modal-open")
       sibling.click();
-    }, 90);
+    }, 140);
     setTimeout(() => {
-      modalCache.content.classList.add('forceSwipe')
+      modalCache.content.style.transition = 'left 0s ease'
+
+
       if (modalCache.content.classList.contains('swipeRight')) {
         modalCache.content.classList.remove('swipeRight')
         modalCache.content.classList.add('swipeLeft')
@@ -527,12 +530,12 @@ function openSiblingModal(direction) {
     }, 100)
 
     setTimeout(() => {
-      modalCache.content.classList.remove('forceSwipe')
+            modalCache.content.style.transition = 'transform .4s cubic-bezier(.25, .8, .25, 1), opacity .3s ease, left .18s cubic-bezier(.08,-0.01,0,1)'
 
       modalCache.content.classList.remove('swipeLeft')
       modalCache.content.classList.remove('swipeRight')
       swiping = false
-    }, 200);
+    }, 250);
   }
 }
 
@@ -608,6 +611,7 @@ function Modal(event) {
   modalCache.description.textContent = from;
   modalCache.price.setAttribute("draggable", false);
   modalCache.title.style.display = item.id === "titles" ? "none" : "block";
+  modalCache.title.parentElement.style.justifyContent = item.id === "titles" ? "flex-end" : "space-between";
 
   modalCache.content.querySelectorAll(".font").forEach((el) => el.remove());
 
