@@ -676,6 +676,7 @@
             'b7a6aa6f564e2e8617ea4e3d443c781d5f890377a584b8d46491d2bcc33e5f36': 'wavetechnic',
             '715add203d5f8c33f00a056b8b72a3df30168607822855ed014a4bc071ca8c83': 'mason',
             'c6cb970822a655e879bcb82cb58ad5e3711f1bfe2fa0c2307d4a48495913590d': 'nap',
+            '7f2a275321dad67fbaa431f372b691cfa5dc970d0e28f6b4e7ce4ea270cfb4e7': 'nooby',
         };
 
         async function computeHash(key) {
@@ -1951,7 +1952,8 @@
             let groups = { All: items };
             if (sort === "group") {
                 groups = {
-                    "1000+": [],
+                    "10,000+": [],
+                    "1,000+": [],
                     "500–999": [],
                     "1–499": [],
                     "0 (unpriced)": []
@@ -1959,7 +1961,8 @@
                 for (const item of items) {
                     const price = parseInt(item.price || 0);
                     if (isNaN(price) || price === 0) groups["0 (unpriced)"].push(item);
-                    else if (price >= 1000) groups["1000+"].push(item);
+                    else if (price >= 10000) groups["10,000+"].push(item);
+                    else if (price >= 1000) groups["1,000+"].push(item);
                     else if (price >= 500) groups["500–999"].push(item);
                     else groups["1–499"].push(item);
                 }

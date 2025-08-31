@@ -504,7 +504,7 @@ function openSiblingModal(direction) {
   const sibling = direction === "next"
     ? currentItem.nextElementSibling
     : currentItem.previousElementSibling;
-  
+
   if (sibling && sibling.classList.contains("item")) {
     if (direction === "next") {
       modalCache.content.classList.add('swipeLeft')
@@ -530,8 +530,7 @@ function openSiblingModal(direction) {
     }, 100)
 
     setTimeout(() => {
-            modalCache.content.style.transition = 'transform .4s cubic-bezier(.25, .8, .25, 1), opacity .3s ease, left .18s cubic-bezier(.08,-0.01,0,1)'
-
+      modalCache.content.style.transition = 'transform .4s cubic-bezier(.25, .8, .25, 1), opacity .3s ease, left .18s cubic-bezier(.08,-0.01,0,1)'
       modalCache.content.classList.remove('swipeLeft')
       modalCache.content.classList.remove('swipeRight')
       swiping = false
@@ -797,29 +796,29 @@ function Modal(event) {
 
     // Reset font size to max starting point
 
-      // Start with maximum font size
-      modalCache.title.style.fontSize = '50px';
-      let fontSize = 50;
+    // Start with maximum font size
+    modalCache.title.style.fontSize = '50px';
+    let fontSize = 50;
 
 
-      // Set initial width based on text length
-      modalCache.title.style.width = modalCache.title.textContent.length < 7
-        ? 'min-content'
-        : 'fit-content';
+    // Set initial width based on text length
+    modalCache.title.style.width = modalCache.title.textContent.length < 7
+      ? 'min-content'
+      : 'fit-content';
 
-      // Get available width (space for title)
-      const containerWidth = modalCache.prc.parentElement.offsetWidth;
-      const priceWidth = modalCache.prc.offsetWidth;
-      const padding = modalCache.title.textContent.length < 12 ? 10 : 52;
-      const availableWidth = containerWidth - priceWidth - padding;
+    // Get available width (space for title)
+    const containerWidth = modalCache.prc.parentElement.offsetWidth;
+    const priceWidth = modalCache.prc.offsetWidth;
+    const padding = modalCache.title.textContent.length < 12 ? 10 : 52;
+    const availableWidth = containerWidth - priceWidth - padding;
 
-      // Get minimum font size based on text length  
-      const minFontSize = modalCache.title.textContent.length < 11 ? 24 : 34;
-      // Reduce font size until title fits
-      while (modalCache.title.offsetWidth > availableWidth && fontSize > minFontSize) {
-        fontSize -= 2;
-        modalCache.title.style.fontSize = `${fontSize}px`;
-      }
+    // Get minimum font size based on text length  
+    const minFontSize = modalCache.title.textContent.length < 11 ? 24 : 34;
+    // Reduce font size until title fits
+    while (modalCache.title.offsetWidth > availableWidth && fontSize > minFontSize) {
+      fontSize -= 2;
+      modalCache.title.style.fontSize = `${fontSize}px`;
+    }
 
     modalCache.content.classList.add("expand");
     modalCache.content.style.pointerEvents = "auto";
