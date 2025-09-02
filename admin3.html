@@ -72,7 +72,7 @@
     </header>
 
     <!-- Main Content -->
-    <main>
+    <main style="display: none;">
         <div id="quick-editor-spacer" style="visibility: hidden;width: 424px;" class="initial"></div>
         <div id="main-content">
             <!-- Lists Section -->
@@ -311,7 +311,7 @@
             // Window resize
             resizer() {
                     UI.renderItems(true);
-                    CanvasArrow.updateSize();
+                    //CanvasArrow.updateSize();
             }
         };
         
@@ -1929,6 +1929,7 @@ new ResizeObserver(Utils.resizer).observe(DOM.get('lists-section'));
             },
 
             showWelcome() {
+                DOM.query('main').style.display = 'flex';
                 const overlay = DOM.get('login-overlay');
                 const welcomeLabel = DOM.get('welcome-label');
                 const text = `Welcome, ${state.adminName}.`;
@@ -1948,7 +1949,7 @@ new ResizeObserver(Utils.resizer).observe(DOM.get('lists-section'));
                         setTimeout(() => {
 
                             DOM.query('.login-card').style.opacity = '0';
-                            setTimeout(() => overlay.remove(), 1800);
+                            
                         }, 1000);
                     }
                 }, 40);
