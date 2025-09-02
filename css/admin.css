@@ -70,6 +70,18 @@ body {
     font-family: Inter, Segoe UI, Arial;
     background: linear-gradient(180deg, var(--bg), #071018);
     color: var(--muted);
+    background-color: #232939;
+}
+body::before{
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('../imgs/ham.png');
+    background-size: 100px;
+    opacity: 0.03;
+    animation: moveHammers 5s linear infinite;
+    pointer-events: none;
+    filter: brightness(0.8);
 }
 
 header {
@@ -1130,26 +1142,14 @@ hr {
 #login-overlay {
     position: fixed;
     inset: 0;
-    background: #232939;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 999999;
+    z-index: 9999999999;
     transition: all 2s ease;
     overflow: hidden;
 }
 
-#login-overlay::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: url('../imgs/ham.png');
-    background-size: 100px;
-    opacity: 0.03;
-    animation: moveHammers 5s linear infinite;
-    pointer-events: none;
-    filter: brightness(0.8);
-}
 
 
 
@@ -1179,6 +1179,7 @@ hr {
     border-radius: 16px;
     width: 64%;
     height: 40%;
+    position: absolute;
     max-height: 240px;
     max-width: 400px;
     text-align: center;
@@ -1188,32 +1189,37 @@ hr {
 
 
 .glass {
-    inset: 50% auto auto 50%;
+    z-index: 99999999;
     width: 40%;
     height: 40%;
-    max-width: 210px;
-    max-height: 184px;
+    max-width: 200px;
+    max-height: 200px;
     border-radius: 50%;
     padding: 0rem;
     background: rgba(255, 255, 255, .08);
     border: 2px solid transparent;
     box-shadow: inset 5px 5px 9px 0px rgb(255 255 255 / 23%), inset 4px 4px 20px 3px rgb(255 255 255 / 15%), 2px 7px 20px 1px rgb(0 0 0 / 22%);
-    backdrop-filter: url(#frosted);
-    -webkit-backdrop-filter: url(#frosted);
     scale: 1.1;
     place-items: center;
     cursor: pointer;
     outline: 0;
     transition: all 1s cubic-bezier(.41, -0.07, .13, 1.6) 0.4s;
     animation: bubble 1.8s ease 1s 1 forwards;
-    transform: translateY(0px);
+    transform: translateY(5px);
+    @starting-style{
+        max-width: 210px;
+        max-height: 184px;
+        transform: translateY(0px);
+    }
 }
 
 .bobble {
-    animation: bobble 1.5s ease-in-out 0.5s infinite alternate;
     max-width: 200px;
     max-height: 200px;
-    transform: translateY(5px);
+    transform: translateY(30vh);
+    transition: all 1s cubic-bezier(.56,-0.37,.3,1);
+    opacity: 0;
+    animation: unset;
 }
 
 
