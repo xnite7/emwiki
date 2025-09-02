@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Walker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            background: white;
+        }
+
+        #petContainer {
+            position: fixed;
+            bottom: 20px;
+            left: 50px;
+            width: 32px;
+            height: 32px;
+            z-index: 100;
+            cursor: pointer;
+            overflow: visible;
+        }
+
+        /* Pet stays the same */
+        #pet {
+            width: 32px;
+            height: 32px;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+            background: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/49.gif') no-repeat center;
+            background-size: contain;
+        }
+
+
+
+        #petContainer.walking {
+            animation: bounce 0.5s ease-in-out infinite;
+        }
+
+        #petContainer.idle {
+            animation: idle 2s ease-in-out infinite;
+        }
+
+        #pet.flipped {
+            transform: scaleX(-1);
+        }
+
+        /* Simple animations since we're using an animated GIF */
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-3px);
+            }
+        }
+
+        @keyframes idle {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-1px) scale(1.05);
+            }
+        }
+
+        /* Yarn Ball */
+        .yarn-ball {
+            position: fixed;
+            bottom: 20px;
+            right: 100px;
+            width: 30px;
+            height: 30px;
+            z-index: 10;
+            cursor: pointer;
+            font-size: 30px;
+        }
+
+        /* Speech Bubble */
+        .speech-bubble {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 5px 10px;
+            border-radius: 10px;
+            border: 2px solid #333;
+            font-size: 12px;
+            font-family: Arial, sans-serif;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 8px solid #333;
+        }
+
+        .speech-bubble.show {
+            opacity: 1;
+        }
+
+        /* Floating hearts */
+        .heart {
+            position: absolute;
+            bottom: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 20px;
+            animation: floatHeart 1s ease-out forwards;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        @keyframes floatHeart {
+            0% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0) scale(0.5);
+            }
+
+            50% {
+                transform: translateX(-50%) translateY(-20px) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-40px) scale(0.8);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Yarn Ball -->
+    <div class="yarn-ball">🌸</div>
+
+    <!-- Pet -->
+    <div id="petContainer">
+        <div id="pet">
+            <div class="speech-bubble" id="speechBubble"></div>
+        </div>
+    </div>
+
+
+    <script>
+        const pet = document.getElementById('petContainer');
+        const pet2 = document.getElementById('pet');
+        const speechBubble = document.getElementById('speechBubble');
+        const yarnBall = document.querySelector('.yarn-ball');
+
+        let petState = {
+            x: 50,
+            direction: 1,
+            speed: 1.5,
+            isWalking: true,
+            isIdle: false,
+            isPlaying: false,
+            destination: null
+        };
+
+        const messages = [
+            "Meow! 😺",
+            "Purrr~ 💕",
+            "Nya~ 🐾",
+            "*stretches*",
+            "Mrow?",
+            "😸",
+            "Prrrr...",
+            "Meow meow!",
+            "*yawns*"
+        ];
+
+        const playMessages = [
+            "Flowers! 🌺",
+            "Play time! ✨",
+            "So fun! 😸",
+            "Wheee! 🎉"
+        ];
+
+        // Movement logic
+        function movePet() {
+            if (petState.isIdle || petState.isPlaying) return;
+
+            const maxX = window.innerWidth - 32;
+
+            // Check if pet has a destination (yarn ball)
+            if (petState.destination !== null) {
+                const yarnX = window.innerWidth - 115;
+                const distance = yarnX - petState.x;
+
+                if (Math.abs(distance) < 10) {
+                    // Reached yarn ball
+                    petState.destination = null;
+                    petState.isWalking = false;
+                    petState.isPlaying = true;
+                    pet.classList.remove('walking');
+                    pet.classList.add('idle');
+                    playWithYarn();
+                    setTimeout(() => {
+                        petState.isPlaying = false;
+                        petState.isWalking = true;
+                        pet.classList.remove('idle');
+                        pet.classList.add('walking');
+                        randomDirection();
+                    }, 3000);
+                } else {
+                    // Move towards yarn ball
+                    petState.direction = distance > 0 ? 1 : -1;
+                    petState.x += petState.speed * petState.direction * 2;
+                }
+            } else {
+                // Random walking
+                petState.x += petState.speed * petState.direction;
+
+                // Bounce off edges
+                if (petState.x <= 0 || petState.x >= maxX) {
+                    petState.direction *= -1;
+                }
+
+                // Random direction change
+                if (Math.random() < 0.008) {
+                    randomDirection();
+                }
+
+                // Random idle
+                if (Math.random() < 0.005) {
+                    idle();
+                }
+            }
+
+            // Update pet position
+            pet.style.left = petState.x + 'px';
+
+            // Flip sprite based on direction (flip when moving right)
+            if (petState.direction > 0) {
+                pet2.classList.add('flipped'); // flip when moving right
+            } else {
+                pet2.classList.remove('flipped'); // normal when moving left
+            }
+
+        }
+
+        function randomDirection() {
+            petState.direction = Math.random() > 0.5 ? 1 : -1;
+        }
+
+        function idle() {
+            petState.isWalking = false;
+            petState.isIdle = true;
+            pet.classList.remove('walking');
+            pet.classList.add('idle');
+
+            if (Math.random() < 0.3) {
+                showMessage(messages[Math.floor(Math.random() * messages.length)]);
+            }
+
+            setTimeout(() => {
+                petState.isIdle = false;
+                petState.isWalking = true;
+                pet.classList.remove('idle');
+                pet.classList.add('walking');
+                speechBubble.classList.remove('show');
+            }, 2000 + Math.random() * 2000);
+        }
+
+        function playWithYarn() {
+            showMessage(playMessages[Math.floor(Math.random() * playMessages.length)]);
+
+            // Animate yarn ball
+            yarnBall.style.animation = 'none';
+            setTimeout(() => {
+                yarnBall.style.animation = 'spin 0.5s ease-out';
+            }, 10);
+        }
+
+        function showMessage(text) {
+            speechBubble.textContent = text;
+            speechBubble.classList.add('show');
+            setTimeout(() => {
+                speechBubble.classList.remove('show');
+            }, 2000);
+        }
+
+        // Click interaction on pet
+        pet.addEventListener('click', () => {
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.textContent = '❤️';
+            pet.appendChild(heart);
+
+            showMessage(messages[Math.floor(Math.random() * messages.length)]);
+
+            setTimeout(() => {
+                heart.remove();
+            }, 1000);
+        });
+
+        // Yarn ball click
+        yarnBall.addEventListener('click', () => {
+            if (!petState.isPlaying) {
+                petState.destination = window.innerWidth - 115;
+                showMessage("Ooh! 🌼");
+            }
+        });
+
+        // Add spin animation for yarn
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Main game loop
+        setInterval(movePet, 50);
+
+        // Sometimes go play with yarn randomly
+        setInterval(() => {
+            if (Math.random() < 0.2 && !petState.isPlaying && petState.destination === null) {
+                petState.destination = window.innerWidth - 115;
+            }
+        }, 8000);
+    </script>
+</body>
+
+</html>

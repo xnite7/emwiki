@@ -1,0 +1,2284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+    <title>Epic Catalogue - Admin Panel</title>
+    <link rel="icon" href="./imgs/admin.png" />
+    <link rel="preload" href="./css/admin.css" as="style" onload="this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="./css/admin.css?version=3.2">
+    </noscript>
+    <link rel="manifest" href="/dev.webmanifest">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+</head>
+
+<body data-theme="dark">
+    <!-- Canvas for arrow overlay -->
+    <canvas id="overlay" class="fixed inset-0 pointer-events-none"
+        style="pointer-events:none;position:fixed;z-index:9999999;"></canvas>
+
+    <!-- Login Overlay -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <div class="garagedoor">
+                <div class="texture-overlay"></div>
+                <div class="endofdoor"></div>
+            </div>
+            <img src="./imgs/eng.png">
+            <div id="welcome-label"></div>
+            <h2>Admin Login</h2>
+            <input type="password" id="admin-key" placeholder="Enter admin key" />
+            <button id="login-btn">Login</button>
+            <div id="login-error"></div>
+        </div>
+    </div>
+
+    <!-- SVG Filters (moved to single definition) -->
+    <svg style="position:absolute;width:0;height:0">
+        <defs id="svg-defs"></defs>
+    </svg>
+
+    <!-- Header -->
+    <header>
+        <h1><img src="./imgs/eng.png" style="width: 52px;">Epic Catalogue<strong
+                style="font-variant-caps: all-petite-caps;">Admin Panel</strong></h1>
+        <div id="top-controls">
+            <div class="tag" id="admin-online" style="display:flex;flex-direction:row-reverse;gap:4px;">connecting...
+            </div>
+            <div id="settings-btn">⚙</div>
+        </div>
+        <div id="settings-menu">
+            <h2>Settings</h2>
+            <label>Theme
+                <select id="theme-select">
+                    <option value="dark">Dark</option>
+                </select>
+            </label>
+            <label>Quick actions</label>
+            <button id="download-json" class="small-btn ghost">
+                <span class="icon download-icon"></span>
+                Download JSON
+            </button>
+            <button id="logout">
+                <span class="icon logout-icon"></span>
+                Logout
+            </button>
+            <div style="height:8px"></div>
+            <div class="note">Tip: edits modify the loaded list in memory.<br>Click SAVE to publish to website.</div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <div id="quick-editor-spacer" style="visibility: hidden;width: 424px;" class="initial"></div>
+        <div id="main-content">
+            <!-- Lists Section -->
+            <div class="section" id="lists-section">
+                <h2>Shops</h2>
+                <div id="shops-container"></div>
+                <div class="panel" style="margin-top:8px">
+                    <div id="filter-controls" class="flex" style="margin-bottom:22px"></div>
+                    <div id="all-items" class="grid"></div>
+                    <div id="pagination-controls"></div>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div class="section" id="history-section">
+                <h2>History</h2>
+                <div id="history-list"></div>
+            </div>
+
+            <!-- Notes Section -->
+            <div class="section" id="notes-section">
+                <h2>Notes</h2>
+                <div class="board-container">
+                    <div class="notes-area" id="notesArea"></div>
+                    <button class="add-button" id="addButton">+</button>
+                    <div class="input-form" id="inputForm">
+                        <input type="text" class="note-input" id="noteInput" placeholder="Type your note..."
+                            maxlength="200">
+                        <button class="send-btn" id="sendNoteBtn">
+                            <span class="icon send-icon"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Quick Editor Modal -->
+    <div id="quick-editor-modal" class="hidden">
+        <div id="quick-editor-content" class="initial">
+            <div id='tutorial'>
+                <h1>Quick Editor</h1>
+                <p style="color: #f0f8ff;">Double Click an item to start editing.</p>
+                <p style="color: #f0f8ffc9;">Drag the panel to move it around.</p>
+                <p style="color: #f0f8ff8f;">Use the "Save" button to apply changes.</p>
+                <p style="color: #f0f8ff6e;">Click the "Close" button to hide.</p>
+            </div>
+            <button id="quick-editor-close" title="Close">&times;</button>
+            <h2 id="quick-editor-title"></h2>
+            <div class="quick-editor-body">
+                <img id="quick-editor-img" src="" alt="" />
+                <div class="price-tag">
+                    <div class="tag-left"></div>
+                    <div class="price-area">
+                        <input id="quick-editor-price" style="caret-color: #ffffff30; border: 0px;" type="text"
+                            placeholder="RAP" />
+                    </div>
+                </div>
+                <div class="flag-row"></div>
+            </div>
+            <hr>
+            <div id="quick-editor-lists">
+                <div>
+                    <label style="margin-top:-9px;position:relative;z-index:1;">
+                        Code / Rarity / Price↴
+                        <h1>?</h1>
+                        <p>Coins, Stars, %, Opals, Baubles, Tokens, Eggs, Pumpkins, Visors, Robux, Unobtainable</p>
+                    </label>
+                    <ul class="prc-list"></ul>
+                    <button style="padding-bottom:8px;margin-bottom:0px;" id="new-prc-btn">Code / Rarity /
+                        Price</button>
+                </div>
+
+                <div style="margin-top:21px;">
+                    <label style="margin-top:-31px;">Descriptions↴</label>
+                    <ul class="desc-list"></ul>
+                    <button id="new-desc-btn">Text</button>
+                    <button id="new-gn-btn">Gamenight Date</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Button -->
+    <button id="save-btn"><b>✔</b> Publish</button>
+
+    <script>
+        // ============================
+        // Configuration & Constants
+        // ============================
+        const CONFIG = {
+            ADMIN_KEYS: {
+                '00cc75b3c354bd864d646cc1a790268c33916bd2a32b78b502151640596f7702': 'xnite',
+                'd8d8c58d2c8c173f8de0ff61081d77210367d00eabcc76a04cf3d2d5b1cb3ab4': 'harvestmoon',
+                '0fc6b5fe21bb973ec350831217401b643eee63a6c29c74fb4fe6606b28ba7f8b': 'ivan',
+                '499b66dcc2946daa0c2ff49b05902dd1152d1a21208ca42fc2c9eb23281cb623': 'bagel',
+                'b7a6aa6f564e2e8617ea4e3d443c781d5f890377a584b8d46491d2bcc33e5f36': 'wavetechnic'
+            },
+            WS_URLS: {
+                ADMIN_TRACKER: 'wss://admin-tracker.xnite7.workers.dev',
+                NOTES_BOARD: 'wss://notes-board.xnite7.workers.dev'
+            },
+            API_URLS: {
+                LATEST_VERSION: 'https://emwiki.site/api/latest-version',
+                GIST_VERSION: 'https://emwiki.site/api/gist-version',
+                UPDATE_GIST: 'https://emwiki.site/api/update-gist',
+                HISTORY: 'https://emwiki.site/api/history'
+            },
+            UI: {
+                SNAP_MARGIN: 12,
+                WIDTH_THRESHOLD: 1300,
+                RECENT_ADMIN_DURATION: 5000,
+                ITEM_MIN_WIDTH: 132,
+                GRID_GAP: 12
+            },
+            ICONS: {
+                download: 'data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12%202a1%201%200%200%201%201%201v10.586l2.293-2.293a1%201%200%200%201%201.414%201.414l-4%204a1%201%200%200%201-1.414%200l-4-4a1%201%200%201%201%201.414-1.414L11%2013.586V3a1%201%200%200%201%201-1zM5%2017a1%201%200%200%201%201%201v2h12v-2a1%201%200%201%201%202%200v2a2%202%200%200%201-2%202H6a2%202%200%200%201-2-2v-2a1%201%200%200%201%201-1z%22%2F%3E%3C%2Fsvg%3E',
+                logout: 'data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M2%206a2%202%200%200%201%202-2h9a2%202%200%200%201%202%202v2a1%201%200%201%201-2%200V6H4v12h9v-2a1%201%200%201%201%202%200v2a2%202%200%200%201-2%202H4a2%202%200%200%201-2-2V6zm15.293%202.293a1%201%200%200%201%201.414%200l3%203a1%201%200%200%201%200%201.414l-3%203a1%201%200%200%201-1.414-1.414L18.586%2013H9a1%201%200%201%201%200-2h9.586l-1.293-1.293a1%201%200%200%201%200-1.414z%22%2F%3E%3C%2Fsvg%3E',
+                send: 'data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12%202a1%201%200%200%201%20.894.553l9%2018a1%201%200%200%201-1.11%201.423L12%2020.024l-8.783%201.952a1%201%200%200%201-1.111-1.423l9-18A1%201%200%200%201%2012%202zm1%2016.198l6.166%201.37L13%207.236v10.962zM11%207.236L4.834%2019.568%2011%2018.198V7.236z%22%2F%3E%3C%2Fsvg%3E',
+                edit: 'data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M16.293%203.293a1%201%200%200%201%201.414%200l3%203a1%201%200%200%201%200%201.414l-9%209A1%201%200%200%201%2011%2017H8a1%201%200%200%201-1-1v-3a1%201%200%200%201%20.293-.707l9-9zM9%2013.414V15h1.586l8-8L17%205.414l-8%208zM3%207a2%202%200%200%201%202-2h5a1%201%200%201%201%200%202H5v12h12v-5a1%201%200%201%201%202%200v5a2%202%200%200%201-2%202H5a2%202%200%200%201-2-2V7z%22%20%2F%3E%3C%2Fsvg%3E',
+                delete: 'data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%204a2%202%200%200%201%202-2h6a2%202%200%200%201%202%202v2h4a1%201%200%201%201%200%202h-1.069l-.867%2012.142A2%202%200%200%201%2017.069%2022H6.93a2%202%200%200%201-1.995-1.858L4.07%208H3a1%201%200%200%201%200-2h4V4zm2%202h6V4H9v2zM6.074%208l.857%2012H17.07l.857-12H6.074zM10%2010a1%201%200%200%201%201%201v6a1%201%200%201%201-2%200v-6a1%201%200%200%201%201-1zm4%200a1%201%200%200%201%201%201v6a1%201%200%201%201-2%200v-6a1%201%200%200%201%201-1z%22%20%2F%3E%3C%2Fsvg%3E',
+                check: 'data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3Csvg%20viewBox%3D%220%20-8%2072%2072%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M61.07%2C12.9%2C57%2C8.84a2.93%2C2.93%2C0%2C0%2C0-4.21%2C0L28.91%2C32.73%2C19.2%2C23A3%2C3%2C0%2C0%2C0%2C15%2C23l-4.06%2C4.07a2.93%2C2.93%2C0%2C0%2C0%2C0%2C4.21L26.81%2C47.16a2.84%2C2.84%2C0%2C0%2C0%2C2.1.89A2.87%2C2.87%2C0%2C0%2C0%2C31%2C47.16l30.05-30a2.93%2C2.93%2C0%2C0%2C0%2C0-4.21Z%22%2F%3E%3C%2Fsvg%3E'
+            }
+        };
+
+        // ============================
+        // State Management
+        // ============================
+        class AppState {
+            constructor() {
+                this.jsData = {};
+                this.allItems = [];
+                this.filteredItems = [];
+                this.currentPage = 1;
+                this.itemsPerPage = 0;
+                this.currentEditingItem = null;
+                this.adminName = '';
+                this.currentVersion = 0;
+                this.gistVersion = 0;
+                this.notes = [];
+                this.recentAdmins = new Map();
+                this.filters = {
+                    search: '',
+                    category: 'all',
+                    gamenightOnly: false,
+                    sort: 'default',
+                    showPrices: false
+                };
+                this.ws = {
+                    admin: null,
+                    notes: null
+                };
+            }
+        }
+
+        const state = new AppState();
+
+        // ============================
+        // Utility Functions
+        // ============================
+        const Utils = {
+            async hash(text) {
+                const data = new TextEncoder().encode(text);
+                const hash = await crypto.subtle.digest('SHA-256', data);
+                return Array.from(new Uint8Array(hash))
+                    .map(b => b.toString(16).padStart(2, '0'))
+                    .join('');
+            },
+
+            getCookie(name) {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                return parts.length === 2 ? parts.pop().split(';').shift() : '';
+            },
+
+            setCookie(name, value, days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
+            },
+
+            clearCookie(name) {
+                document.cookie = `${name}=; Max-Age=0; path=/`;
+            },
+
+            debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            },
+
+            formatThousands(text) {
+                text = String(text);
+                return text.replace(/\b\d{4,}\b/g, match => {
+                    const num = parseInt(match, 10);
+                    return num >= 1000 ? (num / 1000).toString().replace(/\.0$/, '') + 'k' : match;
+                });
+            },
+
+            createElement(tag, attrs = {}, children = []) {
+                const el = document.createElement(tag);
+                Object.entries(attrs).forEach(([key, value]) => {
+                    if (key === 'style' && typeof value === 'object') {
+                        Object.assign(el.style, value);
+                    } else if (key === 'class') {
+                        el.className = value;
+                    } else if (key.startsWith('on')) {
+                        el.addEventListener(key.slice(2).toLowerCase(), value);
+                    } else {
+                        el[key] = value;
+                    }
+                });
+                children.forEach(child => {
+                    if (typeof child === 'string') {
+                        el.appendChild(document.createTextNode(child));
+                    } else if (child) {
+                        el.appendChild(child);
+                    }
+                });
+                return el;
+            },
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        };
+
+        // ============================
+        // DOM Cache
+        // ============================
+        const DOM = {
+            get(id) {
+                if (!this[id]) {
+                    this[id] = document.getElementById(id);
+                }
+                return this[id];
+            },
+            query(selector) {
+                return document.querySelector(selector);
+            },
+            queryAll(selector) {
+                return document.querySelectorAll(selector);
+            }
+        };
+
+        // ============================
+        // WebSocket Manager
+        // ============================
+        class WebSocketManager {
+            constructor(url, name, handlers) {
+                this.url = url;
+                this.name = name;
+                this.handlers = handlers;
+                this.backoff = 1000;
+                this.ws = null;
+                this.connect();
+            }
+
+            connect() {
+                this.ws = new WebSocket(this.url);
+
+                this.ws.onopen = () => {
+                    this.backoff = 1000;
+                    if (this.handlers.onOpen) this.handlers.onOpen();
+                };
+
+                this.ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    if (this.handlers.onMessage) this.handlers.onMessage(data);
+                };
+
+                this.ws.onclose = () => {
+                    setTimeout(() => this.connect(), this.backoff);
+                    this.backoff = Math.min(this.backoff * 2, 30000);
+                    if (this.handlers.onClose) this.handlers.onClose();
+                };
+
+                this.ws.onerror = (error) => {
+                    console.error(`WebSocket ${this.name} error:`, error);
+                    if (this.handlers.onError) this.handlers.onError(error);
+                };
+            }
+
+            send(data) {
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(typeof data === 'string' ? data : JSON.stringify(data));
+                }
+            }
+
+            close() {
+                if (this.ws) {
+                    this.ws.close();
+                    this.ws = null;
+                }
+            }
+        }
+
+        // ============================
+        // API Manager
+        // ============================
+        const API = {
+            async fetchWithRetry(url, options = {}, retries = 3) {
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        const response = await fetch(url, options);
+                        if (response.ok) return response;
+                        if (i === retries - 1) throw new Error(`Failed after ${retries} attempts`);
+                    } catch (error) {
+                        if (i === retries - 1) throw error;
+                        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
+                    }
+                }
+            },
+
+            async loadData() {
+                try {
+                    const [versionRes, gistRes] = await Promise.all([
+                        API.fetchWithRetry(CONFIG.API_URLS.LATEST_VERSION, { cache: 'no-store' }),
+                        API.fetchWithRetry(CONFIG.API_URLS.GIST_VERSION, { cache: 'no-store' })
+                    ]);
+
+                    const data = await gistRes.json();
+                    const raw = data.files?.['auto.json']?.content;
+                    state.jsData = raw ? JSON.parse(raw) : {};
+                    state.allItems = Object.values(state.jsData).flat();
+
+                    if (versionRes) {
+                        const text = await versionRes.text();
+                        const [, v] = text.split('|');
+                        state.currentVersion = v || '';
+                    }
+
+                    state.gistVersion = data.history?.[0]?.version || '';
+
+                    return true;
+                } catch (error) {
+                    console.error('Failed to load data:', error);
+                    return false;
+                }
+            },
+
+            async saveData() {
+                const response = await fetch(CONFIG.API_URLS.UPDATE_GIST, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: state.jsData,
+                        username: state.adminName,
+                        version: state.gistVersion
+                    })
+                });
+                return response;
+            },
+
+            async loadHistory() {
+                const response = await API.fetchWithRetry(CONFIG.API_URLS.HISTORY);
+                return await response.json();
+            }
+        };
+
+        // ============================
+        // UI Components
+        // ============================
+        const UI = {
+            showLoading(element, text = 'Loading...') {
+                element.innerHTML = `<div class="loading">${text}</div>`;
+            },
+
+            showError(element, text = 'An error occurred') {
+                element.innerHTML = `<div class="error">${text}</div>`;
+            },
+
+            createItemCard(item) {
+                const card = Utils.createElement('div', {
+                    class: 'item-card',
+
+                });
+                card.dataset.name = item.name;
+
+                const img = Utils.createElement('img', {
+                    src: item.img || './imgs/trs.png',
+                    alt: item.name,
+                    onError: function () { this.style.display = 'none'; }
+                });
+
+                const name = Utils.createElement('div', {
+                    class: 'item-name',
+                    textContent: item.name
+                });
+
+                const priceLabel = Utils.createElement('label', {
+                    class: `price-label ${!state.filters.showPrices ? 'hidden' : ''}`,
+                    textContent: Utils.formatThousands(item.price) || ''
+                });
+
+                if (item.price <= 0 || item.price === 'N/A') {
+                    priceLabel.style.display = 'none';
+                }
+
+                card.appendChild(img);
+                card.appendChild(name);
+                card.appendChild(priceLabel);
+
+                card.addEventListener('click', () => {
+                    card.style.transition = 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                    card.style.transform = 'scale(0.9)';
+                    card.style.filter = 'opacity(0.5)';
+
+                    setTimeout(() => {
+                        card.style.transform = '';
+                        card.style.filter = '';
+                        setTimeout(() => {
+                            card.style.transition = '';
+                        }, 200);
+                    }, 200);
+
+                    QuickEditor.open(item);
+                });
+
+                // Auto-size font
+                requestAnimationFrame(() => {
+                    name.style.fontSize = '13px';
+                    let fontsize = 13;
+                    while (name.offsetWidth > card.offsetWidth - 18 && fontsize > 8) {
+                        fontsize -= 1;
+                        name.style.fontSize = `${fontsize}px`;
+                    }
+                });
+
+                return card;
+            },
+
+            renderShops() {
+                const container = DOM.get('shops-container');
+                container.innerHTML = '';
+
+                const shops = [
+                    { name: 'Weekly Shop', key: 'weekly' },
+                    { name: 'Star Shop', key: 'weeklystar' }
+                ];
+
+                const wrapper = Utils.createElement('div', {
+                    style: { display: 'flex', gap: '12px', marginBottom: '28px', flexWrap: 'wrap' }
+                });
+
+                shops.forEach(shop => {
+                    const panel = Utils.createElement('div', {
+                        class: 'panel',
+                        style: { flex: 1 }
+                    });
+
+                    const title = Utils.createElement('div', {
+                        textContent: shop.name,
+                        style: {
+                            fontWeight: '700',
+                            marginBottom: '8px',
+                            fontVariantCaps: 'all-small-caps',
+                            marginTop: '-10px',
+                            fontSize: '20px'
+                        }
+                    });
+
+                    const grid = Utils.createElement('div', {
+                        class: 'grid',
+                        id: `${shop.key}-items`
+                    });
+
+                    state.allItems
+                        .filter(item => item[shop.key])
+                        .forEach(item => grid.appendChild(UI.createItemCard(item)));
+
+                    panel.appendChild(title);
+                    panel.appendChild(grid);
+                    wrapper.appendChild(panel);
+                });
+
+                container.appendChild(wrapper);
+            },
+
+            renderFilterControls() {
+                const container = DOM.get('filter-controls');
+                container.innerHTML = '';
+
+                // Search input
+                const searchInput = Utils.createElement('input', {
+                    id: 'search',
+                    placeholder: 'Search items...',
+                    value: state.filters.search,
+                    style: {
+                        flex: 1,
+                        borderRadius: '8px',
+                        border: '1px solid var(--ghost)',
+                        background: 'transparent',
+                        color: 'var(--muted)'
+                    },
+                    onInput: Utils.debounce((e) => {
+                        state.filters.search = e.target.value;
+                        UI.renderItems();
+                    }, 300)
+                });
+
+                // Category filter
+                const categorySelect = Utils.createElement('select', {
+                    id: 'category-filter',
+                    value: state.filters.category,
+                    onChange: (e) => {
+                        state.filters.category = e.target.value;
+                        UI.renderItems();
+                    }
+                });
+
+                const allOption = Utils.createElement('option', {
+                    value: 'all',
+                    textContent: 'All categories'
+                });
+                categorySelect.appendChild(allOption);
+
+                Object.keys(state.jsData).forEach(key => {
+                    const option = Utils.createElement('option', {
+                        value: key,
+                        textContent: key.charAt(0).toUpperCase() + key.slice(1)
+                    });
+                    categorySelect.appendChild(option);
+                });
+
+                // Gamenight toggle
+                const gamenightBtn = Utils.createElement('button', {
+                    class: `small-btn ${state.filters.gamenightOnly ? '' : 'ghost'}`,
+                    textContent: '🎮 Gamenight Only',
+                    onClick: () => {
+                        state.filters.gamenightOnly = !state.filters.gamenightOnly;
+                        gamenightBtn.classList.toggle('ghost');
+                        UI.renderItems();
+                    }
+                });
+
+                // Sort select
+                const sortSelect = Utils.createElement('select', {
+                    id: 'sort-select',
+                    value: state.filters.sort,
+                    onChange: (e) => {
+                        state.filters.sort = e.target.value;
+                        UI.renderItems();
+                    }
+                });
+
+                const sortOptions = [
+                    { value: 'default', text: 'Default' },
+                    { value: 'az', text: 'A → Z' },
+                    { value: 'za', text: 'Z → A' },
+                    { value: 'high', text: '$$$ → $' },
+                    { value: 'low', text: '$ → $$$' }
+                ];
+
+                sortOptions.forEach(opt => {
+                    const option = Utils.createElement('option', {
+                        value: opt.value,
+                        textContent: opt.text
+                    });
+                    sortSelect.appendChild(option);
+                });
+
+                // Show prices button
+                const pricesBtn = Utils.createElement('button', {
+                    class: `small-btn ${state.filters.showPrices ? '' : 'ghost'}`,
+                    textContent: 'Show prices',
+                    onClick: () => {
+                        state.filters.showPrices = !state.filters.showPrices;
+                        pricesBtn.classList.toggle('ghost');
+                        DOM.queryAll('.price-label').forEach(tag => {
+                            tag.classList.toggle('hidden');
+                        });
+                    }
+                });
+
+                container.appendChild(searchInput);
+                container.appendChild(categorySelect);
+                container.appendChild(gamenightBtn);
+                container.appendChild(sortSelect);
+                container.appendChild(pricesBtn);
+            },
+
+            renderItems(keepPage = false) {
+                if (!keepPage) state.currentPage = 1;
+
+                const container = DOM.get('all-items');
+                container.innerHTML = '';
+
+                // Calculate grid
+                const containerWidth = container.clientWidth;
+                const columns = Math.floor((containerWidth + CONFIG.UI.GRID_GAP) / (CONFIG.UI.ITEM_MIN_WIDTH + CONFIG.UI.GRID_GAP));
+                container.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+
+                const rows = 2;
+                state.itemsPerPage = columns * rows;
+
+                // Apply filters
+                let filtered = state.allItems.slice();
+
+                if (state.filters.category !== 'all') {
+                    filtered = state.jsData[state.filters.category] ? state.jsData[state.filters.category].slice() : [];
+                }
+
+                if (state.filters.gamenightOnly) {
+                    filtered = filtered.filter(i => i.from && i.from.toLowerCase().includes('gamenight'));
+                }
+
+                if (state.filters.search) {
+                    const fuse = new Fuse(filtered, {
+                        keys: ['name'],
+                        threshold: 0.35
+                    });
+                    filtered = fuse.search(state.filters.search).map(r => r.item);
+                }
+
+                // Apply sorting
+                const sortFunctions = {
+                    'az': (a, b) => a.name.localeCompare(b.name),
+                    'za': (a, b) => b.name.localeCompare(a.name),
+                    'high': (a, b) => (parseInt(b.price || 0) || 0) - (parseInt(a.price || 0) || 0),
+                    'low': (a, b) => (parseInt(a.price || 0) || 0) - (parseInt(b.price || 0) || 0)
+                };
+
+                if (sortFunctions[state.filters.sort]) {
+                    filtered.sort(sortFunctions[state.filters.sort]);
+                }
+
+                state.filteredItems = filtered;
+
+                // Render current page
+                const start = (state.currentPage - 1) * state.itemsPerPage;
+                const end = start + state.itemsPerPage;
+
+                filtered.slice(start, end).forEach(item => {
+                    container.appendChild(UI.createItemCard(item));
+                });
+
+                UI.renderPagination();
+            },
+
+            renderPagination() {
+                const container = DOM.get('pagination-controls');
+                container.innerHTML = '';
+
+                const totalPages = Math.max(1, Math.ceil(state.filteredItems.length / state.itemsPerPage));
+
+                const wrapper = Utils.createElement('div', {
+                    style: {
+                        display: 'flex',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        marginTop: '19px',
+                        alignItems: 'center'
+                    }
+                });
+
+                const prevBtn = Utils.createElement('button', {
+                    class: 'small-btn ghost',
+                    textContent: '◀ Prev',
+                    disabled: state.currentPage === 1,
+                    style: { opacity: state.currentPage === 1 ? '0.5' : '1' },
+                    onClick: () => {
+                        if (state.currentPage > 1) {
+                            state.currentPage--;
+                            UI.renderItems(true);
+                        }
+                    }
+                });
+
+                const pageCount = Utils.createElement('div', {
+                    class: 'note',
+                    textContent: `Page ${state.currentPage} of ${totalPages}`
+                });
+
+                const nextBtn = Utils.createElement('button', {
+                    class: 'small-btn ghost',
+                    textContent: 'Next ▶',
+                    disabled: state.currentPage === totalPages,
+                    style: { opacity: state.currentPage === totalPages ? '0.5' : '1' },
+                    onClick: () => {
+                        if (state.currentPage < totalPages) {
+                            state.currentPage++;
+                            UI.renderItems(true);
+                        }
+                    }
+                });
+
+                wrapper.appendChild(prevBtn);
+                wrapper.appendChild(pageCount);
+                wrapper.appendChild(nextBtn);
+                container.appendChild(wrapper);
+            },
+
+            setupDragDrop() {
+                const FLAG_PANELS = { 'weekly-items': 'weekly', 'weeklystar-items': 'weeklystar' };
+
+                // master list
+                new Sortable(DOM.get('all-items'), {
+                    group: {
+                        name: 'all',
+                        pull: 'clone',
+                        put: true,
+                    },
+                    animation: 100,
+                    sort: false,
+
+                    onAdd(evt) {
+                        console.log(evt)
+                        const name = evt.item.dataset.name;
+                        evt.item.remove(); // remove cloned item
+                        evt.clone.remove(); // remove original dragged item
+                        let key = evt.from.id == 'weeklystar-items' ? 'weeklystar' : 'weekly';
+                        for (const arr of Object.values(state.jsData)) {
+                            const it = arr.find(x => x.name === name);
+                            if (it) { it[key] = false; }
+                            if (it === state.currentEditingItem) { openQuickEditor(it); }
+                        }
+
+                        //UI.renderItems(true);
+                    },
+                    onStart: evt => { 
+                        evt.item.style.opacity = '0.25'; 
+                        DOM.get('weekly-items').children.length < 4 ? DOM.get('weekly-items').parentElement.style.filter = 'brightness(1.3)' : DOM.get('weekly-items').parentElement.classList.add('full');
+                        DOM.get('weeklystar-items').children.length < 4 ? DOM.get('weeklystar-items').parentElement.style.filter = 'brightness(1.3)' : DOM.get('weeklystar-items').parentElement.classList.add('full');
+                    },
+                    onEnd: evt => { 
+                        evt.item.style.opacity = ''; 
+                        DOM.get('weekly-items').parentElement.style.filter = ''; 
+                        DOM.get('weeklystar-items').parentElement.style.filter = ''; 
+                        DOM.get('weekly-items').parentElement.classList.remove('full');
+                        DOM.get('weeklystar-items').parentElement.classList.remove('full');
+                    }
+                });
+
+                // helper to check duplicates
+                function alreadyInList(toEl, dragEl) {
+                    //TODO: notify user about full list
+                    if (toEl.children.length >= 4) return true;
+                    const name = dragEl.dataset.name;
+
+                    return Array.from(toEl.children).some(el => el.dataset.name === name);
+                }
+
+                Object.entries(FLAG_PANELS).forEach(([id, key]) => {
+                    new Sortable(DOM.get(id), {
+                        group: {
+                            name: 'shared-flags',
+                            pull: 'clone',
+                            put: (to, from, dragEl) => {
+                                return !alreadyInList(to.el, dragEl);
+                            }
+                        },
+                        animation: 100,
+                        sort: false,
+
+                        onAdd(evt) {
+                            const name = evt.item.dataset.name;
+                            for (const arr of Object.values(state.jsData)) {
+                                const it = arr.find(x => x.name === name);
+                                if (it) { it[key] = true; }
+                                if (it === state.currentEditingItem) { openQuickEditor(it); }
+                            }
+
+                            UI.renderItems(true);
+                        },
+                        onStart: evt => { evt.item.style.opacity = '0.25'; DOM.get('all-items').parentElement.classList.add('delete-zone'); },
+                        onEnd: evt => { evt.item.style.opacity = ''; DOM.get('all-items').parentElement.classList.remove('delete-zone'); }
+                    });
+                });
+            }
+        };
+
+        // ============================
+        // Quick Editor
+        // ============================
+        const QuickEditor = {
+            TAG_COLORS: {
+                New: "#1abc9c",
+                Weekly: "#3498db",
+                Star: "#f1c40f",
+                Retired: "#9b59b6",
+                Premium: "#e67e22",
+                Untradable: "#e74c3c"
+            },
+
+            TAG_TO_PROP: {
+                New: "new",
+                Weekly: "weekly",
+                Star: "weeklystar",
+                Retired: "retired",
+                Premium: "premium",
+                Untradable: "tradable"
+            },
+
+            ICON_MAP: {
+                Robux: "./imgs/cf8ZvY7.png",
+                Coins: "./imgs/Coin.webp",
+                Stars: "./imgs/WKeX5AS.png",
+                Visors: "./imgs/7IoLZCN.png",
+                Pumpkins: "./imgs/bHRBTrU.png",
+                Eggs: "./imgs/qMxjgQy.png",
+                Opals: "./imgs/wwMMAvr.png",
+                Opal: "./imgs/wwMMAvr.png",
+                Baubles: "./imgs/bauble.png",
+                Bauble: "./imgs/bauble.png",
+                Tokens: "./imgs/Cy9r140.png",
+                Token: "./imgs/Cy9r140.png"
+            },
+
+            tagMenu: null,
+
+            open(item) {
+                state.currentEditingItem = item;
+                const modal = DOM.get('quick-editor-modal');
+                const content = DOM.get('quick-editor-content');
+                const priceInput = DOM.get('quick-editor-price');
+
+                content.classList.remove('initial');
+                DOM.get('quick-editor-title').textContent = item.name;
+
+                // Handle image
+                const img = DOM.get('quick-editor-img');
+                if (item.img) {
+                    img.src = item.img;
+                    img.style.display = 'block';
+                } else {
+                    img.style.display = 'none';
+                }
+
+                // Setup price input
+                priceInput.placeholder = "RAP";
+                priceInput.value = item.price || '';
+                priceInput.onchange = () => {
+                    state.currentEditingItem.price = priceInput.value.trim();
+                    renderItems(true);
+                };
+
+                // Setup buttons
+                this.setupButtons();
+
+                // Render components
+                this.renderTags(item);
+                this.renderDescriptions(item);
+                this.renderPrices(item);
+
+                // Setup modal click handler for closing tag menu
+                this.setupModalClickHandler(content);
+
+                // Show modal
+                modal.classList.add('show');
+                modal.classList.remove('hidden');
+            },
+
+            close() {
+                const modal = DOM.get('quick-editor-modal');
+                modal.classList.remove('show');
+                modal.classList.add('hidden');
+                state.currentEditingItem = null;
+                if (this.tagMenu) {
+                    this.tagMenu.remove();
+                    this.tagMenu = null;
+                }
+            },
+
+            setupButtons() {
+                const descBtn = DOM.get('new-desc-btn');
+                const gnBtn = DOM.get('new-gn-btn');
+                const prcBtn = DOM.get('new-prc-btn');
+
+                if (descBtn) descBtn.onclick = () => this.createDescItem('');
+                if (gnBtn) gnBtn.onclick = () => {
+                    const now = new Date();
+                    const month = now.toLocaleDateString('en-US', { month: 'short' });
+                    const year = now.toLocaleDateString('en-US', { year: 'numeric' });
+                    this.createDescItem(`Gamenight (${month} ${year})`, true);
+                };
+                if (prcBtn) prcBtn.onclick = () => this.createPriceItem('');
+            },
+
+            renderTags(item) {
+                const flagRow = DOM.query('.flag-row');
+
+                // Build tags array from item properties
+                const tags = Object.entries({
+                    New: item.new,
+                    Weekly: item.weekly,
+                    Star: item.weeklystar,
+                    Retired: item.retired,
+                    Premium: item.premium,
+                    Untradable: !item.tradable
+                }).filter(([k, v]) => v).map(([k]) => k);
+
+                // Store tags in closure for tag management
+                this.currentTags = tags;
+
+                // Clear existing tags and buttons
+                flagRow.querySelectorAll('.tag-pill, .small-btn.ghost').forEach(e => e.remove());
+
+                // Render tag pills
+                this.renderTagPills(flagRow);
+
+                // Add tag selector button
+                const btn = document.createElement('button');
+                btn.className = 'small-btn ghost';
+                btn.textContent = 'Tags';
+                btn.style.cssText = 'margin-top:-40px;font-variant:all-petite-caps;position:absolute';
+                btn.onclick = e => {
+                    e.stopPropagation();
+                    this.openTagSelector(flagRow);
+                };
+                flagRow.appendChild(btn);
+            },
+
+            renderTagPills(flagRow) {
+                this.currentTags.forEach(tag => {
+                    const pill = document.createElement('span');
+                    pill.className = 'tag-pill';
+                    pill.textContent = tag;
+
+                    const color = this.TAG_COLORS[tag] || '#aaa';
+                    pill.style.cssText = `border-color:${color};background:${color}33;color:${color}`;
+
+                    const closeBtn = document.createElement('span');
+                    closeBtn.textContent = ' ×';
+                    closeBtn.style.cssText = 'cursor:pointer;-webkit-text-stroke-width:medium';
+                    closeBtn.onclick = () => {
+                        this.currentTags = this.currentTags.filter(t => t !== tag);
+
+                        // Update item properties
+                        if (tag === "Untradable") {
+                            state.currentEditingItem.tradable = true;
+                        } else {
+                            state.currentEditingItem[this.TAG_TO_PROP[tag]] = false;
+                        }
+
+                        this.renderTagPills(flagRow);
+                        renderListPanels();
+                    };
+
+                    pill.appendChild(closeBtn);
+                    flagRow.appendChild(pill);
+                });
+            },
+
+            openTagSelector(flagRow) {
+                if (this.tagMenu) this.tagMenu.remove();
+
+                this.tagMenu = document.createElement('div');
+                this.tagMenu.style.cssText = 'position:absolute;background:#1e293b;padding:10px;border:1px solid #555;border-radius:8px;z-index:1000';
+
+                Object.keys(this.TAG_COLORS).forEach(tag => {
+                    const btn = document.createElement('button');
+                    btn.textContent = tag;
+                    btn.className = 'tag-option';
+
+                    if (this.currentTags.includes(tag)) {
+                        btn.style.cssText = `background:${this.TAG_COLORS[tag]}36;color:#5c5c5c`;
+                    }
+
+                    btn.onclick = () => {
+                        if (!this.currentTags.includes(tag)) {
+                            this.currentTags.push(tag);
+
+                            // Update item properties
+                            if (tag === "Untradable") {
+                                state.currentEditingItem.tradable = false;
+                            } else {
+                                state.currentEditingItem[this.TAG_TO_PROP[tag]] = true;
+                            }
+                        }
+
+                        this.tagMenu.remove();
+                        this.tagMenu = null;
+                        this.renderTagPills(flagRow);
+                        renderListPanels();
+                    };
+
+                    this.tagMenu.appendChild(btn);
+                });
+
+                flagRow.appendChild(this.tagMenu);
+            },
+
+            setupModalClickHandler(modalContent) {
+                modalContent.addEventListener('click', e => {
+                    if (this.tagMenu &&
+                        !this.tagMenu.contains(e.target) &&
+                        !e.target.classList.contains('tag-option') &&
+                        e.target.textContent !== 'Tags') {
+                        this.tagMenu.remove();
+                        this.tagMenu = null;
+                    }
+                });
+            },
+
+            renderDescriptions(item) {
+                const container = DOM.query('.desc-list');
+                container.innerHTML = '';
+
+                const descriptions = (item.from || '').split('<br>').map(x => x.trim()).filter(Boolean);
+                descriptions.forEach(desc => {
+                    const isGamenight = /\([A-Z][a-z]{2}\./.test(desc);
+                    this.createDescItem(desc, isGamenight);
+                });
+
+                // Initialize Sortable
+                Sortable.create(container, {
+                    animation: 150,
+                    handle: '.desc-item',
+                    group: { name: 'desc', pull: false, put: false },
+                    sort: true
+                });
+            },
+
+            renderPrices(item) {
+                const container = DOM.query('.prc-list');
+                container.innerHTML = '';
+
+                const prices = (item['price/code/rarity'] || '').split('<br>').map(x => x.trim()).filter(Boolean);
+                prices.forEach(price => this.createPriceItem(price));
+
+                // Initialize Sortable
+                Sortable.create(container, {
+                    animation: 150,
+                    handle: '.prc-item',
+                    group: { name: 'prc', pull: false, put: false },
+                    sort: true
+                });
+            },
+
+            createDescItem(value = '', isGamenight = false) {
+                const container = DOM.query('.desc-list');
+                const months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+                const selectedMonths = new Set();
+
+                const li = this.createElement('li', {
+                    className: 'desc-item',
+                    style: 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:#555;color:#fff;border-radius:6px;padding:5px 11px;margin-bottom:6px;cursor:grab;user-select:none'
+                });
+
+                const label = this.createElement('span', {
+                    style: 'max-width:255px;flex-grow:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis',
+                    textContent: value || 'Description...'
+                });
+
+                const input = this.createElement('input', {
+                    type: 'text',
+                    value: value || '',
+                    style: 'flex-grow:1;display:none;border:none;border-radius:4px;padding:6px 8px'
+                });
+
+                const monthsWrapper = this.createElement('div', {
+                    style: 'cursor:initial;justify-content:space-evenly;display:none;flex-wrap:wrap;gap:4px;flex-grow:1'
+                });
+
+                const yearInput = this.createElement('input', {
+                    type: 'number',
+                    min: 2016,
+                    max: new Date().getFullYear(),
+                    placeholder: 'Year',
+                    style: 'font-weight:700;font-size:15px;width:50px;display:none;border:none;border-radius:4px;padding:4px 6px'
+                });
+
+                // Create month buttons
+                months.forEach(month => {
+                    const btn = this.createElement('span', {
+                        textContent: month,
+                        style: 'padding:4px 8px;border-radius:4px;background:#777;cursor:pointer;user-select:none;transition:all .15s'
+                    });
+
+                    btn.onclick = () => {
+                        if (selectedMonths.has(month)) {
+                            selectedMonths.delete(month);
+                            btn.style.background = '#777';
+                        } else {
+                            selectedMonths.add(month);
+                            btn.style.background = 'var(--accent)';
+                        }
+                        btn.style.transform = 'scale(1.05)';
+                        setTimeout(() => btn.style.transform = '', 100);
+                    };
+
+                    monthsWrapper.appendChild(btn);
+                });
+
+                const editBtn = this.createIconButton('edit', 'ᴇᴅɪᴛ', 'small-btn ghost');
+                const deleteBtn = this.createIconButton('delete', '', 'small-btn', 'padding:6px 0px 6px 6px;background:#f66');
+                const okBtn = this.createIconButton('check', '', 'small-btn', 'background:rgb(95 193 95);padding:6px 0px 6px 6px;text-shadow:0 0 5px #00000057;display:none;font-weight:700');
+
+                // Parse existing gamenight data
+                if (isGamenight && /\(.+\)/.test(value)) {
+                    const match = value.match(/\((.+)\s(\d{4})\)/);
+                    if (match) {
+                        const [_, monthsStr, year] = match;
+                        monthsStr.split(',').map(m => m.trim()).forEach(m => {
+                            selectedMonths.add(m);
+                            [...monthsWrapper.children].forEach(btn => {
+                                if (btn.textContent === m) {
+                                    btn.style.background = 'var(--accent)';
+                                }
+                            });
+                        });
+                        yearInput.value = year || '';
+                    }
+                }
+
+                // Setup edit/done functions
+                const edit = () => {
+                    deleteBtn.style.display = 'none';
+                    okBtn.style.display = 'inline-block';
+                    label.style.display = 'none';
+                    editBtn.style.display = 'none';
+
+                    if (isGamenight) {
+                        monthsWrapper.style.display = 'flex';
+                        yearInput.style.display = 'inline-block';
+                    } else {
+                        input.style.display = 'inline-block';
+                        input.focus();
+                    }
+                };
+
+                const done = () => {
+                    deleteBtn.style.display = 'inline-block';
+                    okBtn.style.display = 'none';
+
+                    if (isGamenight) {
+                        value = `Gamenight (${[...selectedMonths].join(', ')}${yearInput.value ? ' ' + yearInput.value : ''})`;
+                    } else {
+                        value = input.value.trim() || 'Description...';
+                    }
+
+                    label.textContent = value;
+                    label.style.display = 'inline';
+                    input.style.display = 'none';
+                    monthsWrapper.style.display = 'none';
+                    yearInput.style.display = 'none';
+                    editBtn.style.display = 'inline-block';
+
+                    this.updateItemDescriptions();
+                };
+
+                // Setup event handlers
+                editBtn.onclick = e => { e.stopPropagation(); edit(); };
+                label.ondblclick = edit;
+                input.onblur = done;
+                input.onkeydown = e => { if (e.key === 'Enter' || e.key === 'Escape') done(); };
+                deleteBtn.onclick = () => {
+                    li.remove();
+                    this.updateItemDescriptions();
+                };
+                okBtn.onclick = done;
+
+                // Setup drag handlers
+                this.setupDragHandlers(li);
+
+                // Append elements
+                if (isGamenight) {
+                    monthsWrapper.append(yearInput, okBtn);
+                    li.append(label, input, monthsWrapper, editBtn, deleteBtn);
+                } else {
+                    li.append(label, input, yearInput, monthsWrapper, editBtn, deleteBtn, okBtn);
+                }
+
+                container.appendChild(li);
+
+            },
+
+            createPriceItem(value = '') {
+                const container = DOM.query('.prc-list');
+
+                const li = this.createElement('li', {
+                    className: 'prc-item',
+                    style: 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:#555;color:#fff;border-radius:6px;padding:5px 11px;margin-bottom:6px;cursor:grab;user-select:none'
+                });
+
+                const icon = this.createElement('img', {
+                    src: './imgs/trs.png',
+                    style: 'display:inline-block;width:20px;height:20px;margin-right:6px;vertical-align:middle'
+                });
+
+                const label = this.createElement('span', {
+                    className: 'prc-label',
+                    style: 'max-width:223px;flex-grow:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis',
+                    textContent: value || 'Price...'
+                });
+
+                const input = this.createElement('input', {
+                    type: 'text',
+                    value: value || '',
+                    style: 'flex-grow:1;display:none;border:none;border-radius:4px;padding:6px 8px'
+                });
+
+                const formatLabel = () => {
+                    const text = input.value.trim();
+
+                    // Reset styles
+                    icon.style.display = 'inline-block';
+                    icon.src = './imgs/trs.png';
+                    label.style.cssText = 'max-width:223px;flex-grow:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#fff;font-weight:normal;font-family:BuilderSans';
+
+                    // Apply special formatting
+                    if (text.includes("Tokens")) {
+                        label.style.fontWeight = '500';
+                        label.style.webkitTextStroke = '1px rgb(255, 83, 219)';
+                    }
+                    if (text.includes("Robux")) {
+                        label.style.fontWeight = '700';
+                    }
+                    if (text.includes("%")) {
+                        label.style.color = 'rgb(193 68 255)';
+                        label.style.fontWeight = '500';
+                        label.style.textShadow = '0 0 6px rgb(199 0 255)';
+                    } else if (text.includes("[EXPIRED]")) {
+                        label.style.textShadow = '0 0 10px black';
+                        label.style.fontSize = '16px';
+                        label.style.fontVariant = 'unicase';
+                        label.style.fontFamily = 'cursive';
+                        label.style.color = 'rgb(255 31 31)';
+                    } else if (text.includes("[ACTIVE]")) {
+                        label.style.fontFamily = 'cursive';
+                        label.style.color = 'rgb(251 255 68)';
+                    } else if (text.includes("Unobtainable")) {
+                        icon.src = './imgs/Red_x.png';
+                        label.style.color = 'rgb(255 44 44)';
+                    }
+
+                    // Update icon based on currency type
+                    for (const [key, src] of Object.entries(this.ICON_MAP)) {
+                        if (text.includes(key)) {
+                            label.textContent = text.replace(` ${key}`, "");
+                            icon.src = src;
+                            break;
+                        }
+                    }
+
+                    // Hide icon if default
+                    if (icon.src.includes('trs.png')) {
+                        icon.style.display = 'none';
+                    }
+                };
+
+                const editBtn = this.createIconButton('edit', 'ᴇᴅɪᴛ', 'small-btn ghost');
+                const deleteBtn = this.createIconButton('delete', '', 'small-btn', 'padding:6px 0px 6px 6px;background:#f66');
+                const okBtn = this.createIconButton('check', '', 'small-btn', 'background:rgb(95 193 95);padding:6px 0px 6px 6px;text-shadow:0 0 5px #00000057;display:none;font-weight:700');
+
+                // Initial format
+                formatLabel();
+
+                // Setup edit/done functions
+                const edit = () => {
+                    deleteBtn.style.display = 'none';
+                    okBtn.style.display = 'inline-block';
+                    label.style.display = 'none';
+                    editBtn.style.display = 'none';
+                    input.style.display = 'inline-block';
+                    input.focus();
+                };
+
+                const done = () => {
+                    deleteBtn.style.display = 'inline-block';
+                    okBtn.style.display = 'none';
+                    label.textContent = input.value.trim() || 'Price...';
+                    label.style.display = 'inline';
+                    input.style.display = 'none';
+                    editBtn.style.display = 'inline-block';
+                    formatLabel();
+                    this.updateItemPrices();
+                };
+
+                // Setup event handlers
+                input.oninput = formatLabel;
+                editBtn.onclick = e => { e.stopPropagation(); edit(); };
+                label.ondblclick = edit;
+                input.onblur = done;
+                input.onkeydown = e => { if (e.key === 'Enter' || e.key === 'Escape') done(); };
+                deleteBtn.onclick = () => {
+                    li.remove();
+                    this.updateItemPrices();
+                };
+                okBtn.onclick = done;
+
+                // Setup drag handlers
+                this.setupDragHandlers(li);
+
+                // Append elements
+                li.append(icon, label, input, editBtn, deleteBtn, okBtn);
+                container.appendChild(li);
+
+            },
+
+            updateItemDescriptions() {
+                const items = Array.from(DOM.queryAll('.desc-item > span'))
+                    .map(span => span.textContent.trim())
+                    .filter(v => v && v !== 'Description...');
+                state.currentEditingItem.from = items.join('<br>') || '';
+            },
+
+            updateItemPrices() {
+                const items = Array.from(DOM.queryAll('.prc-item input'))
+                    .map(input => input.value.trim())
+                    .filter(v => v);
+                state.currentEditingItem['price/code/rarity'] = items.join('<br>') || '';
+            },
+
+            setupDragHandlers(element) {
+                element.ondragstart = e => {
+                    e.dataTransfer.setData('text/plain', state.currentEditingItem.name);
+                    e.dataTransfer.effectAllowed = 'move';
+                    if (typeof dragImgEl !== 'undefined') {
+                        e.dataTransfer.setDragImage(dragImgEl, 0, 0);
+                    }
+                    element.style.opacity = '0.5';
+                };
+
+                element.ondragend = () => {
+                    element.style.opacity = '1';
+                };
+            },
+
+            createElement(tag, props = {}) {
+                const el = document.createElement(tag);
+                Object.assign(el, props);
+                return el;
+            },
+
+            createIconButton(type, text = '', className = '', additionalStyle = '') {
+                const icons = {
+                    edit: 'M16.293 3.293a1 1 0 0 1 1.414 0l3 3a1 1 0 0 1 0 1.414l-9 9A1 1 0 0 1 11 17H8a1 1 0 0 1-1-1v-3a1 1 0 0 1 .293-.707l9-9zM9 13.414V15h1.586l8-8L17 5.414l-8 8zM3 7a2 2 0 0 1 2-2h5a1 1 0 1 1 0 2H5v12h12v-5a1 1 0 1 1 2 0v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z',
+                    delete: 'M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4V4zm2 2h6V4H9v2zM6.074 8l.857 12H17.07l.857-12H6.074zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1zm4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1z',
+                    check: 'M61.07,12.9,57,8.84a2.93,2.93,0,0,0-4.21,0L28.91,32.73,19.2,23A3,3,0,0,0,15,23l-4.06,4.07a2.93,2.93,0,0,0,0,4.21L26.81,47.16a2.84,2.84,0,0,0,2.1.89A2.87,2.87,0,0,0,31,47.16l30.05-30a2.93,2.93,0,0,0,0-4.21Z'
+                };
+
+                const btn = this.createElement('button', {
+                    className: className,
+                    innerHTML: `<div class="icon" style="mask-image: url('data:image/svg+xml,<svg viewBox="${type === 'check' ? '0 -8 72 72' : '0 0 24 24'}" xmlns="http://www.w3.org/2000/svg"><path d="${icons[type]}" /></svg>');"></div>${text}`
+                });
+
+                if (additionalStyle) {
+                    btn.style.cssText = additionalStyle;
+                }
+
+                return btn;
+            }
+        };
+
+
+
+        // ============================
+        // History Manager
+        // ============================
+        const HistoryManager = {
+            // Configuration constants
+            STYLES: {
+                header: 'background: linear-gradient(rgb(34 34 34), rgb(8 8 8));padding: 7px;border-radius: 6px;margin-bottom: 1.2rem; font-weight:700; font-size:19px; margin-bottom:4px; display:flex; justify-content: space-between; align-items: baseline;',
+                timeDiv: 'font-weight:900; font-size:14px; color:#666;',
+                sectionTitle: 'margin:8px 0 4px 0; font-weight:600; font-size:21px; color:#9f9790; font-variant:all-petite-caps;',
+                section: 'marginLeft:18px;',
+                list: 'margin:0 0 8px 16px; padding:0; list-style:none; font-size:14px; color:#ddd;',
+                listItem: 'margin-bottom:3px;',
+                descriptionItem: 'margin-bottom:16px;'
+            },
+
+            ICONS: {
+                true: '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>',
+                false: '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>',
+                price: '<span style="display:inline-block;width:1.2em;text-align:center;color:#fa4;font-weight:bolder;">$</span>'
+            },
+
+            BOOLEAN_FIELDS: ['weeklystar', 'weekly', 'new', 'retired', 'premium', 'tradable'],
+
+            SECTION_CONFIG: [
+                ['Star shop:', 'weeklystar'],
+                ['Weekly:', 'weekly'],
+                ['New:', 'new'],
+                ['Retired:', 'retired'],
+                ['Premium:', 'premium'],
+                ['Tradable:', 'tradable'],
+                ['Price:', 'price'],
+                ['Description:', 'from']
+            ],
+
+            async load() {
+                const container = DOM.get('history-list');
+                UI.showLoading(container);
+
+                try {
+                    const data = await API.loadHistory();
+                    if (!Array.isArray(data) || data.length === 0) {
+                        container.innerHTML = '<p>No history available.</p>';
+                        return;
+                    }
+
+                    container.innerHTML = '';
+                    this.renderBatch(data, container, 0, 3);
+                } catch (error) {
+                    UI.showError(container, 'Failed to load history');
+                }
+            },
+
+            renderBatch(data, container, startIndex, batchSize) {
+                const slice = data.slice(startIndex, startIndex + batchSize);
+                slice.forEach(entry => this.renderEntry(entry, container));
+
+                const nextIndex = startIndex + batchSize;
+                if (nextIndex < data.length) {
+                    const loadMoreBtn = Utils.createElement('button', {
+                        class: 'small-btn ghost',
+                        textContent: 'Load more history',
+                        style: { marginTop: '8px' },
+                        onClick: () => {
+                            loadMoreBtn.remove();
+                            this.renderBatch(data, container, nextIndex, batchSize);
+                        }
+                    });
+                    container.appendChild(loadMoreBtn);
+                }
+            },
+
+            // Utility functions
+            formatTime(timestamp) {
+                const ts = new Date(timestamp);
+                const now = new Date();
+                const yesterday = new Date();
+                yesterday.setDate(now.getDate() - 1);
+
+                const isToday = ts.toDateString() === now.toDateString();
+                const isYesterday = ts.toDateString() === yesterday.toDateString();
+
+                if (!isToday && !isYesterday) {
+                    return ts.toLocaleString();
+                }
+
+                let hours = ts.getHours();
+                const minutes = ts.getMinutes().toString().padStart(2, '0');
+                const seconds = ts.getSeconds().toString().padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12 || 12;
+
+                const formattedTime = `${hours}:${minutes}:${seconds} ${ampm}`;
+                return `${isToday ? 'Today' : 'Yesterday'}, ${formattedTime}`;
+            },
+
+            parseValue(value) {
+                return (!value || value === 'undefined' || value === '') ? undefined : value;
+            },
+
+            parsePrice(value) {
+                return (!value || value === 'undefined') ? "0" : value;
+            },
+
+            // Change processors
+            processBooleanChange(item, newVal) {
+                return { item, value: newVal === 'true' };
+            },
+
+            processPriceChange(item, oldRaw, newRaw) {
+                return {
+                    item,
+                    oldPrice: this.parsePrice(oldRaw),
+                    newPrice: this.parsePrice(newRaw)
+                };
+            },
+
+            processDescriptionChange(item, oldVal, newVal) {
+                return { item, oldDesc: oldVal, newDesc: newVal };
+            },
+
+            // Formatters
+            formatBooleanItem(item) {
+                return `${this.ICONS[item.value]} <strong>[${item.item}]</strong>`;
+            },
+
+            formatPriceItem(item) {
+                return `${this.ICONS.price} <strong>[${item.item}]</strong> <span style="color:#f66">${item.oldPrice}</span> → <span style="color:#6f6">${item.newPrice}</span>`;
+            },
+
+            formatDescriptionItem(item) {
+                const oldLines = (item.oldDesc || "").split(/<br>|\n/).map(s => s.trim()).filter(Boolean);
+                const newLines = (item.newDesc || "").split(/<br>|\n/).map(s => s.trim()).filter(Boolean);
+                const maxLines = Math.max(oldLines.length, newLines.length);
+
+                let output = `<strong>[${item.item}]</strong><br>`;
+
+                for (let i = 0; i < maxLines; i++) {
+                    const oldLine = oldLines[i];
+                    const newLine = newLines[i];
+
+                    if (oldLine === newLine) {
+                        output += `&nbsp;&nbsp;⨽&nbsp;${oldLine}<br>`;
+                    } else if (oldLine && newLine) {
+                        output += `&nbsp;&nbsp;⨽&nbsp;<span style="color:#fa4">${oldLine}</span> → <span style="color:#fa4">${newLine}</span><br>`;
+                    } else if (oldLine && !newLine) {
+                        output += `&nbsp;&nbsp;⨽&nbsp;<span style="color:#f66">${oldLine} 🗙</span><br>`;
+                    } else if (!oldLine && newLine) {
+                        output += `&nbsp;&nbsp;⨽&nbsp;<span style="color:#6f6">${newLine} +</span><br>`;
+                    }
+                }
+
+                return output;
+            },
+
+            processChanges(diffLines) {
+                const changes = Object.fromEntries([
+                    ...this.BOOLEAN_FIELDS.map(field => [field, []]),
+                    ['price', []],
+                    ['from', []]
+                ]);
+
+                for (const line of diffLines) {
+                    const match = line.match(/^\[(.+?)\] (\w+): (.*) → (.*)$/);
+                    if (!match) continue;
+
+                    const [, item, fieldRaw, oldRaw, newRaw] = match;
+                    const field = fieldRaw.toLowerCase();
+                    const oldVal = this.parseValue(oldRaw);
+                    const newVal = this.parseValue(newRaw);
+
+                    if (this.BOOLEAN_FIELDS.includes(field) && (newRaw === 'true' || newRaw === 'false')) {
+                        changes[field].push(this.processBooleanChange(item, newRaw));
+                    } else if (field === 'price') {
+                        changes.price.push(this.processPriceChange(item, oldRaw, newRaw));
+                    } else if (field === 'from') {
+                        changes.from.push(this.processDescriptionChange(item, oldVal, newVal));
+                    }
+                }
+
+                return changes;
+            },
+
+            createSection(title, items, formatterMethod) {
+                if (!items.length) return null;
+
+                const section = Utils.createElement('div', {
+                    style: this.STYLES.section
+                });
+
+                const titleElement = Utils.createElement('h4', {
+                    textContent: title,
+                    style: this.STYLES.sectionTitle
+                });
+                section.appendChild(titleElement);
+
+                const list = Utils.createElement('ul', {
+                    style: this.STYLES.list
+                });
+
+                items.forEach(item => {
+                    const listItem = Utils.createElement('li', {
+                        style: title === 'Description:' ? this.STYLES.descriptionItem : this.STYLES.listItem,
+                        innerHTML: formatterMethod.call(this, item)
+                    });
+                    list.appendChild(listItem);
+                });
+
+                section.appendChild(list);
+                return section;
+            },
+
+            renderEntry(entry, container) {
+                // Create header
+                const header = Utils.createElement('div', {
+                    textContent: entry.username,
+                    style: this.STYLES.header
+                });
+
+                const timeDiv = Utils.createElement('div', {
+                    textContent: this.formatTime(entry.timestamp),
+                    style: this.STYLES.timeDiv
+                });
+                header.appendChild(timeDiv);
+
+                // Create main container
+                const historyItem = Utils.createElement('div', {
+                    className: 'history-item'
+                });
+                historyItem.appendChild(header);
+
+                // Process changes
+                const diffLines = entry.diff?.split('\n') || [];
+                const changes = this.processChanges(diffLines);
+
+                // Create sections
+                let anySectionAdded = false;
+
+                const formatters = {
+                    weeklystar: this.formatBooleanItem,
+                    weekly: this.formatBooleanItem,
+                    new: this.formatBooleanItem,
+                    retired: this.formatBooleanItem,
+                    premium: this.formatBooleanItem,
+                    tradable: this.formatBooleanItem,
+                    price: this.formatPriceItem,
+                    from: this.formatDescriptionItem
+                };
+
+                for (const [title, changeKey] of this.SECTION_CONFIG) {
+                    const section = this.createSection(title, changes[changeKey], formatters[changeKey]);
+                    if (section) {
+                        historyItem.appendChild(section);
+                        anySectionAdded = true;
+                    }
+                }
+
+                // Fallback content
+                if (!anySectionAdded) {
+                    historyItem.textContent = entry.diff || '(no diff available)';
+                }
+
+                container.appendChild(historyItem);
+            }
+        };
+
+        // ============================
+        // Notes Manager
+        // ============================
+        const NotesManager = {
+            init() {
+                const addBtn = DOM.get('addButton');
+                const inputForm = DOM.get('inputForm');
+                const noteInput = DOM.get('noteInput');
+                const sendBtn = DOM.get('sendNoteBtn');
+
+                addBtn.addEventListener('click', () => this.toggleForm());
+                sendBtn.addEventListener('click', () => this.sendNote());
+
+                noteInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.sendNote();
+                    } else if (e.key === 'Escape') {
+                        this.cancelNote();
+                    }
+                });
+
+                // Click outside to close
+                document.addEventListener('click', (e) => {
+                    if (inputForm.classList.contains('active') &&
+                        !addBtn.contains(e.target) &&
+                        !inputForm.contains(e.target)) {
+                        this.cancelNote();
+                    }
+                });
+            },
+
+            toggleForm() {
+                const addBtn = DOM.get('addButton');
+                const inputForm = DOM.get('inputForm');
+
+                if (!addBtn.classList.contains('expanded')) {
+                    addBtn.classList.add('expanded');
+                    addBtn.classList.remove('add-button');
+                    addBtn.innerHTML = '';
+                    addBtn.appendChild(inputForm);
+                    inputForm.classList.add('active');
+
+                    setTimeout(() => {
+                        DOM.get('noteInput').focus();
+                    }, 300);
+                }
+            },
+
+            cancelNote() {
+                const addBtn = DOM.get('addButton');
+                const inputForm = DOM.get('inputForm');
+                const noteInput = DOM.get('noteInput');
+
+                addBtn.classList.add('add-button');
+                addBtn.classList.remove('expanded');
+                inputForm.classList.remove('active');
+                addBtn.innerHTML = '+';
+                noteInput.value = '';
+                document.body.appendChild(inputForm);
+            },
+
+            sendNote() {
+                const noteInput = DOM.get('noteInput');
+                const content = noteInput.value.trim();
+
+                if (!content) {
+                    noteInput.focus();
+                    return;
+                }
+
+                state.ws.notes.send({
+                    type: 'create',
+                    content,
+                    author: state.adminName
+                });
+
+                this.cancelNote();
+            },
+
+            render() {
+                const container = DOM.get('notesArea');
+                container.innerHTML = '';
+
+                state.notes.forEach((note, index) => {
+                    const noteEl = Utils.createElement('div', {
+                        class: 'stickynote',
+                        dataset: { index }
+                    });
+
+                    const pin = Utils.createElement('div', { class: 'pin' });
+                    const content = Utils.createElement('div', {
+                        class: 'note-content',
+                        innerHTML: note.content
+                    });
+                    const author = Utils.createElement('div', {
+                        class: 'note-author',
+                        textContent: '@' + note.author
+                    });
+                    const time = Utils.createElement('div', {
+                        class: 'note-time',
+                        textContent: this.formatTime(note.timestamp)
+                    });
+
+                    noteEl.appendChild(pin);
+                    noteEl.appendChild(content);
+                    noteEl.appendChild(author);
+                    noteEl.appendChild(time);
+
+                    // Context menu for deletion
+                    noteEl.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        this.promptDelete(index);
+                    });
+
+                    // Long press for mobile
+                    let pressTimer;
+                    noteEl.addEventListener('touchstart', () => {
+                        pressTimer = setTimeout(() => this.promptDelete(index), 600);
+                    });
+                    noteEl.addEventListener('touchend', () => clearTimeout(pressTimer));
+
+                    container.appendChild(noteEl);
+                });
+
+                container.scrollTop = container.scrollHeight;
+            },
+
+            promptDelete(index) {
+                const note = state.notes[index];
+                if (!note) return;
+
+                if (confirm('Delete this note?')) {
+                    state.ws.notes.send({
+                        type: 'delete',
+                        id: note.id,
+                        author: state.adminName
+                    });
+                    state.notes.splice(index, 1);
+                    this.render();
+                }
+            },
+
+            formatTime(timestamp) {
+                const date = new Date(timestamp);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / 60000);
+
+                if (diffMins < 1) return 'now';
+                if (diffMins < 60) return `${diffMins}m`;
+                if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h`;
+                return `${Math.floor(diffMins / 1440)}d`;
+            }
+        };
+
+        // ============================
+        // Authentication
+        // ============================
+        const Auth = {
+            async init() {
+                DOM.get('admin-key').focus();
+
+                const saved = Utils.getCookie('adminKey');
+                if (saved) {
+                    const hash = await Utils.hash(saved);
+                    if (CONFIG.ADMIN_KEYS[hash]) {
+                        state.adminName = CONFIG.ADMIN_KEYS[hash];
+                        this.onSuccess();
+                        return;
+                    }
+                }
+
+                this.showLoginForm();
+            },
+
+            showLoginForm() {
+                const input = DOM.get('admin-key');
+                const loginBtn = DOM.get('login-btn');
+                const errorDiv = DOM.get('login-error');
+                let attempts = 0;
+
+                const tryLogin = async () => {
+                    const key = input.value.trim();
+                    if (!key) {
+                        errorDiv.textContent = 'Please enter an admin key';
+                        return;
+                    }
+
+                    const hash = await Utils.hash(key);
+                    if (CONFIG.ADMIN_KEYS[hash]) {
+                        Utils.setCookie('adminKey', key, 30);
+                        state.adminName = CONFIG.ADMIN_KEYS[hash];
+                        this.onSuccess();
+                    } else {
+                        attempts++;
+                        if (attempts > 4) {
+                            errorDiv.textContent = 'Too many attempts. Please refresh.';
+                            input.disabled = true;
+                            loginBtn.disabled = true;
+                            return;
+                        }
+                        errorDiv.textContent = 'Invalid admin key';
+                        DOM.query('.login-card').classList.add('shake');
+                        setTimeout(() => {
+                            DOM.query('.login-card').classList.remove('shake');
+                        }, 500);
+                    }
+                };
+
+                loginBtn.addEventListener('click', tryLogin);
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') tryLogin();
+                });
+                input.addEventListener('input', () => {
+                    errorDiv.textContent = '';
+                });
+            },
+
+            async onSuccess() {
+                // Show welcome animation
+                this.showWelcome();
+
+                // Initialize app
+                await App.init();
+            },
+
+            showWelcome() {
+                const overlay = DOM.get('login-overlay');
+                const welcomeLabel = DOM.get('welcome-label');
+                const text = `Welcome, ${state.adminName}.`;
+
+                overlay.style.background = 'transparent';
+                overlay.style.pointerEvents = 'none';
+
+                // Typing animation
+                let i = 0;
+                const typeInterval = setInterval(() => {
+                    if (i < text.length) {
+                        welcomeLabel.textContent += text[i];
+                        i++;
+                    } else {
+                        clearInterval(typeInterval);
+                        setTimeout(() => {
+                            DOM.query('.login-card').classList.add('bobble');
+                            DOM.query('.login-card').style.opacity = '0';
+                            setTimeout(() => overlay.remove(), 1000);
+                        }, 1000);
+                    }
+                }, 50);
+            }
+        };
+
+        // ============================
+        // Main App
+        // ============================
+        const App = {
+            async init() {
+                // Load data
+                const loaded = await API.loadData();
+                if (!loaded) {
+                    alert('Failed to load data. Please refresh.');
+                    return;
+                }
+
+                // Initialize WebSockets
+                this.initWebSockets();
+
+                // Setup UI
+                UI.renderFilterControls();
+                UI.renderShops();
+                UI.renderItems();
+                UI.setupDragDrop();
+
+                // Load history
+                HistoryManager.load();
+
+                // Initialize components
+                NotesManager.init();
+                this.initEventListeners();
+                this.startUpdateChecker();
+
+                // Setup canvas arrow
+                CanvasArrow.init();
+            },
+
+            initWebSockets() {
+                // Admin tracker
+                state.ws.admin = new WebSocketManager(
+                    `${CONFIG.WS_URLS.ADMIN_TRACKER}?adminName=${encodeURIComponent(state.adminName)}`,
+                    'admin',
+                    {
+                        onMessage: (data) => {
+                            if (data.type === 'adminList') {
+                                this.updateAdminOnline(data.admins);
+                            }
+                        }
+                    }
+                );
+
+                // Notes board
+                state.ws.notes = new WebSocketManager(
+                    CONFIG.WS_URLS.NOTES_BOARD,
+                    'notes',
+                    {
+                        onMessage: (msg) => {
+                            if (msg.type === 'init') {
+                                state.notes = msg.notes;
+                                NotesManager.render();
+                            } else if (msg.type === 'create') {
+                                state.notes.push(msg.note);
+                                NotesManager.render();
+                            } else if (msg.type === 'delete') {
+                                state.notes = state.notes.filter(n => n.id !== msg.id);
+                                NotesManager.render();
+                            }
+                        }
+                    }
+                );
+            },
+
+            updateAdminOnline(admins) {
+                const container = DOM.get('admin-online');
+                container.innerHTML = '';
+                const now = Date.now();
+
+                admins.forEach(admin => {
+                    const pill = Utils.createElement('div', {
+                        style: {
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '4px 10px',
+                            borderRadius: '20px',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            color: '#fff',
+                            background: admin === state.adminName ?
+                                'rgba(100, 100, 255, 0.4)' :
+                                'rgba(255, 255, 255, 0.05)'
+                        }
+                    });
+
+                    if (admin !== state.adminName) {
+                        const dot = Utils.createElement('span', {
+                            style: {
+                                width: '10px',
+                                height: '10px',
+                                borderRadius: '50%',
+                                display: 'inline-block',
+                                backgroundColor: 'limegreen'
+                            }
+                        });
+                        pill.appendChild(dot);
+                    }
+
+                    pill.appendChild(document.createTextNode(admin));
+                    container.appendChild(pill);
+                });
+            },
+
+            initEventListeners() {
+                // Settings
+                DOM.get('settings-btn').addEventListener('click', () => {
+                    DOM.get('settings-menu').classList.toggle('show');
+                });
+
+                // Theme
+                DOM.get('theme-select').addEventListener('change', (e) => {
+                    document.body.setAttribute('data-theme', e.target.value);
+                });
+
+                // Download JSON
+                DOM.get('download-json').addEventListener('click', () => {
+                    const blob = new Blob([JSON.stringify(state.jsData, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = Utils.createElement('a', {
+                        href: url,
+                        download: 'auto.json'
+                    });
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                });
+
+                // Logout
+                DOM.get('logout').addEventListener('click', () => {
+                    Utils.clearCookie('adminKey');
+                    location.reload();
+                });
+
+                // Save button
+                DOM.get('save-btn').addEventListener('click', async () => {
+                    const btn = DOM.get('save-btn');
+                    btn.disabled = true;
+                    btn.textContent = 'Publishing...';
+
+                    try {
+                        const response = await API.saveData();
+
+                        if (response.status === 409) {
+                            alert('Conflict detected — a newer version exists. Consider downloading and merging.');
+                        } else if (response.ok) {
+                            alert('✅ Changes saved successfully.');
+                            location.reload();
+                        } else {
+                            throw new Error('Save failed');
+                        }
+                    } catch (error) {
+                        alert('Save error: ' + error.message);
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = '<b>✔</b> Publish';
+                    }
+                });
+
+                // Quick editor close
+                DOM.get('quick-editor-close').addEventListener('click', () => {
+                    QuickEditor.close();
+                });
+
+                // Window resize
+                let resizeTimer;
+                window.addEventListener('resize', () => {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(() => {
+                        UI.renderItems(true);
+                        CanvasArrow.updateSize();
+                    }, 250);
+                });
+            },
+
+            startUpdateChecker() {
+                setInterval(async () => {
+                    try {
+                        const res = await fetch(CONFIG.API_URLS.LATEST_VERSION, { cache: 'no-store' });
+                        if (!res.ok) return;
+
+                        const text = await res.text();
+                        if (!text.includes('@') || !text.includes('|')) return;
+
+                        const [user, textuah] = text.split('@');
+                        const [, d1Version] = textuah.split('|');
+
+                        if (state.currentVersion !== d1Version) {
+                            alert(`⚠️ New update to Catalog Detected by ${user.slice(0, -1)}`);
+                            location.reload(true);
+                        }
+                    } catch (err) {
+                        console.error(`Connection lost: ${err}`);
+                    }
+                }, 10000);
+            }
+        };
+
+        // ============================
+        // Canvas Arrow Animation
+        // ============================
+        const CanvasArrow = {
+            canvas: null,
+            ctx: null,
+            mouse: { x: null, y: null },
+            target: null,
+            enabled: true,
+
+            init() {
+                this.canvas = DOM.get('overlay');
+                this.ctx = this.canvas.getContext('2d');
+                this.updateSize();
+
+                window.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                });
+
+                this.animate();
+            },
+
+            updateSize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            },
+
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                if (this.enabled && this.target && this.mouse.x && this.mouse.y) {
+                    this.drawArrow();
+                }
+
+                requestAnimationFrame(() => this.animate());
+            },
+
+            drawArrow() {
+                const rect = this.target.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top + rect.height / 2;
+
+                const angle = Math.atan2(cy - this.mouse.y, cx - this.mouse.x);
+                const x1 = cx - Math.cos(angle) * (rect.width / 2 + 12);
+                const y1 = cy - Math.sin(angle) * (rect.height / 2 + 12);
+
+                const midX = (this.mouse.x + x1) / 2;
+                const midY = (this.mouse.y + y1) / 2;
+                const offset = Math.min(200, Math.hypot(x1 - this.mouse.x, y1 - this.mouse.y) * 0.5);
+                const t = Math.max(-1, Math.min(1, (this.mouse.y - y1) / 200));
+                const controlX = midX;
+                const controlY = midY + offset * t;
+
+                const distance = Math.sqrt((x1 - this.mouse.x) ** 2 + (y1 - this.mouse.y) ** 2);
+                const opacity = Math.min(0.75, (distance - Math.max(rect.width, rect.height) / 4) / 750);
+
+                this.ctx.strokeStyle = `rgba(255,255,255,${opacity})`;
+                this.ctx.lineWidth = 1;
+
+                // Draw curve
+                this.ctx.save();
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.mouse.x, this.mouse.y);
+                this.ctx.quadraticCurveTo(controlX, controlY, x1, y1);
+                this.ctx.setLineDash([10, 4]);
+                this.ctx.stroke();
+                this.ctx.restore();
+
+                // Draw arrowhead
+                const headAngle = Math.atan2(y1 - controlY, x1 - controlX);
+                const headLength = 10;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x1, y1);
+                this.ctx.lineTo(
+                    x1 - headLength * Math.cos(headAngle - Math.PI / 6),
+                    y1 - headLength * Math.sin(headAngle - Math.PI / 6)
+                );
+                this.ctx.moveTo(x1, y1);
+                this.ctx.lineTo(
+                    x1 - headLength * Math.cos(headAngle + Math.PI / 6),
+                    y1 - headLength * Math.sin(headAngle + Math.PI / 6)
+                );
+                this.ctx.stroke();
+            }
+        };
+
+        // ============================
+        // Initialize on DOM ready
+        // ============================
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => Auth.init());
+        } else {
+            Auth.init();
+        }
+
+        // Add CSS for icons
+        const style = document.createElement('style');
+        style.textContent = `
+        .icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background-color: currentColor;
+            mask-size: contain;
+            mask-repeat: no-repeat;
+            mask-position: center;
+        }
+        .download-icon { mask-image: url('${CONFIG.ICONS.download}'); }
+        .logout-icon { mask-image: url('${CONFIG.ICONS.logout}'); }
+        .send-icon { mask-image: url('${CONFIG.ICONS.send}'); }
+        .edit-icon { mask-image: url('${CONFIG.ICONS.edit}'); }
+        .delete-icon { mask-image: url('${CONFIG.ICONS.delete}'); }
+        .check-icon { mask-image: url('${CONFIG.ICONS.check}'); }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 20px;
+            color: #f66;
+        }
+    `;
+        document.head.appendChild(style);
+    </script>
+</body>
+
+</html>

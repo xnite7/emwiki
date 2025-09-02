@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
     <title>Epic Catalogue - Admin Panel</title>
     <link rel="icon" href="./imgs/admin.png" />
     <link rel="preload" href="./css/admin.css" as="style" onload="this.rel='stylesheet'">
@@ -57,7 +57,7 @@
             </div>
             <div id="settings-btn">⚙</div>
         </div>
-        <div id="settings-menu" aria-hidden="true">
+        <div id="settings-menu">
             <h2>Settings</h2>
             <label>Theme
                 <select id="theme-select">
@@ -79,7 +79,7 @@
                 Logout
             </button>
             <div style="height:8px"></div>
-            <div class="note">Tip: edits modify the loaded list in memory. Click SAVE to publish to website.</div>
+            <div class="note">Tip: edits modify the loaded list in memory.<br>Click SAVE to publish to website.</div>
         </div>
 
     </header>
@@ -90,13 +90,13 @@
             <div class="section" id="lists-section">
                 <h2>Shops</h2>
                 <div style="display:flex;gap:12px;margin-bottom:28px;flex-wrap:wrap">
-                    <div class="panel" style="flex:1;min-width:180px">
+                    <div class="panel" style="flex:1;">
                         <div
                             style="font-weight:700;margin-bottom:8px;font-variant-caps: all-small-caps;margin-top: -10px;font-size: 20px;">
                             Weekly Shop</div>
                         <div id="weekly-items" class="grid"></div>
                     </div>
-                    <div class="panel" style="flex:1;min-width:180px">
+                    <div class="panel" style="flex:1;">
                         <div
                             style="font-weight:700;margin-bottom:8px;font-variant-caps: all-small-caps;margin-top: -10px;font-size: 20px;">
                             Star Shop</div>
@@ -105,18 +105,16 @@
                 </div>
 
                 <div class="panel" style="margin-top:8px">
-                    <div class="flex" style="margin-bottom:8px">
+                    <div class="flex" style="margin-bottom:22px">
                         <input id="search" placeholder="Search items..."
                             style="flex:1;border-radius:8px;border:1px solid var(--ghost);background:transparent;color:var(--muted)">
                         <i class="icon"></i>
-                        <select id="category-filter"
-                            style="color: white;padding:8px;border-radius:8px;background:transparent;border:1px solid var(--ghost)">
+                        <select id="category-filter">
                             <option value="all">All categories</option>
 
                         </select>
                         <button id="gamenight-toggle" class="small-btn ghost">🎮 Gamenight Only</button>
-                        <select id="sort-select"
-                            style="padding:8px;border-radius:8px;background:transparent;border:1px solid var(--ghost)">
+                        <select id="sort-select">
                             <option value="default">Default</option>
                             <option value="az">A → Z</option>
                             <option value="za">Z → A</option>
@@ -126,7 +124,7 @@
                         <button class="small-btn" id="toggle-prices">Show prices</button>
                     </div>
                     <div id="all-items" class="grid"></div>
-                    <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;align-items:center">
+                    <div style="display:flex;justify-content:center;gap:8px;margin-top:19px;align-items:center">
                         <button id="prev-btn" class="small-btn ghost">◀ Prev</button>
                         <div id="page-count" class="note">Page 1 of 1</div>
                         <button id="next-btn" class="small-btn ghost">Next ▶</button>
@@ -261,16 +259,16 @@
                 } else {
                     const pill = document.createElement("div");
                     pill.style.cssText = `
-                display:flex;
-                align-items:center;
-                gap:6px;
-                padding:4px 10px;
-                border-radius:20px;
-                font-size:14px;
-                font-weight:500;
-                color:#fff;
-                transition: opacity 1s, background 0.5s;
-            `;
+                        display:flex;
+                        align-items:center;
+                        gap:6px;
+                        padding:4px 10px;
+                        border-radius:20px;
+                        font-size:14px;
+                        font-weight:500;
+                        color:#fff;
+                        transition: opacity 1s, background 0.5s;
+                    `;
 
                     // Highlight your own pill
                     if (admin === myAdminName) {
@@ -451,10 +449,10 @@
         const logoutBtn = document.getElementById('logout');
         const adminOnline = document.getElementById('admin-online');
 
-        settingsBtn.addEventListener('click', () => settingsMenu.classList.toggle('show'));
-        themeSelect.addEventListener('change', () => document.body.setAttribute('data-theme', themeSelect.value));
-        downloadJson.addEventListener('click', () => { const b = new Blob([JSON.stringify(jsData, null, 2)], { type: 'application/json' }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = 'auto.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(u); });
-        logoutBtn.addEventListener('click', () => { clearCookie('adminKey'); location.reload(); });
+        settingsBtn.onclick = () => { settingsMenu.classList.toggle('show') };
+        themeSelect.onchange = document.body.setAttribute('data-theme', themeSelect.value);
+        downloadJson.onclick = () => { const b = new Blob([JSON.stringify(jsData, null, 2)], { type: 'application/json' }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = 'auto.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(u); };
+        logoutBtn.onclick = () => { clearCookie('adminKey'); location.reload(); };
 
         // Data holders
         let jsData = {};
@@ -466,7 +464,7 @@
         // Pagination
         let filteredItems = [];
         let currentPage = 1;
-        const ITEMS_PER_PAGE = window.innerWidth < 720 ? 9 : 14;
+
 
 
         var dragImgEl = document.createElement('span');
@@ -526,15 +524,13 @@
                     }, 500);
                 }
             }
-            loginBtn.addEventListener('click', () => {
-                tryLogin()
-            })
+            loginBtn.onclick = tryLogin;
 
             input.onkeydown = e => {
                 if (e.key === 'Enter') tryLogin();
             };
 
-            input.oninput = e => {
+            input.oninput = () => {
                 errorDiv.textContent = '';
             };
         }
@@ -606,27 +602,31 @@
 
             async function checkUpdate() {
                 try {
-                    // Remove Promise.all since you're only making one request
                     const res = await fetch("https://emwiki.site/api/latest-version", { cache: "no-store" });
 
                     if (!res.ok) return;
 
                     const text = await res.text();
+
+                    if (!text.includes("@") || !text.includes("|")) {
+                        console.warn("Unexpected response format:", text);
+                        return; // skip instead of crashing
+                    }
+
                     const [user, textuah] = text.split("@");
                     const [timestamp, d1Version] = textuah.split("|");
-
 
                     if (CURRENT_VERSION !== d1Version) {
                         alert(`⚠️ New update to Catalog Detected by ${user.slice(0, -1)}`);
                         location.reload(true);
                     }
                 } catch (err) {
-                    alert(`Connection lost: ${err}`);
-                    location.reload(true);
+                    console.error(`Connection lost: ${err}`);
                 }
             }
 
             setInterval(checkUpdate, 10000);
+
 
 
             // --- Save to Gist endpoint ---
@@ -786,7 +786,7 @@
             const priceArea = document.querySelector('.price-tag');
             let priceson = true;
 
-            document.getElementById('toggle-prices').addEventListener('click', () => {
+            document.getElementById('toggle-prices').onclick = function () {
                 const priceTags = document.querySelectorAll('.price-label');
                 priceson = !priceson;
                 if (!priceson) {
@@ -800,7 +800,7 @@
                         tag.classList.remove('hidden');
                     });
                 }
-            });
+            };
             const quickEditorPrice = document.getElementById('quick-editor-price');
 
             //on clicked outside quickeditorprice unfocus
@@ -891,102 +891,85 @@
                 for (const k in jsData) { jsData[k].forEach(i => { if (i.weekly) weeklyEl.appendChild(makeItemCard(i)); if (i.weeklystar) starEl.appendChild(makeItemCard(i)); }) }
             }
 
-            // --- All items with pagination ---
-            function renderAllItems() {
-                const container = document.getElementById('all-items'); container.innerHTML = '';
-                const start = (currentPage - 1) * ITEMS_PER_PAGE; const pageItems = filteredItems.slice(start, start + ITEMS_PER_PAGE);
-                pageItems.forEach(i => container.appendChild(makeItemCard(i)));
+            let resizeTimer;
+            // Re-render on resize
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                const allEl = document.getElementById('all-items');
+
+                updateCanvasSize()
+                resizePanel()
+
+                const containerWidth = allEl.clientWidth;
+
+                const itemMinWidth = 132; // minimum width per item
+                const gap = 12; // gap in px
+
+                // Calculate how many items fit per row
+                const columns = Math.floor((containerWidth + gap) / (itemMinWidth + gap));
+                allEl.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+
+                const rows = 2; // or dynamically calculate if you have fixed height
+
+                if (ITEMS_PER_PAGE != columns * rows) renderAll(true);
+            });
+
+
+            document.getElementById('prev-btn').addEventListener('click', () => {
+                if (currentPage > 1) { currentPage--; renderAll(true, true); }
+            });
+            document.getElementById('next-btn').addEventListener('click', () => {
                 const totalPages = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE));
-                document.getElementById('page-count').textContent = `Page ${currentPage} of ${totalPages}`;
-                document.getElementById('prev-btn').disabled = currentPage === 1;
-                document.getElementById('next-btn').disabled = currentPage === totalPages;
-
-                if (currentPage === 1) {
-                    document.getElementById('prev-btn').style.opacity = '0.5';
-                } else {
-                    document.getElementById('prev-btn').style.opacity = '1';
-                }
-                if (currentPage === totalPages) {
-                    document.getElementById('next-btn').style.opacity = '0.5';
-                } else {
-                    document.getElementById('next-btn').style.opacity = '1';
-                }
-
-            }
-            document.getElementById('prev-btn').addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderAllItems(); } });
-            document.getElementById('next-btn').addEventListener('click', () => { const totalPages = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE)); if (currentPage < totalPages) { currentPage++; renderAllItems(); } });
+                if (currentPage < totalPages) { currentPage++; renderAll(true, true); }
+            });
 
             document.getElementById('search').addEventListener('input', () => {
 
                 renderAll();
             });
+            let ITEMS_PER_PAGE = 0;
 
-            function reRenderCurrentPage() {
+
+            function renderAll(keepPage, bottomonly) {
                 const allEl = document.getElementById('all-items');
+
+                if (!keepPage) currentPage = 1;
+
+
                 allEl.innerHTML = '';
-                // First handle weekly/star panels
-                const weeklyEl = document.getElementById('weekly-items');
-                const starEl = document.getElementById('weeklystar-items');
-                weeklyEl.innerHTML = '';
-                starEl.innerHTML = '';
-                allItems.forEach(item => {
-                    if (item.weekly) weeklyEl.appendChild(makeItemCard(item));
-                    if (item.weeklystar) starEl.appendChild(makeItemCard(item));
-                });
 
-                // Start with all items
-                let filtered = allItems.slice();
 
-                // Apply category filter first
-                const selectedCategory = document.getElementById('category-filter').value;
-                if (selectedCategory !== 'all') {
-                    filtered = jsData[selectedCategory] ? jsData[selectedCategory].slice() : [];
-                }
 
-                // Apply gamenight filter
-                if (gamenightOnly) {
-                    filtered = filtered.filter(i => (i.from && i.from.toLowerCase().includes("gamenight")));
-                }
+                const containerWidth = allEl.clientWidth;
 
-                // Apply search filter
-                const searchQuery = document.getElementById('search').value.trim();
-                if (searchQuery) {
-                    // Create new Fuse instance with currently filtered items
-                    const tempFuse = new Fuse(filtered, {
-                        keys: ['name'],
-                        threshold: 0.35
+                const itemMinWidth = 132; // minimum width per item
+                const gap = 12; // gap in px
+
+                // Calculate how many items fit per row
+                const columns = Math.floor((containerWidth + gap) / (itemMinWidth + gap));
+                allEl.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+
+                const rows = 2; // or dynamically calculate if you have fixed height
+
+                ITEMS_PER_PAGE = columns * rows;
+
+                const start = (currentPage - 1) * ITEMS_PER_PAGE;
+
+
+
+
+                if (!bottomonly) {
+                    // First handle weekly/star panels
+                    const weeklyEl = document.getElementById('weekly-items');
+                    const starEl = document.getElementById('weeklystar-items');
+                    weeklyEl.innerHTML = '';
+                    starEl.innerHTML = '';
+                    allItems.forEach(item => {
+                        if (item.weekly) weeklyEl.appendChild(makeItemCard(item));
+                        if (item.weeklystar) starEl.appendChild(makeItemCard(item));
                     });
-                    filtered = tempFuse.search(searchQuery).map(r => r.item);
                 }
 
-                // Apply sorting
-                const sort = document.getElementById('sort-select').value;
-                if (sort === 'az') filtered.sort((a, b) => a.name.localeCompare(b.name));
-                else if (sort === 'za') filtered.sort((a, b) => b.name.localeCompare(a.name));
-                else if (sort === 'high') filtered.sort((a, b) => (parseInt(b.price || 0) || 0) - (parseInt(a.price || 0) || 0));
-                else if (sort === 'low') filtered.sort((a, b) => (parseInt(a.price || 0) || 0) - (parseInt(b.price || 0) || 0));
-
-                // Update filteredItems for pagination
-                filteredItems = filtered;
-
-                // Render current page
-                filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-                    .forEach(item => allEl.appendChild(makeItemCard(item)));
-            }
-
-            function renderAll() {
-                const allEl = document.getElementById('all-items');
-                allEl.innerHTML = '';
-                currentPage = 1;
-                // First handle weekly/star panels
-                const weeklyEl = document.getElementById('weekly-items');
-                const starEl = document.getElementById('weeklystar-items');
-                weeklyEl.innerHTML = '';
-                starEl.innerHTML = '';
-                allItems.forEach(item => {
-                    if (item.weekly) weeklyEl.appendChild(makeItemCard(item));
-                    if (item.weeklystar) starEl.appendChild(makeItemCard(item));
-                });
 
                 // Start with all items
                 let filtered = allItems.slice();
@@ -1067,7 +1050,7 @@
                     el.innerHTML = '';
 
                     let currentIndex = 0; // track the next item to render
-                    const batchSize = 4;  // render 4 items at a time
+                    const batchSize = 3;  // render 4 items at a time
 
                     function renderHistoryItem(e) {
                         // Header: username + time
@@ -1112,17 +1095,6 @@
                         // Diff container
                         const h = document.createElement('div');
                         h.className = 'history-item';
-                        h.style.cssText = `
-                        font-family: monospace;
-                        font-weight:400;
-                        font-size:15px;
-                        background:rgb(16 16 16);
-                        padding:8px;
-                        border-radius:14px;
-                        max-width: 100%;
-                        white-space: normal;
-                        color: #ddd;
-                    `;
 
                         h.appendChild(header);
 
@@ -1283,6 +1255,7 @@
                 // helper to check duplicates
                 function alreadyInList(toEl, dragEl) {
                     const name = dragEl.dataset.name;
+                    
                     return Array.from(toEl.children).some(el => el.dataset.name === name);
                 }
 
@@ -1306,7 +1279,8 @@
                                 if (it === currentEditingItem) { openQuickEditor(it); }
 
                             }
-                            renderListPanels();
+
+                            renderAll(true);
                         },
                         onStart: evt => { evt.item.style.opacity = '0.25'; },
                         onEnd: evt => { evt.item.style.opacity = ''; }
@@ -1336,7 +1310,7 @@
 
                 RAP.onchange = () => {
                     currentEditingItem.price = RAP.value.trim();
-                    reRenderCurrentPage()
+                    renderAll(true)
                 };
 
                 const desccontainer = document.querySelector('.desc-list');
@@ -1637,191 +1611,187 @@
 
 
 
-            (() => {
-                const modal = document.getElementById('quick-editor-modal');
-                const panel = document.getElementById('quick-editor-content');
-                const handle = document.getElementById('quick-editor-title');
-                const closeBtn = document.getElementById('quick-editor-close');
 
-                const mainEl = document.querySelector('main');
+            const modal = document.getElementById('quick-editor-modal');
+            const panel = document.getElementById('quick-editor-content');
+            const handle = document.getElementById('quick-editor-title');
+            const closeBtn = document.getElementById('quick-editor-close');
 
-                const WIDTH_THRESHOLD = 1300;
+            const mainEl = document.querySelector('main');
 
-                // Remember original position so we can put it back
-                const originalParent = panel.parentNode;
+            const WIDTH_THRESHOLD = 1300;
 
-                // Move panel based on width
+            // Remember original position so we can put it back
+            const originalParent = panel.parentNode;
 
-                if (!modal || !panel || !handle) return;
+            // Move panel based on width
 
-                // config
-                const SNAP_MARGIN = 12;
-                const STORAGE_KEY = 'quickEditorPosV1';
+            if (!modal || !panel || !handle) return;
 
-                // helpers
-                const vw = () => window.innerWidth;
-                const vh = () => window.innerHeight;
-                const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+            // config
+            const SNAP_MARGIN = 12;
+            const STORAGE_KEY = 'quickEditorPosV1';
 
-
+            // helpers
+            const vw = () => window.innerWidth;
+            const vh = () => window.innerHeight;
+            const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 
 
 
-                const centerPanel = () => {
-                    const w = panel.offsetWidth;
-                    setPanelPos(Math.round((vw() - w) / 2), Math.round(vh() * 0.1));
-                };
 
-                const setPanelPos = (left, top) => {
-                    // keep panel inside viewport (with margin)
-                    const W = panel.offsetWidth, H = panel.offsetHeight;
-                    const maxLeft = vw() - W - SNAP_MARGIN;
-                    const maxTop = vh() - H - SNAP_MARGIN;
-                    left = clamp(Math.round(left), SNAP_MARGIN, Math.max(SNAP_MARGIN, maxLeft));
-                    top = clamp(Math.round(top), SNAP_MARGIN, Math.max(SNAP_MARGIN, maxTop));
 
-                    panel.style.left = left + 'px';
-                    panel.style.top = top + 'px';
+            const centerPanel = () => {
+                const w = panel.offsetWidth;
+                setPanelPos(Math.round((vw() - w) / 2), Math.round(vh() * 0.1));
+            };
+
+            const setPanelPos = (left, top) => {
+                // keep panel inside viewport (with margin)
+                const W = panel.offsetWidth, H = panel.offsetHeight;
+                const maxLeft = vw() - W - SNAP_MARGIN;
+                const maxTop = vh() - H - SNAP_MARGIN;
+                left = clamp(Math.round(left), SNAP_MARGIN, Math.max(SNAP_MARGIN, maxLeft));
+                top = clamp(Math.round(top), SNAP_MARGIN, Math.max(SNAP_MARGIN, maxTop));
+
+                panel.style.left = left + 'px';
+                panel.style.top = top + 'px';
+                panel.style.transform = 'none';
+            };
+
+            const savePosition = () => {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                        left: parseInt(panel.style.left || 0, 10),
+                        top: parseInt(panel.style.top || 0, 10)
+                    }));
+                } catch { }
+            };
+
+            // pointer dragging
+            let dragging = false;
+            let startX = 0, startY = 0;
+            let startLeft = 0, startTop = 0;
+
+            // Use the whole panel as handle
+
+            panel.addEventListener('pointerdown', onPointerDown);
+
+            function onPointerDown(e) {
+                //if parent of modal is main then do nothing
+                if (panel.parentNode === mainEl) return;
+                if (['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT', 'SPAN', 'LI'].includes(e.target.tagName)) return;
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+                dragging = true;
+                panel.classList.add('dragging');
+                panel.setPointerCapture(e.pointerId);
+
+                const rect = panel.getBoundingClientRect();
+                startX = e.clientX;
+                startY = e.clientY;
+                startLeft = rect.left;
+                startTop = rect.top;
+
+                document.body.style.userSelect = 'none';
+                e.preventDefault();
+            }
+
+            function onPointerMove(e) {
+                if (!dragging) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                setPanelPos(startLeft + dx, startTop + dy);
+            }
+
+            function onPointerUp(e) {
+                if (!dragging) return;
+                dragging = false;
+                panel.classList.remove('dragging');
+
+                const rect = panel.getBoundingClientRect();
+                const leftDist = rect.left;
+                const rightDist = vw() - (rect.left + rect.width);
+
+                // Snap horizontally only, but to CORNERS vertically
+                let finalLeft = leftDist < rightDist ? SNAP_MARGIN : vw() - rect.width - SNAP_MARGIN;
+
+                // For corners: pick top or bottom based on closest
+                const topDist = rect.top;
+                const bottomDist = vh() - (rect.top + rect.height);
+                let finalTop = topDist < bottomDist ? SNAP_MARGIN : vh() - rect.height - SNAP_MARGIN;
+
+                // But if you want vertical to remain unchanged:
+                // let finalTop = rect.top;
+
+                setPanelPos(finalLeft, finalTop);
+                savePosition();
+
+                document.body.style.userSelect = '';
+                try { panel.releasePointerCapture(e.pointerId); } catch { }
+            }
+
+
+            // attach pointer events
+
+            window.addEventListener('pointermove', onPointerMove);
+            window.addEventListener('pointerup', onPointerUp);
+
+
+            const spacer = document.getElementById('quick-editor-spacer');
+            function resizePanel() {
+                if (vw() > WIDTH_THRESHOLD) {
+                    mainEl.insertBefore(panel, mainEl.firstChild);
+                    panel.style.position = 'fixed';
+                    panel.style.left = spacer.offsetLeft + 'px';
+                    panel.style.top = '96px';
                     panel.style.transform = 'none';
-                };
-
-                const savePosition = () => {
-                    try {
-                        localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                            left: parseInt(panel.style.left || 0, 10),
-                            top: parseInt(panel.style.top || 0, 10)
-                        }));
-                    } catch { }
-                };
-
-                // pointer dragging
-                let dragging = false;
-                let startX = 0, startY = 0;
-                let startLeft = 0, startTop = 0;
-
-                // Use the whole panel as handle
-
-                panel.addEventListener('pointerdown', onPointerDown);
-
-                function onPointerDown(e) {
-                    //if parent of modal is main then do nothing
-                    if (panel.parentNode === mainEl) return;
-                    if (['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT', 'SPAN', 'LI'].includes(e.target.tagName)) return;
-                    if (e.pointerType === 'mouse' && e.button !== 0) return;
-                    dragging = true;
-                    panel.classList.add('dragging');
-                    panel.setPointerCapture(e.pointerId);
-
+                    panel.style.boxShadow = '0 6px 24px var(--shade)';
+                    panel.style.border = '1px solid var(--shade)';
+                    panel.style.background = 'linear-gradient(137deg, #4a576163, #77839945, #4254622b)';
+                    closeBtn.style.display = 'none';
+                    spacer.style.display = 'unset';
+                    spacer.style.width = panel.offsetWidth + 'px';
+                    //set spacer height to main's height
+                    if (vh() < panel.offsetHeight + 96) {
+                        panel.style.position = 'absolute';
+                    }
+                } else {
+                    if (!modal.contains(panel)) {
+                        modal.appendChild(panel);
+                        panel.style.position = 'fixed';
+                        closeBtn.style.display = 'unset'; // show close button in modal
+                        panel.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.45)';
+                        spacer.style.display = 'none';
+                    }
+                    // Keep it clamped inside view
                     const rect = panel.getBoundingClientRect();
-                    startX = e.clientX;
-                    startY = e.clientY;
-                    startLeft = rect.left;
-                    startTop = rect.top;
-
-                    document.body.style.userSelect = 'none';
-                    e.preventDefault();
-                }
-
-                function onPointerMove(e) {
-                    if (!dragging) return;
-                    const dx = e.clientX - startX;
-                    const dy = e.clientY - startY;
-                    setPanelPos(startLeft + dx, startTop + dy);
-                }
-
-                function onPointerUp(e) {
-                    if (!dragging) return;
-                    dragging = false;
-                    panel.classList.remove('dragging');
-
-                    const rect = panel.getBoundingClientRect();
-                    const leftDist = rect.left;
-                    const rightDist = vw() - (rect.left + rect.width);
-
-                    // Snap horizontally only, but to CORNERS vertically
-                    let finalLeft = leftDist < rightDist ? SNAP_MARGIN : vw() - rect.width - SNAP_MARGIN;
-
-                    // For corners: pick top or bottom based on closest
-                    const topDist = rect.top;
-                    const bottomDist = vh() - (rect.top + rect.height);
-                    let finalTop = topDist < bottomDist ? SNAP_MARGIN : vh() - rect.height - SNAP_MARGIN;
-
-                    // But if you want vertical to remain unchanged:
-                    // let finalTop = rect.top;
-
+                    const finalLeft = clamp(rect.left, SNAP_MARGIN, Math.max(SNAP_MARGIN, vw() - rect.width - SNAP_MARGIN));
+                    const finalTop = clamp(rect.top, SNAP_MARGIN, Math.max(SNAP_MARGIN, vh() - rect.height - SNAP_MARGIN));
                     setPanelPos(finalLeft, finalTop);
                     savePosition();
-
-                    document.body.style.userSelect = '';
-                    try { panel.releasePointerCapture(e.pointerId); } catch { }
                 }
+            }
+            resizePanel()
+
+            // optional: close button & Esc to close
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+            }
 
 
-                // attach pointer events
-
-                window.addEventListener('pointermove', onPointerMove);
-                window.addEventListener('pointerup', onPointerUp);
-
-                // keep inside on resize
-                window.addEventListener('resize', () => {
-                    resizePanel()
-
-                });
-                const spacer = document.getElementById('quick-editor-spacer');
-                function resizePanel() {
-                    if (vw() > WIDTH_THRESHOLD) {
-                        mainEl.insertBefore(panel, mainEl.firstChild);
-                        panel.style.position = 'fixed';
-                        panel.style.left = spacer.offsetLeft + 'px';
-                        panel.style.top = '96px';
-                        panel.style.transform = 'none';
-                        panel.style.boxShadow = '0 6px 24px var(--shade)';
-                        panel.style.border = '1px solid var(--shade)';
-                        panel.style.background = 'linear-gradient(137deg, #4a576163, #77839945, #4254622b)';
-                        closeBtn.style.display = 'none';
-                        spacer.style.display = 'unset';
-                        spacer.style.width = panel.offsetWidth + 'px';
-                        //set spacer height to main's height
-                        if (vh() < panel.offsetHeight + 96) {
-                            panel.style.position = 'absolute';
-                        }
-                    } else {
-                        if (!modal.contains(panel)) {
-                            modal.appendChild(panel);
-                            panel.style.position = 'fixed';
-                            closeBtn.style.display = 'unset'; // show close button in modal
-                            panel.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.45)';
-                            spacer.style.display = 'none';
-                        }
-                        // Keep it clamped inside view
-                        const rect = panel.getBoundingClientRect();
-                        const finalLeft = clamp(rect.left, SNAP_MARGIN, Math.max(SNAP_MARGIN, vw() - rect.width - SNAP_MARGIN));
-                        const finalTop = clamp(rect.top, SNAP_MARGIN, Math.max(SNAP_MARGIN, vh() - rect.height - SNAP_MARGIN));
-                        setPanelPos(finalLeft, finalTop);
-                        savePosition();
-                    }
+            // init when visible
+            const observer = new MutationObserver(() => {
+                if (!modal.classList.contains('hidden')) {
+                    // slight delay to ensure layout computed
+                    requestAnimationFrame(() => resizePanel());
                 }
-                resizePanel()
+            });
+            observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
 
-                // optional: close button & Esc to close
-                if (closeBtn) {
-                    closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
-                }
+            // initial restore if already visible
+            if (!modal.classList.contains('hidden')) resizePanel();
 
-
-                // init when visible
-                const observer = new MutationObserver(() => {
-                    if (!modal.classList.contains('hidden')) {
-                        // slight delay to ensure layout computed
-                        requestAnimationFrame(() => resizePanel());
-                    }
-                });
-                observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
-
-                // initial restore if already visible
-                if (!modal.classList.contains('hidden')) resizePanel();
-            })();
 
             document.getElementById('sort-select').addEventListener('change', () => renderAll());
             const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -1875,7 +1845,7 @@
         };
 
         // Handle window resize
-        window.addEventListener("resize", updateCanvasSize);
+        
         updateCanvasSize();
 
         // Mouse position
