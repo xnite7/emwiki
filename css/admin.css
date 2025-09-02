@@ -521,7 +521,14 @@ main {
 
     #lists-section,
     #history-section {
-        max-width: 1076px;
+        max-width: 653px;
+    }
+}
+@media(max-width:1173px) {
+
+    #lists-section,
+    #history-section {
+       max-width: 653px;
     }
 }
 
@@ -2025,13 +2032,16 @@ hr {
     height: fit-content;
 }
 
+@media (max-width: 730px) {
+    .panel {
+        min-width: -webkit-fill-available;
+    }
+
+}
+
 @media (max-width: 550px) {
     .board-container {
         width: unset;
-    }
-
-    .panel {
-        min-width: -webkit-fill-available;
     }
 
     .tag div:nth-child(n+3) {

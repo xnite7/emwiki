@@ -207,6 +207,7 @@
                 this.allItems = [];
                 this.filteredItems = [];
                 this.currentPage = 1;
+                this.resizeTimer = 0;
                 this.itemsPerPage = 0;
                 this.currentEditingItem = null;
                 this.adminName = '';
@@ -305,9 +306,15 @@
                 const div = document.createElement('div');
                 div.textContent = text;
                 return div.innerHTML;
+            },
+
+            // Window resize
+            resizer() {
+                    UI.renderItems(true);
+                    CanvasArrow.updateSize();
             }
         };
-
+        
         // ============================
         // DOM Cache
         // ============================
@@ -325,7 +332,7 @@
                 return document.querySelectorAll(selector);
             }
         };
-
+new ResizeObserver(Utils.resizer).observe(DOM.get('lists-section'));
         // ============================
         // WebSocket Manager
         // ============================
@@ -801,15 +808,15 @@
 
                         //UI.renderItems(true);
                     },
-                    onStart: evt => { 
-                        evt.item.style.opacity = '0.25'; 
+                    onStart: evt => {
+                        evt.item.style.opacity = '0.25';
                         DOM.get('weekly-items').children.length < 4 ? DOM.get('weekly-items').parentElement.style.filter = 'brightness(1.3)' : DOM.get('weekly-items').parentElement.classList.add('full');
                         DOM.get('weeklystar-items').children.length < 4 ? DOM.get('weeklystar-items').parentElement.style.filter = 'brightness(1.3)' : DOM.get('weeklystar-items').parentElement.classList.add('full');
                     },
-                    onEnd: evt => { 
-                        evt.item.style.opacity = ''; 
-                        DOM.get('weekly-items').parentElement.style.filter = ''; 
-                        DOM.get('weeklystar-items').parentElement.style.filter = ''; 
+                    onEnd: evt => {
+                        evt.item.style.opacity = '';
+                        DOM.get('weekly-items').parentElement.style.filter = '';
+                        DOM.get('weeklystar-items').parentElement.style.filter = '';
                         DOM.get('weekly-items').parentElement.classList.remove('full');
                         DOM.get('weeklystar-items').parentElement.classList.remove('full');
                     }
@@ -1928,7 +1935,8 @@
 
                 overlay.style.background = 'transparent';
                 overlay.style.pointerEvents = 'none';
-
+                DOM.query('.login-card').classList.add('glass');
+                welcomeLabel.style.opacity = '1';
                 // Typing animation
                 let i = 0;
                 const typeInterval = setInterval(() => {
@@ -1938,12 +1946,12 @@
                     } else {
                         clearInterval(typeInterval);
                         setTimeout(() => {
-                            DOM.query('.login-card').classList.add('bobble');
+
                             DOM.query('.login-card').style.opacity = '0';
-                            setTimeout(() => overlay.remove(), 1000);
+                            setTimeout(() => overlay.remove(), 1800);
                         }, 1000);
                     }
-                }, 50);
+                }, 40);
             }
         };
 
@@ -2116,15 +2124,7 @@
                     QuickEditor.close();
                 });
 
-                // Window resize
-                let resizeTimer;
-                window.addEventListener('resize', () => {
-                    clearTimeout(resizeTimer);
-                    resizeTimer = setTimeout(() => {
-                        UI.renderItems(true);
-                        CanvasArrow.updateSize();
-                    }, 250);
-                });
+
             },
 
             startUpdateChecker() {
