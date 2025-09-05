@@ -134,11 +134,7 @@
             <div class="quick-editor-body">
                 <img id="quick-editor-img" src="" alt="" />
                 <div class="price-tag">
-                    <div class="tag-left"></div>
-                    <div class="price-area">
-                        <input id="quick-editor-price" style="caret-color: #ffffff30; border: 0px;" type="text"
-                            placeholder="RAP" />
-                    </div>
+                    <input id="quick-editor-price" type="text" placeholder="RAP" />
                 </div>
                 <div class="flag-row"></div>
             </div>
@@ -156,7 +152,7 @@
                 </div>
 
                 <div style="margin-top:21px;">
-                    <label style="margin-top:-31px;">Descriptions↴</label>
+                    <label>Descriptions↴</label>
                     <ul class="desc-list"></ul>
                     <button id="new-desc-btn">Text</button>
                     <button id="new-gn-btn">Gamenight Date</button>
@@ -966,14 +962,14 @@
                 const gnBtn = DOM.get('new-gn-btn');
                 const prcBtn = DOM.get('new-prc-btn');
 
-                if (descBtn) descBtn.onclick = () => this.createDescItem('');
+                if (descBtn) descBtn.onclick = () => this.createDescItem('', false, true);
                 if (gnBtn) gnBtn.onclick = () => {
                     const now = new Date();
                     const month = now.toLocaleDateString('en-US', { month: 'short' });
                     const year = now.toLocaleDateString('en-US', { year: 'numeric' });
-                    this.createDescItem(`Gamenight (${month} ${year})`, true);
+                    this.createDescItem(`Gamenight (${month === "May" ? "May" : month + "."} ${year})`, true, true);
                 };
-                if (prcBtn) prcBtn.onclick = () => this.createPriceItem('');
+                if (prcBtn) prcBtn.onclick = () => this.createPriceItem('', true);
             },
 
             renderTags(item) {
@@ -996,18 +992,27 @@
                 flagRow.querySelectorAll('.tag-pill, .small-btn.ghost').forEach(e => e.remove());
 
                 // Render tag pills
-                this.renderTagPills(flagRow);
+
 
                 // Add tag selector button
                 const btn = document.createElement('button');
                 btn.className = 'small-btn ghost';
                 btn.textContent = 'Tags';
-                btn.style.cssText = 'margin-top:-40px;font-variant:all-petite-caps;position:absolute';
+                btn.style.cssText = 'margin: 10px 47%;display: block;font-variant:all-petite-caps;';
                 btn.onclick = e => {
                     e.stopPropagation();
+                    if (this.tagMenu) {
+                        this.tagMenu.remove();
+                        this.tagMenu = null;
+                        return;
+                    }
+
                     this.openTagSelector(flagRow);
+
                 };
                 flagRow.appendChild(btn);
+
+                this.renderTagPills(flagRow);
             },
 
             renderTagPills(flagRow) {
@@ -1033,7 +1038,7 @@
                         }
 
                         this.renderTagPills(flagRow);
-                        renderListPanels();
+                        UI.renderShops();
                     };
 
                     pill.appendChild(closeBtn);
@@ -1042,10 +1047,14 @@
             },
 
             openTagSelector(flagRow) {
-                if (this.tagMenu) this.tagMenu.remove();
+                //wait 1ms
+
+                if (this.tagMenu) {
+                    this.tagMenu.remove();
+                }
 
                 this.tagMenu = document.createElement('div');
-                this.tagMenu.style.cssText = 'position:absolute;background:#1e293b;padding:10px;border:1px solid #555;border-radius:8px;z-index:1000';
+                this.tagMenu.style.cssText = 'position:absolute;background:#1e293b;padding:10px;border:1px solid #555;border-radius:8px;z-index:1000;transform: translateY(48px);';
 
                 Object.keys(this.TAG_COLORS).forEach(tag => {
                     const btn = document.createElement('button');
@@ -1071,7 +1080,7 @@
                         this.tagMenu.remove();
                         this.tagMenu = null;
                         this.renderTagPills(flagRow);
-                        renderListPanels();
+                        UI.renderShops();
                     };
 
                     this.tagMenu.appendChild(btn);
@@ -1127,7 +1136,7 @@
                 });
             },
 
-            createDescItem(value = '', isGamenight = false) {
+            createDescItem(value = '', isGamenight = false, startFocused = false) {
                 const container = DOM.query('.desc-list');
                 const months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
                 const selectedMonths = new Set();
@@ -1139,13 +1148,12 @@
 
                 const label = this.createElement('span', {
                     style: 'max-width:255px;flex-grow:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis',
-                    textContent: value || 'Description...'
+                    textContent: value || ''
                 });
 
                 const input = this.createElement('input', {
                     type: 'text',
                     value: value || '',
-                    style: 'flex-grow:1;display:none;border:none;border-radius:4px;padding:6px 8px'
                 });
 
                 const monthsWrapper = this.createElement('div', {
@@ -1186,6 +1194,7 @@
                 const deleteBtn = this.createIconButton('delete', '', 'small-btn', 'padding:6px 0px 6px 6px;background:#f66');
                 const okBtn = this.createIconButton('check', '', 'small-btn', 'background:rgb(95 193 95);padding:6px 0px 6px 6px;text-shadow:0 0 5px #00000057;display:none;font-weight:700');
 
+
                 // Parse existing gamenight data
                 if (isGamenight && /\(.+\)/.test(value)) {
                     const match = value.match(/\((.+)\s(\d{4})\)/);
@@ -1215,9 +1224,14 @@
                         yearInput.style.display = 'inline-block';
                     } else {
                         input.style.display = 'inline-block';
-                        input.focus();
+
+                        setTimeout(() => {
+                            input.focus();
+                        }, 100);
                     }
                 };
+
+                if (startFocused) { edit(); }
 
                 const done = () => {
                     deleteBtn.style.display = 'inline-block';
@@ -1226,7 +1240,7 @@
                     if (isGamenight) {
                         value = `Gamenight (${[...selectedMonths].join(', ')}${yearInput.value ? ' ' + yearInput.value : ''})`;
                     } else {
-                        value = input.value.trim() || 'Description...';
+                        value = input.value.trim() || li.remove();
                     }
 
                     label.textContent = value;
@@ -1238,6 +1252,7 @@
 
                     this.updateItemDescriptions();
                 };
+
 
                 // Setup event handlers
                 editBtn.onclick = e => { e.stopPropagation(); edit(); };
@@ -1265,7 +1280,7 @@
 
             },
 
-            createPriceItem(value = '') {
+            createPriceItem(value = '', startFocused = false) {
                 const container = DOM.query('.prc-list');
 
                 const li = this.createElement('li', {
@@ -1280,14 +1295,12 @@
 
                 const label = this.createElement('span', {
                     className: 'prc-label',
-                    style: 'max-width:223px;flex-grow:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis',
-                    textContent: value || 'Price...'
+                    textContent: value || ''
                 });
 
                 const input = this.createElement('input', {
                     type: 'text',
                     value: value || '',
-                    style: 'flex-grow:1;display:none;border:none;border-radius:4px;padding:6px 8px'
                 });
 
                 const formatLabel = () => {
@@ -1296,7 +1309,7 @@
                     // Reset styles
                     icon.style.display = 'inline-block';
                     icon.src = './imgs/trs.png';
-                    label.style.cssText = 'max-width:223px;flex-grow:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#fff;font-weight:normal;font-family:BuilderSans';
+
 
                     // Apply special formatting
                     if (text.includes("Tokens")) {
@@ -1353,13 +1366,17 @@
                     label.style.display = 'none';
                     editBtn.style.display = 'none';
                     input.style.display = 'inline-block';
-                    input.focus();
+                    setTimeout(() => {
+                        input.focus();
+                    }, 100);
                 };
+
+                if (startFocused) { edit(); }
 
                 const done = () => {
                     deleteBtn.style.display = 'inline-block';
                     okBtn.style.display = 'none';
-                    label.textContent = input.value.trim() || 'Price...';
+                    label.textContent = input.value.trim() || li.remove();
                     label.style.display = 'inline';
                     input.style.display = 'none';
                     editBtn.style.display = 'inline-block';
@@ -1432,11 +1449,15 @@
 
                 const btn = this.createElement('button', {
                     className: className,
-                    innerHTML: `<div class="icon" style="mask-image: url('data:image/svg+xml,<svg viewBox="${type === 'check' ? '0 -8 72 72' : '0 0 24 24'}" xmlns="http://www.w3.org/2000/svg"><path d="${icons[type]}" /></svg>');"></div>${text}`
+                    innerHTML: `<div class="icon"></div>${text}`
                 });
 
+                if (icons[type]) {
+                    btn.querySelector('.icon').style.maskImage = `url('data:image/svg+xml,<svg viewBox="${type === 'check' ? '0 -8 72 72' : '0 0 24 24'}" xmlns="http://www.w3.org/2000/svg"><path d="${icons[type]}" /></svg>')`;
+                }
+
                 if (additionalStyle) {
-                    btn.style.cssText = additionalStyle;
+                    btn.style.cssText = additionalStyle
                 }
 
                 return btn;
@@ -1943,6 +1964,7 @@
             showWelcome() {
                 CanvasArrow.enabled = false;
                 DOM.query('main').style.display = 'flex';
+                DOM.query('header').style.display = 'flex';
                 const overlay = DOM.get('login-overlay');
                 const welcomeLabel = DOM.get('welcome-label');
                 const text = `Welcome, ${state.adminName}.`;
@@ -1966,7 +1988,7 @@
                     } else {
 
                         DOM.query('.login-card').addEventListener('animationend', (event) => {
-                            
+
                             DOM.query('.login-card').style.animation = 'unset';
 
                         });
@@ -2283,7 +2305,7 @@
         }
         .download-icon { mask-image: url('${CONFIG.ICONS.download}'); }
         .logout-icon { mask-image: url('${CONFIG.ICONS.logout}'); }
-        .send-icon { mask-image: url('${CONFIG.ICONS.send}'); }
+        .send-icon { mask-image: url('${CONFIG.ICONS.send}');rotate: 47deg;}
         .edit-icon { mask-image: url('${CONFIG.ICONS.edit}'); }
         .delete-icon { mask-image: url('${CONFIG.ICONS.delete}'); }
         .check-icon { mask-image: url('${CONFIG.ICONS.check}'); }

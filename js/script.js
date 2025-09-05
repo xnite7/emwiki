@@ -654,8 +654,8 @@ function Modal(event) {
   const splitted = prcdra.split("<br>");
   const seen = new Set();
   const uniqueLines = splitted.filter(line => {
-    if (seen.has(line)) return false;
-    seen.add(line);
+    if (seen.has(line.toLowerCase())) return false;
+    seen.add(line.toLowerCase());
     return true;
   });
 
@@ -698,23 +698,23 @@ function Modal(event) {
       }
 
       const iconMap = {
-        Robux: "./imgs/cf8ZvY7.png",
-        Coins: "./imgs/Coin.webp",
-        Stars: "./imgs/WKeX5AS.png",
-        Visors: "./imgs/7IoLZCN.png",
-        Pumpkins: "./imgs/bHRBTrU.png",
-        Eggs: "./imgs/qMxjgQy.png",
-        Opals: "./imgs/wwMMAvr.png",
-        Opal: "./imgs/wwMMAvr.png",
-        Baubles: "./imgs/bauble.png",
-        Bauble: "./imgs/bauble.png",
-        Tokens: "./imgs/Cy9r140.png",
-        Token: "./imgs/Cy9r140.png"
+        robux: "./imgs/cf8ZvY7.png",
+        coins: "./imgs/Coin.webp",
+        stars: "./imgs/WKeX5AS.png",
+        visors: "./imgs/7IoLZCN.png",
+        pumpkins: "./imgs/bHRBTrU.png",
+        eggs: "./imgs/qMxjgQy.png",
+        opals: "./imgs/wwMMAvr.png",
+        opal: "./imgs/wwMMAvr.png",
+        baubles: "./imgs/bauble.png",
+        bauble: "./imgs/bauble.png",
+        tokens: "./imgs/Cy9r140.png",
+        token: "./imgs/Cy9r140.png"
       };
 
       for (const [key, src] of Object.entries(iconMap)) {
-        if (text.includes(key)) {
-          children[1].textContent = text.replace(` ${key}`, "");
+        if (text.toLowerCase().includes(key.toLowerCase())) {
+          children[1].textContent = text.toLowerCase().replace(` ${key.toLowerCase()}`, "");
           children[0].src = src;
           break;
         }

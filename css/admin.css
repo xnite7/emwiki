@@ -72,7 +72,8 @@ body {
     color: var(--muted);
     background-color: #232939;
 }
-body::before{
+
+body::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -84,10 +85,18 @@ body::before{
     filter: brightness(0.8);
 }
 
+.flag-row {
+    width: -webkit-fill-available;
+    display: inline-flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
 header {
     position: fixed;
     inset: 0 0 auto 0;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: space-between;
     padding: 14px 18px;
@@ -324,23 +333,29 @@ main {
     src: url('https://emwiki.site/fonts/BuilderSans-Bold-700.woff2') format('woff2')
 }
 
-#quick-editor-content input {
-
-    padding: 6px 8px;
-    border-radius: 6px;
-    border: 1px solid var(--ghost);
-    background: transparent;
-    color: var(--muted);
-    font-size: 14px;
-}
-
 #quick-editor-price {
-    font-family: 'BuilderSans' !important;
-    color: #000000 !important;
-    text-align: left !important;
-    padding: 0px 0px !important;
-    font-size: 26px !important;
+    font-family: 'BuilderSans';
+    color: #000000;
+    text-align: left;
+    padding: 10px 15px 10px 10px;
+    font-size: 27px;
+    border-radius: 0px 6px 6px 0px;
+    border: 0px solid var(--ghost);
+    color: var(--muted);
+    field-sizing: content;
+    background: linear-gradient(90deg, #ffffff, #ffffff4f);
+    text-overflow: ellipsis;
+    max-width: 150px;
 }
+
+#quick-editor-price::placeholder {
+    color: #00000073;
+}
+
+#quick-editor-price:autofill {
+    background-color: light-dark(rgba(232, 240, 254, 0), rgba(70, 90, 126, 0));
+}
+
 
 .price-label {
     font-family: 'BuilderSans';
@@ -365,28 +380,6 @@ main {
     margin-right: 2px;
 }
 
-#quick-editor-price:focus {
-    font-family: 'BuilderSans' !important;
-    color: #000000 !important;
-    text-align: left !important;
-    padding: 0px 0px !important;
-    font-size: 26px !important;
-}
-
-/*.price-area:focus-within {
-            filter: drop-shadow(0px 0px 5px yellow);
-        }*/
-
-#quick-editor-price::placeholder {
-    color: #00000073 !important;
-    text-align: left !important;
-    padding: 0px 0px !important;
-    font-size: 26px !important;
-}
-
-#quick-editor-price:autofill {
-    background-color: light-dark(rgba(232, 240, 254, 0), rgba(70, 90, 126, 0)) !important;
-}
 
 
 .section {
@@ -536,11 +529,12 @@ main {
         max-width: 653px;
     }
 }
+
 @media(max-width:1173px) {
 
     #lists-section,
     #history-section {
-       max-width: 653px;
+        max-width: 653px;
     }
 }
 
@@ -858,9 +852,22 @@ input#search:focus-visible {
 }
 
 /* Keep inprgba(255, 255, 255, 0.555)e */
-#quick-editor-content input,
-#quick-editor-content button {
+#quick-editor-content input {
     user-select: text;
+}
+
+#quick-editor-lists input {
+    display:none;
+        flex-grow: 1;
+        border: none;
+        padding: 0px;
+    font-variant: contextual;
+    font-size: 15px;
+    font-weight: 400;
+    user-select: text;
+    outline: none;
+    background: #555555;
+    color: white;
 }
 
 #quick-editor-code {
@@ -879,13 +886,29 @@ hr {
     margin: 7px auto 5px;
     filter: invert(0.63);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     height: 52px;
     background: none;
     user-select: none;
     font-family: Arial, sans-serif;
 }
 
+.price-tag::before {
+    content: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%2283.017%2071.204%20402.88%20341.831%22%3E%3Cdefs%3E%3Cmask%20id%3D%22hole%22%3E%3Crect%20width%3D%22130%25%22%20height%3D%22120%25%22%20%20mask%3D%22url(%23hole)%22%20fill%3D%22white%22%2F%3E%3Cpath%20d%3D%22M%20425.082%20165.212%20C%20439.744%20173.682%20448.787%20189.339%20448.787%20206.273%20L%20448.787%20277.956%20C%20448.787%20294.9%20439.744%20310.55%20425.082%20319.017%20L%20362.989%20354.868%20C%20348.326%20363.334%20330.25%20363.334%20315.586%20354.868%20L%20253.494%20319.017%20C%20238.831%20310.55%20229.798%20294.9%20229.798%20277.956%20L%20229.798%20206.273%20C%20229.798%20189.339%20238.831%20173.682%20253.494%20165.212%20L%20315.586%20129.374%20C%20330.25%20120.905%20348.326%20120.905%20362.989%20129.374%20L%20425.082%20165.212%20Z%20M%20323.9%20145.643%20L%20263.431%20180.553%20C%20253.904%20186.055%20248.048%20196.211%20248.048%20207.214%20L%20248.048%20277.028%20C%20248.048%20288.022%20253.904%20298.185%20263.431%20303.688%20L%20323.9%20338.59%20C%20333.425%20344.091%20345.149%20344.091%20354.677%20338.59%20L%20415.145%20303.688%20C%20424.67%20298.185%20430.537%20288.022%20430.537%20277.028%20L%20430.537%20207.214%20C%20430.537%20196.211%20424.67%20186.055%20415.145%20180.553%20L%20354.677%20145.643%20C%20345.149%20140.142%20333.425%20140.142%20323.9%20145.643%20Z%20M%20351.93%20165.151%20L%20399.642%20192.688%20C%20407.461%20197.204%20412.289%20205.554%20412.289%20214.597%20L%20412.289%20269.681%20C%20412.289%20278.715%20407.461%20287.063%20399.642%20291.58%20L%20351.93%20319.127%20C%20344.11%20323.643%20334.464%20323.643%20326.645%20319.127%20L%20278.934%20291.58%20C%20271.113%20287.063%20266.296%20278.715%20266.296%20269.681%20L%20266.296%20214.597%20C%20266.296%20205.554%20271.113%20197.204%20278.934%20192.688%20L%20326.645%20165.151%20C%20334.464%20160.633%20344.11%20160.633%20351.93%20165.151%20Z%20M%20311.918%20269.507%20L%20366.666%20269.507%20L%20366.666%20214.76%20L%20311.918%20214.76%20L%20311.918%20269.507%20Z%22%20fill%3D%22black%22%3E%3C%2Fpath%3E%3C%2Fmask%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M%20253.548%2072.162%20C%20291.987%2072.162%20486.429%2072.204%20486.429%2072.204%20L%20485.897%20411.835%20C%20485.897%20411.835%20287.408%20412.035%20252.201%20412.035%20C%20232.925%20412.035%20154.199%20332.778%20154.199%20332.778%20C%20154.199%20332.778%2094.22%20275.795%2091.011%20268.048%20C%2083.92%20250.928%2083.425%20230.889%2090.57%20213.639%20C%2094.25%20204.755%20166.494%20136.443%20166.494%20136.443%20C%20166.494%20136.443%20234.906%2072.162%20253.548%2072.162%20Z%22%20fill%3D%22white%22%20mask%3D%22url(%23hole)%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E');
+    width: 65px;
+    margin-right: -1px;
+
+}
+
+.prc-label {
+    flex: 1 1 43%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: rgb(255, 255, 255);
+    font-weight: normal;
+    font-family: BuilderSans;
+}
 
 
 #quick-editor-content label {
@@ -893,6 +916,7 @@ hr {
     font-variant: all-petite-caps;
     font-weight: 500;
     color: #ffffff7a;
+    pointer-events: none;
 }
 
 .quick-editor-body+hr+div label h1 {
@@ -974,19 +998,10 @@ hr {
     margin-top: 11px;
 }
 
-.price-tag:has(.price-area:focus-within) {
+.price-tag:has(#quick-editor-price:focus-within) {
     filter: invert(0);
 }
 
-/* Left part of the tag: fixed shape (excluding white part) */
-.tag-left {
-    transition: all 0.2s ease;
-    filter: opacity(0.6);
-    flex-shrink: 0;
-    width: 60px;
-    height: 100%;
-    background: url('../imgs/rap_tag.png') no-repeat center / contain;
-}
 
 
 
@@ -1000,20 +1015,7 @@ hr {
                 }/*
 
                 /* Right part: white area that expands */
-.price-area {
 
-    flex-grow: 1;
-    height: 100%;
-    background: linear-gradient(90deg, #ffffff99, #ffffff5e, #ffffff21);
-    border-radius: 0 20px 20px 0;
-    /* rounded right edges */
-    display: flex;
-    align-items: center;
-    padding: 0 10px;
-    box-sizing: border-box;
-    min-width: 50px;
-
-}
 
 .blur {
 
@@ -1041,18 +1043,6 @@ hr {
 
 }
 
-/* The input */
-.price-area input {
-    width: 100%;
-    font-size: 20px;
-    font-weight: bold;
-    border: none;
-    outline: none;
-    background: transparent;
-    text-align: center;
-    /* prevent input from shrinking */
-    min-width: 1ch;
-}
 
 /* Optional: hide default input spinner for number */
 .price-area input::-webkit-inner-spin-button,
@@ -1206,7 +1196,8 @@ hr {
     transition: all 1s cubic-bezier(.41, -0.07, .13, 1.6) 0.4s;
     animation: bubble 1.8s ease 1s 1 forwards;
     transform: translateY(5px);
-    @starting-style{
+
+    @starting-style {
         max-width: 210px;
         max-height: 184px;
         transform: translateY(0px);
@@ -1217,7 +1208,7 @@ hr {
     max-width: 200px;
     max-height: 200px;
     transform: translateY(30vh);
-    transition: all 1s cubic-bezier(.56,-0.37,.3,1);
+    transition: all 1s cubic-bezier(.56, -0.37, .3, 1);
     opacity: 0;
     animation: unset;
 }
