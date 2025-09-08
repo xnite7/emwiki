@@ -2738,8 +2738,8 @@
         const Auth = {
             async init() {
                 try {
-                    // Check if already logged in (via secure cookie)
-                    const res = await fetch("api/check-session");
+                    // Check if already logged in via secure cookie
+                    const res = await fetch("/api/check-session");
                     if (res.ok) {
                         const data = await res.json();
                         if (data.ok) {
@@ -2751,7 +2751,7 @@
                     console.error("Session check failed:", err);
                 }
 
-                // If no valid session, show login
+                // No valid session, show login
                 this.showLoginForm();
             },
 
@@ -2769,7 +2769,7 @@
                     }
 
                     try {
-                        const res = await fetch("api/admin-login", {
+                        const res = await fetch("/api/admin-login", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ key })
@@ -2781,7 +2781,8 @@
                             this.onSuccess();
                         } else {
                             attempts++;
-                            errorDiv.textContent = "Invalid admin key";
+                            const errorText = res.status === 401 ? "Invalid admin key" : "Server error";
+                            errorDiv.textContent = errorText;
 
                             if (attempts > 4) {
                                 errorDiv.textContent = "Too many attempts. Please refresh.";
@@ -2791,9 +2792,7 @@
 
                             // shake animation
                             DOM.query(".login-card").classList.add("shake");
-                            setTimeout(() => {
-                                DOM.query(".login-card").classList.remove("shake");
-                            }, 500);
+                            setTimeout(() => DOM.query(".login-card").classList.remove("shake"), 500);
                         }
                     } catch (err) {
                         errorDiv.textContent = "Network error, try again";
@@ -2802,12 +2801,8 @@
                 };
 
                 loginBtn.addEventListener("click", tryLogin);
-                input.addEventListener("keydown", e => {
-                    if (e.key === "Enter") tryLogin();
-                });
-                input.addEventListener("input", () => {
-                    errorDiv.textContent = "";
-                });
+                input.addEventListener("keydown", e => { if (e.key === "Enter") tryLogin(); });
+                input.addEventListener("input", () => { errorDiv.textContent = ""; });
             },
 
             async onSuccess() {
@@ -2843,12 +2838,10 @@
                             DOM.query(".login-card").style.animation = "unset";
                         });
                         clearInterval(typeInterval);
-                        setTimeout(() => {
-                            DOM.query(".login-card").classList.add("bobble");
-                        }, 2400);
+                        setTimeout(() => DOM.query(".login-card").classList.add("bobble"), 2400);
                     }
                 }, 40);
-            }
+            },
         };
 
         // ============================
@@ -2999,12 +2992,12 @@
 
                 // Logout
                 DOM.get("logout").addEventListener("click", async () => {
-                    try {
-                        await fetch("api/logout", { method: "POST" });
-                    } catch (err) {
-                        console.error("Logout failed:", err);
-                    }
-                    location.reload();
+                    
+                        // Clear session cookie via backend
+                        fetch("/api/logout", { method: "POST" }).finally(() => {
+                            location.reload();
+                        });
+                    
                 });
 
 
