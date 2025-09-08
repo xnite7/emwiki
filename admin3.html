@@ -2757,7 +2757,7 @@
             async init() {
                 try {
                     // Check if already logged in via secure cookie
-                    const res = await fetch("https://emwiki.site/api/check-session");
+                    const res = await fetch("https://emwiki.site/api/check-session  ", {  method: "GET", credentials: "include" });
                     if (res.ok) {
                         const data = await res.json();
                         if (data.ok) {
@@ -2791,8 +2791,9 @@
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ key }),
-                            credentials: "include" // important for cookies
+                            credentials: "include"
                         });
+
 
 
                         if (res.ok) {

@@ -9,7 +9,6 @@ function corsHeaders(request) {
     };
 }
 
-
 // --------------------- admin-login.js ---------------------
 import { createSession } from "./_utils/auth.js";
 
@@ -18,7 +17,6 @@ export const onRequestPost = async ({ request, env }) => {
     if (request.method === "OPTIONS") {
         return new Response(null, { headers: corsHeaders(request) });
     }
-
 
     try {
         const data = await request.json();
@@ -41,9 +39,9 @@ export const onRequestPost = async ({ request, env }) => {
 
         return new Response(JSON.stringify({ ok: true, name: row.name }), {
             headers: {
-                ...corsHeaders(request),
                 "Content-Type": "application/json",
-                "Set-Cookie": `session=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400`
+                "Set-Cookie": `session=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400`,
+                ...corsHeaders(request) // <-- apply CORS headers here
             }
         });
     } catch (err) {
