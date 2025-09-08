@@ -1,6 +1,6 @@
 // Helper for CORS
 function corsHeaders(request) {
-    const origin = request.headers.get("Origin") || "*";
+    const origin = request.headers.get("Origin") || "";
     return {
         "Access-Control-Allow-Origin": origin,
         "Access-Control-Allow-Credentials": "true",
@@ -8,6 +8,7 @@ function corsHeaders(request) {
         "Access-Control-Allow-Headers": "Content-Type",
     };
 }
+
 
 // --------------------- admin-login.js ---------------------
 import { createSession } from "./_utils/auth.js";
@@ -17,6 +18,7 @@ export const onRequestPost = async ({ request, env }) => {
     if (request.method === "OPTIONS") {
         return new Response(null, { headers: corsHeaders(request) });
     }
+
 
     try {
         const data = await request.json();
@@ -29,9 +31,9 @@ export const onRequestPost = async ({ request, env }) => {
             .catch(() => null);
 
         if (!row) {
-            return new Response(JSON.stringify({ error: "Invalid key" }), { 
-                status: 401, 
-                headers: corsHeaders(request) 
+            return new Response(JSON.stringify({ error: "Invalid key" }), {
+                status: 401,
+                headers: corsHeaders(request)
             });
         }
 
@@ -46,9 +48,9 @@ export const onRequestPost = async ({ request, env }) => {
         });
     } catch (err) {
         console.error("admin-login error:", err);
-        return new Response(JSON.stringify({ error: err.message }), { 
-            status: 500, 
-            headers: corsHeaders(request) 
+        return new Response(JSON.stringify({ error: err.message }), {
+            status: 500,
+            headers: corsHeaders(request)
         });
     }
 };
