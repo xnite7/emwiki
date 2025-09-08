@@ -13,7 +13,7 @@ export const onRequestPost = async ({ request, env }) => {
             .first();
 
         if (!row) {
-            return new Response(JSON.stringify({ error: "Invalid key" }), { status: 401 });
+            return new Response(JSON.stringify({ error: `Invalid key ${hashHex}` }), { status: 401 });
         }
 
         // Create signed token
