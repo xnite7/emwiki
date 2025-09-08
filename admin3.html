@@ -2739,7 +2739,7 @@
             async init() {
                 try {
                     // Check if already logged in (via secure cookie)
-                    const res = await fetch("/check-session");
+                    const res = await fetch("api/check-session");
                     if (res.ok) {
                         const data = await res.json();
                         if (data.ok) {
@@ -2769,7 +2769,7 @@
                     }
 
                     try {
-                        const res = await fetch("/login", {
+                        const res = await fetch("api/login", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ key })
