@@ -202,13 +202,6 @@
         // Configuration & Constants
         // ============================
         const CONFIG = {
-            ADMIN_KEYS: {
-                '00cc75b3c354bd864d646cc1a790268c33916bd2a32b78b502151640596f7702': 'xnite',
-                'd8d8c58d2c8c173f8de0ff61081d77210367d00eabcc76a04cf3d2d5b1cb3ab4': 'harvestmoon',
-                '0fc6b5fe21bb973ec350831217401b643eee63a6c29c74fb4fe6606b28ba7f8b': 'ivan',
-                '499b66dcc2946daa0c2ff49b05902dd1152d1a21208ca42fc2c9eb23281cb623': 'bagel',
-                'b7a6aa6f564e2e8617ea4e3d443c781d5f890377a584b8d46491d2bcc33e5f36': 'wavetechnic'
-            },
             WS_URLS: {
                 ADMIN_TRACKER: 'wss://admin-tracker.xnite7.workers.dev',
                 NOTES_BOARD: 'wss://notes-board.xnite7.workers.dev'
@@ -1693,7 +1686,11 @@
                     if (isGamenight) {
                         value = `Gamenight (${[...selectedMonths].join(', ')}${yearInput.value ? ' ' + yearInput.value : ''})`;
                     } else {
-                        value = input.value.trim() || li.remove();
+                        value = input.value.trim();
+                        if (!value) {
+                            li.remove();
+                            return;
+                        }
                     }
 
                     label.textContent = value;
@@ -3439,6 +3436,7 @@
                 UI.renderItems();
                 if (!isTouch) {
                     UI.setupDragDrop();
+                    CanvasArrow.init();
                 }
 
                 // Load history
