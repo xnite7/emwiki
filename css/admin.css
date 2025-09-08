@@ -2645,6 +2645,9 @@ body.dragging-panel {
 @media (max-width: 768px) {
 
 
+    .glass {
+        opacity: 0;
+    }
 
     #quick-editor-content img {
         max-width: 120px;
@@ -2676,7 +2679,10 @@ body.dragging-panel {
         font-size: 15px;
     }
 
+    .quick-editor-body {
 
+        align-content: center;
+    }
 
     #quick-editor-content.mobile-mode .small-btn {
 
@@ -2704,8 +2710,7 @@ body.dragging-panel {
         padding-bottom: env(safe-area-inset-bottom, 20px);
     }
 
-    .small-btn{
+    .small-btn {
         padding: 5px 5px;
     }
 }
-
