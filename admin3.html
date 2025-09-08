@@ -2757,7 +2757,7 @@
             async init() {
                 try {
                     // Check if already logged in via secure cookie
-                    const res = await fetch("/api/check-session");
+                    const res = await fetch("https://emwiki.site/api/check-session");
                     if (res.ok) {
                         const data = await res.json();
                         if (data.ok) {
@@ -2787,7 +2787,7 @@
                     }
 
                     try {
-                        const res = await fetch("/api/admin-login", {
+                        const res = await fetch("https://emwiki.site/api/admin-login", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ key })
@@ -3012,7 +3012,7 @@
                 DOM.get("logout").addEventListener("click", async () => {
 
                     // Clear session cookie via backend
-                    fetch("/api/logout", { method: "POST" }).finally(() => {
+                    fetch("https://emwiki.site/api/logout", { method: "POST" }).finally(() => {
                         location.reload();
                     });
 
