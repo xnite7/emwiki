@@ -239,6 +239,26 @@
         };
 
         // ============================
+        // Development Mode Configuration
+        // ============================
+        console.log(window.location)
+        const DEV_MODE = {
+            
+            enabled: window.location.hostname === 'localhost' ||
+                window.location.origin === 'file://' ||
+                window.location.hostname.includes('.local'),
+            adminName: 'dev_admin',
+            mockData: {
+                jsData: {
+                    "weapons": [],
+                    "backs": [],
+                    "heads": [],
+                    // Add sample data as needed
+                }
+            }
+        };
+
+        // ============================
         // State Management
         // ============================
         class AppState {
@@ -2755,6 +2775,11 @@
         // ============================
         const Auth = {
             async init() {
+                if (DEV_MODE.enabled) {
+                    console.log('🚀 Running in development mode');
+                    state.adminName = DEV_MODE.adminName;
+                    return this.onSuccess();
+                }
                 try {
                     // Check if already logged in via secure cookie
                     const res = await fetch("/api/check-session");
@@ -3019,9 +3044,9 @@
                 });
 
 
-                // Save button
-                DOM.get('save-btn').addEventListener('click', async () => {
-                    const btn = DOM.get('save-btn');
+                // Publish button
+                DOM.get('publish-btn').addEventListener('click', async () => {
+                    const btn = DOM.get('publish-btn');
                     btn.disabled = true;
                     btn.textContent = 'Publishing...';
 
