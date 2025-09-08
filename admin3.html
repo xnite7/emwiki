@@ -1508,14 +1508,15 @@
                 });
 
                 // Initialize Sortable
-                                if (!isTouch) {
-                Sortable.create(container, {
-                    animation: 150,
-                    handle: '.desc-item',
-                    group: { name: 'desc', pull: false, put: false },
-                    sort: true,
-                    filter: '.editing',
-                });}
+                if (!isTouch) {
+                    Sortable.create(container, {
+                        animation: 150,
+                        handle: '.desc-item',
+                        group: { name: 'desc', pull: false, put: false },
+                        sort: true,
+                        filter: '.editing',
+                    });
+                }
             },
 
             renderPrices(item) {
@@ -1526,14 +1527,15 @@
                 prices.forEach(price => this.createPriceItem(price, false));
 
                 // Initialize Sortable
-                                if (!isTouch) {
-                Sortable.create(container, {
-                    animation: 150,
-                    handle: '.prc-item',
-                    group: { name: 'prc', pull: false, put: false },
-                    sort: true,
-                    filter: '.editing',
-                });}
+                if (!isTouch) {
+                    Sortable.create(container, {
+                        animation: 150,
+                        handle: '.prc-item',
+                        group: { name: 'prc', pull: false, put: false },
+                        sort: true,
+                        filter: '.editing',
+                    });
+                }
             },
 
             createDescItem(value = '', isGamenight = false, startFocused = false, skipOriginalCheck = false) {
@@ -2735,111 +2737,114 @@
         // ============================
         const Auth = {
             async init() {
-                DOM.get('admin-key').focus();
-
-                const saved = Utils.getCookie('adminKey');
-                if (saved) {
-                    const hash = await Utils.hash(saved);
-                    if (CONFIG.ADMIN_KEYS[hash]) {
-                        state.adminName = CONFIG.ADMIN_KEYS[hash];
-                        this.onSuccess();
-                        return;
+                try {
+                    // Check if already logged in (via secure cookie)
+                    const res = await fetch("/check-session");
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.ok) {
+                            state.adminName = data.name;
+                            return this.onSuccess();
+                        }
                     }
+                } catch (err) {
+                    console.error("Session check failed:", err);
                 }
 
+                // If no valid session, show login
                 this.showLoginForm();
-                // Setup canvas arrow
-                if (!isTouch) {
-                    CanvasArrow.init();
-                    CanvasArrow.target = DOM.get('admin-key');
-                }
             },
 
             showLoginForm() {
-                const input = DOM.get('admin-key');
-                const loginBtn = DOM.get('login-btn');
-                const errorDiv = DOM.get('login-error');
+                const input = DOM.get("admin-key");
+                const loginBtn = DOM.get("login-btn");
+                const errorDiv = DOM.get("login-error");
                 let attempts = 0;
 
                 const tryLogin = async () => {
                     const key = input.value.trim();
                     if (!key) {
-                        errorDiv.textContent = 'Please enter an admin key';
+                        errorDiv.textContent = "Please enter an admin key";
                         return;
                     }
 
-                    const hash = await Utils.hash(key);
-                    if (CONFIG.ADMIN_KEYS[hash]) {
-                        Utils.setCookie('adminKey', key, 30);
-                        state.adminName = CONFIG.ADMIN_KEYS[hash];
-                        this.onSuccess();
-                    } else {
-                        attempts++;
-                        if (attempts > 4) {
-                            errorDiv.textContent = 'Too many attempts. Please refresh.';
-                            input.disabled = true;
-                            loginBtn.disabled = true;
-                            return;
+                    try {
+                        const res = await fetch("/login", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ key })
+                        });
+
+                        if (res.ok) {
+                            const data = await res.json();
+                            state.adminName = data.name;
+                            this.onSuccess();
+                        } else {
+                            attempts++;
+                            errorDiv.textContent = "Invalid admin key";
+
+                            if (attempts > 4) {
+                                errorDiv.textContent = "Too many attempts. Please refresh.";
+                                input.disabled = true;
+                                loginBtn.disabled = true;
+                            }
+
+                            // shake animation
+                            DOM.query(".login-card").classList.add("shake");
+                            setTimeout(() => {
+                                DOM.query(".login-card").classList.remove("shake");
+                            }, 500);
                         }
-                        errorDiv.textContent = 'Invalid admin key';
-                        DOM.query('.login-card').classList.add('shake');
-                        setTimeout(() => {
-                            DOM.query('.login-card').classList.remove('shake');
-                        }, 500);
+                    } catch (err) {
+                        errorDiv.textContent = "Network error, try again";
+                        console.error("Login error:", err);
                     }
                 };
 
-                loginBtn.addEventListener('click', tryLogin);
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') tryLogin();
+                loginBtn.addEventListener("click", tryLogin);
+                input.addEventListener("keydown", e => {
+                    if (e.key === "Enter") tryLogin();
                 });
-                input.addEventListener('input', () => {
-                    errorDiv.textContent = '';
+                input.addEventListener("input", () => {
+                    errorDiv.textContent = "";
                 });
             },
 
             async onSuccess() {
-                // Show welcome animation
                 this.showWelcome();
-
-                // Initialize app
                 await App.init();
             },
 
             showWelcome() {
                 CanvasArrow.enabled = false;
-                DOM.query('main').style.display = 'flex';
-                DOM.query('header').style.display = 'flex';
-                const overlay = DOM.get('login-overlay');
-                const welcomeLabel = DOM.get('welcome-label');
+                DOM.query("main").style.display = "flex";
+                DOM.query("header").style.display = "flex";
+                const overlay = DOM.get("login-overlay");
+                const welcomeLabel = DOM.get("welcome-label");
                 const text = `Welcome, ${state.adminName}.`;
 
-                overlay.style.background = 'transparent';
-                overlay.style.pointerEvents = 'none';
-                DOM.query('.login-card').classList.add('glass');
-                welcomeLabel.style.opacity = '1';
-                // Typing animation
+                overlay.style.background = "transparent";
+                overlay.style.pointerEvents = "none";
+                DOM.query(".login-card").classList.add("glass");
+                welcomeLabel.style.opacity = "1";
+
                 let i = 0;
                 setTimeout(() => {
-
-                    DOM.query('.login-card').style.backdropFilter = 'url(#frosted)';
-                    DOM.query('.login-card').style.webkitBackdropFilter = 'url(#frosted)';
+                    DOM.query(".login-card").style.backdropFilter = "url(#frosted)";
+                    DOM.query(".login-card").style.webkitBackdropFilter = "url(#frosted)";
                 }, 1000);
+
                 const typeInterval = setInterval(() => {
                     if (i < text.length) {
                         welcomeLabel.textContent += text[i];
                         i++;
-
                     } else {
-
-                        DOM.query('.login-card').addEventListener('animationend', (event) => {
-
-                            DOM.query('.login-card').style.animation = 'unset';
-
+                        DOM.query(".login-card").addEventListener("animationend", () => {
+                            DOM.query(".login-card").style.animation = "unset";
                         });
                         clearInterval(typeInterval);
                         setTimeout(() => {
-                            DOM.query('.login-card').classList.add('bobble');
+                            DOM.query(".login-card").classList.add("bobble");
                         }, 2400);
                     }
                 }, 40);
@@ -3304,7 +3309,7 @@
                         padding: '14px 15px 0px 15px',
                         marginTop: '7px',
                         textAlign: 'center',
-                        height:'54px'
+                        height: '54px'
                     });
                 }
 
@@ -3312,7 +3317,7 @@
                 //    Object.assign(img.style, {
                 //        maxWidth: '200px',
                 //        margin: '0 auto'
-                 //   });
+                //   });
                 //}
 
                 if (body) {
