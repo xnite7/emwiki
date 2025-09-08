@@ -1566,11 +1566,21 @@ function setupSearch(itemList, defaultColor) {
 
     if (e.key === 'ArrowDown') {
       activeIndex = (activeIndex + 1) % items.length;
+      
+      items[activeIndex].style.filter = "brightness(0.8)";
     } else if (e.key === 'ArrowUp') {
       activeIndex = (activeIndex - 1 + items.length) % items.length;
-    } else if (e.key === 'Enter' && activeIndex >= 0) {
+      
+      items[activeIndex].style.filter = "brightness(0.8)";
+      
+    } else if (e.key === 'Enter') {
+
+      if (searchInput.value.trim() === 'dev') {
+        window.location.href = 'https://emwiki.site/admin';
+        return;
+      }
       e.preventDefault();
-      items[activeIndex].click();
+      items[activeIndex + 1].click();
     } else if (e.key === 'Escape') {
       resultsContainer.innerHTML = '';
       return;
