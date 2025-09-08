@@ -748,7 +748,7 @@ function Modal(event) {
 
 
   modalCache.prc.style.display = "flex"
-  if (price == 0 || price == 'N/A') {
+  if (price == 'N/A') {
     modalCache.prc.style.display = "none"
   }
 
@@ -1362,7 +1362,7 @@ function createNewItem(item, color) {
   price.innerHTML = `<img src="./imgs/iZGLVYo.png" draggable="false">${shortenThousands(item.price) || 0}`;
   newItem.appendChild(price);
 
-  if (item.price == 0 || item.price == 'N/A') {
+  if (item.price == 'N/A') {
     price.style.display = "none";
   }
   const from = document.createElement("div");

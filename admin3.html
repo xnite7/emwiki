@@ -81,9 +81,9 @@
 
     <!-- Main Content -->
     <main style="display: none;">
-        <div id="quick-editor-spacer" style="visibility: hidden;width: 424px;" class="initial"></div>
+
         <div id="main-content">
-            <!-- Lists Section -->
+            <div id="quick-editor-spacer" style="visibility: hidden;width: 424px;" class="initial"></div>
             <div class="section" id="lists-section">
                 <h2>Shops</h2>
                 <div id="shops-container"></div>
@@ -97,7 +97,10 @@
             <!-- History Section -->
             <div class="section" id="history-section">
                 <h2>History</h2>
-                <div id="history-list"></div>
+                <div id="history-list">
+                    <div class="torn-edge"></div>
+                </div>
+
             </div>
 
             <!-- Notes Section -->
@@ -131,17 +134,26 @@
             </div>
             <button id="quick-editor-close" title="Close">&times;</button>
             <h2 id="quick-editor-title"></h2>
+            <img id="quick-editor-img" src="" alt="" />
             <div class="quick-editor-body">
-                <img id="quick-editor-img" src="" alt="" />
                 <div class="price-tag">
-                    <input id="quick-editor-price" type="text" placeholder="RAP" />
+                    <input id="quick-editor-price" autocomplete="off" type="text" placeholder="RAP" />
                 </div>
                 <div class="flag-row"></div>
             </div>
             <hr>
             <div id="quick-editor-lists">
+
+
                 <div>
-                    <label style="margin-top:-9px;position:relative;z-index:1;">
+                    <label>Descriptions↴</label>
+                    <ul class="desc-list"></ul>
+                    <button id="new-desc-btn">Text</button>
+                    <button id="new-gn-btn">Gamenight Date</button>
+                </div>
+
+                <div style="margin-top:9px;">
+                    <label>
                         Code / Rarity / Price↴
                         <h1>?</h1>
                         <p>Coins, Stars, %, Opals, Baubles, Tokens, Eggs, Pumpkins, Visors, Robux, Unobtainable</p>
@@ -149,13 +161,6 @@
                     <ul class="prc-list"></ul>
                     <button style="padding-bottom:8px;margin-bottom:0px;" id="new-prc-btn">Code / Rarity /
                         Price</button>
-                </div>
-
-                <div style="margin-top:21px;">
-                    <label>Descriptions↴</label>
-                    <ul class="desc-list"></ul>
-                    <button id="new-desc-btn">Text</button>
-                    <button id="new-gn-btn">Gamenight Date</button>
                 </div>
             </div>
         </div>
@@ -165,6 +170,7 @@
 
 
     <script>
+        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         // ============================
         // Configuration & Constants
         // ============================
@@ -199,7 +205,9 @@
                 send: 'data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12%202a1%201%200%200%201%20.894.553l9%2018a1%201%200%200%201-1.11%201.423L12%2020.024l-8.783%201.952a1%201%200%200%201-1.111-1.423l9-18A1%201%200%200%201%2012%202zm1%2016.198l6.166%201.37L13%207.236v10.962zM11%207.236L4.834%2019.568%2011%2018.198V7.236z%22%2F%3E%3C%2Fsvg%3E',
                 edit: 'data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M16.293%203.293a1%201%200%200%201%201.414%200l3%203a1%201%200%200%201%200%201.414l-9%209A1%201%200%200%201%2011%2017H8a1%201%200%200%201-1-1v-3a1%201%200%200%201%20.293-.707l9-9zM9%2013.414V15h1.586l8-8L17%205.414l-8%208zM3%207a2%202%200%200%201%202-2h5a1%201%200%201%201%200%202H5v12h12v-5a1%201%200%201%201%202%200v5a2%202%200%200%201-2%202H5a2%202%200%200%201-2-2V7z%22%20%2F%3E%3C%2Fsvg%3E',
                 delete: 'data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%204a2%202%200%200%201%202-2h6a2%202%200%200%201%202%202v2h4a1%201%200%201%201%200%202h-1.069l-.867%2012.142A2%202%200%200%201%2017.069%2022H6.93a2%202%200%200%201-1.995-1.858L4.07%208H3a1%201%200%200%201%200-2h4V4zm2%202h6V4H9v2zM6.074%208l.857%2012H17.07l.857-12H6.074zM10%2010a1%201%200%200%201%201%201v6a1%201%200%201%201-2%200v-6a1%201%200%200%201%201-1zm4%200a1%201%200%200%201%201%201v6a1%201%200%201%201-2%200v-6a1%201%200%200%201%201-1z%22%20%2F%3E%3C%2Fsvg%3E',
-                check: 'data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3Csvg%20viewBox%3D%220%20-8%2072%2072%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M61.07%2C12.9%2C57%2C8.84a2.93%2C2.93%2C0%2C0%2C0-4.21%2C0L28.91%2C32.73%2C19.2%2C23A3%2C3%2C0%2C0%2C0%2C15%2C23l-4.06%2C4.07a2.93%2C2.93%2C0%2C0%2C0%2C0%2C4.21L26.81%2C47.16a2.84%2C2.84%2C0%2C0%2C0%2C2.1.89A2.87%2C2.87%2C0%2C0%2C0%2C31%2C47.16l30.05-30a2.93%2C2.93%2C0%2C0%2C0%2C0-4.21Z%22%2F%3E%3C%2Fsvg%3E'
+                check: 'data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3Csvg%20viewBox%3D%220%20-8%2072%2072%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M61.07%2C12.9%2C57%2C8.84a2.93%2C2.93%2C0%2C0%2C0-4.21%2C0L28.91%2C32.73%2C19.2%2C23A3%2C3%2C0%2C0%2C0%2C15%2C23l-4.06%2C4.07a2.93%2C2.93%2C0%2C0%2C0%2C0%2C4.21L26.81%2C47.16a2.84%2C2.84%2C0%2C0%2C0%2C2.1.89A2.87%2C2.87%2C0%2C0%2C0%2C31%2C47.16l30.05-30a2.93%2C2.93%2C0%2C0%2C0%2C0-4.21Z%22%2F%3E%3C%2Fsvg%3E',
+                gamenight: 'data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20class%3D%22icon%20flat-color%22%3E%3Cpath%20id%3D%22primary%22%20d%3D%22M22%2C9.81a1%2C1%2C0%2C0%2C0-.83-.69l-5.7-.78L12.88%2C3.53a1%2C1%2C0%2C0%2C0-1.76%2C0L8.57%2C8.34l-5.7.78a1%2C1%2C0%2C0%2C0-.82.69%2C1%2C1%2C0%2C0%2C0%2C.28%2C1l4.09%2C3.73-1%2C5.24A1%2C1%2C0%2C0%2C0%2C6.88%2C20.9L12%2C18.38l5.12%2C2.52a1%2C1%2C0%2C0%2C0%2C.44.1%2C1%2C1%2C0%2C0%2C0%2C1-1.18l-1-5.24%2C4.09-3.73A1%2C1%2C0%2C0%2C0%2C22%2C9.81Z%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E',
+                prices: 'data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M20%2C2H14a1%2C1%2C0%2C0%2C0-.71.29L3%2C12.55a2%2C2%2C0%2C0%2C0%2C0%2C2.83L8.62%2C21a2%2C2%2C0%2C0%2C0%2C1.41.59h0A2%2C2%2C0%2C0%2C0%2C11.45%2C21L21.71%2C10.7A1%2C1%2C0%2C0%2C0%2C22%2C10V4A2%2C2%2C0%2C0%2C0%2C20%2C2Z%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E'
             }
         };
 
@@ -220,6 +228,10 @@
                 this.gistVersion = 0;
                 this.notes = [];
                 this.recentAdmins = new Map();
+
+                this.originalItems = new Map(); // Store original states
+                this.changedItems = new Set(); // Track which items have changes
+
                 this.filters = {
                     search: '',
                     category: 'all',
@@ -237,8 +249,92 @@
         const state = new AppState();
 
         // ============================
+        // Change Tracking
+        // ============================
+
+        const ChangeTracker = {
+            captureOriginal(item) {
+                if (!state.originalItems.has(item.name)) {
+                    state.originalItems.set(item.name, JSON.stringify(item));
+                }
+            },
+
+            checkChanges(item) {
+                const original = state.originalItems.get(item.name);
+                if (!original) return false;
+
+                // Normalize items for comparison
+                const normalizedCurrent = JSON.parse(JSON.stringify(item));
+                const normalizedOriginal = JSON.parse(original);
+
+                // Normalize price values - treat "", null, undefined, "0" as equivalent
+                const normalizePrice = (price) => {
+                    if (!price || price === '' || price === 'N/A' || price === 'undefined') {
+                        return '0';
+                    }
+                    return price;
+                };
+
+                normalizedCurrent.price = normalizePrice(normalizedCurrent.price);
+                normalizedOriginal.price = normalizePrice(normalizedOriginal.price);
+
+                const hasChanges = JSON.stringify(normalizedOriginal) !== JSON.stringify(normalizedCurrent);
+
+                if (hasChanges) {
+                    state.changedItems.add(item.name);
+                } else {
+                    state.changedItems.delete(item.name);
+                }
+
+                return hasChanges;
+            },
+
+            updateHighlights() {
+                document.querySelectorAll('.item-card').forEach(card => {
+                    const name = card.dataset.name;
+                    if (state.changedItems.has(name)) {
+                        card.classList.add('changed');
+                    } else {
+                        card.classList.remove('changed');
+                    }
+                });
+            },
+
+            /**
+             * Check if a specific value exists in the original item data
+             * @param {Object} item - Current item
+             * @param {string} field - Field to check ('from' or 'price/code/rarity')
+             * @param {string} value - Value to check for
+             * @returns {boolean} - True if value existed in original data
+             */
+            isValueOriginal(item, field, value) {
+                const originalData = this.getOriginalItem(item);
+                if (!originalData) return false;
+
+                const originalFieldValue = originalData[field] || '';
+                const originalLines = originalFieldValue.split('<br>')
+                    .map(line => line.trim())
+                    .filter(Boolean);
+
+                return originalLines.includes(value.trim());
+            },
+
+            /**
+             * Get the original item data
+             * @param {Object} item - Current item
+             * @returns {Object|null} - Original item data or null
+             */
+            getOriginalItem(item) {
+                const originalJson = state.originalItems.get(item.name);
+                return originalJson ? JSON.parse(originalJson) : null;
+            },
+
+        };
+
+        // ============================
         // Utility Functions
         // ============================
+
         const Utils = {
             async hash(text) {
                 const data = new TextEncoder().encode(text);
@@ -317,6 +413,77 @@
             resizer() {
                 UI.renderItems(true);
                 //CanvasArrow.updateSize();
+            },
+
+            // Improved debounce with immediate option
+            debounce(func, wait, immediate = false) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        timeout = null;
+                        if (!immediate) func(...args);
+                    };
+
+                    const callNow = immediate && !timeout;
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+
+                    if (callNow) func(...args);
+                };
+            },
+
+            // Throttle function
+            throttle(func, limit) {
+                let inThrottle;
+                return function (...args) {
+                    if (!inThrottle) {
+                        func.apply(this, args);
+                        inThrottle = true;
+                        setTimeout(() => inThrottle = false, limit);
+                    }
+                };
+            },
+
+            // Improved event delegation
+            delegate(parent, selector, event, handler) {
+                parent.addEventListener(event, (e) => {
+                    if (e.target.matches(selector)) {
+                        handler.call(e.target, e);
+                    }
+                });
+            },
+
+            // Local storage with error handling
+            storage: {
+                get(key, defaultValue = null) {
+                    try {
+                        const item = localStorage.getItem(key);
+                        return item ? JSON.parse(item) : defaultValue;
+                    } catch (error) {
+                        ErrorHandler.handle(error, 'localStorage get');
+                        return defaultValue;
+                    }
+                },
+
+                set(key, value) {
+                    try {
+                        localStorage.setItem(key, JSON.stringify(value));
+                        return true;
+                    } catch (error) {
+                        ErrorHandler.handle(error, 'localStorage set');
+                        return false;
+                    }
+                },
+
+                remove(key) {
+                    try {
+                        localStorage.removeItem(key);
+                        return true;
+                    } catch (error) {
+                        ErrorHandler.handle(error, 'localStorage remove');
+                        return false;
+                    }
+                }
             }
         };
 
@@ -324,19 +491,31 @@
         // DOM Cache
         // ============================
         const DOM = {
+            cache: new Map(),
+
             get(id) {
-                if (!this[id]) {
-                    this[id] = document.getElementById(id);
+                if (!this.cache.has(id)) {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        this.cache.set(id, element);
+                    }
                 }
-                return this[id];
+                return this.cache.get(id);
             },
+
             query(selector) {
                 return document.querySelector(selector);
             },
+
             queryAll(selector) {
                 return document.querySelectorAll(selector);
+            },
+
+            clear() {
+                this.cache.clear();
             }
         };
+
         new ResizeObserver(Utils.resizer).observe(DOM.get('lists-section'));
         // ============================
         // WebSocket Manager
@@ -347,49 +526,152 @@
                 this.name = name;
                 this.handlers = handlers;
                 this.backoff = 1000;
+                this.maxBackoff = 30000;
                 this.ws = null;
+                this.reconnectAttempts = 0;
+                this.maxReconnectAttempts = 5;
+                this.isIntentionallyClosed = false;
+                this.heartbeatInterval = null;
+
                 this.connect();
             }
 
             connect() {
-                this.ws = new WebSocket(this.url);
+                if (this.isIntentionallyClosed) return;
 
+                try {
+                    this.ws = new WebSocket(this.url);
+                    this.setupEventHandlers();
+                } catch (error) {
+                    ErrorHandler.handle(error, `WebSocket ${this.name} connection`);
+                    this.scheduleReconnect();
+                }
+            }
+
+            setupEventHandlers() {
                 this.ws.onopen = () => {
                     this.backoff = 1000;
-                    if (this.handlers.onOpen) this.handlers.onOpen();
+                    this.reconnectAttempts = 0;
+                    this.startHeartbeat();
+
+                    if (this.handlers.onOpen) {
+                        this.handlers.onOpen();
+                    }
                 };
 
                 this.ws.onmessage = (event) => {
-                    const data = JSON.parse(event.data);
-                    if (this.handlers.onMessage) this.handlers.onMessage(data);
+                    try {
+                        const data = JSON.parse(event.data);
+                        if (this.handlers.onMessage) {
+                            this.handlers.onMessage(data);
+                        }
+                    } catch (error) {
+                        ErrorHandler.handle(error, `WebSocket ${this.name} message parsing`);
+                    }
                 };
 
-                this.ws.onclose = () => {
-                    setTimeout(() => this.connect(), this.backoff);
-                    this.backoff = Math.min(this.backoff * 2, 30000);
-                    if (this.handlers.onClose) this.handlers.onClose();
+                this.ws.onclose = (event) => {
+                    this.stopHeartbeat();
+
+                    if (!this.isIntentionallyClosed) {
+                        if (this.reconnectAttempts < this.maxReconnectAttempts) {
+                            this.scheduleReconnect();
+                        } else {
+                            ErrorHandler.handle(
+                                new Error('Max reconnection attempts reached'),
+                                `WebSocket ${this.name}`
+                            );
+                        }
+                    }
+
+                    if (this.handlers.onClose) {
+                        this.handlers.onClose(event);
+                    }
                 };
 
                 this.ws.onerror = (error) => {
-                    console.error(`WebSocket ${this.name} error:`, error);
-                    if (this.handlers.onError) this.handlers.onError(error);
+                    ErrorHandler.handle(error, `WebSocket ${this.name}`);
+                    if (this.handlers.onError) {
+                        this.handlers.onError(error);
+                    }
                 };
+            }
+
+            scheduleReconnect() {
+                this.reconnectAttempts++;
+                setTimeout(() => {
+                    this.connect();
+                }, this.backoff);
+
+                this.backoff = Math.min(this.backoff * 2, this.maxBackoff);
+            }
+
+            startHeartbeat() {
+                this.heartbeatInterval = setInterval(() => {
+                    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                        this.send({ type: 'ping' });
+                    }
+                }, 30000); // 30 seconds
+            }
+
+            stopHeartbeat() {
+                if (this.heartbeatInterval) {
+                    clearInterval(this.heartbeatInterval);
+                    this.heartbeatInterval = null;
+                }
             }
 
             send(data) {
                 if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-                    this.ws.send(typeof data === 'string' ? data : JSON.stringify(data));
+                    try {
+                        this.ws.send(typeof data === 'string' ? data : JSON.stringify(data));
+                        return true;
+                    } catch (error) {
+                        ErrorHandler.handle(error, `WebSocket ${this.name} send`);
+                        return false;
+                    }
                 }
+                return false;
             }
 
             close() {
+                this.isIntentionallyClosed = true;
+                this.stopHeartbeat();
+
                 if (this.ws) {
                     this.ws.close();
                     this.ws = null;
                 }
             }
-        }
+        };
 
+        // ============================
+        // Performance Monitor
+        // ============================
+        const PerformanceMonitor = {
+            timers: new Map(),
+
+            start(label) {
+                this.timers.set(label, performance.now());
+            },
+
+            end(label) {
+                const startTime = this.timers.get(label);
+                if (startTime) {
+                    const duration = performance.now() - startTime;
+                    console.log(`${label}: ${duration.toFixed(2)}ms`);
+                    this.timers.delete(label);
+                    return duration;
+                }
+            },
+
+            measure(fn, label) {
+                this.start(label);
+                const result = fn();
+                this.end(label);
+                return result;
+            }
+        };
         // ============================
         // API Manager
         // ============================
@@ -435,6 +717,21 @@
             },
 
             async saveData() {
+                // Clean up the data before saving
+                const cleanedData = JSON.parse(JSON.stringify(state.jsData)); // Deep clone
+
+                // Iterate through all categories and items to fix prices
+                Object.values(cleanedData).forEach(categoryItems => {
+                    if (Array.isArray(categoryItems)) {
+                        categoryItems.forEach(item => {
+                            // Convert empty, null, undefined, or "N/A" prices to "0"
+                            if (!item.price || item.price === '' || item.price === 'N/A' || item.price === 'undefined') {
+                                item.price = '0';
+                            }
+                        });
+                    }
+                });
+
                 const response = await fetch(CONFIG.API_URLS.UPDATE_GIST, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -467,7 +764,7 @@
 
             createItemCard(item) {
                 const card = Utils.createElement('div', {
-                    class: 'item-card',
+                    class: `item-card ${state.changedItems.has(item.name) ? 'changed' : ''}`,
 
                 });
                 card.dataset.name = item.name;
@@ -581,17 +878,17 @@
                     id: 'search',
                     placeholder: 'Search items...',
                     value: state.filters.search,
-                    style: {
-                        flex: 1,
-                        borderRadius: '8px',
-                        border: '1px solid var(--ghost)',
-                        background: 'transparent',
-                        color: 'var(--muted)'
-                    },
+                    autocomplete: "off",
                     onInput: Utils.debounce((e) => {
                         state.filters.search = e.target.value;
                         UI.renderItems();
                     }, 300)
+                });
+
+                const i = Utils.createElement('span', {
+                    id: 'search-icon',
+                    class: 'icon',
+                    innerHTML: '<span class="icon search-icon"></span>',
                 });
 
                 // Category filter
@@ -621,7 +918,7 @@
                 // Gamenight toggle
                 const gamenightBtn = Utils.createElement('button', {
                     class: `small-btn ${state.filters.gamenightOnly ? '' : 'ghost'}`,
-                    textContent: '🎮 Gamenight Only',
+                    innerHTML: '<span class="icon gamenight-icon"></span>Gamenight Only',
                     onClick: () => {
                         state.filters.gamenightOnly = !state.filters.gamenightOnly;
                         gamenightBtn.classList.toggle('ghost');
@@ -658,7 +955,7 @@
                 // Show prices button
                 const pricesBtn = Utils.createElement('button', {
                     class: `small-btn ${state.filters.showPrices ? '' : 'ghost'}`,
-                    textContent: 'Show prices',
+                    innerHTML: '<span class="icon prices-icon"></span>Show Prices',
                     onClick: () => {
                         state.filters.showPrices = !state.filters.showPrices;
                         pricesBtn.classList.toggle('ghost');
@@ -667,8 +964,10 @@
                         });
                     }
                 });
+                pricesBtn.click();
 
                 container.appendChild(searchInput);
+                container.appendChild(i);
                 container.appendChild(categorySelect);
                 container.appendChild(gamenightBtn);
                 container.appendChild(sortSelect);
@@ -903,16 +1202,74 @@
             },
 
             tagMenu: null,
+            titleInput: null,
 
             open(item) {
+
+
+                // Initialize draggable panel if not already done
+                if (!DraggablePanelManager.state.isInitialized) {
+                    DraggablePanelManager.init();
+                }
+
+                // Show the panel
+                DraggablePanelManager.show();
+
+                ChangeTracker.captureOriginal(item);
                 state.currentEditingItem = item;
                 const modal = DOM.get('quick-editor-modal');
                 const content = DOM.get('quick-editor-content');
                 const priceInput = DOM.get('quick-editor-price');
 
                 content.classList.remove('initial');
-                DOM.get('quick-editor-title').textContent = item.name;
+                DOM.get('quick-editor-title').innerHTML = item.name + `<span class="icon" style="
+                    mask-image: url(&quot;data:image/svg+xml,%3Csvg%20viewBox%3D%22-2.5%20-2.5%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20preserveAspectRatio%3D%22xMinYMin%22%20class%3D%22jam%20jam-pencil%22%3E%3Cpath%20d%3D'M12.238%205.472L3.2%2014.51l-.591%202.016%201.975-.571%209.068-9.068-1.414-1.415zM13.78%203.93l1.414%201.414%201.318-1.318a.5.5%200%200%200%200-.707l-.708-.707a.5.5%200%200%200-.707%200L13.781%203.93zm3.439-2.732l.707.707a2.5%202.5%200%200%201%200%203.535L5.634%2017.733l-4.22%201.22a1%201%200%200%201-1.237-1.241l1.248-4.255%2012.26-12.26a2.5%202.5%200%200%201%203.535%200z'%2F%3E%3C%2Fsvg%3E&quot;);
+                    width: 19px;
+                    height: 19px;
+                    margin-bottom: -2px;
+                    margin-left: 2px;
+                    float: none;
+                "></span>`;
 
+                DOM.get('quick-editor-title').onclick = () => {
+                    //if (this.titleInput) return; // already editing
+                    this.titleInput = document.createElement('input');
+                    this.titleInput.type = 'text';
+                    this.titleInput.value = item.name;
+                    this.titleInput.style.cssText = 'width:80%;background:#111827;border:1px solid #555;padding:4px 8px;color:#eee;font-size:16px;';
+                    DOM.get('quick-editor-title').innerHTML = '';
+                    DOM.get('quick-editor-title').appendChild(this.titleInput);
+                    this.titleInput.focus();
+                    this.titleInput.select();
+
+                    const saveName = () => {
+                        const newName = this.titleInput.value.trim();
+                        if (newName && newName !== item.name) {
+                            // Update name
+                            const oldName = item.name;
+                            item.name = newName;
+
+                            ChangeTracker.checkChanges(item);
+                            ChangeTracker.updateHighlights();
+                            UI.renderItems(true);
+                            UI.renderShops();
+                        }
+                        DOM.get('quick-editor-title').innerHTML = item.name + `<span class="icon" style="
+                            mask-image: url(&quot;data:image/svg+xml,%3Csvg%20viewBox%3D%22-2.5%20-2.5%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20preserveAspectRatio%3D%22xMinYMin%22%20class%3D%22jam%20jam-pencil%22%3E%3Cpath%20d%3D'M12.238%205.472L3.2%2014.51l-.591%202.016%201.975-.571%209.068-9.068-1.414-1.415zM13.78%203.93l1.414%201.414%201.318-1.318a.5.5%200%200%200%200-.707l-.708-.707a.5.5%200%200%200-.707%200L13.781%203.93zm3.439-2.732l.707.707a2.5%202.5%200%200%201%200%203.535L5.634%2017.733l-4.22%201.22a1%201%200%200%201-1.237-1.241l1.248-4.255%2012.26-12.26a2.5%202.5%200%200%201%203.535%200z'%2F%3E%3C%2Fsvg%3E&quot;);
+                            width: 19px;
+                            height: 19px;
+                            margin-bottom: -2px;
+                            margin-left: 2px;
+                            float: none;
+                        "></span>`;
+                    }
+                    this.titleInput.onchange = saveName;
+                    this.titleInput.onkeydown = (e) => {
+                        if (e.key === 'Enter') {
+                            saveName();
+                        }
+                    }
+                }
                 // Handle image
                 const img = DOM.get('quick-editor-img');
                 if (item.img) {
@@ -924,10 +1281,19 @@
 
                 // Setup price input
                 priceInput.placeholder = "RAP";
-                priceInput.value = item.price || '';
+                priceInput.value = '';
+
+                if (item.price >= 0 || item.price !== 'N/A') {
+                    priceInput.value = item.price || '';
+                }
+
                 priceInput.onchange = () => {
                     state.currentEditingItem.price = priceInput.value.trim();
-                    renderItems(true);
+                    ChangeTracker.checkChanges(state.currentEditingItem);
+                    ChangeTracker.updateHighlights();
+                    UI.renderItems(true);
+                    UI.renderShops();
+
                 };
 
                 // Setup buttons
@@ -955,6 +1321,9 @@
                     this.tagMenu.remove();
                     this.tagMenu = null;
                 }
+
+                // Hide the panel
+                DraggablePanelManager.hide();
             },
 
             setupButtons() {
@@ -962,14 +1331,14 @@
                 const gnBtn = DOM.get('new-gn-btn');
                 const prcBtn = DOM.get('new-prc-btn');
 
-                if (descBtn) descBtn.onclick = () => this.createDescItem('', false, true);
+                if (descBtn) descBtn.onclick = () => this.createDescItem('', false, true, true);
                 if (gnBtn) gnBtn.onclick = () => {
                     const now = new Date();
                     const month = now.toLocaleDateString('en-US', { month: 'short' });
                     const year = now.toLocaleDateString('en-US', { year: 'numeric' });
-                    this.createDescItem(`Gamenight (${month === "May" ? "May" : month + "."} ${year})`, true, true);
+                    this.createDescItem(`Gamenight (${month === "May" ? "May" : month + "."} ${year})`, true, true, true);
                 };
-                if (prcBtn) prcBtn.onclick = () => this.createPriceItem('', true);
+                if (prcBtn) prcBtn.onclick = () => this.createPriceItem('', true, true);
             },
 
             renderTags(item) {
@@ -990,9 +1359,6 @@
 
                 // Clear existing tags and buttons
                 flagRow.querySelectorAll('.tag-pill, .small-btn.ghost').forEach(e => e.remove());
-
-                // Render tag pills
-
 
                 // Add tag selector button
                 const btn = document.createElement('button');
@@ -1016,6 +1382,9 @@
             },
 
             renderTagPills(flagRow) {
+                // Clear existing tag pills first (but not the Tags button)
+                flagRow.querySelectorAll('.tag-pill').forEach(e => e.remove());
+
                 this.currentTags.forEach(tag => {
                     const pill = document.createElement('span');
                     pill.className = 'tag-pill';
@@ -1039,6 +1408,9 @@
 
                         this.renderTagPills(flagRow);
                         UI.renderShops();
+
+                        ChangeTracker.checkChanges(state.currentEditingItem);
+                        ChangeTracker.updateHighlights();
                     };
 
                     pill.appendChild(closeBtn);
@@ -1081,6 +1453,10 @@
                         this.tagMenu = null;
                         this.renderTagPills(flagRow);
                         UI.renderShops();
+
+                        // Add change tracking
+                        ChangeTracker.checkChanges(state.currentEditingItem);
+                        ChangeTracker.updateHighlights();
                     };
 
                     this.tagMenu.appendChild(btn);
@@ -1098,6 +1474,10 @@
                         this.tagMenu.remove();
                         this.tagMenu = null;
                     }
+                    if (this.titleInput) {
+                        this.titleInput.remove();
+                        this.titleInput = null;
+                    }
                 });
             },
 
@@ -1108,7 +1488,7 @@
                 const descriptions = (item.from || '').split('<br>').map(x => x.trim()).filter(Boolean);
                 descriptions.forEach(desc => {
                     const isGamenight = /\([A-Z][a-z]{2}\./.test(desc);
-                    this.createDescItem(desc, isGamenight);
+                    this.createDescItem(desc, isGamenight, false);
                 });
 
                 // Initialize Sortable
@@ -1116,7 +1496,8 @@
                     animation: 150,
                     handle: '.desc-item',
                     group: { name: 'desc', pull: false, put: false },
-                    sort: true
+                    sort: true,
+                    filter: '.editing',
                 });
             },
 
@@ -1125,29 +1506,43 @@
                 container.innerHTML = '';
 
                 const prices = (item['price/code/rarity'] || '').split('<br>').map(x => x.trim()).filter(Boolean);
-                prices.forEach(price => this.createPriceItem(price));
+                prices.forEach(price => this.createPriceItem(price, false));
 
                 // Initialize Sortable
                 Sortable.create(container, {
                     animation: 150,
                     handle: '.prc-item',
                     group: { name: 'prc', pull: false, put: false },
-                    sort: true
+                    sort: true,
+                    filter: '.editing',
                 });
             },
 
-            createDescItem(value = '', isGamenight = false, startFocused = false) {
+            createDescItem(value = '', isGamenight = false, startFocused = false, skipOriginalCheck = false) {
                 const container = DOM.query('.desc-list');
                 const months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
                 const selectedMonths = new Set();
 
+                // Check if this value is from the original item (unless we're skipping the check)
+                const isOriginal = !skipOriginalCheck &&
+                    state.currentEditingItem &&
+                    value &&
+                    ChangeTracker.isValueOriginal(state.currentEditingItem, 'from', value);
+
                 const li = this.createElement('li', {
                     className: 'desc-item',
-                    style: 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:#555;color:#fff;border-radius:6px;padding:5px 11px;margin-bottom:6px;cursor:grab;user-select:none'
+                    style: 'display:flex;align-items:center;gap:6px;background:#5c5c5c;color:#fff;border-radius:6px;padding:5px 11px;margin-bottom:6px;cursor:grab;user-select:none'
                 });
 
+                // Apply original styling if this content existed in the original item
+                if (isOriginal) {
+                    li.style.background = '#3c3c3c';
+                    li.style.border = '1px solid #555';
+                }
+
+                // ... rest of the method remains the same
                 const label = this.createElement('span', {
-                    style: 'max-width:255px;flex-grow:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis',
+                    style: 'max-width:224px;flex-grow:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis',
                     textContent: value || ''
                 });
 
@@ -1165,7 +1560,7 @@
                     min: 2016,
                     max: new Date().getFullYear(),
                     placeholder: 'Year',
-                    style: 'font-weight:700;font-size:15px;width:50px;display:none;border:none;border-radius:4px;padding:4px 6px'
+                    style: 'background: #3a3a3a;font-weight:700;font-size:14px;width:50px;display:none;border:none;border-radius:4px;padding:4px 6px'
                 });
 
                 // Create month buttons
@@ -1194,7 +1589,6 @@
                 const deleteBtn = this.createIconButton('delete', '', 'small-btn', 'padding:6px 0px 6px 6px;background:#f66');
                 const okBtn = this.createIconButton('check', '', 'small-btn', 'background:rgb(95 193 95);padding:6px 0px 6px 6px;text-shadow:0 0 5px #00000057;display:none;font-weight:700');
 
-
                 // Parse existing gamenight data
                 if (isGamenight && /\(.+\)/.test(value)) {
                     const match = value.match(/\((.+)\s(\d{4})\)/);
@@ -1212,28 +1606,30 @@
                     }
                 }
 
-                // Setup edit/done functions
+                // Setup edit/done functions with dynamic original check
                 const edit = () => {
+                    li.classList.add('editing');
                     deleteBtn.style.display = 'none';
                     okBtn.style.display = 'inline-block';
                     label.style.display = 'none';
                     editBtn.style.display = 'none';
+                    li.style.background = '#5c5c5c';
+                    li.style.border = 'none'; // Remove original border when editing
 
                     if (isGamenight) {
                         monthsWrapper.style.display = 'flex';
                         yearInput.style.display = 'inline-block';
                     } else {
                         input.style.display = 'inline-block';
-
-                        setTimeout(() => {
-                            input.focus();
-                        }, 100);
+                        setTimeout(() => input.focus(), 100);
                     }
                 };
 
                 if (startFocused) { edit(); }
 
                 const done = () => {
+                    if (!li.classList.contains('editing')) return;
+                    li.classList.remove('editing');
                     deleteBtn.style.display = 'inline-block';
                     okBtn.style.display = 'none';
 
@@ -1250,13 +1646,25 @@
                     yearInput.style.display = 'none';
                     editBtn.style.display = 'inline-block';
 
+                    // Re-check if the new value is original after editing
+                    const newIsOriginal = state.currentEditingItem &&
+                        value &&
+                        ChangeTracker.isValueOriginal(state.currentEditingItem, 'from', value);
+
+                    if (newIsOriginal) {
+                        li.style.background = '#3c3c3c';
+                        li.style.border = '1px solid #555';
+                    } else {
+                        li.style.background = '#5c5c5c';
+                        li.style.border = 'none';
+                    }
+
                     this.updateItemDescriptions();
                 };
 
-
                 // Setup event handlers
                 editBtn.onclick = e => { e.stopPropagation(); edit(); };
-                label.ondblclick = edit;
+                li.ondblclick = edit;
                 input.onblur = done;
                 input.onkeydown = e => { if (e.key === 'Enter' || e.key === 'Escape') done(); };
                 deleteBtn.onclick = () => {
@@ -1277,16 +1685,28 @@
                 }
 
                 container.appendChild(li);
-
             },
 
-            createPriceItem(value = '', startFocused = false) {
+            // Updated createPriceItem method
+            createPriceItem(value = '', startFocused = false, skipOriginalCheck = false) {
                 const container = DOM.query('.prc-list');
+
+                // Check if this value is from the original item (unless we're skipping the check)
+                const isOriginal = !skipOriginalCheck &&
+                    state.currentEditingItem &&
+                    value &&
+                    ChangeTracker.isValueOriginal(state.currentEditingItem, 'price/code/rarity', value);
 
                 const li = this.createElement('li', {
                     className: 'prc-item',
-                    style: 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:#555;color:#fff;border-radius:6px;padding:5px 11px;margin-bottom:6px;cursor:grab;user-select:none'
+                    style: 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:#5c5c5c;color:#fff;border-radius:6px;padding:5px 11px;margin-bottom:6px;cursor:grab;user-select:none'
                 });
+
+                // Apply original styling if this content existed in the original item
+                if (isOriginal) {
+                    li.style.background = '#3c3c3c';
+                    li.style.border = '1px solid #555';
+                }
 
                 const icon = this.createElement('img', {
                     src: './imgs/trs.png',
@@ -1309,7 +1729,6 @@
                     // Reset styles
                     icon.style.display = 'inline-block';
                     icon.src = './imgs/trs.png';
-
 
                     // Apply special formatting
                     if (text.includes("Tokens")) {
@@ -1339,8 +1758,8 @@
 
                     // Update icon based on currency type
                     for (const [key, src] of Object.entries(this.ICON_MAP)) {
-                        if (text.includes(key)) {
-                            label.textContent = text.replace(` ${key}`, "");
+                        if (text.toLowerCase().includes(key.toLowerCase())) {
+                            label.textContent = text.toLowerCase().replace(` ${key.toLowerCase()}`, "");
                             icon.src = src;
                             break;
                         }
@@ -1359,35 +1778,60 @@
                 // Initial format
                 formatLabel();
 
-                // Setup edit/done functions
+                // Setup edit/done functions with dynamic original check
                 const edit = () => {
                     deleteBtn.style.display = 'none';
                     okBtn.style.display = 'inline-block';
                     label.style.display = 'none';
                     editBtn.style.display = 'none';
                     input.style.display = 'inline-block';
-                    setTimeout(() => {
-                        input.focus();
-                    }, 100);
+                    li.classList.add('editing');
+                    li.style.background = '#5c5c5c';
+                    li.style.border = 'none'; // Remove original border when editing
+                    setTimeout(() => input.focus(), 100);
                 };
 
                 if (startFocused) { edit(); }
 
                 const done = () => {
+                    if (!li.classList.contains('editing')) return;
+                    li.classList.remove('editing');
                     deleteBtn.style.display = 'inline-block';
                     okBtn.style.display = 'none';
-                    label.textContent = input.value.trim() || li.remove();
+
+                    const newValue = input.value.trim();
+                    if (!newValue) {
+                        li.remove();
+                        this.updateItemPrices();
+                        return;
+                    }
+
+                    label.textContent = newValue;
                     label.style.display = 'inline';
                     input.style.display = 'none';
                     editBtn.style.display = 'inline-block';
                     formatLabel();
+
+                    // Re-check if the new value is original after editing
+                    const newIsOriginal = state.currentEditingItem &&
+                        newValue &&
+                        ChangeTracker.isValueOriginal(state.currentEditingItem, 'price/code/rarity', newValue);
+
+                    if (newIsOriginal) {
+                        li.style.background = '#3c3c3c';
+                        li.style.border = '1px solid #555';
+                    } else {
+                        li.style.background = '#5c5c5c';
+                        li.style.border = 'none';
+                    }
+
                     this.updateItemPrices();
                 };
 
                 // Setup event handlers
                 input.oninput = formatLabel;
                 editBtn.onclick = e => { e.stopPropagation(); edit(); };
-                label.ondblclick = edit;
+                li.ondblclick = edit;
                 input.onblur = done;
                 input.onkeydown = e => { if (e.key === 'Enter' || e.key === 'Escape') done(); };
                 deleteBtn.onclick = () => {
@@ -1402,7 +1846,6 @@
                 // Append elements
                 li.append(icon, label, input, editBtn, deleteBtn, okBtn);
                 container.appendChild(li);
-
             },
 
             updateItemDescriptions() {
@@ -1410,6 +1853,13 @@
                     .map(span => span.textContent.trim())
                     .filter(v => v && v !== 'Description...');
                 state.currentEditingItem.from = items.join('<br>') || '';
+                ChangeTracker.checkChanges(state.currentEditingItem);
+                ChangeTracker.updateHighlights();
+
+                // Trigger overflow check after content update
+                if (DraggablePanelManager.state.isInitialized) {
+                    DraggablePanelManager.refreshOverflow();
+                }
             },
 
             updateItemPrices() {
@@ -1417,6 +1867,13 @@
                     .map(input => input.value.trim())
                     .filter(v => v);
                 state.currentEditingItem['price/code/rarity'] = items.join('<br>') || '';
+                ChangeTracker.checkChanges(state.currentEditingItem);
+                ChangeTracker.updateHighlights();
+
+                // Trigger overflow check after content update
+                if (DraggablePanelManager.state.isInitialized) {
+                    DraggablePanelManager.refreshOverflow();
+                }
             },
 
             setupDragHandlers(element) {
@@ -1454,6 +1911,9 @@
 
                 if (icons[type]) {
                     btn.querySelector('.icon').style.maskImage = `url('data:image/svg+xml,<svg viewBox="${type === 'check' ? '0 -8 72 72' : '0 0 24 24'}" xmlns="http://www.w3.org/2000/svg"><path d="${icons[type]}" /></svg>')`;
+                    if (type == 'edit') {
+                        btn.querySelector('.icon').style.marginRight = '3px';
+                    }
                 }
 
                 if (additionalStyle) {
@@ -1464,27 +1924,15 @@
             }
         };
 
-
-
         // ============================
         // History Manager
         // ============================
         const HistoryManager = {
-            // Configuration constants
-            STYLES: {
-                header: 'background: linear-gradient(rgb(34 34 34), rgb(8 8 8));padding: 7px;border-radius: 6px;margin-bottom: 1.2rem; font-weight:700; font-size:19px; margin-bottom:4px; display:flex; justify-content: space-between; align-items: baseline;',
-                timeDiv: 'font-weight:900; font-size:14px; color:#666;',
-                sectionTitle: 'margin:8px 0 4px 0; font-weight:600; font-size:21px; color:#9f9790; font-variant:all-petite-caps;',
-                section: 'marginLeft:18px;',
-                list: 'margin:0 0 8px 16px; padding:0; list-style:none; font-size:14px; color:#ddd;',
-                listItem: 'margin-bottom:3px;',
-                descriptionItem: 'margin-bottom:16px;'
-            },
-
+            // Configuration constants (unchanged)
             ICONS: {
-                true: '<span style="display:inline-block;width:1.2em;text-align:center;color:#6f6">✔</span>',
-                false: '<span style="display:inline-block;width:1.2em;text-align:center;color:#f66">🗙</span>',
-                price: '<span style="display:inline-block;width:1.2em;text-align:center;color:#fa4;font-weight:bolder;">$</span>'
+                true: '<span class="typeicon green">✓</span>',
+                false: '<span class="typeicon red">✗</span>',
+                price: '<span class="typeicon price">$</span>'
             },
 
             BOOLEAN_FIELDS: ['weeklystar', 'weekly', 'new', 'retired', 'premium', 'tradable'],
@@ -1500,44 +1948,175 @@
                 ['Description:', 'from']
             ],
 
+            // Pagination settings
+            MAX_ENTRIES_PER_PAGE: 3,
+            ENTRY_HEIGHT_THRESHOLD: 400, // Pixels; if an entry exceeds this, reduce count
+            currentPage: 0,
+            historyData: [],
+            isAnimating: false, // Prevent rapid clicks
+
             async load() {
                 const container = DOM.get('history-list');
                 UI.showLoading(container);
 
                 try {
-                    const data = await API.loadHistory();
-                    if (!Array.isArray(data) || data.length === 0) {
+                    this.historyData = await API.loadHistory();
+                    if (!Array.isArray(this.historyData) || this.historyData.length === 0) {
                         container.innerHTML = '<p>No history available.</p>';
                         return;
                     }
 
-                    container.innerHTML = '';
-                    this.renderBatch(data, container, 0, 3);
+                    this.currentPage = 0;
+                    this.renderPage(container, 'none'); // Initial render without animation
                 } catch (error) {
                     UI.showError(container, 'Failed to load history');
                 }
             },
 
-            renderBatch(data, container, startIndex, batchSize) {
-                const slice = data.slice(startIndex, startIndex + batchSize);
-                slice.forEach(entry => this.renderEntry(entry, container));
+            renderPage(container, direction = 'none') {
+                if (this.isAnimating) return; // Prevent overlapping animations
+                this.isAnimating = true;
 
-                const nextIndex = startIndex + batchSize;
-                if (nextIndex < data.length) {
-                    const loadMoreBtn = Utils.createElement('button', {
-                        class: 'small-btn ghost',
-                        textContent: 'Load more history',
-                        style: { marginTop: '8px' },
-                        onClick: () => {
-                            loadMoreBtn.remove();
-                            this.renderBatch(data, container, nextIndex, batchSize);
-                        }
+                // Create wrapper if not exists
+                let wrapper = container.querySelector('.history-wrapper');
+                if (!wrapper) {
+                    wrapper = Utils.createElement('div', {
+                        className: 'history-wrapper',
+                        style: { position: 'relative', overflow: 'hidden', height: '400px' }
                     });
-                    container.appendChild(loadMoreBtn);
+                    torn = Utils.createElement('div', {
+                        className: 'torn-edge'
+                    });
+                    container.innerHTML = '';
+                    container.appendChild(wrapper);
+                    container.appendChild(torn);
                 }
+
+                // Calculate entries to show
+                const startIndex = this.currentPage * this.MAX_ENTRIES_PER_PAGE;
+                const potentialSlice = this.historyData.slice(startIndex, startIndex + this.MAX_ENTRIES_PER_PAGE);
+
+                // Measure heights in a temporary container
+                const tempContainer = Utils.createElement('div', { style: { display: 'none' } });
+                document.body.appendChild(tempContainer);
+                potentialSlice.forEach(entry => this.renderEntry(entry, tempContainer));
+                let entriesToShow = this.MAX_ENTRIES_PER_PAGE;
+                const entryElements = Array.from(tempContainer.children);
+                let cumulativeHeight = 0;
+                for (let i = 0; i < entryElements.length; i++) {
+                    const height = entryElements[i].offsetHeight;
+                    cumulativeHeight += height;
+                    if (height > this.ENTRY_HEIGHT_THRESHOLD && i === 0) {
+                        entriesToShow = 1;
+                        break;
+                    } else if (cumulativeHeight > this.ENTRY_HEIGHT_THRESHOLD * 2 && i === 1) {
+                        entriesToShow = 2;
+                        break;
+                    }
+                }
+                document.body.removeChild(tempContainer);
+
+                // Create new inner container for new entries
+                const newInner = Utils.createElement('div', {
+                    className: 'history-inner',
+                    style: { position: 'absolute', width: '100%', top: '0', transition: 'transform 0.3s ease-in-out' }
+                });
+                const slice = this.historyData.slice(startIndex, startIndex + entriesToShow);
+                slice.forEach(entry => this.renderEntry(entry, newInner));
+
+                // Handle animation
+                const oldInner = wrapper.querySelector('.history-inner');
+                if (direction === 'none' || !oldInner) {
+                    // Initial render or no previous content
+                    wrapper.innerHTML = '';
+                    wrapper.appendChild(newInner);
+                    this.addPaginationControls(wrapper);
+                    this.isAnimating = false;
+                    return;
+                }
+
+                // Position new content for animation
+                if (direction === 'up') {
+                    newInner.style.transform = 'translateY(100%)'; // Start below
+                } else if (direction === 'down') {
+                    newInner.style.transform = 'translateY(-100%)'; // Start above
+                }
+                wrapper.appendChild(newInner);
+
+                // Animate both containers
+                setTimeout(() => {
+                    if (direction === 'up') {
+                        oldInner.style.transform = 'translateY(-100%)'; // Slide old up
+                        newInner.style.transform = 'translateY(0)'; // Slide new in
+                    } else if (direction === 'down') {
+                        oldInner.style.transform = 'translateY(100%)'; // Slide old down
+                        newInner.style.transform = 'translateY(0)'; // Slide new in
+                    }
+
+                    // Clean up after animation
+                    setTimeout(() => {
+                        wrapper.removeChild(oldInner);
+                        this.isAnimating = false;
+                    }, 350); // Match animation duration
+                }, 0);
+
+                // Update pagination controls
+                wrapper.querySelector('.pagination-controls')?.remove();
+                this.addPaginationControls(wrapper);
             },
 
-            // Utility functions
+            addPaginationControls(wrapper) {
+                const totalPages = Math.ceil(this.historyData.length / this.MAX_ENTRIES_PER_PAGE); // Approximate
+                const controls = Utils.createElement('div', {
+                    className: 'pagination-controls',
+                    style: { position: 'absolute', bottom: '10px', right: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center' }
+                });
+
+                // Up button (Previous)
+                const upBtn = Utils.createElement('button', {
+                    className: `small-btn ghost ${this.currentPage === 0 || this.isAnimating ? 'disabled' : ''}`,
+                    innerHTML: '↑',
+                    onClick: () => {
+                        if (this.currentPage > 0 && !this.isAnimating) {
+                            this.currentPage--;
+                            this.renderPage(wrapper.parentElement, 'down');
+                        }
+                    }
+                });
+
+                // Page indicator
+                const pageIndicator = Utils.createElement('span', {
+                    textContent: `${this.currentPage + 1}/${totalPages}`,
+                    style: { margin: '5px 0', fontSize: '12px', color: '#fff', textShadow: 'rgb(0, 0, 0) 1px 1px, rgb(0, 0, 0) 1px -1px, rgb(0, 0, 0) -1px 1px, rgb(0, 0, 0) -1px -1px, rgb(0, 0, 0) 0px -2px, rgb(0, 0, 0) 0px 1px' }
+                });
+
+                // Down button (Next)
+                const downBtn = Utils.createElement('button', {
+                    className: `small-btn ghost ${this.currentPage >= totalPages - 1 || this.isAnimating ? 'disabled' : ''}`,
+                    innerHTML: '↓',
+                    onClick: () => {
+                        if (this.currentPage < totalPages - 1 && !this.isAnimating) {
+                            this.currentPage++;
+                            this.renderPage(wrapper.parentElement, 'up');
+                        }
+                    }
+                });
+
+                if (this.currentPage === 0) {
+                    upBtn.style.opacity = '0.5';
+                }
+
+                if (this.currentPage === totalPages - 1) {
+                    downBtn.style.opacity = '0.5';
+                }
+
+                controls.appendChild(upBtn);
+                controls.appendChild(pageIndicator);
+                controls.appendChild(downBtn);
+                wrapper.appendChild(controls);
+            },
+
+            // Utility functions, change processors, formatters, processChanges, createSection, renderEntry (unchanged)
             formatTime(timestamp) {
                 const ts = new Date(timestamp);
                 const now = new Date();
@@ -1569,7 +2148,6 @@
                 return (!value || value === 'undefined') ? "0" : value;
             },
 
-            // Change processors
             processBooleanChange(item, newVal) {
                 return { item, value: newVal === 'true' };
             },
@@ -1586,13 +2164,12 @@
                 return { item, oldDesc: oldVal, newDesc: newVal };
             },
 
-            // Formatters
             formatBooleanItem(item) {
                 return `${this.ICONS[item.value]} <strong>[${item.item}]</strong>`;
             },
 
             formatPriceItem(item) {
-                return `${this.ICONS.price} <strong>[${item.item}]</strong> <span style="color:#f66">${item.oldPrice}</span> → <span style="color:#6f6">${item.newPrice}</span>`;
+                return `${this.ICONS.price} <strong>[${item.item}]</strong> <span class="old strike">${item.oldPrice}</span> → <span class="new">${item.newPrice}</span>`;
             },
 
             formatDescriptionItem(item) {
@@ -1609,11 +2186,11 @@
                     if (oldLine === newLine) {
                         output += `&nbsp;&nbsp;⨽&nbsp;${oldLine}<br>`;
                     } else if (oldLine && newLine) {
-                        output += `&nbsp;&nbsp;⨽&nbsp;<span style="color:#fa4">${oldLine}</span> → <span style="color:#fa4">${newLine}</span><br>`;
+                        output += `&nbsp;&nbsp;⨽&nbsp;<span class="amber">${oldLine}</span> → <span class="amber">${newLine}</span><br>`;
                     } else if (oldLine && !newLine) {
-                        output += `&nbsp;&nbsp;⨽&nbsp;<span style="color:#f66">${oldLine} 🗙</span><br>`;
+                        output += `&nbsp;&nbsp;⨽&nbsp;<span class="old">${oldLine} 🗙</span><br>`;
                     } else if (!oldLine && newLine) {
-                        output += `&nbsp;&nbsp;⨽&nbsp;<span style="color:#6f6">${newLine} +</span><br>`;
+                        output += `&nbsp;&nbsp;⨽&nbsp;<span class="new">${newLine} +</span><br>`;
                     }
                 }
 
@@ -1652,22 +2229,22 @@
                 if (!items.length) return null;
 
                 const section = Utils.createElement('div', {
-                    style: this.STYLES.section
+                    className: 'history-section'
                 });
 
                 const titleElement = Utils.createElement('h4', {
                     textContent: title,
-                    style: this.STYLES.sectionTitle
+                    className: 'section-title'
                 });
                 section.appendChild(titleElement);
 
                 const list = Utils.createElement('ul', {
-                    style: this.STYLES.list
+                    className: 'history-list'
                 });
 
                 items.forEach(item => {
                     const listItem = Utils.createElement('li', {
-                        style: title === 'Description:' ? this.STYLES.descriptionItem : this.STYLES.listItem,
+                        className: title === 'Description:' ? 'description-item' : 'list-item',
                         innerHTML: formatterMethod.call(this, item)
                     });
                     list.appendChild(listItem);
@@ -1680,13 +2257,13 @@
             renderEntry(entry, container) {
                 // Create header
                 const header = Utils.createElement('div', {
-                    textContent: entry.username,
-                    style: this.STYLES.header
+                    textContent: entry.username.toUpperCase(),
+                    className: 'history-header'
                 });
 
                 const timeDiv = Utils.createElement('div', {
                     textContent: this.formatTime(entry.timestamp),
-                    style: this.STYLES.timeDiv
+                    className: 'date'
                 });
                 header.appendChild(timeDiv);
 
@@ -1793,6 +2370,20 @@
                 document.body.appendChild(inputForm);
             },
 
+            adjustBulletinHeight() {
+                const container = DOM.get('notesArea');
+                container.style.height = 'fit-content';
+
+                const height = isTouch ? 284 : 265; // Max height before scrolling
+
+                if (container.offsetHeight > height) {
+                    container.classList.add('scroll');
+                    container.style.height = 'unset';
+                } else {
+                    container.classList.remove('scroll');
+                }
+            },
+
             sendNote() {
                 const noteInput = DOM.get('noteInput');
                 const content = noteInput.value.trim();
@@ -1809,6 +2400,8 @@
                 });
 
                 this.cancelNote();
+                this.adjustBulletinHeight();
+
             },
 
             render() {
@@ -1847,14 +2440,24 @@
                     });
 
                     // Long press for mobile
+                    //if moved then cancel
+                    let isMoved = false;
+                    noteEl.addEventListener('touchmove', () => {
+                        isMoved = true;
+                    });
                     let pressTimer;
                     noteEl.addEventListener('touchstart', () => {
-                        pressTimer = setTimeout(() => this.promptDelete(index), 600);
+                        pressTimer = setTimeout(() => {
+                            if (!isMoved) {
+                                this.promptDelete(index);
+                            }
+                        }, 600);
                     });
                     noteEl.addEventListener('touchend', () => clearTimeout(pressTimer));
 
                     container.appendChild(noteEl);
                 });
+                this.adjustBulletinHeight();
 
                 container.scrollTop = container.scrollHeight;
             },
@@ -1872,6 +2475,7 @@
                     state.notes.splice(index, 1);
                     this.render();
                 }
+                this.adjustBulletinHeight();
             },
 
             formatTime(timestamp) {
@@ -1884,6 +2488,42 @@
                 if (diffMins < 60) return `${diffMins}m`;
                 if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h`;
                 return `${Math.floor(diffMins / 1440)}d`;
+            }
+        };
+
+        // ============================
+        // Enhanced Error Handling
+        // ============================
+        const ErrorHandler = {
+            handle(error, context = '') {
+                console.error(`Error in ${context}:`, error);
+
+                // Show user-friendly error message
+                this.showToast(`Error: ${error.message || 'Something went wrong'}`, 'error');
+            },
+
+            showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
+                toast.textContent = message;
+                toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: white;
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+            background: ${type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#3b82f6'};
+        `;
+
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
             }
         };
 
@@ -2030,6 +2670,8 @@
                 this.initEventListeners();
                 this.startUpdateChecker();
 
+                setTimeout(() => DraggablePanelManager.init(), 100);
+
 
             },
 
@@ -2039,10 +2681,16 @@
                     `${CONFIG.WS_URLS.ADMIN_TRACKER}?adminName=${encodeURIComponent(state.adminName)}`,
                     'admin',
                     {
+                        onOpen: () => {
+                            ErrorHandler.showToast('Status: Online', 'success');
+                        },
                         onMessage: (data) => {
                             if (data.type === 'adminList') {
-                                this.updateAdminOnline(data.admins);
+                                App.updateAdminOnline(data.admins);
                             }
+                        },
+                        onClose: () => {
+                            ErrorHandler.showToast('Status: Offline', 'error');
                         }
                     }
                 );
@@ -2063,6 +2711,9 @@
                                 state.notes = state.notes.filter(n => n.id !== msg.id);
                                 NotesManager.render();
                             }
+                        },
+                        onClose: () => {
+                            ErrorHandler.showToast('Notes: Offline', 'error');
                         }
                     }
                 );
@@ -2283,6 +2934,478 @@
         };
 
         // ============================
+        // Enhanced Draggable Panel Manager
+        // ============================
+        const DraggablePanelManager = {
+            // Configuration
+            config: {
+                WIDTH_THRESHOLD: 1300,
+                SNAP_MARGIN: 12,
+                STORAGE_KEY: 'quickEditorPosV1',
+                SIDEBAR_TOP: 96,
+                EXCLUDED_TAGS: ['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT', 'SPAN', 'LI']
+            },
+
+            // State
+            state: {
+                dragging: false,
+                startX: 0,
+                startY: 0,
+                startLeft: 0,
+                startTop: 0,
+                observer: null,
+                contentObserver: null, // Add this for content changes
+                isInitialized: false,
+                currentMode: null // Track current mode: 'sidebar' or 'modal'
+            },
+
+            // DOM elements (cached)
+            elements: {
+                modal: null,
+                panel: null,
+                handle: null,
+                closeBtn: null,
+                mainEl: null,
+                spacer: null,
+                originalParent: null
+            },
+
+            // Initialize the draggable panel system
+            init() {
+                if (this.state.isInitialized) return;
+
+                try {
+                    this.cacheElements();
+                    if (!this.elements.modal || !this.elements.panel) {
+                        console.warn('Draggable panel elements not found');
+                        return false;
+                    }
+
+                    this.setupEventListeners();
+                    this.setupObserver();
+                    this.handleResize();
+
+                    this.state.isInitialized = true;
+                    return true;
+                } catch (error) {
+                    console.error('Failed to initialize draggable panel:', error);
+                    return false;
+                }
+            },
+
+            // Cache DOM elements
+            cacheElements() {
+                this.elements.modal = DOM.get('quick-editor-modal');
+                this.elements.panel = DOM.get('quick-editor-content');
+                this.elements.handle = DOM.get('quick-editor-title');
+                this.elements.closeBtn = DOM.get('quick-editor-close');
+                this.elements.mainEl = DOM.query('main');
+                this.elements.spacer = DOM.get('quick-editor-spacer');
+                this.elements.historySection = DOM.get('history-section');
+
+                if (this.elements.panel) {
+                    this.elements.originalParent = this.elements.panel.parentNode;
+                }
+            },
+
+            // Utility functions
+            utils: {
+                vw: () => window.innerWidth,
+                vh: () => window.innerHeight,
+                clamp: (v, a, b) => Math.max(a, Math.min(b, v))
+            },
+
+            // Position management
+            setPanelPos(left, top) {
+                const { panel } = this.elements;
+                if (!panel) return;
+
+                const W = panel.offsetWidth;
+                const H = panel.offsetHeight;
+                const maxLeft = this.utils.vw() - W - this.config.SNAP_MARGIN;
+                const maxTop = this.utils.vh() - H - this.config.SNAP_MARGIN;
+
+                left = this.utils.clamp(Math.round(left), this.config.SNAP_MARGIN, Math.max(this.config.SNAP_MARGIN, maxLeft));
+                top = this.utils.clamp(Math.round(top), this.config.SNAP_MARGIN, Math.max(this.config.SNAP_MARGIN, maxTop));
+
+                panel.style.left = `${left}px`;
+                panel.style.top = `${top}px`;
+                panel.style.transform = 'none';
+            },
+
+            centerPanel() {
+                const { panel } = this.elements;
+                if (!panel) return;
+
+                const w = panel.offsetWidth;
+                this.setPanelPos(
+                    Math.round((this.utils.vw() - w) / 2),
+                    Math.round(this.utils.vh() * 0.1)
+                );
+            },
+
+
+
+            // Event handlers
+            onPointerDown(e) {
+                const { panel, mainEl } = this.elements;
+                if (!panel) return;
+
+                // Don't drag if panel is in sidebar mode
+                if (panel.parentNode === mainEl) return;
+
+                // Don't drag if clicking on interactive elements
+                if (this.config.EXCLUDED_TAGS.includes(e.target.tagName)) return;
+
+                // Only handle left mouse button
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+                this.state.dragging = true;
+                panel.classList.add('dragging');
+
+                try {
+                    panel.setPointerCapture(e.pointerId);
+                } catch (error) {
+                    console.warn('Pointer capture failed:', error);
+                }
+
+                const rect = panel.getBoundingClientRect();
+                this.state.startX = e.clientX;
+                this.state.startY = e.clientY;
+                this.state.startLeft = rect.left;
+                this.state.startTop = rect.top;
+
+                document.body.style.userSelect = 'none';
+                e.preventDefault();
+            },
+
+            onPointerMove(e) {
+                if (!this.state.dragging) return;
+
+                const dx = e.clientX - this.state.startX;
+                const dy = e.clientY - this.state.startY;
+
+                this.setPanelPos(this.state.startLeft + dx, this.state.startTop + dy);
+            },
+
+            onPointerUp(e) {
+                if (!this.state.dragging) return;
+
+                const { panel } = this.elements;
+                if (!panel) return;
+
+                this.state.dragging = false;
+                panel.classList.remove('dragging');
+
+                // Smart snapping to corners
+                const rect = panel.getBoundingClientRect();
+                const leftDist = rect.left;
+                const rightDist = this.utils.vw() - (rect.left + rect.width);
+                const topDist = rect.top;
+                const bottomDist = this.utils.vh() - (rect.top + rect.height);
+
+                const finalLeft = leftDist < rightDist ?
+                    this.config.SNAP_MARGIN :
+                    this.utils.vw() - rect.width - this.config.SNAP_MARGIN;
+
+                const finalTop = topDist < bottomDist ?
+                    this.config.SNAP_MARGIN :
+                    this.utils.vh() - rect.height - this.config.SNAP_MARGIN;
+
+                this.setPanelPos(finalLeft, finalTop);
+
+                document.body.style.userSelect = '';
+
+                try {
+                    panel.releasePointerCapture(e.pointerId);
+                } catch (error) {
+                    // Pointer capture release failed, not critical
+                }
+            },
+
+            onScroll() {
+                this.checkAndUpdateOverflow();
+            },
+
+            switchToSidebarMode() {
+                const { panel, modal, closeBtn, spacer, mainEl } = this.elements;
+
+                // Move panel to main content area
+                if (!mainEl.contains(panel)) {
+                    mainEl.insertBefore(panel, mainEl.firstChild);
+                }
+
+                // Apply sidebar styles
+                Object.assign(panel.style, {
+                    position: 'fixed',
+                    left: `${spacer.offsetLeft}px`,
+                    top: `${this.config.SIDEBAR_TOP}px`,
+                    transform: 'none',
+                    boxShadow: '0 6px 24px var(--shade)',
+                    border: '1px solid var(--shade)',
+                    background: 'linear-gradient(137deg, #4a57613d, #4a515e5e, #42546221)',
+                    zIndex: 2
+                });
+
+                // Update UI elements
+                closeBtn.style.display = 'none';
+                spacer.style.display = 'unset';
+                spacer.style.width = `${panel.offsetWidth}px`;
+
+                // Set current mode
+                this.state.currentMode = 'sidebar';
+
+                // Check initial overflow state
+                this.checkAndUpdateOverflow();
+
+                // Start observing content changes
+                this.startContentObserver();
+            },
+
+            switchToModalMode() {
+                const { panel, modal, closeBtn, spacer } = this.elements;
+
+                // Set current mode first
+                this.state.currentMode = 'modal';
+
+                // Stop observing content changes in modal mode
+                this.stopContentObserver();
+
+                // Move panel back to modal
+                if (!modal.contains(panel)) {
+                    modal.appendChild(panel);
+                }
+
+                // Apply modal styles
+                Object.assign(panel.style, {
+                    position: 'fixed',
+                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.45)',
+                    border: '',
+                    background: ''
+                });
+
+                // Update UI elements
+                closeBtn.style.display = 'unset';
+                spacer.style.display = 'none';
+                spacer.style.height = '0px'; // Reset spacer height
+
+                // Keep panel within viewport bounds
+                const rect = panel.getBoundingClientRect();
+                const finalLeft = this.utils.clamp(
+                    rect.left,
+                    this.config.SNAP_MARGIN,
+                    Math.max(this.config.SNAP_MARGIN, this.utils.vw() - rect.width - this.config.SNAP_MARGIN)
+                );
+                const finalTop = this.utils.clamp(
+                    rect.top,
+                    this.config.SNAP_MARGIN,
+                    Math.max(this.config.SNAP_MARGIN, this.utils.vh() - rect.height - this.config.SNAP_MARGIN)
+                );
+
+                this.setPanelPos(finalLeft, finalTop);
+            },
+
+            // Event listener setup
+            setupEventListeners() {
+                const { panel, closeBtn, modal } = this.elements;
+
+                if (panel) {
+                    panel.addEventListener('pointerdown', (e) => this.onPointerDown(e));
+                }
+
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        modal?.classList.add('hidden');
+                    });
+                }
+
+                // Global pointer events
+                window.addEventListener('pointermove', (e) => this.onPointerMove(e));
+                window.addEventListener('pointerup', (e) => this.onPointerUp(e));
+
+                // ADD THIS: Scroll event listener for continuous checking
+                window.addEventListener('scroll', () => {
+                    if (this.state.currentMode === 'sidebar') {
+                        this.checkAndUpdateOverflow();
+                    }
+                });
+
+                // Debounced resize handler
+                const debouncedResize = Utils.debounce(() => this.handleResize(), 150);
+                window.addEventListener('resize', debouncedResize);
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && !modal?.classList.contains('hidden')) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            },
+
+            // Updated checkAndUpdateOverflow method
+            checkAndUpdateOverflow() {
+                const { panel, spacer, historySection } = this.elements;
+                if (!panel || !spacer || !historySection || this.state.currentMode !== 'sidebar') return;
+
+                const panelHeight = panel.offsetHeight;
+                const sidebarTop = this.config.SIDEBAR_TOP;
+
+                // Current scroll and viewport data
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const historyRect = historySection.getBoundingClientRect();
+                const historyTopAbs = scrollTop + historyRect.top;
+
+                // Calculate where panel would end if it stayed fixed
+                const desiredTop = scrollTop + sidebarTop;
+                const panelBottomAbs = desiredTop + panelHeight;
+
+                if (panelBottomAbs + 40 > historyTopAbs) {
+                    // Stick panel right above history section
+                    panel.style.position = 'absolute';
+                    panel.style.top = `${historyTopAbs - panelHeight - 34}px`; // 12px margin
+                    spacer.style.height = `${panelHeight + 24}px`; // keep layout stable
+                    panel.dataset.scrollMode = 'stuck';
+                } else {
+                    // Keep it fixed at normal sidebar position
+                    panel.style.position = 'fixed';
+                    panel.style.top = `${sidebarTop}px`;
+                    spacer.style.height = '0px';
+                    delete panel.dataset.scrollMode;
+                }
+
+                panel.style.left = `${spacer.offsetLeft}px`;
+                panel.style.maxHeight = `calc(100vh - ${sidebarTop + 20}px)`;
+                panel.style.overflowY = 'auto';
+            },
+
+
+            // Observer for modal visibility changes
+            setupObserver() {
+                const { modal } = this.elements;
+                if (!modal) return;
+
+                this.state.observer = new MutationObserver(() => {
+                    if (!modal.classList.contains('hidden')) {
+                        requestAnimationFrame(() => this.handleResize());
+                    }
+                });
+
+                this.state.observer.observe(modal, {
+                    attributes: true,
+                    attributeFilter: ['class']
+                });
+            },
+
+            // Public API methods
+            show() {
+                const { modal } = this.elements;
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('show');
+                }
+            },
+
+            hide() {
+                const { modal } = this.elements;
+                if (modal) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('show');
+                }
+            },
+
+            isVisible() {
+                const { modal } = this.elements;
+                return modal && !modal.classList.contains('hidden');
+            },
+
+            // Start observing content changes for dynamic overflow
+            startContentObserver() {
+                if (this.state.contentObserver) return; // Already observing
+
+                const { panel } = this.elements;
+                if (!panel) return;
+
+                // Use ResizeObserver to detect when panel content changes size
+                this.state.contentObserver = new ResizeObserver(() => {
+                    // Debounce the overflow check to avoid excessive calls
+                    clearTimeout(this.overflowCheckTimeout);
+                    this.overflowCheckTimeout = setTimeout(() => {
+                        this.checkAndUpdateOverflow();
+                    }, 100);
+                });
+
+                this.state.contentObserver.observe(panel);
+
+                // Also observe for DOM mutations (adding/removing elements)
+                this.state.mutationObserver = new MutationObserver(() => {
+                    clearTimeout(this.overflowCheckTimeout);
+                    this.overflowCheckTimeout = setTimeout(() => {
+                        this.checkAndUpdateOverflow();
+                    }, 100);
+                });
+
+                this.state.mutationObserver.observe(panel, {
+                    childList: true,
+                    subtree: true,
+                    attributes: false
+                });
+            },
+
+            // Stop observing content changes
+            stopContentObserver() {
+                if (this.state.contentObserver) {
+                    this.state.contentObserver.disconnect();
+                    this.state.contentObserver = null;
+                }
+
+                if (this.state.mutationObserver) {
+                    this.state.mutationObserver.disconnect();
+                    this.state.mutationObserver = null;
+                }
+
+                if (this.overflowCheckTimeout) {
+                    clearTimeout(this.overflowCheckTimeout);
+                    this.overflowCheckTimeout = null;
+                }
+            },
+
+            // Enhanced handleResize with mode tracking
+            handleResize() {
+                const { panel, modal, closeBtn, spacer, mainEl } = this.elements;
+                if (!panel || !modal || !spacer || !mainEl) return;
+
+                const isWideScreen = this.utils.vw() > this.config.WIDTH_THRESHOLD;
+
+                if (isWideScreen) {
+                    this.switchToSidebarMode();
+                } else {
+                    this.switchToModalMode();
+                }
+            },
+
+            // Enhanced cleanup
+            destroy() {
+                this.stopContentObserver();
+
+                if (this.state.observer) {
+                    this.state.observer.disconnect();
+                    this.state.observer = null;
+                }
+
+                this.state.isInitialized = false;
+                this.state.currentMode = null;
+            },
+
+            // Public method to manually trigger overflow check (useful for external calls)
+            refreshOverflow() {
+                if (this.state.currentMode === 'sidebar') {
+                    this.checkAndUpdateOverflow();
+                }
+            }
+
+        };
+
+        // ============================
         // Initialize on DOM ready
         // ============================
         if (document.readyState === 'loading') {
@@ -2290,6 +3413,17 @@
         } else {
             Auth.init();
         }
+
+        // Get the accent color from root
+        const root = document.documentElement;
+        const rootStyles = getComputedStyle(root);
+        const accentColor = rootStyles.getPropertyValue('--accent').trim();
+
+        // Add transparency (66 in hex = 40% opacity)
+        const accentTransparent = accentColor + '66';
+
+        // Set the new transparent variable on root
+        root.style.setProperty('--accent-transparent', accentTransparent);
 
         // Add CSS for icons
         const style = document.createElement('style');
@@ -2309,7 +3443,9 @@
         .edit-icon { mask-image: url('${CONFIG.ICONS.edit}'); }
         .delete-icon { mask-image: url('${CONFIG.ICONS.delete}'); }
         .check-icon { mask-image: url('${CONFIG.ICONS.check}'); }
-        
+        .gamenight-icon { mask-image: url('${CONFIG.ICONS.gamenight}'); }
+        .prices-icon { mask-image: url('${CONFIG.ICONS.prices}'); }
+
         .loading {
             text-align: center;
             padding: 20px;
@@ -2320,6 +3456,15 @@
             text-align: center;
             padding: 20px;
             color: #f66;
+        }
+        .item-card.changed {
+            box-shadow: 0 0 0 2px var(--accent), 0 0 12px var(--accent-transparent);
+            animation: pulse-highlight 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-highlight {
+            0%, 100% { box-shadow: 0 0 0 2px var(--accent), 0 0 12px var(--accent-transparent); }
+            50% { box-shadow: 0 0 0 3px var(--accent), 0 0 20px var(--accent-transparent); }
         }
     `;
         document.head.appendChild(style);
