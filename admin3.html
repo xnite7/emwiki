@@ -1508,13 +1508,14 @@
                 });
 
                 // Initialize Sortable
+                                if (!isTouch) {
                 Sortable.create(container, {
                     animation: 150,
                     handle: '.desc-item',
                     group: { name: 'desc', pull: false, put: false },
                     sort: true,
                     filter: '.editing',
-                });
+                });}
             },
 
             renderPrices(item) {
@@ -1525,13 +1526,14 @@
                 prices.forEach(price => this.createPriceItem(price, false));
 
                 // Initialize Sortable
+                                if (!isTouch) {
                 Sortable.create(container, {
                     animation: 150,
                     handle: '.prc-item',
                     group: { name: 'prc', pull: false, put: false },
                     sort: true,
                     filter: '.editing',
-                });
+                });}
             },
 
             createDescItem(value = '', isGamenight = false, startFocused = false, skipOriginalCheck = false) {
@@ -2863,7 +2865,9 @@
                 UI.renderFilterControls();
                 UI.renderShops();
                 UI.renderItems();
-                UI.setupDragDrop();
+                if (!isTouch) {
+                    UI.setupDragDrop();
+                }
 
                 // Load history
                 HistoryManager.load();
