@@ -1,17 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Courier+Prime:wght@400;700&family=Bebas+Neue&display=swap');
-
-
-@font-face {
-    font-family: 'Courier New';
-    /* Choose a name for your font family */
-    src: url('../fonts/cour.ttf') format('truetype');
-    /* Specify the path to your .ttf file */
-    font-weight: normal;
-    /* Optional: Define font weight */
-    font-style: normal;
-    /* Optional: Define font style */
-}
-
 :root {
     --bg: #0f1720;
     --bg2: #000000;
@@ -25,8 +11,21 @@
     --danger: #e14b4b;
     --card: #1b2228;
     --glass: rgba(255, 255, 255, 0.03);
-
 }
+
+
+@font-face {
+    font-family: 'Courier New';
+    /* Choose a name for your font family */
+    src: url('../fonts/cour.ttf') format('truetype');
+    /* Specify the path to your .ttf file */
+    font-weight: normal;
+    /* Optional: Define font weight */
+    font-style: normal;
+    /* Optional: Define font style */
+}
+
+
 
 [data-theme="light"] {
     --bg: #f6f7fb;
@@ -184,6 +183,85 @@ select::-webkit-scrollbar {
     font-variant: all-petite-caps;
     text-box: auto;
     margin-bottom: 8px;
+}
+
+
+/* Add to your CSS */
+#panels-btn {
+    cursor: pointer;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    font-size: 20px;
+    transition: all 0.2s;
+}
+
+#panels-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+#panels-menu {
+    position: absolute;
+    top: 60px;
+    right: 120px;
+    /* Adjusted position */
+    background: #1e293b;
+    border: 1px solid #555;
+    border-radius: 12px;
+    padding: 16px;
+    min-width: 200px;
+    display: none;
+    z-index: 1000;
+}
+
+#panels-menu.show {
+    display: block;
+}
+
+.panel-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    margin: 4px 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.panel-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.panel-toggle.hidden2 {
+    opacity: 0.5;
+}
+
+.panel-toggle .status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+}
+
+.panel-toggle.hidden2 .status {
+    background: #ef4444;
+}
+
+.section-close-btn {
+    float: right;
+    cursor: pointer;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    font-size: 16px;
+    margin-top: -4px;
+    transition: all 0.2s;
+}
+
+.section-close-btn:hover {
+    background: rgba(255, 0, 0, 0.3);
 }
 
 select {
@@ -553,11 +631,11 @@ main {
 
 @media(min-width:1300px) {
     #history-section {
-        max-width: 762px;
+        max-width: 470PX;
     }
 
     #lists-section {
-        max-width: 462px;
+        max-width: 666PX;
     }
 }
 
@@ -947,7 +1025,7 @@ hr {
 }
 
 .prc-label {
-    flex: 1 1 43%;
+    flex: 1 1;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -1012,9 +1090,6 @@ hr {
         opacity: 0;
     }
 }
-
-
-
 
 .quick-editor-body+hr+div label h1:hover~p {
     position: absolute;
@@ -2267,22 +2342,42 @@ hr {
     }
 }
 
-/* Mobile touch improvements */
-@media (max-width: 768px) {
-    #quick-editor-content {
-        touch-action: none;
-    }
-    #quick-editor-content img {
-        max-width: 120px;
-        max-height: 120px;
-    }
+.desc-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgb(60, 60, 60);
+    color: rgb(255, 255, 255);
+    border-radius: 6px;
+    padding: 5px 11px;
+    margin-bottom: 6px;
+    cursor: grab;
+    user-select: none;
+    border: 1px solid rgb(85, 85, 85);
 }
+
+.prc-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgb(60, 60, 60);
+    color: rgb(255, 255, 255);
+    border-radius: 6px;
+    padding: 5px 11px;
+    margin-bottom: 6px;
+    cursor: grab;
+    user-select: none;
+    border: 1px solid rgb(85, 85, 85);
+}
+
+
 
 /* Prevent text selection during drag */
 body.dragging-panel {
     user-select: none !important;
     -webkit-user-select: none !important;
 }
+
 
 
 
@@ -2520,7 +2615,7 @@ body.dragging-panel {
     backdrop-filter: sepia(0.5) blur(6px);
 }
 
-#history-list::after{
+#history-list::after {
     content: '';
     position: absolute;
     top: -40px;
@@ -2541,4 +2636,87 @@ body.dragging-panel {
     height: 4px;
     background: linear-gradient(90deg, transparent 0%, #f4f1e8 5%, #f4f1e8 10%, transparent 15%, transparent 20%, #f4f1e8 25%, #f4f1e8 30%, transparent 35%);
     background-size: 20px 100%;
+}
+
+
+
+
+/* Mobile-specific styles for quick editor */
+@media (max-width: 768px) {
+
+    .quick-editor-body {
+
+        margin: auto;
+    }
+
+
+
+    #quick-editor-content img {
+        max-width: 120px;
+        max-height: 120px;
+    }
+
+
+
+    #quick-editor-modal.mobile-mode {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    #quick-editor-content.mobile-mode {
+        border-radius: 0 !important;
+        margin: 0 !important;
+        padding-top: 50px !important;
+        /* Space for close button */
+    }
+
+    #quick-editor-content.mobile-mode #tutorial {
+        padding: 20px;
+        font-size: 14px;
+    }
+
+    #quick-editor-content.mobile-mode .desc-item,
+    #quick-editor-content.mobile-mode .prc-item {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+
+
+    #quick-editor-content.mobile-mode .small-btn {
+
+        font-size: 14px;
+    }
+
+    #quick-editor-content.mobile-mode .flag-row {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    #quick-editor-content.mobile-mode .tag-pill {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+    /* Ensure scrollability */
+    #quick-editor-modal.mobile-mode {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Fix for iOS safe areas */
+    #quick-editor-content.mobile-mode {
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+    }
+}
+
+/* Touch-friendly buttons */
+@media (pointer: coarse) {
+
+
+
+    #quick-editor-close {
+        width: 44px !important;
+        height: 44px !important;
+    }
 }

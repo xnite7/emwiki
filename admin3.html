@@ -10,6 +10,9 @@
     <noscript>
         <link rel="stylesheet" href="./css/admin.css?version=3.2">
     </noscript>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Courier+Prime:wght@400;700&family=Bebas+Neue&display=swap');
+    </style>
     <link rel="manifest" href="/dev.webmanifest">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
@@ -56,6 +59,7 @@
         <div id="top-controls">
             <div class="tag" id="admin-online" style="display:flex;flex-direction:row-reverse;gap:4px;">connecting...
             </div>
+            <div id="panels-btn" title="Manage Panels">⊞</div>
             <div id="settings-btn">⚙</div>
         </div>
         <div id="settings-menu">
@@ -76,6 +80,11 @@
             </button>
             <div style="height:8px"></div>
             <div class="note">Tip: edits modify the loaded list in memory.<br>Click SAVE to publish to website.</div>
+        </div>
+        <div id="panels-menu">
+            <h2>Panels</h2>
+            <div id="panels-list"></div>
+            <div class="note" style="margin-top:12px">Click to show/hide panels</div>
         </div>
     </header>
 
@@ -1099,7 +1108,6 @@
                     sort: false,
 
                     onAdd(evt) {
-                        console.log(evt)
                         const name = evt.item.dataset.name;
                         evt.item.remove(); // remove cloned item
                         evt.clone.remove(); // remove original dragged item
@@ -1220,6 +1228,14 @@
                 const modal = DOM.get('quick-editor-modal');
                 const content = DOM.get('quick-editor-content');
                 const priceInput = DOM.get('quick-editor-price');
+
+                if (DraggablePanelManager.state.isMobile) {
+                    modal.classList.add('mobile-mode');
+                    content.classList.add('mobile-mode');
+                } else {
+                    modal.classList.remove('mobile-mode');
+                    content.classList.remove('mobile-mode');
+                }
 
                 content.classList.remove('initial');
                 DOM.get('quick-editor-title').innerHTML = item.name + `<span class="icon" style="
@@ -1530,8 +1546,7 @@
                     ChangeTracker.isValueOriginal(state.currentEditingItem, 'from', value);
 
                 const li = this.createElement('li', {
-                    className: 'desc-item',
-                    style: 'display:flex;align-items:center;gap:6px;background:#5c5c5c;color:#fff;border-radius:6px;padding:5px 11px;margin-bottom:6px;cursor:grab;user-select:none'
+                    className: 'desc-item'
                 });
 
                 // Apply original styling if this content existed in the original item
@@ -1542,7 +1557,7 @@
 
                 // ... rest of the method remains the same
                 const label = this.createElement('span', {
-                    style: 'max-width:224px;flex-grow:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis',
+                    style: 'flex: 1 1;flex-grow:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis',
                     textContent: value || ''
                 });
 
@@ -1698,8 +1713,7 @@
                     ChangeTracker.isValueOriginal(state.currentEditingItem, 'price/code/rarity', value);
 
                 const li = this.createElement('li', {
-                    className: 'prc-item',
-                    style: 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:#5c5c5c;color:#fff;border-radius:6px;padding:5px 11px;margin-bottom:6px;cursor:grab;user-select:none'
+                    className: 'prc-item'
                 });
 
                 // Apply original styling if this content existed in the original item
@@ -2492,6 +2506,193 @@
         };
 
         // ============================
+        // Panels Manager (FIXED)
+        // ============================
+        const PanelsManager = {
+            panels: [
+                { id: 'lists-section', name: 'Shops', sectionId: 'lists-section' },
+                { id: 'history-section', name: 'History', sectionId: 'history-section' },
+                { id: 'notes-section', name: 'Notes', sectionId: 'notes-section' }
+            ],
+
+            hiddenPanels: new Set(),
+
+            init() {
+                // Load saved state
+                const saved = Utils.storage.get('hiddenPanels', []);
+                this.hiddenPanels = new Set(saved);
+
+                // Setup close button handlers for existing buttons
+                this.setupCloseButtons();
+
+                // Setup panels menu
+                this.setupPanelsMenu();
+
+                // Apply saved state
+                this.applySavedState();
+            },
+
+            setupCloseButtons() {
+                // Just attach handlers to existing close buttons
+                DOM.queryAll('.section-close-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+
+                        // Find the parent section
+                        const section = btn.closest('.section');
+                        if (section) {
+                            const panelId = section.id || 'shops-container';
+                            this.togglePanel(panelId, false);
+                        }
+                    });
+                });
+            },
+
+            setupPanelsMenu() {
+                const panelsBtn = DOM.get('panels-btn');
+                const panelsMenu = DOM.get('panels-menu');
+
+                if (!panelsBtn || !panelsMenu) return;
+
+                // Toggle menu on button click
+                panelsBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    panelsMenu.classList.toggle('show');
+                    this.renderPanelsList();
+                });
+
+                // Close menu when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!panelsMenu.contains(e.target) && e.target !== panelsBtn) {
+                        panelsMenu.classList.remove('show');
+                    }
+                });
+            },
+
+            renderPanelsList() {
+                const container = DOM.get('panels-list');
+                if (!container) return;
+
+                container.innerHTML = '';
+
+                this.panels.forEach(panel => {
+                    const isHidden = this.hiddenPanels.has(panel.id);
+
+                    const toggle = Utils.createElement('div', {
+                        className: `panel-toggle ${isHidden ? 'hidden2' : ''}`,
+                        onclick: () => this.togglePanel(panel.id)
+                    });
+
+                    const name = Utils.createElement('span', {
+                        textContent: panel.name
+                    });
+
+                    const status = Utils.createElement('span', {
+                        className: 'status'
+                    });
+
+                    toggle.appendChild(name);
+                    toggle.appendChild(status);
+                    container.appendChild(toggle);
+                });
+            },
+
+            togglePanel(panelId, show = null) {
+                const panel = this.panels.find(p => p.id === panelId || p.sectionId === panelId);
+                if (!panel) return;
+
+                // Get the actual section element
+                let sectionElement;
+                if (panel.id === 'shops-container') {
+                    // Special case for shops - hide the entire lists-section
+                    sectionElement = DOM.get('lists-section');
+                } else {
+                    sectionElement = DOM.get(panel.sectionId);
+                }
+
+                if (!sectionElement) return;
+
+                // Determine new state
+                const shouldShow = show !== null ? show : this.hiddenPanels.has(panel.id);
+
+                if (shouldShow) {
+                    // Show panel
+                    sectionElement.style.display = '';
+                    this.hiddenPanels.delete(panel.id);
+                } else {
+                    // Hide panel
+                    sectionElement.style.display = 'none';
+                    this.hiddenPanels.add(panel.id);
+                }
+
+                // Save state
+                Utils.storage.set('hiddenPanels', Array.from(this.hiddenPanels));
+
+                // Update menu if open
+                if (DOM.get('panels-menu').classList.contains('show')) {
+                    this.renderPanelsList();
+                }
+
+                // Update badge
+                this.updateBadge();
+            },
+
+            applySavedState() {
+                this.hiddenPanels.forEach(panelId => {
+                    const panel = this.panels.find(p => p.id === panelId);
+                    if (panel) {
+                        let sectionElement;
+                        if (panel.id === 'shops-container') {
+                            sectionElement = DOM.get('lists-section');
+                        } else {
+                            sectionElement = DOM.get(panel.sectionId);
+                        }
+
+                        if (sectionElement) {
+                            sectionElement.style.display = 'none';
+                        }
+                    }
+                });
+                this.updateBadge();
+            },
+
+            updateBadge() {
+                const btn = DOM.get('panels-btn');
+                if (!btn) return;
+
+                const count = this.hiddenPanels.size;
+                if (count > 0) {
+                    btn.setAttribute('data-badge', count);
+                    btn.style.position = 'relative';
+
+                    // Add badge styles if not exists
+                    if (!document.querySelector('#panels-badge-style')) {
+                        const style = Utils.createElement('style', {
+                            id: 'panels-badge-style',
+                            textContent: `
+                        #panels-btn[data-badge]:after {
+                            content: attr(data-badge);
+                            position: absolute;
+                            top: -4px;
+                            right: -4px;
+                            background: #ef4444;
+                            color: white;
+                            border-radius: 10px;
+                            padding: 2px 6px;
+                            font-size: 11px;
+                            font-weight: bold;
+                        }
+                    `
+                        });
+                        document.head.appendChild(style);
+                    }
+                } else {
+                    btn.removeAttribute('data-badge');
+                }
+            }
+        };
+
+        // ============================
         // Enhanced Error Handling
         // ============================
         const ErrorHandler = {
@@ -2667,6 +2868,7 @@
 
                 // Initialize components
                 NotesManager.init();
+                PanelsManager.init();
                 this.initEventListeners();
                 this.startUpdateChecker();
 
@@ -2940,6 +3142,7 @@
             // Configuration
             config: {
                 WIDTH_THRESHOLD: 1300,
+                MOBILE_THRESHOLD: 768, // Add mobile detection threshold
                 SNAP_MARGIN: 12,
                 STORAGE_KEY: 'quickEditorPosV1',
                 SIDEBAR_TOP: 96,
@@ -2954,9 +3157,10 @@
                 startLeft: 0,
                 startTop: 0,
                 observer: null,
-                contentObserver: null, // Add this for content changes
+                contentObserver: null,
                 isInitialized: false,
-                currentMode: null // Track current mode: 'sidebar' or 'modal'
+                currentMode: null, // Track current mode: 'sidebar', 'modal', or 'mobile'
+                isMobile: false
             },
 
             // DOM elements (cached)
@@ -2981,6 +3185,9 @@
                         return false;
                     }
 
+                    // Check if mobile
+                    this.checkMobile();
+
                     this.setupEventListeners();
                     this.setupObserver();
                     this.handleResize();
@@ -2991,6 +3198,129 @@
                     console.error('Failed to initialize draggable panel:', error);
                     return false;
                 }
+            },
+
+            // Add mobile detection
+            checkMobile() {
+                this.state.isMobile = window.innerWidth <= this.config.MOBILE_THRESHOLD ||
+                    ('ontouchstart' in window && navigator.maxTouchPoints > 0);
+            },
+
+            // Add mobile mode handler
+            switchToMobileMode() {
+                const { panel, modal, closeBtn, spacer } = this.elements;
+
+                // Set current mode
+                this.state.currentMode = 'mobile';
+
+                // Stop observing content changes in mobile mode
+                this.stopContentObserver();
+
+                // Move panel back to modal if needed
+                if (!modal.contains(panel)) {
+                    modal.appendChild(panel);
+                }
+
+                // Apply mobile full-screen styles
+                Object.assign(modal.style, {
+                    position: 'fixed',
+                    top: '0',
+                    left: '0',
+                    width: '100%',
+                    height: '100%',
+                    zIndex: '9999',
+                    background: 'var(--bg-color, #1f2937)',
+                    display: 'flex',
+                    flexDirection: 'column'
+                });
+
+                Object.assign(panel.style, {
+                    position: 'relative',
+                    width: '100%',
+                    height: '100%',
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    top: 'unset',
+                    left: 'unset',
+                    transform: 'none',
+                    boxShadow: 'none',
+                    border: 'none',
+                    background: 'transparent',
+                    overflowY: 'auto',
+                    overflowX: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column'
+                });
+
+                // Style the close button for mobile
+                if (closeBtn) {
+                    Object.assign(closeBtn.style, {
+                        position: 'fixed',
+                        top: '10px',
+                        right: '10px',
+                        zIndex: '10000',
+                        width: '40px',
+                        height: '40px',
+                        fontSize: '24px',
+                        background: 'rgba(0, 0, 0, 0.5)',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    });
+                }
+
+                // Hide spacer
+                if (spacer) {
+                    spacer.style.display = 'none';
+                }
+
+                // Adjust quick editor content for mobile
+                this.adjustMobileContent();
+            },
+
+            adjustMobileContent() {
+                const { panel } = this.elements;
+                if (!panel) return;
+
+                // Find and adjust inner content
+                const title = panel.querySelector('#quick-editor-title');
+                const img = panel.querySelector('#quick-editor-img');
+                const body = panel.querySelector('.quick-editor-body');
+                const lists = panel.querySelector('#quick-editor-lists');
+
+                if (title) {
+                    Object.assign(title.style, {
+                        fontSize: '20px',
+                        padding: '15px',
+                        marginTop: '10px',
+                        textAlign: 'center'
+                    });
+                }
+
+                if (img) {
+                    Object.assign(img.style, {
+                        maxWidth: '200px',
+                        margin: '0 auto'
+                    });
+                }
+
+                if (body) {
+                    Object.assign(body.style, {
+                        padding: '15px'
+                    });
+                }
+
+                if (lists) {
+                    Object.assign(lists.style, {
+                        padding: '15px',
+                        flex: '1',
+                        overflowY: 'auto'
+                    });
+                }
+
+                // Ensure the content is scrollable
+                panel.style.paddingBottom = '80px'; // Space for controls at bottom
             },
 
             // Cache DOM elements
@@ -3048,6 +3378,8 @@
 
             // Event handlers
             onPointerDown(e) {
+                if (this.state.isMobile) return;
+
                 const { panel, mainEl } = this.elements;
                 if (!panel) return;
 
@@ -3259,7 +3591,7 @@
                 const desiredTop = scrollTop + sidebarTop;
                 const panelBottomAbs = desiredTop + panelHeight;
 
-                if (panelBottomAbs + 40 > historyTopAbs) {
+                if (panelBottomAbs + 40 > historyTopAbs && historyTopAbs > 200) {
                     // Stick panel right above history section
                     panel.style.position = 'absolute';
                     panel.style.top = `${historyTopAbs - panelHeight - 34}px`; // 12px margin
@@ -3374,12 +3706,19 @@
                 const { panel, modal, closeBtn, spacer, mainEl } = this.elements;
                 if (!panel || !modal || !spacer || !mainEl) return;
 
-                const isWideScreen = this.utils.vw() > this.config.WIDTH_THRESHOLD;
+                // Check if mobile
+                this.checkMobile();
 
-                if (isWideScreen) {
-                    this.switchToSidebarMode();
+                if (this.state.isMobile) {
+                    this.switchToMobileMode();
                 } else {
-                    this.switchToModalMode();
+                    const isWideScreen = this.utils.vw() > this.config.WIDTH_THRESHOLD;
+
+                    if (isWideScreen) {
+                        this.switchToSidebarMode();
+                    } else {
+                        this.switchToModalMode();
+                    }
                 }
             },
 
