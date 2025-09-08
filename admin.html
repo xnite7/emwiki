@@ -1269,7 +1269,8 @@
                 }
 
                 content.classList.remove('initial');
-                DOM.get('quick-editor-title').innerHTML = item.name + `<span class="icon" style="
+                DOM.get('quick-editor-title').innerHTML = item.name
+                /*DOM.get('quick-editor-title').innerHTML = item.name + `<span class="icon" style="
                     mask-image: url(&quot;data:image/svg+xml,%3Csvg%20viewBox%3D%22-2.5%20-2.5%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20preserveAspectRatio%3D%22xMinYMin%22%20class%3D%22jam%20jam-pencil%22%3E%3Cpath%20d%3D'M12.238%205.472L3.2%2014.51l-.591%202.016%201.975-.571%209.068-9.068-1.414-1.415zM13.78%203.93l1.414%201.414%201.318-1.318a.5.5%200%200%200%200-.707l-.708-.707a.5.5%200%200%200-.707%200L13.781%203.93zm3.439-2.732l.707.707a2.5%202.5%200%200%201%200%203.535L5.634%2017.733l-4.22%201.22a1%201%200%200%201-1.237-1.241l1.248-4.255%2012.26-12.26a2.5%202.5%200%200%201%203.535%200z'%2F%3E%3C%2Fsvg%3E&quot;);
                     width: 19px;
                     height: 19px;
@@ -1279,44 +1280,61 @@
                 "></span>`;
 
                 DOM.get('quick-editor-title').onclick = () => {
-                    //if (this.titleInput) return; // already editing
+                    console.log('Editing title');
+                    if (this.titleInput) return; // Already editing
+
                     this.titleInput = document.createElement('input');
                     this.titleInput.type = 'text';
                     this.titleInput.value = item.name;
                     this.titleInput.style.cssText = 'width:80%;background:#111827;border:1px solid #555;padding:4px 8px;color:#eee;font-size:16px;';
+
                     DOM.get('quick-editor-title').innerHTML = '';
                     DOM.get('quick-editor-title').appendChild(this.titleInput);
                     this.titleInput.focus();
                     this.titleInput.select();
 
                     const saveName = () => {
-                        const newName = this.titleInput.value.trim();
-                        if (newName && newName !== item.name) {
-                            // Update name
-                            const oldName = item.name;
-                            item.name = newName;
+                        if (!this.titleInput) return; // Already saved
 
+                        const newName = this.titleInput.value.trim();
+
+                        // Update name if changed and valid
+                        if (newName && newName !== item.name) {
+                            item.name = newName;
                             ChangeTracker.checkChanges(item);
                             ChangeTracker.updateHighlights();
                             UI.renderItems(true);
                             UI.renderShops();
                         }
+
+                        // Always restore the title display (use current item.name)
                         DOM.get('quick-editor-title').innerHTML = item.name + `<span class="icon" style="
-                            mask-image: url(&quot;data:image/svg+xml,%3Csvg%20viewBox%3D%22-2.5%20-2.5%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20preserveAspectRatio%3D%22xMinYMin%22%20class%3D%22jam%20jam-pencil%22%3E%3Cpath%20d%3D'M12.238%205.472L3.2%2014.51l-.591%202.016%201.975-.571%209.068-9.068-1.414-1.415zM13.78%203.93l1.414%201.414%201.318-1.318a.5.5%200%200%200%200-.707l-.708-.707a.5.5%200%200%200-.707%200L13.781%203.93zm3.439-2.732l.707.707a2.5%202.5%200%200%201%200%203.535L5.634%2017.733l-4.22%201.22a1%201%200%200%201-1.237-1.241l1.248-4.255%2012.26-12.26a2.5%202.5%200%200%201%203.535%200z'%2F%3E%3C%2Fsvg%3E&quot;);
-                            width: 19px;
-                            height: 19px;
-                            margin-bottom: -2px;
-                            margin-left: 2px;
-                            float: none;
-                        "></span>`;
+            mask-image: url(&quot;data:image/svg+xml,%3Csvg%20viewBox%3D%22-2.5%20-2.5%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20preserveAspectRatio%3D%22xMinYMin%22%20class%3D%22jam%20jam-pencil%22%3E%3Cpath%20d%3D'M12.238%205.472L3.2%2014.51l-.591%202.016%201.975-.571%209.068-9.068-1.414-1.415zM13.78%203.93l1.414%201.414%201.318-1.318a.5.5%200%200%200%200-.707l-.708-.707a.5.5%200%200%200-.707%200L13.781%203.93zm3.439-2.732l.707.707a2.5%202.5%200%200%201%200%203.535L5.634%2017.733l-4.22%201.22a1%201%200%200%201-1.237-1.241l1.248-4.255%2012.26-12.26a2.5%202.5%200%200%201%203.535%200z'%2F%3E%3C%2Fsvg%3E&quot;);
+            width: 19px;
+            height: 19px;
+            margin-bottom: -2px;
+            margin-left: 2px;
+            float: none;
+        "></span>`;
+
+                        // Clear the reference
+                        this.titleInput = null;
                     }
-                    this.titleInput.onchange = saveName;
+
+                    // Handle various save triggers
+                    this.titleInput.onblur = saveName;
                     this.titleInput.onkeydown = (e) => {
                         if (e.key === 'Enter') {
+                            e.preventDefault();
+                            saveName();
+                        } else if (e.key === 'Escape') {
+                            e.preventDefault();
+                            // Restore original name on escape
+                            this.titleInput.value = item.name;
                             saveName();
                         }
                     }
-                }
+                }*/
                 // Handle image
                 const img = DOM.get('quick-editor-img');
                 if (item.img) {
@@ -1514,6 +1532,7 @@
 
             setupModalClickHandler(modalContent) {
                 modalContent.addEventListener('click', e => {
+                    // Handle tag menu
                     if (this.tagMenu &&
                         !this.tagMenu.contains(e.target) &&
                         !e.target.classList.contains('tag-option') &&
@@ -1521,9 +1540,23 @@
                         this.tagMenu.remove();
                         this.tagMenu = null;
                     }
-                    if (this.titleInput) {
-                        this.titleInput.remove();
-                        this.titleInput = null;
+
+                    // Handle title input - restore title if clicking away
+                    if (this.titleInput && !this.titleInput.contains(e.target)) {
+                        const saveName = () => {
+                            const newName = this.titleInput.value.trim();
+                            if (newName && newName !== state.currentEditingItem.name) {
+                                state.currentEditingItem.name = newName;
+                                ChangeTracker.checkChanges(state.currentEditingItem);
+                                ChangeTracker.updateHighlights();
+                                UI.renderItems(true);
+                                UI.renderShops();
+                            }
+
+                            DOM.get('quick-editor-title').innerHTML = state.currentEditingItem.name + `<span class="icon" style="..."></span>`;
+                            this.titleInput = null;
+                        };
+                        saveName();
                     }
                 });
             },

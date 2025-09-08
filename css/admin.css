@@ -2768,11 +2768,7 @@ body.dragging-panel {
         font-size: 16px;
     }
 
-    #quick-editor-content.mobile-mode .desc-item,
-    #quick-editor-content.mobile-mode .prc-item {
-        padding: 10px;
-        font-size: 15px;
-    }
+
 
     .quick-editor-body {
 
@@ -2789,10 +2785,7 @@ body.dragging-panel {
         gap: 8px;
     }
 
-    #quick-editor-content.mobile-mode .tag-pill {
-        font-size: 16px;
-        padding: 6px 10px;
-    }
+
 
     /* Ensure scrollability */
     #quick-editor-modal.mobile-mode {
