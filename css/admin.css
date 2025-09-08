@@ -2672,20 +2672,20 @@ body.dragging-panel {
 
     #quick-editor-content.mobile-mode #tutorial {
         padding: 20px;
-        font-size: 14px;
+        font-size: 16px;
     }
 
     #quick-editor-content.mobile-mode .desc-item,
     #quick-editor-content.mobile-mode .prc-item {
         padding: 10px;
-        font-size: 14px;
+        font-size: 15px;
     }
 
 
 
     #quick-editor-content.mobile-mode .small-btn {
 
-        font-size: 14px;
+        font-size: 16px;
     }
 
     #quick-editor-content.mobile-mode .flag-row {
@@ -2694,7 +2694,7 @@ body.dragging-panel {
     }
 
     #quick-editor-content.mobile-mode .tag-pill {
-        font-size: 12px;
+        font-size: 16px;
         padding: 6px 10px;
     }
 

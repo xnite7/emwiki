@@ -2747,8 +2747,10 @@
 
                 this.showLoginForm();
                 // Setup canvas arrow
-                CanvasArrow.init();
-                CanvasArrow.target = DOM.get('admin-key');
+                if (!isTouch) {
+                    CanvasArrow.init();
+                    CanvasArrow.target = DOM.get('admin-key');
+                }
             },
 
             showLoginForm() {
@@ -3238,7 +3240,7 @@
                     position: 'relative',
                     width: '100%',
                     height: '100%',
-                    maxWidth: '100%',
+                    maxWidth: '-webkit-fill-available',
                     maxHeight: '100%',
                     top: 'unset',
                     left: 'unset',
@@ -3246,8 +3248,7 @@
                     boxShadow: 'none',
                     border: 'none',
                     background: 'transparent',
-                    overflowY: 'auto',
-                    overflowX: 'hidden',
+                    overflow: 'clip',
                     display: 'flex',
                     flexDirection: 'column'
                 });
@@ -3256,12 +3257,12 @@
                 if (closeBtn) {
                     Object.assign(closeBtn.style, {
                         position: 'fixed',
-                        top: '10px',
+                        top: '67px',
                         right: '10px',
                         zIndex: '10000',
                         width: '40px',
                         height: '40px',
-                        fontSize: '24px',
+                        fontSize: '34px',
                         background: 'rgba(0, 0, 0, 0.5)',
                         borderRadius: '50%',
                         display: 'flex',
@@ -3291,7 +3292,7 @@
 
                 if (title) {
                     Object.assign(title.style, {
-                        fontSize: '20px',
+                        fontSize: '25px',
                         padding: '15px',
                         marginTop: '10px',
                         textAlign: 'center'
@@ -3307,7 +3308,7 @@
 
                 if (body) {
                     Object.assign(body.style, {
-                        padding: '15px'
+                        paddingTop: '6px'
                     });
                 }
 
