@@ -82,7 +82,7 @@
             <div class="note">Tip: edits modify the loaded list in memory.<br>Click SAVE to publish to website.</div>
         </div>
         <div id="panels-menu">
-            <h2>Panels</h2>
+            <h2 style="margin-top: 0px;">Panels</h2>
             <div id="panels-list"></div>
             <div class="note" style="margin-top:12px">Click to show/hide panels</div>
         </div>
@@ -2659,7 +2659,6 @@
         // ============================
         const PanelsManager = {
             panels: [
-                { id: 'lists-section', name: 'Shops', sectionId: 'lists-section' },
                 { id: 'history-section', name: 'History', sectionId: 'history-section' },
                 { id: 'notes-section', name: 'Notes', sectionId: 'notes-section' }
             ],
@@ -2668,7 +2667,7 @@
 
             init() {
                 // Load saved state
-                const saved = Utils.storage.get('hiddenPanels', []);
+                const saved = []
                 this.hiddenPanels = new Set(saved);
 
                 // Setup close button handlers for existing buttons

@@ -2842,9 +2842,10 @@ body.dragging-panel {
     padding: 12px 24px 24px 24px;
     max-width: 400px;
     box-shadow: 0 6px 24px var(--shade);
-    border: 1px solid var(--shade);
+    border: 1px solid var(--ghost);
+    backdrop-filter: blur(15px);
     background: linear-gradient(137deg, rgba(74, 87, 97, 0.24), rgba(74, 81, 94, 0.37), rgba(66, 84, 98, 0.13));
-    backdrop-filter: blur(11px);
+    
     width: 90%;
     transition: transform 0.2s ease;
 }
