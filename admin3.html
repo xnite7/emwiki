@@ -2998,10 +2998,15 @@
                 });
 
                 // Logout
-                DOM.get('logout').addEventListener('click', () => {
-                    Utils.clearCookie('adminKey');
+                DOM.get("logout").addEventListener("click", async () => {
+                    try {
+                        await fetch("api/logout", { method: "POST" });
+                    } catch (err) {
+                        console.error("Logout failed:", err);
+                    }
                     location.reload();
                 });
+
 
                 // Save button
                 DOM.get('save-btn').addEventListener('click', async () => {
