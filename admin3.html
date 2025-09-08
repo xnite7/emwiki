@@ -3252,16 +3252,16 @@
                     boxShadow: 'none',
                     border: 'none',
                     background: 'transparent',
-                    overflow: 'clip',
+                    overflow: 'hidden',
                     display: 'flex',
-                    flexDirection: 'column'
+                    flexDirection: 'row'
                 });
 
                 // Style the close button for mobile
                 if (closeBtn) {
                     Object.assign(closeBtn.style, {
                         position: 'fixed',
-                        top: '67px',
+                        top: '72px',
                         right: '10px',
                         zIndex: '10000',
                         width: '40px',
@@ -3296,19 +3296,20 @@
 
                 if (title) {
                     Object.assign(title.style, {
-                        fontSize: '25px',
-                        padding: '15px',
-                        marginTop: '10px',
-                        textAlign: 'center'
+                        fontSize: '27px',
+                        padding: '14px 15px 0px 15px',
+                        marginTop: '7px',
+                        textAlign: 'center',
+                        height:'54px'
                     });
                 }
 
-                if (img) {
-                    Object.assign(img.style, {
-                        maxWidth: '200px',
-                        margin: '0 auto'
-                    });
-                }
+                //if (img) {
+                //    Object.assign(img.style, {
+                //        maxWidth: '200px',
+                //        margin: '0 auto'
+                 //   });
+                //}
 
                 if (body) {
                     Object.assign(body.style, {
@@ -3318,14 +3319,14 @@
 
                 if (lists) {
                     Object.assign(lists.style, {
-                        padding: '15px',
-                        flex: '1',
-                        overflowY: 'visible'
+                        padding: '13px',
+                        flex: '1 1 0%',
+                        overflowY: 'auto'
                     });
                 }
 
                 // Ensure the content is scrollable
-                panel.style.paddingBottom = '80px'; // Space for controls at bottom
+                panel.style.paddingBottom = '50px'; // Space for controls at bottom
             },
 
             // Cache DOM elements

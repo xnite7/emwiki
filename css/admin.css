@@ -2644,11 +2644,6 @@ body.dragging-panel {
 /* Mobile-specific styles for quick editor */
 @media (max-width: 768px) {
 
-    .quick-editor-body {
-
-        margin: auto;
-    }
-
 
 
     #quick-editor-content img {
@@ -2714,13 +2709,3 @@ body.dragging-panel {
     }
 }
 
-/* Touch-friendly buttons */
-@media (pointer: coarse) {
-
-
-
-    #quick-editor-close {
-        width: 44px !important;
-        height: 44px !important;
-    }
-}
