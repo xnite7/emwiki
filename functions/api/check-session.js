@@ -1,29 +1,41 @@
-// functions/api/check-session.js
+// --------------------- check-session.js ---------------------
 import { verifySession } from "./_utils/auth.js";
 
 export const onRequestGet = async ({ request, env }) => {
-  try {
-    const cookieHeader = request.headers.get("Cookie") || "";
-    const session = cookieHeader
-      .split("; ")
-      .find(c => c.startsWith("session="))
-      ?.split("=")[1];
-
-    if (!session) {
-      return new Response(JSON.stringify({ ok: false }), { status: 401 });
+    // Handle preflight OPTIONS
+    if (request.method === "OPTIONS") {
+        return new Response(null, { headers: corsHeaders(request) });
     }
 
-    const payload = await verifySession(session, env.SECRET_KEY);
-    if (!payload) {
-      return new Response(JSON.stringify({ ok: false }), { status: 401 });
-    }
+    try {
+        const cookieHeader = request.headers.get("Cookie") || "";
+        const session = cookieHeader
+            .split("; ")
+            .find(c => c.startsWith("session="))
+            ?.split("=")[1];
 
-    return new Response(JSON.stringify({ ok: true, name: payload.name }), {
-      headers: { "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*" }
-    });
-  } catch (err) {
-    console.error("check-session error:", err);
-    return new Response(JSON.stringify({ ok: false, error: err.message }), { status: 500 });
-  }
+        if (!session) return new Response(JSON.stringify({ ok: false }), { 
+            status: 401, 
+            headers: corsHeaders(request) 
+        });
+
+        const payload = await verifySession(session, env.SECRET_KEY);
+        if (!payload) return new Response(JSON.stringify({ ok: false }), { 
+            status: 401, 
+            headers: corsHeaders(request) 
+        });
+
+        return new Response(JSON.stringify({ ok: true, name: payload.name }), {
+            headers: {
+                ...corsHeaders(request),
+                "Content-Type": "application/json"
+            }
+        });
+    } catch (err) {
+        console.error("check-session error:", err);
+        return new Response(JSON.stringify({ ok: false, error: err.message }), { 
+            status: 500, 
+            headers: corsHeaders(request) 
+        });
+    }
 };

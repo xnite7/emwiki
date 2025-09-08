@@ -2789,12 +2789,11 @@
                     try {
                         const res = await fetch("https://emwiki.site/api/admin-login", {
                             method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "Access-Control-Allow-Origin": "*"
-                            },
-                            body: JSON.stringify({ key })
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ key }),
+                            credentials: "include" // important for cookies
                         });
+
 
                         if (res.ok) {
                             const data = await res.json();
