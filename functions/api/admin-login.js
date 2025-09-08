@@ -31,7 +31,8 @@ export const onRequestPost = async ({ request, env }) => {
     return new Response(JSON.stringify({ ok: true, name: row.name }), {
       headers: {
         "Content-Type": "application/json",
-        "Set-Cookie": `session=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400`
+        "Set-Cookie": `session=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400`,
+          "Access-Control-Allow-Origin": "*"
       }
     });
   } catch (err) {

@@ -19,7 +19,8 @@ export const onRequestGet = async ({ request, env }) => {
     }
 
     return new Response(JSON.stringify({ ok: true, name: payload.name }), {
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*" }
     });
   } catch (err) {
     console.error("check-session error:", err);
