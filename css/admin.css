@@ -2708,6 +2708,10 @@ body.dragging-panel {
     #quick-editor-content.mobile-mode {
         padding-bottom: env(safe-area-inset-bottom, 20px);
     }
+
+    .small-btn{
+        padding: 5px 5px;
+    }
 }
 
 /* Touch-friendly buttons */
