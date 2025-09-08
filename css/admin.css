@@ -291,10 +291,12 @@ main {
 
 #quick-editor-spacer {
     min-width: 420px;
-
+    max-width: min(400px, 89vw);
     height: 100%;
 
 }
+
+
 
 #main-content {
     flex: auto;
@@ -690,6 +692,14 @@ main {
     cursor: pointer;
     transition: filter 0.2s ease, scale 0.1s ease;
 }
+
+.danger {
+    background: linear-gradient(180deg, var(--danger), #890000);
+    border: 1px solid #810000;
+    color: white;
+}
+
+
 
 
 .small-btn:hover {
@@ -2490,9 +2500,41 @@ body.dragging-panel {
     font-family: 'Courier New';
     color: var(--muted, #ddd);
     transition: background 0.2s ease;
+
 }
 
+.publish-modal-overlay * {
+    box-sizing: border-box;
+}
 
+.publish-modal-content h2 {
+    font-variant-caps: small-caps;
+}
+
+.publish-modal-content h3 {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+}
+
+.publish-modal-content button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.publish-modal-content button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+@media (max-width: 640px) {
+    .publish-modal-content {
+        width: 95%;
+        max-width: 95%;
+    }
+}
 
 .history-header {
     background: linear-gradient(90deg, #2c1810 0%, #3a280d6e 80%);
@@ -2581,6 +2623,7 @@ body.dragging-panel {
 
 .description-item {
     margin-bottom: 16px;
+    margin-left: 27px;
 }
 
 .list-item {
@@ -2684,11 +2727,17 @@ body.dragging-panel {
     background-size: 20px 100%;
 }
 
-
+@media (max-width: 1047px) {
+    #publish-section {
+        position: unset !important;
+    }
+}
 
 
 /* Mobile-specific styles for quick editor */
 @media (max-width: 768px) {
+
+
 
 
     .glass {
@@ -2761,7 +2810,117 @@ body.dragging-panel {
     }
 }
 
-.glass .garagedoor{
+.glass .garagedoor {
     opacity: 0;
-    
+
+}
+
+
+.delete-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.delete-modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.delete-modal {
+    border-radius: 12px;
+    padding: 12px 24px 24px 24px;
+    max-width: 400px;
+    box-shadow: 0 6px 24px var(--shade);
+    border: 1px solid var(--shade);
+    background: linear-gradient(137deg, rgba(74, 87, 97, 0.24), rgba(74, 81, 94, 0.37), rgba(66, 84, 98, 0.13));
+    backdrop-filter: blur(11px);
+    width: 90%;
+    transition: transform 0.2s ease;
+}
+
+.delete-modal-overlay.active .delete-modal {
+    transform: scale(1);
+}
+
+.delete-modal-header {
+    font-size: 31px;
+    text-shadow: 0px 0px 8px #ffffff;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 8px;
+    font-variant: all-petite-caps;
+}
+
+.delete-modal-content {
+    color: #afafaf;
+    margin-bottom: 24px;
+    line-height: 1.4;
+}
+
+.delete-modal-note-preview {
+    min-width: 65px;
+    height: fit-content;
+    background: linear-gradient(135deg, #feffa0 0%, #fff2a0 100%);
+    border: 1px solid #d4c23a;
+    border-radius: 4px;
+    padding: 12px;
+    position: relative;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    transform: rotate(-1deg);
+    transition: all 0.3s ease;
+    font-size: 13px;
+    color: black;
+    margin: 20px;
+    font-size: 15px;
+}
+
+.delete-modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.update-warning-modal {
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+#update-badge:hover {
+    transform: scale(1.1);
 }
