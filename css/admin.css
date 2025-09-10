@@ -2837,9 +2837,9 @@ body.dragging-panel {
     max-width: 400px;
     box-shadow: 0 6px 24px var(--shade);
     border: 1px solid var(--ghost);
-    backdrop-filter: blur(15px);
+    backdrop-filter: blur(36px);
     background: linear-gradient(137deg, rgba(74, 87, 97, 0.24), rgba(74, 81, 94, 0.37), rgba(66, 84, 98, 0.13));
-    
+
     width: 90%;
     transition: transform 0.2s ease;
 }
@@ -2918,4 +2918,80 @@ body.dragging-panel {
 
 #update-badge:hover {
     transform: scale(1.1);
+}
+
+
+.context-menu-section {
+    padding: 8px 12px;
+}
+
+.context-menu-label {
+    font-size: 12px;
+    color: #ffffff;
+    margin-bottom: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.context-menu-reactions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.reaction-option {
+    cursor: pointer;
+    font-size: 20px;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    display: inline-block;
+}
+
+.reaction-option:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.2);
+}
+
+.context-menu-divider {
+    height: 1px;
+    background: var(--shade, #374151);
+    margin: 4px 0;
+}
+
+.context-menu-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 14px;
+}
+
+.context-menu-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.note-reactions {
+    position: absolute;
+    bottom: -8px;
+    right: 22px;
+    display: flex;
+    gap: 0px;
+    flex-wrap: nowrap;
+    max-width: 80px;
+}
+
+.note-reaction {
+    font-size: 14px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.note-reaction-count {
+    font-size: 10px;
+    color: #9ca3af;
+    font-weight: 600;
 }

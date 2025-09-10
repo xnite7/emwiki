@@ -1868,7 +1868,7 @@
                 };
 
                 const editBtn = this.createIconButton('edit', 'ᴇᴅɪᴛ', 'small-btn ghost');
-                const deleteBtn = this.createIconButton('delete', '', 'small-btn', 'padding:6px 0px 6px 6px;background:#f66');
+                const deleteBtn = this.createIconButton('delete', '', 'small-btn', 'padding:6px 0px 6px 6px;background:##f55');
                 const okBtn = this.createIconButton('check', '', 'small-btn', 'background:rgb(95 193 95);padding:6px 0px 6px 6px;text-shadow:0 0 5px #00000057;display:none;font-weight:700');
 
                 // Initial format
@@ -2430,6 +2430,9 @@
         // Notes Manager
         // ============================
         const NotesManager = {
+            contextMenu: null,
+            currentNoteIndex: null,
+
             init() {
                 const addBtn = DOM.get('addButton');
                 const inputForm = DOM.get('inputForm');
@@ -2455,10 +2458,161 @@
                         !inputForm.contains(e.target)) {
                         this.cancelNote();
                     }
+
+                    // Also close context menu
+                    if (this.contextMenu && !this.contextMenu.contains(e.target)) {
+                        this.hideContextMenu();
+                    }
+                });
+
+                // Prevent default context menu
+                document.addEventListener('contextmenu', (e) => {
+                    if (e.target.closest('.stickynote')) {
+                        e.preventDefault();
+                    }
                 });
 
                 // Create delete modal on init
                 this.createDeleteModal();
+                this.createContextMenu();
+            },
+
+            createContextMenu() {
+                // Remove existing if any
+                if (this.contextMenu) {
+                    this.contextMenu.remove();
+                }
+
+                this.contextMenu = document.createElement('div');
+                this.contextMenu.className = 'notes-context-menu';
+                this.contextMenu.style.cssText = `
+            position: fixed;
+            background: linear-gradient(137deg, rgba(74, 87, 97, 0.24), rgba(74, 81, 94, 0.37), rgba(66, 84, 98, 0.13));
+            border: 1px solid var(--shade, #374151);
+            border-radius: 8px;
+            padding: 8px 0;
+            min-width: 180px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 10001;
+            display: none;
+            backdrop-filter: blur(23px);
+        `;
+
+                // Create menu structure
+                this.contextMenu.innerHTML = `
+            <div class="context-menu-section">
+                <div class="context-menu-label">React</div>
+                <div class="context-menu-reactions">
+                    <span class="reaction-option" data-emoji="👍">👍</span>
+                    <span class="reaction-option" data-emoji="❤️">❤️</span>
+                    <span class="reaction-option" data-emoji="😂">😂</span>
+                    <span class="reaction-option" data-emoji="🔥">🔥</span>
+                    <span class="reaction-option" data-emoji="👀">👀</span>
+                    <span class="reaction-option" data-emoji="✅">✅</span>
+                </div>
+            </div>
+            <div class="context-menu-divider"></div>
+            <div class="context-menu-item delete-option">
+                
+            </div>
+        `;
+
+                this.contextMenu.querySelector('.delete-option').appendChild(QuickEditor.createIconButton('delete', 'DELETE NOTE', '', 'line-height: 15px;border: 0;font-size: 17px;color: #ff1f27;padding:0px 6px 0px 0px;background:transparent;margin-right:8px;vertical-align:middle;font-variant: all-petite-caps;font-size:17px;pointer-events:none;'));
+
+                document.body.appendChild(this.contextMenu);
+                // Event handlers
+                this.contextMenu.querySelectorAll('.reaction-option').forEach(option => {
+                    option.addEventListener('click', () => {
+                        const emoji = option.dataset.emoji;
+                        this.addReaction(this.currentNoteIndex, emoji);
+                        this.hideContextMenu();
+                    });
+                });
+
+                this.contextMenu.querySelector('.delete-option').addEventListener('click', () => {
+                    this.hideContextMenu();
+                    this.showDeleteModal(this.currentNoteIndex);
+                });
+            },
+
+            showContextMenu(e, noteIndex) {
+                this.currentNoteIndex = noteIndex;
+
+                // Position the menu
+                const x = e.clientX;
+                const y = e.clientY;
+
+                // Show menu first to get dimensions
+                this.contextMenu.style.display = 'block';
+
+                // Adjust position if it would go off-screen
+                const menuRect = this.contextMenu.getBoundingClientRect();
+                const finalX = Math.min(x, window.innerWidth - menuRect.width - 10);
+                const finalY = Math.min(y, window.innerHeight - menuRect.height - 10);
+
+                this.contextMenu.style.left = `${finalX}px`;
+                this.contextMenu.style.top = `${finalY}px`;
+
+                // Add show animation
+                this.contextMenu.style.opacity = '0';
+                this.contextMenu.style.transform = 'scale(0.95)';
+
+                requestAnimationFrame(() => {
+                    this.contextMenu.style.transition = 'opacity 0.2s, transform 0.2s';
+                    this.contextMenu.style.opacity = '1';
+                    this.contextMenu.style.transform = 'scale(1)';
+                });
+            },
+
+            hideContextMenu() {
+                if (this.contextMenu) {
+                    this.contextMenu.style.opacity = '0';
+                    this.contextMenu.style.transform = 'scale(0.95)';
+
+                    setTimeout(() => {
+                        this.contextMenu.style.display = 'none';
+                        this.currentNoteIndex = null;
+                    }, 200);
+                }
+            },
+
+            addReaction(noteIndex, emoji) {
+                const note = state.notes[noteIndex];
+                if (!note) return;
+
+                // Initialize reactions if not exists
+                if (!note.reactions) {
+                    note.reactions = {};
+                }
+
+                // Toggle reaction for current user
+                if (!note.reactions[emoji]) {
+                    note.reactions[emoji] = { users: [], count: 0 };
+                }
+
+                const userIndex = note.reactions[emoji].users.indexOf(state.adminName);
+                if (userIndex === -1) {
+                    note.reactions[emoji].users.push(state.adminName);
+                    note.reactions[emoji].count++;
+                } else {
+                    note.reactions[emoji].users.splice(userIndex, 1);
+                    note.reactions[emoji].count--;
+
+                    // Remove emoji if no reactions
+                    if (note.reactions[emoji].count === 0) {
+                        delete note.reactions[emoji];
+                    }
+                }
+
+                // Send update to server
+                state.ws.notes.send({
+                    type: 'react',
+                    noteId: note.id,
+                    reactions: note.reactions,
+                    author: state.adminName
+                });
+
+                this.render();
             },
 
             createDeleteModal() {
@@ -2643,27 +2797,57 @@
                         textContent: this.formatTime(note.timestamp)
                     });
 
+                    // Add reactions display
+                    if (note.reactions && Object.keys(note.reactions).length > 0) {
+                        const reactionsEl = Utils.createElement('div', {
+                            class: 'note-reactions'
+                        });
+
+                        Object.entries(note.reactions).forEach(([emoji, data]) => {
+                            if (data.count > 0) {
+                                const reactionEl = Utils.createElement('div', {
+                                    class: 'note-reaction',
+                                    title: data.users.join(', ')
+                                });
+
+                                reactionEl.innerHTML = `
+                            <span>${emoji}</span>
+                            ${data.count > 1 ? `<span class="note-reaction-count">${data.count}</span>` : ''}
+                        `;
+
+                                reactionsEl.appendChild(reactionEl);
+                            }
+                        });
+
+                        noteEl.appendChild(reactionsEl);
+                    }
+
                     noteEl.appendChild(pin);
                     noteEl.appendChild(content);
                     noteEl.appendChild(author);
                     noteEl.appendChild(time);
 
-                    // Context menu for deletion
+                    // Context menu on right-click
                     noteEl.addEventListener('contextmenu', (e) => {
                         e.preventDefault();
-                        this.showDeleteModal(index);
+                        this.showContextMenu(e, index);
                     });
 
-                    // Long press for mobile
+                    // Long press for mobile (keep existing)
                     let isMoved = false;
                     noteEl.addEventListener('touchmove', () => {
                         isMoved = true;
                     });
                     let pressTimer;
-                    noteEl.addEventListener('touchstart', () => {
+                    noteEl.addEventListener('touchstart', (e) => {
                         pressTimer = setTimeout(() => {
                             if (!isMoved) {
-                                this.showDeleteModal(index);
+                                const touch = e.touches[0];
+                                const fakeEvent = {
+                                    clientX: touch.clientX,
+                                    clientY: touch.clientY
+                                };
+                                this.showContextMenu(fakeEvent, index);
                             }
                         }, 600);
                     });
@@ -2671,8 +2855,8 @@
 
                     container.appendChild(noteEl);
                 });
-                this.adjustBulletinHeight();
 
+                this.adjustBulletinHeight();
                 container.scrollTop = container.scrollHeight;
             },
 
@@ -2694,6 +2878,7 @@
                 return `${Math.floor(diffMins / 1440)}d`;
             }
         };
+
         // ============================
         // Panels Manager (FIXED)
         // ============================
@@ -3532,10 +3717,13 @@
                             } else if (msg.type === 'delete') {
                                 state.notes = state.notes.filter(n => n.id !== msg.id);
                                 NotesManager.render();
+                            } else if (msg.type === 'react') {
+                                const noteIndex = state.notes.findIndex(n => n.id === msg.noteId);
+                                if (noteIndex !== -1) {
+                                    state.notes[noteIndex].reactions = msg.reactions;
+                                    NotesManager.render();
+                                }
                             }
-                        },
-                        onClose: () => {
-                            ErrorHandler.showToast('Notes: Offline', 'error');
                         }
                     }
                 );
