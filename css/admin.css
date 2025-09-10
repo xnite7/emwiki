@@ -2145,9 +2145,18 @@ hr {
     justify-content: center;
 }
 
-.board-container:hover .add-button {
+.plusPad:hover .add-button {
     opacity: 0.5;
-    transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease 1s;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease 0.2s;
+}
+
+.plusPad {
+    padding: 35px;
+    width: 81%;
+    pointer-events: all;
+    position: absolute;
+    z-index: 5;
+    bottom: 0;
 }
 
 .add-button:hover {
