@@ -3775,7 +3775,7 @@
                                 state.notes = state.notes.filter(n => n.id !== msg.id);
                                 NotesManager.render();
                             } else if (msg.type === 'react') {
-                                // THIS IS THE MISSING HANDLER
+                                // Handle reaction updates
                                 const noteIndex = state.notes.findIndex(n => n.id === msg.noteId);
                                 if (noteIndex !== -1) {
                                     state.notes[noteIndex].reactions = msg.reactions || {};
