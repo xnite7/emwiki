@@ -3013,8 +3013,8 @@ body.dragging-panel {
 
 .note-reactions {
     position: absolute;
-    bottom: -8px;
-    right: 22px;
+    bottom: 3px;
+    right: 40%;
     display: flex;
     gap: 0px;
     flex-wrap: nowrap;
@@ -3023,15 +3023,14 @@ body.dragging-panel {
 
 .note-reaction {
     font-size: 14px;
-    padding: 2px 4px;
-    border-radius: 4px;
     display: inline-flex;
     align-items: center;
     gap: 2px;
 }
 
 .note-reaction-count {
-    font-size: 10px;
-    color: #9ca3af;
-    font-weight: 600;
+    font-size: 11px;
+    color: #000000;
+    font-family: cursive;
+    border-radius: 7px;
 }
