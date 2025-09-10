@@ -998,7 +998,7 @@ input#search:focus-visible {
     font-weight: 400;
     user-select: text;
     outline: none;
-    background: #555555;
+    background: transparent;
     color: white;
 }
 
@@ -1977,6 +1977,7 @@ hr {
     z-index: 5;
     display: flex;
     flex-wrap: wrap;
+    height: 90%;
     width: auto;
     gap: 10px;
     overflow: visible;
@@ -2039,6 +2040,16 @@ hr {
     background: linear-gradient(135deg, #aeaeff 0%, #a5acff 100%);
     border-color: #3a3ad4;
     transform: rotate(-0.5deg);
+}
+
+.stickynote:nth-child(3n) .note-content {
+    text-shadow: 0 1px 0 rgb(201 201 201 / 80%);
+}
+
+.stickynote:nth-child(3n) .note-time,
+.stickynote:nth-child(3n) .note-author {
+    color: #444;
+    text-shadow: 0 1px 0 rgb(201 201 201 / 80%);
 }
 
 .stickynote:nth-child(4n) {
@@ -2126,14 +2137,22 @@ hr {
     font-weight: bold;
     cursor: pointer;
     z-index: 20;
+    opacity: 0;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.3);
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+.board-container:hover .add-button {
+    opacity: 0.5;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease 1s;
+}
+
 .add-button:hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease !important;
+    opacity: 1 !important;
     transform: scale(1.1);
     box-shadow:
         0 6px 12px rgba(0, 0, 0, 0.4),
@@ -2956,6 +2975,29 @@ body.dragging-panel {
 .reaction-option:hover {
     background: rgba(255, 255, 255, 0.1);
     transform: scale(1.2);
+}
+
+/* Style for already-selected reactions */
+.reaction-option.selected {
+    filter: saturate(0) brightness(0.5);
+    background: rgba(255, 255, 255, 0.05);
+    position: relative;
+}
+
+.reaction-option.selected::after {
+    content: '✓';
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    font-size: 10px;
+    color: #10b981;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .context-menu-divider {

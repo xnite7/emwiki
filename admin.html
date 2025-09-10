@@ -359,8 +359,8 @@
                 const originalLines = originalFieldValue.split('<br>')
                     .map(line => line.trim())
                     .filter(Boolean);
-                
-                
+
+
                 return originalLines.includes(value.trim());
             },
 
@@ -1416,7 +1416,7 @@
                     const now = new Date();
                     const month = now.toLocaleDateString('en-US', { month: 'short' });
                     const year = now.toLocaleDateString('en-US', { year: 'numeric' });
-                    this.createDescItem(`Gamenight (${month === "May" ? "May" : month + "."} ${year})`, true);
+                    this.createDescItem(`Gamenight (${month === "May" ? "May" : month + "."} ${year})`, true, true);
                 };
                 if (prcBtn) prcBtn.onclick = () => this.createPriceItem('');
             },
@@ -1617,7 +1617,7 @@
                 }
             },
 
-            createDescItem(value = '', isGamenight = false) {
+            createDescItem(value = '', isGamenight = false, focus = false) {
                 const container = DOM.query('.desc-list');
                 const months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
                 const selectedMonths = new Set();
@@ -1723,6 +1723,7 @@
                 };
 
                 if (value.trim() === '') { edit(); }
+                if (focus) { edit(); }
 
                 const done = () => {
                     if (!li.classList.contains('editing')) return;
@@ -1796,7 +1797,7 @@
                 const isOriginal = state.currentEditingItem &&
                     value &&
                     ChangeTracker.isValueOriginal(state.currentEditingItem, 'price/code/rarity', value);
-                
+
 
                 const li = this.createElement('li', {
                     className: 'prc-item'
@@ -2541,6 +2542,18 @@
 
             showContextMenu(e, noteIndex) {
                 this.currentNoteIndex = noteIndex;
+                const note = state.notes[noteIndex];
+
+                // Update reaction options to show which ones are selected
+                this.contextMenu.querySelectorAll('.reaction-option').forEach(option => {
+                    const emoji = option.dataset.emoji;
+                    option.classList.remove('selected');
+
+                    // Check if current user has reacted with this emoji
+                    if (note?.reactions?.[emoji]?.users?.includes(state.adminName)) {
+                        option.classList.add('selected');
+                    }
+                });
 
                 // Position the menu
                 const x = e.clientX;
@@ -2752,7 +2765,7 @@
 
                 if (container.offsetHeight > height) {
                     container.classList.add('scroll');
-                    container.style.height = 'unset';
+                    container.style.height = '';
                 } else {
                     container.classList.remove('scroll');
                 }
@@ -3711,6 +3724,7 @@
                     CONFIG.WS_URLS.NOTES_BOARD,
                     'notes',
                     {
+                        // In the notes WebSocket onMessage handler:
                         onMessage: (msg) => {
                             if (msg.type === 'init') {
                                 state.notes = msg.notes;
@@ -3722,9 +3736,10 @@
                                 state.notes = state.notes.filter(n => n.id !== msg.id);
                                 NotesManager.render();
                             } else if (msg.type === 'react') {
-                                const noteIndex = state.notes.findIndex(n => n.id === msg.noteId);
-                                if (noteIndex !== -1) {
-                                    state.notes[noteIndex].reactions = msg.reactions;
+                                // Update the note with new reactions
+                                const note = state.notes.find(n => n.id === msg.noteId);
+                                if (note) {
+                                    note.reactions = msg.reactions;
                                     NotesManager.render();
                                 }
                             }
@@ -4596,10 +4611,7 @@
                 const desiredTop = scrollTop + sidebarTop;
                 const panelBottomAbs = desiredTop + panelHeight;
 
-                console.log({
-                    panelHeight,
-                    viewportHeight: this.utils.vh()
-                });
+
 
                 if (panelBottomAbs + 40 > historyTopAbs && historyTopAbs > 200 && panelHeight + 34 < this.utils.vh()) {
                     // Stick panel right above history section
