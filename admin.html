@@ -2983,7 +2983,7 @@
                 // Animate in
                 requestAnimationFrame(() => {
                     modal.style.opacity = '1';
-                    modal.querySelector('.publish-modal-content').style.transform = 'scale(1)';
+                    DOM.get('publishModalContent').style.transform = 'scale(1)';
                 });
             },
 
@@ -3255,7 +3255,7 @@
             },
 
             showSuccess(modal) {
-                const content = modal.querySelector('.publish-modal-content');
+                const content = DOM.get('publishModalContent');
                 content.innerHTML = `
             <div style="padding: 60px; text-align: center;">
                 <div style="font-size: 64px; margin-bottom: 20px;">✅</div>
