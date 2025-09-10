@@ -55,10 +55,21 @@
     <!-- Header -->
     <header>
         <h1><img src="./imgs/eng.png" style="width: 52px;">Epic Catalogue<strong
-                style="font-variant-caps: all-petite-caps;">Admin Panel</strong></h1>
+                style="font-variant-caps: all-petite-caps;">Admin Panel</strong>
+            <div id="undo-redo-controls" style="margin-left: 20px;display: flex; gap: 8px;">
+                <button id="undo-btn" class="small-btn ghost" style="padding: 8px;" disabled title="Undo (Ctrl+Z)">
+                    <span class="icon undo-icon" style="margin:0;width: 20px;height: 20px;"></span>
+                </button>
+                <button id="redo-btn" class="small-btn ghost" style="padding: 8px;" disabled title="Redo (Ctrl+Y)">
+                    <span class="icon redo-icon" style="margin:0;width: 20px;height: 20px;"></span>
+                </button>
+            </div>
+        </h1>
+
         <div id="top-controls">
             <div class="tag" id="admin-online" style="display:flex;flex-direction:row-reverse;gap:4px;">connecting...
             </div>
+
             <div id="panels-btn" title="Manage Panels">⊞</div>
             <div id="settings-btn">⚙</div>
         </div>
@@ -298,87 +309,355 @@
         // Change Tracking
         // ============================
 
-        const ChangeTracker = {
-            captureOriginal(item) {
-                if (!state.originalItems.has(item.name)) {
-                    state.originalItems.set(item.name, JSON.stringify(item));
-                }
-            },
+// Replace your existing ChangeTracker with this fixed version:
+const ChangeTracker = {
+    captureOriginal(item) {
+        if (!state.originalItems.has(item.name)) {
+            state.originalItems.set(item.name, JSON.stringify(item));
+        }
+    },
 
-            checkChanges(item) {
-                const original = state.originalItems.get(item.name);
-                if (!original) return false;
+    checkChanges(item) {
+        const original = state.originalItems.get(item.name);
+        if (!original) return false;
 
-                // Normalize items for comparison
-                const normalizedCurrent = JSON.parse(JSON.stringify(item));
-                const normalizedOriginal = JSON.parse(original);
+        // Store the previous state for undo before making changes
+        const previousState = JSON.parse(original);
+        
+        // Normalize items for comparison
+        const normalizedCurrent = JSON.parse(JSON.stringify(item));
+        const normalizedOriginal = JSON.parse(original);
 
-                // Normalize price values - treat "", null, undefined, "0" as equivalent
-                const normalizePrice = (price) => {
-                    if (!price || price === '' || price === 'N/A' || price === 'undefined') {
-                        return '0';
-                    }
-                    return price;
-                };
-
-                normalizedCurrent.price = normalizePrice(normalizedCurrent.price);
-                normalizedOriginal.price = normalizePrice(normalizedOriginal.price);
-
-                const hasChanges = JSON.stringify(normalizedOriginal) !== JSON.stringify(normalizedCurrent);
-
-                if (hasChanges) {
-                    state.changedItems.add(item.name);
-                } else {
-                    state.changedItems.delete(item.name);
-                }
-
-                return hasChanges;
-            },
-
-            updateHighlights() {
-                document.querySelectorAll('.item-card').forEach(card => {
-                    const name = card.dataset.name;
-                    if (state.changedItems.has(name)) {
-                        card.classList.add('changed');
-                    } else {
-                        card.classList.remove('changed');
-                    }
-                });
-            },
-
-            /**
-             * Check if a specific value exists in the original item data
-             * @param {Object} item - Current item
-             * @param {string} field - Field to check ('from' or 'price/code/rarity')
-             * @param {string} value - Value to check for
-             * @returns {boolean} - True if value existed in original data
-             */
-            isValueOriginal(item, field, value) {
-                const originalData = this.getOriginalItem(item);
-                if (!originalData) return false;
-
-                const originalFieldValue = originalData[field] || '';
-                const originalLines = originalFieldValue.split('<br>')
-                    .map(line => line.trim())
-                    .filter(Boolean);
-
-
-                return originalLines.includes(value.trim());
-            },
-
-            /**
-             * Get the original item data
-             * @param {Object} item - Current item
-             * @returns {Object|null} - Original item data or null
-             */
-            getOriginalItem(item) {
-                const originalJson = state.originalItems.get(item.name);
-                return originalJson ? JSON.parse(originalJson) : null;
-            },
-
+        // Normalize price values - treat "", null, undefined, "0" as equivalent
+        const normalizePrice = (price) => {
+            if (!price || price === '' || price === 'N/A' || price === 'undefined') {
+                return '0';
+            }
+            return price;
         };
 
-        // ============================
+        normalizedCurrent.price = normalizePrice(normalizedCurrent.price);
+        normalizedOriginal.price = normalizePrice(normalizedOriginal.price);
+
+        const hasChanges = JSON.stringify(normalizedOriginal) !== JSON.stringify(normalizedCurrent);
+
+        if (hasChanges) {
+            state.changedItems.add(item.name);
+            
+            // Record to undo history if not currently applying undo/redo
+            if (!UndoRedoManager.isApplyingChange) {
+                UndoRedoManager.recordChange({
+                    type: 'edit',
+                    itemName: item.name,
+                    previousState: previousState,
+                    newState: JSON.parse(JSON.stringify(item))
+                });
+            }
+        } else {
+            state.changedItems.delete(item.name);
+        }
+
+        return hasChanges;
+    },
+
+    updateHighlights() {
+        document.querySelectorAll('.item-card').forEach(card => {
+            const name = card.dataset.name;
+            if (state.changedItems.has(name)) {
+                card.classList.add('changed');
+            } else {
+                card.classList.remove('changed');
+            }
+        });
+    },
+
+    isValueOriginal(item, field, value) {
+        const originalData = this.getOriginalItem(item);
+        if (!originalData) return false;
+
+        const originalFieldValue = originalData[field] || '';
+        const originalLines = originalFieldValue.split('<br>')
+            .map(line => line.trim())
+            .filter(Boolean);
+
+        return originalLines.includes(value.trim());
+    },
+
+    getOriginalItem(item) {
+        const originalJson = state.originalItems.get(item.name);
+        return originalJson ? JSON.parse(originalJson) : null;
+    }
+};
+
+// Fixed UndoRedoManager
+const UndoRedoManager = {
+    history: [],
+    currentIndex: -1,
+    maxHistorySize: 50,
+    isApplyingChange: false,
+    lastRecordedState: new Map(), // Track last recorded state to prevent duplicates
+
+    recordChange(action) {
+        if (this.isApplyingChange) return;
+        
+        // Prevent duplicate recordings of the same change
+        const stateKey = `${action.itemName}_${JSON.stringify(action.newState)}`;
+        const lastState = this.lastRecordedState.get(action.itemName);
+        
+        if (lastState && lastState === stateKey) {
+            return; // Skip duplicate
+        }
+        
+        this.lastRecordedState.set(action.itemName, stateKey);
+
+        // Remove any history after current index
+        this.history = this.history.slice(0, this.currentIndex + 1);
+
+        // Add new action to history
+        this.history.push({
+            timestamp: Date.now(),
+            action: action
+        });
+
+        // Limit history size
+        if (this.history.length > this.maxHistorySize) {
+            this.history.shift();
+        } else {
+            this.currentIndex++;
+        }
+
+        this.updateButtons();
+        console.log('Recorded change:', action.itemName, 'History size:', this.history.length);
+    },
+
+    findItem(itemName) {
+        for (const [category, items] of Object.entries(state.jsData)) {
+            if (Array.isArray(items)) {
+                const item = items.find(i => i.name === itemName);
+                if (item) return { item, category };
+            }
+        }
+        return null;
+    },
+
+    applyItemState(itemName, newState) {
+        const result = this.findItem(itemName);
+        if (!result) {
+            console.warn('Item not found:', itemName);
+            return false;
+        }
+
+        const { item, category } = result;
+
+        // Update the item with new state
+        Object.keys(newState).forEach(key => {
+            if (key !== 'name') {
+                item[key] = newState[key];
+            }
+        });
+
+        // Update in allItems as well
+        const allItemsIndex = state.allItems.findIndex(i => i.name === itemName);
+        if (allItemsIndex !== -1) {
+            Object.keys(newState).forEach(key => {
+                if (key !== 'name') {
+                    state.allItems[allItemsIndex][key] = newState[key];
+                }
+            });
+        }
+
+        // Update the current editing item if it's the same
+        if (state.currentEditingItem && state.currentEditingItem.name === itemName) {
+            Object.keys(newState).forEach(key => {
+                if (key !== 'name') {
+                    state.currentEditingItem[key] = newState[key];
+                }
+            });
+        }
+
+        return true;
+    },
+
+    undo() {
+        if (!this.canUndo()) {
+            console.log('Cannot undo: no history');
+            return;
+        }
+
+        this.isApplyingChange = true;
+        const entry = this.history[this.currentIndex];
+        console.log('Undoing:', entry.action.itemName);
+
+        if (entry.action.type === 'edit') {
+            // Restore previous state
+            const success = this.applyItemState(entry.action.itemName, entry.action.previousState);
+            
+            if (success) {
+                // Find the item and check changes
+                const result = this.findItem(entry.action.itemName);
+                if (result) {
+                    ChangeTracker.checkChanges(result.item);
+                    ChangeTracker.updateHighlights();
+                    
+                    // Update UI if this item is currently being edited
+                    if (state.currentEditingItem && state.currentEditingItem.name === entry.action.itemName) {
+                        QuickEditor.open(result.item);
+                    }
+                }
+            }
+        }
+
+        this.currentIndex--;
+        this.isApplyingChange = false;
+
+        // Refresh UI
+        UI.renderItems(true);
+        UI.renderShops();
+        this.updateButtons();
+
+        ErrorHandler.showToast(`⮌ Undo: ${entry.action.itemName}`);
+    },
+
+    redo() {
+        if (!this.canRedo()) {
+            console.log('Cannot redo: no future history');
+            return;
+        }
+
+        this.isApplyingChange = true;
+        this.currentIndex++;
+        const entry = this.history[this.currentIndex];
+        console.log();
+
+        if (entry.action.type === 'edit') {
+            // Apply new state
+            const success = this.applyItemState(entry.action.itemName, entry.action.newState);
+            
+            if (success) {
+                // Find the item and check changes
+                const result = this.findItem(entry.action.itemName);
+                if (result) {
+                    ChangeTracker.checkChanges(result.item);
+                    ChangeTracker.updateHighlights();
+                    
+                    // Update UI if this item is currently being edited
+                    if (state.currentEditingItem && state.currentEditingItem.name === entry.action.itemName) {
+                        QuickEditor.open(result.item);
+                    }
+                }
+            }
+        }
+
+        this.isApplyingChange = false;
+
+        // Refresh UI
+        UI.renderItems(true);
+        UI.renderShops();
+        this.updateButtons();
+
+        ErrorHandler.showToast(`⮎ Redo: ${entry.action.itemName}`);
+    },
+
+    canUndo() {
+        return this.currentIndex >= 0;
+    },
+
+    canRedo() {
+        return this.currentIndex < this.history.length - 1;
+    },
+
+    updateButtons() {
+        const undoBtn = DOM.get('undo-btn');
+        const redoBtn = DOM.get('redo-btn');
+
+        if (undoBtn) {
+            undoBtn.disabled = !this.canUndo();
+            undoBtn.style.opacity = this.canUndo() ? '1' : '0.3';
+            
+            if (this.canUndo()) {
+                const lastAction = this.history[this.currentIndex];
+                undoBtn.title = `Undo: ${this.getActionDescription(lastAction.action)} (Ctrl+Z)`;
+            } else {
+                undoBtn.title = 'Undo (Ctrl+Z)';
+            }
+        }
+
+        if (redoBtn) {
+            redoBtn.disabled = !this.canRedo();
+            redoBtn.style.opacity = this.canRedo() ? '1' : '0.3';
+            
+            if (this.canRedo()) {
+                const nextAction = this.history[this.currentIndex + 1];
+                redoBtn.title = `Redo: ${this.getActionDescription(nextAction.action)} (Ctrl+Y)`;
+            } else {
+                redoBtn.title = 'Redo (Ctrl+Y)';
+            }
+        }
+    },
+
+    getActionDescription(action) {
+        if (action.type === 'edit') {
+            const changes = [];
+            const prev = action.previousState;
+            const next = action.newState;
+
+            if (prev.price !== next.price) changes.push('price');
+            if (prev.from !== next.from) changes.push('description');
+            if (prev['price/code/rarity'] !== next['price/code/rarity']) changes.push('codes');
+            if (prev.weekly !== next.weekly) changes.push('weekly flag');
+            if (prev.weeklystar !== next.weeklystar) changes.push('star flag');
+            if (prev.new !== next.new) changes.push('new flag');
+            if (prev.retired !== next.retired) changes.push('retired flag');
+            if (prev.premium !== next.premium) changes.push('premium flag');
+            if (prev.tradable !== next.tradable) changes.push('tradable flag');
+
+            return `Edit ${action.itemName}${changes.length ? ': ' + changes.join(', ') : ''}`;
+        }
+        return 'Unknown action';
+    },
+
+    clear() {
+        this.history = [];
+        this.currentIndex = -1;
+        this.lastRecordedState.clear();
+        this.updateButtons();
+    },
+
+    init() {
+        console.log('Initializing UndoRedoManager');
+        
+        // Add undo/redo buttons event listeners
+        const undoBtn = DOM.get('undo-btn');
+        const redoBtn = DOM.get('redo-btn');
+
+        if (undoBtn) {
+            undoBtn.addEventListener('click', () => this.undo());
+        }
+
+        if (redoBtn) {
+            redoBtn.addEventListener('click', () => this.redo());
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Don't trigger when typing in inputs
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+                return;
+            }
+
+            if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z') {
+                e.preventDefault();
+                this.undo();
+            } else if ((e.ctrlKey || e.metaKey) && (e.shiftKey && e.key.toLowerCase() === 'z' || e.key.toLowerCase() === 'y')) {
+                e.preventDefault();
+                this.redo();
+            }
+        });
+
+        this.updateButtons();
+    }
+};
+// ============================
         // Utility Functions
         // ============================
 
@@ -2103,7 +2382,7 @@
                     className: 'history-inner',
                     style: { position: 'absolute', width: '97%', top: '0', transition: 'transform 0.3s ease-in-out' }
                 });
-                
+
                 this.historyData.forEach(entry => this.renderEntry(entry, newInner));
 
 
@@ -2143,7 +2422,7 @@
                     onClick: () => {
                         if (this.currentPage < totalPages - 1 && !this.isAnimating) {
                             this.currentPage++;
-                            
+
                         }
                     }
                 });
@@ -3503,15 +3782,9 @@
                 toast.className = `toast toast-${type}`;
                 toast.textContent = message;
                 toast.style.cssText = `
-                    position: fixed;
-                    bottom: 20px;
-                    right: 20px;
-                    padding: 12px 16px;
-                    border-radius: 8px;
-                    color: white;
-                    z-index: 10000;
-                    animation: slideIn 0.3s ease;
-                    background: ${type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#3b82f6'};
+
+                    background: ${type === 'error' ? 'linear-gradient(135deg, #ef4444, #c62828)' : type === 'success' ? 'linear-gradient(135deg, #10b981, #0b8045)' : 'linear-gradient(135deg, #3b82f6, #1e40af)'};
+
                 `;
 
                 document.body.appendChild(toast);
@@ -3672,6 +3945,7 @@
                 NotesManager.init();
                 PanelsManager.init();
                 PublishManager.init();
+                UndoRedoManager.init();
                 this.initEventListeners();
                 UpdateChecker.start();
 

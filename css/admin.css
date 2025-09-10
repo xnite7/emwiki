@@ -2289,12 +2289,26 @@ hr {
 
 }
 
+.undo-icon {
+    mask-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"%3E%3Cpath d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/%3E%3C/svg%3E');
+}
+
+.redo-icon {
+    mask-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"%3E%3Cpath d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"/%3E%3C/svg%3E');
+}
+
+@media (max-width: 400px) {
+    .tag div {
+        display: none !important;
+    }
+}
+
 @media (max-width: 550px) {
     .board-container {
         width: unset;
     }
 
-    .tag div:nth-child(n+3) {
+    .tag div:nth-child(n+2) {
         display: none !important;
     }
 
@@ -2391,17 +2405,7 @@ hr {
 
 
 
-@keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
 
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
 
 @keyframes slideOut {
     from {
@@ -2419,6 +2423,19 @@ hr {
     font-family: system-ui, -apple-system, sans-serif;
     font-weight: 500;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    transform: translateX(0%);
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: white;
+    z-index: 10000;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+
+    @starting-style {
+        transform: translateX(100%);
+    }
 }
 
 
@@ -2528,13 +2545,12 @@ body.dragging-panel {
     width: 20px;
     border: 1px solid #750000;
     border-radius: 3px;
-    transition: all 0.3s 
-    ease;
+    transition: all 0.3s ease;
 }
 
 .history-wrapper::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(180deg, var(--danger), #000000);
-    
+
     width: 20px;
     border: 1px solid #750000;
     border-radius: 3px;
