@@ -427,7 +427,7 @@ const UndoRedoManager = {
         }
 
         this.updateButtons();
-        console.log('Recorded change:', action.itemName, 'History size:', this.history.length);
+
     },
 
     findItem(itemName) {
@@ -479,14 +479,11 @@ const UndoRedoManager = {
     },
 
     undo() {
-        if (!this.canUndo()) {
-            console.log('Cannot undo: no history');
-            return;
-        }
+
 
         this.isApplyingChange = true;
         const entry = this.history[this.currentIndex];
-        console.log('Undoing:', entry.action.itemName);
+
 
         if (entry.action.type === 'edit') {
             // Restore previous state
@@ -519,15 +516,10 @@ const UndoRedoManager = {
     },
 
     redo() {
-        if (!this.canRedo()) {
-            console.log('Cannot redo: no future history');
-            return;
-        }
-
         this.isApplyingChange = true;
         this.currentIndex++;
         const entry = this.history[this.currentIndex];
-        console.log();
+ 
 
         if (entry.action.type === 'edit') {
             // Apply new state
