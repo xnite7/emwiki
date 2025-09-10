@@ -143,7 +143,7 @@ header h1 {
 
 
 
-#settings-menu {
+.menu {
     position: fixed;
     right: 18px;
     top: 64px;
@@ -159,7 +159,7 @@ header h1 {
     zoom: 1.1;
 }
 
-#settings-menu.show {
+.menu.show {
     display: block
 }
 
@@ -168,8 +168,8 @@ select::-webkit-scrollbar {
     background: var(--panel);
 }
 
-#settings-menu label,
-#settings-menu button {
+.menu label,
+.menu button {
     display: block;
     font-variant: all-petite-caps;
     text-box: auto;
@@ -191,23 +191,7 @@ select::-webkit-scrollbar {
     filter: brightness(1.3) saturate(1.3);
 }
 
-#panels-menu {
-    position: absolute;
-    top: 60px;
-    right: 120px;
-    /* Adjusted position */
-    background: #1e293b;
-    border: 1px solid #555;
-    border-radius: 12px;
-    padding: 16px;
-    min-width: 200px;
-    display: none;
-    z-index: 1000;
-}
 
-#panels-menu.show {
-    display: block;
-}
 
 .panel-toggle {
     display: flex;
@@ -500,7 +484,7 @@ main {
     /* -webkit-text-stroke: 2px #0000001a; */
 }
 
-#settings-menu h2 {
+.menu h2 {
     margin: -13px 0px 12px 0px;
     color: var(--ghost);
     font-variant: all-petite-caps;
