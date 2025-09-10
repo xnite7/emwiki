@@ -2082,15 +2082,13 @@
             },
 
             renderPage(container, direction = 'none') {
-                if (this.isAnimating) return; // Prevent overlapping animations
-                this.isAnimating = true;
 
                 // Create wrapper if not exists
                 let wrapper = container.querySelector('.history-wrapper');
                 if (!wrapper) {
                     wrapper = Utils.createElement('div', {
                         className: 'history-wrapper',
-                        style: { position: 'relative', overflow: 'hidden', height: '400px' }
+                        style: { position: 'relative', overflowX: 'hidden', overflowY: 'scroll', height: '400px' }
                     });
                     torn = Utils.createElement('div', {
                         className: 'torn-edge'
@@ -2100,77 +2098,18 @@
                     container.appendChild(torn);
                 }
 
-                // Calculate entries to show
-                const startIndex = this.currentPage * this.MAX_ENTRIES_PER_PAGE;
-                const potentialSlice = this.historyData.slice(startIndex, startIndex + this.MAX_ENTRIES_PER_PAGE);
-
-                // Measure heights in a temporary container
-                const tempContainer = Utils.createElement('div', { style: { display: 'none' } });
-                document.body.appendChild(tempContainer);
-                potentialSlice.forEach(entry => this.renderEntry(entry, tempContainer));
-                let entriesToShow = this.MAX_ENTRIES_PER_PAGE;
-                const entryElements = Array.from(tempContainer.children);
-                let cumulativeHeight = 0;
-                for (let i = 0; i < entryElements.length; i++) {
-                    const height = entryElements[i].offsetHeight;
-                    cumulativeHeight += height;
-                    if (height > this.ENTRY_HEIGHT_THRESHOLD && i === 0) {
-                        entriesToShow = 1;
-                        break;
-                    } else if (cumulativeHeight > this.ENTRY_HEIGHT_THRESHOLD * 2 && i === 1) {
-                        entriesToShow = 2;
-                        break;
-                    }
-                }
-                document.body.removeChild(tempContainer);
-
                 // Create new inner container for new entries
                 const newInner = Utils.createElement('div', {
                     className: 'history-inner',
-                    style: { position: 'absolute', width: '100%', top: '0', transition: 'transform 0.3s ease-in-out' }
+                    style: { position: 'absolute', width: '97%', top: '0', transition: 'transform 0.3s ease-in-out' }
                 });
-                const slice = this.historyData.slice(startIndex, startIndex + entriesToShow);
-                slice.forEach(entry => this.renderEntry(entry, newInner));
+                
+                this.historyData.forEach(entry => this.renderEntry(entry, newInner));
 
-                // Handle animation
-                const oldInner = wrapper.querySelector('.history-inner');
-                if (direction === 'none' || !oldInner) {
-                    // Initial render or no previous content
-                    wrapper.innerHTML = '';
-                    wrapper.appendChild(newInner);
-                    this.addPaginationControls(wrapper);
-                    this.isAnimating = false;
-                    return;
-                }
 
-                // Position new content for animation
-                if (direction === 'up') {
-                    newInner.style.transform = 'translateY(100%)'; // Start below
-                } else if (direction === 'down') {
-                    newInner.style.transform = 'translateY(-100%)'; // Start above
-                }
                 wrapper.appendChild(newInner);
 
-                // Animate both containers
-                setTimeout(() => {
-                    if (direction === 'up') {
-                        oldInner.style.transform = 'translateY(-100%)'; // Slide old up
-                        newInner.style.transform = 'translateY(0)'; // Slide new in
-                    } else if (direction === 'down') {
-                        oldInner.style.transform = 'translateY(100%)'; // Slide old down
-                        newInner.style.transform = 'translateY(0)'; // Slide new in
-                    }
-
-                    // Clean up after animation
-                    setTimeout(() => {
-                        wrapper.removeChild(oldInner);
-                        this.isAnimating = false;
-                    }, 350); // Match animation duration
-                }, 0);
-
-                // Update pagination controls
-                wrapper.querySelector('.pagination-controls')?.remove();
-                this.addPaginationControls(wrapper);
+                //this.addPaginationControls(wrapper);
             },
 
             addPaginationControls(wrapper) {
@@ -2187,7 +2126,6 @@
                     onClick: () => {
                         if (this.currentPage > 0 && !this.isAnimating) {
                             this.currentPage--;
-                            this.renderPage(wrapper.parentElement, 'down');
                         }
                     }
                 });
@@ -2205,7 +2143,7 @@
                     onClick: () => {
                         if (this.currentPage < totalPages - 1 && !this.isAnimating) {
                             this.currentPage++;
-                            this.renderPage(wrapper.parentElement, 'up');
+                            
                         }
                     }
                 });
@@ -2221,7 +2159,7 @@
                 controls.appendChild(upBtn);
                 controls.appendChild(pageIndicator);
                 controls.appendChild(downBtn);
-                wrapper.appendChild(controls);
+                wrapper.parentElement.appendChild(controls);
             },
 
             // Utility functions, change processors, formatters
@@ -2524,11 +2462,14 @@
             </div>
             <div class="context-menu-divider"></div>
             <div class="context-menu-item delete-option">
-                
-            </div>
-        `;
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="74.2895 78.773 20.0031 20" style="margin-bottom: -5px;" width="16px" height="16px">
+  <path d="M 79.291 80.773 C 79.291 79.668 80.186 78.773 81.291 78.773 L 87.291 78.773 C 88.396 78.773 89.291 79.668 89.291 80.773 L 89.291 82.773 L 93.291 82.773 C 94.061 82.773 94.542 83.606 94.157 84.273 C 93.978 84.582 93.648 84.773 93.291 84.773 L 92.222 84.773 L 91.355 96.915 C 91.281 97.961 90.409 98.773 89.36 98.773 L 79.221 98.773 C 78.172 98.773 77.301 97.961 77.226 96.915 L 76.361 84.773 L 75.291 84.773 C 74.521 84.773 74.04 83.939 74.425 83.273 C 74.604 82.963 74.934 82.773 75.291 82.773 L 79.291 82.773 L 79.291 80.773 Z M 81.291 82.773 L 87.291 82.773 L 87.291 80.773 L 81.291 80.773 L 81.291 82.773 Z" style="stroke-width: 1; fill: #cf2026" transform="matrix(1, 0, 0, 1, 7.105427357601002e-15, 1.4210854715202004e-14)"/>
+  <path d="M 79.291 80.773 C 79.291 79.668 80.186 78.773 81.291 78.773 L 87.291 78.773 C 88.396 78.773 89.291 79.668 89.291 80.773 L 89.291 82.773 L 93.291 82.773 C 94.061 82.773 94.542 83.606 94.157 84.273 C 93.978 84.582 93.648 84.773 93.291 84.773 L 92.222 84.773 L 91.355 96.915 C 91.281 97.961 90.409 98.773 89.36 98.773 L 79.221 98.773 C 78.172 98.773 77.301 97.961 77.226 96.915 L 76.361 84.773 L 75.291 84.773 C 74.521 84.773 74.04 83.939 74.425 83.273 C 74.604 82.963 74.934 82.773 75.291 82.773 L 79.291 82.773 L 79.291 80.773 Z M 81.291 82.773 L 87.291 82.773 L 87.291 80.773 L 81.291 80.773 L 81.291 82.773 Z M 78.365 84.773 L 79.222 96.773 L 89.361 96.773 L 90.218 84.773 L 78.365 84.773 Z M 82.291 86.773 C 82.843 86.773 83.291 87.22 83.291 87.773 L 83.291 93.773 C 83.291 94.542 82.458 95.024 81.791 94.639 C 81.482 94.46 81.291 94.13 81.291 93.773 L 81.291 87.773 C 81.291 87.22 81.739 86.773 82.291 86.773 Z M 86.291 86.773 C 86.843 86.773 87.291 87.22 87.291 87.773 L 87.291 93.773 C 87.291 94.542 86.458 95.024 85.791 94.639 C 85.482 94.46 85.291 94.13 85.291 93.773 L 85.291 87.773 C 85.291 87.22 85.739 86.773 86.291 86.773 Z" style="stroke-width: 1;" transform="matrix(1, 0, 0, 1, 7.105427357601002e-15, 1.4210854715202004e-14)"/>
+</svg>
+                <span style="line-height: 15px;border: 0;font-size: 17px;color: #ff1f27;padding:0px 6px 0px 0px;background:transparent;margin-right:8px;vertical-align:middle;font-variant: all-petite-caps;font-size:17px;pointer-events:none;text-shadow: -1.3px -1.3px 0 #000, 0 -1.3px 0 #000, 1.3px -1.3px 0 #000, 1.3px 0 0 #000, 1.3px 1.3px 0 #000, 0 1.3px 0 #000, -1.3px 1.3px 0 #000, -1.3px 0 0 #000;"> DELETE NOTE</span>
 
-                this.contextMenu.querySelector('.delete-option').appendChild(QuickEditor.createIconButton('delete', 'DELETE NOTE', '', 'line-height: 15px;border: 0;font-size: 17px;color: #ff1f27;padding:0px 6px 0px 0px;background:transparent;margin-right:8px;vertical-align:middle;font-variant: all-petite-caps;font-size:17px;pointer-events:none;'));
+                </div>
+        `;
 
                 document.body.appendChild(this.contextMenu);
                 // Event handlers
@@ -2831,7 +2772,6 @@
                         });
 
                         Object.entries(note.reactions).forEach(([emoji, data]) => {
-                            console.log(note.reactions);
                             if (data.count > 0) {
                                 const reactionEl = Utils.createElement('div', {
                                     class: 'note-reaction',
