@@ -699,7 +699,11 @@ main {
     color: white;
 }
 
-
+.success {
+    background: linear-gradient(180deg, var(--success), #005700);
+    border: 1px solid #004600;
+    color: white;
+}
 
 
 .small-btn:hover {

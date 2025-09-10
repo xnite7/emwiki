@@ -197,6 +197,10 @@
 
 
     <script>
+
+        function print(msg) {
+            console.log(`[Admin Panel] ${msg}`);
+        }
         const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         // ============================
         // Configuration & Constants
@@ -355,7 +359,8 @@
                 const originalLines = originalFieldValue.split('<br>')
                     .map(line => line.trim())
                     .filter(Boolean);
-
+                
+                
                 return originalLines.includes(value.trim());
             },
 
@@ -1406,14 +1411,14 @@
                 const gnBtn = DOM.get('new-gn-btn');
                 const prcBtn = DOM.get('new-prc-btn');
 
-                if (descBtn) descBtn.onclick = () => this.createDescItem('', false, true, true);
+                if (descBtn) descBtn.onclick = () => this.createDescItem('');
                 if (gnBtn) gnBtn.onclick = () => {
                     const now = new Date();
                     const month = now.toLocaleDateString('en-US', { month: 'short' });
                     const year = now.toLocaleDateString('en-US', { year: 'numeric' });
-                    this.createDescItem(`Gamenight (${month === "May" ? "May" : month + "."} ${year})`, true, true, true);
+                    this.createDescItem(`Gamenight (${month === "May" ? "May" : month + "."} ${year})`, true);
                 };
-                if (prcBtn) prcBtn.onclick = () => this.createPriceItem('', true, true);
+                if (prcBtn) prcBtn.onclick = () => this.createPriceItem('');
             },
 
             renderTags(item) {
@@ -1578,7 +1583,7 @@
                 const descriptions = (item.from || '').split('<br>').map(x => x.trim()).filter(Boolean);
                 descriptions.forEach(desc => {
                     const isGamenight = /\([A-Z][a-z]{2}\./.test(desc);
-                    this.createDescItem(desc, isGamenight, false);
+                    this.createDescItem(desc, isGamenight);
                 });
 
                 // Initialize Sortable
@@ -1598,7 +1603,7 @@
                 container.innerHTML = '';
 
                 const prices = (item['price/code/rarity'] || '').split('<br>').map(x => x.trim()).filter(Boolean);
-                prices.forEach(price => this.createPriceItem(price, false));
+                prices.forEach(price => this.createPriceItem(price));
 
                 // Initialize Sortable
                 if (!isTouch) {
@@ -1612,14 +1617,13 @@
                 }
             },
 
-            createDescItem(value = '', isGamenight = false, startFocused = false, skipOriginalCheck = false) {
+            createDescItem(value = '', isGamenight = false) {
                 const container = DOM.query('.desc-list');
                 const months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
                 const selectedMonths = new Set();
 
                 // Check if this value is from the original item (unless we're skipping the check)
-                const isOriginal = !skipOriginalCheck &&
-                    state.currentEditingItem &&
+                const isOriginal = state.currentEditingItem &&
                     value &&
                     ChangeTracker.isValueOriginal(state.currentEditingItem, 'from', value);
 
@@ -1628,9 +1632,9 @@
                 });
 
                 // Apply original styling if this content existed in the original item
-                if (isOriginal) {
-                    li.style.background = '#3c3c3c';
-                    li.style.border = '1px solid #555';
+                if (!isOriginal) {
+                    li.style.background = '#5c5c5c';
+                    li.style.border = 'none';
                 }
 
                 // ... rest of the method remains the same
@@ -1679,8 +1683,8 @@
                 });
 
                 const editBtn = this.createIconButton('edit', 'ᴇᴅɪᴛ', 'small-btn ghost');
-                const deleteBtn = this.createIconButton('delete', '', 'small-btn', 'padding:6px 0px 6px 6px;background:#f55');
-                const okBtn = this.createIconButton('check', '', 'small-btn', 'background:rgb(95 193 95);padding:6px 0px 6px 6px;text-shadow:0 0 5px #00000057;display:none;font-weight:700');
+                const deleteBtn = this.createIconButton('delete', '', 'small-btn danger', 'padding:6px 0px 6px 6px;');
+                const okBtn = this.createIconButton('check', '', 'small-btn success', 'padding:6px 0px 6px 6px;text-shadow:0 0 5px #00000057;display:none;font-weight:700');
 
                 // Parse existing gamenight data
                 if (isGamenight && /\(.+\)/.test(value)) {
@@ -1718,7 +1722,7 @@
                     }
                 };
 
-                if (startFocused) { edit(); }
+                if (value.trim() === '') { edit(); }
 
                 const done = () => {
                     if (!li.classList.contains('editing')) return;
@@ -1785,23 +1789,23 @@
             },
 
             // Updated createPriceItem method
-            createPriceItem(value = '', startFocused = false, skipOriginalCheck = false) {
+            createPriceItem(value = '') {
                 const container = DOM.query('.prc-list');
 
                 // Check if this value is from the original item (unless we're skipping the check)
-                const isOriginal = !skipOriginalCheck &&
-                    state.currentEditingItem &&
+                const isOriginal = state.currentEditingItem &&
                     value &&
                     ChangeTracker.isValueOriginal(state.currentEditingItem, 'price/code/rarity', value);
+                
 
                 const li = this.createElement('li', {
                     className: 'prc-item'
                 });
 
                 // Apply original styling if this content existed in the original item
-                if (isOriginal) {
-                    li.style.background = '#3c3c3c';
-                    li.style.border = '1px solid #555';
+                if (!isOriginal) {
+                    li.style.background = '#5c5c5c';
+                    li.style.border = 'none';
                 }
 
                 const icon = this.createElement('img', {
@@ -1868,8 +1872,8 @@
                 };
 
                 const editBtn = this.createIconButton('edit', 'ᴇᴅɪᴛ', 'small-btn ghost');
-                const deleteBtn = this.createIconButton('delete', '', 'small-btn', 'padding:6px 0px 6px 6px;background:#f55');
-                const okBtn = this.createIconButton('check', '', 'small-btn', 'background:rgb(95 193 95);padding:6px 0px 6px 6px;text-shadow:0 0 5px #00000057;display:none;font-weight:700');
+                const deleteBtn = this.createIconButton('delete', '', 'small-btn danger', 'padding:6px 0px 6px 6px;');
+                const okBtn = this.createIconButton('check', '', 'small-btn success', 'padding:6px 0px 6px 6px;text-shadow:0 0 5px #00000057;display:none;font-weight:700');
 
                 // Initial format
                 formatLabel();
@@ -1887,7 +1891,7 @@
                     setTimeout(() => input.focus(), 100);
                 };
 
-                if (startFocused) { edit(); }
+                if (value.trim() === '') { edit(); }
 
                 const done = () => {
                     if (!li.classList.contains('editing')) return;
