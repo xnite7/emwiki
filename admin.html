@@ -3763,11 +3763,10 @@
                     {
                         onMessage: (msg) => {
                             if (msg.type === 'init') {
-                                // Initialize notes with reactions preserved
                                 state.notes = msg.notes || [];
                                 NotesManager.render();
                             } else if (msg.type === 'create') {
-                                // Find if note already exists (prevent duplicates)
+                                // Check if note already exists to prevent duplicates
                                 if (!state.notes.find(n => n.id === msg.note.id)) {
                                     state.notes.push(msg.note);
                                     NotesManager.render();
@@ -3776,7 +3775,7 @@
                                 state.notes = state.notes.filter(n => n.id !== msg.id);
                                 NotesManager.render();
                             } else if (msg.type === 'react') {
-                                // Handle reaction updates
+                                // THIS IS THE MISSING HANDLER
                                 const noteIndex = state.notes.findIndex(n => n.id === msg.noteId);
                                 if (noteIndex !== -1) {
                                     state.notes[noteIndex].reactions = msg.reactions || {};
