@@ -2321,6 +2321,9 @@
                     className: 'history-item'
                 });
                 historyItem.appendChild(header);
+                if (entry.username.toUpperCase() === 'XNITE') {
+                    historyItem.style.filter = 'sepia(1)';
+                }
 
                 // Check if this is a "No changes" entry
                 if (entry.diff === '(No changes)') {
@@ -4767,7 +4770,7 @@
         const accentTransparent = accentColor + '66';
 
         // Set the new transparent variable on root
-        root.style.setProperty('--accent-transparent', accentTransparent);
+        //root.style.setProperty('--accent-transparent', accentTransparent);
 
         // Add CSS for icons
         const style = document.createElement('style');
