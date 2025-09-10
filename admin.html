@@ -2831,6 +2831,7 @@
                         });
 
                         Object.entries(note.reactions).forEach(([emoji, data]) => {
+                            console.log(note.reactions);
                             if (data.count > 0) {
                                 const reactionEl = Utils.createElement('div', {
                                     class: 'note-reaction',
