@@ -2993,21 +2993,6 @@ body.dragging-panel {
     position: relative;
 }
 
-.reaction-option.selected::after {
-    content: '✓';
-    position: absolute;
-    bottom: -2px;
-    right: -2px;
-    font-size: 10px;
-    color: #10b981;
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 50%;
-    width: 14px;
-    height: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 
 .context-menu-divider {
     height: 1px;

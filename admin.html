@@ -668,17 +668,21 @@
                 }
             }
 
+            // In WebSocketManager class, verify the send method:
             send(data) {
                 if (this.ws && this.ws.readyState === WebSocket.OPEN) {
                     try {
-                        this.ws.send(typeof data === 'string' ? data : JSON.stringify(data));
+                        const message = typeof data === 'string' ? data : JSON.stringify(data);
+                        this.ws.send(message);
                         return true;
                     } catch (error) {
                         ErrorHandler.handle(error, `WebSocket ${this.name} send`);
                         return false;
                     }
+                } else {
+                    console.warn(`WebSocket ${this.name} not ready, state: ${this.ws?.readyState}`);
+                    return false;
                 }
-                return false;
             }
 
             close() {
@@ -2611,9 +2615,11 @@
 
                 const userIndex = note.reactions[emoji].users.indexOf(state.adminName);
                 if (userIndex === -1) {
+                    // Add reaction
                     note.reactions[emoji].users.push(state.adminName);
                     note.reactions[emoji].count++;
                 } else {
+                    // Remove reaction
                     note.reactions[emoji].users.splice(userIndex, 1);
                     note.reactions[emoji].count--;
 
@@ -2623,17 +2629,19 @@
                     }
                 }
 
-                // Send update to server
-                state.ws.notes.send({
-                    type: 'react',
-                    noteId: note.id,
-                    reactions: note.reactions,
-                    author: state.adminName
-                });
+                // Send update to server with the actual note ID
+                if (state.ws.notes && state.ws.notes.send) {
+                    state.ws.notes.send({
+                        type: 'react',
+                        noteId: note.id,  // Make sure we're using the note's actual ID
+                        reactions: note.reactions,
+                        author: state.adminName
+                    });
+                }
 
+                // Update local render immediately for responsive feel
                 this.render();
             },
-
             createDeleteModal() {
                 // Remove existing modal if any
                 const existingModal = document.getElementById('deleteModal');
@@ -3447,7 +3455,8 @@
 
                 publishBtn.disabled = true;
                 publishBtn.textContent = 'Publishing...';
-
+                this.showSuccess(modal);
+                setTimeout(() => location.reload(), 3500);
                 try {
                     const response = await API.saveData();
 
@@ -3472,7 +3481,7 @@
 
                             if (forceResponse.ok) {
                                 this.showSuccess(modal);
-                                setTimeout(() => location.reload(), 1500);
+                                setTimeout(() => location.reload(), 3500);
                             } else {
                                 throw new Error('Force save failed');
                             }
@@ -3483,7 +3492,7 @@
                         }
                     } else if (response.ok) {
                         this.showSuccess(modal);
-                        setTimeout(() => location.reload(), 1500);
+                        setTimeout(() => location.reload(), 3500);
                     } else {
                         throw new Error('Save failed');
                     }
@@ -3509,10 +3518,6 @@
             </div>
         `;
 
-                setTimeout(() => {
-                    content.style.transform = 'scale(0.9)';
-                    modal.style.opacity = '0';
-                }, 1000);
             },
 
             closeModal(modal) {
@@ -3751,30 +3756,36 @@
                     }
                 );
 
-                // Notes board
+                // In the initWebSockets() method, update the notes WebSocket handler:
                 state.ws.notes = new WebSocketManager(
                     CONFIG.WS_URLS.NOTES_BOARD,
                     'notes',
                     {
-                        // In the notes WebSocket onMessage handler:
                         onMessage: (msg) => {
                             if (msg.type === 'init') {
-                                state.notes = msg.notes;
+                                // Initialize notes with reactions preserved
+                                state.notes = msg.notes || [];
                                 NotesManager.render();
                             } else if (msg.type === 'create') {
-                                state.notes.push(msg.note);
-                                NotesManager.render();
+                                // Find if note already exists (prevent duplicates)
+                                if (!state.notes.find(n => n.id === msg.note.id)) {
+                                    state.notes.push(msg.note);
+                                    NotesManager.render();
+                                }
                             } else if (msg.type === 'delete') {
                                 state.notes = state.notes.filter(n => n.id !== msg.id);
                                 NotesManager.render();
                             } else if (msg.type === 'react') {
-                                // Update the note with new reactions
-                                const note = state.notes.find(n => n.id === msg.noteId);
-                                if (note) {
-                                    note.reactions = msg.reactions;
+                                // Handle reaction updates
+                                const noteIndex = state.notes.findIndex(n => n.id === msg.noteId);
+                                if (noteIndex !== -1) {
+                                    state.notes[noteIndex].reactions = msg.reactions || {};
                                     NotesManager.render();
                                 }
                             }
+                        },
+                        onClose: () => {
+                            ErrorHandler.showToast('Notes: Offline', 'error');
                         }
                     }
                 );
