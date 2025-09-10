@@ -1051,8 +1051,18 @@
                 const sortFunctions = {
                     'az': (a, b) => a.name.localeCompare(b.name),
                     'za': (a, b) => b.name.localeCompare(a.name),
-                    'high': (a, b) => (parseInt(b.price || 0) || 0) - (parseInt(a.price || 0) || 0),
-                    'low': (a, b) => (parseInt(a.price || 0) || 0) - (parseInt(b.price || 0) || 0)
+                    'high': (a, b) => {
+                        // Convert prices, treating 'o/c' as highest value
+                        const priceA = a.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(a.price || 0) || 0);
+                        const priceB = b.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(b.price || 0) || 0);
+                        return priceB - priceA;
+                    },
+                    'low': (a, b) => {
+                        // Convert prices, treating 'o/c' as highest value
+                        const priceA = a.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(a.price || 0) || 0);
+                        const priceB = b.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(b.price || 0) || 0);
+                        return priceA - priceB;
+                    }
                 };
 
                 if (sortFunctions[state.filters.sort]) {

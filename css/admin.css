@@ -2010,6 +2010,7 @@ hr {
 
 .stickynote {
     min-width: 65px;
+    max-width: 177px;
     height: fit-content;
     background: linear-gradient(135deg, #feffa0 0%, #fff2a0 100%);
     border: 1px solid #d4c23a;
