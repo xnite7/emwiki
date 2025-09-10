@@ -3143,8 +3143,6 @@ const UndoRedoManager = {
                 // Setup panels menu
                 this.setupPanelsMenu();
 
-                // Apply saved state
-                this.applySavedState();
             },
 
             setupCloseButtons() {
@@ -3240,6 +3238,11 @@ const UndoRedoManager = {
                     this.hiddenPanels.add(panel.id);
                 }
 
+                const publishSection = DOM.get('publish-section');
+                if (publishSection) {
+                    publishSection.style.position = this.hiddenPanels.size >= 2 ? 'unset' : '';
+                }
+
                 // Save state
                 Utils.storage.set('hiddenPanels', Array.from(this.hiddenPanels));
 
@@ -3249,25 +3252,6 @@ const UndoRedoManager = {
                 }
 
                 // Update badge
-                this.updateBadge();
-            },
-
-            applySavedState() {
-                this.hiddenPanels.forEach(panelId => {
-                    const panel = this.panels.find(p => p.id === panelId);
-                    if (panel) {
-                        let sectionElement;
-                        if (panel.id === 'shops-container') {
-                            sectionElement = DOM.get('lists-section');
-                        } else {
-                            sectionElement = DOM.get(panel.sectionId);
-                        }
-
-                        if (sectionElement) {
-                            sectionElement.style.display = 'none';
-                        }
-                    }
-                });
                 this.updateBadge();
             },
 
@@ -3287,6 +3271,7 @@ const UndoRedoManager = {
                             textContent: `
                         #panels-btn[data-badge]:after {
                             content: attr(data-badge);
+                            font-family: 'BuilderSans';
                             position: absolute;
                             top: -4px;
                             right: -4px;
