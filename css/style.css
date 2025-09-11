@@ -10,13 +10,18 @@ body {
     width: -webkit-fill-available
 }
 
-button{
+button {
     border: 0;
 }
 
 .blackscreen {
-    background: rgb(0, 0, 0);
+    background: rgb(0, 0, 0, 0);
+    pointer-events: none;
     transition: all 500ms cubic-bezier(1, -0.01, .65, 1.04) 600ms;
+
+    @starting-style {
+        background: rgb(0, 0, 0, 1);
+    }
 }
 
 .parallax-bg {
@@ -394,10 +399,14 @@ body.fonts-loaded html {
 }
 
 main {
-    filter: opacity(0);
+    filter: opacity(1);
     justify-content: center;
     scale: .9;
-    transition: 1s
+    transition: 1s;
+
+    @starting-style {
+        filter: opacity(0);
+    }
 }
 
 .logo.fade {
@@ -680,15 +689,9 @@ section {
     -webkit-text-stroke: 0 #000
 }
 
-.show {
-    opacity: 1;
-    visibility: visible
-}
 
-.hide {
-    opacity: 0;
-    visibility: hidden
-}
+
+
 
 input {
     border: none;
@@ -884,6 +887,7 @@ p {
     min-height: 126px;
     min-width: 126px;
     padding: 0;
+    scale: 1;
     transition: transform .15s ease;
     -webkit-user-select: none;
     -ms-user-select: none;
@@ -1318,7 +1322,6 @@ input {
 
 html {
     overflow-x: hidden;
-    overflow: hidden
 }
 
 html {
@@ -1391,11 +1394,7 @@ html {
 
 }
 
-.modal.show {
-    display: flex;
-    opacity: 1;
-    pointer-events: auto
-}
+
 
 .modal-content {
     aspect-ratio: 9/15.5;
@@ -1409,16 +1408,16 @@ html {
     max-width: 380px;
 
     padding: 20px;
-    position: absolute;
+
     text-align: center;
     opacity: 1;
     transform-origin: center;
     transform-style: preserve-3d;
     left: 0vw;
-    transition: transform .4s cubic-bezier(.25, .8, .25, 1), opacity .3s ease, left .18s cubic-bezier(.08,-0.01,0,1);
+    transition: transform .4s cubic-bezier(.18, .89, .32, 1.28), opacity .3s ease, left .18s cubic-bezier(.08, -0.01, 0, 1);
     width: 100%;
     will-change: transform, box-shadow, background-size;
-    transform: perspective(1800px) rotateY(0deg) scale(1) !important;
+    transform: perspective(1800px) rotateY(0deg) scale(1);
 
     @starting-style {
         opacity: 0;
@@ -1436,13 +1435,96 @@ html {
     max-width: 90%;
 }
 
+.dock {
+    display: flex;
+    width: -webkit-fill-available;
+    justify-content: space-around;
+    align-items: flex-start;
+    height: fit-content;
+    order: 1;
+}
 
+.title-price-container {
+    display: flex;
+    flex-flow: row;
+    justify-content: space-between;
+    align-items: center;
+    width: -webkit-fill-available;
+    z-index: 30;
+}
+
+
+#modal-description {
+    white-space: pre-wrap;
+    z-index: 34;
+    margin: 0px 0px 4px 0px;
+    width: 100%;
+    align-self: anchor-center;
+    font-size: 18px;
+    background: -webkit-linear-gradient(#fff, #999999);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.price {
+    display: flex;
+    flex-wrap: nowrap;
+    height: 35px;
+    flex-direction: row;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+}
+
+#modal-price-value {
+    position: relative;
+    height: 37px;
+    right: 13px;
+    z-index: 34;
+}
+
+.price p {
+    right: 6px;
+    white-space: pre-wrap;
+    z-index: 222;
+    margin: 13px 0;
+    position: relative;
+    font-family: BuilderSans;
+    font-size: 32px;
+    font-weight: 400;
+}
+
+.js-tilt-glare {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+.js-tilt-glare-inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    pointer-events: none;
+    background-image: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgb(255, 255, 255) 100%);
+    transform: rotate(180deg) translate(-50%, -50%);
+    transform-origin: 0% 0%;
+    opacity: 0;
+    width: 1388px;
+    height: 1388px;
+}
 
 
 .modal-prc,
 .modal-title {
     text-shadow: 0px 1px 5px #49444499;
-    z-index: 22
+    z-index: 22;
+    margin: 0px;
 }
 
 .modal-prc {
@@ -1451,11 +1533,9 @@ html {
     display: none;
     font: 700 42px BuilderSans;
     justify-self: right;
-    margin-left: -32px;
-    margin-bottom: 0px;
-        margin-top: 7px;
+    margin-top: 7px;
     white-space: nowrap;
-        margin-right: 8px;
+    align-self: flex-start;
     transform: translateZ(30px);
     width: fit-content;
 }
@@ -1468,7 +1548,7 @@ html {
     border: 1px solid rgba(255, 214, 102, .1);
     border-radius: 1.375rem;
     box-shadow: inset .5px .5px 1.5px rgba(255, 235, 180, .6), inset -1px -1px 1px rgba(160, 110, 0, .5), inset 3px 3px 6px rgba(0, 0, 0, .25);
-    inset: 14px;
+    inset: 13px;
     pointer-events: none;
     position: absolute;
     will-change: transform;
@@ -1497,9 +1577,11 @@ html {
     display: flex;
     flex-direction: column;
     inset: 14px;
-    justify-content: space-evenly;
+    justify-content: space-between;
     overflow: hidden;
-    z-index: 5
+    z-index: 5;
+    align-items: center;
+    padding: 12px 22px 33px;
 }
 
 .content-area,
@@ -1519,30 +1601,18 @@ html {
 }
 
 .tour-button {
-    align-items: center;
     background: linear-gradient(145deg, #fde047, #facc15);
     border: none;
     border-radius: 9999px;
     box-shadow: inset 2px 2px 4px rgba(160, 110, 0, .6), inset -2px -2px 4px rgba(255, 245, 200, .5), 0 1px 2px rgba(0, 0, 0, .1);
     color: #422006;
-    display: flex;
+    display: none;
     font-weight: 600;
-    gap: .75rem;
-    justify-content: center;
-    letter-spacing: .025em;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 1rem;
-    max-width: 85%;
-    min-width: 190px;
-    padding: .75rem 1.75rem;
-    position: relative;
-    text-align: center;
-    transform: translateZ(40px);
+    padding: 12px 55px;
     transition: all .3s ease;
-    width: auto;
-    will-change: transform, box-shadow, background;
-    z-index: 20
+    z-index: 20;
+    font-variant: all-petite-caps;
+    font-size: 18px;
 }
 
 .tour-button:hover {
@@ -2371,3 +2441,18 @@ html {
     transition: left 0s ease;
 
 }
+
+.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.hide {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.modal.show {
+    pointer-events: all;
+}
+
