@@ -103,7 +103,7 @@
             }
 
             generateSVG(title) {
-                const width = 300;
+                const width = 200;
                 const height = 100;
 
                 // Parse style properties
@@ -125,14 +125,14 @@
                 const svg = `
                 <svg width="${width}" height="${height}" viewBox="0 0 100 93" xmlns="http://www.w3.org/2000/svg">
                     <style>
-                        @import url("./css/fonts.css");
+                        @import url("https://emwiki.site/css/fonts.css");
                     </style>
                     <text x="50" y="50" xmlns="http://www.w3.org/2000/svg" text-anchor="middle" ${this.generateTextStroke2(strokeSize, strokeColor)} fill="${styles.color}" style="${this.generateDivStyle(styles, title)}">
                         ${this.generateTextContent(title, styles)}
                     </text>
                 </svg>`;
 
-                return this.svgToDataURL(svg);
+                return svg;
             }
 
             parseStyles(title) {
@@ -5635,16 +5635,13 @@
                 const card = document.createElement('div');
                 card.className = 'title-card';
 
-                const img = document.createElement('img');
-                img.className = 'title-svg';
-                img.src = title.img;
-                img.alt = title.name;
+                card.innerHTML = title.img;
 
                 const info = document.createElement('div');
                 info.className = 'title-info';
                 info.textContent = title.name;
 
-                card.appendChild(img);
+                
                 card.appendChild(info);
                 grid.appendChild(card);
             });
