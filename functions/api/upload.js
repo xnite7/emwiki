@@ -16,7 +16,7 @@ export async function onRequestPost({ request, env }) {
     });
 
     // Public access via R2 public bucket domain (or serve via Worker)
-    const url = `https://<your-r2-public-domain>/${key}`;
+    const url = `https://pub-49351598fde84dec89feb871921190e9.r2.dev/${key}`;
 
     return new Response(JSON.stringify({ url }), {
       headers: { "Content-Type": "application/json" },
