@@ -2339,7 +2339,7 @@
                 priceInput.placeholder = "RAP";
                 priceInput.value = '';
 
-                
+
 
                 if (item.price >= 0 || item.price !== 'N/A') {
                     priceInput.value = item.price || '';
@@ -2355,10 +2355,10 @@
                     state.currentEditingItem.price = priceInput.value.trim();
 
                     ChangeTracker.checkModifications(state.currentEditingItem);
-                    console.log(previousState.price, state.currentEditingItem.price)
+
                     if (!UndoRedoManager.isApplyingChange &&
                         previousState.price !== state.currentEditingItem.price) {
-                        console.log(previousState.price, state.currentEditingItem.price)
+
                         UndoRedoManager.recordChange({
                             type: 'edit',
                             itemName: state.currentEditingItem.name,
@@ -2478,6 +2478,7 @@
                     closeBtn.onclick = () => {
                         this.currentTags = this.currentTags.filter(t => t !== tag);
 
+                        const previousState = JSON.parse(JSON.stringify(state.currentEditingItem));
                         // Update item properties
                         if (tag === "Untradable") {
                             state.currentEditingItem.tradable = true;
@@ -2485,10 +2486,21 @@
                             state.currentEditingItem[this.TAG_TO_PROP[tag]] = false;
                         }
 
+                        ChangeTracker.checkModifications(state.currentEditingItem);
+
+                        if (!UndoRedoManager.isApplyingChange &&
+                            previousState[this.TAG_TO_PROP[tag]] !== state.currentEditingItem[this.TAG_TO_PROP[tag]]) {
+
+                            UndoRedoManager.recordChange({
+                                type: 'edit',
+                                itemName: state.currentEditingItem.name,
+                                previousState: previousState,
+                                newState: JSON.parse(JSON.stringify(state.currentEditingItem))
+                            });
+                        }
+                        UI.renderItems(true);
                         this.renderTagPills(flagRow);
                         UI.renderShops();
-
-                        ChangeTracker.checkChanges(state.currentEditingItem);
                         ChangeTracker.updateHighlights();
                     };
 
@@ -2517,9 +2529,10 @@
                     }
 
                     btn.onclick = () => {
+                        const previousState = JSON.parse(JSON.stringify(state.currentEditingItem));
                         if (!this.currentTags.includes(tag)) {
                             this.currentTags.push(tag);
-
+                            
                             // Update item properties
                             if (tag === "Untradable") {
                                 state.currentEditingItem.tradable = false;
@@ -2528,13 +2541,25 @@
                             }
                         }
 
+                        ChangeTracker.checkModifications(state.currentEditingItem);
+
+                        if (!UndoRedoManager.isApplyingChange &&
+                            previousState[this.TAG_TO_PROP[tag]] !== state.currentEditingItem[this.TAG_TO_PROP[tag]]) {
+
+                            UndoRedoManager.recordChange({
+                                type: 'edit',
+                                itemName: state.currentEditingItem.name,
+                                previousState: previousState,
+                                newState: JSON.parse(JSON.stringify(state.currentEditingItem))
+                            });
+                        }
+
                         this.tagMenu.remove();
                         this.tagMenu = null;
                         this.renderTagPills(flagRow);
-                        UI.renderShops();
 
-                        // Add change tracking
-                        ChangeTracker.checkChanges(state.currentEditingItem);
+                        UI.renderItems(true);
+                        UI.renderShops();
                         ChangeTracker.updateHighlights();
                     };
 
@@ -2562,9 +2587,10 @@
                             if (newName && newName !== state.currentEditingItem.name) {
                                 state.currentEditingItem.name = newName;
                                 ChangeTracker.checkChanges(state.currentEditingItem);
-                                ChangeTracker.updateHighlights();
-                                UI.renderItems(true);
-                                UI.renderShops();
+
+                        UI.renderItems(true);
+                        UI.renderShops();
+                        ChangeTracker.updateHighlights();
                             }
 
                             DOM.get('quick-editor-title').innerHTML = state.currentEditingItem.name + `<span class="icon" style="..."></span>`;
