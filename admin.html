@@ -41,9 +41,7 @@
 
     <svg style="position:absolute;width:0;height:0">
         <filter id="frosted" primitiveUnits="objectBoundingBox">
-            <feImage
-                href="/imgs/bubble.png"
-                x="0" y="0" width="1" height="1" result="map" />
+            <feImage href="/imgs/bubble.png" x="0" y="0" width="1" height="1" result="map" />
             <feGaussianBlur in="SourceGraphic" stdDeviation="0.02" result="blur" />
             <feDisplacementMap id="disp" in="blur" in2="map" scale="1" xChannelSelector="R" yChannelSelector="G">
                 <animate attributeName="scale" to="1.4" dur="0.3s" begin="btn.mouseover" fill="freeze" />
@@ -318,83 +316,160 @@
         // Change Tracking
         // ============================
 
-        // Replace your existing ChangeTracker with this fixed version:
         const ChangeTracker = {
-            captureOriginal(item) {
-                if (!state.originalItems.has(item.name)) {
-                    state.originalItems.set(item.name, JSON.stringify(item));
+            // Track different types of items
+            originalItems: new Map(),      // Original state of items that existed at load
+            newItems: new Set(),           // Items added during this session
+            modifiedItems: new Set(),      // Items that have been modified
+            deletedItems: new Map(),       // Items that were deleted (name -> original state)
+
+            // Initialize with the original data
+            initializeOriginals() {
+                // Clear everything first
+                this.originalItems.clear();
+                this.newItems.clear();
+                this.modifiedItems.clear();
+                this.deletedItems.clear();
+
+                // Capture all existing items as originals
+                state.allItems.forEach(item => {
+                    this.originalItems.set(item.name, JSON.stringify(item));
+                });
+            },
+
+            // Check if an item is new (added this session)
+            isNewItem(itemName) {
+                return this.newItems.has(itemName);
+            },
+
+            // Check if an item is modified from its original state
+            isModifiedItem(itemName) {
+                // New items can't be "modified" in the traditional sense
+                if (this.isNewItem(itemName)) return false;
+                return this.modifiedItems.has(itemName);
+            },
+
+            // Check if an item has any changes (new or modified)
+            hasChanges(itemName) {
+                return this.isNewItem(itemName) || this.isModifiedItem(itemName);
+            },
+
+            // Mark an item as new
+            markAsNew(itemName) {
+                this.newItems.add(itemName);
+                // New items aren't modified
+                this.modifiedItems.delete(itemName);
+            },
+
+            // Mark an item as deleted
+            markAsDeleted(itemName, originalState) {
+                this.deletedItems.set(itemName, originalState);
+                this.newItems.delete(itemName);
+                this.modifiedItems.delete(itemName);
+            },
+
+            // Restore a deleted item
+            restoreDeleted(itemName) {
+                const originalState = this.deletedItems.get(itemName);
+                if (originalState) {
+                    this.deletedItems.delete(itemName);
+                    // Check if it was originally a new item or existing
+                    if (!this.originalItems.has(itemName)) {
+                        this.newItems.add(itemName);
+                    }
                 }
             },
 
-            checkChanges(item) {
-                const original = state.originalItems.get(item.name);
-                if (!original) return false;
+            // Check for modifications on an existing item
+            checkModifications(item) {
+                const itemName = item.name;
 
-                // Store the previous state for undo before making changes
-                const previousState = JSON.parse(original);
+                // If it's a new item, it stays new regardless of modifications
+                if (this.isNewItem(itemName)) {
+                    return;
+                }
 
-                // Normalize items for comparison
-                const normalizedCurrent = JSON.parse(JSON.stringify(item));
-                const normalizedOriginal = JSON.parse(original);
+                // Check against original for existing items
+                const originalJson = this.originalItems.get(itemName);
+                if (!originalJson) {
+                    // This shouldn't happen for existing items
+                    console.warn(`No original found for ${itemName}`);
+                    return;
+                }
 
-                // Normalize price values - treat "", null, undefined, "0" as equivalent
+                const original = JSON.parse(originalJson);
+                const hasChanges = this.compareItems(original, item);
+
+                if (hasChanges) {
+                    this.modifiedItems.add(itemName);
+                } else {
+                    this.modifiedItems.delete(itemName);
+                }
+            },
+
+            // Compare two items for changes
+            compareItems(original, current) {
+                // Normalize price values for comparison
                 const normalizePrice = (price) => {
                     if (!price || price === '' || price === 'N/A' || price === 'undefined') {
                         return '0';
                     }
-                    return price;
+                    return String(price);
                 };
 
-                normalizedCurrent.price = normalizePrice(normalizedCurrent.price);
-                normalizedOriginal.price = normalizePrice(normalizedOriginal.price);
+                // Create normalized copies
+                const norm1 = JSON.parse(JSON.stringify(original));
+                const norm2 = JSON.parse(JSON.stringify(current));
 
-                const hasChanges = JSON.stringify(normalizedOriginal) !== JSON.stringify(normalizedCurrent);
+                norm1.price = normalizePrice(norm1.price);
+                norm2.price = normalizePrice(norm2.price);
 
-                if (hasChanges) {
-                    state.changedItems.add(item.name);
-
-                    // Record to undo history if not currently applying undo/redo
-                    if (!UndoRedoManager.isApplyingChange) {
-                        UndoRedoManager.recordChange({
-                            type: 'edit',
-                            itemName: item.name,
-                            previousState: previousState,
-                            newState: JSON.parse(JSON.stringify(item))
-                        });
-                    }
-                } else {
-                    state.changedItems.delete(item.name);
-                }
-
-                return hasChanges;
+                return JSON.stringify(norm1) !== JSON.stringify(norm2);
             },
 
+            // Update visual indicators
             updateHighlights() {
                 document.querySelectorAll('.item-card').forEach(card => {
                     const name = card.dataset.name;
-                    if (state.changedItems.has(name)) {
-                        card.classList.add('changed');
-                    } else {
-                        card.classList.remove('changed');
+
+                    // Remove all change classes first
+                    card.classList.remove('changed', 'new-item', 'modified-item');
+
+                    if (this.isNewItem(name)) {
+                        card.classList.add('changed', 'new-item');
+                    } else if (this.isModifiedItem(name)) {
+                        card.classList.add('changed', 'modified-item');
                     }
                 });
             },
 
-            isValueOriginal(item, field, value) {
-                const originalData = this.getOriginalItem(item);
-                if (!originalData) return false;
+            // Get all changes for publishing
+            getAllChanges() {
+                return {
+                    newItems: Array.from(this.newItems),
+                    modifiedItems: Array.from(this.modifiedItems),
+                    deletedItems: Array.from(this.deletedItems.keys()),
+                    hasChanges: this.newItems.size > 0 ||
+                        this.modifiedItems.size > 0 ||
+                        this.deletedItems.size > 0
+                };
+            },
 
+            // Check if a value existed in the original item (for desc/price items)
+            isValueOriginal(item, field, value) {
+                // New items don't have "original" values
+                if (this.isNewItem(item.name)) return false;
+
+                const originalJson = this.originalItems.get(item.name);
+                if (!originalJson) return false;
+
+                const originalData = JSON.parse(originalJson);
                 const originalFieldValue = originalData[field] || '';
                 const originalLines = originalFieldValue.split('<br>')
                     .map(line => line.trim())
                     .filter(Boolean);
 
                 return originalLines.includes(value.trim());
-            },
-
-            getOriginalItem(item) {
-                const originalJson = state.originalItems.get(item.name);
-                return originalJson ? JSON.parse(originalJson) : null;
             }
         };
 
@@ -404,29 +479,41 @@
             currentIndex: -1,
             maxHistorySize: 50,
             isApplyingChange: false,
-            lastRecordedState: new Map(), // Track last recorded state to prevent duplicates
 
+            // Clear and initialize
+            init() {
+                console.log('Initializing UndoRedoManager');
+                this.clear();
+                this.setupEventListeners();
+                this.updateButtons();
+            },
+
+            clear() {
+                this.history = [];
+                this.currentIndex = -1;
+                this.updateButtons();
+            },
+
+            // Record a change action
             recordChange(action) {
                 if (this.isApplyingChange) return;
-
-                // Prevent duplicate recordings of the same change
-                const stateKey = `${action.itemName}_${JSON.stringify(action.newState)}`;
-                const lastState = this.lastRecordedState.get(action.itemName);
-
-                if (lastState && lastState === stateKey) {
-                    return; // Skip duplicate
-                }
-
-                this.lastRecordedState.set(action.itemName, stateKey);
 
                 // Remove any history after current index
                 this.history = this.history.slice(0, this.currentIndex + 1);
 
-                // Add new action to history
-                this.history.push({
+                // Create a complete snapshot of the action
+                const snapshot = {
                     timestamp: Date.now(),
-                    action: action
-                });
+                    type: action.type,
+                    itemName: action.itemName,
+                    category: action.category,
+                    data: JSON.parse(JSON.stringify(action.data || {})),
+                    previousState: action.previousState ? JSON.parse(JSON.stringify(action.previousState)) : null,
+                    newState: action.newState ? JSON.parse(JSON.stringify(action.newState)) : null,
+                    wasNewItem: ChangeTracker.isNewItem(action.itemName)
+                };
+
+                this.history.push(snapshot);
 
                 // Limit history size
                 if (this.history.length > this.maxHistorySize) {
@@ -436,134 +523,217 @@
                 }
 
                 this.updateButtons();
-
             },
 
+            // Find an item in the current data
             findItem(itemName) {
                 for (const [category, items] of Object.entries(state.jsData)) {
                     if (Array.isArray(items)) {
                         const item = items.find(i => i.name === itemName);
-                        if (item) return { item, category };
+                        if (item) return { item, category, index: items.indexOf(item) };
                     }
                 }
                 return null;
             },
 
-            applyItemState(itemName, newState) {
-                const result = this.findItem(itemName);
-                if (!result) {
-                    console.warn('Item not found:', itemName);
-                    return false;
-                }
-
-                const { item, category } = result;
-
-                // Update the item with new state
-                Object.keys(newState).forEach(key => {
-                    if (key !== 'name') {
-                        item[key] = newState[key];
-                    }
-                });
-
-                // Update in allItems as well
-                const allItemsIndex = state.allItems.findIndex(i => i.name === itemName);
-                if (allItemsIndex !== -1) {
-                    Object.keys(newState).forEach(key => {
-                        if (key !== 'name') {
-                            state.allItems[allItemsIndex][key] = newState[key];
-                        }
-                    });
-                }
-
-                // Update the current editing item if it's the same
-                if (state.currentEditingItem && state.currentEditingItem.name === itemName) {
-                    Object.keys(newState).forEach(key => {
-                        if (key !== 'name') {
-                            state.currentEditingItem[key] = newState[key];
-                        }
-                    });
-                }
-
-                return true;
-            },
-
+            // Undo the last action
             undo() {
                 if (!this.canUndo()) return;
 
                 this.isApplyingChange = true;
-                const entry = this.history[this.currentIndex];
+                const action = this.history[this.currentIndex];
 
-                if (entry.action.type === 'edit') {
-                    // ... existing edit code ...
-                } else if (entry.action.type === 'add') {
-                    // Remove the added item
-                    const category = entry.action.category;
-                    const itemName = entry.action.itemName;
-
-                    if (state.jsData[category]) {
-                        const index = state.jsData[category].findIndex(i => i.name === itemName);
-                        if (index !== -1) {
-                            state.jsData[category].splice(index, 1);
-                            state.allItems = Object.values(state.jsData).flat();
-                            state.changedItems.delete(itemName);
-                            state.originalItems.delete(itemName);
-                        }
-                    }
-
-                    ErrorHandler.showToast(`⮌ Removed: ${itemName}`, 'info');
+                switch (action.type) {
+                    case 'add':
+                        this.undoAdd(action);
+                        break;
+                    case 'edit':
+                        this.undoEdit(action);
+                        break;
+                    case 'delete':
+                        this.undoDelete(action);
+                        break;
                 }
 
                 this.currentIndex--;
                 this.isApplyingChange = false;
 
+                // Update UI
                 UI.renderItems(true);
                 UI.renderShops();
+                ChangeTracker.updateHighlights();
                 this.updateButtons();
+
+                // Refresh Quick Editor if open
+                if (state.currentEditingItem && state.currentEditingItem.name === action.itemName) {
+                    const result = this.findItem(action.itemName);
+                    if (result) {
+                        QuickEditor.open(result.item);
+                    } else {
+                        QuickEditor.close();
+                    }
+                }
             },
 
+            // Redo the next action
             redo() {
                 if (!this.canRedo()) return;
 
                 this.isApplyingChange = true;
                 this.currentIndex++;
-                const entry = this.history[this.currentIndex];
+                const action = this.history[this.currentIndex];
 
-                if (entry.action.type === 'edit') {
-                    // ... existing edit code ...
-                } else if (entry.action.type === 'add') {
-                    // Re-add the item
-                    const category = entry.action.category;
-                    const newItem = entry.action.newState;
-
-                    if (!state.jsData[category]) {
-                        state.jsData[category] = [];
-                    }
-
-                    // Find correct alphabetical position
-                    const categoryItems = state.jsData[category];
-                    let insertIndex = categoryItems.findIndex(item =>
-                        item.name.toLowerCase() > newItem.name.toLowerCase()
-                    );
-
-                    if (insertIndex === -1) {
-                        insertIndex = categoryItems.length;
-                    }
-
-                    categoryItems.splice(insertIndex, 0, newItem);
-                    state.allItems = Object.values(state.jsData).flat();
-                    ChangeTracker.captureOriginal(newItem);
-                    state.changedItems.add(newItem.name);
-
-                    ErrorHandler.showToast(`⮎ Re-added: ${newItem.name}`, 'info');
+                switch (action.type) {
+                    case 'add':
+                        this.redoAdd(action);
+                        break;
+                    case 'edit':
+                        this.redoEdit(action);
+                        break;
+                    case 'delete':
+                        this.redoDelete(action);
+                        break;
                 }
 
                 this.isApplyingChange = false;
 
+                // Update UI
                 UI.renderItems(true);
                 UI.renderShops();
+                ChangeTracker.updateHighlights();
                 this.updateButtons();
+
+                // Refresh Quick Editor if open
+                if (state.currentEditingItem && state.currentEditingItem.name === action.itemName) {
+                    const result = this.findItem(action.itemName);
+                    if (result) {
+                        QuickEditor.open(result.item);
+                    }
+                }
             },
 
+            // Undo handlers
+            undoAdd(action) {
+                const result = this.findItem(action.itemName);
+                if (!result) return;
+
+                // Remove the item
+                state.jsData[result.category].splice(result.index, 1);
+                state.allItems = Object.values(state.jsData).flat();
+
+                // Update tracking
+                ChangeTracker.newItems.delete(action.itemName);
+                ChangeTracker.markAsDeleted(action.itemName, action.newState);
+
+                ErrorHandler.showToast(`⮌ Removed: ${action.itemName}`, 'info');
+            },
+
+            undoEdit(action) {
+                if (!action.previousState) return;
+
+                const result = this.findItem(action.itemName);
+                if (!result) return;
+
+                // Restore previous state
+                Object.assign(result.item, action.previousState);
+
+                // Update tracking - check if it should still be marked as modified
+                if (!action.wasNewItem) {
+                    ChangeTracker.checkModifications(result.item);
+                }
+
+                ErrorHandler.showToast(`⮌ Restored: ${action.itemName}`, 'info');
+            },
+
+            undoDelete(action) {
+                if (!action.previousState) return;
+
+                // Re-add the item
+                const category = action.category;
+                if (!state.jsData[category]) {
+                    state.jsData[category] = [];
+                }
+
+                // Find correct position
+                const categoryItems = state.jsData[category];
+                let insertIndex = categoryItems.findIndex(item =>
+                    item.name.toLowerCase() > action.previousState.name.toLowerCase()
+                );
+
+                if (insertIndex === -1) {
+                    insertIndex = categoryItems.length;
+                }
+
+                categoryItems.splice(insertIndex, 0, action.previousState);
+                state.allItems = Object.values(state.jsData).flat();
+
+                // Restore tracking state
+                ChangeTracker.restoreDeleted(action.itemName);
+
+                ErrorHandler.showToast(`⮌ Restored: ${action.itemName}`, 'info');
+            },
+
+            // Redo handlers
+            redoAdd(action) {
+                if (!action.newState) return;
+
+                const category = action.category;
+                if (!state.jsData[category]) {
+                    state.jsData[category] = [];
+                }
+
+                // Find correct position
+                const categoryItems = state.jsData[category];
+                let insertIndex = categoryItems.findIndex(item =>
+                    item.name.toLowerCase() > action.newState.name.toLowerCase()
+                );
+
+                if (insertIndex === -1) {
+                    insertIndex = categoryItems.length;
+                }
+
+                categoryItems.splice(insertIndex, 0, action.newState);
+                state.allItems = Object.values(state.jsData).flat();
+
+                // Mark as new
+                ChangeTracker.markAsNew(action.itemName);
+                ChangeTracker.deletedItems.delete(action.itemName);
+
+                ErrorHandler.showToast(`⮎ Re-added: ${action.itemName}`, 'info');
+            },
+
+            redoEdit(action) {
+                if (!action.newState) return;
+
+                const result = this.findItem(action.itemName);
+                if (!result) return;
+
+                // Apply new state
+                Object.assign(result.item, action.newState);
+
+                // Update tracking
+                if (!action.wasNewItem) {
+                    ChangeTracker.checkModifications(result.item);
+                }
+
+                ErrorHandler.showToast(`⮎ Re-applied: ${action.itemName}`, 'info');
+            },
+
+            redoDelete(action) {
+                const result = this.findItem(action.itemName);
+                if (!result) return;
+
+                // Remove the item
+                state.jsData[result.category].splice(result.index, 1);
+                state.allItems = Object.values(state.jsData).flat();
+
+                // Mark as deleted
+                ChangeTracker.markAsDeleted(action.itemName, action.previousState);
+
+                ErrorHandler.showToast(`⮎ Re-deleted: ${action.itemName}`, 'info');
+            },
+
+            // UI helpers
             canUndo() {
                 return this.currentIndex >= 0;
             },
@@ -582,7 +752,7 @@
 
                     if (this.canUndo()) {
                         const lastAction = this.history[this.currentIndex];
-                        undoBtn.title = `Undo: ${this.getActionDescription(lastAction.action)} (Ctrl+Z)`;
+                        undoBtn.title = `Undo: ${this.getActionDescription(lastAction)} (Ctrl+Z)`;
                     } else {
                         undoBtn.title = 'Undo (Ctrl+Z)';
                     }
@@ -594,7 +764,7 @@
 
                     if (this.canRedo()) {
                         const nextAction = this.history[this.currentIndex + 1];
-                        redoBtn.title = `Redo: ${this.getActionDescription(nextAction.action)} (Ctrl+Y)`;
+                        redoBtn.title = `Redo: ${this.getActionDescription(nextAction)} (Ctrl+Y)`;
                     } else {
                         redoBtn.title = 'Redo (Ctrl+Y)';
                     }
@@ -602,37 +772,35 @@
             },
 
             getActionDescription(action) {
-                if (action.type === 'edit') {
-                    const changes = [];
-                    const prev = action.previousState;
-                    const next = action.newState;
+                switch (action.type) {
+                    case 'add':
+                        return `Add ${action.itemName}`;
+                    case 'delete':
+                        return `Delete ${action.itemName}`;
+                    case 'edit':
+                        if (action.previousState && action.newState) {
+                            const changes = [];
+                            if (action.previousState.price !== action.newState.price) changes.push('price');
+                            if (action.previousState.from !== action.newState.from) changes.push('description');
+                            if (action.previousState['price/code/rarity'] !== action.newState['price/code/rarity']) changes.push('codes');
 
-                    if (prev.price !== next.price) changes.push('price');
-                    if (prev.from !== next.from) changes.push('description');
-                    if (prev['price/code/rarity'] !== next['price/code/rarity']) changes.push('codes');
-                    if (prev.weekly !== next.weekly) changes.push('weekly flag');
-                    if (prev.weeklystar !== next.weeklystar) changes.push('star flag');
-                    if (prev.new !== next.new) changes.push('new flag');
-                    if (prev.retired !== next.retired) changes.push('retired flag');
-                    if (prev.premium !== next.premium) changes.push('premium flag');
-                    if (prev.tradable !== next.tradable) changes.push('tradable flag');
+                            const flags = ['weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable'];
+                            flags.forEach(flag => {
+                                if (action.previousState[flag] !== action.newState[flag]) {
+                                    changes.push(flag);
+                                }
+                            });
 
-                    return `Edit ${action.itemName}${changes.length ? ': ' + changes.join(', ') : ''}`;
+                            return `Edit ${action.itemName}${changes.length ? ': ' + changes.join(', ') : ''}`;
+                        }
+                        return `Edit ${action.itemName}`;
+                    default:
+                        return 'Unknown action';
                 }
-                return 'Unknown action';
             },
 
-            clear() {
-                this.history = [];
-                this.currentIndex = -1;
-                this.lastRecordedState.clear();
-                this.updateButtons();
-            },
-
-            init() {
-                console.log('Initializing UndoRedoManager');
-
-                // Add undo/redo buttons event listeners
+            setupEventListeners() {
+                // Button click handlers
                 const undoBtn = DOM.get('undo-btn');
                 const redoBtn = DOM.get('redo-btn');
 
@@ -644,26 +812,26 @@
                     redoBtn.addEventListener('click', () => this.redo());
                 }
 
-                // Add keyboard shortcuts
+                // Keyboard shortcuts
                 document.addEventListener('keydown', (e) => {
                     // Don't trigger when typing in inputs
-                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+                    if (e.target.tagName === 'INPUT' ||
+                        e.target.tagName === 'TEXTAREA' ||
+                        e.target.tagName === 'SELECT') {
                         return;
                     }
 
                     if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z') {
                         e.preventDefault();
                         this.undo();
-                    } else if ((e.ctrlKey || e.metaKey) && (e.shiftKey && e.key.toLowerCase() === 'z' || e.key.toLowerCase() === 'y')) {
+                    } else if ((e.ctrlKey || e.metaKey) &&
+                        (e.shiftKey && e.key.toLowerCase() === 'z' || e.key.toLowerCase() === 'y')) {
                         e.preventDefault();
                         this.redo();
                     }
                 });
-
-                this.updateButtons();
             }
         };
-
 
         // ============================
         // Item Adder System
@@ -722,7 +890,7 @@
                         </svg><p>Click to select or drag & drop image here</p><small>PNG, JPG, GIF up to 5MB</small></div><div class=upload-status id=upload-status style=display:none><div class=upload-progress><div class=progress-bar id=upload-progress-bar></div></div><span id=upload-status-text>Uploading...</span></div></div></div><div class=upload-content id=upload-content-url>
                             <input type="text" id=item-img placeholder=imgs/category/filename.png autocomplete=off> <small>Enter the image URL or path</small></div></div></div><div class=form-group><label>RAP</label> <input type="text" id=item-price placeholder="Enter price e.g.(69)"autocomplete=off></div><div class=form-group><label>Description</label> <textarea id=item-from placeholder="Obtainment method/@author/season x/tip"rows=3>
                                 </textarea> <small>Separate multiple lines with Enter</small></div><div class=form-group><label>Price/Code/Rarity</label> <textarea id=item-rarity placeholder="Code, rarity, or shop price"rows=3></textarea> <small>Separate multiple lines with Enter</small></div></div><div class=step-content id=step-3><h3>Item Properties</h3><div class=properties-grid><label class=property-toggle>
-                                    <input id=item-tradable type=checkbox checked> <span>Tradable</span></label> <label class=property-toggle><input id=item-new type=checkbox> <span>New</span></label> <label class=property-toggle><input id=item-weekly type=checkbox> <span>Weekly Shop</span></label> <label class=property-toggle><input id=item-weeklystar type=checkbox> <span>Star Shop</span></label> <label class=property-toggle>
+                                    <input id=item-untradable type=checkbox checked> <span>Untradable</span></label> <label class=property-toggle><input id=item-new type=checkbox> <span>New</span></label> <label class=property-toggle><input id=item-weekly type=checkbox> <span>Weekly Shop</span></label> <label class=property-toggle><input id=item-weeklystar type=checkbox> <span>Star Shop</span></label> <label class=property-toggle>
                                         <input id=item-retired type=checkbox> <span>Retired</span></label> <label class=property-toggle><input id=item-premium type=checkbox> <span>Premium</span></label></div><div class=item-preview><h4>Preview</h4>
                                             <div class=preview-card id=item-preview-card></div></div></div></div><div class=item-adder-footer><button class="small-btn ghost"id=item-adder-back style=display:none>Back</button> 
                                                 <button class=small-btn id=item-adder-next>Next</button> <button class="small-btn success"id=item-adder-add style=display:none>Add Item</button></div></div>`;
@@ -821,7 +989,12 @@
 
                     out = null;
                 });
-
+                document.getElementById('item-untradable').onchange = () => this.updatePreview();
+                document.getElementById('item-new').onchange = () => this.updatePreview();
+                document.getElementById('item-weekly').onchange = () => this.updatePreview();
+                document.getElementById('item-weeklystar').onchange = () => this.updatePreview();
+                document.getElementById('item-retired').onchange = () => this.updatePreview();
+                document.getElementById('item-premium').onchange = () => this.updatePreview();
                 // ESC key to close
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape' && !this.modal.classList.contains('hidden')) {
@@ -1031,7 +1204,7 @@
                 const previewCard = document.getElementById('item-preview-card');
                 const item = {
                     ...this.newItemData,
-                    tradable: document.getElementById('item-tradable').checked,
+                    tradable: !document.getElementById('item-untradable').checked,
                     new: document.getElementById('item-new').checked,
                     weekly: document.getElementById('item-weekly').checked,
                     weeklystar: document.getElementById('item-weeklystar').checked,
@@ -1060,14 +1233,14 @@
         `;
             },
 
-            async addItem() {
+            addItem() {
                 const newItem = {
                     name: this.newItemData.name,
                     img: this.newItemData.img || '',
                     price: this.newItemData.price || '0',
                     from: this.newItemData.from || '',
                     'price/code/rarity': this.newItemData['price/code/rarity'] || '',
-                    tradable: document.getElementById('item-tradable').checked,
+                    tradable: !document.getElementById('item-untradable').checked,
                     new: document.getElementById('item-new').checked,
                     weekly: document.getElementById('item-weekly').checked,
                     weeklystar: document.getElementById('item-weeklystar').checked,
@@ -1092,9 +1265,10 @@
                 categoryItems.splice(insertIndex, 0, newItem);
                 state.allItems = Object.values(state.jsData).flat();
 
-                ChangeTracker.captureOriginal(newItem);
-                state.changedItems.add(newItem.name);
+                // Mark as new item (not modified)
+                ChangeTracker.markAsNew(newItem.name);
 
+                // Record for undo
                 UndoRedoManager.recordChange({
                     type: 'add',
                     itemName: newItem.name,
@@ -1133,8 +1307,8 @@
                 document.getElementById('item-price').value = '';
                 document.getElementById('item-from').value = '';
                 document.getElementById('item-rarity').value = '';
-                document.getElementById('item-tradable').checked = true;
-                document.getElementById('item-new').checked = false;
+                document.getElementById('item-untradable').checked = false;
+                document.getElementById('item-new').checked = true;
                 document.getElementById('item-weekly').checked = false;
                 document.getElementById('item-weeklystar').checked = false;
                 document.getElementById('item-retired').checked = false;
@@ -1804,6 +1978,7 @@
             },
 
             renderItems(keepPage = false) {
+                ChangeTracker.updateHighlights();
                 if (!keepPage) state.currentPage = 1;
 
                 const container = DOM.get('all-items');
@@ -1854,9 +2029,17 @@
                     }
                 };
 
-                if (sortFunctions[state.filters.sort]) {
-                    filtered.sort(sortFunctions[state.filters.sort]);
-                }
+                filtered.sort((a, b) => {
+                    const aNew = a.new === true ? -1 : 0;
+                    const bNew = b.new === true ? -1 : 0;
+
+                    if (aNew !== bNew) return aNew - bNew;
+
+                    const fn = sortFunctions[state.filters.sort];
+                    return fn ? fn(a, b) : (a.name || "").localeCompare(b.name || "");
+                });
+
+
 
                 state.filteredItems = filtered;
 
@@ -1869,6 +2052,7 @@
                 });
 
                 UI.renderPagination();
+                ChangeTracker.updateHighlights();
             },
 
             renderPagination() {
@@ -2044,6 +2228,14 @@
 
             open(item) {
 
+                // Don't capture original for new items
+                if (!ChangeTracker.isNewItem(item.name)) {
+                    // Only capture if not already captured
+                    if (!ChangeTracker.originalItems.has(item.name)) {
+                        ChangeTracker.originalItems.set(item.name, JSON.stringify(item));
+                    }
+                }
+                state.currentEditingItem = item;
 
                 // Initialize draggable panel if not already done
                 if (!DraggablePanelManager.state.isInitialized) {
@@ -2053,7 +2245,7 @@
                 // Show the panel
                 DraggablePanelManager.show();
 
-                ChangeTracker.captureOriginal(item);
+
                 state.currentEditingItem = item;
                 const modal = DOM.get('quick-editor-modal');
                 const content = DOM.get('quick-editor-content');
@@ -2152,11 +2344,24 @@
                 }
 
                 priceInput.onchange = () => {
+                    const previousState = JSON.parse(JSON.stringify(state.currentEditingItem));
                     state.currentEditingItem.price = priceInput.value.trim();
-                    ChangeTracker.checkChanges(state.currentEditingItem);
-                    ChangeTracker.updateHighlights();
+
+                    ChangeTracker.checkModifications(state.currentEditingItem);
+
+                    if (!UndoRedoManager.isApplyingChange &&
+                        previousState.price !== state.currentEditingItem.price) {
+                        UndoRedoManager.recordChange({
+                            type: 'edit',
+                            itemName: state.currentEditingItem.name,
+                            previousState: previousState,
+                            newState: JSON.parse(JSON.stringify(state.currentEditingItem))
+                        });
+                    }
+
                     UI.renderItems(true);
                     UI.renderShops();
+                    ChangeTracker.updateHighlights();
 
                 };
 
@@ -2406,9 +2611,8 @@
                 const months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
                 const selectedMonths = new Set();
 
-                // Check if this value is from the original item (unless we're skipping the check)
-                const isOriginal = state.currentEditingItem &&
-                    value &&
+                // Replace the isOriginal check with:
+                const isOriginal = !ChangeTracker.isNewItem(state.currentEditingItem.name) &&
                     ChangeTracker.isValueOriginal(state.currentEditingItem, 'from', value);
 
                 const li = this.createElement('li', {
@@ -2577,10 +2781,10 @@
             createPriceItem(value = '') {
                 const container = DOM.query('.prc-list');
 
-                // Check if this value is from the original item (unless we're skipping the check)
-                const isOriginal = state.currentEditingItem &&
-                    value &&
+                // Replace the isOriginal check with:
+                const isOriginal = !ChangeTracker.isNewItem(state.currentEditingItem.name) &&
                     ChangeTracker.isValueOriginal(state.currentEditingItem, 'price/code/rarity', value);
+
 
 
                 const li = this.createElement('li', {
@@ -2737,8 +2941,24 @@
                 const items = Array.from(DOM.queryAll('.desc-item > span'))
                     .map(span => span.textContent.trim())
                     .filter(v => v && v !== 'Description...');
+
+                const previousState = JSON.parse(JSON.stringify(state.currentEditingItem));
                 state.currentEditingItem.from = items.join('<br>') || '';
-                ChangeTracker.checkChanges(state.currentEditingItem);
+
+                // Check for modifications
+                ChangeTracker.checkModifications(state.currentEditingItem);
+
+                // Record change for undo if not already applying
+                if (!UndoRedoManager.isApplyingChange &&
+                    previousState.from !== state.currentEditingItem.from) {
+                    UndoRedoManager.recordChange({
+                        type: 'edit',
+                        itemName: state.currentEditingItem.name,
+                        previousState: previousState,
+                        newState: JSON.parse(JSON.stringify(state.currentEditingItem))
+                    });
+                }
+
                 ChangeTracker.updateHighlights();
 
                 // Trigger overflow check after content update
@@ -2751,8 +2971,24 @@
                 const items = Array.from(DOM.queryAll('.prc-item input'))
                     .map(input => input.value.trim())
                     .filter(v => v);
+
+                const previousState = JSON.parse(JSON.stringify(state.currentEditingItem));
                 state.currentEditingItem['price/code/rarity'] = items.join('<br>') || '';
-                ChangeTracker.checkChanges(state.currentEditingItem);
+
+                // Check for modifications
+                ChangeTracker.checkModifications(state.currentEditingItem);
+
+                // Record change for undo if not already applying
+                if (!UndoRedoManager.isApplyingChange &&
+                    previousState['price/code/rarity'] !== state.currentEditingItem['price/code/rarity']) {
+                    UndoRedoManager.recordChange({
+                        type: 'edit',
+                        itemName: state.currentEditingItem.name,
+                        previousState: previousState,
+                        newState: JSON.parse(JSON.stringify(state.currentEditingItem))
+                    });
+                }
+
                 ChangeTracker.updateHighlights();
 
                 // Trigger overflow check after content update
@@ -3804,125 +4040,135 @@
         // ============================
         // Enhanced Publish Manager
         // ============================
-        const PublishManager = {
-            // Generate a diff summary of all changes
-            generateChangeSummary() {
-                const changes = {
-                    modified: [],
-                    added: [],
-                    removed: []
-                };
+const PublishManager = {
+    // Generate a diff summary of all changes
+    generateChangeSummary() {
+        const changes = {
+            modified: [],
+            added: [],
+            removed: []
+        };
 
-                // Track all changed items
-                state.changedItems.forEach(itemName => {
-                    const currentItem = state.allItems.find(i => i.name === itemName);
-                    if (!currentItem) return;
-
-                    const originalItem = Object.values(state.jsData).flat().find(i => i.name === itemName);
-                    
-                    console.log('Comparing item:', itemName, originalItem);
-
-                    if (!originalItem) {
-                        changes.added.push({ name: itemName, item: currentItem });
-                    } else {
-                        const itemChanges = this.compareItems(originalItem, currentItem);
-                        if (itemChanges.length > 0) {
-                            changes.modified.push({
-                                name: itemName,
-                                changes: itemChanges,
-                                original: originalItem,
-                                current: currentItem
-                            });
-                        }
-                    }
+        // Process new items
+        ChangeTracker.newItems.forEach(itemName => {
+            const currentItem = state.allItems.find(i => i.name === itemName);
+            if (currentItem) {
+                changes.added.push({
+                    name: itemName,
+                    item: currentItem
                 });
+            }
+        });
 
-                // Check for removed items (in original but not in current)
-                state.originalItems.forEach((originalJson, itemName) => {
-                    if (!state.allItems.find(i => i.name === itemName)) {
-                        const originalItem = JSON.parse(originalJson);
-                        changes.removed.push({ name: itemName, item: originalItem });
-                    }
-                });
-
-                return changes;
-            },
-
-            // Compare two items and return list of changes
-            compareItems(original, current) {
-                const changes = [];
-                const fields = ['price', 'from', 'price/code/rarity', 'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'name'];
-
-                fields.forEach(field => {
-                    const oldVal = this.normalizeValue(field, original[field]);
-                    const newVal = this.normalizeValue(field, current[field]);
-
-                    if (oldVal !== newVal) {
-                        changes.push({
-                            field,
-                            oldValue: original[field],
-                            newValue: current[field],
-                            display: this.formatFieldChange(field, original[field], current[field])
-                        });
-                    }
-                });
-
-                return changes;
-            },
-
-            normalizeValue(field, value) {
-                if (field === 'price') {
-                    if (!value || value === '' || value === 'N/A' || value === 'undefined') {
-                        return '0';
-                    }
-                    return String(value);
+        // Process modified items
+        ChangeTracker.modifiedItems.forEach(itemName => {
+            const currentItem = state.allItems.find(i => i.name === itemName);
+            const originalJson = ChangeTracker.originalItems.get(itemName);
+            
+            if (currentItem && originalJson) {
+                const originalItem = JSON.parse(originalJson);
+                const itemChanges = this.compareItems(originalItem, currentItem);
+                
+                if (itemChanges.length > 0) {
+                    changes.modified.push({
+                        name: itemName,
+                        changes: itemChanges,
+                        original: originalItem,
+                        current: currentItem
+                    });
                 }
-                return value;
-            },
+            }
+        });
 
-            formatFieldChange(field, oldValue, newValue) {
-                const formatters = {
-                    'price': (old, val) => `RAP: ${old || '0'} → ${val || '0'}`,
-                    'from': (old, val) => `Description changed`,
-                    'price/code/rarity': (old, val) => `Price/Code/Rarity changed`,
-                    'weekly': (old, val) => val ? '✓ Added to Weekly' : '✗ Removed from Weekly',
-                    'weeklystar': (old, val) => val ? '✓ Added to Star Shop' : '✗ Removed from Star Shop',
-                    'new': (old, val) => val ? '✓ Marked as New' : '✗ Unmarked as New',
-                    'retired': (old, val) => val ? '✓ Marked as Retired' : '✗ Unmarked as Retired',
-                    'premium': (old, val) => val ? '✓ Marked as Premium' : '✗ Unmarked as Premium',
-                    'tradable': (old, val) => !val ? '✓ Marked as Untradable' : '✗ Marked as Tradable',
-                    'name': (old, val) => `Name: "${old}" → "${val}"`
-                };
+        // Process deleted items
+        ChangeTracker.deletedItems.forEach((originalStateJson, itemName) => {
+            const originalItem = typeof originalStateJson === 'string' 
+                ? JSON.parse(originalStateJson) 
+                : originalStateJson;
+            
+            changes.removed.push({ 
+                name: itemName, 
+                item: originalItem 
+            });
+        });
 
-                return formatters[field] ? formatters[field](oldValue, newValue) : `${field}: ${oldValue} → ${newValue}`;
-            },
+        return changes;
+    },
 
-            // Show the publish preview modal
-            async showPublishModal() {
-                const changes = this.generateChangeSummary();
-                const totalChanges = changes.modified.length + changes.added.length + changes.removed.length;
+    // Compare two items and return list of changes
+    compareItems(original, current) {
+        const changes = [];
+        const fields = ['price', 'from', 'price/code/rarity', 'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'name'];
 
-                if (totalChanges === 0) {
+        fields.forEach(field => {
+            const oldVal = this.normalizeValue(field, original[field]);
+            const newVal = this.normalizeValue(field, current[field]);
 
-                    ErrorHandler.showToast('No changes to publish', 'error');
-                    return;
-                }
-
-                // Create modal
-                const modal = this.createModal(changes, totalChanges);
-                document.body.appendChild(modal);
-
-                // Animate in
-                requestAnimationFrame(() => {
-                    modal.style.opacity = '1';
-                    DOM.get('publishModalContent').style.transform = 'scale(1)';
+            if (oldVal !== newVal) {
+                changes.push({
+                    field,
+                    oldValue: original[field],
+                    newValue: current[field],
+                    display: this.formatFieldChange(field, original[field], current[field])
                 });
-            },
+            }
+        });
 
-            createModal(changes, totalChanges) {
-                const modal = document.createElement('div');
-                modal.className = 'publish-modal-overlay';
-                modal.style.cssText = `
+        return changes;
+    },
+
+    normalizeValue(field, value) {
+        if (field === 'price') {
+            if (!value || value === '' || value === 'N/A' || value === 'undefined') {
+                return '0';
+            }
+            return String(value);
+        }
+        return value;
+    },
+
+    formatFieldChange(field, oldValue, newValue) {
+        const formatters = {
+            'price': (old, val) => `RAP: ${old || '0'} → ${val || '0'}`,
+            'from': (old, val) => `Description changed`,
+            'price/code/rarity': (old, val) => `Price/Code/Rarity changed`,
+            'weekly': (old, val) => val ? '✓ Added to Weekly Shop' : '✗ Removed from Weekly Shop',
+            'weeklystar': (old, val) => val ? '✓ Added to Star Shop' : '✗ Removed from Star Shop',
+            'new': (old, val) => val ? '✓ Marked as New' : '✗ Unmarked as New',
+            'retired': (old, val) => val ? '✓ Marked as Retired' : '✗ Unmarked as Retired',
+            'premium': (old, val) => val ? '✓ Marked as Premium' : '✗ Unmarked as Premium',
+            'tradable': (old, val) => !val ? '✓ Marked as Untradable' : '✗ Marked as Tradable',
+            'name': (old, val) => `Name: "${old}" → "${val}"`
+        };
+
+        return formatters[field] ? formatters[field](oldValue, newValue) : `${field}: ${oldValue} → ${newValue}`;
+    },
+
+    // Show the publish preview modal
+    async showPublishModal() {
+        const changes = this.generateChangeSummary();
+        const totalChanges = changes.modified.length + changes.added.length + changes.removed.length;
+
+        if (totalChanges === 0) {
+            ErrorHandler.showToast('No changes to publish', 'error');
+            return;
+        }
+
+        // Create modal
+        const modal = this.createModal(changes, totalChanges);
+        document.body.appendChild(modal);
+
+        // Animate in
+        requestAnimationFrame(() => {
+            modal.style.opacity = '1';
+            DOM.get('publishModalContent').style.transform = 'scale(1)';
+        });
+    },
+
+    createModal(changes, totalChanges) {
+        const modal = document.createElement('div');
+        modal.className = 'publish-modal-overlay';
+        modal.style.cssText = `
             position: fixed;
             top: 0;
             left: 0;
@@ -3938,24 +4184,24 @@
             transition: opacity 0.3s ease;
         `;
 
-                const content = document.createElement('div');
-                content.className = 'delete-modal';
-                content.id = "publishModalContent";
-                content.style.cssText = `
+        const content = document.createElement('div');
+        content.className = 'delete-modal';
+        content.id = "publishModalContent";
+        content.style.cssText = `
             max-width: 90%;
             width: 600px;
             padding: 0px;
             overflow: clip;
         `;
 
-                // Header
-                const header = document.createElement('div');
-                header.style.cssText = `
+        // Header
+        const header = document.createElement('div');
+        header.style.cssText = `
             padding: 20px;
             border-bottom: 1px solid var(--shade, #374151);
             background: linear-gradient(135deg, rgb(255 255 255 / 10%), rgb(39 118 215 / 10%));
         `;
-                header.innerHTML = `
+        header.innerHTML = `
             <h2 style="margin: 0; font-size: 24px; color: white; display: flex; align-items: center; gap: 10px;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -3970,19 +4216,19 @@
             </p>
         `;
 
-                // Body with changes list
-                const body = document.createElement('div');
-                body.style.cssText = `
+        // Body with changes list
+        const body = document.createElement('div');
+        body.style.cssText = `
             flex: 1;
             overflow-y: auto;
             padding: 20px 20px 0px;
             max-height: 400px;
         `;
-                body.innerHTML = this.renderChanges(changes);
+        body.innerHTML = this.renderChanges(changes);
 
-                // Footer with actions
-                const footer = document.createElement('div');
-                footer.style.cssText = `
+        // Footer with actions
+        const footer = document.createElement('div');
+        footer.style.cssText = `
             border-top: 1px solid var(--shade, #374151);
             display: flex;
             gap: 12px;
@@ -3991,10 +4237,10 @@
             align-items: center;
         `;
 
-                // Version conflict warning (hidden by default)
-                const conflictWarning = document.createElement('div');
-                conflictWarning.id = 'conflict-warning';
-                conflictWarning.style.cssText = `
+        // Version conflict warning (hidden by default)
+        const conflictWarning = document.createElement('div');
+        conflictWarning.id = 'conflict-warning';
+        conflictWarning.style.cssText = `
             flex: 1;
             color: #fbbf24;
             display: none;
@@ -4002,7 +4248,7 @@
             align-items: center;
             gap: 8px;
         `;
-                conflictWarning.innerHTML = `
+        conflictWarning.innerHTML = `
             <span style="display: flex; align-items: center; gap: 6px;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
@@ -4017,51 +4263,71 @@
             </label>
         `;
 
-                const cancelBtn = document.createElement('button');
-                cancelBtn.textContent = 'Cancel';
-                cancelBtn.className = 'small-btn ghost';
-                cancelBtn.onclick = () => this.closeModal(modal);
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.className = 'small-btn ghost';
+        cancelBtn.onclick = () => this.closeModal(modal);
 
-                const publishBtn = document.createElement('button');
-                publishBtn.textContent = 'Publish Changes';
-                publishBtn.className = 'small-btn';
+        const publishBtn = document.createElement('button');
+        publishBtn.textContent = 'Publish Changes';
+        publishBtn.className = 'small-btn';
+        publishBtn.onclick = () => this.handlePublish(modal);
 
-                publishBtn.onclick = () => this.handlePublish(modal);
+        footer.appendChild(conflictWarning);
+        footer.appendChild(cancelBtn);
+        footer.appendChild(publishBtn);
 
-                footer.appendChild(conflictWarning);
-                footer.appendChild(cancelBtn);
-                footer.appendChild(publishBtn);
+        content.appendChild(header);
+        content.appendChild(body);
+        content.appendChild(footer);
+        modal.appendChild(content);
 
-                content.appendChild(header);
-                content.appendChild(body);
-                content.appendChild(footer);
-                modal.appendChild(content);
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                this.closeModal(modal);
+            }
+        });
 
-                // Close on backdrop click
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        this.closeModal(modal);
-                    }
-                });
+        // Close on Escape key
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                this.closeModal(modal);
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
 
-                // Close on Escape key
-                const escHandler = (e) => {
-                    if (e.key === 'Escape') {
-                        this.closeModal(modal);
-                        document.removeEventListener('keydown', escHandler);
-                    }
-                };
-                document.addEventListener('keydown', escHandler);
+        return modal;
+    },
 
-                return modal;
-            },
+    renderChanges(changes) {
+        let html = '';
 
-            renderChanges(changes) {
-                let html = '';
+        // Added items (show first for better visibility)
+        if (changes.added.length > 0) {
+            html += `<div style="margin-bottom: 24px;">
+                <h3 style="color: #10b981; margin: 0 0 12px 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="16"></line>
+                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                    </svg>
+                    New Items (${changes.added.length})
+                </h3>
+                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); 
+                            border-radius: 8px; padding: 12px;">`;
 
-                // Modified items
-                if (changes.modified.length > 0) {
-                    html += `
+            changes.added.forEach(item => {
+                html += `<div style="color: #d1d5db; margin: 4px 0;">• ${item.name}</div>`;
+            });
+
+            html += `</div></div>`;
+        }
+
+        // Modified items
+        if (changes.modified.length > 0) {
+            html += `
                 <div style="margin-bottom: 24px;">
                     <h3 style="color: #fbbf24; margin: 0 0 12px 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -4071,48 +4337,27 @@
                         Modified Items (${changes.modified.length})
                     </h3>`;
 
-                    changes.modified.forEach(item => {
-                        html += `<div style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); 
-                                border-radius: 8px; padding: 12px; margin-bottom: 12px;">
-                        <div style="font-weight: 600; margin-bottom: 8px; color: white;">
-                            ${item.name}
-                        </div>
-                        <ul style="margin: 0; padding-left: 20px; color: #d1d5db; font-size: 14px;">`;
+            changes.modified.forEach(item => {
+                html += `<div style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); 
+                        border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                    <div style="font-weight: 600; margin-bottom: 8px; color: white;">
+                        ${item.name}
+                    </div>
+                    <ul style="margin: 0; padding-left: 20px; color: #d1d5db; font-size: 14px;">`;
 
-                        item.changes.forEach(change => {
-                            html += `<li style="margin: 4px 0;">${change.display}</li>`;
-                        });
+                item.changes.forEach(change => {
+                    html += `<li style="margin: 4px 0;">${change.display}</li>`;
+                });
 
-                        html += `</ul></div>`;
-                    });
+                html += `</ul></div>`;
+            });
 
-                    html += '</div>';
-                }
+            html += '</div>';
+        }
 
-                // Added items
-                if (changes.added.length > 0) {
-                    html += `<div style="margin-bottom: 24px;">
-                    <h3 style="color: #10b981; margin: 0 0 12px 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="12" y1="8" x2="12" y2="16"></line>
-                            <line x1="8" y1="12" x2="16" y2="12"></line>
-                        </svg>
-                        New Items (${changes.added.length})
-                    </h3>
-                    <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); 
-                                border-radius: 8px; padding: 12px;">`;
-
-                    changes.added.forEach(item => {
-                        html += `<div style="color: #d1d5db; margin: 4px 0;"> • ${item.name}</div>`;
-                    });
-
-                    html += `</div></div>`;
-                }
-
-                // Removed items
-                if (changes.removed.length > 0) {
-                    html += `
+        // Removed items
+        if (changes.removed.length > 0) {
+            html += `
                 <div style="margin-bottom: 24px;">
                     <h3 style="color: #ef4444; margin: 0 0 12px 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -4124,111 +4369,152 @@
                     <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); 
                                 border-radius: 8px; padding: 12px;">`;
 
-                    changes.removed.forEach(item => {
-                        html += `<div style="color: #d1d5db; margin: 4px 0;">• ${item.name}</div>`;
+            changes.removed.forEach(item => {
+                html += `<div style="color: #d1d5db; margin: 4px 0;">• ${item.name}</div>`;
+            });
+
+            html += `</div></div>`;
+        }
+
+        return html || '<p style="color: #9ca3af;">No changes to display</p>';
+    },
+
+    async handlePublish(modal) {
+        UpdateChecker.stop();
+        const publishBtn = modal.querySelector('button:last-child');
+        const conflictWarning = modal.querySelector('#conflict-warning');
+        const forceCheckbox = modal.querySelector('#force-overwrite');
+
+        publishBtn.disabled = true;
+        publishBtn.textContent = 'Publishing...';
+
+        try {
+            const response = await API.saveData();
+
+            if (response.status === 409) {
+                // Version conflict detected
+                conflictWarning.style.display = 'flex';
+                publishBtn.textContent = 'Retry Publish';
+                publishBtn.disabled = false;
+
+                if (forceCheckbox && forceCheckbox.checked) {
+                    // Force overwrite
+                    const forceResponse = await fetch(CONFIG.API_URLS.UPDATE_GIST, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            content: state.jsData,
+                            username: state.adminName,
+                            version: state.gistVersion,
+                            force: true
+                        })
                     });
 
-                    html += ` </div></div>`;
-                }
-
-                return html || '<p style="color: #9ca3af;">No changes to display</p>';
-            },
-
-            async handlePublish(modal) {
-                UpdateChecker.stop();
-                const publishBtn = modal.querySelector('button:last-child');
-                const conflictWarning = modal.querySelector('#conflict-warning');
-                const forceCheckbox = modal.querySelector('#force-overwrite');
-
-                publishBtn.disabled = true;
-                publishBtn.textContent = 'Publishing...';
-                
-                setTimeout(() => location.reload(), 3500);
-                try {
-                    const response = await API.saveData();
-
-                    if (response.status === 409) {
-                        // Version conflict detected
-                        conflictWarning.style.display = 'flex';
-                        publishBtn.textContent = 'Retry Publish';
-                        publishBtn.disabled = false;
-
-                        if (forceCheckbox && forceCheckbox.checked) {
-                            // Force overwrite
-                            const forceResponse = await fetch(CONFIG.API_URLS.UPDATE_GIST, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    content: state.jsData,
-                                    username: state.adminName,
-                                    version: state.gistVersion,
-                                    force: true // Add force flag
-                                })
-                            });
-
-                            if (forceResponse.ok) {
-                                this.showSuccess(modal);
-                                setTimeout(() => location.reload(), 3500);
-                            } else {
-                                throw new Error('Force save failed');
-                            }
-                        } else {
-                            // Show conflict warning and wait for user action
-                            publishBtn.textContent = 'Retry Publish';
-                            publishBtn.disabled = false;
-                        }
-                    } else if (response.ok) {
+                    if (forceResponse.ok) {
                         this.showSuccess(modal);
                         setTimeout(() => location.reload(), 3500);
                     } else {
-                        throw new Error('Save failed');
+                        const errorData = await forceResponse.text();
+                        throw new Error(errorData || 'Force save failed');
                     }
-                } catch (error) {
-                    ErrorHandler.showToast('Publish error: ' + error.message, 'error');
-                    publishBtn.disabled = false;
-                    publishBtn.textContent = 'Retry Publish';
                 }
-            },
-
-            showSuccess(modal) {
-                const content = DOM.get('publishModalContent');
-                content.innerHTML = `
-                <div style="padding: 60px; text-align: center;">
-                    <div style="font-size: 64px; margin-bottom: 20px; display: flex; justify-content: center;">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10" fill="#10b98120"></circle>
-                            <polyline points="9 11 12 14 15 10"></polyline>
-                        </svg>
-                    </div>
-                    <h2 style="color: white; margin: 0 0 12px 0;">Changes Published!</h2>
-                    <p style="color: #9ca3af;">The catalog has been updated successfully.</p>
-                </div>`;
-
-            },
-
-            closeModal(modal) {
-                DOM.get('publishModalContent').style.transform = 'scale(0.9)';
-                modal.style.opacity = '0';
-                setTimeout(() => modal.remove(), 300);
-            },
-
-            // Initialize - replace the current publish button handler
-            init() {
-                const publishBtn = DOM.get('publish-btn');
-                if (!publishBtn) return;
-
-                // Remove old handler and add new one
-                const newBtn = publishBtn.cloneNode(true);
-                publishBtn.parentNode.replaceChild(newBtn, publishBtn);
-
-                newBtn.addEventListener('click', () => {
-                    this.showPublishModal();
-                });
-
-                // Update the button text to indicate new behavior
-                newBtn.innerHTML = '<span class="rocket-icon"></span><span class="publish-label">Review & Publish</span>';
+            } else if (response.ok) {
+                // Clear change tracking after successful publish
+                ChangeTracker.initializeOriginals();
+                
+                this.showSuccess(modal);
+                setTimeout(() => location.reload(), 3500);
+            } else {
+                // Handle non-OK responses
+                const errorData = await response.text();
+                throw new Error(errorData || `Server error: ${response.status}`);
             }
-        };
+        } catch (error) {
+            // Show proper error modal instead of just a toast
+            this.showErrorModal(modal, error.message);
+            publishBtn.disabled = false;
+            publishBtn.textContent = 'Retry Publish';
+        }
+    },
+
+    showErrorModal(currentModal, errorMessage) {
+        // Hide the current modal content
+        const content = currentModal.querySelector('.delete-modal') || DOM.get('publishModalContent');
+
+        // Create error display
+        content.innerHTML = `
+            <div style="padding: 40px; text-align: center;">
+                <div style="font-size: 64px; margin-bottom: 20px; display: flex; justify-content: center;">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" fill="#ef444420"></circle>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                    </svg>
+                </div>
+                <h2 style="color: #ef4444; margin: 0 0 12px 0;">Publish Failed</h2>
+                <div style="background: rgba(239, 68, 68, 0.1); 
+                            border: 1px solid rgba(239, 68, 68, 0.3); 
+                            border-radius: 8px; 
+                            padding: 16px; 
+                            margin: 20px 0;
+                            text-align: left;">
+                    <strong style="color: #fbbf24;">Error Details:</strong>
+                    <p style="color: #d1d5db; margin: 8px 0 0 0; word-break: break-word;">
+                        ${Utils.escapeHtml(errorMessage)}
+                    </p>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: center; margin-top: 24px;">
+                    <button class="small-btn ghost" onclick="location.reload()">
+                        Refresh Page
+                    </button>
+                    <button class="small-btn" onclick="this.closest('.publish-modal-overlay').remove()">
+                        Close & Try Again
+                    </button>
+                </div>
+                <p style="color: #9ca3af; margin: 16px 0 0 0; font-size: 12px;">
+                    Your changes have not been lost. You can try publishing again.
+                </p>
+            </div>`;
+    },
+
+    showSuccess(modal) {
+        const content = DOM.get('publishModalContent');
+        content.innerHTML = `
+            <div style="padding: 60px; text-align: center;">
+                <div style="font-size: 64px; margin-bottom: 20px; display: flex; justify-content: center;">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" fill="#10b98120"></circle>
+                        <polyline points="9 11 12 14 15 10"></polyline>
+                    </svg>
+                </div>
+                <h2 style="color: white; margin: 0 0 12px 0;">Changes Published!</h2>
+                <p style="color: #9ca3af;">The catalog has been updated successfully.</p>
+            </div>`;
+    },
+
+    closeModal(modal) {
+        DOM.get('publishModalContent').style.transform = 'scale(0.9)';
+        modal.style.opacity = '0';
+        setTimeout(() => modal.remove(), 300);
+    },
+
+    // Initialize - replace the current publish button handler
+    init() {
+        const publishBtn = DOM.get('publish-btn');
+        if (!publishBtn) return;
+
+        // Remove old handler and add new one
+        const newBtn = publishBtn.cloneNode(true);
+        publishBtn.parentNode.replaceChild(newBtn, publishBtn);
+
+        newBtn.addEventListener('click', () => {
+            this.showPublishModal();
+        });
+
+        // Update the button text to indicate new behavior
+        newBtn.innerHTML = '<span class="rocket-icon"></span><span class="publish-label">Review & Publish</span>';
+    }
+};
         // ============================
         // Enhanced Error Handling
         // ============================
@@ -4388,6 +4674,9 @@
                     ErrorHandler.showToast('Failed to load data. Please refresh.', 'error');
                     return;
                 }
+
+                // Initialize change tracking with original data
+                ChangeTracker.initializeOriginals();
 
                 // Initialize WebSockets
                 this.initWebSockets();
@@ -5549,15 +5838,7 @@
             padding: 20px;
             color: #f66;
         }
-        .item-card.changed {
-            box-shadow: 0 0 0 2px var(--accent), 0 0 12px var(--accent-transparent);
-            animation: pulse-highlight 2s ease-in-out infinite;
-        }
-        
-        @keyframes pulse-highlight {
-            0%, 100% { box-shadow: 0 0 0 2px var(--accent), 0 0 12px var(--accent-transparent); }
-            50% { box-shadow: 0 0 0 3px var(--accent), 0 0 20px var(--accent-transparent); }
-        }
+
     `;
         document.head.appendChild(style);
     </script>
