@@ -996,7 +996,7 @@
                     return;
                 }
 
-                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                if (file.size > 10 * 1024 * 1024) { // 5MB limit
                     ErrorHandler.showToast('File size must be less than 5MB', 'error');
                     return;
                 }
