@@ -359,7 +359,7 @@ class ModalSystem {
     // Handle visibility
     this.cache.prc.style.display = 'flex'
 
-    if (data.price === 'N/A' || data.price === '') {
+    if (data.price === 'N/A' || data.price === '0' || data.price === '') {
       this.cache.prc.style.display = 'none';
     }
 
@@ -997,7 +997,7 @@ class ItemFactory {
     const formattedPrice = this.formatPrice(data.price);
     price.innerHTML = `<img src="./imgs/iZGLVYo.png" draggable="false">${formattedPrice}`;
 
-    if (data.price === 'N/A' || data.price === '') price.style.display = 'none';
+    if (data.price === 'N/A' || data.price === '0' || data.price === '') price.style.display = 'none';
 
     item.appendChild(price);
   }
