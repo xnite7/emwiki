@@ -3209,6 +3209,7 @@ body.dragging-panel {
 .item-adder-body {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 20px;
 }
 
@@ -3223,7 +3224,7 @@ body.dragging-panel {
 .step-content h3 {
     margin: 0 0 20px 0;
     color: #ffffff69;
-    font-size: 22px;
+    font-size: 28px;
     font-variant: all-petite-caps;
 }
 
@@ -3336,14 +3337,20 @@ body.dragging-panel {
     display: block;
     margin-bottom: 8px;
     color: #ffffff69;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 500;
     font-variant: all-petite-caps;
 }
 
+.form-group label strong {
+
+    color: #b93d3d;
+
+}
+
 .form-group input[type="text"],
 .form-group textarea {
-    width: 100%;
+    width: -webkit-fill-available;
     background: transparent;
     border: 1px solid var(--ghost);
     border-radius: 8px;
@@ -3363,6 +3370,7 @@ body.dragging-panel {
 
 .form-group textarea {
     resize: vertical;
+    border-bottom-right-radius: 0px;
     font-family: inherit;
 }
 
@@ -3391,7 +3399,7 @@ body.dragging-panel {
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .image-preview img {
@@ -3460,7 +3468,6 @@ body.dragging-panel {
 }
 
 .category-option .category-icon svg {
-
     transition: all 0.2s;
 }
 
@@ -3593,17 +3600,13 @@ body.dragging-panel {
 
 .image-preview {
     position: relative;
-    text-align: center;
     justify-self: center;
-    margin-top: 15px;
     margin-bottom: 15px;
     min-height: 100px;
-    background: #1a1a1a;
+    min-width: 100px;
+    padding: 12px;
     border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .image-preview img {
@@ -3614,23 +3617,45 @@ body.dragging-panel {
 
 .remove-image-btn {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 30px;
-    height: 30px;
-    background: rgba(231, 76, 60, 0.9);
-    border: none;
+    top: -15px;
+    right: -16px;
+    background: linear-gradient(180deg, #ff3b3b, #9b0e0e);
+    border: 1px solid darkred;
     border-radius: 50%;
     color: white;
     font-size: 20px;
     cursor: pointer;
     transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .remove-image-btn:hover {
-    background: #c0392b;
+    filter: brightness(0.85);
     transform: scale(1.1);
+}
+
+
+
+
+.item-adder-container *::-webkit-scrollbar {
+    width: 8px;
+}
+
+.item-adder-container *::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 4px;
+}
+
+.item-adder-container *::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.item-adder-container *::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+
+
+.item-adder-container *::-webkit-scrollbar-corner {
+    background: transparent;
 }
