@@ -3201,7 +3201,8 @@ body.dragging-panel {
 }
 
 .step-label {
-    font-size: 14px;
+    margin-top: -5px;
+    font-size: 18px;
     color: var(--muted);
     font-variant: all-petite-caps;
 }
@@ -3543,7 +3544,7 @@ body.dragging-panel {
 .upload-dropzone {
     border: 2px dashed #444;
     border-radius: 8px;
-    padding: 30px;
+    padding: 20px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s;
@@ -3561,7 +3562,7 @@ body.dragging-panel {
 }
 
 .upload-dropzone p {
-    margin: 10px 0 5px;
+    margin: 4px 0 5px;
     color: #ccc;
 }
 
