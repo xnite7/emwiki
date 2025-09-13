@@ -1921,7 +1921,7 @@ html {
     }
 
     .catalog:has(#new) {
-        flex: 0 0 36vw
+        flex: 1 1 200%;
     }
 }
 
