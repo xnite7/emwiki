@@ -557,71 +557,69 @@ class ModalSystem {
   }
 
   optimizeTitleSize() {
-    requestAnimationFrame(() => {
-      const title = this.cache.title;
-      const prc = this.cache.prc;
-      if (!title || !prc) return;
+  requestAnimationFrame(() => {
+    const title = this.cache.title;
+    const prc = this.cache.prc;
+    if (!title || !prc) return;
 
-      const titleText = title.textContent;
-      const wordCount = titleText.split(' ').filter(w => w).length;
-      const charCount = titleText.length;
+    // Fixed configuration - no more dependency on char/word count
+    const config = {
+      maxFontSize: 60,
+      minFontSize: 24,
+      padding: 25,
+    };
 
-      // Dynamic configuration
-      const config = {
-        maxFontSize: wordCount <= 4 ? 50 : wordCount <= 2 ? 65 : 45,
-        minFontSize: charCount < 10 ? 35 : charCount < 20 ? 30 : 25,
-        padding: wordCount <= 2 ? 20 : 30,
-      };
+    // Set initial styles with max font size
+    title.style.cssText = `
+      font-size: ${config.maxFontSize}px;
+      line-height: 1.15;
+      font: 900 ${config.maxFontSize}px 'Source Sans Pro';
+      text-shadow: 0px 1px 5px #49444499;
+      z-index: 22;
+      transform: translateZ(20px);
+      text-align: left;
+      transition: font-size 0.1s ease;
+    `;
 
-      // Set initial styles
-      title.style.cssText = `
-        font-size: ${config.maxFontSize}px;
-        line-height: 1.15;
-        font: 900 ${config.maxFontSize}px 'Source Sans Pro';
-        text-shadow: 0px 1px 5px #49444499;
-        z-index: 22;
-        transform: translateZ(20px);
-        text-align: left;
-        transition: font-size 0.1s ease;
-      `;
+    // Calculate available space
+    const container = title.parentElement;
+    const containerWidth = container.offsetWidth;
+    const prcWidth = prc.offsetWidth;
+    const availableWidth = containerWidth - prcWidth - config.padding;
 
-      // Calculate available space
-      const container = title.parentElement;
-      const containerWidth = container.offsetWidth;
-      const prcWidth = prc.offsetWidth;
-      const availableWidth = containerWidth - prcWidth - config.padding;
+    // Binary search for optimal size based on actual width
+    let low = config.minFontSize;
+    let high = config.maxFontSize;
+    let optimal = config.minFontSize;
 
-      // Binary search for optimal size
-      let low = config.minFontSize;
-      let high = config.maxFontSize;
-      let optimal = config.minFontSize;
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      title.style.fontSize = `${mid}px`;
 
-      while (low <= high) {
-        const mid = Math.floor((low + high) / 2);
-        title.style.fontSize = `${mid}px`;
+      // Force reflow to get accurate measurements
+      title.offsetHeight;
 
-        // Force reflow
-        title.offsetHeight;
-
-        if (title.offsetWidth <= availableWidth) {
-          optimal = mid;
-          low = mid + 1;
-        } else {
-          high = mid - 1;
-        }
+      if (title.offsetWidth <= availableWidth) {
+        optimal = mid;
+        low = mid + 1;
+      } else {
+        high = mid - 1;
       }
+    }
 
-      title.style.fontSize = `${optimal}px`;
+    // Apply the optimal font size
+    title.style.fontSize = `${optimal}px`;
 
-      // Special handling for very short titles
-      if (wordCount <= 2 && charCount < 12) {
-        title.style.fontWeight = '900';
-        title.style.letterSpacing = '-0.02em';
-      }
+    // Width-based special handling for very short content
+    // If title takes up less than 40% of available width, enhance typography
+    if (title.offsetWidth < availableWidth * 0.4) {
+      title.style.fontWeight = '900';
+      title.style.letterSpacing = '-0.02em';
+    }
 
-      title.style.opacity = this.cache.content.querySelector('canvas') ? '1' : '0';
-    });
-  }
+    title.style.opacity = this.cache.content.querySelector('canvas') ? '1' : '0';
+  });
+}
 
   navigate(direction) {
     if (appState.isSwiping) return;
