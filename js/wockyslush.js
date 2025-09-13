@@ -286,6 +286,7 @@ function showInfo(arr, color) {
   const gamenightItems = [];
   const drsecretItems = [];
   const staffitems = [];
+  const birthdaychestitems = [];
   for (const [listName, list] of Object.entries(arr)) {
     list.forEach(item => {
       item.listName = listName;
@@ -331,9 +332,12 @@ function showInfo(arr, color) {
       if (item.from && item.from.toLowerCase().includes("staff item")) {
         staffitems.push(item);
       }
+      if (item.from && item.from.toLowerCase().includes("birthday chest")) {
+        birthdaychestitems.push(item);
+      }
     });
   };
-  const chests = [steelChestItems, elusiveBagItems, legendaryChestItems, itemcrateItems, luckyChestItems, epicChestItems, mysterybagItems, typicalChestItems, premiumChestItems, hrplaytimeItems, gamenightItems, drsecretItems, staffitems];
+  const chests = [steelChestItems, elusiveBagItems, legendaryChestItems, itemcrateItems, luckyChestItems, epicChestItems, mysterybagItems, typicalChestItems, premiumChestItems, hrplaytimeItems, gamenightItems, drsecretItems, staffitems, birthdaychestitems];
   chests.forEach((chestItems) => {
     chestItems.forEach((item) => {
       let listElement;
@@ -363,6 +367,8 @@ function showInfo(arr, color) {
         listElement = document.getElementById("drsecretitems");
       } else if (item.from.toLowerCase().includes("staff item")) {
         listElement = document.getElementById("staffitems");
+      } else if (item.from.toLowerCase().includes("birthday chest")) {
+        listElement = document.getElementById("birthdaychest");
       }
 
       // Check if the item's parent is "pets" and set the color to orange
@@ -388,7 +394,8 @@ const chestsNames = {
   hrplaytimerewards: document.getElementById("1hrplaytimerewards"),
   gamenightitems: document.getElementById("gamenightitems"),
   drsecretitems: document.getElementById("drsecretitems"),
-  staffitems: document.getElementById("staffitems")
+  staffitems: document.getElementById("staffitems"),
+  birthdaychest: document.getElementById("birthdaychest")
 };
 
 
@@ -442,7 +449,8 @@ if (isTouch) {
     hrplaytimerewards: "1hr Playtime",
     gamenightitems: "Gamenight",
     drsecretitems: "Daily Rewards",
-    staffitems: "Staff Items"
+    staffitems: "Staff Items",
+    birthdaychest: "Birthday Chest"
   };
 
   const modalRoot = document.getElementById("modalRoot");
