@@ -1981,17 +1981,14 @@
                     }
                 });
                 pricesBtn.click();
-
                 container.appendChild(searchInput);
                 container.appendChild(i);
                 container.appendChild(categorySelect);
                 container.appendChild(newestBtn);
-                
                 container.appendChild(sortSelect);
                 container.appendChild(pricesBtn);
                 container.appendChild(gamenightBtn);
-                
-                
+
             },
 
             renderItems(keepPage = false) {
@@ -2882,10 +2879,10 @@
                         label.style.textShadow = '0 0 10px black';
                         label.style.fontSize = '16px';
                         label.style.fontVariant = 'unicase';
-                        label.style.fontFamily = 'cursive';
+                        label.style.fontFamily = 'Comic Sans';
                         label.style.color = 'rgb(255 31 31)';
                     } else if (text.includes("[ACTIVE]")) {
-                        label.style.fontFamily = 'cursive';
+                        label.style.fontFamily = 'Comic Sans';
                         label.style.color = 'rgb(251 255 68)';
                     } else if (text.includes("Unobtainable")) {
                         icon.src = './imgs/Red_x.png';
@@ -3100,12 +3097,16 @@
             ICONS: {
                 true: '<span class="typeicon green">✓</span>',
                 false: '<span class="typeicon red">✗</span>',
-                price: '<span class="typeicon price">$</span>'
+                price: '<span class="typeicon price">$</span>',
+                added: '<span style="font-family: \'Segoe UI Symbol\', sans-serif;" class="typeicon green">➕</span>',
+                removed: '<span style="font-family: \'Segoe UI Symbol\', sans-serif;" class="typeicon red">➖</span>'
             },
 
             BOOLEAN_FIELDS: ['weeklystar', 'weekly', 'new', 'retired', 'premium', 'tradable'],
 
             SECTION_CONFIG: [
+                ['Added Items', 'added'],
+                ['Removed Items', 'removed'],
                 ['Star Shop', 'weeklystar'],
                 ['Weekly', 'weekly'],
                 ['New', 'new'],
@@ -3114,15 +3115,15 @@
                 ['Tradable', 'tradable'],
                 ['RAP', 'price'],
                 ['Description', 'from'],
-                ['Price/Code/Rarity', 'price/code/rarity']  // Added new field
+                ['Price/Code/Rarity', 'price/code/rarity']
             ],
 
             // Pagination settings
             MAX_ENTRIES_PER_PAGE: 3,
-            ENTRY_HEIGHT_THRESHOLD: 400, // Pixels; if an entry exceeds this, reduce count
+            ENTRY_HEIGHT_THRESHOLD: 400,
             currentPage: 0,
             historyData: [],
-            isAnimating: false, // Prevent rapid clicks
+            isAnimating: false,
 
             async load() {
                 const container = DOM.get('history-list');
@@ -3136,15 +3137,13 @@
                     }
 
                     this.currentPage = 0;
-                    this.renderPage(container, 'none'); // Initial render without animation
+                    this.renderPage(container, 'none');
                 } catch (error) {
                     UI.showError(container, 'Failed to load history');
                 }
             },
 
             renderPage(container, direction = 'none') {
-
-                // Create wrapper if not exists
                 let wrapper = container.querySelector('.history-wrapper');
                 if (!wrapper) {
                     wrapper = Utils.createElement('div', {
@@ -3159,7 +3158,6 @@
                     container.appendChild(torn);
                 }
 
-                // Create new inner container for new entries
                 const newInner = Utils.createElement('div', {
                     className: 'history-inner',
                     style: { position: 'absolute', width: '97%', top: '0', transition: 'transform 0.3s ease-in-out' }
@@ -3167,20 +3165,16 @@
 
                 this.historyData.forEach(entry => this.renderEntry(entry, newInner));
 
-
                 wrapper.appendChild(newInner);
-
-                //this.addPaginationControls(wrapper);
             },
 
             addPaginationControls(wrapper) {
-                const totalPages = Math.ceil(this.historyData.length / this.MAX_ENTRIES_PER_PAGE); // Approximate
+                const totalPages = Math.ceil(this.historyData.length / this.MAX_ENTRIES_PER_PAGE);
                 const controls = Utils.createElement('div', {
                     className: 'pagination-controls',
                     style: { position: 'absolute', bottom: '10px', right: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center' }
                 });
 
-                // Up button (Previous)
                 const upBtn = Utils.createElement('button', {
                     className: `small-btn ghost ${this.currentPage === 0 || this.isAnimating ? 'disabled' : ''}`,
                     innerHTML: '↑',
@@ -3191,20 +3185,17 @@
                     }
                 });
 
-                // Page indicator
                 const pageIndicator = Utils.createElement('span', {
                     textContent: `${this.currentPage + 1}/${totalPages}`,
                     style: { margin: '5px 0', fontSize: '12px', color: '#fff', textShadow: 'rgb(0, 0, 0) 1px 1px, rgb(0, 0, 0) 1px -1px, rgb(0, 0, 0) -1px 1px, rgb(0, 0, 0) -1px -1px, rgb(0, 0, 0) 0px -2px, rgb(0, 0, 0) 0px 1px' }
                 });
 
-                // Down button (Next)
                 const downBtn = Utils.createElement('button', {
                     className: `small-btn ghost ${this.currentPage >= totalPages - 1 || this.isAnimating ? 'disabled' : ''}`,
                     innerHTML: '↓',
                     onClick: () => {
                         if (this.currentPage < totalPages - 1 && !this.isAnimating) {
                             this.currentPage++;
-
                         }
                     }
                 });
@@ -3223,7 +3214,6 @@
                 wrapper.parentElement.appendChild(controls);
             },
 
-            // Utility functions, change processors, formatters
             formatTime(timestamp) {
                 const ts = new Date(timestamp);
                 const now = new Date();
@@ -3304,15 +3294,40 @@
                 return output;
             },
 
+            formatAddedItem(item) {
+                return `${this.ICONS.added} <strong>${item.name}</strong>`;
+            },
+
+            formatRemovedItem(item) {
+                return `${this.ICONS.removed} <strong>${item.name}</strong>`;
+            },
+
             processChanges(diffLines) {
                 const changes = Object.fromEntries([
+                    ['added', []],
+                    ['removed', []],
                     ...this.BOOLEAN_FIELDS.map(field => [field, []]),
                     ['price', []],
                     ['from', []],
-                    ['price/code/rarity', []]  // Added new field
+                    ['price/code/rarity', []]
                 ]);
 
                 for (const line of diffLines) {
+                    // Check for added items
+                    const addedMatch = line.match(/^🆕\s+Added:\s+"([^"]+)"$/);
+                    if (addedMatch) {
+                        changes.added.push({ name: addedMatch[1] });
+                        continue;
+                    }
+
+                    // Check for removed items
+                    const removedMatch = line.match(/^❌\s+Removed:\s+"([^"]+)"$/);
+                    if (removedMatch) {
+                        changes.removed.push({ name: removedMatch[1] });
+                        continue;
+                    }
+
+                    // Check for regular changes
                     const match = line.match(/^\[(.+?)\] ([\w\/]+): (.*) → (.*)$/);
                     if (!match) continue;
 
@@ -3365,7 +3380,6 @@
             },
 
             renderEntry(entry, container) {
-                // Create header
                 const header = Utils.createElement('div', {
                     textContent: entry.username.toUpperCase(),
                     className: 'history-header'
@@ -3377,18 +3391,15 @@
                 });
                 header.appendChild(timeDiv);
 
-                // Create main container
                 const historyItem = Utils.createElement('div', {
                     className: 'history-item'
                 });
                 historyItem.appendChild(header);
                 if (entry.username.toUpperCase() === 'XNITE') {
-                    historyItem.style.filter = 'sepia(1)';
+                    historyItem.style.filter = 'contrast(1.06)';
                 }
 
-                // Check if this is a "No changes" entry
                 if (entry.diff === '(No changes)') {
-                    // Apply special styling for "No changes"
                     const noChangesDiv = Utils.createElement('div', {
                         textContent: '(No changes)',
                         style: {
@@ -3404,14 +3415,14 @@
                     return;
                 }
 
-                // Process changes
                 const diffLines = entry.diff?.split('\n') || [];
                 const changes = this.processChanges(diffLines);
 
-                // Create sections
                 let anySectionAdded = false;
 
                 const formatters = {
+                    added: this.formatAddedItem,
+                    removed: this.formatRemovedItem,
                     weeklystar: this.formatBooleanItem,
                     weekly: this.formatBooleanItem,
                     new: this.formatBooleanItem,
@@ -3420,7 +3431,7 @@
                     tradable: this.formatBooleanItem,
                     price: this.formatPriceItem,
                     from: this.formatDescriptionItem,
-                    'price/code/rarity': this.formatDescriptionItem  // Use description formatter
+                    'price/code/rarity': this.formatDescriptionItem
                 };
 
                 for (const [title, changeKey] of this.SECTION_CONFIG) {
@@ -3431,14 +3442,19 @@
                     }
                 }
 
-                // Fallback content
+                // Only show raw diff as fallback if nothing was processed
                 if (!anySectionAdded) {
+                    // Check if this might be unprocessed added/removed items
+                    if (entry.diff && (entry.diff.includes('🆕 Added:') || entry.diff.includes('❌ Removed:'))) {
+                        console.warn('Unprocessed added/removed items format:', entry.diff);
+                    }
                     historyItem.textContent = entry.diff || '(no diff available)';
                 }
 
                 container.appendChild(historyItem);
             }
         };
+
         // ============================
         // Notes Manager
         // ============================
@@ -3767,7 +3783,8 @@
                 addBtn.classList.add('add-button');
                 addBtn.classList.remove('expanded');
                 inputForm.classList.remove('active');
-                addBtn.innerHTML = '+';
+                addBtn.innerHTML = '➕';
+                addBtn.style.fontFamily = "\'Segoe UI Symbol\', sans-serif"
                 noteInput.value = '';
                 document.body.appendChild(inputForm);
             },
