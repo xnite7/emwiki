@@ -11,7 +11,7 @@
     font-family: 'Twemoji';
     font-style: normal;
     font-weight: normal;
-    src: url("../fonts/Twemoji.Mozilla.woff") format('woff');
+    src: url("../fonts/Twemoji-Mozilla.ttf") format('ttf');
 }
 @font-face {
     font-family: 'Bunny Flowers';
