@@ -337,6 +337,7 @@ class ModalSystem {
     this.optimizeTitleSize();
 
     // Update URL
+
     this.updateURL(item.name);
 
     // Update navigation arrows
@@ -382,12 +383,14 @@ class ModalSystem {
   }
 
   extractItemData(element) {
+
     return {
-      title: element.querySelector('#h3')?.textContent || '',
-      description: element.querySelector('#from')?.textContent.replace(/<br>/g, '\n') || '',
-      price: element.querySelector('p img')?.nextSibling?.textContent.trim() || 'N/A',
-      priceCodeRarity: element.querySelector('#pricecoderarity')?.textContent || '',
+      title: element.getAttribute('data-title-name'),
+      description: element.getAttribute('description'),
+      price: element.getAttribute('price'),
+      priceCodeRarity: element.getAttribute('prc'),
       image: element.dataset.image,
+      svg: element.querySelector('svg')?.outerHTML || '',
       category: element.id,
       isRetired: !!element.querySelector('.retired'),
       isPremium: !!element.querySelector('.premium'),
@@ -396,9 +399,12 @@ class ModalSystem {
   }
 
   handleModalImages(data) {
-    // Remove existing canvas
+    // Remove existing canvas and SVG
     const existingCanvas = this.cache.content.querySelector('#content-area canvas');
     if (existingCanvas) existingCanvas.remove();
+
+    const existingSvg = this.cache.content.querySelector('#content-area .modal-svg-title');
+    if (existingSvg) existingSvg.remove();
 
     // Remove font elements
     this.cache.content.querySelectorAll('.font').forEach(el => el.remove());
@@ -406,13 +412,13 @@ class ModalSystem {
     if (data.image) {
       const canvas = document.createElement('canvas');
       canvas.style.cssText = `
-        width: 100%;
-        margin: -11px 0 -11px;
-        place-self: center;
-        display: block;
-        user-select: none;
-        z-index: 99;
-      `;
+      width: 100%;
+      margin: -11px 0 -11px;
+      place-self: center;
+      display: block;
+      user-select: none;
+      z-index: 99;
+    `;
 
       const contentArea = this.cache.content.querySelector('#content-area');
       contentArea.insertBefore(canvas, this.cache.description);
@@ -425,24 +431,59 @@ class ModalSystem {
         ctx.drawImage(img, 0, 0);
       };
       img.src = data.image;
-    } else if (data.category === 'titles') {
-      // Handle title-specific display
-      const clone = document.querySelector('.item.showing #h3').cloneNode(true);
-      Object.assign(clone.style, {
-        height: '100%',
-        paddingTop: '4px',
-        zoom: '2',
-        width: '-webkit-fill-available',
+    }
+    // Handle SVG titles in modal
+    else if (data.svg && data.category === 'titles') {
+      const svgContainer = document.createElement('div');
+      svgContainer.className = 'modal-svg-title';
+
+      svgContainer.innerHTML = data.svg;
+
+      Object.assign(svgContainer.style, {
+        width: '100%',
+        height: '-webkit-fill-available',
+        display: 'flex',
+        alignItems: 'center',
         zIndex: '22',
-        margin: '31px 0px 46px 0px',
-        alignSelf: 'center',
-        position: 'relative',
-        alignContent: 'center'
       });
-      clone.classList.add('font');
+
+      // Scale up the SVG for modal display
+      const svg = svgContainer.querySelector('svg');
+      if (svg) {
+        svg.style.width = '100%';
+        svg.style.overflow = 'visible';
+        svg.style.textShadow = 'none';
+        svg.style.height = 'auto';
+        svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      }
 
       const contentArea = this.cache.content.querySelector('#content-area');
-      contentArea.insertBefore(clone, this.cache.description);
+      contentArea.insertBefore(svgContainer, this.cache.description);
+    }
+    // Handle old format titles
+    else if (data.category === 'titles') {
+      const itemElement = document.querySelector('.item.showing');
+      if (itemElement) {
+        const h3Element = itemElement.querySelector('#h3');
+        if (h3Element) {
+          const clone = h3Element.cloneNode(true);
+          Object.assign(clone.style, {
+            height: '100%',
+            paddingTop: '4px',
+            zoom: '2',
+            width: '-webkit-fill-available',
+            zIndex: '22',
+            margin: '31px 0px 46px 0px',
+            alignSelf: 'center',
+            position: 'relative',
+            alignContent: 'center'
+          });
+          clone.classList.add('font');
+
+          const contentArea = this.cache.content.querySelector('#content-area');
+          contentArea.insertBefore(clone, this.cache.description);
+        }
+      }
     }
   }
 
@@ -452,7 +493,7 @@ class ModalSystem {
       if (idx > 0) el.remove();
     });
 
-    const prices = data.priceCodeRarity.split('<br>').filter((line, index, self) =>
+    const prices = data.priceCodeRarity.split('\n').filter((line, index, self) =>
       self.findIndex(l => l.toLowerCase() === line.toLowerCase()) === index
     );
 
@@ -557,20 +598,20 @@ class ModalSystem {
   }
 
   optimizeTitleSize() {
-  requestAnimationFrame(() => {
-    const title = this.cache.title;
-    const prc = this.cache.prc;
-    if (!title || !prc) return;
+    requestAnimationFrame(() => {
+      const title = this.cache.title;
+      const prc = this.cache.prc;
+      if (!title || !prc) return;
 
-    // Fixed configuration - no more dependency on char/word count
-    const config = {
-      maxFontSize: 60,
-      minFontSize: 24,
-      padding: 25,
-    };
+      // Fixed configuration - no more dependency on char/word count
+      const config = {
+        maxFontSize: 60,
+        minFontSize: 24,
+        padding: 25,
+      };
 
-    // Set initial styles with max font size
-    title.style.cssText = `
+      // Set initial styles with max font size
+      title.style.cssText = `
       font-size: ${config.maxFontSize}px;
       line-height: 1.15;
       font: 900 ${config.maxFontSize}px 'Source Sans Pro';
@@ -581,45 +622,45 @@ class ModalSystem {
       transition: font-size 0.1s ease;
     `;
 
-    // Calculate available space
-    const container = title.parentElement;
-    const containerWidth = container.offsetWidth;
-    const prcWidth = prc.offsetWidth;
-    const availableWidth = containerWidth - prcWidth - config.padding;
+      // Calculate available space
+      const container = title.parentElement;
+      const containerWidth = container.offsetWidth;
+      const prcWidth = prc.offsetWidth;
+      const availableWidth = containerWidth - prcWidth - config.padding;
 
-    // Binary search for optimal size based on actual width
-    let low = config.minFontSize;
-    let high = config.maxFontSize;
-    let optimal = config.minFontSize;
+      // Binary search for optimal size based on actual width
+      let low = config.minFontSize;
+      let high = config.maxFontSize;
+      let optimal = config.minFontSize;
 
-    while (low <= high) {
-      const mid = Math.floor((low + high) / 2);
-      title.style.fontSize = `${mid}px`;
+      while (low <= high) {
+        const mid = Math.floor((low + high) / 2);
+        title.style.fontSize = `${mid}px`;
 
-      // Force reflow to get accurate measurements
-      title.offsetHeight;
+        // Force reflow to get accurate measurements
+        title.offsetHeight;
 
-      if (title.offsetWidth <= availableWidth) {
-        optimal = mid;
-        low = mid + 1;
-      } else {
-        high = mid - 1;
+        if (title.offsetWidth <= availableWidth) {
+          optimal = mid;
+          low = mid + 1;
+        } else {
+          high = mid - 1;
+        }
       }
-    }
 
-    // Apply the optimal font size
-    title.style.fontSize = `${optimal}px`;
+      // Apply the optimal font size
+      title.style.fontSize = `${optimal}px`;
 
-    // Width-based special handling for very short content
-    // If title takes up less than 40% of available width, enhance typography
-    if (title.offsetWidth < availableWidth * 0.4) {
-      title.style.fontWeight = '900';
-      title.style.letterSpacing = '-0.02em';
-    }
+      // Width-based special handling for very short content
+      // If title takes up less than 40% of available width, enhance typography
+      if (title.offsetWidth < availableWidth * 0.4) {
+        title.style.fontWeight = '900';
+        title.style.letterSpacing = '-0.02em';
+      }
 
-    title.style.opacity = this.cache.content.querySelector('canvas') ? '1' : '0';
-  });
-}
+      title.style.opacity = this.cache.content.querySelector('canvas') ? '1' : '0';
+    });
+  }
 
   navigate(direction) {
     if (appState.isSwiping) return;
@@ -707,12 +748,13 @@ const modalSystem = new ModalSystem();
 window.modalCache = modalSystem.cache;
 window.Modal = (event) => {
   const item = event.target.closest('.item');
-  if (item) modalSystem.open({ element: item, name: item.querySelector('#h3')?.textContent });
+  if (item) modalSystem.open({ element: item, name: item.getAttribute('data-title-name') });
 };
 
 // ============================================
 // ITEM CREATION & CATALOG SYSTEM
 // ============================================
+
 
 class ItemFactory {
   constructor() {
@@ -723,8 +765,7 @@ class ItemFactory {
     const item = document.createElement('div');
     item.classList.add('item', 'item-refresh-animate');
     item.id = this.getCategoryId(color);
-    item.style.backgroundColor = color;
-    item.style.border = '1px solid rgba(0, 0, 0, 0.2)';
+    item.setAttribute('data-title-name', data.name);
 
     // Set outline for weekly star items
     if (data.weeklystar) {
@@ -751,8 +792,6 @@ class ItemFactory {
       item.classList.add('staff');
     }
 
-    // Set item data for modal
-    item.dataset.itemData = JSON.stringify(data);
 
     return item;
   }
@@ -872,15 +911,15 @@ class ItemFactory {
       item.dataset.image = data.img;
       canvas.id = 'img';
       canvas.style.cssText = `
-        max-width: 100%;
-        max-height: 100%;
-        display: block;
-        margin: 0 auto;
-        user-select: none;
-        pointer-events: none;
-        ${data.new ? 'padding-top: 9px;' : ''}
-        ${color === 'rgb(201, 96, 254)' ? 'position: absolute;' : ''}
-      `;
+      max-width: 100%;
+      max-height: 100%;
+      display: block;
+      margin: 0 auto;
+      user-select: none;
+      pointer-events: none;
+      ${data.new ? 'padding-top: 9px;' : ''}
+      ${color === 'rgb(201, 96, 254)' ? 'position: absolute;' : ''}
+    `;
 
       const ctx = canvas.getContext('2d');
       const img = new Image();
@@ -894,16 +933,31 @@ class ItemFactory {
       item.appendChild(canvas);
     }
 
-    // Add name/title
-    const name = this.createNameElement(data, color);
-    item.appendChild(name);
+    // Handle SVG titles (new format)
+    if (data.svg) {
+      item.innerHTML = data.svg;
 
-    // Apply special title styling
-    if (data.style3) {
-      name.outerHTML = data.style3;
+      // Ensure SVG scales properly
+      const svg = item.querySelector('svg');
+      if (svg) {
+        svg.style.width = '100%';
+        svg.style.height = 'auto';
+      }
+
+    }
+    // Handle old format titles or non-title items DELETE THIS XNITE
+    else {
+      const name = this.createNameElement(data, color);
+      item.appendChild(name);
+
+      // Apply special title styling (old format)
+      if (data.style3) {
+        name.outerHTML = data.style3;
+      }
     }
   }
 
+  // Update the createNameElement method to handle the title text extraction:
   createNameElement(data, color) {
     const name = document.createElement('div');
     name.id = 'h3';
@@ -914,8 +968,8 @@ class ItemFactory {
       name.style.paddingTop = '0px';
     }
 
-    // Special handling for titles
-    if (color === 'rgb(201, 96, 254)') {
+    // Special handling for titles (old format)
+    if (color === 'rgb(201, 96, 254)' && !data.svg) {
       this.styleTitleElement(name, data);
     }
 
@@ -926,6 +980,7 @@ class ItemFactory {
 
     return name;
   }
+
 
   styleTitleElement(element, data) {
     Object.assign(element.style, {
@@ -1011,17 +1066,9 @@ class ItemFactory {
   }
 
   addHiddenData(item, data) {
-    const from = document.createElement('div');
-    from.textContent = data.from || '';
-    from.id = 'from';
-    from.style.display = 'none';
-    item.appendChild(from);
-
-    const priceCodeRarity = document.createElement('div');
-    priceCodeRarity.textContent = data['price/code/rarity'] || '';
-    priceCodeRarity.id = 'pricecoderarity';
-    priceCodeRarity.style.display = 'none';
-    item.appendChild(priceCodeRarity);
+    item.setAttribute('description', data.from.replace(/<br>/g, '\n') || '');
+    item.setAttribute('prc', data['price/code/rarity'].replace(/<br>/g, '\n') || '');
+    item.setAttribute('price', data.price || 'N/A');
   }
 
   addFavoriteButton(item, itemName) {
@@ -1029,11 +1076,12 @@ class ItemFactory {
     heartBtn.className = 'heart-button';
     heartBtn.style.cssText = `
       position: absolute;
-      top: -14px;
-      right: -18px;
+      top: -7px;
+      right: -11px;
       z-index: 999;
       height: fit-content;
       font-size: 28px;
+      font-family: Twemoji;
       cursor: pointer;
       user-select: none;
       border-radius: 50%;
@@ -1208,7 +1256,7 @@ class CatalogManager {
 
     if (!appState.showingFavoritesOnly) {
       items.forEach(item => {
-        const name = item.querySelector('#h3')?.textContent;
+        const name = item.getAttribute('data-title-name');
         item.style.display = appState.favorites.includes(name) ? 'flex' : 'none';
       });
       if (btn) btn.textContent = '🔁 Show All';
@@ -1726,15 +1774,29 @@ function openModalFromURL(itemList) {
 
 async function fetchData() {
   try {
-    const res = await fetch('https://emwiki.site/api/gist-version');
-    if (!res.ok) throw new Error('Failed to fetch data');
-    const data = await res.json();
-    return JSON.parse(data.files?.['auto.json']?.content);
+    let data;
+    console.log(location.hostname);
+
+    // ✅ Production: use remote API
+    const res = await fetch("https://api.github.com/gists/52dfc00b4ca2ccceb119b9701c8cf4ef", {
+      headers: {
+        "Authorization": `token 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`
+      }
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch remote data");
+    const json = await res.json();
+    data = JSON.parse(json.files?.["titles.json"]?.content);
+
+
+
+    return data;
   } catch (error) {
-    console.error('Error fetching data:', error);
+    console.error("Error fetching data:", error);
     return null;
   }
 }
+
 
 // ============================================
 // MAIN APPLICATION INITIALIZATION

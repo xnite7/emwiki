@@ -2043,6 +2043,10 @@
                     }
                 };
 
+                if (sortFunctions[state.filters.sort]) {
+                    filtered.sort(sortFunctions[state.filters.sort]);
+                }
+
                 if (state.filters.newestOnly) {
                     filtered = filtered.filter(i => i.new);
                 }

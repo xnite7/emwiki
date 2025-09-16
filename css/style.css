@@ -780,27 +780,27 @@ p {
 
 #pets {
     background-color: #377bfa;
-    outline-color: #fae351
+
 }
 
 #effects {
     background-color: #ffb135;
-    outline-color: #ffb135
+
 }
 
 #gears {
     background-color: #5bfe6a;
-    outline-color: #ff2a00
+
 }
 
 #deaths {
     background-color: #ff7a5e;
-    outline-color: #b31aff
+
 }
 
 #titles {
     background-color: #c960fe;
-    outline-color: #fae351
+    padding: 10px;
 }
 
 .welcome h1 {
@@ -871,28 +871,30 @@ p {
 }
 
 .item {
-    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
     background-color: hsla(0, 0%, 100%, .15);
     border-radius: 12px;
+    border: 1px solid #00000033;
     box-shadow: 0 4px 10px rgba(0, 0, 0, .3);
-    color: #fff;
     cursor: pointer;
     display: flex;
     flex-direction: column-reverse;
     height: 13vw;
-    justify-content: flex-end;
-    justify-items: center;
     max-height: 139px;
     max-width: 139px;
     min-height: 126px;
     min-width: 126px;
-    padding: 0;
     scale: 1;
     transition: transform .15s ease;
     -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    width: 13vw
+    width: 100%;
+}
+.item svg {
+    height: auto;
+    width: 100%;
 }
 
 .item:hover {
@@ -931,11 +933,6 @@ body.pressing-heart .item:active {
     padding-top: 4px;
     text-shadow: -1.3px -1.3px 0 #000, 0 -1.3px 0 #000, 1.3px -1.3px 0 #000, 1.3px 0 0 #000, 1.3px 1.3px 0 #000, 0 1.3px 0 #000, -1.3px 1.3px 0 #000, -1.3px 0 0 #000;
     z-index: 99
-}
-
-#titles.item {
-    align-items: center;
-    justify-content: center
 }
 
 #titles.item #h3 {
@@ -1909,6 +1906,31 @@ html {
     background: #424242;
     padding: 10px;
     text-align: center
+}
+
+.svg-title svg {
+    width: 100%;
+    height: auto;
+    max-height: 80px;
+    display: block;
+}
+
+.item.titles .svg-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+    padding: 10px;
+}
+
+.modal-svg-title svg {
+    filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* Ensure text selection works for accessibility */
+.svg-title text,
+.modal-svg-title text {
+    user-select: text;
 }
 
 @media (min-width:1035px) {
