@@ -891,6 +891,7 @@ p {
     -ms-user-select: none;
     user-select: none;
     width: 100%;
+    align-items: center;
 }
 .item svg {
     height: auto;
@@ -926,13 +927,17 @@ body.pressing-heart .item:active {
     transition: all .15s ease-in-out
 }
 
+
 #h3 {
     bottom: 0;
-    font: 400 1.1rem 'Source Sans Pro';
-    height: 21px;
+    white-space: nowrap;
+    font-family: 'Source Sans Pro';
+    font-weight: 400;
     padding-top: 4px;
     text-shadow: -1.3px -1.3px 0 #000, 0 -1.3px 0 #000, 1.3px -1.3px 0 #000, 1.3px 0 0 #000, 1.3px 1.3px 0 #000, 0 1.3px 0 #000, -1.3px 1.3px 0 #000, -1.3px 0 0 #000;
-    z-index: 99
+    z-index: 99;
+
+    max-width: 120px;
 }
 
 #titles.item #h3 {
@@ -990,21 +995,39 @@ body.pressing-heart .item:active {
     backdrop-filter: blur(12px);
     background: #00000040;
     border-radius: 9px;
-    bottom: -7px;
     font: 200 20px BuilderSans;
-    left: -7px;
-    padding: 0 5px;
+    bottom: -9px;
+    right: -8px;
+    padding: 2px 5px;
+    font-size: medium;
     position: absolute;
     text-align: left;
     text-shadow: 0 0 4px #000;
-    z-index: 99999
+    z-index: 1;
+}
+
+.item:has(> #new-badge) p {
+    white-space: nowrap;
+    backdrop-filter: blur(12px);
+    background: #00000040;
+    border-radius: 9px;
+    font: 200 20px BuilderSans;
+    top: -8px;
+    right: -9px;
+    bottom: unset;
+    padding: 2px 5px;
+    font-size: medium;
+    position: absolute;
+    text-align: left;
+    text-shadow: 0 0 4px #000;
+    z-index: 1
 }
 
 .item p img {
     filter: drop-shadow(1px 1px 2px black);
     float: left;
     height: auto;
-    width: 25px
+    width: 19px
 }
 
 .glow {
@@ -2310,9 +2333,7 @@ html {
         font-size: 2.7em;
     }
 
-    #h3 {
-        font: 100 1.2em 'Source Sans Pro'
-    }
+
 
     .logo4 {
         bottom: -44px;

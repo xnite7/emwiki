@@ -110,7 +110,8 @@ export async function onRequestPost(context) {
         Authorization: `Bearer ${GITHUB_TOKEN}`,
         Accept: "application/vnd.github+json",
         "Content-Type": "application/json",
-        "User-Agent": "emwiki-site-worker"
+        "User-Agent": "emwiki-site-worker",
+         "Access-Control-Allow-Origin": "*"
       },
       body: JSON.stringify(updatedGist)
     });

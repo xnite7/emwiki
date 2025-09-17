@@ -174,8 +174,22 @@ select::-webkit-scrollbar {
     font-variant: all-petite-caps;
     text-box: auto;
     margin-bottom: 8px;
+    white-space: nowrap;
 }
 
+.upload-icon { 
+    mask-image: url('data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12%2022a1%201%200%200%201-1-1V10.414L8.707%2012.707a1%201%200%200%201-1.414-1.414l4-4a1%201%200%200%201%201.414%200l4%204a1%201%200%201%201-1.414%201.414L13%2010.414V21a1%201%200%200%201-1%201zM5%207a1%201%200%200%201-1-1V4a2%202%200%200%201%202-2h12a2%202%200%200%201%202%202v2a1%201%200%201%201-2%200V4H6v2a1%201%200%200%201-1%201z%22%2F%3E%3C%2Fsvg%3E'); 
+}
+
+/* Optional: Add animation to the import button */
+#import-json:hover .upload-icon {
+    animation: bounce 0.5s ease-in-out;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
 
 #settings-btn,
 #panels-btn {
@@ -2652,6 +2666,7 @@ body.dragging-panel {
     font-weight: normal;
     font-style: italic;
     letter-spacing: 0px;
+    white-space: nowrap;
 }
 
 .amber {
