@@ -2946,6 +2946,13 @@
 }
 
 @font-face {
+    font-family: 'Zekton Rg';
+    font-style: normal;
+    font-weight: 700;
+    src: local('Zekton Rg'), url('../fonts/zekton_rg.woff2') format('woff');
+}
+
+@font-face {
     font-family: 'Highway Gothic';
     font-style: normal;
     font-weight: 400;
