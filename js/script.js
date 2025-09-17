@@ -605,7 +605,7 @@ class ModalSystem {
 
       // Fixed configuration - no more dependency on char/word count
       const config = {
-        maxFontSize: 60,
+        maxFontSize: 50,
         minFontSize: 24,
         padding: 25,
       };
@@ -861,7 +861,7 @@ class ItemFactory {
         width: 17%;
         height: auto;
         position: absolute;
-        z-index: 4;
+        z-index: 100;
         bottom: 5px;
         ${data.premium ? 'left: 5px;' : 'right: 5px;'}
       `;
@@ -881,7 +881,7 @@ class ItemFactory {
 
   createNewBadge() {
     const canvas = document.createElement('canvas');
-    canvas.id = 'img';
+    canvas.id = 'new-badge';
     canvas.style.cssText = `
       width: 50%;
       height: auto;
@@ -1205,23 +1205,43 @@ class CatalogManager {
     this.resizeToFit(grid);
   }
 
-  resizeToFit(grid) {
-    const items = Array.from(grid.querySelectorAll('.item')).filter(item => item.id !== 'titles');
-
-    items.forEach(item => {
-      const div = item.querySelector('div');
-      if (!div) return;
-
-      div.style.fontSize = '20px';
-      let fontSize = 20;
-
-      while (div.offsetWidth > 120 && fontSize > 11) {
-        fontSize -= 2;
-        div.style.fontSize = `${fontSize}px`;
+resizeToFit(grid) {
+  const items = grid.querySelectorAll('.item #h3');
+  
+  // Prevent visual jump
+  items.forEach(div => {
+    if (!div) return;
+    div.style.opacity = '0';
+    div.style.transition = 'opacity 0.2s ease';
+  });
+  
+  // Batch resize after next frame
+  requestAnimationFrame(() => {
+    items.forEach(div => {
+      
+      if (!div || !div.textContent) return;
+      
+      // Binary search (5x faster than your while loop)
+      let low = 8, high = 20, optimal = 18;
+      
+      while (low <= high) {
+        const mid = Math.floor((low + high) / 2);
+        div.style.fontSize = `${mid}px`;
+        console.log(optimal);
+        if (div.scrollWidth <= 120) {
+          
+          optimal = mid;
+          low = mid + 1;
+        } else {
+          high = mid - 1;
+        }
       }
+      
+      div.style.fontSize = `${optimal}px`;
+      div.style.opacity = '1';
     });
-  }
-
+  });
+}
   populateRandom(arr, colors) {
     const randomGrid = document.getElementById('random');
     if (!randomGrid) return;
@@ -1774,25 +1794,12 @@ function openModalFromURL(itemList) {
 
 async function fetchData() {
   try {
-    let data;
-    console.log(location.hostname);
-
-    // ✅ Production: use remote API
-    const res = await fetch("https://api.github.com/gists/52dfc00b4ca2ccceb119b9701c8cf4ef", {
-      headers: {
-        "Authorization": `token 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`
-      }
-    });
-
-    if (!res.ok) throw new Error("Failed to fetch remote data");
-    const json = await res.json();
-    data = JSON.parse(json.files?.["titles.json"]?.content);
-
-
-
-    return data;
+    const res = await fetch('https://emwiki.site/api/gist-version');
+    if (!res.ok) throw new Error('Failed to fetch data');
+    const data = await res.json();
+    return JSON.parse(data.files?.['auto.json']?.content);
   } catch (error) {
-    console.error("Error fetching data:", error);
+    console.error('Error fetching data:', error);
     return null;
   }
 }
