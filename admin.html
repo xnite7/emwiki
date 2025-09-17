@@ -3568,6 +3568,15 @@
                     return false;
                 }
 
+                //if required categorys not found then return false
+                for (const category of this.config.REQUIRED_CATEGORIES) {
+                    if (!Object.prototype.hasOwnProperty.call(state.jsData, category)) {
+                        ErrorHandler.showToast(`Current data missing required category: ${category}`, 'error');
+                        return false;
+                    }
+                }
+
+
                 return true;
             },
 
