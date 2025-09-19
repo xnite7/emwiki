@@ -942,11 +942,11 @@ class ItemFactory {
       if (svg) {
         svg.style.width = '100%';
         svg.style.height = 'auto';
-      }else {
+      }
+
+    }else {
       const name = this.createNameElement(data, color);
       item.appendChild(name);}
-
-    }
   }
 
 createNameElement(data, color) {
