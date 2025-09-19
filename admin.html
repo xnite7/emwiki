@@ -2256,6 +2256,7 @@
             titleInput: null,
 
             open(item) {
+                this.close(); // Close any existing editor
                 // Don't capture original for new items
                 if (!ChangeTracker.isNewItem(item.name)) {
                     // Only capture if not already captured
