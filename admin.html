@@ -2250,9 +2250,12 @@
 
             tagMenu: null,
             titleInput: null,
+            imageInput: null,
+
+            tagMenu: null,
+            titleInput: null,
 
             open(item) {
-
                 // Don't capture original for new items
                 if (!ChangeTracker.isNewItem(item.name)) {
                     // Only capture if not already captured
@@ -2270,8 +2273,6 @@
                 // Show the panel
                 DraggablePanelManager.show();
 
-
-                state.currentEditingItem = item;
                 const modal = DOM.get('quick-editor-modal');
                 const content = DOM.get('quick-editor-content');
                 const priceInput = DOM.get('quick-editor-price');
@@ -2285,94 +2286,22 @@
                 }
 
                 content.classList.remove('initial');
-                DOM.get('quick-editor-title').innerHTML = item.name
-                /*DOM.get('quick-editor-title').innerHTML = item.name + `<span class="icon" style="
-                    mask-image: url(&quot;data:image/svg+xml,%3Csvg%20viewBox%3D%22-2.5%20-2.5%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20preserveAspectRatio%3D%22xMinYMin%22%20class%3D%22jam%20jam-pencil%22%3E%3Cpath%20d%3D'M12.238%205.472L3.2%2014.51l-.591%202.016%201.975-.571%209.068-9.068-1.414-1.415zM13.78%203.93l1.414%201.414%201.318-1.318a.5.5%200%200%200%200-.707l-.708-.707a.5.5%200%200%200-.707%200L13.781%203.93zm3.439-2.732l.707.707a2.5%202.5%200%200%201%200%203.535L5.634%2017.733l-4.22%201.22a1%201%200%200%201-1.237-1.241l1.248-4.255%2012.26-12.26a2.5%202.5%200%200%201%203.535%200z'%2F%3E%3C%2Fsvg%3E&quot;);
-                    width: 19px;
-                    height: 19px;
-                    margin-bottom: -2px;
-                    margin-left: 2px;
-                    float: none;
-                "></span>`;
 
-                DOM.get('quick-editor-title').onclick = () => {
-                    console.log('Editing title');
-                    if (this.titleInput) return; // Already editing
+                // Setup editable title with edit icon
+                this.setupEditableTitle(item);
 
-                    this.titleInput = document.createElement('input');
-                    this.titleInput.type = 'text';
-                    this.titleInput.value = item.name;
-                    this.titleInput.style.cssText = 'width:80%;background:#111827;border:1px solid #555;padding:4px 8px;color:#eee;font-size:16px;';
-
-                    DOM.get('quick-editor-title').innerHTML = '';
-                    DOM.get('quick-editor-title').appendChild(this.titleInput);
-                    this.titleInput.focus();
-                    this.titleInput.select();
-
-                    const saveName = () => {
-                        if (!this.titleInput) return; // Already saved
-
-                        const newName = this.titleInput.value.trim();
-
-                        // Update name if changed and valid
-                        if (newName && newName !== item.name) {
-                            item.name = newName;
-                            ChangeTracker.checkChanges(item);
-                            ChangeTracker.updateHighlights();
-                            UI.renderItems(true);
-                            UI.renderShops();
-                        }
-
-                        // Always restore the title display (use current item.name)
-                        DOM.get('quick-editor-title').innerHTML = item.name + `<span class="icon" style="
-            mask-image: url(&quot;data:image/svg+xml,%3Csvg%20viewBox%3D%22-2.5%20-2.5%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20preserveAspectRatio%3D%22xMinYMin%22%20class%3D%22jam%20jam-pencil%22%3E%3Cpath%20d%3D'M12.238%205.472L3.2%2014.51l-.591%202.016%201.975-.571%209.068-9.068-1.414-1.415zM13.78%203.93l1.414%201.414%201.318-1.318a.5.5%200%200%200%200-.707l-.708-.707a.5.5%200%200%200-.707%200L13.781%203.93zm3.439-2.732l.707.707a2.5%202.5%200%200%201%200%203.535L5.634%2017.733l-4.22%201.22a1%201%200%200%201-1.237-1.241l1.248-4.255%2012.26-12.26a2.5%202.5%200%200%201%203.535%200z'%2F%3E%3C%2Fsvg%3E&quot;);
-            width: 19px;
-            height: 19px;
-            margin-bottom: -2px;
-            margin-left: 2px;
-            float: none;
-        "></span>`;
-
-                        // Clear the reference
-                        this.titleInput = null;
-                    }
-
-                    // Handle various save triggers
-                    this.titleInput.onblur = saveName;
-                    this.titleInput.onkeydown = (e) => {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            saveName();
-                        } else if (e.key === 'Escape') {
-                            e.preventDefault();
-                            // Restore original name on escape
-                            this.titleInput.value = item.name;
-                            saveName();
-                        }
-                    }
-                }*/
-                // Handle image
-                const img = DOM.get('quick-editor-img');
-                if (item.img) {
-                    img.src = item.img;
-                    img.style.display = 'block';
-                } else {
-                    img.style.display = 'none';
-                }
+                // Setup editable image
+                this.setupEditableImage(item);
 
                 // Setup price input
                 priceInput.placeholder = "RAP";
                 priceInput.value = '';
 
-
-
                 if (item.price >= 0 || item.price !== 'N/A') {
                     priceInput.value = item.price || '';
                 }
 
-
                 priceInput.onchange = () => {
-
                     if (priceInput.value.trim() == '') {
                         item.price = 'N/A';
                     }
@@ -2392,12 +2321,9 @@
                         });
                     }
 
-
-
                     UI.renderItems(true);
                     UI.renderShops();
                     ChangeTracker.updateHighlights();
-
                 };
 
                 // Setup buttons
@@ -2416,6 +2342,303 @@
                 modal.classList.remove('hidden');
             },
 
+            setupEditableTitle(item) {
+                const titleContainer = DOM.get('quick-editor-title');
+
+                // Create title display with edit icon
+                titleContainer.innerHTML = `
+            <span id="title-text">${item.name}</span>
+            <button id="edit-title-btn" style="
+                background: none;
+                border: none;
+                cursor: pointer;
+                opacity: 0.7;
+                margin-left: -3px;
+                transition: opacity 0.2s;
+                display: inline-flex;
+                align-items: center;
+                padding: 4px;
+                transform: translateY(-4px);
+            " title="Edit name">
+                <span class="icon" style="
+                    mask-image: url('data:image/svg+xml,%3Csvg viewBox=%22-2.5 -2.5 24 24%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath d=%22M12.238 5.472L3.2 14.51l-.591 2.016 1.975-.571 9.068-9.068-1.414-1.415zM13.78 3.93l1.414 1.414 1.318-1.318a.5.5 0 0 0 0-.707l-.708-.707a.5.5 0 0 0-.707 0L13.781 3.93zm3.439-2.732l.707.707a2.5 2.5 0 0 1 0 3.535L5.634 17.733l-4.22 1.22a1 1 0 0 1-1.237-1.241l1.248-4.255 12.26-12.26a2.5 2.5 0 0 1 3.535 0z%22/%3E%3C/svg%3E');
+                    width: 19px;
+                    height: 19px;
+                    background: #c5d8e9a1;
+                "></span>
+            </button>
+        `;
+
+                const editBtn = document.getElementById('edit-title-btn');
+                editBtn.onmouseover = () => { editBtn.style.opacity = '1'; };
+                editBtn.onmouseout = () => { editBtn.style.opacity = '0.7'; };
+
+                editBtn.onclick = () => this.editTitle(item);
+
+                // Also allow double-click on title to edit
+                document.getElementById('title-text').ondblclick = () => this.editTitle(item);
+            },
+
+            editTitle(item) {
+                const titleContainer = DOM.get('quick-editor-title');
+                const currentName = item.name;
+
+                // Create input field
+                titleContainer.innerHTML = `
+            <input type="text" id="title-edit-input" value="${currentName}" style="
+                width: 80%;
+                background: #111827;
+                border: 1px solid #555;
+                padding: 4px 8px;
+                color: #eee;
+                font-size:  21px;
+                border-radius: 4px;
+            ">
+            <button id="save-title-btn" class="small-btn success" style="
+
+                padding: 4px 12px;
+                margin-left: 8px;
+
+            ">✓</button>
+        `;
+
+                const input = document.getElementById('title-edit-input');
+                const saveBtn = document.getElementById('save-title-btn');
+
+
+                // Focus and select input
+                input.focus();
+                input.select();
+
+                const saveName = () => {
+                    const newName = input.value.trim();
+
+                    if (newName && newName !== currentName) {
+                        // Check if name already exists in the same category
+                        const category = Object.entries(state.jsData).find(([cat, items]) =>
+                            items.some(i => i === item)
+                        )?.[0];
+
+                        if (category) {
+                            const exists = state.jsData[category].some(i =>
+                                i !== item && i.name.toLowerCase() === newName.toLowerCase()
+                            );
+
+                            if (exists) {
+                                ErrorHandler.showToast('An item with this name already exists', 'error');
+                                return;
+                            }
+                        }
+
+                        const previousState = JSON.parse(JSON.stringify(item));
+                        item.name = newName;
+
+                        ChangeTracker.checkModifications(item);
+
+                        if (!UndoRedoManager.isApplyingChange) {
+                            UndoRedoManager.recordChange({
+                                type: 'edit',
+                                itemName: previousState.name,
+                                previousState: previousState,
+                                newState: JSON.parse(JSON.stringify(item))
+                            });
+                        }
+
+                        UI.renderItems(true);
+                        UI.renderShops();
+                        ChangeTracker.updateHighlights();
+                        ErrorHandler.showToast('Name updated', 'success');
+                    }
+
+                    // Restore display
+                    this.setupEditableTitle(item);
+                };
+
+                const cancel = () => {
+                    this.setupEditableTitle(item);
+                };
+
+                // Event handlers
+                saveBtn.onclick = saveName;
+
+
+                input.onkeydown = (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        saveName();
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        cancel();
+                    }
+                };
+            },
+
+            setupEditableImage(item) {
+                const img = DOM.get('quick-editor-img');
+                const container = img.parentElement;
+
+                // Create image container with edit overlay
+                if (!document.getElementById('image-edit-container')) {
+                    const imageContainer = document.createElement('div');
+                    imageContainer.id = 'image-edit-container';
+                    imageContainer.style.cssText = `
+                position: relative;
+                display: inline-block;
+                cursor: pointer;
+            `;
+
+                    container.insertBefore(imageContainer, img);
+                    imageContainer.appendChild(img);
+
+                    // Create edit overlay
+                    const editOverlay = document.createElement('div');
+                    editOverlay.id = 'image-edit-overlay';
+                    editOverlay.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                border-radius: 8px;
+                backdrop-filter: blur(2px);
+            `;
+
+                    editOverlay.innerHTML = `
+                    
+                <button style="
+                    background: rgba(255, 255, 255, 0.1);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    color: white;
+                    padding: 6px 9px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    margin: 15px;
+                    font-variant: all-petite-caps;
+                    display: flex;
+                    align-items: center;
+                    gap: 0px;
+                " onclick="document.getElementById('edit-image-input').click();">
+                <input type="file" accept="image/*" style="display:none" id="edit-image-input">
+                    <span class="icon" style="
+                        mask-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 24 24%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath d=%22M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z%22/%3E%3C/svg%3E');
+                        width: 32px;
+                        height: 32px;
+                        margin: 0px;
+                    "></span>
+                    Change Image
+                </button>
+            `;
+
+                    imageContainer.appendChild(editOverlay);
+
+                    // Show overlay on hover
+                    imageContainer.onmouseenter = () => {
+                        editOverlay.style.display = 'flex';
+                    };
+
+                    imageContainer.onmouseleave = () => {
+                        editOverlay.style.display = 'none';
+                    };
+
+                }
+                const fileInput = document.getElementById('edit-image-input');
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        this.handleFileUpload(file);
+                    }
+                });
+
+                // Set image
+                if (item.img) {
+                    img.src = item.img;
+                    img.style.display = 'block';
+                } else {
+                    img.style.display = 'none';
+                }
+            },
+
+            async handleFileUpload(file) {
+                // Validate file
+                if (!file.type.startsWith('image/')) {
+                    ErrorHandler.showToast('Please select an image file', 'error');
+                    return;
+                }
+
+                if (file.size > 10 * 1024 * 1024) { // 10MB limit
+                    ErrorHandler.showToast('File size must be less than 10MB', 'error');
+                    return;
+                }
+
+
+
+                // Create form data
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    // Upload to your Cloudflare Pages function
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+
+                    if (!response.ok) {
+                        throw new Error(`Upload failed: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+
+
+
+                    if (data.url !== item.img) {
+                        const previousState = JSON.parse(JSON.stringify(item));
+                        item.img = data.url;
+
+                        ChangeTracker.checkModifications(item);
+
+                        if (!UndoRedoManager.isApplyingChange) {
+                            UndoRedoManager.recordChange({
+                                type: 'edit',
+                                itemName: item.name,
+                                previousState: previousState,
+                                newState: JSON.parse(JSON.stringify(item))
+                            });
+                        }
+
+                        // Update the main image
+                        const mainImg = DOM.get('quick-editor-img');
+                        if (data.url) {
+                            mainImg.src = data.url;
+                            mainImg.style.display = 'block';
+                        } else {
+                            mainImg.style.display = 'none';
+                        }
+
+                        UI.renderItems(true);
+                        UI.renderShops();
+                        ChangeTracker.updateHighlights();
+                        ErrorHandler.showToast('Image updated', 'success');
+                    }
+
+
+
+
+                } catch (error) {
+
+
+                    ErrorHandler.showToast('Upload failed: ' + error.message, 'error');
+                }
+            },
+
+
+            
             close() {
                 const modal = DOM.get('quick-editor-modal');
                 modal.classList.remove('show');
@@ -2425,6 +2648,10 @@
                     this.tagMenu.remove();
                     this.tagMenu = null;
                 }
+
+                // Clean up any editing states
+                this.titleInput = null;
+                this.imageInput = null;
 
                 // Hide the panel
                 DraggablePanelManager.hide();
@@ -3479,7 +3706,6 @@
             config: {
                 MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB max
                 REQUIRED_CATEGORIES: ['gears', 'titles', 'effects', 'pets', 'deaths'], // Add your required categories
-                BACKUP_KEY: 'jsDataBackup'
             },
 
             // Import JSON from file
@@ -3487,6 +3713,7 @@
                 try {
                     // Validate file
                     if (!this.validateFile(file)) {
+                        console.log(this.validateFile(file))
                         return false;
                     }
 
@@ -3510,9 +3737,6 @@
                         return false;
                     }
 
-                    // Create backup before import
-                    this.createBackup();
-
                     // Show confirmation modal
                     const confirmed = await this.showConfirmationModal(importedData);
 
@@ -3523,15 +3747,7 @@
                     // Apply the imported data
                     this.applyImportedData(importedData);
 
-                    // Success
-                    ErrorHandler.showToast('JSON imported successfully!', 'success');
 
-                    // Reload the page to reinitialize everything with new data
-                    setTimeout(() => {
-                        if (confirm('Import successful! The page needs to reload to apply changes. Reload now?')) {
-                            location.reload();
-                        }
-                    }, 1000);
 
                     return true;
 
@@ -3570,12 +3786,13 @@
 
                 //if required categorys not found then return false
                 for (const category of this.config.REQUIRED_CATEGORIES) {
-                    if (!Object.prototype.hasOwnProperty.call(state.jsData, category)) {
+                    console.log(state.jsData.hasOwnProperty(category));
+                    if (!state.jsData.hasOwnProperty(category)) {
                         ErrorHandler.showToast(`Current data missing required category: ${category}`, 'error');
+
                         return false;
                     }
                 }
-
 
                 return true;
             },
@@ -3614,56 +3831,12 @@
                 return true;
             },
 
-            // Create backup of current data
-            createBackup() {
-                try {
-                    const backup = {
-                        timestamp: Date.now(),
-                        data: JSON.parse(JSON.stringify(state.jsData))
-                    };
-
-                    Utils.storage.set(this.config.BACKUP_KEY, backup);
-                    console.log('Backup created before import');
-                } catch (error) {
-                    console.error('Failed to create backup:', error);
-                }
-            },
-
-            // Restore from backup
-            restoreBackup() {
-                try {
-                    const backup = Utils.storage.get(this.config.BACKUP_KEY);
-
-                    if (!backup || !backup.data) {
-                        ErrorHandler.showToast('No backup available', 'error');
-                        return false;
-                    }
-
-                    state.jsData = backup.data;
-                    state.allItems = Object.values(state.jsData).flat();
-
-                    // Reinitialize change tracking
-                    ChangeTracker.initializeOriginals();
-
-                    // Update UI
-                    UI.renderItems();
-                    UI.renderShops();
-
-                    ErrorHandler.showToast('Restored from backup', 'success');
-                    return true;
-
-                } catch (error) {
-                    console.error('Failed to restore backup:', error);
-                    ErrorHandler.showToast('Failed to restore backup', 'error');
-                    return false;
-                }
-            },
-
             // Show confirmation modal before import
             showConfirmationModal(importedData) {
                 return new Promise((resolve) => {
-                    // Calculate statistics
+                    // Calculate statistics and get diff
                     const stats = this.calculateStats(importedData);
+                    const diff = this.calculateDiff(importedData);
 
                     // Create modal
                     const modal = document.createElement('div');
@@ -3688,10 +3861,16 @@
                     content.className = 'delete-modal';
                     content.style.cssText = `
                 max-width: 90%;
-                width: 500px;
+                width: 600px;
                 padding: 0;
                 overflow: hidden;
+                max-height: 80vh;
+                display: flex;
+                flex-direction: column;
             `;
+
+                    // Generate diff HTML
+                    const diffHTML = this.generateDiffHTML(diff);
 
                     content.innerHTML = `
                 <div style="padding: 20px; border-bottom: 1px solid var(--shade, #374151); 
@@ -3708,33 +3887,33 @@
                     <p style="margin: 8px 0 0 0; color: #fbbf24; font-weight: 500;">
                         ⚠️ This will replace all current data
                     </p>
+                    <p style="margin: 4px 0 0 0; color: #3b82f6; font-size: 13px;">
+                        ℹ️ You'll need to publish after importing to save changes to the server
+                    </p>
                 </div>
                 
-                <div style="padding: 20px;">
+                <div style="padding: 20px; overflow-y: auto; flex: 1;">
                     <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); 
                                 border-radius: 8px; padding: 12px; margin-bottom: 16px;">
                         <h3 style="margin: 0 0 8px 0; color: #3b82f6; font-size: 14px;">Import Statistics:</h3>
                         <div style="color: #d1d5db; font-size: 14px;">
-                            <div>• Categories: ${stats.categories}</div>
                             <div>• Total Items: ${stats.totalItems}</div>
-                            <div>• New Categories: ${stats.newCategories.length > 0 ? stats.newCategories.join(', ') : 'None'}</div>
+                            <div>• New Items: ${stats.newItems}</div>
+                            <div>• Removed Items: ${stats.removedItems}</div>
+                            <div>• Unchanged Items: ${stats.unchangedItems}</div>
                         </div>
                     </div>
                     
+                    ${diffHTML}
+                    
                     <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); 
-                                border-radius: 8px; padding: 12px;">
+                                border-radius: 8px; padding: 12px; margin-top: 16px;">
                         <strong style="color: #fbbf24;">Current Data:</strong>
                         <div style="color: #9ca3af; margin-top: 4px; font-size: 14px;">
-                            • ${Object.keys(state.jsData).length} categories
                             • ${state.allItems.length} total items
                             • All unsaved changes will be lost
                         </div>
                     </div>
-                    
-                    <label style="display: flex; align-items: center; gap: 8px; margin-top: 16px; cursor: pointer;">
-                        <input type="checkbox" id="backup-checkbox" checked style="cursor: pointer;">
-                        <span style="color: #d1d5db; font-size: 14px;">Create backup before import</span>
-                    </label>
                 </div>
                 
                 <div style="border-top: 1px solid var(--shade, #374151); padding: 16px; 
@@ -3762,12 +3941,6 @@
                     };
 
                     document.getElementById('confirm-import').onclick = () => {
-                        const createBackup = document.getElementById('backup-checkbox').checked;
-                        if (!createBackup) {
-                            // Clear any existing backup if user opted out
-                            Utils.storage.remove(this.config.BACKUP_KEY);
-                        }
-
                         modal.style.opacity = '0';
                         setTimeout(() => modal.remove(), 300);
                         resolve(true);
@@ -3788,25 +3961,208 @@
 
             // Calculate statistics about imported data
             calculateStats(data) {
-                const currentCategories = Object.keys(state.jsData);
-                const importedCategories = Object.keys(data);
+                const currentItems = Object.values(state.jsData).flat();
+                const importedItems = Object.values(data).flat();
+
+                const currentItemNames = new Set(currentItems.map(item => item.name));
+                const importedItemNames = new Set(importedItems.map(item => item.name));
+
+                const newItems = [...importedItemNames].filter(name => !currentItemNames.has(name));
+                const removedItems = [...currentItemNames].filter(name => !importedItemNames.has(name));
+                const unchangedItems = [...currentItemNames].filter(name => importedItemNames.has(name));
 
                 return {
-                    categories: importedCategories.length,
-                    totalItems: Object.values(data).flat().length,
-                    newCategories: importedCategories.filter(cat => !currentCategories.includes(cat)),
-                    removedCategories: currentCategories.filter(cat => !importedCategories.includes(cat))
+                    totalItems: importedItems.length,
+                    newItems: newItems.length,
+                    removedItems: removedItems.length,
+                    unchangedItems: unchangedItems.length
                 };
+            },
+
+            // Calculate detailed diff between current and imported data
+            calculateDiff(importedData) {
+                const diff = {
+                    added: {},
+                    removed: {},
+                    unchanged: {}
+                };
+
+                // Get all categories from both datasets
+                const allCategories = new Set([
+                    ...Object.keys(state.jsData),
+                    ...Object.keys(importedData)
+                ]);
+
+                for (const category of allCategories) {
+                    const currentItems = state.jsData[category] || [];
+                    const importedItems = importedData[category] || [];
+
+                    const currentNames = new Set(currentItems.map(item => item.name));
+                    const importedNames = new Set(importedItems.map(item => item.name));
+
+                    // Find added items in this category
+                    const addedInCategory = importedItems
+                        .filter(item => !currentNames.has(item.name))
+                        .map(item => item.name);
+
+                    if (addedInCategory.length > 0) {
+                        diff.added[category] = addedInCategory;
+                    }
+
+                    // Find removed items in this category
+                    const removedInCategory = currentItems
+                        .filter(item => !importedNames.has(item.name))
+                        .map(item => item.name);
+
+                    if (removedInCategory.length > 0) {
+                        diff.removed[category] = removedInCategory;
+                    }
+
+                    // Find unchanged items in this category
+                    const unchangedInCategory = currentItems
+                        .filter(item => importedNames.has(item.name))
+                        .map(item => item.name);
+
+                    if (unchangedInCategory.length > 0) {
+                        diff.unchanged[category] = unchangedInCategory;
+                    }
+                }
+
+                return diff;
+            },
+
+            // Generate HTML for diff display
+            generateDiffHTML(diff) {
+                let html = '';
+
+                // Show removed items
+                if (Object.keys(diff.removed).length > 0) {
+                    html += `
+                <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); 
+                            border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                    <h3 style="margin: 0 0 8px 0; color: #ef4444; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                        </svg>
+                        Removed Items (${Object.values(diff.removed).flat().length})
+                    </h3>
+                    <div style="color: #fca5a5; font-size: 13px; max-height: 150px; overflow-y: auto;">
+                        ${this.formatDiffList(diff.removed)}
+                    </div>
+                </div>
+            `;
+                }
+
+                // Show added items
+                if (Object.keys(diff.added).length > 0) {
+                    html += `
+                <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); 
+                            border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                    <h3 style="margin: 0 0 8px 0; color: #22c55e; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="16"></line>
+                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                        </svg>
+                        New Items (${Object.values(diff.added).flat().length})
+                    </h3>
+                    <div style="color: #86efac; font-size: 13px; max-height: 150px; overflow-y: auto;">
+                        ${this.formatDiffList(diff.added)}
+                    </div>
+                </div>
+            `;
+                }
+
+                if (!html) {
+                    html = `
+                <div style="background: rgba(156, 163, 175, 0.1); border: 1px solid rgba(156, 163, 175, 0.3); 
+                            border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                    <p style="margin: 0; color: #9ca3af; text-align: center;">No changes detected</p>
+                </div>
+            `;
+                }
+
+                return html;
+            },
+
+            // Format diff list as nested bullets
+            formatDiffList(items) {
+                let html = '<ul style="margin: 0; padding-left: 20px; list-style: disc;">';
+
+                for (const [category, categoryItems] of Object.entries(items)) {
+                    html += `
+                <li style="margin-bottom: 6px;">
+                    <strong>${category}</strong>
+                    <ul style="margin: 4px 0 0 0; padding-left: 20px; list-style: circle;">
+                        ${categoryItems.map(item =>
+                        `<li style="margin: 2px 0;">${this.escapeHtml(item)}</li>`
+                    ).join('')}
+                    </ul>
+                </li>
+            `;
+                }
+
+                html += '</ul>';
+                return html;
+            },
+
+            // Escape HTML to prevent XSS
+            escapeHtml(text) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, m => map[m]);
             },
 
             // Apply imported data to state
             applyImportedData(data) {
                 // Clear change tracking
-                ChangeTracker.initializeOriginals();
 
-                // Update state
+
+                // Get current server state to compare against
+                const serverItems = new Set();
+                ChangeTracker.originalItems.forEach((_, itemName) => {
+                    serverItems.add(itemName);
+                });
+
+                // Update state with imported data
                 state.jsData = JSON.parse(JSON.stringify(data)); // Deep clone to avoid reference issues
                 state.allItems = Object.values(state.jsData).flat();
+
+                // Mark all imported items as changes
+                const importedItems = new Set();
+                state.allItems.forEach(item => {
+                    importedItems.add(item.name);
+
+                    // If this item wasn't in the original server data, mark as new
+                    if (!serverItems.has(item.name)) {
+                        ChangeTracker.markAsNew(item.name);
+                    } else {
+                        // If it exists, check if it's different and mark as modified
+                        const originalJson = ChangeTracker.originalItems.get(item.name);
+                        if (originalJson) {
+                            const original = JSON.parse(originalJson);
+                            if (ChangeTracker.compareItems(original, item)) {
+                                ChangeTracker.modifiedItems.add(item.name);
+                            }
+                        }
+                    }
+                });
+
+                // Mark items that were on server but not in import as deleted
+                serverItems.forEach(itemName => {
+                    if (!importedItems.has(itemName)) {
+                        const originalJson = ChangeTracker.originalItems.get(itemName);
+                        if (originalJson) {
+                            ChangeTracker.markAsDeleted(itemName, JSON.parse(originalJson));
+                        }
+                    }
+                });
 
                 // Reset filters and pagination
                 state.currentPage = 1;
@@ -3827,12 +4183,21 @@
                 // Clear undo/redo history since we have new data
                 UndoRedoManager.clear();
 
-                console.log('Import applied successfully');
+                // Update visual highlights to show all the changes
+                ChangeTracker.updateHighlights();
+
+                // Show a toast with change count
+                const changes = ChangeTracker.getAllChanges();
+                const totalChanges = changes.newItems.length + changes.modifiedItems.length + changes.deletedItems.length;
+                if (totalChanges > 0) {
+                    ErrorHandler.showToast(`✓ Imported with ${totalChanges} change${totalChanges !== 1 ? 's' : ''} ready to publish`, 'success');
+                };
             }
         };
         // ============================
         // Notes Manager
         // ============================
+
         const NotesManager = {
             contextMenu: null,
             currentNoteIndex: null,
@@ -4972,7 +5337,7 @@
                 toast.style.cssText = `
 
                     background: ${type === 'error' ? 'linear-gradient(135deg, #ef4444, #c62828)' : type === 'success' ? 'linear-gradient(135deg, #10b981, #0b8045)' : 'linear-gradient(135deg, #3b82f6, #1e40af)'};
-
+                    z-index: 110000;
                 `;
 
                 document.body.appendChild(toast);
@@ -5297,14 +5662,7 @@
                     }
                 });
 
-                document.addEventListener('keydown', (e) => {
-                    // Ctrl/Cmd + Shift + B to restore backup
-                    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'B') {
-                        if (confirm('Restore from last import backup?')) {
-                            JSONImportManager.restoreBackup();
-                        }
-                    }
-                });
+
 
                 // Logout
                 DOM.get("logout").addEventListener("click", async () => {

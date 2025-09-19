@@ -440,6 +440,14 @@ main {
     transition: all 0.15s ease-in-out;
 }
 
+#title-text{
+    max-width: 300px;
+    white-space: nowrap;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 #quick-editor-price:focus {
     color: #000000;
 }
@@ -2501,30 +2509,28 @@ body.dragging-panel {
 
 
 /* Smooth scrolling for the panel when constrained */
-#quick-editor-content {
+#quick-editor-content, .delete-modal * {
     scroll-behavior: smooth;
 }
 
 /* Custom scrollbar styling for the constrained panel */
-#quick-editor-content::-webkit-scrollbar {
+#quick-editor-content::-webkit-scrollbarm, .delete-modal *::-webkit-scrollbar {
     width: 8px;
 }
 
-#quick-editor-content::-webkit-scrollbar-track {
+#quick-editor-content::-webkit-scrollbar-track, .delete-modal *::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
 }
 
-#quick-editor-content::-webkit-scrollbar-thumb {
+#quick-editor-content::-webkit-scrollbar-thumb, .delete-modal *::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.3);
     border-radius: 4px;
 }
 
-#quick-editor-content::-webkit-scrollbar-thumb:hover {
+#quick-editor-content::-webkit-scrollbar-thumb:hover, .delete-modal *::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
 }
-
-
 
 .history-wrapper::-webkit-scrollbar {
     width: 9px;
