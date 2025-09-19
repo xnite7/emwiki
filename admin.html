@@ -2550,7 +2550,7 @@
                 fileInput.addEventListener('change', (e) => {
                     const file = e.target.files[0];
                     if (file) {
-                        this.handleFileUpload(file);
+                        this.handleFileUpload(item,file);
                     }
                 });
 
@@ -2563,7 +2563,7 @@
                 }
             },
 
-            async handleFileUpload(file) {
+            async handleFileUpload(item,file) {
                 // Validate file
                 if (!file.type.startsWith('image/')) {
                     ErrorHandler.showToast('Please select an image file', 'error');
