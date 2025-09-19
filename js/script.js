@@ -1088,6 +1088,20 @@ class CatalogManager {
   constructor(itemFactory) {
     this.itemFactory = itemFactory;
     this.grids = new Map();
+    // Pagination state
+    this.currentPage = 1;
+    this.itemsPerPage = 24; // Default items per page
+    this.totalItems = 0;
+    this.filteredItems = [];
+    this.allItems = [];
+    // Filter state
+    this.filters = {
+      search: '',
+      season: '',
+      bundle: '',
+      gamenight: false,
+      chest: ''
+    };
   }
 
   populateGrid(gridId, items, limit = null) {
@@ -1096,17 +1110,272 @@ class CatalogManager {
 
     grid.innerHTML = '';
 
-    const itemsToDisplay = limit ? items.slice(0, limit) : items;
-    const fragment = document.createDocumentFragment();
+    // Store all items for pagination
+    this.allItems = items;
+    this.applyFilters();
 
-    itemsToDisplay.forEach(item => {
+    // Use pagination for catalog grid
+    if (gridId === 'ctlg') {
+      this.renderPaginatedItems(grid);
+    } else {
+      // For other grids, use original logic
+      const itemsToDisplay = limit ? items.slice(0, limit) : items;
+      const fragment = document.createDocumentFragment();
+
+      itemsToDisplay.forEach(item => {
+        const element = this.itemFactory.create(item, item._color || APP_CONFIG.colors.gears);
+        element.onclick = (event) => Modal(event);
+        fragment.appendChild(element);
+      });
+
+      grid.appendChild(fragment);
+      this.resizeToFit(grid);
+    }
+  }
+
+  renderPaginatedItems(grid) {
+    const fragment = document.createDocumentFragment();
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    const end = Math.min(start + this.itemsPerPage, this.filteredItems.length);
+
+    for (let i = start; i < end; i++) {
+      const item = this.filteredItems[i];
       const element = this.itemFactory.create(item, item._color || APP_CONFIG.colors.gears);
       element.onclick = (event) => Modal(event);
       fragment.appendChild(element);
-    });
+    }
 
     grid.appendChild(fragment);
     this.resizeToFit(grid);
+    this.renderPaginationControls();
+    this.updateItemCount();
+  }
+
+  applyFilters() {
+    let filtered = [...this.allItems];
+
+    // Search filter
+    if (this.filters.search.trim()) {
+      const searchTerm = this.filters.search.toLowerCase();
+      filtered = filtered.filter(item => 
+        item.name?.toLowerCase().includes(searchTerm) ||
+        item.from?.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    // Season filter
+    if (this.filters.season) {
+      filtered = filtered.filter(item => 
+        item.from?.toLowerCase().includes(`season ${this.filters.season}`)
+      );
+    }
+
+    // Bundle filter
+    if (this.filters.bundle) {
+      filtered = filtered.filter(item => 
+        item.from?.toLowerCase().includes(this.filters.bundle.toLowerCase())
+      );
+    }
+
+    // Gamenight filter
+    if (this.filters.gamenight) {
+      filtered = filtered.filter(item => 
+        item.from?.toLowerCase().includes('gamenight') ||
+        item.from?.toLowerCase().includes('rodis')
+      );
+    }
+
+    // Chest filter
+    if (this.filters.chest) {
+      filtered = filtered.filter(item => 
+        item.from?.toLowerCase().includes(this.filters.chest.toLowerCase())
+      );
+    }
+
+    this.filteredItems = filtered;
+    this.totalItems = filtered.length;
+    
+    // Reset to first page when filters change
+    if (this.currentPage > Math.ceil(this.totalItems / this.itemsPerPage)) {
+      this.currentPage = 1;
+    }
+  }
+
+  renderPaginationControls() {
+    const container = document.getElementById('pagination-controls');
+    if (!container) return;
+
+    container.innerHTML = '';
+    
+    const totalPages = Math.max(1, Math.ceil(this.totalItems / this.itemsPerPage));
+    if (totalPages <= 1) return; // Don't show pagination for single page
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'pagination-wrapper';
+    wrapper.style.cssText = `
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    `;
+
+    // Previous button
+    const prevBtn = document.createElement('button');
+    prevBtn.textContent = '← Previous';
+    prevBtn.className = 'pagination-btn';
+    prevBtn.disabled = this.currentPage === 1;
+    prevBtn.onclick = () => this.goToPage(this.currentPage - 1);
+
+    // Page numbers
+    const pageNumbers = this.createPageNumbers(totalPages);
+
+    // Next button
+    const nextBtn = document.createElement('button');
+    nextBtn.textContent = 'Next →';
+    nextBtn.className = 'pagination-btn';
+    nextBtn.disabled = this.currentPage === totalPages;
+    nextBtn.onclick = () => this.goToPage(this.currentPage + 1);
+
+    // Items per page selector
+    const itemsPerPageSelect = this.createItemsPerPageSelect();
+
+    wrapper.appendChild(prevBtn);
+    pageNumbers.forEach(element => wrapper.appendChild(element));
+    wrapper.appendChild(nextBtn);
+    wrapper.appendChild(itemsPerPageSelect);
+
+    container.appendChild(wrapper);
+  }
+
+  createPageNumbers(totalPages) {
+    const pageElements = [];
+    const maxVisiblePages = 5;
+    
+    let startPage = Math.max(1, this.currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    // Adjust start if we're near the end
+    if (endPage - startPage < maxVisiblePages - 1) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // First page and ellipsis
+    if (startPage > 1) {
+      const firstBtn = document.createElement('button');
+      firstBtn.textContent = '1';
+      firstBtn.className = 'pagination-btn';
+      firstBtn.onclick = () => this.goToPage(1);
+      pageElements.push(firstBtn);
+
+      if (startPage > 2) {
+        const ellipsis = document.createElement('span');
+        ellipsis.textContent = '...';
+        ellipsis.className = 'pagination-ellipsis';
+        pageElements.push(ellipsis);
+      }
+    }
+
+    // Page numbers
+    for (let i = startPage; i <= endPage; i++) {
+      const pageBtn = document.createElement('button');
+      pageBtn.textContent = i.toString();
+      pageBtn.className = `pagination-btn ${i === this.currentPage ? 'active' : ''}`;
+      pageBtn.onclick = () => this.goToPage(i);
+      pageElements.push(pageBtn);
+    }
+
+    // Last page and ellipsis
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        const ellipsis = document.createElement('span');
+        ellipsis.textContent = '...';
+        ellipsis.className = 'pagination-ellipsis';
+        pageElements.push(ellipsis);
+      }
+
+      const lastBtn = document.createElement('button');
+      lastBtn.textContent = totalPages.toString();
+      lastBtn.className = 'pagination-btn';
+      lastBtn.onclick = () => this.goToPage(totalPages);
+      pageElements.push(lastBtn);
+    }
+
+    return pageElements;
+  }
+
+  createItemsPerPageSelect() {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'items-per-page-wrapper';
+    wrapper.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-left: 20px;
+    `;
+
+    const label = document.createElement('span');
+    label.textContent = 'Per page:';
+    label.style.color = '#fff';
+
+    const select = document.createElement('select');
+    select.className = 'items-per-page-select';
+    [12, 24, 48, 96].forEach(value => {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = value;
+      option.selected = value === this.itemsPerPage;
+      select.appendChild(option);
+    });
+
+    select.onchange = (e) => {
+      this.itemsPerPage = parseInt(e.target.value);
+      this.currentPage = 1; // Reset to first page
+      this.renderPaginatedItems(document.getElementById('ctlg'));
+    };
+
+    wrapper.appendChild(label);
+    wrapper.appendChild(select);
+    return wrapper;
+  }
+
+  goToPage(page) {
+    const totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
+    if (page < 1 || page > totalPages) return;
+
+    this.currentPage = page;
+    this.renderPaginatedItems(document.getElementById('ctlg'));
+    
+    // Scroll to top of catalog
+    document.getElementById('ctlg')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  updateItemCount() {
+    const itemCount = document.getElementById('zd');
+    if (!itemCount) return;
+
+    const start = (this.currentPage - 1) * this.itemsPerPage + 1;
+    const end = Math.min(this.currentPage * this.itemsPerPage, this.totalItems);
+    const totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
+
+    if (this.totalItems === 0) {
+      itemCount.textContent = 'No items found';
+    } else if (totalPages > 1) {
+      itemCount.textContent = `Showing ${start}-${end} of ${this.totalItems} items (Page ${this.currentPage} of ${totalPages})`;
+    } else {
+      itemCount.textContent = `${this.totalItems} item${this.totalItems === 1 ? '' : 's'}`;
+    }
+  }
+
+  setFilter(filterType, value) {
+    this.filters[filterType] = value;
+    this.currentPage = 1; // Reset to first page when filter changes
+    
+    if (document.getElementById('ctlg')) {
+      this.applyFilters();
+      this.renderPaginatedItems(document.getElementById('ctlg'));
+    }
   }
 
 resizeToFit(grid) {
@@ -1211,7 +1480,7 @@ resizeToFit(grid) {
         if (gridId === 'random') {
           this.populateRandom(data, colors);
         } else if (gridId === 'ctlg') {
-          // Handle catalog page
+          // Handle catalog page with pagination
           let items = data;
           let color = 'rgb(0, 0, 0)';
 
@@ -1225,7 +1494,10 @@ resizeToFit(grid) {
             ? items.map(item => ({ ...item, _color: color }))
             : Object.values(items).flat().map(item => ({ ...item, _color: color }));
 
-          this.populateGrid(gridId, itemsWithColor);
+          // Store items and initialize pagination
+          this.allItems = itemsWithColor;
+          this.applyFilters();
+          this.renderPaginatedItems(entry.target);
         } else {
           // Handle filtered grids
           const filteredItems = Object.entries(colors).flatMap(([key, catColor]) =>
@@ -1704,6 +1976,13 @@ async function fetchData() {
     return JSON.parse(data.files?.['auto.json']?.content);
   } catch (error) {
     console.error('Error fetching data:', error);
+    
+    // Fallback to test data if available
+    if (window.TEST_DATA) {
+      console.log('Using test data for development');
+      return window.TEST_DATA;
+    }
+    
     return null;
   }
 }
@@ -1781,3 +2060,51 @@ document.addEventListener('DOMContentLoaded', initializeApp);
 // Export necessary functions for global access
 window.slugify = slugify;
 window.searchSystem = searchSystem;
+
+// Filter handler functions for catalog
+window.handleSearchInput = function(event) {
+  catalogManager.setFilter('search', event.target.value);
+};
+
+window.handleSeasonFilter = function(event) {
+  catalogManager.setFilter('season', event.target.value);
+};
+
+window.handleBundleFilter = function(event) {
+  catalogManager.setFilter('bundle', event.target.value);
+};
+
+window.handleChestFilter = function(event) {
+  catalogManager.setFilter('chest', event.target.value);
+};
+
+window.handleGamenightFilter = function() {
+  const button = document.getElementById('gamenight-filter');
+  const isActive = button.classList.contains('active');
+  
+  button.classList.toggle('active', !isActive);
+  button.style.background = isActive ? '#333' : '#4CAF50';
+  
+  catalogManager.setFilter('gamenight', !isActive);
+};
+
+window.clearAllFilters = function() {
+  // Reset all filter inputs
+  document.getElementById('search-bar').value = '';
+  document.getElementById('season-filter').value = '';
+  document.getElementById('bundle-filter').value = '';
+  document.getElementById('chest-filter').value = '';
+  
+  const gamenightBtn = document.getElementById('gamenight-filter');
+  gamenightBtn.classList.remove('active');
+  gamenightBtn.style.background = '#333';
+  
+  // Reset all filters in catalog manager
+  Object.keys(catalogManager.filters).forEach(key => {
+    catalogManager.filters[key] = key === 'gamenight' ? false : '';
+  });
+  
+  catalogManager.currentPage = 1;
+  catalogManager.applyFilters();
+  catalogManager.renderPaginatedItems(document.getElementById('ctlg'));
+};

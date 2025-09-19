@@ -145,13 +145,78 @@
 		<section class="catalog">
 			<h1>⚙️ Gears</h1>
 			<h2>Explore a variety of gears to enhance your gameplay!</h2>
-			<input type="text" id="search-bar" placeholder="Search items..." oninput="filterItems()"
-				style="margin-bottom: 20px; padding: 10px; width: 80%; border-radius: 5px; border: 1px solid #ccc;">
+			
+			<!-- Enhanced Filter Controls -->
+			<div class="filter-controls" style="margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center;">
+				<input type="text" id="search-bar" placeholder="Search items..." oninput="handleSearchInput(event)"
+					style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; min-width: 200px;">
+				
+				<select id="season-filter" onchange="handleSeasonFilter(event)"
+					style="padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+					<option value="">All Seasons</option>
+					<option value="1">Season 1</option>
+					<option value="2">Season 2</option>
+					<option value="3">Season 3</option>
+					<option value="4">Season 4</option>
+					<option value="5">Season 5</option>
+					<option value="6">Season 6</option>
+					<option value="7">Season 7</option>
+					<option value="8">Season 8</option>
+					<option value="9">Season 9</option>
+					<option value="10">Season 10</option>
+					<option value="11">Season 11</option>
+					<option value="12">Season 12</option>
+					<option value="13">Season 13</option>
+					<option value="14">Season 14</option>
+					<option value="15">Season 15</option>
+				</select>
+
+				<select id="bundle-filter" onchange="handleBundleFilter(event)"
+					style="padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+					<option value="">All Bundles</option>
+					<option value="halloween">Halloween</option>
+					<option value="easter">Easter</option>
+					<option value="christmas">Christmas</option>
+					<option value="valentine">Valentine</option>
+					<option value="summer">Summer</option>
+					<option value="thanksgiving">Thanksgiving</option>
+					<option value="anniversary">Anniversary</option>
+					<option value="birthday">Birthday</option>
+				</select>
+
+				<select id="chest-filter" onchange="handleChestFilter(event)"
+					style="padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+					<option value="">All Sources</option>
+					<option value="steel chest">Steel Chest</option>
+					<option value="elusive bag">Elusive Bag</option>
+					<option value="legendary chest">Legendary Chest</option>
+					<option value="item crate">Item Crate</option>
+					<option value="lucky chest">Lucky Chest</option>
+					<option value="epic chest">Epic Chest</option>
+					<option value="mystery bag">Mystery Bag</option>
+					<option value="typical chest">Typical Chest</option>
+					<option value="premium chest">Premium Chest</option>
+					<option value="birthday chest">Birthday Chest</option>
+				</select>
+
+				<button id="gamenight-filter" onclick="handleGamenightFilter()" 
+					style="padding: 10px 15px; border-radius: 5px; border: 1px solid #ccc; background: #333; color: white; cursor: pointer;">
+					🎮 Gamenight Items
+				</button>
+
+				<button onclick="clearAllFilters()" 
+					style="padding: 10px 15px; border-radius: 5px; border: 1px solid #ccc; background: #666; color: white; cursor: pointer;">
+					🗑️ Clear Filters
+				</button>
+			</div>
+
 			<p id="zd">0</p>
 			<div class="catalog-grid" data-loaded="false" id="ctlg">
 				<div data-loaded="false" id="itemlist"></div>
-
 			</div>
+			
+			<!-- Pagination Controls -->
+			<div id="pagination-controls"></div>
 		</section>
 	</main>
 	<footer>
@@ -170,4 +235,5 @@
 	VanillaTilt.init(document.querySelectorAll("[data-tilt]"), {
 	});
 </script>
+<script src="./js/test-data.js"></script>
 <script src="./js/script.js"></script>

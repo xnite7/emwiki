@@ -2501,3 +2501,194 @@ html {
 .modal.show {
     pointer-events: all;
 }
+
+/* Catalog Pagination and Filter Styles */
+.filter-controls {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.filter-controls input,
+.filter-controls select,
+.filter-controls button {
+    font-family: 'Source Sans Pro', sans-serif;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.filter-controls input:focus,
+.filter-controls select:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+}
+
+.filter-controls button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.filter-controls button.active {
+    background: #4CAF50 !important;
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+}
+
+/* Pagination Styles */
+.pagination-wrapper {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pagination-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'Source Sans Pro', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 12px;
+    transition: all 0.3s ease;
+    min-width: 40px;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.pagination-btn.active {
+    background: #4CAF50;
+    border-color: #4CAF50;
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.pagination-ellipsis {
+    color: #ccc;
+    padding: 8px 4px;
+    font-weight: bold;
+}
+
+.items-per-page-wrapper {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 5px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.items-per-page-select {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.items-per-page-select:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+/* Enhanced Catalog Grid Styles */
+.catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    padding: 10px;
+    min-height: 200px;
+}
+
+/* Loading and Empty States */
+.catalog-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    color: #ccc;
+    font-size: 18px;
+}
+
+.catalog-empty {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    color: #ccc;
+    text-align: center;
+}
+
+.catalog-empty h3 {
+    margin: 10px 0;
+    font-size: 24px;
+}
+
+.catalog-empty p {
+    margin: 5px 0;
+    opacity: 0.8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .filter-controls {
+        padding: 10px;
+    }
+    
+    .filter-controls input,
+    .filter-controls select,
+    .filter-controls button {
+        font-size: 12px;
+        padding: 8px;
+    }
+    
+    .pagination-wrapper {
+        padding: 10px;
+    }
+    
+    .pagination-btn {
+        font-size: 12px;
+        padding: 6px 8px;
+        min-width: 35px;
+    }
+    
+    .catalog-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .filter-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-controls > * {
+        margin-bottom: 8px;
+    }
+    
+    .pagination-wrapper {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .items-per-page-wrapper {
+        align-self: center;
+    }
+}
