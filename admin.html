@@ -2252,11 +2252,10 @@
             titleInput: null,
             imageInput: null,
 
-            tagMenu: null,
-            titleInput: null,
+            imageEvent: null,
 
             open(item) {
-                this.close(); // Close any existing editor
+
                 // Don't capture original for new items
                 if (!ChangeTracker.isNewItem(item.name)) {
                     // Only capture if not already captured
@@ -2475,6 +2474,7 @@
             },
 
             setupEditableImage(item) {
+                removeEventListeners('change', this.imageEvent);
                 const img = DOM.get('quick-editor-img');
                 const container = img.parentElement;
 
@@ -2548,7 +2548,7 @@
 
                 }
                 const fileInput = document.getElementById('edit-image-input');
-                fileInput.addEventListener('change', (e) => {
+                this.imageEvent = fileInput.addEventListener('change', (e) => {
                     const file = e.target.files[0];
                     if (file) {
                         this.handleFileUpload(item,file);
@@ -3066,7 +3066,6 @@
                 container.appendChild(li);
             },
 
-            // Updated createPriceItem method
             createPriceItem(value = '') {
                 const container = DOM.query('.prc-list');
 
