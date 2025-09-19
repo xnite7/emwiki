@@ -2252,8 +2252,6 @@
             titleInput: null,
             imageInput: null,
 
-            imageEvent: null,
-
             open(item) {
 
                 // Don't capture original for new items
@@ -2548,14 +2546,14 @@
                 }
 
                 const fileInput = document.getElementById('edit-image-input');
-                if (this.imageEvent) fileInput.removeEventListener('change', this.imageEvent);
 
-                this.imageEvent = fileInput.addEventListener('change', (e) => {
+                fileInput.onchange = (e) => {
                     const file = e.target.files[0];
                     if (file) {
-                        this.handleFileUpload(item, file);
+                        this.handleFileUpload(item, file, img);
                     }
-                });
+                };
+
 
                 // Set image
                 if (item.img) {
@@ -2566,20 +2564,17 @@
                 }
             },
 
-            async handleFileUpload(item, file) {
+            async handleFileUpload(item, file, imgElement) {
+                console.log(imgElement)
                 // Validate file
                 if (!file.type.startsWith('image/')) {
                     ErrorHandler.showToast('Please select an image file', 'error');
                     return;
                 }
-
                 if (file.size > 10 * 1024 * 1024) { // 10MB limit
                     ErrorHandler.showToast('File size must be less than 10MB', 'error');
                     return;
                 }
-
-
-
                 // Create form data
                 const formData = new FormData();
                 formData.append('file', file);
@@ -2591,14 +2586,10 @@
                         body: formData
                     });
 
-
                     if (!response.ok) {
                         throw new Error(`Upload failed: ${response.statusText}`);
                     }
-
                     const data = await response.json();
-
-
 
                     if (data.url !== item.img) {
                         const previousState = JSON.parse(JSON.stringify(item));
@@ -2615,13 +2606,11 @@
                             });
                         }
 
-                        // Update the main image
-                        const mainImg = DOM.get('quick-editor-img');
                         if (data.url) {
-                            mainImg.src = data.url;
-                            mainImg.style.display = 'block';
+                            imgElement.src = data.url;
+                            imgElement.style.display = 'block';
                         } else {
-                            mainImg.style.display = 'none';
+                            imgElement.style.display = 'none';
                         }
 
                         UI.renderItems(true);
@@ -2629,13 +2618,7 @@
                         ChangeTracker.updateHighlights();
                         ErrorHandler.showToast('Image updated', 'success');
                     }
-
-
-
-
                 } catch (error) {
-
-
                     ErrorHandler.showToast('Upload failed: ' + error.message, 'error');
                 }
             },
