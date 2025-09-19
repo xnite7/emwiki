@@ -2474,8 +2474,6 @@
             },
 
             setupEditableImage(item) {
-                const fileInput = document.getElementById('edit-image-input');
-                fileInput.removeEventListener('change', this.imageEvent);
                 const img = DOM.get('quick-editor-img');
                 const container = img.parentElement;
 
@@ -2548,11 +2546,14 @@
                     };
 
                 }
-                
+
+                const fileInput = document.getElementById('edit-image-input');
+                if (this.imageEvent) fileInput.removeEventListener('change', this.imageEvent);
+
                 this.imageEvent = fileInput.addEventListener('change', (e) => {
                     const file = e.target.files[0];
                     if (file) {
-                        this.handleFileUpload(item,file);
+                        this.handleFileUpload(item, file);
                     }
                 });
 
@@ -2565,7 +2566,7 @@
                 }
             },
 
-            async handleFileUpload(item,file) {
+            async handleFileUpload(item, file) {
                 // Validate file
                 if (!file.type.startsWith('image/')) {
                     ErrorHandler.showToast('Please select an image file', 'error');
@@ -2640,7 +2641,7 @@
             },
 
 
-            
+
             close() {
                 const modal = DOM.get('quick-editor-modal');
                 modal.classList.remove('show');
