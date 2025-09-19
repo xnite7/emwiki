@@ -8,15 +8,15 @@
 	<meta charset="UTF-8">
 	<link rel="canonical" href="https://emwiki.site/gears.html" />
 
-	<title>Catalog - Epic Catalogue</title>
+	<title>All Items - Epic Catalogue</title>
 	<meta name="description"
-		content="by @xnite! .˚○ • ° Browse every gear you can unlock and equip in Epic Minigames." />
-	<meta content="by @xnite! .˚○ • ° Browse every gear you can unlock and equip in Epic Minigames."
+		content="by @xnite! .˚○ • ° Browse every item available in Epic Minigames - gears, deaths, pets, effects, and titles all in one place." />
+	<meta content="by @xnite! .˚○ • ° Browse every item available in Epic Minigames - gears, deaths, pets, effects, and titles all in one place."
 		property="og:description">
 	<meta name="author" content="@xnite">
 
 	<!-- image -->
-	<meta content="Gears - The Complete EM Catalogue" property="og:title">
+	<meta content="All Items - The Complete EM Catalogue" property="og:title">
 	<meta property="og:image" content="https://emwiki.site/imgs/QgWIUWf.png" />
 	<meta content="Epic Catalogue" property="og:site_name">
 	<meta property="twitter:image" content="https://emwiki.site/imgs/QgWIUWf.png" />
@@ -42,12 +42,18 @@
 	}
 
 	body {
-		background-image: url(./imgs/gearsbg.png);
+		background: linear-gradient(135deg, 
+			rgba(91, 254, 106, 0.1) 0%, 
+			rgba(255, 122, 94, 0.1) 25%, 
+			rgba(55, 122, 250, 0.1) 50%, 
+			rgba(255, 177, 53, 0.1) 75%, 
+			rgba(201, 96, 254, 0.1) 100%),
+			url(./imgs/gearsbg.png);
 		background-repeat: repeat;
 		background-size: 200px;
 		background-attachment: fixed;
 		animation: diagonalScroll 50s linear infinite;
-		background-color: rgb(16 138 0 / 41%);
+		background-color: rgb(30, 30, 30);
 	}
 
 	@keyframes diagonalScroll {
@@ -143,14 +149,27 @@
 		<nav>
 		</nav>
 		<section class="catalog">
-			<h1>⚙️ Gears</h1>
-			<h2>Explore a variety of gears to enhance your gameplay!</h2>
+			<h1>📦 All Items</h1>
+			<h2>Browse every item in Epic Minigames!</h2>
+			
+			<!-- Category Filter Controls -->
+			<div id="category-controls" style="margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center;">
+				<select id="category-filter" style="padding: 8px 12px; border-radius: 5px; border: 1px solid #ccc; background: white; font-size: 14px;">
+					<option value="all">All Categories</option>
+					<option value="gears">⚙️ Gears</option>
+					<option value="deaths">💀 Deaths</option>
+					<option value="pets">🐾 Pets</option>
+					<option value="effects">✨ Effects</option>
+					<option value="titles">🏆 Titles</option>
+				</select>
+			</div>
+			
 			<input type="text" id="search-bar" placeholder="Search items..." oninput="filterItems()"
-				style="margin-bottom: 20px; padding: 10px; width: 80%; border-radius: 5px; border: 1px solid #ccc;">
+				style="margin-bottom: 20px; padding: 10px; width: 80%; border-radius: 5px; border: 1px solid #ccc; position: relative;">
+			<div id="search-results" style="position: absolute; background: #333; color: white; border-radius: 5px; width: 80%; max-height: 200px; overflow-y: auto; z-index: 1000; display: none; left: 50%; transform: translateX(-50%); margin-top: -20px;"></div>
 			<p id="zd">0</p>
 			<div class="catalog-grid" data-loaded="false" id="ctlg">
 				<div data-loaded="false" id="itemlist"></div>
-
 			</div>
 		</section>
 	</main>
@@ -171,3 +190,4 @@
 	});
 </script>
 <script src="./js/script.js"></script>
+<script src="./js/catalog-filter.js"></script>
