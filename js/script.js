@@ -942,12 +942,30 @@ class ItemFactory {
       if (svg) {
         svg.style.width = '100%';
         svg.style.height = 'auto';
-      }
+      }else {
+      const name = this.createNameElement(data, color);
+      item.appendChild(name);}
 
     }
   }
 
+createNameElement(data, color) {
+    const name = document.createElement('div');
+    name.id = 'h3';
+    name.innerText = data.name;
 
+    if (data.new) {
+      name.style.order = '-1';
+      name.style.paddingTop = '0px';
+    }
+
+    // Hide name if has image and is title
+    if (data.svg) {
+      name.style.visibility = 'hidden';
+    }
+
+    return name;
+  }
 
   addPricing(item, data) {
     const price = document.createElement('p');
