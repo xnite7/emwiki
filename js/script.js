@@ -354,8 +354,8 @@ class ModalSystem {
 
     // Set content
     this.cache.title.textContent = data.title;
-    this.cache.description.textContent = data.description;
-    this.cache.prc.innerHTML = `<img src="./imgs/rap.png" style="filter: drop-shadow(0px 1px 5px #49444454);height:44px;float:left;">${data.price || 0}`;
+    this.cache.description.textContent = data.description; 
+    this.cache.prc.innerHTML = `<img src="./imgs/rap.png" style="filter: drop-shadow(0px 1px 5px #49444454);height:44px;float:left;">${itemFactory.formatPrice(data.price) || 0}`;
 
     // Handle visibility
     this.cache.prc.style.display = 'flex'
