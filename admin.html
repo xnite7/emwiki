@@ -1788,11 +1788,20 @@
                 card.dataset.name = item.name;
 
                 const img = Utils.createElement('img', {
-                    src: item.img || './imgs/trs.png',
+                    src: item.img || '',
                     alt: item.name,
                     onError: function () { this.style.display = 'none'; }
                 });
 
+                if (item.svg) {
+                    card.innerHTML = item.svg;
+                    // Ensure SVG scales properly
+                    const svg = card.querySelector('svg');
+                    if (svg) {
+                        svg.style.width = '100%';
+                        svg.style.height = 'auto';
+                    }
+                }
                 const name = Utils.createElement('div', {
                     class: 'item-name',
                     textContent: item.name
@@ -1807,7 +1816,7 @@
                     priceLabel.style.display = 'none';
                 }
 
-                card.appendChild(img);
+                if (img.src) card.appendChild(img);
                 card.appendChild(name);
                 card.appendChild(priceLabel);
 
@@ -2565,7 +2574,7 @@
             },
 
             async handleFileUpload(item, file, imgElement) {
-                console.log(imgElement)
+
                 // Validate file
                 if (!file.type.startsWith('image/')) {
                     ErrorHandler.showToast('Please select an image file', 'error');
