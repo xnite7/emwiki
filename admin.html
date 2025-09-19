@@ -2474,7 +2474,8 @@
             },
 
             setupEditableImage(item) {
-                removeEventListeners('change', this.imageEvent);
+                const fileInput = document.getElementById('edit-image-input');
+                fileInput.removeEventListener('change', this.imageEvent);
                 const img = DOM.get('quick-editor-img');
                 const container = img.parentElement;
 
@@ -2547,7 +2548,7 @@
                     };
 
                 }
-                const fileInput = document.getElementById('edit-image-input');
+                
                 this.imageEvent = fileInput.addEventListener('change', (e) => {
                     const file = e.target.files[0];
                     if (file) {
