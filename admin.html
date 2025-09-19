@@ -2154,7 +2154,7 @@
                         for (const arr of Object.values(state.jsData)) {
                             const it = arr.find(x => x.name === name);
                             if (it) { it[key] = false; }
-                            if (it === state.currentEditingItem) { openQuickEditor(it); }
+                            if (it === state.currentEditingItem) { QuickEditor.open(it); }
                         }
 
                         //UI.renderItems(true);
@@ -2199,7 +2199,7 @@
                             for (const arr of Object.values(state.jsData)) {
                                 const it = arr.find(x => x.name === name);
                                 if (it) { it[key] = true; }
-                                if (it === state.currentEditingItem) { openQuickEditor(it); }
+                                if (it === state.currentEditingItem) { QuickEditor.open(it); }
                             }
 
                             UI.renderItems(true);
