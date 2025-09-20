@@ -28,6 +28,28 @@
             overflow-x: hidden;
         }
 
+        header {
+            text-align: center;
+            padding: 20px;
+            background: #1a1a1a;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .bn {
+            background: #424242;
+            padding: 10px;
+            text-align: center
+        }
+
+        header svg {
+            max-width: 400px;
+            width: 30%;
+            min-width: 300px;
+            height: auto;
+            overflow: visible;
+
+        }
+
         /* ============================================
            FILTER BAR - SIMPLE & STICKY
            ============================================ */
@@ -479,12 +501,120 @@
         }
     </style>
 </head>
+<div class="bn">
+    🛠️ Site updated May 31 — <a style="color: #33c5ff;" href="#patchnotes">See
+        what's new</a> — All the items have been added!
+    <button
+        style="margin-left: 15px; padding: 5px 10px; border-radius: 8px; background: #33c5ff; border: none; cursor: pointer;"
+        onclick="window.location.href='https://emwiki.site/admin.html'">Admin</button>
+    <button
+        style="right: 15px;position: absolute;padding: 5px 10px;font-size: 17px;border-radius: 8px;background: transparent;border: none;cursor: pointer;"
+        onclick="document.querySelector('.bn').remove()">x</button>
+</div>
+<header>
+    <a href="https://emwiki.site">
+        <svg width="700" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
+            <style>
+                @import url("https://emwiki.site/css/fonts.css");
+
+                @keyframes floatAnim {
+
+                    0%,
+                    to {
+                        transform: translateY(0)
+                    }
+
+                    50% {
+                        transform: translateY(-4px)
+                    }
+                }
+
+                @keyframes glowPulse {
+
+                    0%,
+                    100% {
+                        filter: drop-shadow(0 0 0px #fff);
+                    }
+
+                    50% {
+                        filter: drop-shadow(0 0 8px #ff0) drop-shadow(0 0 15px #24ff5a);
+                    }
+                }
+
+                @keyframes gradientShift {
+                    0% {
+                        stop-color: #ff0;
+                    }
+
+                    50% {
+                        stop-color: #24ff5a;
+                    }
+
+                    100% {
+                        stop-color: #ff0;
+                    }
+                }
+
+                a:hover text {
+                    animation: floatAnim 2.5s ease-in-out infinite,
+                        glowPulse 2s ease-in-out infinite;
+                    text-shadow: #ffffff3b 0px 0px 6px;
+                    transition: all 0.3s ease;
+                }
+
+                a:hover stop:first-child {
+                    animation: gradientShift 2s ease-in-out infinite alternate;
+                }
+            </style>
+
+            <defs>
+                <linearGradient id="eppp1" y1="1" x2="0">
+                    <stop offset=".2" style="stop-color:#ff0" />
+                    <stop offset="1" style="stop-color:#24ff5a" />
+                </linearGradient>
+                <linearGradient id="eppp2" y1="1" x2="0">
+                    <stop offset="0" style="stop-color:#24ff5d" />
+                    <stop offset="1" style="stop-color:#ff0" />
+                </linearGradient>
+            </defs>
+
+            <text x="481" y="498" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
+                stroke-linejoin="round" fill="url(#eppp1)" style="animation:floatAnim 12s ease-in-out infinite;
+                   font:200 38px Bunny Flowers">
+                Epic
+            </text>
+
+            <g style="scale:.39;transform:translate(1645px,685px);rotate:20deg">
+                <circle cy="37.5" cx="36" r="35.5" />
+                <circle cy="37.5" cx="36" r="33" fill="#fede58" />
+                <path d="M32.5 66.5c-12-2-19.5-11.5-21-23.5v-.5H9l-.5-2H57c.5 1.5 1 2.5 1 4C59.5 54 54.5 59 46.5 64c-4.5 2-9 3-14 2.5" />
+                <path d="M37 64.5c5.5-.5 10-2.5 14-6 3-2.5 4.5-5.5 5-8.5.5-2 0-6-.5-7l-42-.5c-.5 6 3.5 12 7 16 3.5 3.5 7.5 5 12 6 1 .5 3.5.5 4.5 0" fill="#871945" />
+                <path d="M7.5 34C2 10 29 12 25.5 32l-.5 2Z" />
+                <path d="M23.5 32.5c.5-1 .5-4 0-6 0-1.5-.5-1.5-1-1-1.5 1.5-3.5 1.5-5 0-1.5-2-1.5-4 .5-5.5l.5-.5c-.5-1.5-8.5-2.5-10 7-.5 1.5 0 5 .5 6z" fill="#fff" />
+                <path d="M38 34.5C35 21 42 18 45.5 17c3-.5 5.5 0 8 1.5 2.5 2 4.5 5 5 8.5 0 5.5-.5 7-.5 7.5Z" />
+                <path d="M56.5 32.5c.5-.5.5-3.5.5-5-.5-1.5-.5-2.5-1-2.5l-.5.5c-1.5 1.5-4.5 1.5-6-1-.5-1.5 0-3 1-4 .5-.5.5-1 .5-1s0-.5-.5-.5c-5-1.5-10.5 2-11.5 8-.5 1.5 0 4.5.195 5.503Z" fill="#fff" />
+                <path d="M48.883 60.176S45.5 63 39.5 64.5c-6.5 1.5-11-1-11-1s1-7.5 9-9.5c7.5-1.5 13 5 13 5Z" fill="#f9bedd" />
+            </g>
+
+            <text x="502" y="508" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
+                stroke-linejoin="round" fill="url(#eppp2)" style="animation:floatAnim 12s ease-in-out infinite;
+                   animation-delay:5.5s;
+                   font:200 13px Bunny Flowers">
+                Catalogue
+            </text>
+        </svg>
+    </a>
+</header>
+
 
 <body>
+
     <!-- Search -->
     <div class="search-wrapper">
         <input id="search-bar" type="text" placeholder="Search items..." />
     </div>
+
+
 
     <!-- Filter Bar -->
     <div class="filter-bar">
