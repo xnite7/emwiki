@@ -12,12 +12,19 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+
         }
 
         body {
             background: #111;
             color: #fff;
-            font-family: 'Source Sans Pro', sans-serif;
+            font-family: 'Source Sans Pro', Twemoji;
             overflow-x: hidden;
         }
 
@@ -94,8 +101,8 @@
 
         .catalog-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+            gap: 23px 15px;
             animation: fadeIn 0.5s;
         }
 
@@ -112,23 +119,33 @@
         .item {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
-            padding: 10px;
+            padding: 6px;
             cursor: pointer;
             transition: all 0.3s;
             position: relative;
-            height: 150px;
-            width: 150px;
+            height: 125px;
+            width: 125px;
+            box-shadow: 0 10px 30px transparent, inset -3px -3px 6px 0px #0000003b;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            border: 2px solid transparent;
+            border: 1px outset #ffffff26;
+            justify-content: space-between;
+
+            @supports (corner-shape: squircle) {
+                corner-shape: squircle;
+                border-radius: 26px;
+            }
+
         }
+
+
 
         .item:hover {
             transform: translateY(-5px);
             background: rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset -3px -3px 4px 0px #0000003b;
+
         }
 
         .item.loading {
@@ -151,42 +168,52 @@
         }
 
         .item>img,
-        .item canvas {
-            max-width: 100%;
-            max-height: 120px;
+        .item canvas,
+        .item>svg {
+            max-width: 80%;
+            max-height: max-content;
+            place-self: anchor-center;
             object-fit: contain;
             position: absolute;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            -webkit-touch-callout: none;
-            -webkit-tap-highlight-color: transparent;
-            pointer-events: none;
+
         }
 
         .item-name {
             text-shadow: -1.3px -1.3px 0 #000, 0 -1.3px 0 #000, 1.3px -1.3px 0 #000, 1.3px 0 0 #000, 1.3px 1.3px 0 #000, 0 1.3px 0 #000, -1.3px 1.3px 0 #000, -1.3px 0 0 #000;
-
-            z-index: 22;
-            margin-top: 10px;
+            z-index: 3;
             font-size: 12px;
             text-align: center;
             word-break: break-word;
+        }
+
+        button {
+            color: #fff;
+        }
+
+        .item:has(>svg) .item-name {
+            opacity: 0;
         }
 
         .item-price {
             border: 1px solid #ffffff61;
             display: flex;
             border-radius: 10px;
-            align-items: center;
-            gap: 5px;
-            margin-top: auto;
-            font-size: 12px;
+            gap: 4px;
+            font: 1000 12px 'BuilderSans';
             color: #ffffff;
             background-color: #00000080;
             padding: 3px 6px;
             backdrop-filter: blur(6px);
+            transition: filter 0.1s ease-out;
+            filter: drop-shadow(2px 4px 6px transparent);
+        }
+
+        .item:hover .item-price {
+            filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.479));
+        }
+
+        .item:hover .heart-button {
+            opacity: 1;
         }
 
         .item-price img {
@@ -202,8 +229,9 @@
         }
 
         .badge.premium {
-            top: 5px;
-            right: 5px;
+            bottom: 6px;
+            left: 7px;
+            place-self: baseline;
         }
 
         .badge.retired {
@@ -217,18 +245,38 @@
         }
 
         .heart-button {
+            opacity: 0;
             position: absolute;
-            top: 5px;
-            right: 5px;
-            font-size: 20px;
+            top: -14px;
+            right: -11px;
+            font-size: 25px;
             cursor: pointer;
-            z-index: 10;
-            transition: transform 0.2s;
+            z-index: 4;
+            transition: all 0.2s, transform 0.4s cubic-bezier(.47, 1.64, .41, .8);
+            text-shadow: -1.3px -1.3px 0 #000, 0 -1.3px 0 #000, 1.3px -1.3px 0 #000, 1.3px 0 0 #000, 1.3px 1.3px 0 #000, 0 1.3px 0 #000, -1.3px 1.3px 0 #000, -1.3px 0 0 #000;
         }
 
         .heart-button:hover {
-            transform: scale(1.2);
+            transform: scale(1.2) rotate(26deg);
         }
+
+        .heart-button.red {
+            transform: scale(1) rotate(26deg);
+            opacity: 1;
+            background: linear-gradient(to top, #730000, #ec2F4B);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: none;
+            filter: drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black);
+        }
+
+        .heart-button:active {
+            transform: scale(.75) rotate(26deg);
+        }
+
+
+
 
         /* ============================================
            LOAD MORE BUTTON
@@ -240,7 +288,7 @@
 
         .load-button {
             padding: 12px 30px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: transparent;
             border: none;
             color: white;
             font-size: 16px;
@@ -344,6 +392,91 @@
             color: rgba(255, 255, 255, 0.6);
             font-size: 14px;
         }
+
+        .stats {
+            visibility: collapse;
+        }
+
+        .stats #showing,
+        .stats #total {
+            visibility: visible;
+            color: #ffffffcc;
+            font-weight: 600;
+        }
+
+        .stats:hover {
+            visibility: visible;
+        }
+
+        .stats #total::before {
+            content: " / ";
+            color: #ffffffa8;
+            font-weight: 100;
+        }
+
+        .stats:hover #total::before {
+            content: " of ";
+        }
+
+        .badge.retired,
+        .badge.retired:before,
+        .badge.retired:after {
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+        }
+
+        .badge.retired {
+            top: 23px;
+            left: -1px;
+            line-height: 0;
+            font-variant: all-petite-caps;
+            font-size: 12px;
+            text-shadow: 0 0 2px black;
+            padding: 0px 3px;
+            position: absolute;
+            width: 53px;
+            height: 0;
+            -webkit-transform: rotate(0deg) skew(0deg);
+            transform: rotate(0deg) skew(0deg);
+            border-top: 7px solid red;
+            border-bottom: 7px solid red;
+            border-right: 8px solid transparent;
+        }
+
+        @media screen and (max-width: 768px) {
+            .item {
+                width: 110px;
+                height: 110px;
+            }
+
+            .catalog-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+                gap: 23px 10px;
+                animation: fadeIn 0.5s;
+            }
+        }
+
+
+        @media screen and (max-width: 400px) {
+            .catalog-container {
+                padding: 12px;
+            }
+
+            .catalog-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 23px 10px;
+                animation: fadeIn 0.5s;
+            }
+
+            .item {
+                width: 100px;
+                height: 100px;
+            }
+
+        }
     </style>
 </head>
 
@@ -366,14 +499,14 @@
 
         <div class="filters">
             <button class="filter-chip" data-filter="new">🆕 New</button>
-            <button class="filter-chip" data-filter="tradable">💱 Tradable</button>
+            <button class="filter-chip" data-filter="untradable">💱 Untradable</button>
             <button class="filter-chip" data-filter="premium">👑 Premium</button>
             <button class="filter-chip" data-filter="retired">🚫 Retired</button>
             <button class="filter-chip" data-filter="favorites">❤️ Favorites</button>
         </div>
 
         <div class="stats">
-            Showing <span id="showing">0</span> of <span id="total">0</span> items
+            Showing <span id="showing">0</span><span id="total">0</span> items
         </div>
     </div>
 
@@ -520,8 +653,8 @@
                             case 'new':
                                 if (!item.new) return false;
                                 break;
-                            case 'tradable':
-                                if (item.tradable === false) return false;
+                            case 'untradable':
+                                if (item.tradable) return false;
                                 break;
                             case 'premium':
                                 if (!item.premium) return false;
@@ -601,6 +734,9 @@
                 };
                 item.style.backgroundColor = colors[data.category] || 'transparent';
 
+
+
+
                 // Add image
                 if (data.img) {
                     const img = document.createElement('img');
@@ -621,7 +757,7 @@
                 if (data.price && data.price !== 'N/A') {
                     const price = document.createElement('div');
                     price.className = 'item-price';
-                    price.innerHTML = `<img src="./imgs/iZGLVYo.png">${this.formatPrice(data.price)}`;
+                    price.innerHTML = `<svg style="width: 13px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18" style="width: 16%;"><path d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z" fill="#fff" fill-rule="evenodd"></path></svg>${this.formatPrice(data.price)}`;
                     item.appendChild(price);
                 }
 
@@ -634,9 +770,9 @@
                 }
 
                 if (data.retired) {
-                    const badge = document.createElement('img');
+                    const badge = document.createElement('div');
                     badge.className = 'badge retired';
-                    badge.src = './imgs/Red_x.png';
+                    badge.innerText = 'Retired';
                     item.appendChild(badge);
                 }
 
@@ -644,10 +780,12 @@
                 const heart = document.createElement('div');
                 heart.className = 'heart-button';
                 heart.textContent = this.favorites.includes(data.name) ? '❤️' : '🤍';
+                this.favorites.includes(data.name) ? heart.classList.add('red') : heart.classList.remove('red');
                 heart.onclick = (e) => {
                     e.stopPropagation();
                     this.toggleFavorite(data.name);
                     heart.textContent = this.favorites.includes(data.name) ? '❤️' : '🤍';
+                    this.favorites.includes(data.name) ? heart.classList.add('red') : heart.classList.remove('red');
                 };
                 item.appendChild(heart);
 
