@@ -1,0 +1,225 @@
+
+
+
+    <svg id="svg1923" width="733" height="733" xmlns="http://www.w3.org/2000/svg">
+            <style>
+
+
+        svg {
+            zoom: 0.5;
+            margin: auto;
+            display: block;
+        }
+
+        .pupil {
+            pointer-events: none;
+        }
+
+        .bounce {
+            animation: bounce 0.25s ease-out;
+        }
+
+        @keyframes bounce {
+            0% {
+                transform: scale(1, 1);
+            }
+
+            30% {
+                transform: scale(1.2, 0.8);
+            }
+
+            50% {
+                transform: scale(0.9, 1.1);
+            }
+
+            70% {
+                transform: scale(1.05, 0.95);
+            }
+
+            100% {
+                transform: scale(1, 1);
+            }
+        }
+    </style>
+        <defs>
+            <radialGradient id="myGradient">
+                <stop offset="0" stop-color="#f5e089" />
+                <stop offset=".9" stop-color="#e6c84d" />
+                <stop offset="1" stop-color="#cfb032" />
+            </radialGradient>
+        </defs>
+        <!-- Outer circle -->
+        <circle cy="366.5" cx="366.5" r="366.5" />
+
+        <!-- Yellow face -->
+        <circle cy="366.5" cx="366.5" r="336.5" fill="url(#myGradient)" />
+
+        <!-- Mouth area -->
+        <path
+            d="m325 665c-121-21-194-115-212-233v-8l-25-1-1-18h481c6 13 10 27 13 41 13 94-38 146-114 193-45 23-93 29-142 26z" />
+
+        <!-- Inner mouth -->
+        <path
+            d="m372 647c52-6 98-28 138-62 28-25 46-56 51-87 4-20 1-57-5-70l-423-1c-2 56 39 118 74 157 31 34 72 54 116 63 11 2 38 2 49 0z"
+            fill="#871945" />
+        <path d="m504 590s-46 40-105 53c-66 15-114-7-114-7s14-76 93-95c76-18 126 49 126 49z" fill="#f9bedd" />
+        <!-- Left eye socket (black) -->
+        <path class="eye-socket left"
+            d="m76 342c-13-26-13-57-9-85 6-27 18-52 35-68 21-20 50-23 77-18 15 4 28 12 39 23 18 17 30 40 36 67 4 20 4 41 0 60l-6 21z" />
+
+        <!-- Right eye socket (black) -->
+        <path class="eye-socket right"
+            d="m378 343c-2-3-6-20-7-29-5-28-1-57 11-83 15-30 41-52 72-60 29-7 57 0 82 15 26 17 45 49 50 82 2 12 2 33 0 45-1 10-5 26-8 30z" />
+
+        <!-- LEFT EYE (white) -->
+        <path d="M88 323C74 263 97 184 160 187 218 188 250 263 234 323Z" class="eyeball left" fill="#fff"
+            id="leftEye" />
+
+        <!-- RIGHT EYE (white) -->
+        <path
+            d="M563 324C567 319 568 290 567 274 559 231 536 202 503 191 451 174 397 211 387 271 384 286 387 314 390 324Z"
+            class="eyeball right" fill="#fff" id="rightEye" />
+
+        <!-- Pupils -->
+        <circle cx="161" cy="255" r="30" fill="#0D0D20" class="pupil left" />
+        <circle cx="475" cy="270" r="30" fill="#0D0D20" class="pupil right" />
+
+            <script>
+        const eyeData = [
+            {
+                pupil: document.querySelector('.pupil.left'),
+                centerX: 161,
+                centerY: 290,
+                arcRadius: 74,
+                currentX: 161,
+                currentY: 260,
+
+            },
+            {
+                pupil: document.querySelector('.pupil.right'),
+                centerX: 475,
+                centerY: 290,
+                arcRadius: 86,
+                currentX: 475,
+                currentY: 260,
+
+            }
+        ];
+        // Detect if device is mobile
+        const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
+        // Mouse position
+        let mouseX = null;
+        let mouseY = null;
+
+        if (!isMobile) {
+            document.addEventListener('mousemove', e => {
+                const svg = document.getElementById('svg1923');
+                const rect = svg.getBoundingClientRect();
+                const scaleX = 733 / rect.width;
+                const scaleY = 203 / rect.height;
+
+                mouseX = (e.clientX - rect.left) * scaleX;
+                mouseY = (e.clientY - rect.top) * scaleY;
+            });
+        }
+
+
+        // Shared idle timer
+        let idleStartTime = Date.now();
+        let idlePause = 0;
+
+        // Blinking
+        function blinkEyes() {
+            const eyelids = document.querySelectorAll('.eyeball');
+            const eyesocks = document.querySelectorAll('.eye-socket');
+            const pupils = document.querySelectorAll('.pupil');
+
+            pupils.forEach(eye => {
+                eye.style.transition = 'transform 0.15s ease-in-out';
+                eye.style.transformOrigin = '50% 47%';
+                eye.style.transform = 'scaleY(0.1)'; // blink
+            });
+            eyelids.forEach(eye => {
+                eye.style.transition = 'all 0.15s ease-in-out';
+                eye.style.transformOrigin = '50% 47%';
+                eye.style.opacity = '0';
+                eye.style.transform = 'scaleY(0.1)'; // blink
+            });
+            eyesocks.forEach(eye => {
+                eye.style.transition = 'transform 0.15s ease-in-out';
+                eye.style.transformOrigin = '50% 47%';
+                eye.style.transform = 'scaleY(0.1)'; // blink
+            });
+            setTimeout(() => {
+                eyelids.forEach(eye => { eye.style.transform = 'scaleY(1)'; eye.style.opacity = '1'; });
+                eyesocks.forEach(eye => eye.style.transform = 'scaleY(1)');
+                pupils.forEach(eye => eye.style.transform = 'scaleY(1)');
+            }, 150);
+
+            setTimeout(blinkEyes, 3000 + Math.random() * 2000); // random blink interval
+        }
+        blinkEyes();
+
+
+        function updatePupils() {
+    const t = (Date.now() - idleStartTime) * 0.002;
+
+    // Compute one shared angle for both pupils in idle mode
+    let sharedAngle = -Math.PI / 2 + Math.sin(t) * 0.6;
+    let sharedRadiusFactor = 0.7;
+
+    // Random pause
+    if (idlePause <= 0 && Math.random() < 0.002) {
+        idlePause = 40 + Math.random() * 60;
+    } else if (idlePause > 0) {
+        idlePause--;
+    }
+
+    eyeData.forEach((eye, i) => {
+        let targetX, targetY;
+
+        if (!isMobile && mouseX !== null && mouseY !== null) {
+            // Desktop: follow mouse individually
+            let dx = mouseX - eye.centerX;
+            let dy = mouseY - eye.centerY;
+            const distance = Math.sqrt(dx*dx + dy*dy);
+            const angle = Math.atan2(dy, dx);
+            const effectiveRadius = eye.arcRadius * Math.min(1, distance / 250) * 0.85;
+
+            targetX = eye.centerX + Math.cos(angle) * effectiveRadius;
+            targetY = eye.centerY + Math.sin(angle) * effectiveRadius * 1.1;
+        } else {
+            // Idle: move both pupils together
+            const radius = eye.arcRadius * sharedRadiusFactor;
+            const jitterX = Math.sin(t*1.5) * 5;
+            const jitterY = Math.cos(t*1.2) * 3;
+
+            if (idlePause > 0) {
+                targetX = eye.currentX;
+                targetY = eye.currentY;
+            } else {
+                targetX = eye.centerX + Math.cos(sharedAngle) * radius + jitterX;
+                targetY = eye.centerY + Math.sin(sharedAngle) * radius * 1.1 + jitterY;
+            }
+        }
+
+        // Smooth movement
+        eye.currentX += (targetX - eye.currentX) * 0.05;
+        eye.currentY += (targetY - eye.currentY) * 0.05;
+
+        eye.pupil.setAttribute('cx', eye.currentX);
+        eye.pupil.setAttribute('cy', eye.currentY);
+    });
+
+    requestAnimationFrame(updatePupils);
+}
+
+
+        updatePupils();
+    </script>
+    </svg>
+
+
+
+
