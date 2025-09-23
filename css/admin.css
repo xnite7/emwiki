@@ -354,7 +354,7 @@ main {
 #quick-editor-content {
     pointer-events: all;
     position: fixed;
-    width: min(400px, 89vw);
+    width: min(405px, 89vw);
     max-width: 92vw;
     height: auto;
     z-index: 9999;
