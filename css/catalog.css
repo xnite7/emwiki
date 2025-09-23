@@ -888,7 +888,7 @@ button {
     color: var(--text-primary);
     background: var(--bg-item);
     backdrop-filter: blur(10px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0px 3px 18px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease;
 }
 
