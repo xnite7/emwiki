@@ -533,6 +533,8 @@ body.light-theme .controls-bar {
     position: relative;
     width: -webkit-fill-available;
     justify-content: center;
+    flex-wrap: wrap;
+
 }
 
 .chest-dropdown-btn {
