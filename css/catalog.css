@@ -776,7 +776,7 @@ body.light-theme .controls-bar {
 .wishlist-item>svg,
 .wishlist-item>img:first-of-type {
     max-width: 80%;
-    max-height: max-content;
+    max-height: 80%;
     place-self: anchor-center;
     object-fit: contain;
     position: absolute;

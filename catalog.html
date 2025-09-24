@@ -167,8 +167,9 @@
 
 
         <div class="chest-dropdown">
-            <a class="chest-expand-toggle"onclick="catalog.toggleChestExpand()">View advanced filters</a>
-            <button class="filter-chip" data-filter="gamenight"><span class="icon gamenight-icon"></span> Gamenight</button>
+            <a class="chest-expand-toggle" onclick="catalog.toggleChestExpand()">View advanced filters</a>
+            <button class="filter-chip" data-filter="gamenight"><span class="icon gamenight-icon"></span>
+                Gamenight</button>
 
             <button class="chest-dropdown-btn" onclick="catalog.toggleChestMenu()">
                 <span>Chest:</span>
@@ -223,6 +224,20 @@
                         </div>
                     </div>
                 </div>
+                <div class="chest-item" data-chest="1hrplaytime" onclick="catalog.selectChest('1hrplaytime')">
+                    <img src="https://i.imgur.com/IBCeaLF.png" alt="1 Hour Playtime">
+                    <div class="chest-item-info">
+                        <div class="chest-name">1 Hour Playtime</div>
+                        <div class="chest-meta">
+                            <span class="chest-timer"><svg fill="#87ceeb"
+                                    style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
+                                    viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
+                                </svg> 1:00:00</span>
+                        </div>
+                    </div>
+                </div>
                 <div class="chest-item" data-chest="mysterybag" onclick="catalog.selectChest('mysterybag')">
                     <img src="https://i.imgur.com/mLNEYGn.png" alt="Mystery Bag">
                     <div class="chest-item-info">
@@ -238,6 +253,20 @@
                             <span class="chest-price"><img src="./imgs/Coin.webp"
                                     style="transform: translateY(2px);margin-right: 2px;margin-left: 3px;width: 12px;height: 12px;">
                                 250</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chest-item" data-chest="dailyrewards" onclick="catalog.selectChest('dailyrewards')">
+                    <img src="https://i.imgur.com/IBCeaLF.png" alt="Daily Rewards Secret Item">
+                    <div class="chest-item-info">
+                        <div class="chest-name">Daily Rewards Secret Item</div>
+                        <div class="chest-meta">
+                            <span class="chest-timer"><svg fill="#87ceeb"
+                                    style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
+                                    viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
+                                </svg> 24H</span>
                         </div>
                     </div>
                 </div>
@@ -426,7 +455,9 @@
                 this.chestMappings = {
                     'itemcrate': [],
                     'luckychest': [],
+                    '1hrplaytime': [],
                     'mysterybag': [],
+                    'dailyrewards': [],
                     'typicalchest': [],
                     'premiumchest': [],
                     'steelchest': [],
@@ -757,26 +788,13 @@
                         assignedChest = 'epicchest';
                     } else if (from.includes('birthday chest')) {
                         assignedChest = 'birthdaychest';
+                    } else if (from.includes('daily rewards')) {
+                        assignedChest = 'dailyrewards';
+                    } else if (from.includes('1hr playtime rewards')) {
+                        assignedChest = '1hrplaytime';
                     }
 
 
-
-                    // Additional checks for daily rewards
-                    else if (from.includes('daily reward') || from.includes('1hr playtime')) {
-                        assignedChest = 'mysterybag'; // Group with mystery bag
-                    }
-
-                    // Check for season-specific chests
-                    else if (from.includes('season') && from.includes('chest')) {
-                        // Try to determine which chest type based on other keywords
-                        if (from.includes('premium') || from.includes('robux')) {
-                            assignedChest = 'premiumchest';
-                        } else if (from.includes('coin')) {
-                            assignedChest = 'typicalchest';
-                        } else {
-                            assignedChest = 'itemcrate'; // Default seasonal items
-                        }
-                    }
 
                     // Add item to chest mapping
                     if (assignedChest) {
