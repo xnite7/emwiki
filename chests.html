@@ -24,6 +24,542 @@
 
         <style>
         @import url("https://emwiki.site/css/fonts.css");
+
+		@import url("https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Playpen+Sans:wght@100..800&family=Oxanium&family=Patrick+Hand&family=Denk+One&family=Marhey:wght@700&family=Rubik+Wet+Paint&family=Irish+Grover&family=Poppins:wght@700&family=Rye&family=Eater&family=Bangers&family=Inconsolata:wght@900&family=Roboto+Mono:wght@700&family=Sedgwick+Ave+Display&family=Rubik+Marker+Hatch&family=Sarpanch:wght@700&family=Kalam&family=Are+You+Serious&family=Akronim&family=Kings&family=Permanent+Marker&family=Caesar+Dressing&family=Michroma&family=Titillium+Web&family=Grenze+Gotisch:wght@100..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Bungee+Shade&family=Frijole&family=Audiowide&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Lobster&family=Fredoka:wght@300..700&family=Codystar:wght@300;400&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Michroma&family=Jura&family=Special+Elite&family=Noto+Serif+HK:wght@200..900&family=Faster+One&family=Nosifer&family=Silkscreen&family=Finger+Paint&family=Merriweather&family=Luckiest+Guy&family=Bungee+Inline&family=Creepster&family=Indie+Flower&family=Pacifico&family=Cairo&family=Fondamento&family=Balthazar&family=Arimo:ital,wght@0,400..700;1,400..700&display=swap");
+
+.scammer-block {
+  width: 100%;
+  max-width: 900px;
+  background: linear-gradient(45deg, #080808, #161616);
+  border: 18px solid #00000085;
+  border-radius: 30px;
+  margin: 20px auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.scammer-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.scammer-img {
+  width: 200px;
+  height: auto;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.scammer-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 200px;
+  align-self: center;
+}
+
+.scammer-info a h2 {
+  font-size: 3.5rem;
+  font-family: 'BuilderSans', sans-serif;
+  background: -webkit-linear-gradient(#ffffff, #c7c7c78f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scammer-info a h2 svg {
+  width: 40px;
+  height: 100%;
+  opacity: 0;
+  transition: all 0.2s;
+}
+
+.scammer-info a:hover h2 svg {
+  opacity: 1;
+}
+
+.scammer-info a {
+  text-decoration: none;
+  color: #b9b9b9;
+}
+
+
+.scammer-info p {
+  text-wrap-style: balance;
+  font-size: 1.9rem;
+  font-family: 'BuilderSans', sans-serif;
+  color: #56697b;
+  margin: 0;
+}
+
+
+.loading {
+  font-weight: bold;
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 1.5rem;
+}
+
+.error {
+  color: red;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+
+
+
+.arrow {
+  width: 163px;
+  height: 163px;
+
+}
+
+
+section {
+  background: #707070;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 5px 15px rgb(0 0 0 / 30%);
+  position: sticky;
+  z-index: 22;
+
+  margin: 0 0vw 39px 0vw;
+}
+
+.welcome h2 {
+  margin-block-start: 0.2em;
+}
+
+footer {
+  background: black;
+  text-align: center;
+  padding: 0 0 16px 0;
+  box-shadow: 0 0 2em 20px #000000;
+}
+
+#tooltip[popover] {
+  left: anchor(center);
+  position-anchor: --a;
+  top: anchor(bottom);
+  transform: translate(-50%, 8px);
+  color: #fff;
+  padding: 12px 18px;
+  inset: auto;
+  position: absolute;
+  font-size: 1.1em;
+  box-shadow: 0 0 12px black, 0 0 12px black, 0 0 15px black, inset 0 0 12px black;
+  backdrop-filter: blur(5px);
+  z-index: 9999;
+  margin: 0;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.15s;
+  position-area: inline-end span-block-end;
+  position-try-fallbacks: flip-inline;
+  transition: all 100ms ease;
+  white-space: nowrap;
+  background: linear-gradient(0deg, #000000, #00000063);
+  border: 1px solid #ffffff45;
+  border-radius: 18px;
+
+  @starting-style {
+    opacity: 0;
+  }
+}
+
+.catalog {
+  /* margin-top: 2rem; */
+  width: -webkit-fill-available;
+  text-align: center;
+  flex: 0 auto;
+  padding-bottom: 66px;
+}
+
+section p {
+  font-size: 1.5rem;
+  color: #ffffff;
+
+}
+
+section h2 {
+  margin-top: 1px;
+  text-shadow: 2px 3px 9px #00000066;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+
+}
+
+.catalog-grid {
+  display: grid;
+  gap: 1.5rem;
+  padding: 0rem;
+  grid-template-columns: repeat(auto-fit, minmax(206px, 0fr));
+  justify-items: center;
+  width: -webkit-fill-available;
+  justify-content: space-evenly;
+
+}
+
+.item,
+#gears,
+#titles,
+#pets,
+#effects,
+#deaths {
+  max-height: unset;
+  max-width: unset;
+  -webkit-user-select: none;
+  /* Safari */
+  -ms-user-select: none;
+  /* IE 10 and IE 11 */
+  user-select: none;
+  /* Standard syntax */
+  background-color: rgb(0 0 0 / 49%);
+  padding: 0px;
+  border-radius: 12px;
+  box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, background 0.3s ease;
+  height: 190px;
+  width: 190px;
+  color: white;
+  cursor: pointer;
+      scale: 1;
+}
+
+.itemname {
+  height: 0px;
+}
+
+#h3 {
+  height: 0px;
+  padding-top: 0px;
+  position: absolute;
+  top: 5px;
+  margin-top: 5px;
+  z-index: 99999;
+  font: 100 24px 'Source Sans Pro';
+  text-shadow:
+    -1.3px -1.3px 0 #000,
+    0 -1.3px 0 #000,
+    1.3px -1.3px 0 #000,
+    1.3px 0 0 #000,
+    1.3px 1.3px 0 #000,
+    0 1.3px 0 #000,
+    -1.3px 1.3px 0 #000,
+    -1.3px 0 0 #000;
+}
+
+.item>canvas {
+  position: absolute;
+  top: 30px;
+  position: relative;
+  width: 135px;
+  height: 135px;
+  z-index: 0;
+}
+
+
+.item p {
+  display: none;
+  font-size: 22px;
+  position: relative;
+  text-align: left;
+  margin-left: 40;
+  left: 16px;
+  bottom: 43px;
+  z-index: 99999;
+  font: 100 24px 'Source Sans Pro';
+  text-shadow:
+    -2px -2px 0 #000,
+    0 -2px 0 #000,
+    2px -2px 0 #000,
+    1px 0 0 #000,
+    2px 2px 0 #000,
+    0 2px 0 #000,
+    -2px 2px 0 #000,
+    -2px 0 0 #000
+}
+
+
+.item p img {
+  height: 27px;
+  width: 27px;
+  float: left;
+}
+
+
+
+#titles div {
+  bottom: -73px;
+}
+
+#titles {
+  flex-direction: column;
+}
+
+
+
+
+
+
+
+
+div .psp {
+  float: none;
+  margin: 30px auto;
+}
+
+
+.retired-badge {
+  background: linear-gradient(180deg, #ff3c3c, #9f0000);
+  color: #ffffff;
+  font-size: 1em;
+  letter-spacing: 2px;
+  padding: 3px 4px 4px 6px;
+  font-family: monospace;
+  font-weight: bolder;
+  border-radius: 6px;
+    position: absolute;
+    top: unset;
+    bottom: -8px;
+    left: 60px;
+}
+
+
+
+
+
+.shelf-oppener {
+  top: 0;
+  right: 0;
+  position: absolute;
+  height: 70px;
+  background-color: #424242d0;
+  border-radius: 17px;
+  color: aliceblue;
+  margin-bottom: 27px;
+  font-size: 34px;
+  width: 87px;
+  rotate: 0deg;
+
+  transition: background-color 100ms linear;
+}
+
+.shelf-oppener:hover {
+  height: 70px;
+  background-color: #6161617e;
+  border-radius: 17px;
+  color: aliceblue;
+  margin-bottom: 27px;
+  font-size: 34px;
+  width: 87px;
+  transform: none;
+}
+
+.papi {
+  grid-template-columns: repeat(auto-fit, minmax(468px, 2fr));
+}
+
+#grid {
+  display: flex;
+  flex-direction: column;
+  width: -webkit-fill-available;
+  flex-wrap: wrap;
+  zoom: 0.5;
+  align-items: flex-start;
+}
+
+#scammers-container.grid {
+  column-gap: 31px;
+  zoom: 0.6;
+}
+
+#scammers-container.grid {
+  background: linear-gradient(180deg, #141414, transparent);
+  margin-bottom: 53px;
+  padding-bottom: 19px;
+}
+
+/* Mobile-friendly adjustments */
+@media (max-width: 600px) {
+
+  #grid {
+    zoom: 0.37;
+  }
+
+  #scammers-container {
+    column-gap: 31px;
+    zoom: 0.53;
+  }
+
+  section.catalog {
+    margin-bottom: 0px;
+  }
+
+  .scammer-block {
+    max-width: 785px;
+  }
+
+  .scammer-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .scammer-img {
+    width: 175px;
+    place-self: center;
+  }
+
+  .scammer-info a h2 {
+    font-size: 5.1rem;
+  }
+
+  .scammer-info p {
+    font-size: 2.5rem;
+  }
+
+
+  .papi {
+    grid-template-columns: repeat(auto-fit, minmax(104vw, 0fr));
+    zoom: 0.86;
+  }
+
+
+  section h2 {
+    margin-top: 17px;
+    text-shadow: 2px 3px 9px #00000066;
+    font-size: 3rem;
+    margin-bottom: 0rem;
+  }
+
+  section p {
+    font-size: 2rem;
+    color: #ffffff;
+    margin-bottom: 35px;
+  }
+
+
+
+
+  div .psp p {
+    font-size: 5rem;
+  }
+
+
+}
+
+
+
+/* Base modal/backdrop styling */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  z-index: 9998;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+
+
+
+.modal-cont {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #1b1b1b;
+  color: white;
+  border-radius: 16px 16px 0 0;
+  max-height: 69vh;
+  width: 100%;
+  overflow-y: auto;
+  position: fixed;
+  bottom: 0;
+  z-index: 9999;
+  padding: 16px;
+  transition: all 0.3s ease;
+  transform: translateY(1%);
+  box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.5);
+  @starting-style{
+    transform: translateY(100%);
+  }
+}
+
+.chest-panel {
+
+  bottom: 0;
+  width: 100%;
+  background: #111;
+  z-index: 9997;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 12px;
+  gap: 10px;
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.chest-button {
+  flex: 0 0 auto;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: #222;
+  border: 2px solid #333;
+  font-size: 14px;
+  color: white;
+  white-space: nowrap;
+  font-family: 'Arimo', sans-serif;
+  transition: transform 0.2s ease;
+}
+
+.chest-button:hover {
+  transform: scale(1.05);
+  background: #2a2a2a;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+
+.modal-cont div .item,
+.modal-cont div #gears,
+.modal-cont div #titles,
+.modal-cont div #pets,
+.modal-cont div #effects,
+.modal-cont div #deaths {
+  height: 120px;
+  width: 120px;
+}
+
+.modal-cont div .item #h3,
+.modal-cont div #gears #h3,
+.modal-cont div #titles #h3,
+.modal-cont div #pets #h3,
+.modal-cont div #effects #h3,
+.modal-cont div #deaths #h3 {
+  bottom: 107px;
+}
     </style>
 
 

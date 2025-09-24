@@ -293,6 +293,8 @@ body.light-theme .controls-bar {
     position: relative;
 }
 
+
+
 .stats-content::-webkit-scrollbar {
     width: 10px;
 }
@@ -385,6 +387,7 @@ body.light-theme .controls-bar {
     height: 23px;
     display: flex;
     align-items: center;
+    z-index: 6;
     justify-content: center;
     font-size: 24px;
     cursor: pointer;
@@ -412,6 +415,7 @@ body.light-theme .controls-bar {
 
 #wishlist-value {
     font-variant: traditional;
+        font-family: 'BuilderSans';
     color: #ffffff;
 }
 
@@ -448,7 +452,8 @@ body.light-theme .controls-bar {
 }
 
 .filter-chip {
-    padding: 10px 20px;
+    line-height: 1.6;
+    padding: 8px 16px;
     border: 2px solid var(--border-color);
     background: var(--bg-item);
     color: var(--text-primary);
@@ -485,12 +490,228 @@ body.light-theme .controls-bar {
     font-weight: 600;
 }
 
+.icon.newest-icon {
+    mask-image: url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2076%2076%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22m44.483%2015.815-6.458%2017.179h-.223l-6.125-17.18-9.91%205.764%2011.692%2014.076v.221L16.087%2032.33v11.194L33.57%2040.42l.111.221-11.915%2013.855%209.577%205.652L37.69%2043.08h.223l6.459%2017.068%209.8-5.653-12.027-13.743v-.221l17.926%202.992V32.329l-17.815%203.547v-.222l11.915-14.187z%22%2F%3E%3C%2Fsvg%3E");
+}
+
+.icon.untradable-icon {
+    mask-image: url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%20512%20512%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M287.03%2020c-39.133.48-79.73%2015.297-117%2045.938h80.47v43.188c52.76-29.75%20114.592-31.588%20163.938.03l-18.188%209.72%2064.688%2050.72-3.75-83.314-26.407%2014.126C395.99%2048.792%20345.038%2020.644%20290.907%2020a162%20162%200%200%200-3.875%200zm-268%2064.625v212.75h212.782V84.625H19.032zm50.282%2026.03H205.78v138.939h-18.718v-120.25H69.313v-18.688zm3.344%2038.126%2090.094%2091.845-13.344%2013.094-90.094-91.845zm206.656%2061.75v212.782h212.75v-212.78h-212.75zm50.25%2026.064h136.469V375.5h-18.686V255.28h-117.78l-.002-18.686zm3.344%2038.094%2090.125%2091.875-13.342%2013.062-90.125-91.844%2013.343-13.092zm-278.53%2063.656%203.75%2083.312%2023.312-12.47c60.927%2088.637%20169.99%20106.485%20259.625%2032.814h-80.439v-43.188c-52.08%2029.38-113%2031.544-162.03%201.188l20.436-10.938z%22%2F%3E%3C%2Fsvg%3E");
+}
+
+.icon.retired-icon {
+    mask-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20128%20128%22%3E%3Ccircle%20transform%3D%22rotate(-45.001%2076.847%2016.626)%22%20cx%3D%2276.8%22%20cy%3D%2216.6%22%20r%3D%2211.6%22%2F%3E%3Cpath%20d%3D%22m96.5%2060.2-19.2-8.9L70%2031.4c-.4-1-1-2-1.9-2.9L64%2024.4c-3.3-3.3-8.9-3.3-12.4%200%200%200-7.5%205.5-13%2011S26.2%2050%2026.2%2050c-1.7%201.7-2.6%203.9-2.6%206.2v60.3c0%204.1%203.2%207.3%207.3%207.3s7.3-3.2%207.3-7.3V68.9c1.6-.3%203.2-1.2%204.5-2.3l21.7-21.7%204.4%2011.9c.4%201.3%201.5%202.3%202.6%202.9l21.1%209.9c2.6%201.2%205.5.1%206.8-2.5.8-2.7-.2-5.8-2.8-6.9m-3%2012.7H97v50.9h-3.5z%22%2F%3E%3C%2Fsvg%3E");
+}
+
+.icon.favorites-icon {
+    mask-image: url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2034%2029%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M31.272%202C27.936-1.643%2021.067-.087%2017.099%205.555%2012.074-.505%206.071-1.643%202.726%202c-9.312%2010.141%2010.62%2024.717%2014.234%2026.356l.084.048v-.048C20.655%2026.717%2040.584%2012.141%2031.272%202%22%2F%3E%3C%2Fsvg%3E");
+}
+
+.icon.gamenight-icon {
+    mask-image: url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20stroke%3D%22%23000%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%222%22%20d%3D%22M9.353%203C5.849%204.408%203%207.463%203%2011.47A9.53%209.53%200%200%200%2012.53%2021c4.007%200%207.062-2.849%208.47-6.353C8.17%2017.065%208.14%208.14%209.353%203%22%2F%3E%3C%2Fsvg%3E");
+}
+
+.icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-color: currentColor;
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    margin: 0;
+    float: left;
+    pointer-events: none;
+    margin-right: 7px;
+    background: var(--text-primary);
+}
+
+/* Chest Dropdown - THE STAR OF THE SHOW */
+.chest-dropdown {
+    display: flex;
+    gap: 12px;
+    margin-top: 13px;
+    position: relative;
+    width: -webkit-fill-available;
+    justify-content: center;
+}
+
+.chest-dropdown-btn {
+    background: linear-gradient(135deg, #8B4513, #A0522D);
+    border: 2px solid #CD853F;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+}
+
+.chest-dropdown-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 69, 19, 0.5);
+    background: linear-gradient(135deg, #A0522D, #8B4513);
+}
+
+.chest-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.chest-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    background: linear-gradient(180deg, #2a1810, #1a0f08);
+    border: 2px solid #CD853F;
+    border-radius: 15px;
+    min-width: 254px;
+    max-height: 500px;
+    overflow-y: auto;
+    display: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    animation: slideDown 0.3s ease;
+}
+
+.chest-menu::-webkit-scrollbar {
+    width: 13px;
+}
+
+.chest-menu::-webkit-scrollbar-thumb {
+    background: #cd853f;
+    box-shadow: inset 2px 2px 5px 0 rgb(255 255 255 / 50%);
+    border: 2px inset #8B4513;
+    border-radius: 10px;
+}
+
+.chest-menu.show {
+    display: block;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chest-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 1px solid rgba(205, 133, 63, 0.1);
+    position: relative;
+}
+
+.chest-item:hover {
+    background: rgba(205, 133, 63, 0.15);
+    padding-left: 25px;
+}
+
+.chest-item.active {
+    background: rgba(205, 133, 63, 0.25);
+}
+
+.chest-item.active::before {
+    content: '✓';
+    position: absolute;
+    right: 20px;
+    color: #24ff5a;
+    font-weight: bold;
+}
+
+.chest-item>img {
+    width: 40px;
+    height: 40px;
+    margin-right: 15px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.chest-item-info {
+    flex: 1;
+}
+
+.chest-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #fff;
+    margin-bottom: 3px;
+}
+
+.chest-meta {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    gap: 10px;
+}
+
+.chest-price {
+    color: #FFD700;
+    font-weight: 600;
+}
+
+.chest-timer {
+    color: #87CEEB;
+}
+
 /* ============================================
            CATALOG GRID
 ============================================ */
 .catalog-container {
-    min-height: 100vh;
+    min-height: 26vh;
     padding: 20px;
+}
+
+.catalog-grid:empty::after {
+    content: "Nothing to see here :3";
+    color: var(--text-secondary);
+    font-size: 18px;
+    text-align: center;
+    grid-column: 1 / -1;
+}
+
+
+.chest-dropdown {
+    transition: all 0.3s ease;
+}
+
+.chest-dropdown.collapsed {
+    width: auto;
+}
+
+.chest-dropdown.collapsed .chest-menu {
+    display: none !important;
+}
+
+.chest-expand-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    padding: 0% 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+
+
+.chest-dropdown.collapsed .chest-dropdown-btn,
+.chest-dropdown.collapsed .filter-chip[data-filter="gamenight"],
+.chest-dropdown.collapsed .filter-chip[data-filter="unreleased"] {
+    display: none;
 }
 
 .catalog-grid {
@@ -607,9 +828,9 @@ body.light-theme .controls-bar {
     filter: drop-shadow(0px 0px 1px black);
 }
 
-.badge.staff{
-    bottom: 6px;
-    right: 6px;
+.badge.staff {
+    bottom: 7.5px;
+    left: 7px;
 }
 
 .item:hover {
@@ -655,6 +876,7 @@ body.light-theme .controls-bar {
     text-shadow: -1.3px -1.3px 0 #000, 0 -1.3px 0 #000, 1.3px -1.3px 0 #000, 1.3px 0 0 #000, 1.3px 1.3px 0 #000, 0 1.3px 0 #000, -1.3px 1.3px 0 #000, -1.3px 0 0 #000;
     z-index: 3;
     font-size: 12px;
+    margin-top: 0px;
     text-align: center;
     word-break: break-word;
     color: white;
@@ -673,15 +895,15 @@ button {
 .item-price {
     border: 1px solid #ffffff61;
     display: flex;
-    border-radius: 10px;
+    border-radius: 50px;
     gap: 4px;
     font: 1000 12px 'BuilderSans';
     color: #ffffff;
-    background-color: #00000080;
-    padding: 3px 6px;
+    background: linear-gradient(to top, #000000, #00000040);
+    padding: 3px 7px;
     backdrop-filter: blur(6px);
     transition: filter 0.1s ease-out;
-    filter: drop-shadow(2px 4px 6px transparent);
+    filter: drop-shadow(0px 0px 0px #00000000);
 }
 
 .item:hover .item-price {
@@ -888,14 +1110,19 @@ button {
 
 /* Search Bar */
 .search-wrapper {
-    width: -webkit-fill-available;
+    width: 30%;
+    min-width: 414px;
+    max-width: 455px;
     position: relative;
 }
 
+
+
 #search-bar {
-    width: 100%;
-    padding: 16px 20px;
-    border: none;
+    width: -webkit-fill-available;
+    padding: 14px 20px;
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 50px;
     font-size: 16px;
     color: var(--text-primary);
@@ -907,6 +1134,7 @@ button {
 
 #search-bar:focus {
     outline: none;
+    border-color: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
     background: var(--bg-item-hover);
     color: var(--text-primary);
@@ -978,7 +1206,8 @@ button {
 /* Category Carousel */
 .category-carousel-container {
     position: relative;
-    padding: 40px 0;
+    padding: 33px 0;
+    box-shadow: inset 0px 0px 20px #00000057;
     overflow: hidden;
 }
 
