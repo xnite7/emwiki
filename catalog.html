@@ -181,20 +181,25 @@
     <div id="stats-dashboard" class="stats-dashboard">
         <div class="stats-content">
             <div class="stats-header">
-                <h2>My Lists</h2>
+                <h2 style="font-size: 41px;letter-spacing: 2px;font-family: pacifico;">My Lists</h2>
                 <span class="close-stats" onclick="catalog.closeStats()">×</span>
             </div>
 
             <div class="wishlist-section">
-                <h3>⭐ Wishlist</h3>
+                <h3 style="font-size: 23px;font-variant: all-petite-caps;"><svg fill="#fff" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:26px;margin-bottom:-7px;"><path d="M14 10h-1V9c0-.6-.4-1-1-1s-1 .4-1 1v1h-1c-.6 0-1 .4-1 1s.4 1 1 1h1v1c0 .6.4 1 1 1s1-.4 1-1v-1h1c.6 0 1-.4 1-1s-.4-1-1-1"/><path d="M19 3H5c-.6 0-1 .4-1 1s.4 1 1 1v14.1c0 .7.4 1.4 1.1 1.8.3.2.6.2.9.2.4 0 .8-.1 1.1-.3l3.9-2.6 3.9 2.6c.6.4 1.4.5 2.1.1.7-.3 1.1-1 1.1-1.8V5c.6 0 1-.4 1-1s-.5-1-1.1-1m-2 16.1-3.9-2.6c-.3-.2-.7-.3-1.1-.3s-.8.1-1.1.3L7 19.1V5h10z"/></svg> Wishlist</h3>
                 <div id="wishlist-items" class="wishlist-items"></div>
                 <div class="wishlist-total">
-                    Total Value: <svg style="margin-right: 2px;margin-left: 3px;width: 18px;transform: translateY(4px);" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18"><path d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z" fill="#fff" fill-rule="evenodd"></path></svg><span id="wishlist-value"> 0</span> 
+                    Total Value: <svg style="margin-right: 2px;margin-left: 3px;width: 18px;transform: translateY(4px);"
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
+                        <path
+                            d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
+                            fill="#fff" fill-rule="evenodd"></path>
+                    </svg><span id="wishlist-value"> 0</span>
                 </div>
             </div>
 
             <div class="recent-section">
-                <h3>👀 Recently Viewed</h3>
+                <h3 style="font-size: 23px;font-variant: all-petite-caps;"><svg stroke="#fff" fill="#fff" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="width:23px;margin-bottom:-6px;"><path d="M20.59 22 15 16.41V7h2v8.58l5 5.01z"></path><path d="M16 2A13.94 13.94 0 0 0 6 6.23V2H4v8h8V8H7.08A12 12 0 1 1 4 16H2A14 14 0 1 0 16 2"></path></svg> Recently Viewed</h3>
                 <div id="recent-viewed-items" class="history-items"></div>
             </div>
         </div>
@@ -265,7 +270,7 @@
                 this.applyFilters();
                 this.loadBatch();
                 this.populateSeasonFilter();
-                
+
             }
 
             loadFromStorage(key, defaultValue) {
@@ -687,15 +692,15 @@
                 switch (this.sortBy) {
                     case 'price-asc':
                         this.filtered.sort((a, b) => {
-                        const priceA = a.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(a.price || 0) || Number.MAX_SAFE_INTEGER);
-                        const priceB = b.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(b.price || 0) || Number.MAX_SAFE_INTEGER);
+                            const priceA = a.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(a.price || 0) || Number.MAX_SAFE_INTEGER);
+                            const priceB = b.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(b.price || 0) || Number.MAX_SAFE_INTEGER);
                             return priceA - priceB;
                         });
                         break;
                     case 'price-desc':
                         this.filtered.sort((a, b) => {
-                        const priceA = a.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(a.price || 0) || 0);
-                        const priceB = b.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(b.price || 0) || 0);
+                            const priceA = a.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(a.price || 0) || 0);
+                            const priceB = b.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(b.price || 0) || 0);
                             return priceB - priceA;
                         });
                         break;
@@ -987,8 +992,9 @@
                         const div = document.createElement('div');
                         div.className = 'wishlist-item';
                         div.innerHTML = `
-                            ${item.img ? `<img src="${item.img}" alt="${item.name}">` : '<div style="width:50px;height:50px;background:#666;border-radius:5px;"></div>'}
-                            <div style="font-size:10px;margin-top:5px;">${item.name}</div>
+                             ${item.img ? `<img src="${item.img}" alt="${item.name}">` : item.svg ? item.svg : '<div style="width:50px;height:50px;background:#666;border-radius:5px;"></div>'}
+                            ${!item.svg ? `<div style="font-size:10px;margin-top:5px;">${item.name}</div>` : ''}
+                            ${item.price != 'N/A' ? `<div class="item-price"><svg style="width: 13px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18"><path d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z" fill="#fff" fill-rule="evenodd"></path></svg>${this.formatPrice(item.price)}</div>` : ''}
                         `;
                         div.onclick = () => {
                             this.closeStats();

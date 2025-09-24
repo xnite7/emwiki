@@ -283,18 +283,30 @@ body.light-theme .controls-bar {
 .stats-content {
     background: var(--bg-secondary);
     border-radius: 20px;
-    padding: 30px;
-    max-width: 600px;
+    padding: 20px 30px;
+    border: 1px outset #7d7d7d;
+    outline: 5px solid #000000;
+    max-width: 702px;
     width: 90%;
     max-height: 80vh;
     overflow-y: auto;
     position: relative;
 }
 
+.stats-content::-webkit-scrollbar {
+    width: 10px;
+}
+
+.stats-content::-webkit-scrollbar-thumb {
+    background-image: repeating-linear-gradient(-45deg, #ed2c6d 0 20px, #ffbc00 20px 40px);
+    box-shadow: inset 2px 2px 5px 0 rgb(255 255 255 / 50%);
+    border-radius: 100px;
+}
+
 .stats-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 20px;
 }
 
@@ -304,10 +316,10 @@ body.light-theme .controls-bar {
 }
 
 .close-stats {
-    font-size: 30px;
+    font-size: 37px;
     cursor: pointer;
     color: var(--text-secondary);
-    transition: color 0.3s;
+    transition: color 0.14s;
 }
 
 .close-stats:hover {
@@ -336,6 +348,11 @@ body.light-theme .controls-bar {
 .wishlist-item {
     background: var(--bg-item);
     border-radius: 10px;
+    width: 100px;
+    display: grid;
+    align-content: space-between;
+    justify-items: center;
+    height: 100px;
     padding: 10px;
     text-align: center;
     cursor: pointer;
@@ -541,11 +558,7 @@ body.light-theme .controls-bar {
     position: absolute;
 }
 
-.wishlist-item>svg,
-.wishlist-item>img:first-of-type {
 
-    position: relative;
-}
 
 /* Badges */
 .badge {
