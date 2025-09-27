@@ -659,6 +659,12 @@ body.light-theme .controls-bar {
     gap: 23px 15px;
     animation: fadeIn 0.5s;
     justify-items: center;
+    padding-bottom: 20px;
+}
+
+#recent-viewed-items{
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 10px 21px;
 }
 
 #wishlist-items {
