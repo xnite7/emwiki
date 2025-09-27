@@ -42,6 +42,17 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+.bn {
+    background: #222;
+    padding: 10px;
+    text-align: center;
+    opacity: 1;
+    position: fixed;
+    z-index: 222;
+    width: 100%;
+    animation: fadeIn 0.3s ease 4.5s reverse forwards;
+}
+
 header {
     text-align: center;
     padding: 20px;
@@ -332,76 +343,6 @@ body.light-theme .controls-bar {
     margin-bottom: 30px;
 }
 
-.history-items {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 10px;
-    margin: 15px 0;
-}
-
-.wishlist-items {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
-    gap: 10px;
-    margin: 15px 0;
-    zoom: .9;
-}
-
-.wishlist-item {
-    background: var(--bg-item);
-    border-radius: 10px;
-    width: 100px;
-    display: grid;
-    align-content: space-between;
-    justify-items: center;
-    height: 100px;
-    padding: 10px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    position: relative;
-}
-
-.wishlist-item:hover {
-    background: var(--bg-item-hover);
-    transform: translateY(-2px);
-}
-
-.wishlist-item img {
-    width: 50px;
-    height: 50px;
-    object-fit: contain;
-}
-
-
-.item .remove-wishlist {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: linear-gradient(180deg, #ff4444, #b70000);
-    border: 1px solid darkred;
-    color: white;
-    border-radius: 50%;
-    line-height: 0.2;
-    width: 23px;
-    height: 23px;
-    display: flex;
-    align-items: center;
-    z-index: 6;
-    justify-content: center;
-    font-size: 24px;
-    cursor: pointer;
-}
-
-.item .remove-wishlist:hover {
-
-    background: linear-gradient(180deg, #ff4444, #ff4444);
-    border: 1px solid rgb(255, 255, 255);
-
-}
-
-
-
 .wishlist-total {
     font-variant: all-petite-caps;
     color: darkgray;
@@ -420,17 +361,7 @@ body.light-theme .controls-bar {
 }
 
 
-.bn {
-    background: #222;
-    padding: 10px;
-    text-align: center;
-    opacity: 1;
-    position: fixed;
-    z-index: 222;
-    width: 100%;
-    animation: fadeIn 0.3s ease 4.5s reverse forwards;
-  
-}
+
 
 
 
@@ -730,6 +661,10 @@ body.light-theme .controls-bar {
     justify-items: center;
 }
 
+#wishlist-items {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -739,11 +674,6 @@ body.light-theme .controls-bar {
         opacity: 1;
     }
 }
-
-
-
-
-
 
 .item {
     background: var(--bg-item);
@@ -766,20 +696,26 @@ body.light-theme .controls-bar {
         corner-shape: squircle;
         border-radius: 26px;
     }
-
 }
 
-#recent-viewed-items .wishlist-item {
+#wishlist-items .item {
+    height: 100px;
+    width: 100px;
+}
+
+.item:hover {
+    transform: translateY(-5px);
+    background: var(--bg-item-hover);
+    box-shadow: 0 10px 30px transparent, inset -3px -3px 12px 0px var(--shadow-color);
+}
+
+#recent-viewed-items .item {
     background: rgb(0 0 0 / 32%);
 }
 
-
-
 .item>img:first-of-type,
 .item canvas,
-.item>svg,
-.wishlist-item>svg,
-.wishlist-item>img:first-of-type {
+.item>svg {
     max-width: 80%;
     max-height: 80%;
     place-self: anchor-center;
@@ -787,10 +723,33 @@ body.light-theme .controls-bar {
     position: absolute;
 }
 
-.item>svg{
+.item>svg {
     max-height: max-content;
 }
 
+.remove-wishlist {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: linear-gradient(180deg, #ff4444, #b70000);
+    border: 1px solid darkred;
+    color: white;
+    border-radius: 50%;
+    line-height: 0.2;
+    width: 23px;
+    height: 23px;
+    display: flex;
+    align-items: center;
+    z-index: 6;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.remove-wishlist:hover {
+    background: linear-gradient(180deg, #ff4444, #ff4444);
+    border: 1px solid rgb(255, 255, 255);
+}
 
 /* Badges */
 .badge {
@@ -844,12 +803,7 @@ body.light-theme .controls-bar {
     left: 7px;
 }
 
-.item:hover {
-    transform: translateY(-5px);
-    background: var(--bg-item-hover);
-    box-shadow: 0 10px 30px transparent, inset -3px -3px 12px 0px var(--shadow-color);
 
-}
 
 
 @keyframes rotate3d {
@@ -1309,18 +1263,23 @@ button {
         font-size: 11px;
     }
 
+    .stats-content {
+        padding: 12px 17px;
+        width: -webkit-fill-available;
+    }
+
     .category-carousel-container {
         zoom: 0.8;
     }
 
     .catalog-grid {
-        display: grid;
         grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
         gap: 23px 10px;
-        animation: fadeIn 0.5s;
     }
 
-
+    #wishlist-items {
+        gap: 5px 5px;
+    }
 }
 
 
@@ -1556,142 +1515,163 @@ button {
 
 
 .tags-dropdown {
-            position: relative;
-            display: inline-block;
-        }
+    position: relative;
+    display: inline-block;
+}
 
-        .tags-dropdown .dropdown-btn {
-            padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: #fff;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-        }
+.tags-dropdown .dropdown-btn {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
 
-        .tags-dropdown .dropdown-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-1px);
-        }
+.tags-dropdown .dropdown-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
 
-        .tags-dropdown .dropdown-btn .tag-count {
-            background: #667eea;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            min-width: 20px;
-            text-align: center;
-        }
+.tags-dropdown .dropdown-btn .tag-count {
+    background: #667eea;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    min-width: 20px;
+    text-align: center;
+}
 
-        #tags-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background: rgba(30, 30, 30, 0.98);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            margin-top: 8px;
-            min-width: 250px;
-            max-height: 300px;
-            overflow-y: auto;
-            display: none;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-        }
+#tags-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: rgba(30, 30, 30, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    margin-top: 8px;
+    min-width: 250px;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
 
-        #tags-menu.show {
-            display: block;
-            animation: slideDown 0.2s ease;
-        }
+#tags-menu.show {
+    display: block;
+    animation: slideDown 0.2s ease;
+}
 
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
 
-        .tag-item {
-            padding: 10px 15px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: background 0.2s;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
-        .tag-item:last-child {
-            border-bottom: none;
-        }
+.tag-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
 
-        .tag-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
+.tag-item:last-child {
+    border-bottom: none;
+}
 
-        .tag-item.selected {
-            background: rgba(102, 126, 234, 0.2);
-        }
+.tag-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
 
-        .tag-checkbox {
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
+.tag-item.selected {
+    background: rgba(102, 126, 234, 0.2);
+}
 
-        .tag-item.selected .tag-checkbox {
-            background: #667eea;
-            border-color: #667eea;
-        }
+.tag-checkbox {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
 
-        .tag-item.selected .tag-checkbox::after {
-            content: '✓';
-            color: white;
-            font-size: 12px;
-            font-weight: bold;
-        }
+.tag-item.selected .tag-checkbox {
+    background: #667eea;
+    border-color: #667eea;
+}
 
-        .tag-item .tag-icon {
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+.tag-item.selected .tag-checkbox::after {
+    content: '✓';
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
 
-        .tag-item .tag-label {
-            flex: 1;
-            color: #fff;
-            font-size: 14px;
-        }
+.tag-item .tag-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-        .tag-item .tag-count {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 12px;
-        }
+.tag-item .tag-label {
+    flex: 1;
+    color: #fff;
+    font-size: 14px;
+}
 
-        /* Icon styles */
-        .newest-icon::before { content: '✨'; }
-        .untradable-icon::before { content: '🔒'; }
-        .premium-icon::before { content: '💎'; }
-        .retired-icon::before { content: '⏰'; }
-        .favorites-icon::before { content: '❤️'; }
-        .gamenight-icon::before { content: '🎮'; }
-        .unreleased-icon::before { content: '🛡️'; }
+.tag-item .tag-count {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+}
+
+/* Icon styles */
+.newest-icon::before {
+    content: '✨';
+}
+
+.untradable-icon::before {
+    content: '🔒';
+}
+
+.premium-icon::before {
+    content: '💎';
+}
+
+.retired-icon::before {
+    content: '⏰';
+}
+
+.favorites-icon::before {
+    content: '❤️';
+}
+
+.gamenight-icon::before {
+    content: '🎮';
+}
+
+.unreleased-icon::before {
+    content: '🛡️';
+}
