@@ -542,7 +542,7 @@
                 setTimeout(() => {
                     document.querySelector('.bn').style.display = 'none';
                 }, 5000);
-                document.querySelector('.chest-expand-toggle').textContent = !chestCollapsed ? '/\\' : '\\/';
+
 
             }
 
@@ -583,7 +583,6 @@
                 // Close other menus
                 document.getElementById('sort-menu').classList.remove('show');
                 document.getElementById('season-menu').classList.remove('show');
-                document.getElementById('tags-menu').classList.remove('show');
             }
 
             selectChest(chest) {
@@ -1031,7 +1030,7 @@
             }
 
             updateTagsLabel() {
-                console.log(this.filters.tags.size + (this.seasonFilter !== 'all' ? 1 : 0))
+
                 const selectedCount = this.filters.tags.size + (this.seasonFilter !== 'all' ? 1 : 0);
                 const tagLabel = document.getElementById('filters-label');
                 const tagCount = document.getElementById('filter-count');
