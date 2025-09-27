@@ -67,7 +67,7 @@ header a svg {
     transition: transform .25s cubic-bezier(.7, .38, .24, 1.27);
     max-width: 300px;
     width: 30%;
-    min-width: 250px;
+    min-width: 208px;
     height: auto;
     overflow: visible;
 }
@@ -421,9 +421,15 @@ body.light-theme .controls-bar {
 
 
 .bn {
-    background: var(--bg-item);
+    background: #222;
     padding: 10px;
-    text-align: center
+    text-align: center;
+    opacity: 1;
+    position: fixed;
+    z-index: 222;
+    width: 100%;
+    animation: fadeIn 0.3s ease 4.5s reverse forwards;
+  
 }
 
 
@@ -712,8 +718,7 @@ body.light-theme .controls-bar {
 
 
 .chest-dropdown.collapsed .chest-dropdown-btn,
-.chest-dropdown.collapsed .filter-chip[data-filter="gamenight"],
-.chest-dropdown.collapsed .filter-chip[data-filter="unreleased"] {
+.chest-dropdown.collapsed .filter-chip {
     display: none;
 }
 
@@ -782,6 +787,9 @@ body.light-theme .controls-bar {
     position: absolute;
 }
 
+.item>svg{
+    max-height: max-content;
+}
 
 
 /* Badges */
@@ -1113,8 +1121,7 @@ button {
 
 /* Search Bar */
 .search-wrapper {
-    width: 30%;
-    min-width: 414px;
+    width: -webkit-fill-available;
     max-width: 455px;
     position: relative;
 }
@@ -1298,8 +1305,12 @@ button {
         height: 110px;
     }
 
+    .bn {
+        font-size: 11px;
+    }
+
     .category-carousel-container {
-        zoom: 0.89;
+        zoom: 0.8;
     }
 
     .catalog-grid {
@@ -1542,3 +1553,145 @@ button {
 .category-item.selecting::after {
     animation: selectPulse 0.6s ease-out;
 }
+
+
+.tags-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tags-dropdown .dropdown-btn {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .tags-dropdown .dropdown-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .tags-dropdown .dropdown-btn .tag-count {
+            background: #667eea;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        #tags-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: rgba(30, 30, 30, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            margin-top: 8px;
+            min-width: 250px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        #tags-menu.show {
+            display: block;
+            animation: slideDown 0.2s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tag-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .tag-item:last-child {
+            border-bottom: none;
+        }
+
+        .tag-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tag-item.selected {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .tag-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .tag-item.selected .tag-checkbox {
+            background: #667eea;
+            border-color: #667eea;
+        }
+
+        .tag-item.selected .tag-checkbox::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .tag-item .tag-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tag-item .tag-label {
+            flex: 1;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .tag-item .tag-count {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+        }
+
+        /* Icon styles */
+        .newest-icon::before { content: '✨'; }
+        .untradable-icon::before { content: '🔒'; }
+        .premium-icon::before { content: '💎'; }
+        .retired-icon::before { content: '⏰'; }
+        .favorites-icon::before { content: '❤️'; }
+        .gamenight-icon::before { content: '🎮'; }
+        .unreleased-icon::before { content: '🛡️'; }

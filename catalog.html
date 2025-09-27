@@ -12,10 +12,6 @@
 <div class="bn">
     🛠️ Site updated May 31 — <a style="color: #33c5ff;" href="#patchnotes">See
         what's new</a> — All the items have been added!
-
-    <button
-        style="right: 15px;position: absolute;padding: 5px 10px;font-size: 17px;border-radius: 8px;background: transparent;border: none;cursor: pointer;"
-        onclick="document.querySelector('.bn').remove()">x</button>
 </div>
 
 <body>
@@ -121,62 +117,104 @@
                 <input id="search-bar" type="text" placeholder="Search items..." />
                 <div id="recent-items" class="recent-items"></div>
             </div>
-
-            <!-- Sort Dropdown -->
-            <div class="sort-dropdown">
-                <button class="dropdown-btn" onclick="catalog.toggleSort()">
-                    <span>Sort:</span> <span id="sort-label">Categorical</span> ▼
-                </button>
-                <div id="sort-menu" class="dropdown-content">
-                    <div class="dropdown-item" data-sort="default">Categorical</div>
-                    <div class="dropdown-item" data-sort="name-asc">Name: A ➔ Z</div>
-                    <div class="dropdown-item" data-sort="name-desc">Name: Z ➔ A</div>
-                    <div class="dropdown-item" data-sort="price-asc">Price: Low to High</div>
-                    <div class="dropdown-item" data-sort="price-desc">Price: High to Low</div>
-
-                </div>
-            </div>
-
-
-
-            <!-- Season Filter -->
-            <div class="season-dropdown">
-                <button class="dropdown-btn" onclick="catalog.toggleSeason()">
-                    <span>Season:</span> <span id="season-label">All</span> ▼
-                </button>
-                <div id="season-menu" class="dropdown-content">
-                    <div class="dropdown-item active" data-season="all">All Seasons</div>
-                </div>
-            </div>
-
-            <!-- Stats Dashboard -->
-            <button class="stats-btn" onclick="catalog.openStats()">My Lists</button>
         </div>
-
-        <div class="filters">
-            <button class="filter-chip" data-filter="new"><span class="icon newest-icon"></span> New</button>
-            <button class="filter-chip" data-filter="untradable"><span class="icon untradable-icon"></span>
-                Untradable</button>
-            <button class="filter-chip" style="display: none;" data-filter="premium"><span
-                    class="icon premium-icon"></span> Premium</button>
-            <button class="filter-chip" data-filter="retired"><span class="icon retired-icon"></span> Retired</button>
-            <button class="filter-chip" data-filter="favorites"><span class="icon favorites-icon"></span>
-                Favorites</button>
-        </div>
-
-
-
         <div class="chest-dropdown">
             <a class="chest-expand-toggle" onclick="catalog.toggleChestExpand()">View advanced filters</a>
-            <button class="filter-chip" data-filter="gamenight"><span class="icon gamenight-icon"></span>
-                Gamenight</button>
+
+            <div class="filters">
+                <!-- Sort Dropdown -->
+                <div class="sort-dropdown">
+                    <button class="dropdown-btn" onclick="catalog.toggleSort()">
+                        <span>Sort:</span> <span id="sort-label">Categorical</span> ▼
+                    </button>
+                    <div id="sort-menu" class="dropdown-content">
+                        <div class="dropdown-item" data-sort="default">Categorical</div>
+                        <div class="dropdown-item" data-sort="name-asc">Name: A ➔ Z</div>
+                        <div class="dropdown-item" data-sort="name-desc">Name: Z ➔ A</div>
+                        <div class="dropdown-item" data-sort="price-asc">Price: Low to High</div>
+                        <div class="dropdown-item" data-sort="price-desc">Price: High to Low</div>
+
+                    </div>
+                </div>
+
+
+
+                <!-- Season Filter -->
+                <div class="season-dropdown">
+                    <button class="dropdown-btn" onclick="catalog.toggleSeason()">
+                        <span>Season:</span> <span id="season-label">All</span> ▼
+                    </button>
+                    <div id="season-menu" class="dropdown-content">
+                        <div class="dropdown-item active" data-season="all">All Seasons</div>
+                    </div>
+                </div>
+
+                <!-- Tags Dropdown (Replaces individual filter chips) -->
+                <div class="tags-dropdown">
+                    <button class="dropdown-btn" onclick="catalog.toggleTags()">
+                        <span>Tags:</span>
+                        <span id="tags-label">None</span>
+                        <span class="tag-count" id="tag-count" style="display: none;">0</span>
+                        <span>▼</span>
+                    </button>
+                    <div id="tags-menu" class="tags-menu">
+                        <div class="tag-item" data-tag="new">
+                            <div class="tag-checkbox"></div>
+                            <div class="tag-icon newest-icon"></div>
+                            <div class="tag-label">New</div>
+                            <div class="tag-count" id="count-new">0</div>
+                        </div>
+                        <div class="tag-item" data-tag="untradable">
+                            <div class="tag-checkbox"></div>
+                            <div class="tag-icon untradable-icon"></div>
+                            <div class="tag-label">Untradable</div>
+                            <div class="tag-count" id="count-untradable">0</div>
+                        </div>
+                        <div class="tag-item" data-tag="premium">
+                            <div class="tag-checkbox"></div>
+                            <div class="tag-icon premium-icon"></div>
+                            <div class="tag-label">Premium</div>
+                            <div class="tag-count" id="count-premium">0</div>
+                        </div>
+                        <div class="tag-item" data-tag="retired">
+                            <div class="tag-checkbox"></div>
+                            <div class="tag-icon retired-icon"></div>
+                            <div class="tag-label">Retired</div>
+                            <div class="tag-count" id="count-retired">0</div>
+                        </div>
+                        <div class="tag-item" data-tag="favorites">
+                            <div class="tag-checkbox"></div>
+                            <div class="tag-icon favorites-icon"></div>
+                            <div class="tag-label">Favorites</div>
+                            <div class="tag-count" id="count-favorites">0</div>
+                        </div>
+                        <div class="tag-item" data-tag="gamenight">
+                            <div class="tag-checkbox"></div>
+                            <div class="tag-icon gamenight-icon"></div>
+                            <div class="tag-label">Gamenight</div>
+                            <div class="tag-count" id="count-gamenight">0</div>
+                        </div>
+                        <div class="tag-item" data-tag="unreleased">
+                            <div class="tag-checkbox"></div>
+                            <div class="tag-icon unreleased-icon"></div>
+                            <div class="tag-label">Staff/Unreleased</div>
+                            <div class="tag-count" id="count-unreleased">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Dashboard -->
+                <button class="stats-btn" onclick="catalog.openStats()">My Lists</button>
+            </div>
+
+
 
             <button class="chest-dropdown-btn" onclick="catalog.toggleChestMenu()">
                 <span>Chest:</span>
                 <span id="chest-label">None</span>
                 <span>▼</span>
             </button>
-            <button class="filter-chip" style="padding-bottom: 8px;" data-filter="unreleased">🛡 Staff/Unreleased</button>
+
             <div id="chest-menu" class="chest-menu">
                 <div class="chest-item" data-chest="all" onclick="catalog.selectChest('all')">
                     <svg style="width: 32px;margin: 0 18px 0 4px;" viewBox="0 0 1920 1920" fill="url(#nostops)"
@@ -411,7 +449,7 @@
 
     <button
         style="margin-left: 15px; padding: 5px 10px; border-radius: 8px; background: #33c5ff; border: none; cursor: pointer;"
-        onclick="window.location.href='https://emwiki.site/admin.html'">Admin</button>
+        onclick="window.location.href=`https://emwiki.site/admin.html`">Admin</button>
 
     <script>
         // Clean, simple catalog system
@@ -442,6 +480,17 @@
                     category: 'all',
                     tags: new Set(),
                     search: ''
+                };
+
+                // Tag counts for display
+                this.tagCounts = {
+                    new: 0,
+                    untradable: 0,
+                    premium: 0,
+                    retired: 0,
+                    favorites: 0,
+                    gamenight: 0,
+                    unreleased: 0
                 };
 
                 this.favorites = this.loadFromStorage('favorites', []);
@@ -486,7 +535,6 @@
                     document.querySelector('.chest-dropdown').classList.add('collapsed');
                     document.querySelector('.chest-expand-toggle').classList.add('collapsed');
                 }
-
             }
 
             loadFromStorage(key, defaultValue) {
@@ -553,14 +601,36 @@
             }
 
             setupParticleCanvas() {
-                this.resizeCanvas();
-                window.addEventListener('resize', () => this.resizeCanvas());
-                this.animateParticles();
-            }
+                this.particleCanvas = document.getElementById('particle-canvas');
+                this.particleCtx = this.particleCanvas.getContext('2d');
+                window.addEventListener('resize', () => {
+                    this.particleCanvas.width = window.innerWidth;
+                    this.particleCanvas.height = window.innerHeight;
+                });
+                const animateParticles = () => {
+                    this.particleCtx.clearRect(0, 0, this.particleCanvas.width, this.particleCanvas.height);
 
-            resizeCanvas() {
-                this.particleCanvas.width = window.innerWidth;
-                this.particleCanvas.height = window.innerHeight;
+                    for (let i = this.particles.length - 1; i >= 0; i--) {
+                        const p = this.particles[i];
+
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.vy += 0.3; // Gravity
+                        p.life -= 0.02;
+
+                        if (p.life <= 0) {
+                            this.particles.splice(i, 1);
+                            continue;
+                        }
+
+                        this.particleCtx.globalAlpha = p.life;
+                        this.particleCtx.fillStyle = p.color;
+                        this.particleCtx.fillRect(p.x, p.y, p.size, p.size);
+                    }
+
+                    requestAnimationFrame(animateParticles);
+                };
+                animateParticles();
             }
 
             createParticles(x, y, colors = ['#ff0000', '#ff4444', '#ff8888', '#ffaaaa']) {
@@ -577,29 +647,6 @@
                 }
             }
 
-            animateParticles() {
-                this.particleCtx.clearRect(0, 0, this.particleCanvas.width, this.particleCanvas.height);
-
-                for (let i = this.particles.length - 1; i >= 0; i--) {
-                    const p = this.particles[i];
-
-                    p.x += p.vx;
-                    p.y += p.vy;
-                    p.vy += 0.3; // Gravity
-                    p.life -= 0.02;
-
-                    if (p.life <= 0) {
-                        this.particles.splice(i, 1);
-                        continue;
-                    }
-
-                    this.particleCtx.globalAlpha = p.life;
-                    this.particleCtx.fillStyle = p.color;
-                    this.particleCtx.fillRect(p.x, p.y, p.size, p.size);
-                }
-
-                requestAnimationFrame(() => this.animateParticles());
-            }
             renderCategoryCarousel() {
                 const carousel = document.getElementById('categoryCarousel');
 
@@ -665,7 +712,6 @@
                 this.renderCategoryCarousel();
                 this.applyFilters();
             }
-
 
             prevCategory() {
                 if (this.currentCategoryIndex > 0) {
@@ -737,6 +783,7 @@
                     seasonMenu.appendChild(item);
                 });
             }
+
             toggleChestExpand() {
                 const chestDropdown = document.querySelector('.chest-dropdown');
                 const expandToggle = document.querySelector('.chest-expand-toggle');
@@ -930,33 +977,75 @@
                 });
             }
 
-            showRecentItems() {
-                if (this.recentlyViewed.length === 0) return;
+            updateTagCounts() {
+                // Reset counts
+                Object.keys(this.tagCounts).forEach(key => this.tagCounts[key] = 0);
 
-                const recentDiv = document.getElementById('recent-items');
-                recentDiv.innerHTML = '';
+                // Count items for each tag
+                this.items.forEach(item => {
+                    if (item.new) this.tagCounts.new++;
+                    if (item.tradable === false) this.tagCounts.untradable++;
+                    if (item.premium) this.tagCounts.premium++;
+                    if (item.retired) this.tagCounts.retired++;
+                    if (this.favorites.includes(item.name)) this.tagCounts.favorites++;
 
-                const recent = this.recentlyViewed.slice(0, 5);
-                recent.forEach(itemName => {
-                    const item = this.items.find(i => i.name === itemName);
-                    if (item) {
-                        const div = document.createElement('div');
-                        div.className = 'recent-item';
-                        div.innerHTML = `
-                            ${item.img ? `<img src="${item.img}" alt="${item.name}">` : '<div style="width:30px;height:30px;background:#666;border-radius:5px;"></div>'}
-                            <span>${item.name}</span>
-                        `;
-                        div.onclick = () => {
-                            document.getElementById('search-bar').value = item.name;
-                            this.filters.search = item.name.toLowerCase();
-                            this.applyFilters();
-                            recentDiv.classList.remove('show');
-                        };
-                        recentDiv.appendChild(div);
+                    const from = (item.from || '').toLowerCase();
+                    if (from.includes('gamenight')) this.tagCounts.gamenight++;
+                    if (from.includes('unreleased') || from.includes('@zarabelle') || from.includes('@typicaltype')) {
+                        this.tagCounts.unreleased++;
                     }
                 });
 
-                recentDiv.classList.add('show');
+                // Update UI counts
+                Object.keys(this.tagCounts).forEach(tag => {
+                    const countEl = document.getElementById(`count-${tag}`);
+                    if (countEl) {
+                        countEl.textContent = this.tagCounts[tag];
+                    }
+                });
+            }
+
+            toggleTags() {
+                const menu = document.getElementById('tags-menu');
+                menu.classList.toggle('show');
+
+                // Close other menus
+                document.getElementById('sort-menu')?.classList.remove('show');
+                document.getElementById('season-menu')?.classList.remove('show');
+                document.getElementById('chest-menu')?.classList.remove('show');
+            }
+
+            selectTag(tagElement, tagName) {
+                tagElement.classList.toggle('selected');
+
+                if (this.filters.tags.has(tagName)) {
+                    this.filters.tags.delete(tagName);
+                } else {
+                    this.filters.tags.add(tagName);
+                }
+
+                this.updateTagsLabel();
+                this.applyFilters();
+            }
+
+            updateTagsLabel() {
+                const selectedCount = this.filters.tags.size;
+                const tagLabel = document.getElementById('tags-label');
+                const tagCount = document.getElementById('tag-count');
+
+                if (selectedCount === 0) {
+                    tagLabel.textContent = 'None';
+                    tagCount.style.display = 'none';
+                } else {
+                    const tagNames = Array.from(this.filters.tags);
+                    if (selectedCount === 1) {
+                        tagLabel.textContent = tagNames[0].charAt(0).toUpperCase() + tagNames[0].slice(1);
+                    } else {
+                        tagLabel.textContent = 'Multiple';
+                    }
+                    tagCount.textContent = selectedCount;
+                    tagCount.style.display = 'inline-block';
+                }
             }
 
             applyFilters() {
@@ -1105,9 +1194,6 @@
                 }, 300);
             }
 
-
-
-
             renderItem(data) {
                 const item = document.createElement('div');
                 item.className = 'item';
@@ -1231,11 +1317,26 @@
             }
 
             formatPrice(price) {
-                const num = parseInt(price);
-                if (num >= 1000) {
-                    return Math.floor(num / 1000) + 'k';
+                function formatNum(num) {
+                    if (num >= 1000) {
+                        let val = (num / 1000).toFixed(1); // one decimal
+                        // remove trailing .0
+                        val = val.replace(/\.0$/, '');
+                        return val + 'k';
+                    }
+                    return num.toString();
                 }
-                return price;
+
+                // Handle ranges like "800-1000"
+                if (price.includes('-')) {
+                    return price
+                        .split('-')
+                        .map(p => formatNum(parseInt(p.trim())))
+                        .join('-');
+                }
+
+                // Handle single numbers
+                return formatNum(parseInt(price));
             }
 
             toggleFavorite(name) {
@@ -1257,6 +1358,35 @@
                 }
                 this.saveToStorage('wishlist', this.wishlist);
                 this.updateStatsIfOpen();
+            }
+
+            showRecentItems() {
+                if (this.recentlyViewed.length === 0) return;
+
+                const recentDiv = document.getElementById('recent-items');
+                recentDiv.innerHTML = '';
+
+                const recent = this.recentlyViewed.slice(0, 5);
+                recent.forEach(itemName => {
+                    const item = this.items.find(i => i.name === itemName);
+                    if (item) {
+                        const div = document.createElement('div');
+                        div.className = 'recent-item';
+                        div.innerHTML = `
+                            ${item.img ? `<img src="${item.img}" alt="${item.name}">` : '<div style="width:30px;height:30px;background:#666;border-radius:5px;"></div>'}
+                            <span>${item.name}</span>
+                        `;
+                        div.onclick = () => {
+                            document.getElementById('search-bar').value = item.name;
+                            this.filters.search = item.name.toLowerCase();
+                            this.applyFilters();
+                            recentDiv.classList.remove('show');
+                        };
+                        recentDiv.appendChild(div);
+                    }
+                });
+
+                recentDiv.classList.add('show');
             }
 
             addToRecentlyViewed(name) {
