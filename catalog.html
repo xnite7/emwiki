@@ -119,7 +119,7 @@
             </div>
         </div>
         <div class="chest-dropdown">
-            <a class="chest-expand-toggle" onclick="catalog.toggleChestExpand()">View advanced filters</a>
+
 
             <div class="filters">
                 <!-- Sort Dropdown -->
@@ -137,246 +137,248 @@
                     </div>
                 </div>
 
+                <!-- Stats Dashboard -->
+                <button class="stats-btn" onclick="catalog.openStats()">My Lists</button>
 
-
-                <!-- Season Filter -->
-                <div class="season-dropdown">
-                    <button class="dropdown-btn" onclick="catalog.toggleSeason()">
-                        <span>Season:</span> <span id="season-label">All</span> ▼
-                    </button>
-                    <div id="season-menu" class="dropdown-content">
-                        <div class="dropdown-item active" data-season="all">All Seasons</div>
-                    </div>
-                </div>
-
-                <!-- Tags Dropdown (Replaces individual filter chips) -->
-                <div class="tags-dropdown">
-                    <button class="dropdown-btn" onclick="catalog.toggleTags()">
-                        <span>Tags:</span>
-                        <span id="tags-label">None</span>
-                        <span class="tag-count" id="tag-count" style="display: none;">0</span>
+                <!-- Filters Dropdown -->
+                <div class="filters-dropdown">
+                    <button class="dropdown-btn" onclick="catalog.toggleFilters()">
+                        <span>Filters:</span>
+                        <span id="filters-label">None</span>
+                        <span class="filter-count" id="filter-count" style="display: none;">0</span>
                         <span>▼</span>
                     </button>
-                    <div id="tags-menu" class="tags-menu">
-                        <div class="tag-item" data-tag="new">
+
+                    <div id="filters-menu" class="dropdown-content">
+                        <!-- Regular Filters -->
+                        <div class="dropdown-item" data-filter="new">
                             <div class="tag-checkbox"></div>
-                            <div class="tag-icon newest-icon"></div>
+                            <span class="icon newest-icon"></span>
                             <div class="tag-label">New</div>
                             <div class="tag-count" id="count-new">0</div>
                         </div>
-                        <div class="tag-item" data-tag="untradable">
+
+                        <div class="dropdown-item" data-filter="untradable">
                             <div class="tag-checkbox"></div>
-                            <div class="tag-icon untradable-icon"></div>
+                            <span class="icon untradable-icon"></span>
                             <div class="tag-label">Untradable</div>
                             <div class="tag-count" id="count-untradable">0</div>
                         </div>
-                        <div class="tag-item" data-tag="premium">
+
+                        <div class="dropdown-item" data-filter="retired">
                             <div class="tag-checkbox"></div>
-                            <div class="tag-icon premium-icon"></div>
-                            <div class="tag-label">Premium</div>
-                            <div class="tag-count" id="count-premium">0</div>
-                        </div>
-                        <div class="tag-item" data-tag="retired">
-                            <div class="tag-checkbox"></div>
-                            <div class="tag-icon retired-icon"></div>
+                            <span class="icon retired-icon"></span>
                             <div class="tag-label">Retired</div>
                             <div class="tag-count" id="count-retired">0</div>
                         </div>
-                        <div class="tag-item" data-tag="favorites">
+
+                        <div class="dropdown-item" data-filter="favorites">
                             <div class="tag-checkbox"></div>
-                            <div class="tag-icon favorites-icon"></div>
+                            <span class="icon favorites-icon"></span>
                             <div class="tag-label">Favorites</div>
                             <div class="tag-count" id="count-favorites">0</div>
                         </div>
-                        <div class="tag-item" data-tag="gamenight">
+
+                        <div class="dropdown-item" data-filter="gamenight">
                             <div class="tag-checkbox"></div>
-                            <div class="tag-icon gamenight-icon"></div>
+                            <span class="icon gamenight-icon"></span>
                             <div class="tag-label">Gamenight</div>
                             <div class="tag-count" id="count-gamenight">0</div>
                         </div>
-                        <div class="tag-item" data-tag="unreleased">
+
+                        <div class="dropdown-item" data-filter="unreleased">
                             <div class="tag-checkbox"></div>
-                            <div class="tag-icon unreleased-icon"></div>
-                            <div class="tag-label">Staff/Unreleased</div>
+                            <span class="icon unreleased-icon"></span>
+                            <div class="tag-label">Unreleased</div>
                             <div class="tag-count" id="count-unreleased">0</div>
                         </div>
+
+                        <!-- Seasons Submenu -->
+                        <div class="submenu" onclick="catalog.toggleSeason()">
+                            <span class="tag-label">Seasons ▸</span>
+                            <div class="dropdown-content" id="season-menu">
+                                <div class="dropdown-item active" data-season="all">All Seasons</div>
+                                <!-- scrollable list -->
+                            </div>
+                        </div>
+
+
                     </div>
                 </div>
 
-                <!-- Stats Dashboard -->
-                <button class="stats-btn" onclick="catalog.openStats()">My Lists</button>
-            </div>
-
-
-
-            <button class="chest-dropdown-btn" onclick="catalog.toggleChestMenu()">
-                <span>Chest:</span>
-                <span id="chest-label">None</span>
-                <span>▼</span>
-            </button>
-
-            <div id="chest-menu" class="chest-menu">
-                <div class="chest-item" data-chest="all" onclick="catalog.selectChest('all')">
-                    <svg style="width: 32px;margin: 0 18px 0 4px;" viewBox="0 0 1920 1920" fill="url(#nostops)"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <linearGradient id="nostops" y2="100%">
-                                <stop style="stop-color:#fff6ee" />
-                                <stop offset="1" style="stop-color:#555" />
-                            </linearGradient>
-                        </defs>
-                        <path stroke="#fff" paint-order="stroke" stroke-width="5"
-                            d="M213.333 960c0-167.36 56-321.707 149.44-446.4L1406.4 1557.227c-124.693 93.44-279.04 149.44-446.4 149.44-411.627 0-746.667-335.04-746.667-746.667m1493.334 0c0 167.36-56 321.707-149.44 446.4L513.6 362.773c124.693-93.44 279.04-149.44 446.4-149.44 411.627 0 746.667 335.04 746.667 746.667M960 0C429.76 0 0 429.76 0 960s429.76 960 960 960 960-429.76 960-960S1490.24 0 960 0"
-                            fill-rule="evenodd" />
-                    </svg>
-                    <div class="chest-item-info">
-                        <div class="chest-name">None</div>
-                        <div class="chest-meta">Show everything</div>
-                    </div>
-                </div>
-                <div class="chest-item" data-chest="itemcrate" onclick="catalog.selectChest('itemcrate')">
-                    <img src="https://i.imgur.com/lZXN7AA.png" alt="Item Crate">
-                    <div class="chest-item-info">
-                        <div class="chest-name">Item Crate</div>
-                        <div class="chest-meta">
-                            <span class="chest-timer"><svg fill="#87ceeb"
-                                    style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
-                                    viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
-                                </svg> 15:00</span>
+                <button class="chest-dropdown-btn" onclick="catalog.toggleChestMenu()">
+                    <span>Chest:</span>
+                    <span id="chest-label">None</span>
+                    <span>▼</span>
+                    <div id="chest-menu" class="chest-menu">
+                        <div class="chest-item" data-chest="all" onclick="catalog.selectChest('all')">
+                            <svg style="width: 32px;margin: 0 18px 0 4px;" viewBox="0 0 1920 1920" fill="url(#nostops)"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <linearGradient id="nostops" y2="100%">
+                                        <stop style="stop-color:#fff6ee" />
+                                        <stop offset="1" style="stop-color:#555" />
+                                    </linearGradient>
+                                </defs>
+                                <path stroke="#fff" paint-order="stroke" stroke-width="5"
+                                    d="M213.333 960c0-167.36 56-321.707 149.44-446.4L1406.4 1557.227c-124.693 93.44-279.04 149.44-446.4 149.44-411.627 0-746.667-335.04-746.667-746.667m1493.334 0c0 167.36-56 321.707-149.44 446.4L513.6 362.773c124.693-93.44 279.04-149.44 446.4-149.44 411.627 0 746.667 335.04 746.667 746.667M960 0C429.76 0 0 429.76 0 960s429.76 960 960 960 960-429.76 960-960S1490.24 0 960 0"
+                                    fill-rule="evenodd" />
+                            </svg>
+                            <div class="chest-item-info">
+                                <div class="chest-name">None</div>
+                                <div class="chest-meta">Show everything</div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="chest-item" data-chest="luckychest" onclick="catalog.selectChest('luckychest')">
-                    <img src="https://i.imgur.com/WFdzb0V.png" alt="Lucky Chest">
-                    <div class="chest-item-info">
-                        <div class="chest-name">Lucky Chest</div>
-                        <div class="chest-meta">
-                            <span class="chest-timer"><svg fill="#87ceeb"
-                                    style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
-                                    viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
-                                </svg> 30:00</span>
+                        <div class="chest-item" data-chest="itemcrate" onclick="catalog.selectChest('itemcrate')">
+                            <img src="https://i.imgur.com/lZXN7AA.png" alt="Item Crate">
+                            <div class="chest-item-info">
+                                <div class="chest-name">Item Crate</div>
+                                <div class="chest-meta">
+                                    <span class="chest-timer"><svg fill="#87ceeb"
+                                            style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
+                                            viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
+                                        </svg> 15:00</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="chest-item" data-chest="1hrplaytime" onclick="catalog.selectChest('1hrplaytime')">
-                    <img src="https://i.imgur.com/IBCeaLF.png" alt="1 Hour Playtime">
-                    <div class="chest-item-info">
-                        <div class="chest-name">1 Hour Playtime</div>
-                        <div class="chest-meta">
-                            <span class="chest-timer"><svg fill="#87ceeb"
-                                    style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
-                                    viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
-                                </svg> 1:00:00</span>
+                        <div class="chest-item" data-chest="luckychest" onclick="catalog.selectChest('luckychest')">
+                            <img src="https://i.imgur.com/WFdzb0V.png" alt="Lucky Chest">
+                            <div class="chest-item-info">
+                                <div class="chest-name">Lucky Chest</div>
+                                <div class="chest-meta">
+                                    <span class="chest-timer"><svg fill="#87ceeb"
+                                            style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
+                                            viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
+                                        </svg> 30:00</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="chest-item" data-chest="mysterybag" onclick="catalog.selectChest('mysterybag')">
-                    <img src="https://i.imgur.com/mLNEYGn.png" alt="Mystery Bag">
-                    <div class="chest-item-info">
-                        <div class="chest-name">Mystery Bag</div>
-                        <div class="chest-meta">Random rewards</div>
-                    </div>
-                </div>
-                <div class="chest-item" data-chest="typicalchest" onclick="catalog.selectChest('typicalchest')">
-                    <img src="https://i.imgur.com/bpigTac.png" alt="Typical Chest">
-                    <div class="chest-item-info">
-                        <div class="chest-name">Typical Chest</div>
-                        <div class="chest-meta">
-                            <span class="chest-price"><img src="./imgs/Coin.webp"
-                                    style="transform: translateY(2px);margin-right: 2px;margin-left: 3px;width: 12px;height: 12px;">
-                                250</span>
+                        <div class="chest-item" data-chest="1hrplaytime" onclick="catalog.selectChest('1hrplaytime')">
+                            <img src="https://i.imgur.com/IBCeaLF.png" alt="1 Hour Playtime">
+                            <div class="chest-item-info">
+                                <div class="chest-name">1 Hour Playtime</div>
+                                <div class="chest-meta">
+                                    <span class="chest-timer"><svg fill="#87ceeb"
+                                            style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
+                                            viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
+                                        </svg> 1:00:00</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="chest-item" data-chest="dailyrewards" onclick="catalog.selectChest('dailyrewards')">
-                    <img src="https://i.imgur.com/IBCeaLF.png" alt="Daily Rewards Secret Item">
-                    <div class="chest-item-info">
-                        <div class="chest-name">Daily Rewards Secret Item</div>
-                        <div class="chest-meta">
-                            <span class="chest-timer"><svg fill="#87ceeb"
-                                    style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
-                                    viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
-                                </svg> 24H</span>
+                        <div class="chest-item" data-chest="mysterybag" onclick="catalog.selectChest('mysterybag')">
+                            <img src="https://i.imgur.com/mLNEYGn.png" alt="Mystery Bag">
+                            <div class="chest-item-info">
+                                <div class="chest-name">Mystery Bag</div>
+                                <div class="chest-meta">Random rewards</div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="chest-item" data-chest="premiumchest" onclick="catalog.selectChest('premiumchest')">
-                    <img src="https://i.imgur.com/vwb0OJv.png" alt="Premium Chest">
-                    <div class="chest-item-info">
-                        <div class="chest-name">Premium Chest</div>
-                        <div class="chest-meta">
-                            <span class="chest-price"><svg
-                                    style="margin-right: 3px;margin-left: 3px;width: 12px;transform: translateY(4px);"
-                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
-                                    <path
-                                        d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
-                                        fill="#FFD700" fill-rule="evenodd"></path>
-                                </svg> 99</span>
+                        <div class="chest-item" data-chest="typicalchest" onclick="catalog.selectChest('typicalchest')">
+                            <img src="https://i.imgur.com/bpigTac.png" alt="Typical Chest">
+                            <div class="chest-item-info">
+                                <div class="chest-name">Typical Chest</div>
+                                <div class="chest-meta">
+                                    <span class="chest-price"><img src="./imgs/Coin.webp"
+                                            style="transform: translateY(2px);margin-right: 2px;margin-left: 3px;width: 12px;height: 12px;">
+                                        250</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="chest-item" data-chest="steelchest" onclick="catalog.selectChest('steelchest')">
-                    <img src="https://i.imgur.com/joSfryH.png" alt="Steel Chest">
-                    <div class="chest-item-info">
-                        <div class="chest-name">Steel Chest</div>
-                        <div class="chest-meta">Rare items</div>
-                    </div>
-                </div>
-                <div class="chest-item" data-chest="elusivebag" onclick="catalog.selectChest('elusivebag')">
-                    <img src="https://i.imgur.com/MmrUfl7.png" alt="Elusive Bag">
-                    <div class="chest-item-info">
-                        <div class="chest-name">Elusive Bag</div>
-                        <div class="chest-meta">Ultra rare</div>
-                    </div>
-                </div>
-                <div class="chest-item" data-chest="legendarychest" onclick="catalog.selectChest('legendarychest')">
-                    <img src="https://i.imgur.com/9Fph277.png" alt="Legendary Chest">
-                    <div class="chest-item-info">
-                        <div class="chest-name">Legendary Chest</div>
-                        <div class="chest-meta">Legendary items</div>
-                    </div>
-                </div>
-                <div class="chest-item" data-chest="epicchest" onclick="catalog.selectChest('epicchest')">
-                    <img src="https://i.imgur.com/Efwzbme.png" alt="Epic Chest">
-                    <div class="chest-item-info">
-                        <div class="chest-name">Epic Chest</div>
-                        <div class="chest-meta">
-                            <span class="chest-price" style="
+                        <div class="chest-item" data-chest="dailyrewards" onclick="catalog.selectChest('dailyrewards')">
+                            <img src="https://i.imgur.com/IBCeaLF.png" alt="Daily Rewards Secret Item">
+                            <div class="chest-item-info">
+                                <div class="chest-name">Daily Rewards Secret Item</div>
+                                <div class="chest-meta">
+                                    <span class="chest-timer"><svg fill="#87ceeb"
+                                            style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
+                                            viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
+                                        </svg> 24H</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chest-item" data-chest="premiumchest" onclick="catalog.selectChest('premiumchest')">
+                            <img src="https://i.imgur.com/vwb0OJv.png" alt="Premium Chest">
+                            <div class="chest-item-info">
+                                <div class="chest-name">Premium Chest</div>
+                                <div class="chest-meta">
+                                    <span class="chest-price"><svg
+                                            style="margin-right: 3px;margin-left: 3px;width: 12px;transform: translateY(4px);"
+                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
+                                            <path
+                                                d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
+                                                fill="#FFD700" fill-rule="evenodd"></path>
+                                        </svg> 99</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chest-item" data-chest="steelchest" onclick="catalog.selectChest('steelchest')">
+                            <img src="https://i.imgur.com/joSfryH.png" alt="Steel Chest">
+                            <div class="chest-item-info">
+                                <div class="chest-name">Steel Chest</div>
+                                <div class="chest-meta">Rare items</div>
+                            </div>
+                        </div>
+                        <div class="chest-item" data-chest="elusivebag" onclick="catalog.selectChest('elusivebag')">
+                            <img src="https://i.imgur.com/MmrUfl7.png" alt="Elusive Bag">
+                            <div class="chest-item-info">
+                                <div class="chest-name">Elusive Bag</div>
+                                <div class="chest-meta">Ultra rare</div>
+                            </div>
+                        </div>
+                        <div class="chest-item" data-chest="legendarychest"
+                            onclick="catalog.selectChest('legendarychest')">
+                            <img src="https://i.imgur.com/9Fph277.png" alt="Legendary Chest">
+                            <div class="chest-item-info">
+                                <div class="chest-name">Legendary Chest</div>
+                                <div class="chest-meta">Legendary items</div>
+                            </div>
+                        </div>
+                        <div class="chest-item" data-chest="epicchest" onclick="catalog.selectChest('epicchest')">
+                            <img src="https://i.imgur.com/Efwzbme.png" alt="Epic Chest">
+                            <div class="chest-item-info">
+                                <div class="chest-name">Epic Chest</div>
+                                <div class="chest-meta">
+                                    <span class="chest-price" style="
     					font-family: arimo;
     					font-weight: 500;
     					color: #fff;
     					/* -webkit-text-stroke: 1px rgb(255, 83, 219); */
     					text-shadow: -1.3px -1.3px 0 #ff53db, 0 -1.3px 0 #ff53db, 1.3px -1.3px 0 #ff53db, 1.3px 0 0 #ff53db, 1.3px 1.3px 0 #ff53db, 0 1.3px 0 #ff53db, -1.3px 1.3px 0 #ff53db, -1.3px 0 0 #ff53db;
     					"><img src="https://i.imgur.com/Cy9r140.png"
-                                    style="transform: translateY(2px);margin-right: 3px;margin-left: 3px;width: 12px;height: 12px;">500</span>
+                                            style="transform: translateY(2px);margin-right: 3px;margin-left: 3px;width: 12px;height: 12px;">500</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chest-item" data-chest="birthdaychest"
+                            onclick="catalog.selectChest('birthdaychest')">
+                            <img src="https://emwiki.site/imgs/61c1df478cf7c4297798fbafe4784899.png"
+                                alt="Birthday Chest">
+                            <div class="chest-item-info">
+                                <div class="chest-name">Birthday Chest</div>
+                                <div class="chest-meta">
+                                    <span class="chest-price"><svg
+                                            style="margin-right: 3px;margin-left: 3px;width: 12px;transform: translateY(4px);"
+                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
+                                            <path
+                                                d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
+                                                fill="#FFD700" fill-rule="evenodd"></path>
+                                        </svg> 99</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="chest-item" data-chest="birthdaychest" onclick="catalog.selectChest('birthdaychest')">
-                    <img src="https://emwiki.site/imgs/61c1df478cf7c4297798fbafe4784899.png" alt="Birthday Chest">
-                    <div class="chest-item-info">
-                        <div class="chest-name">Birthday Chest</div>
-                        <div class="chest-meta">
-                            <span class="chest-price"><svg
-                                    style="margin-right: 3px;margin-left: 3px;width: 12px;transform: translateY(4px);"
-                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
-                                    <path
-                                        d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
-                                        fill="#FFD700" fill-rule="evenodd"></path>
-                                </svg> 99</span>
-                        </div>
-                    </div>
-                </div>
+                </button>
             </div>
+
         </div>
+        <a class="chest-expand-toggle" onclick="catalog.toggleChestExpand()">/\</a>
     </div>
 
 
@@ -387,6 +389,10 @@
     <div class="stats">
         Showing <span id="showing">0</span><span id="total">0</span> items
     </div>
+
+    <!-- Season Label -->
+    <h1 id="season-label">
+    </h1>
 
     <!-- Catalog -->
     <div class="catalog-container">
@@ -425,8 +431,9 @@
             </div>
 
             <div class="recent-section">
-                <h3 style="font-size: 23px;font-variant: all-petite-caps;"><svg stroke="#fff" fill="#fff"
-                        viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="width:23px;margin-bottom:-6px;">
+                <h3 style="margin-bottom: 15px;font-size: 23px;font-variant: all-petite-caps;"><svg stroke="#fff"
+                        fill="#fff" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"
+                        style="width:23px;margin-bottom:-6px;">
                         <path d="M20.59 22 15 16.41V7h2v8.58l5 5.01z"></path>
                         <path d="M16 2A13.94 13.94 0 0 0 6 6.23V2H4v8h8V8H7.08A12 12 0 1 1 4 16H2A14 14 0 1 0 16 2">
                         </path>
@@ -524,17 +531,19 @@
                 this.loadTheme();
                 this.renderCategoryCarousel();
                 await this.loadData();
+                this.populateSeasonFilter();
                 this.populateChests();
                 this.setupEventListeners();
                 this.applyFilters();
                 this.loadBatch();
-                this.populateSeasonFilter();
 
-                const chestCollapsed = localStorage.getItem('chestDropdownCollapsed') === 'true';
-                if (chestCollapsed) {
-                    document.querySelector('.chest-dropdown').classList.add('collapsed');
-                    document.querySelector('.chest-expand-toggle').classList.add('collapsed');
-                }
+                this.updateTagCounts();
+
+                setTimeout(() => {
+                    document.querySelector('.bn').style.display = 'none';
+                }, 5000);
+                document.querySelector('.chest-expand-toggle').textContent = !chestCollapsed ? '/\\' : '\\/';
+
             }
 
             loadFromStorage(key, defaultValue) {
@@ -574,6 +583,7 @@
                 // Close other menus
                 document.getElementById('sort-menu').classList.remove('show');
                 document.getElementById('season-menu').classList.remove('show');
+                document.getElementById('tags-menu').classList.remove('show');
             }
 
             selectChest(chest) {
@@ -589,48 +599,21 @@
                     }
                 });
 
-                // Update label
                 const selectedChest = document.querySelector(`.chest-item[data-chest="${chest}"] .chest-name`);
                 document.getElementById('chest-label').textContent = selectedChest ? selectedChest.textContent : 'All Items';
 
-                // Close menu
                 document.getElementById('chest-menu').classList.remove('show');
-
-                // Apply filter
                 this.applyFilters();
             }
 
             setupParticleCanvas() {
-                this.particleCanvas = document.getElementById('particle-canvas');
-                this.particleCtx = this.particleCanvas.getContext('2d');
+                this.particleCanvas.width = window.innerWidth;
+                this.particleCanvas.height = window.innerHeight;
                 window.addEventListener('resize', () => {
                     this.particleCanvas.width = window.innerWidth;
                     this.particleCanvas.height = window.innerHeight;
                 });
-                const animateParticles = () => {
-                    this.particleCtx.clearRect(0, 0, this.particleCanvas.width, this.particleCanvas.height);
-
-                    for (let i = this.particles.length - 1; i >= 0; i--) {
-                        const p = this.particles[i];
-
-                        p.x += p.vx;
-                        p.y += p.vy;
-                        p.vy += 0.3; // Gravity
-                        p.life -= 0.02;
-
-                        if (p.life <= 0) {
-                            this.particles.splice(i, 1);
-                            continue;
-                        }
-
-                        this.particleCtx.globalAlpha = p.life;
-                        this.particleCtx.fillStyle = p.color;
-                        this.particleCtx.fillRect(p.x, p.y, p.size, p.size);
-                    }
-
-                    requestAnimationFrame(animateParticles);
-                };
-                animateParticles();
+                this.animateParticles();
             }
 
             createParticles(x, y, colors = ['#ff0000', '#ff4444', '#ff8888', '#ffaaaa']) {
@@ -645,6 +628,30 @@
                         life: 1.0
                     });
                 }
+            }
+
+            animateParticles() {
+                this.particleCtx.clearRect(0, 0, this.particleCanvas.width, this.particleCanvas.height);
+
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const p = this.particles[i];
+
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy -= 0.3; // Gravity
+                    p.life -= 0.03;
+
+                    if (p.life <= 0) {
+                        this.particles.splice(i, 1);
+                        continue;
+                    }
+
+                    this.particleCtx.globalAlpha = p.life;
+                    this.particleCtx.fillStyle = p.color;
+                    this.particleCtx.fillRect(p.x, p.y, p.size, p.size);
+                }
+
+                requestAnimationFrame(() => this.animateParticles());
             }
 
             renderCategoryCarousel() {
@@ -785,12 +792,15 @@
             }
 
             toggleChestExpand() {
-                const chestDropdown = document.querySelector('.chest-dropdown');
+                const chestDropdown = document.querySelector('.chest-dropdown-btn');
+                const filtersDropdown = document.querySelector('.filters-dropdown');
+                const sortDropdown = document.querySelector('.sort-dropdown');
                 const expandToggle = document.querySelector('.chest-expand-toggle');
 
                 chestDropdown.classList.toggle('collapsed');
-                expandToggle.classList.toggle('collapsed');
-                expandToggle.textContent = 'Hide Advanced Filters';
+                filtersDropdown.classList.toggle('collapsed');
+                sortDropdown.classList.toggle('collapsed');
+                expandToggle.textContent = '/\\';
                 // Save state to localStorage
                 const isCollapsed = chestDropdown.classList.contains('collapsed');
                 localStorage.setItem('chestDropdownCollapsed', isCollapsed);
@@ -798,7 +808,7 @@
                 // Close the menu if it's open when collapsing
                 if (isCollapsed) {
                     document.getElementById('chest-menu').classList.remove('show');
-                    expandToggle.textContent = 'Show Advanced Filters';
+                    expandToggle.textContent = '\\/';
                 }
             }
 
@@ -857,12 +867,11 @@
 
             selectSeason(season) {
                 this.seasonFilter = season;
-                document.getElementById('season-label').textContent = season === 'all' ? 'All' : `${season}`;
+                document.getElementById('season-label').textContent = season === 'all' ? '' : `Season ${season}`;
                 document.querySelectorAll('#season-menu .dropdown-item').forEach(item => {
                     item.classList.toggle('active', item.dataset.season == season);
                 });
-
-                this.toggleSeason(); // Close dropdown
+                this.updateTagsLabel();
                 this.applyFilters();
             }
 
@@ -873,6 +882,12 @@
 
             toggleSeason() {
                 const menu = document.getElementById('season-menu');
+                menu.classList.toggle('show');
+            }
+
+
+            toggleFilters() {
+                const menu = document.getElementById('filters-menu');
                 menu.classList.toggle('show');
             }
 
@@ -897,15 +912,26 @@
 
             setupEventListeners() {
 
+                // Tag menu items
+                document.querySelectorAll('#filters-menu>.dropdown-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.selectTag(item, item.dataset.filter);
+                    });
+                });
+
                 // Close menus when clicking outside
                 document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.filters-dropdown')) {
+                        document.getElementById('filters-menu').classList.remove('show');
+                    }
                     if (!e.target.closest('.chest-dropdown')) {
                         document.getElementById('chest-menu').classList.remove('show');
                     }
                     if (!e.target.closest('.sort-dropdown')) {
                         document.getElementById('sort-menu').classList.remove('show');
                     }
-                    if (!e.target.closest('.season-dropdown')) {
+                    if (!e.target.closest('.submenu')) {
                         document.getElementById('season-menu').classList.remove('show');
                     }
                 });
@@ -917,21 +943,7 @@
                     });
                 });
 
-                // Filter chips
-                document.querySelectorAll('.filter-chip').forEach(chip => {
-                    chip.addEventListener('click', () => {
-                        chip.classList.toggle('active');
-                        const filter = chip.dataset.filter;
 
-                        if (this.filters.tags.has(filter)) {
-                            this.filters.tags.delete(filter);
-                        } else {
-                            this.filters.tags.add(filter);
-                        }
-
-                        this.applyFilters();
-                    });
-                });
 
                 // Search with recent items
                 const searchBar = document.getElementById('search-bar');
@@ -970,9 +982,9 @@
                 // Keyboard navigation
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'ArrowLeft') {
-                        this.prevCategory();
+                        this.prevModal();
                     } else if (e.key === 'ArrowRight') {
-                        this.nextCategory();
+                        this.nextModal();
                     }
                 });
             }
@@ -1005,16 +1017,6 @@
                 });
             }
 
-            toggleTags() {
-                const menu = document.getElementById('tags-menu');
-                menu.classList.toggle('show');
-
-                // Close other menus
-                document.getElementById('sort-menu')?.classList.remove('show');
-                document.getElementById('season-menu')?.classList.remove('show');
-                document.getElementById('chest-menu')?.classList.remove('show');
-            }
-
             selectTag(tagElement, tagName) {
                 tagElement.classList.toggle('selected');
 
@@ -1029,20 +1031,17 @@
             }
 
             updateTagsLabel() {
-                const selectedCount = this.filters.tags.size;
-                const tagLabel = document.getElementById('tags-label');
-                const tagCount = document.getElementById('tag-count');
+                console.log(this.filters.tags.size + (this.seasonFilter !== 'all' ? 1 : 0))
+                const selectedCount = this.filters.tags.size + (this.seasonFilter !== 'all' ? 1 : 0);
+                const tagLabel = document.getElementById('filters-label');
+                const tagCount = document.getElementById('filter-count');
 
                 if (selectedCount === 0) {
                     tagLabel.textContent = 'None';
                     tagCount.style.display = 'none';
                 } else {
                     const tagNames = Array.from(this.filters.tags);
-                    if (selectedCount === 1) {
-                        tagLabel.textContent = tagNames[0].charAt(0).toUpperCase() + tagNames[0].slice(1);
-                    } else {
-                        tagLabel.textContent = 'Multiple';
-                    }
+                    tagLabel.textContent = '';
                     tagCount.textContent = selectedCount;
                     tagCount.style.display = 'inline-block';
                 }
@@ -1074,9 +1073,13 @@
                         return false;
                     }
 
+
+
                     // Tag filters
                     for (let tag of this.filters.tags) {
+
                         switch (tag) {
+
                             case 'new':
                                 if (!item.new) return false;
                                 break;
@@ -1103,6 +1106,7 @@
                                 break;
                         }
                     }
+
 
                     return true;
                 });
@@ -1177,7 +1181,7 @@
                         this.displayed.push(item);
                         this.renderItem(item);
                     });
-                    
+
 
                     this.currentBatch++;
                     this.loading = false;
@@ -1267,7 +1271,7 @@
                     const badge = document.createElement('img');
                     badge.className = 'badge untradable';
                     badge.title = 'Untradable';
-                    badge.src = './imgs/WLjbELh.png';
+                    badge.src = 'data:image/svg+xml,%3Csvg%20viewBox%3D%22-1%200%2077%2077%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20fill%3D%22%23fff%22%20d%3D%22M14%2022v11h26v4l27-10-27-9v4zm47%2032V43H35v-4L8%2049l27%209v-4z%22%2F%3E%3Cpath%20fill%3D%22red%22%20d%3D%22M37.5%208.5c6.7%200%2012.85%202.25%2017.85%206L13.6%2056.25c-3.75-5-6-11.15-6-17.85C7.6%2021.95%2021%208.55%2037.5%208.5m0%2059.75c-6.7%200-12.85-2.25-17.85-6L61.4%2020.5c3.75%205%206%2011.15%206%2017.85C67.4%2054.8%2054%2068.2%2037.55%2068.2m38.4-29.85c0-21.2-17.2-38.4-38.4-38.4s-38.4%2017.2-38.4%2038.4%2017.2%2038.4%2038.4%2038.4%2038.4-17.2%2038.4-38.4%22%2F%3E%3C%2Fsvg%3E';
                     item.appendChild(badge);
                 }
 
@@ -1300,12 +1304,12 @@
 
                     // Create particles at click position
                     const rect = heart.getBoundingClientRect();
-                    this.createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2);
 
                     this.toggleFavorite(data.name);
                     heart.textContent = this.favorites.includes(data.name) ? '❤️' : '🤍';
                     heart.classList.toggle('red');
-                };
+                    if (heart.classList.contains('red')) this.createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                }
                 item.appendChild(heart);
 
                 // Click to open modal
@@ -1351,8 +1355,6 @@
                 return formatted ?? str;
             }
 
-
-
             toggleFavorite(name) {
                 const index = this.favorites.indexOf(name);
                 if (index > -1) {
@@ -1361,6 +1363,7 @@
                     this.favorites.push(name);
                 }
                 this.saveToStorage('favorites', this.favorites);
+                this.updateTagCounts();
             }
 
             toggleWishlist(name) {
@@ -1458,7 +1461,7 @@
                         div.innerHTML = `
                             ${item.img ? `<img src="${item.img}" alt="${item.name}">` : item.svg ? item.svg : '<div style="width:50px;height:50px;background:#666;border-radius:5px;"></div>'}
                             ${!item.svg ? `<div class="item-name">${item.name}</div>` : ''}
-                            ${item.price != 'N/A'  && item.price != '' ? `<div class="item-price"><svg style="width: 13px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18"><path d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z" fill="#fff" fill-rule="evenodd"></path></svg>${this.formatPrice(item.price)}</div>` : ''}
+                            ${item.price != 'N/A' && item.price != '' ? `<div class="item-price"><svg style="width: 13px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18"><path d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z" fill="#fff" fill-rule="evenodd"></path></svg>${this.formatPrice(item.price)}</div>` : ''}
                             <div class="remove-wishlist">×</div>
                         `;
                         div.querySelector('.remove-wishlist').onclick = (e) => {
@@ -1493,7 +1496,7 @@
                             ${item.img ? `<img src="${item.img}" alt="${item.name}">` : item.svg ? item.svg : '<div style="width:50px;height:50px;background:#666;border-radius:5px;"></div>'}
                             ${item.price != 'N/A' && item.price != '' ? `<div class="item-price"><svg style="width: 13px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18"><path d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z" fill="#fff" fill-rule="evenodd"></path></svg>${this.formatPrice(item.price)}</div>` : ''}
                         `;
-                        div.style.opacity = '0.8';
+
                         div.onclick = () => {
                             this.closeStats();
                             this.openModal(item);
@@ -1503,7 +1506,6 @@
                 });
             }
         }
-        // Eye tracking logic
 
         // Initialize
         const catalog = new Catalog();
