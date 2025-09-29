@@ -1578,13 +1578,6 @@
                 item.appendChild(heart);
 
                 // Click to open modal
-                // Set required attributes for modal
-                item.setAttribute('data-title-name', data.name);
-                item.setAttribute('description', data.from || '');
-                item.setAttribute('prc', data['price/code/rarity'] || '');
-                item.setAttribute('price', data.price || 'N/A');
-
-                // Click to open modal
                 item.onclick = () => {
                     this.modal.open(data);
                 };
@@ -1688,55 +1681,6 @@
                 this.saveToStorage('recentlyViewed', this.recentlyViewed);
             }
 
-            openModal(item) {
-                // Store current item for navigation
-                this.currentModalItem = item;
-                this.currentModalIndex = this.displayed.findIndex(i => i.name === item.name);
-
-                this.addToRecentlyViewed(item.name);
-
-                // Use the sophisticated modal system
-                if (!window.modalSystem) {
-                    // Initialize modal system if not exists
-                    window.modalSystem = new ModalSystem();
-                }
-
-                // Create item element format that modal expects
-                const itemElement = document.createElement('div');
-                itemElement.setAttribute('data-title-name', item.name);
-                itemElement.setAttribute('description', item.from || '');
-                itemElement.setAttribute('prc', item['price/code/rarity'] || '');
-                itemElement.setAttribute('price', item.price || 'N/A');
-                itemElement.id = item.category;
-                itemElement.dataset.image = item.img || '';
-                if (item.svg) itemElement.innerHTML = item.svg;
-
-                // Add badge info
-                if (item.premium) {
-                    const premium = document.createElement('img');
-                    premium.className = 'premium';
-                    itemElement.appendChild(premium);
-                }
-                if (item.retired) {
-                    const retired = document.createElement('div');
-                    retired.className = 'retired';
-                    itemElement.appendChild(retired);
-                }
-                if (!item.tradable) {
-                    const untradable = document.createElement('img');
-                    untradable.className = 'untradable';
-                    itemElement.appendChild(untradable);
-                }
-
-                window.modalSystem.open({ element: itemElement, name: item.name });
-            }
-
-            closeModal() {
-                if (window.modalSystem) {
-                    window.modalSystem.close();
-                }
-            }
-
             openStats() {
                 document.getElementById('stats-dashboard').classList.add('show');
                 this.updateStatsIfOpen();
@@ -1770,8 +1714,7 @@
                             this.toggleWishlist(item.name);
                         };
                         div.onclick = () => {
-                            this.closeStats();
-                            this.openModal(item);
+                            this.modal.open(item);
                         };
                         wishlistDiv.appendChild(div);
 
@@ -1799,8 +1742,7 @@
                         `;
 
                         div.onclick = () => {
-                            this.closeStats();
-                            this.openModal(item);
+                            this.modal.open(item);
                         };
                         recentDiv.appendChild(div);
                     }
