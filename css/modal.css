@@ -213,8 +213,5 @@
         display: none;
     }
 
-    .modal-container {
-        margin: 20px;
-        width: calc(100% - 40px);
-    }
+
 }
