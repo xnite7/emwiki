@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Epic Catalogue - Catalogue</title>
-    <link rel="stylesheet" href="./css/catalog.css?version=3.2">
+    <link rel="stylesheet" href="./css/catalog.css">
+    <link rel="stylesheet" href="./css/modal.css">
     <link rel="manifest" href="/dev.webmanifest">
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
 </head>
@@ -19,8 +20,6 @@
         <a href="https://emwiki.site">
             <svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
                 <style>
-                    @import url(https://emwiki.site/css/fonts.css);
-
                     @keyframes floatAnim {
 
                         0%,
@@ -444,11 +443,8 @@
     </div>
 
     <!-- Item Modal -->
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="catalog.closeModal()">×</span>
-            <div id="modalBody"></div>
-        </div>
+    <div id="product-modal" class="modal">
+        <!-- Modal content will be created by JavaScript -->
     </div>
 
     <!-- Particle Canvas -->
@@ -459,6 +455,282 @@
         onclick="window.location.href=`https://emwiki.site/admin.html`">Admin</button>
 
     <script>
+
+
+        class ItemModal {
+            constructor(catalog) {
+                this.catalog = catalog;
+                this.isOpen = false;
+                this.currentItem = null;
+                this.currentIndex = -1;
+
+                this.elements = {};
+                this.init();
+            }
+
+            init() {
+                this.createModal();
+                this.setupEventListeners();
+            }
+
+            createModal() {
+                // Create modal HTML
+                const modalHTML = `
+            <div id="item-modal" class="item-modal">
+                <div class="modal-overlay"></div>
+                <button class="modal-nav modal-prev">‹</button>
+                <button class="modal-nav modal-next">›</button>
+                <div class="modal-container">
+
+                    
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2 class="modal-title"></h2>
+                            <div class="modal-price"></div>
+                        </div>
+                        
+                        <div class="modal-image-container">
+                            <img class="modal-image" style="display:none;">
+                            <div class="modal-svg" style="display:none;"></div>
+                        </div>
+                        
+                        <div class="modal-description"></div>
+                        
+                        <div class="modal-details"></div>
+                        
+                        <div class="modal-badges">
+                            <span class="badge-premium" style="display:none;">Premium</span>
+                            <span class="badge-retired" style="display:none;">Retired</span>
+                            <span class="badge-untradable" style="display:none;">Untradable</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+                // Cache elements
+                this.elements = {
+                    modal: document.getElementById('item-modal'),
+                    overlay: document.querySelector('.modal-overlay'),
+                    container: document.querySelector('.modal-container'),
+                    title: document.querySelector('.modal-title'),
+                    price: document.querySelector('.modal-price'),
+                    image: document.querySelector('.modal-image'),
+                    svg: document.querySelector('.modal-svg'),
+                    description: document.querySelector('.modal-description'),
+                    details: document.querySelector('.modal-details'),
+
+                    prevBtn: document.querySelector('.modal-prev'),
+                    nextBtn: document.querySelector('.modal-next'),
+                    badges: {
+                        premium: document.querySelector('.badge-premium'),
+                        retired: document.querySelector('.badge-retired'),
+                        untradable: document.querySelector('.badge-untradable')
+                    }
+                };
+            }
+
+            setupEventListeners() {
+                // Close events
+
+                this.elements.overlay.addEventListener('click', () => this.close());
+
+                // Navigation
+                this.elements.prevBtn.addEventListener('click', () => this.navigate(-1));
+                this.elements.nextBtn.addEventListener('click', () => this.navigate(1));
+
+                // Keyboard
+                document.addEventListener('keydown', (e) => {
+                    if (!this.isOpen) return;
+
+                    switch (e.key) {
+                        case 'Escape': this.close(); break;
+                        case 'ArrowLeft': this.navigate(-1); break;
+                        case 'ArrowRight': this.navigate(1); break;
+                    }
+                });
+
+                // Touch gestures
+                let touchStartX = 0;
+
+                this.elements.container.addEventListener('touchstart', (e) => {
+                    touchStartX = e.touches[0].clientX;
+                });
+
+                this.elements.container.addEventListener('touchend', (e) => {
+                    const touchEndX = e.changedTouches[0].clientX;
+                    const diff = touchStartX - touchEndX;
+
+                    if (Math.abs(diff) > 50) {
+                        this.navigate(diff > 0 ? 1 : -1);
+                    }
+                });
+            }
+
+            open(item) {
+                this.currentItem = item;
+                this.currentIndex = this.catalog.displayed.findIndex(i => i.name === item.name);
+
+                // Update content
+                this.updateContent(item);
+
+                // Show modal
+                this.elements.modal.classList.add('active');
+                this.isOpen = true;
+                document.body.style.overflow = 'hidden';
+
+                // Update URL
+                this.updateURL(item.name);
+
+                // Update navigation buttons
+                this.updateNavButtons();
+
+                // Add to recently viewed
+                this.catalog.addToRecentlyViewed(item.name);
+            }
+
+            updateContent(item) {
+                // Basic info
+                this.elements.title.textContent = item.name;
+                this.elements.description.innerHTML = item.from || '';
+
+                // Price
+                if (item.price && item.price !== 'N/A') {
+                    this.elements.price.innerHTML = `
+                <img src="./imgs/rap.png" alt="RAP">
+                ${this.catalog.formatPrice(item.price)}
+            `;
+                    this.elements.price.style.display = 'flex';
+                } else {
+                    this.elements.price.style.display = 'none';
+                }
+
+                // Image/SVG
+                if (item.img) {
+                    this.elements.image.src = item.img;
+                    this.elements.image.style.display = 'block';
+                    this.elements.svg.style.display = 'none';
+                } else if (item.svg) {
+                    this.elements.svg.innerHTML = item.svg;
+                    this.elements.svg.style.display = 'block';
+                    this.elements.image.style.display = 'none';
+                } else {
+                    this.elements.image.style.display = 'none';
+                    this.elements.svg.style.display = 'none';
+                }
+
+                // Additional details
+                if (item['price/code/rarity']) {
+                    const details = item['price/code/rarity'].split('<br>').filter(Boolean);
+                    const appendedDetails = new Set();
+                    this.elements.details.innerHTML = details.map(detail => {
+                        if (appendedDetails.has(detail)) return '';
+                        appendedDetails.add(detail);
+                        return this.formatDetail(detail);
+                    }).join('');
+                } else {
+                    this.elements.details.innerHTML = '';
+                }
+
+                // Badges
+                this.elements.badges.premium.style.display = item.premium ? 'inline-block' : 'none';
+                this.elements.badges.retired.style.display = item.retired ? 'inline-block' : 'none';
+                this.elements.badges.untradable.style.display = !item.tradable ? 'inline-block' : 'none';
+
+                // Set theme color based on category
+                const colors = {
+                    gears: '#37cd44',
+                    deaths: '#dd592e',
+                    titles: '#9a2dd1',
+                    pets: '#2766dd',
+                    effects: '#f3a425'
+                };
+
+                this.elements.container.style.backgroundColor = colors[item.category] || '#333';
+            }
+
+            formatDetail(detail) {
+                // Add icons for special currencies
+                const icons = {
+                    unobtainable: "./imgs/Red_x.png",
+                    robux: "./imgs/cf8ZvY7.png",
+                    coins: "./imgs/Coin.webp",
+                    stars: "./imgs/WKeX5AS.png",
+                    visors: "./imgs/7IoLZCN.png",
+                    pumpkins: "./imgs/bHRBTrU.png",
+                    eggs: "./imgs/qMxjgQy.png",
+                    opals: "./imgs/wwMMAvr.png",
+                    baubles: "./imgs/bauble.png",
+                    tokens: "./imgs/Cy9r140.png"
+                };
+                const styles = {
+                    '%': "color: #ce00ff;text-shadow: 0 0 2px #ab00ff;",
+                    rank: "font-variant: all-small-caps; font-weight: 600; color: #ffd700; text-shadow: 0 0 3px #ffae00;",
+                    expired: "color: red;font-family: consolas;",
+                    active: "color: #45ff45;font-family: consolas;",
+                    robux: "font: 1000 17px 'buildersans'",
+                    tokens: "text-shadow: -1.3px -1.3px 0 #ff00e7, 0 -1.3px 0 #ff00e7, 1.3px -1.3px 0 #ff00e7, 1.3px 0 0 #ff00e7, 1.3px 1.3px 0 #ff00e7, 0 1.3px 0 #ff00e7, -1.3px 1.3px 0 #ff00e7, -1.3px 0 0 #ff00e7"
+                };
+                const matchedKey = Object.keys(styles).find(key =>
+                    detail.toLowerCase().includes(key.toLowerCase())
+                );
+
+                let formatted = `<div class="detail-item" style="${matchedKey ? styles[matchedKey] : ''}">${detail}</div>`;
+
+                Object.entries(icons).forEach(([key, src]) => {
+                    if (detail.toLowerCase().includes(key)) {
+                        formatted = `<div class="detail-item" style="${key in styles ? styles[key] : ''}"> <img src="${src}" title="${key.charAt(0).toUpperCase() + key.slice(1)}" class="detail-icon"> ${/\d+(?!\%)/.test(detail) ? detail.replace(new RegExp(key, 'i'), '').trim() : detail}</div>`;
+                    }
+                });
+
+                return formatted;
+            }
+
+            navigate(direction) {
+                const newIndex = this.currentIndex + direction;
+
+                if (newIndex >= 0 && newIndex < this.catalog.displayed.length) {
+                    this.currentIndex = newIndex;
+                    this.currentItem = this.catalog.displayed[newIndex];
+
+                    // Animate transition
+                    this.elements.container.classList.add('transitioning');
+
+                    setTimeout(() => {
+                        this.updateContent(this.currentItem);
+                        this.updateNavButtons();
+                        this.updateURL(this.currentItem.name);
+                        this.catalog.addToRecentlyViewed(this.currentItem.name);
+                        this.elements.container.classList.remove('transitioning');
+                    }, 150);
+                }
+            }
+
+            updateNavButtons() {
+                this.elements.prevBtn.disabled = this.currentIndex <= 0;
+                this.elements.nextBtn.disabled = this.currentIndex >= this.catalog.displayed.length - 1;
+            }
+
+            updateURL(itemName) {
+                const slug = itemName.toLowerCase().replace(/\s+/g, '-');
+                const url = new URL(window.location);
+                url.searchParams.set('item', slug);
+                history.pushState(null, '', url.toString());
+            }
+
+            close() {
+                this.elements.modal.classList.remove('active');
+                this.isOpen = false;
+                document.body.style.overflow = '';
+
+                // Clear URL
+                const url = new URL(window.location);
+                url.searchParams.delete('item');
+                history.pushState(null, '', url.toString());
+            }
+        }
         // Clean, simple catalog system
         class Catalog {
             constructor() {
@@ -473,6 +745,7 @@
                 this.seasonFilter = 'all';
                 this.chestFilter = 'all';
                 this.seasons = new Set();
+                this.modal = new ItemModal(this);
 
                 this.categories = [
                     { id: 'all', name: 'All', img: './imgs/XwkWVJJ.png', color: '#667eea' },
@@ -978,14 +1251,7 @@
                     }
                 });
 
-                // Keyboard navigation
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'ArrowLeft') {
-                        this.prevModal();
-                    } else if (e.key === 'ArrowRight') {
-                        this.nextModal();
-                    }
-                });
+
             }
 
             updateTagCounts() {
@@ -1312,8 +1578,15 @@
                 item.appendChild(heart);
 
                 // Click to open modal
+                // Set required attributes for modal
+                item.setAttribute('data-title-name', data.name);
+                item.setAttribute('description', data.from || '');
+                item.setAttribute('prc', data['price/code/rarity'] || '');
+                item.setAttribute('price', data.price || 'N/A');
+
+                // Click to open modal
                 item.onclick = () => {
-                    this.openModal(data);
+                    this.modal.open(data);
                 };
 
                 document.getElementById('catalog').appendChild(item);
@@ -1416,23 +1689,52 @@
             }
 
             openModal(item) {
+                // Store current item for navigation
+                this.currentModalItem = item;
+                this.currentModalIndex = this.displayed.findIndex(i => i.name === item.name);
+
                 this.addToRecentlyViewed(item.name);
-                const modal = document.getElementById('modal');
-                const body = document.getElementById('modalBody');
 
-                body.innerHTML = `
-                    <h2>${item.name}</h2>
-                    ${item.img ? `<img src="${item.img}" style="max-width: 100%; margin: 20px 0;">` : ''}
-                    <p>${item.from || 'No description available'}</p>
-                    ${item.price ? `<p><strong>Price:</strong> ${item.price}</p>` : ''}
-                    ${item['price/code/rarity'] ? `<p>${item['price/code/rarity']}</p>` : ''}
-                `;
+                // Use the sophisticated modal system
+                if (!window.modalSystem) {
+                    // Initialize modal system if not exists
+                    window.modalSystem = new ModalSystem();
+                }
 
-                modal.classList.add('show');
+                // Create item element format that modal expects
+                const itemElement = document.createElement('div');
+                itemElement.setAttribute('data-title-name', item.name);
+                itemElement.setAttribute('description', item.from || '');
+                itemElement.setAttribute('prc', item['price/code/rarity'] || '');
+                itemElement.setAttribute('price', item.price || 'N/A');
+                itemElement.id = item.category;
+                itemElement.dataset.image = item.img || '';
+                if (item.svg) itemElement.innerHTML = item.svg;
+
+                // Add badge info
+                if (item.premium) {
+                    const premium = document.createElement('img');
+                    premium.className = 'premium';
+                    itemElement.appendChild(premium);
+                }
+                if (item.retired) {
+                    const retired = document.createElement('div');
+                    retired.className = 'retired';
+                    itemElement.appendChild(retired);
+                }
+                if (!item.tradable) {
+                    const untradable = document.createElement('img');
+                    untradable.className = 'untradable';
+                    itemElement.appendChild(untradable);
+                }
+
+                window.modalSystem.open({ element: itemElement, name: item.name });
             }
 
             closeModal() {
-                document.getElementById('modal').classList.remove('show');
+                if (window.modalSystem) {
+                    window.modalSystem.close();
+                }
             }
 
             openStats() {
@@ -1508,6 +1810,9 @@
 
         // Initialize
         const catalog = new Catalog();
+
+
+
     </script>
 </body>
 

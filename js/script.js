@@ -1487,14 +1487,9 @@ class SearchSystem {
 class NavigationSystem {
   constructor() {
     this.navButtons = [
-      { id: 'gearstab', href: './gears', img: './imgs/AYUbTJv.png' },
-      { id: 'deathstab', href: './deaths', img: './imgs/fADZwOh.png' },
-      { id: 'petstab', href: './pets', img: './imgs/GHXB0nC.png' },
-      { id: 'effectstab', href: './effects', img: './imgs/l90cgxf.png' },
-      { id: 'titlestab', href: './titles', img: './imgs/ZOP8l9g.png' },
-      { id: 'cheststab', href: './chests', img: './imgs/XwkWVJJ.png' },
-      { id: 'scammerstab', href: './scammers', img: './imgs/SK5csOS.png' },
-      { id: 'gamenightstab', href: './gamenights', img: './imgs/gn.png' }
+      { id: 'gamenightstab', href: './gamenights', img: './imgs/gn.png' },
+      { id: 'catalogstab', href: './catalog', img: './imgs/all.png' },
+      { id: 'scammerstab', href: './scammers', img: './imgs/SK5csOS.png' }
     ];
   }
 

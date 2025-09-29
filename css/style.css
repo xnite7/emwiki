@@ -1,4 +1,4 @@
-
+@import url("https://emwiki.site/css/fonts.css");
 body {
     background-color: #000;
     color: #fff;
@@ -516,29 +516,12 @@ nav a {
     z-index: 125
 }
 
-nav #gearstab {
-    background: linear-gradient(145deg, #47fd4e, #1de9c4)
+
+
+nav #catalogstab {
+    background: linear-gradient(307deg, #47fd4e 20%, #1de9c4, #4facff, #4915fa, #a215fa, #f347fd, #ff4848, #ff6f1a, #fdf147 80%)
 }
 
-nav #deathstab {
-    background: linear-gradient(145deg, #ff4848, #ff6f1a)
-}
-
-nav #titlestab {
-    background: linear-gradient(145deg, #f347fd, #a215fa)
-}
-
-nav #petstab {
-    background: linear-gradient(145deg, #4facff, #4915fa)
-}
-
-nav #effectstab {
-    background: linear-gradient(145deg, #fdf147, #fa9415)
-}
-
-nav #cheststab {
-    background: linear-gradient(345deg, #238099, #71cbff)
-}
 
 nav #scammerstab {
     background: linear-gradient(345deg, #000, #717171)
