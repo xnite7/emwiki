@@ -171,6 +171,13 @@
                             <div class="tag-count" id="count-retired">0</div>
                         </div>
 
+                        <div class="dropdown-item" data-filter="removed">
+                            <div class="tag-checkbox"></div>
+                            <span class="icon removed-icon"></span>
+                            <div class="tag-label">Removed</div>
+                            <div class="tag-count" id="count-removed">0</div>
+                        </div>
+
                         <div class="dropdown-item" data-filter="favorites">
                             <div class="tag-checkbox"></div>
                             <span class="icon favorites-icon"></span>
@@ -508,6 +515,7 @@
                         <div class="modal-badges">
                             <span class="badge-premium" style="display:none;">Premium</span>
                             <span class="badge-retired" style="display:none;">Retired</span>
+                            <span class="badge-removed" style="display:none;">Removed</span>
                             <span class="badge-untradable" style="display:none;">Untradable</span>
                         </div>
                     </div>
@@ -534,6 +542,7 @@
                     badges: {
                         premium: document.querySelector('.badge-premium'),
                         retired: document.querySelector('.badge-retired'),
+                        removed: document.querySelector('.badge-removed'),
                         untradable: document.querySelector('.badge-untradable')
                     }
                 };
@@ -654,6 +663,7 @@
                 // Badges
                 this.elements.badges.premium.style.display = item.premium ? 'inline-block' : 'none';
                 this.elements.badges.retired.style.display = item.retired ? 'inline-block' : 'none';
+                this.elements.badges.removed.style.display = item.removed ? 'inline-block' : 'none';
                 this.elements.badges.untradable.style.display = !item.tradable ? 'inline-block' : 'none';
 
                 // Set theme color based on category
@@ -788,6 +798,7 @@
                     untradable: 0,
                     premium: 0,
                     retired: 0,
+                    removed: 0,
                     favorites: 0,
                     gamenight: 0,
                     unreleased: 0
@@ -1372,6 +1383,7 @@
                     if (item.tradable === false) this.tagCounts.untradable++;
                     if (item.premium) this.tagCounts.premium++;
                     if (item.retired) this.tagCounts.retired++;
+                    if (item.removed) this.tagCounts.removed++;
                     if (this.favorites.includes(item.name)) this.tagCounts.favorites++;
 
                     const from = (item.from || '').toLowerCase();
@@ -1482,7 +1494,7 @@
                                 if (!this.wishlist.includes(item.name)) return false;
                                 break;
                             case 'removed':
-                                if (!this.removed.includes(item.name)) return false;
+                                if (!item.removed) return false;
                                 break;
                         }
                     }
@@ -1629,6 +1641,13 @@
                     const badge = document.createElement('div');
                     badge.className = 'badge retired';
                     badge.innerText = 'Retired';
+                    item.appendChild(badge);
+                }
+
+                if (data.removed) {
+                    const badge = document.createElement('div');
+                    badge.className = 'badge removed';
+                    badge.innerText = 'Removed';
                     item.appendChild(badge);
                 }
 

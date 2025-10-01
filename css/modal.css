@@ -216,6 +216,11 @@ body:has(.item-modal.active) {
     color: white;
 }
 
+.badge-removed {
+    background: linear-gradient(90deg, #000000, #000000 70%);
+    color: white;
+}
+
 @media (max-width: 768px) {
     .modal-nav {
         display: none;

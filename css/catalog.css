@@ -912,7 +912,14 @@ body.light-theme .controls-bar {
 }
 
 
-
+.badge.removed {
+    font-family: inconsolata;
+    background: black;
+    width: -webkit-fill-available;
+    text-align: center;
+    bottom: 14px;
+    margin: 0px -1px;
+}
 
 @keyframes rotate3d {
     0% {
