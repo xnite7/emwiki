@@ -26,11 +26,16 @@
 }
 
 .modal-content {
-    background: linear-gradient(0deg, black, transparent);
+    background: linear-gradient(0deg, #000000e6, transparent);
     padding: 30px;
     min-height: 500px;
-    display: grid
-;
+    display: grid;
+    align-content: space-between;
+    justify-items: center;
+}
+
+body:has(.item-modal.active) {
+    overflow: hidden;
 }
 
 .modal-container {
@@ -102,10 +107,10 @@
 }
 
 .modal-header {
-    display: flex;
-    justify-content: space-between;
+    width: -webkit-fill-available;
+    display: inline-flex;
     align-items: flex-start;
-    margin-bottom: 20px;
+    height: 60px;
 }
 
 .modal-title {
@@ -114,6 +119,7 @@
     overflow-wrap: anywhere;
     color: white;
     margin: 0;
+    z-index: 2;
     flex: 1;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
@@ -133,40 +139,35 @@
     height: 40px;
 }
 
-.modal-image-container {
-    display: flex;
-    justify-content: center;
-    margin: 20px 0;
-    min-width: 100%;
-}
 
 .modal-image {
-    max-width: 100%;
-    max-height: 300px;
-    object-fit: contain;
+    width: 153px;
+    height: 153px;
 }
 
 .modal-description {
-    color: rgba(255, 255, 255, 0.9);
     font-size: 16px;
     text-align: center;
-    line-height: 1.5;
     margin: 12px 0;
     white-space: pre-wrap;
     background: -webkit-linear-gradient(#fff, #999999);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    height: fit-content;
 }
 
 .modal-details {
     margin: 12px 0;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .detail-item {
-    background: rgba(0, 0, 0, 0.2);
-    padding: 10px;
-    margin: 5px 0;
+    background: rgb(0 0 0 / 30%);
+    padding: 4px 10px;
     border-radius: 8px;
     color: white;
     justify-self: center;
@@ -182,13 +183,16 @@
 .modal-badges {
     display: flex;
     gap: 10px;
-    justify-content: center;
-    margin-top: 20px;
+    font-variant: all-petite-caps;
+    justify-content: space-around;
+    width: -webkit-fill-available;
 }
 
 .modal-badges span {
-    padding: 5px 15px;
+    padding: 4px 13px;
+    flex: 1 1 10%;
     border-radius: 20px;
+    border: 1px solid black;
     font-size: 14px;
     font-weight: bold;
 }
@@ -211,6 +215,11 @@
 @media (max-width: 768px) {
     .modal-nav {
         display: none;
+    }
+
+    .modal-container {
+        zoom: 0.9;
+        width: 70%;
     }
 
 
