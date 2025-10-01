@@ -397,18 +397,21 @@
             },
 
             // Check for modifications on an existing item
-            checkModifications(item) {
-                const itemName = item.name;
+            checkModifications(item, oldName = null) {
+                const itemName = oldName || item.name;
 
-                // If it's a new item, it stays new regardless of modifications
                 if (this.isNewItem(itemName)) {
+                    // If name changed on a new item, update tracking
+                    if (oldName && oldName !== item.name) {
+                        this.newItems.delete(oldName);
+                        this.newItems.add(item.name);
+                    }
                     return;
                 }
 
                 // Check against original for existing items
                 const originalJson = this.originalItems.get(itemName);
                 if (!originalJson) {
-                    // This shouldn't happen for existing items
                     console.warn(`No original found for ${itemName}`);
                     return;
                 }
@@ -417,9 +420,19 @@
                 const hasChanges = this.compareItems(original, item);
 
                 if (hasChanges) {
-                    this.modifiedItems.add(itemName);
+                    this.modifiedItems.add(item.name);
+                    // If name changed, also clean up old name from modified items
+                    if (oldName && oldName !== item.name) {
+                        this.modifiedItems.delete(oldName);
+                        // Update the original items map with new name
+                        this.originalItems.delete(oldName);
+                        this.originalItems.set(item.name, originalJson);
+                    }
                 } else {
-                    this.modifiedItems.delete(itemName);
+                    this.modifiedItems.delete(item.name);
+                    if (oldName && oldName !== item.name) {
+                        this.modifiedItems.delete(oldName);
+                    }
                 }
             },
 
@@ -433,14 +446,32 @@
                     return String(price);
                 };
 
-                // Create normalized copies
-                const norm1 = JSON.parse(JSON.stringify(original));
-                const norm2 = JSON.parse(JSON.stringify(current));
+                // List of fields to check
+                const fields = ['name', 'img', 'price', 'from', 'price/code/rarity',
+                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed'];
 
-                norm1.price = normalizePrice(norm1.price);
-                norm2.price = normalizePrice(norm2.price);
+                // Check each field for changes
+                for (const field of fields) {
+                    let val1 = original[field];
+                    let val2 = current[field];
 
-                return JSON.stringify(norm1) !== JSON.stringify(norm2);
+                    // Normalize price field
+                    if (field === 'price') {
+                        val1 = normalizePrice(val1);
+                        val2 = normalizePrice(val2);
+                    }
+
+                    // Convert undefined/null to empty string for comparison
+                    if (val1 === undefined || val1 === null) val1 = '';
+                    if (val2 === undefined || val2 === null) val2 = '';
+
+                    // Compare values
+                    if (String(val1) !== String(val2)) {
+                        return true; // Has changes
+                    }
+                }
+
+                return false; // No changes
             },
 
             // Update visual indicators
@@ -2443,7 +2474,7 @@
                         const previousState = JSON.parse(JSON.stringify(item));
                         item.name = newName;
 
-                        ChangeTracker.checkModifications(item);
+                        ChangeTracker.checkModifications(item, previousState.name);
 
                         if (!UndoRedoManager.isApplyingChange) {
                             UndoRedoManager.recordChange({
@@ -2607,7 +2638,7 @@
                         const previousState = JSON.parse(JSON.stringify(item));
                         item.img = data.url;
 
-                        ChangeTracker.checkModifications(item);
+                        ChangeTracker.checkModifications(item, item.name);  // Pass current name since it didn't change
 
                         if (!UndoRedoManager.isApplyingChange) {
                             UndoRedoManager.recordChange({
