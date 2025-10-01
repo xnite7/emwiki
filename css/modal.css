@@ -202,17 +202,17 @@ body:has(.item-modal.active) {
 }
 
 .badge-premium {
-    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    background: linear-gradient(90deg, #ffd700, #ffed4e 70%);
     color: #333;
 }
 
 .badge-retired {
-    background: linear-gradient(135deg, #ff3c3c, #9f0000);
+    background: linear-gradient(90deg, #ff3c3c, #9f0000 70%);
     color: white;
 }
 
 .badge-untradable {
-    background: linear-gradient(135deg, #666, #333);
+    background: linear-gradient(90deg, #666, #333 70%);
     color: white;
 }
 

@@ -200,6 +200,14 @@
                                 <!-- scrollable list -->
                             </div>
                         </div>
+                        <!-- Events Submenu -->
+                        <div class="submenu" onclick="catalog.toggleEvent()">
+                            <span class="tag-label">Events ▸</span>
+                            <div class="dropdown-content" id="event-menu">
+                                <div class="dropdown-item active" data-event="all">All Events</div>
+                                <!-- populated dynamically -->
+                            </div>
+                        </div>
 
 
                     </div>
@@ -619,7 +627,7 @@
                     this.elements.svg.style.display = 'unset';
                     this.elements.image.style.display = 'none';
                     this.elements.title.style.opacity = '0';
-                    
+
 
                     this.elements.svg.style.width = '85%';
                     this.elements.svg.style.height = 'auto';
@@ -755,6 +763,8 @@
                 this.seasonFilter = 'all';
                 this.chestFilter = 'all';
                 this.seasons = new Set();
+                this.events = new Set();
+                this.eventFilter = 'all';
                 this.modal = new ItemModal(this);
 
                 this.categories = [
@@ -815,6 +825,7 @@
                 this.renderCategoryCarousel();
                 await this.loadData();
                 this.populateSeasonFilter();
+                this.populateEventFilter();
                 this.populateChests();
                 this.setupEventListeners();
                 this.applyFilters();
@@ -1031,6 +1042,7 @@
                             parsed[cat].forEach(item => {
                                 // Extract ALL seasons from description
                                 const seasons = [];
+                                const eventNames = [];
                                 if (item.from) {
                                     // Use matchAll with global flag to find all season mentions
                                     const seasonMatches = [...item.from.matchAll(/Season (\d+)/gi)];
@@ -1042,14 +1054,69 @@
                                             this.seasons.add(seasonNum);
                                         }
                                     });
+                                    const eventPatterns = [
+                                        /Summer\s*(?:\d{4})?/gi,
+                                        /\bEaster\s*(?:\d{4})?/gi,
+                                        /Valentine(?:'s)?\s*(?:\d{4})?/gi,
+                                        /Halloween\s*(?:\d{4})?/gi,
+                                        /Christmas\s*(?:\d{4})?/gi,
+                                        /Art Contest\s*(?:\d{4})?/gi,
+                                        /4th of July\s*(?:\d{4})?/gi,
+                                        /10th Anniversary\s*(?:\d{4})?/gi,
+                                        /2B Update\s*(?:\d{4})?/gi,
+                                        /RODIS\s*(?:\d{4})?/gi,
+                                    ];
+
+
+
+
+                                    eventPatterns.forEach(pattern => {
+                                        const fieldsToMatch = [item.name, item.from, item['price/code/rarity']];
+                                        fieldsToMatch.forEach(field => {
+                                            // Ensure field is not null/undefined
+                                            if (field) {
+                                                const matches = [...field.matchAll(pattern)];
+
+                                                matches.forEach(match => {
+                                                    // Remove the year if it exists
+                                                    let eventName = match[0].replace(/\s*\d{4}/, '').trim();
+
+                                                    // Normalize event names to avoid duplicates
+                                                    const normalizeEvent = (name) => {
+                                                        const normalizations = {
+                                                            "valentine": "Valentine's",
+                                                            "Valentine": "Valentine's",
+                                                            "valentine's": "Valentine's",
+                                                            "christmas": "Christmas",
+                                                            "rodis": "RODIS",
+                                                        };
+
+                                                        const lower = name.toLowerCase();
+                                                        return normalizations[lower] || name;
+                                                    };
+
+                                                    eventName = normalizeEvent(eventName);
+
+                                                    // If it's not already in the eventNames array, add it
+                                                    if (!eventNames.includes(eventName)) {
+                                                        eventNames.push(eventName);
+                                                        this.events.add(eventName);
+                                                    }
+                                                });
+                                            }
+                                        })
+                                    }
+                                    );
+
+                                    this.items.push({
+                                        ...item,
+                                        category: cat,
+                                        seasons: seasons,
+                                        events: eventNames
+                                    });
                                 }
 
-                                this.items.push({
-                                    ...item,
-                                    category: cat,
-                                    seasons: seasons // Store as array
-                                });
-                            });
+                            })
                         }
                     });
 
@@ -1070,6 +1137,20 @@
                     item.textContent = `Season ${season}`;
                     item.onclick = () => this.selectSeason(season);
                     seasonMenu.appendChild(item);
+                });
+            }
+
+            populateEventFilter() {
+                const eventMenu = document.getElementById('event-menu');
+                const events = Array.from(this.events).sort();
+                eventMenu.querySelector('.dropdown-item').onclick = () => this.selectEvent('all');
+                events.forEach(event => {
+                    const item = document.createElement('div');
+                    item.className = 'dropdown-item';
+                    item.dataset.event = event;
+                    item.textContent = event;
+                    item.onclick = () => this.selectEvent(event);
+                    eventMenu.appendChild(item);
                 });
             }
 
@@ -1157,6 +1238,20 @@
                 this.applyFilters();
             }
 
+            toggleEvent() {
+                const menu = document.getElementById('event-menu');
+                menu.classList.toggle('show');
+            }
+
+            selectEvent(event) {
+                this.eventFilter = event;
+                document.querySelectorAll('#event-menu .dropdown-item').forEach(item => {
+                    item.classList.toggle('active', item.dataset.event == event);
+                });
+                this.updateTagsLabel();
+                this.applyFilters();
+            }
+
             toggleSort() {
                 const menu = document.getElementById('sort-menu');
                 menu.classList.toggle('show');
@@ -1215,6 +1310,9 @@
                     }
                     if (!e.target.closest('.submenu')) {
                         document.getElementById('season-menu').classList.remove('show');
+                    }
+                    if (!e.target.closest('.submenu')) {
+                        document.getElementById('event-menu').classList.remove('show');
                     }
                 });
 
@@ -1277,7 +1375,7 @@
                     if (this.favorites.includes(item.name)) this.tagCounts.favorites++;
 
                     const from = (item.from || '').toLowerCase();
-                    if (from.includes('gamenight')) this.tagCounts.gamenight++;
+                    if (from.includes('gamenight') || from.includes('rodis')) this.tagCounts.gamenight++;
                     if (from.includes('unreleased') || from.includes('@zarabelle') || from.includes('@typicaltype')) {
                         this.tagCounts.unreleased++;
                     }
@@ -1307,7 +1405,7 @@
 
             updateTagsLabel() {
 
-                const selectedCount = this.filters.tags.size + (this.seasonFilter !== 'all' ? 1 : 0);
+                const selectedCount = this.filters.tags.size + (this.seasonFilter !== 'all' ? 1 : 0) + (this.eventFilter !== 'all' ? 1 : 0);
                 const tagLabel = document.getElementById('filters-label');
                 const tagCount = document.getElementById('filter-count');
 
@@ -1343,6 +1441,11 @@
                         return false;
                     }
 
+                    // Event filter
+                    if (this.eventFilter !== 'all' && item.events && !item.events.includes(this.eventFilter)) {
+                        return false;
+                    }
+
                     // Search filter
                     if (this.filters.search && !item.name.toLowerCase().includes(this.filters.search)) {
                         return false;
@@ -1354,7 +1457,6 @@
                     for (let tag of this.filters.tags) {
 
                         switch (tag) {
-
                             case 'new':
                                 if (!item.new) return false;
                                 break;
@@ -1365,7 +1467,7 @@
                                 if (!item.premium) return false;
                                 break;
                             case 'gamenight':
-                                if (!item.from.toLowerCase().includes('gamenight')) return false;
+                                if (!item.from.toLowerCase().includes('gamenight') && !item.from.toLowerCase().includes('rodis')) return false;
                                 break;
                             case 'unreleased':
                                 if (!item.from.toLowerCase().includes('unreleased')) return false;
@@ -1378,6 +1480,9 @@
                                 break;
                             case 'wishlist':
                                 if (!this.wishlist.includes(item.name)) return false;
+                                break;
+                            case 'removed':
+                                if (!this.removed.includes(item.name)) return false;
                                 break;
                         }
                     }

@@ -244,9 +244,17 @@ body.light-theme .controls-bar {
     display: block;
 }
 
+.tag-count{
+    justify-self: flex-end;
+    position: absolute;
+    right: 15px;
+    color: var(--border-color);
+}
+
 .dropdown-item {
     display: inline-flex;
     width: -webkit-fill-available;
+    white-space: nowrap;
     padding: 10px 35px 10px 15px;
     cursor: pointer;
     transition: background 0.2s;
@@ -254,6 +262,10 @@ body.light-theme .controls-bar {
     align-items: center;
     gap: 10px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dropdown-item:has(.tag-count) {
+    padding-right: 55px;
 }
 
 .dropdown-item:last-child {
@@ -885,6 +897,7 @@ body.light-theme .controls-bar {
     border-top: 7px solid red;
     border-bottom: 7px solid red;
     border-right: 8px solid transparent;
+    color: #fff;
 }
 
 .badge.untradable {
@@ -1200,31 +1213,7 @@ button {
     content: " of ";
 }
 
-.badge.retired,
-.badge.retired:before,
-.badge.retired:after {
-    box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-}
 
-.badge.retired {
-    top: 23px;
-    left: -1px;
-    line-height: 0;
-    font-variant: all-petite-caps;
-    font-size: 12px;
-    text-shadow: 0 0 2px black;
-    padding: 0px 3px;
-    position: absolute;
-    width: 53px;
-    height: 0;
-    -webkit-transform: rotate(0deg) skew(0deg);
-    transform: rotate(0deg) skew(0deg);
-    border-top: 7px solid red;
-    border-bottom: 7px solid red;
-    border-right: 8px solid transparent;
-}
 
 /* Category Carousel */
 .category-carousel-container {
