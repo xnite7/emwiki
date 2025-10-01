@@ -165,6 +165,10 @@ body:has(.item-modal.active) {
     flex-wrap: wrap;
 }
 
+.modal-details:empty {
+    display: none;
+}
+
 .detail-item {
     background: rgb(0 0 0 / 30%);
     padding: 4px 10px;
