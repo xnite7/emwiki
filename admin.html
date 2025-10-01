@@ -3344,7 +3344,7 @@
                 removed: '<span style="font-family: \'Segoe UI Symbol\', sans-serif;" class="typeicon red">➖</span>'
             },
 
-            BOOLEAN_FIELDS: ['weeklystar', 'weekly', 'new', 'retired', 'premium', 'tradable'],
+            BOOLEAN_FIELDS: ['weeklystar', 'weekly', 'new', 'retired', 'premium', 'tradable', 'removed'],
 
             SECTION_CONFIG: [
                 ['Added Items', 'added'],
@@ -3353,6 +3353,7 @@
                 ['Weekly', 'weekly'],
                 ['New', 'new'],
                 ['Retired', 'retired'],
+                ['Removed', 'removed'],
                 ['Premium', 'premium'],
                 ['Tradable', 'tradable'],
                 ['RAP', 'price'],
@@ -3669,6 +3670,7 @@
                     weekly: this.formatBooleanItem,
                     new: this.formatBooleanItem,
                     retired: this.formatBooleanItem,
+                    removed: this.formatBooleanItem,
                     premium: this.formatBooleanItem,
                     tradable: this.formatBooleanItem,
                     price: this.formatPriceItem,
@@ -4900,7 +4902,7 @@
             // Compare two items and return list of changes
             compareItems(original, current) {
                 const changes = [];
-                const fields = ['price', 'from', 'price/code/rarity', 'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'name'];
+                const fields = ['price', 'from', 'price/code/rarity', 'weekly', 'weeklystar', 'new', 'retired', 'removed', 'premium', 'tradable', 'name'];
 
                 fields.forEach(field => {
                     const oldVal = this.normalizeValue(field, original[field]);
@@ -4938,6 +4940,7 @@
                     'weeklystar': (old, val) => val ? '✓ Added to Star Shop' : '✗ Removed from Star Shop',
                     'new': (old, val) => val ? '✓ Marked as New' : '✗ Unmarked as New',
                     'retired': (old, val) => val ? '✓ Marked as Retired' : '✗ Unmarked as Retired',
+                    'removed': (old, val) => val ? '✓ Marked as Removed' : '✗ Unmarked as Removed',
                     'premium': (old, val) => val ? '✓ Marked as Premium' : '✗ Unmarked as Premium',
                     'tradable': (old, val) => !val ? '✓ Marked as Untradable' : '✗ Marked as Tradable',
                     'name': (old, val) => `Name: "${old}" → "${val}"`
