@@ -488,11 +488,10 @@
                             <h2 class="modal-title"></h2>
                             <div class="modal-price"></div>
                         </div>
-                        
-                        <div class="modal-image-container">
-                            <img class="modal-image" style="display:none;">
-                            <div class="modal-svg" style="display:none;"></div>
-                        </div>
+
+                        <img class="modal-image" style="display:none;">
+                        <div class="modal-svg" style="display:none;"></div>
+
                         
                         <div class="modal-description"></div>
                         
@@ -612,10 +611,19 @@
                     this.elements.image.src = item.img;
                     this.elements.image.style.display = 'block';
                     this.elements.svg.style.display = 'none';
+                    this.elements.title.style.opacity = 'unset';
                 } else if (item.svg) {
-                    this.elements.svg.innerHTML = item.svg;
-                    this.elements.svg.style.display = 'block';
+                    this.elements.svg.outerHTML = item.svg;
+                    this.elements.svg = this.elements.container.querySelector('svg');
+                    this.elements.svg.classList.add('modal-svg');
+                    this.elements.svg.style.display = 'unset';
                     this.elements.image.style.display = 'none';
+                    this.elements.title.style.opacity = '0';
+                    
+
+                    this.elements.svg.style.width = '85%';
+                    this.elements.svg.style.height = 'auto';
+
                 } else {
                     this.elements.image.style.display = 'none';
                     this.elements.svg.style.display = 'none';
