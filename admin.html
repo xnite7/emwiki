@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-        <style>
+    <style>
         @import url("https://emwiki.site/css/fonts.css");
     </style>
     <meta charset="utf-8" />
@@ -2231,7 +2231,8 @@
                 Star: "#f1c40f",
                 Retired: "#9b59b6",
                 Premium: "#e67e22",
-                Untradable: "#e74c3c"
+                Untradable: "#e74c3c",
+                Removed: "#95a5a6"
             },
 
             TAG_TO_PROP: {
@@ -2240,7 +2241,8 @@
                 Star: "weeklystar",
                 Retired: "retired",
                 Premium: "premium",
-                Untradable: "tradable"
+                Untradable: "tradable",
+                Removed: "removed"
             },
 
             ICON_MAP: {
@@ -2678,7 +2680,8 @@
                     Star: item.weeklystar,
                     Retired: item.retired,
                     Premium: item.premium,
-                    Untradable: !item.tradable
+                    Untradable: !item.tradable,
+                    Removed: item.removed
                 }).filter(([k, v]) => v).map(([k]) => k);
 
                 // Store tags in closure for tag management
