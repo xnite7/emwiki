@@ -835,7 +835,7 @@
 
 
 
-                
+
 
 
             }
@@ -886,13 +886,13 @@
 
                 //if halloween
                 const now = new Date();
-                
+
                 if (now.getMonth() === 9) { // if october
 
                     var rarities = [{
                         type: "https://emwiki.site/imgs/epicfaces/kitta.png",
                         chance: 15
-                    },{
+                    }, {
                         type: "https://emwiki.site/imgs/epicfaces/devlil.png",
                         chance: 15
                     }, {
@@ -907,6 +907,23 @@
                     }];
 
                     document.getElementById('epic-image').setAttribute('href', pickRandom(rarities));
+
+                    const halloweenColors = [
+                        ['#ff7518', '#000000'], // orange to black
+                        ['#000000', '#ff7518']  // black to orange
+                    ];
+
+                    // Get the gradient stops by their IDs
+                    const grad1Stops = document.querySelectorAll('#eppp1 stop');
+                    const grad2Stops = document.querySelectorAll('#eppp2 stop');
+
+                    // Update gradient 1
+                    grad1Stops[0].setAttribute('style', `stop-color: ${halloweenColors[0][1]}`);
+                    grad1Stops[1].setAttribute('style', `stop-color: ${halloweenColors[0][0]}`);
+
+                    // Update gradient 2
+                    grad2Stops[0].setAttribute('style', `stop-color: ${halloweenColors[1][0]}`);
+                    grad2Stops[1].setAttribute('style', `stop-color: ${halloweenColors[1][1]}`);
 
 
 
