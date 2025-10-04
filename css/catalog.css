@@ -244,7 +244,7 @@ body.light-theme .controls-bar {
     display: block;
 }
 
-.tag-count{
+.tag-count {
     justify-self: flex-end;
     position: absolute;
     right: 15px;
@@ -453,15 +453,15 @@ body.light-theme .controls-bar {
     margin-bottom: 30px;
     border: 3px solid #ffffff26;
     border-radius: inherit;
-    padding: 10px;
+    padding: 10px 0px 0px;
 }
 
 .wishlist-total {
     font-variant: all-petite-caps;
     color: darkgray;
-    background: linear-gradient(135deg, #3a3a3a00, #3a3a3a61, #3a3a3a00);
+    background: linear-gradient(180deg, transparent, #5d5d5d5e 75%);
     padding: 12px 15px 16px 15px;
-    border-radius: 10px;
+    border-radius: 15px;
     text-align: center;
     font-size: 19px;
     font-weight: 600;
@@ -731,10 +731,6 @@ body.light-theme .controls-bar {
     transition: transform 0.3s ease;
 }
 
-
-
-
-
 .catalog-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
@@ -752,6 +748,7 @@ body.light-theme .controls-bar {
 
 #wishlist-items {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        padding: 12px;
 }
 
 @keyframes fadeIn {
@@ -828,6 +825,12 @@ body.light-theme .controls-bar {
     place-self: anchor-center;
     object-fit: contain;
     position: absolute;
+
+}
+
+img{
+        -webkit-user-drag: none;
+        user-select: none;
 }
 
 .item>svg {
