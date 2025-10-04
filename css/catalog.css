@@ -24,7 +24,7 @@
 }
 
 body.light-theme {
-    --bg-primary: #f5f5f5;
+    --bg-primary: #e7ebeb;
     --bg-secondary: #fff;
     --bg-item: rgba(0, 0, 0, 0.03);
     --bg-item-hover: rgba(0, 0, 0, 0.06);
@@ -451,15 +451,15 @@ body.light-theme .controls-bar {
 
 .wishlist-section {
     margin-bottom: 30px;
-    border: 3px solid #ffffff26;
+    border: 3px solid var(--bg-item-hover);
     border-radius: inherit;
     padding: 10px 0px 0px;
 }
 
 .wishlist-total {
     font-variant: all-petite-caps;
-    color: darkgray;
-    background: linear-gradient(180deg, transparent, #5d5d5d5e 75%);
+    color: var(--text-secondary);
+    background: linear-gradient(180deg, transparent, var(--bg-item-hover) 75%);
     padding: 12px 15px 16px 15px;
     border-radius: 15px;
     text-align: center;
@@ -470,10 +470,12 @@ body.light-theme .controls-bar {
 #wishlist-value {
     font-variant: traditional;
     font-family: 'BuilderSans';
-    color: #ffffff;
+    color: var(--text-primary);
 }
 
-
+svg{
+    fill: var(--text-primary);
+}
 
 
 
@@ -527,7 +529,7 @@ body.light-theme .controls-bar {
     box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
 }
 
-/* Stats */
+
 .stats {
     text-align: center;
     padding: 10px;
@@ -535,11 +537,32 @@ body.light-theme .controls-bar {
     font-size: 14px;
 }
 
+.stats {
+    visibility: collapse;
+}
+
 .stats #showing,
 .stats #total {
+    visibility: visible;
     color: var(--text-primary);
     font-weight: 600;
 }
+
+.stats:hover {
+    visibility: visible;
+}
+
+.stats #total::before {
+    content: " / ";
+    color: var(--text-secondary);
+    font-weight: 100;
+}
+
+.stats:hover #total::before {
+    content: " of ";
+}
+
+
 
 
 
@@ -743,7 +766,7 @@ body.light-theme .controls-bar {
 #recent-viewed-items {
     grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
     gap: 10px 21px;
-    mix-blend-mode: screen;
+    opacity: 0.8;
 }
 
 #wishlist-items {
@@ -1191,37 +1214,6 @@ button {
     color: #cccccc;
 }
 
-.stats {
-    text-align: center;
-    padding: 10px;
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 14px;
-}
-
-.stats {
-    visibility: collapse;
-}
-
-.stats #showing,
-.stats #total {
-    visibility: visible;
-    color: #ffffffcc;
-    font-weight: 600;
-}
-
-.stats:hover {
-    visibility: visible;
-}
-
-.stats #total::before {
-    content: " / ";
-    color: #ffffffa8;
-    font-weight: 100;
-}
-
-.stats:hover #total::before {
-    content: " of ";
-}
 
 
 
