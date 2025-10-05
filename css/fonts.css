@@ -67,6 +67,13 @@
 }
 
 @font-face {
+    font-family: 'Uninkled';
+    font-style: normal;
+    font-weight: normal;
+    src: url("../fonts/Uninkled-Bold.ttf") format('truetype');
+}
+
+@font-face {
   font-family: 'Inconsolata';
   font-style: normal;
   font-weight: 400;
@@ -91,12 +98,7 @@
     src: url("../fonts/BunnyFlowers-Regular.woff") format('woff');
 }
 
-@font-face {
-    font-family: Uninkled;
-    font-style: normal;
-    font-weight: normal;
-    src: url("../fonts/Uninkled-Bold.woff2") format('woff2');
-}
+
 @font-face {
   font-family: BuilderSans;
   font-weight: 500;
