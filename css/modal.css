@@ -179,6 +179,7 @@ body:has(.item-modal.active) {
     align-items: center;
     gap: 10px;
 }
+
 .modal-content svg{
     overflow: visible;
 }
