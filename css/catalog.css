@@ -83,21 +83,21 @@ header a svg {
     overflow: visible;
 }
 
-svg image {
+svg #cloud {
     transition: all 0.2s ease-in-out;
 }
 
 
-svg image:last-of-type {
+svg #cloud:last-of-type {
     transition: all 0.4s ease-in-out;
 }
 
-svg image:first-of-type {
+svg #cloud:first-of-type {
     transition: all 0.6s ease-in-out;
 }
 
 
-svg:hover image {
+svg:hover #cloud {
     opacity: 0;
     transform: scale(.98);
     transform-origin: center;
