@@ -50,7 +50,7 @@ body {
     position: fixed;
     z-index: 222;
     width: 100%;
-    animation: fadeIn 0.3s ease 4.5s reverse forwards;
+    animation: slideup 0.3s ease 4.5s forwards;
 }
 
 header {
@@ -109,13 +109,18 @@ svg:hover image {
     position: absolute;
     top: 20px;
     right: 20px;
-    width: 60px;
+    width: 31px;
     height: 30px;
     background: var(--bg-item);
     border-radius: 15px;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: all 0.3s;
     border: 2px solid var(--border-color);
+    opacity: 0.5;
+}
+.theme-toggle:hover {
+    width: 60px;
+    opacity: 1;
 }
 
 .theme-toggle::before {
@@ -129,8 +134,13 @@ svg:hover image {
 
 body.light-theme .theme-toggle::before {
     content: '☀️';
+    transition: unset;
+}
+
+body.light-theme .theme-toggle:hover::before {
     left: 30px;
 }
+
 
 /* Controls Bar */
 .controls-bar {
@@ -781,6 +791,18 @@ svg{
 
     to {
         opacity: 1;
+    }
+}
+
+@keyframes slideup {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateY(-50%);
+        opacity: 0;
     }
 }
 

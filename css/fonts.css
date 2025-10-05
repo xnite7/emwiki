@@ -90,6 +90,13 @@
     font-weight: normal;
     src: url("../fonts/BunnyFlowers-Regular.woff") format('woff');
 }
+
+@font-face {
+    font-family: 'Uninkled';
+    font-style: normal;
+    font-weight: normal;
+    src: url("../fonts/Uninkled-Bold.woff") format('woff');
+}
 @font-face {
   font-family: BuilderSans;
   font-weight: 500;
