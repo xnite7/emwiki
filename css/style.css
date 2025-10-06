@@ -728,10 +728,10 @@ div.logo-container {
 
 .catalog-grid {
     display: flex;
-    gap: 21px;
+    gap: 16px;
     grid-template-columns: repeat(auto-fill, 194px);
     padding: 2%;
-    zoom: 1.1;
+    zoom: 1.0;
     flex-wrap: wrap;
     justify-content: center;
     justify-items: center
@@ -811,27 +811,25 @@ p {
 .ff {
     align-items: center;
     background-color: hsla(0, 0%, 100%, .15);
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, .3);
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .35);
     color: #fff;
     cursor: pointer;
     display: flex;
     flex-direction: column-reverse;
-    height: 190px;
-    height: 13vw;
-    justify-content: flex-end;
-    justify-items: center;
-    max-height: 191px;
-    max-width: 191px;
-    min-height: 126px;
-    min-width: 126px;
+    height: 11vw;
+    max-height: 115px;
+    max-width: 115px;
+    min-height: 100px;
+    min-width: 100px;
     padding: 0;
-    transition: transform .18s ease, background .25s ease;
+    transition: transform .2s ease, box-shadow .2s ease;
     -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    width: 190px;
-    width: 13vw
+    width: 11vw;
+    justify-content: flex-end;
+    justify-items: center;
 }
 
 .ff p {
@@ -856,19 +854,19 @@ p {
     justify-content: center;
     box-sizing: border-box;
     background-color: hsla(0, 0%, 100%, .15);
-    border-radius: 12px;
+    border-radius: 16px;
     border: 1px solid #00000033;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, .3);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .35);
     cursor: pointer;
     display: flex;
     flex-direction: column-reverse;
-    height: 13vw;
-    max-height: 139px;
-    max-width: 139px;
-    min-height: 126px;
-    min-width: 126px;
+    height: 11vw;
+    max-height: 115px;
+    max-width: 115px;
+    min-height: 100px;
+    min-width: 100px;
     scale: 1;
-    transition: transform .15s ease;
+    transition: transform .2s ease, box-shadow .2s ease;
     -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
@@ -882,19 +880,17 @@ p {
 }
 
 .item:hover {
-    background-color: red;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, .4);
-    filter: grayscale(0) brightness(1.12);
-    transform: scale(1.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+    filter: grayscale(0) brightness(1.1);
+    transform: scale(1.03) translateY(-2px);
     z-index: 1;
 }
 
 
 .item:active {
-    background-color: rgba(0, 0, 0, .349);
-    box-shadow: 0 4px 10px transparent;
-    filter: grayscale(0) brightness(.88);
-    transform: scale(.95)
+    box-shadow: 0 3px 15px rgba(0, 0, 0, .6);
+    filter: grayscale(0) brightness(.95);
+    transform: scale(.98) translateY(1px)
 }
 
 body.pressing-heart .item:active {
@@ -2261,7 +2257,7 @@ html {
     }
 
     .item:hover {
-        transform: scale(1)
+        transform: scale(1.01) translateY(-1px)
     }
 
     .scammer-img {

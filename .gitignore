@@ -1,2 +1,7 @@
 node_modules/
 .env
+
+# Temporary test files
+test-*.html
+mock-*.json
+comparison.html
