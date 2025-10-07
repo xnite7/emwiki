@@ -12,8 +12,107 @@ class Auth {
         if (this.token) {
             await this.checkSession();
         }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('profile-dropdown');
+            const profileBtn = document.getElementById('user-profile-btn');
+            if (dropdown && profileBtn && !dropdown.contains(e.target) && !profileBtn.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+    }
+    // Toast notification system
+    showToast(title, message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        const icons = {
+            error: '❌',
+            success: '✅',
+            info: 'ℹ️',
+            warning: '⚠️'
+        };
+        
+        toast.innerHTML = `
+            <div class="toast-icon">${icons[type]}</div>
+            <div class="toast-content">
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+            <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+        `;
+        
+        container.appendChild(toast);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            toast.classList.add('hiding');
+            setTimeout(() => toast.remove(), 300);
+        }, 5000);
     }
 
+        // Celebration card
+    showCelebration(username) {
+        const card = document.getElementById('celebration-card');
+        const message = card.querySelector('.celebration-message');
+        message.textContent = `Welcome, ${username}! Your Roblox account has been successfully linked to Epic Catalogue.`;
+        card.classList.add('show');
+    }
+
+    closeCelebration() {
+        document.getElementById('celebration-card').classList.remove('show');
+    }
+
+    // Profile dropdown
+    showProfileMenu() {
+        const dropdown = document.getElementById('profile-dropdown');
+        
+        if (dropdown.classList.contains('show')) {
+            dropdown.classList.remove('show');
+            return;
+        }
+        
+        const roleColors = {
+            admin: 'admin',
+            vip: 'vip',
+            moderator: 'moderator',
+            user: ''
+        };
+        
+        dropdown.innerHTML = `
+            <div class="profile-dropdown-header">
+                <img src="${this.user.avatarUrl || 'https://www.roblox.com/headshot-thumbnail/image?userId=' + this.user.userId + '&width=150&height=150&format=png'}" alt="${this.user.username}">
+                <div class="profile-dropdown-info">
+                    <div class="profile-dropdown-name">${this.user.displayName}</div>
+                    <div class="profile-dropdown-role ${roleColors[this.user.role]}">${this.user.role || 'User'}</div>
+                </div>
+            </div>
+            
+            <div class="profile-dropdown-stats">
+                <div class="profile-stat">
+                    <div class="profile-stat-value">${this.user.userId}</div>
+                    <div class="profile-stat-label">User ID</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value">@${this.user.username}</div>
+                    <div class="profile-stat-label">Username</div>
+                </div>
+            </div>
+            
+            <div class="profile-dropdown-actions">
+                <button class="profile-action-btn" onclick="window.open('https://www.roblox.com/users/${this.user.userId}/profile', '_blank')">
+                    🔗 View Roblox Profile
+                </button>
+                <button class="profile-action-btn logout" onclick="auth.logout()">
+                    🚪 Logout
+                </button>
+            </div>
+        `;
+        
+        dropdown.classList.add('show');
+    }
     async checkSession() {
         try {
             const response = await fetch('https://emwiki.site/api/auth/session', {
@@ -64,19 +163,13 @@ class Auth {
 
             document.getElementById('auth-step-1').style.display = 'none';
             document.getElementById('auth-step-2').style.display = 'block';
-            document.getElementById('auth-code-display').textContent = code;
 
             this.currentCode = code;
-
             this.displayCodeWithAnimation(code);
-
-            // Start countdown
             this.startTimer(expiresIn);
-
-            // Start polling for verification
             this.startPolling(code);
         } catch (error) {
-            alert('Error: ' + error.message);
+            this.showToast('Connection Error', error.message, 'error');
         }
     }
 
@@ -85,18 +178,16 @@ class Auth {
 
         try {
             await navigator.clipboard.writeText(this.currentCode);
-
-            const btn = document.querySelector('.copy-code-btn');
-
-            btn.classList.add('copied');
+            const display = document.getElementById('auth-code-display');
+            display.classList.add('copied');
+            this.showToast('Copied!', 'Code copied to clipboard', 'success');
 
             setTimeout(() => {
-                btn.classList.remove('copied');
+                display.classList.remove('copied');
 
             }, 2000);
         } catch (error) {
-            console.error('Failed to copy:', error);
-            alert('Code: ' + this.currentCode);
+            this.showToast('Copy Failed', 'Code: ' + this.currentCode, 'error');
         }
     }
 
@@ -124,7 +215,6 @@ class Auth {
         let remaining = seconds;
         const timerEl = document.getElementById('code-timer');
 
-        // Clear any existing interval
         if (this.timerInterval) {
             clearInterval(this.timerInterval);
         }
@@ -137,73 +227,71 @@ class Auth {
 
             if (remaining <= 0) {
                 clearInterval(this.timerInterval);
-
-                // Clear polling interval too
                 if (this.pollInterval) {
                     clearInterval(this.pollInterval);
                 }
-
-                // Generate new code automatically
                 this.generateCode();
             }
         }, 1000);
     }
 
     startPolling(code) {
-    // Poll every 2 seconds to check if code was verified
-    this.pollInterval = setInterval(async () => {
-        try {
-            const response = await fetch('https://emwiki.site/api/auth/check-code', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code })
-            });
+        // Poll every 2 seconds to check if code was verified
+        this.pollInterval = setInterval(async () => {
+            try {
+                const response = await fetch('https://emwiki.site/api/auth/check-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
 
-            const data = await response.json();
+                const data = await response.json();
 
-            if (data.verified && data.token) {
-                // Store the token
-                localStorage.setItem('auth_token', data.token);
-                this.token = data.token;
-                this.user = data.user;
+                if (data.verified && data.token) {
+                    // Store the token
+                    localStorage.setItem('auth_token', data.token);
+                    this.token = data.token;
+                    this.user = data.user;
 
-                // Clear intervals
-                clearInterval(this.pollInterval);
-                if (this.timerInterval) {
-                    clearInterval(this.timerInterval);
+                    // Clear intervals
+                    clearInterval(this.pollInterval);
+                    if (this.timerInterval) {
+                        clearInterval(this.timerInterval);
+                    }
+
+                    // Update UI
+                    this.updateUI();
+                    this.closeModal();
+                    this.showCelebration(this.user.username);
                 }
-
-                // Update UI
-                this.updateUI();
-                this.closeModal();
-
-                // Show success message
-                alert(`Welcome, ${this.user.username}! 🎉`);
+            } catch (error) {
+                console.error('Polling error:', error);
             }
-        } catch (error) {
-            console.error('Polling error:', error);
-        }
-    }, 2000);
-}
+        }, 2000);
+    }
 
     updateUI() {
         if (!this.user) return;
 
+        // Hide the auth button
+        const authButton = document.getElementById('auth-button');
+        if (authButton) {
+            authButton.style.display = 'none';
+        }
+
+        // Show profile button
         const profileBtn = document.getElementById('user-profile-btn');
         profileBtn.style.display = 'flex';
         profileBtn.innerHTML = `
-            <img src="${this.user.avatarUrl || 'https://www.roblox.com/headshot-thumbnail/image?userId=' + this.user.userId + '&width=150&height=150&format=png'}" alt="${this.user.username}">
-            <span>${this.user.displayName}</span>
-            <div class="online-indicator"></div>
-        `;
+        <img src="${this.user.avatarUrl || 'https://www.roblox.com/headshot-thumbnail/image?userId=' + this.user.userId + '&width=150&height=150&format=png'}" alt="${this.user.username}">
+        <span>${this.user.displayName}</span>
+        <div class="online-indicator"></div>
+    `;
 
         profileBtn.onclick = () => this.showProfileMenu();
     }
 
-    showProfileMenu() {
-        // Add dropdown menu here if you want
-        alert(`Logged in as: ${this.user.username}\nRole: ${this.user.role}`);
-    }
+
 
     async logout() {
         if (this.token) {
@@ -216,8 +304,17 @@ class Auth {
         localStorage.removeItem('auth_token');
         this.token = null;
         this.user = null;
+
+        // Show auth button again
+        const authButton = document.getElementById('auth-button');
+        if (authButton) {
+            authButton.style.display = 'flex';
+        }
+
         document.getElementById('user-profile-btn').style.display = 'none';
-        location.reload();
+        this.showToast('Logged Out', 'You have been successfully logged out', 'info');
+        
+        setTimeout(() => location.reload(), 1500);
     }
 }
 

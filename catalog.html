@@ -105,12 +105,10 @@
            <div id="auth-step-2" style="display: none;">
     <p>Your code is:</p>
     <div class="auth-code-container">
-        <div class="auth-code" id="auth-code-display"></div>
-        <button class="copy-code-btn" onclick="auth.copyCode()">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
-            </svg>
-        </button>
+        <div class="auth-code" id="auth-code-display" onclick="auth.copyCode()"></div>
+        <svg class="copy-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+        </svg>
     </div>
     <p class="auth-instructions">
         Join the game and enter this code!<br>
@@ -118,7 +116,7 @@
     </p>
     <div class="auth-actions">
         <button class="join-game-btn" onclick="auth.joinGame()">
-            <span>🎮 Join Game</span>
+            <span>Join Game</span>
         </button>
     </div>
     <p style="font-size: 12px; color: var(--text-secondary); margin-top: 15px;">Checking for verification...</p>
@@ -514,6 +512,19 @@
         style="margin-left: 15px; padding: 5px 10px; border-radius: 8px; background: #33c5ff; border: none; cursor: pointer;"
         onclick="window.location.href=`https://emwiki.site/admin.html`">Admin</button>
 
+        <!-- Profile Dropdown -->
+<div id="profile-dropdown" class="profile-dropdown"></div>
+
+<!-- Celebration Card -->
+<div id="celebration-card" class="celebration-card">
+    <div class="celebration-icon">🎉</div>
+    <div class="celebration-title">Account Linked!</div>
+    <div class="celebration-message">Welcome to Epic Catalogue! Your Roblox account has been successfully linked.</div>
+    <button class="celebration-close-btn" onclick="auth.closeCelebration()">Awesome!</button>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container" class="toast-container"></div>
     <script>
 
 
@@ -2163,6 +2174,7 @@
         const catalog = new Catalog();
     </script>
     <script src="./js/auth.js"></script>
+    
 </body>
 
 </html>
