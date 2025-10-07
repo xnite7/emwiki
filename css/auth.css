@@ -483,7 +483,7 @@
 #user-profile-btn {
     position: absolute;
     top: 20px;
-    right: 70px;
+    right: 20px;
     display: flex;
     align-items: center;
     gap: 12px;
