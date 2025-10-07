@@ -565,6 +565,14 @@ body.light-theme .controls-bar {
     color: var(--text-secondary);
     transition: color 0.14s;
 }
+#wishlist-tab, #favorites-tab {
+    transition: opacity 0.3s ease;
+}
+
+#wishlist-tab:hover, #favorites-tab:hover {
+    opacity: 1 !important;
+}
+
 
 .close-stats:hover {
     color: var(--text-primary);
@@ -1763,10 +1771,8 @@ button {
         height: 110px;
     }
 
-    #recent-viewed-items {
-        grid-template-columns: repeat(auto-fill, minmax(73px, 1fr));
-        gap: 10px 0px;
-        mix-blend-mode: screen;
+    #recent-viewed-items .item:nth-child(5) {
+        display: none;
     }
 
     .bn {
@@ -1797,6 +1803,10 @@ button {
 @media screen and (max-width: 400px) {
     .catalog-container {
         padding: 12px;
+    }
+
+    #recent-viewed-items .item:nth-child(4) {
+        display: none;
     }
 
     .catalog-grid {
