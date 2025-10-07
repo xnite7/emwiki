@@ -83,6 +83,117 @@ header a svg {
     overflow: visible;
 }
 
+/* Auth System */
+#auth-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-modal {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    border: 2px solid var(--border-color);
+    position: relative;
+}
+
+.close-auth {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 30px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.auth-btn {
+    padding: 15px 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 25px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+    margin-top: 20px;
+}
+
+.auth-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.auth-code {
+    font-size: 48px;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    color: #667eea;
+    padding: 20px;
+    background: var(--bg-item);
+    border-radius: 15px;
+    margin: 20px 0;
+    letter-spacing: 8px;
+}
+
+.auth-instructions {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-top: 15px;
+}
+
+#user-profile-btn {
+    position: absolute;
+    top: 20px;
+    right: 70px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 15px;
+    background: var(--bg-item);
+    border-radius: 25px;
+    cursor: pointer;
+    border: 2px solid var(--border-color);
+    transition: all 0.3s;
+}
+
+#user-profile-btn:hover {
+    background: var(--bg-item-hover);
+}
+
+.dropdown-item.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+#user-profile-btn img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.online-indicator {
+    width: 10px;
+    height: 10px;
+    background: #24ff5a;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #24ff5a;
+}
+
 svg #cloud {
     transition: all 0.2s ease-in-out;
 }
@@ -1568,6 +1679,11 @@ button {
 .icon.favorites-icon {
     mask-image: url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2034%2029%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M31.272%202C27.936-1.643%2021.067-.087%2017.099%205.555%2012.074-.505%206.071-1.643%202.726%202c-9.312%2010.141%2010.62%2024.717%2014.234%2026.356l.084.048v-.048C20.655%2026.717%2040.584%2012.141%2031.272%202%22%2F%3E%3C%2Fsvg%3E");
     background: linear-gradient(to top, #550606, #ee0979);
+}
+
+.icon.code-icon {
+    mask-image: url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2016%2016%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M11.126%202.601a.75.75%200%200%200-1.025.273l-5.5%209.5a.75.75%200%200%200%201.298.752l5.5-9.5a.75.75%200%200%200-.273-1.025%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E");
+    background: linear-gradient(to bottom, #ffffff, #7e7e7e);
 }
 
 .icon.gamenight-icon {

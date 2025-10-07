@@ -86,6 +86,28 @@
         <div class="theme-toggle" onclick="catalog.toggleTheme()"></div>
     </header>
 
+    <!-- Auth UI -->
+    <div id="auth-container" style="display: none;">
+        <div class="auth-modal">
+            <button class="close-auth" onclick="auth.closeModal()">×</button>
+            <h2>Link Your Roblox Account</h2>
+            <div id="auth-step-1">
+                <p>Click below to generate your unique code</p>
+                <button class="auth-btn" onclick="auth.generateCode()">Generate Code</button>
+            </div>
+            <div id="auth-step-2" style="display: none;">
+                <p>Your code is:</p>
+                <div class="auth-code" id="auth-code-display"></div>
+                <p class="auth-instructions">Join the game and enter this code!<br>Code expires in <span
+                        id="code-timer">5:00</span></p>
+                <p style="font-size: 12px; color: var(--text-secondary);">Checking for verification...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Profile Button (when logged in) -->
+    <div id="user-profile-btn" style="display: none;"></div>
+
     <!-- Category Carousel -->
     <div class="category-carousel-container">
         <div class="category-carousel" id="categoryCarousel"></div>
@@ -117,7 +139,8 @@
                         <div class="dropdown-item" data-sort="name-desc">Name: Z ➔ A</div>
                         <div class="dropdown-item" data-sort="price-asc">Price: Low to High</div>
                         <div class="dropdown-item" data-sort="price-desc">Price: High to Low</div>
-
+                        <div class="dropdown-item disabled" data-sort="date-desc">Newer First</div>
+                        <div class="dropdown-item disabled" data-sort="date-asc">Older First</div>
                     </div>
                 </div>
 
@@ -156,14 +179,7 @@
                             <div class="tag-count" id="count-retired">0</div>
                         </div>
 
-                        <div class="dropdown-item" data-filter="removed">
-                            <div class="tag-checkbox"></div>
-                            <span class="icon removed-icon"></span>
-                            <div class="tag-label">Removed</div>
-                            <div class="tag-count" id="count-removed">0</div>
-                        </div>
-
-                        <div class="dropdown-item" data-filter="favorites">
+                        <div style="display: none;" class="dropdown-item" data-filter="favorites">
                             <div class="tag-checkbox"></div>
                             <span class="icon favorites-icon"></span>
                             <div class="tag-label">Favorites</div>
@@ -182,6 +198,21 @@
                             <span class="icon unreleased-icon"></span>
                             <div class="tag-label">Unreleased</div>
                             <div class="tag-count" id="count-unreleased">0</div>
+                        </div>
+
+
+                        <div class="dropdown-item" data-filter="removed">
+                            <div class="tag-checkbox"></div>
+                            <span class="icon removed-icon"></span>
+                            <div class="tag-label">Removed</div>
+                            <div class="tag-count" id="count-removed">0</div>
+                        </div>
+
+                        <div class="dropdown-item" data-filter="code">
+                            <div class="tag-checkbox"></div>
+                            <span class="icon code-icon"></span>
+                            <div class="tag-label">Code</div>
+                            <div class="tag-count" id="count-code">0</div>
                         </div>
 
                         <!-- Seasons Submenu -->
@@ -785,7 +816,8 @@
                     removed: 0,
                     favorites: 0,
                     gamenight: 0,
-                    unreleased: 0
+                    unreleased: 0,
+                    code: 0
                 };
 
                 this.favorites = this.loadFromStorage('favorites', []);
@@ -831,13 +863,6 @@
                 setTimeout(() => {
                     document.querySelector('.bn').style.display = 'none';
                 }, 5000);
-
-
-
-
-
-
-
             }
 
             loadFromStorage(key, defaultValue) {
@@ -1373,11 +1398,13 @@
             selectSort(sortType) {
                 this.sortBy = sortType;
                 const labels = {
-                    'default': 'Default',
+                    'default': 'Categorical',
                     'price-asc': '$ ➔ $$$',
                     'price-desc': '$$$ ➔ $',
                     'name-asc': 'A ➔ Z',
-                    'name-desc': 'Z ➔ A'
+                    'name-desc': 'Z ➔ A',
+                    'date-desc': 'Newer First',
+                    'date-asc': 'Older First'
                 };
                 document.getElementById('sort-label').textContent = labels[sortType];
 
@@ -1482,6 +1509,8 @@
                     if (from.includes('unreleased') || from.includes('@zarabelle') || from.includes('@typicaltype')) {
                         this.tagCounts.unreleased++;
                     }
+
+                    if (from.includes('code')) this.tagCounts.code++;
                 });
 
                 // Update UI counts
@@ -1500,6 +1529,29 @@
                     this.filters.tags.delete(tagName);
                 } else {
                     this.filters.tags.add(tagName);
+                }
+
+                // Enable/disable date sorting based on code/gamenight filters
+                const hasDateFilters = this.filters.tags.has('code') || this.filters.tags.has('gamenight');
+                const dateOptions = document.querySelectorAll('[data-sort="date-desc"], [data-sort="date-asc"]');
+
+                dateOptions.forEach(option => {
+                    if (hasDateFilters) {
+                        option.classList.remove('disabled');
+                    } else {
+                        option.classList.add('disabled');
+                        // Reset to default if currently using date sorting
+                        if (this.sortBy === 'date-desc' || this.sortBy === 'date-asc') {
+                            this.selectSort('default');
+                        }
+                    }
+                });
+
+                // Auto-switch to date-desc when activating code/gamenight
+                if ((tagName === 'code' || tagName === 'gamenight') &&
+                    this.filters.tags.has(tagName) &&
+                    this.sortBy === 'default') {
+                    this.selectSort('date-desc');
                 }
 
                 this.updateTagsLabel();
@@ -1524,6 +1576,7 @@
             }
 
             applyFilters() {
+
                 this.filtered = this.items.filter(item => {
                     // Chest filter
                     if (this.chestFilter !== 'all') {
@@ -1572,6 +1625,9 @@
                             case 'gamenight':
                                 if (!item.from.toLowerCase().includes('gamenight') && !item.from.toLowerCase().includes('rodis')) return false;
                                 break;
+                            case 'code':
+                                if (!item.from.toLowerCase().includes('code')) return false;
+                                break;
                             case 'unreleased':
                                 if (!item.from.toLowerCase().includes('unreleased')) return false;
                                 break;
@@ -1590,11 +1646,10 @@
                         }
                     }
 
-
                     return true;
                 });
 
-                // Apply sorting
+
                 this.sortItems();
 
                 // Reset display
@@ -1617,6 +1672,72 @@
 
             sortItems() {
                 switch (this.sortBy) {
+                    case 'date-desc': // Newer first
+                        this.filtered.sort((a, b) => {
+                            const parseDate = (from) => {
+                                if (!from) return 0;
+
+                                let pattern = this.filters.tags.has('code') ? /\b(?:code|Code)\s*(?:\()?([A-Za-z]+)\.?\s*(\d{4})\)?/gi : /\b(?:gamenight|Gamenight)\s*(?:\()?([A-Za-z]+)\.?\s*(\d{4})\)?/gi;
+                                if (this.filters.tags.has('code') && this.filters.tags.has('gamenight')) {
+                                    // If both tags are selected, match either
+                                    pattern = /\b(?:code|Code|gamenight|Gamenight)\s*(?:\()?([A-Za-z]+)\.?\s*(\d{4})\)?/gi;
+                                }
+                                const matches = [...from.matchAll(pattern)];
+
+                                if (matches.length === 0) return 0;
+
+                                const months = {
+                                    'jan': 0, 'feb': 1, 'mar': 2, 'apr': 3, 'may': 4, 'jun': 5,
+                                    'jul': 6, 'aug': 7, 'sep': 8, 'sept': 8, 'oct': 9, 'nov': 10, 'dec': 11
+                                };
+
+                                const timestamps = matches.map(match => {
+                                    const monthStr = match[1].toLowerCase();
+                                    const month = months[monthStr];
+                                    const year = parseInt(match[2]);
+
+                                    if (month === undefined) return 0;
+                                    return new Date(year, month).getTime();
+                                });
+
+                                return Math.max(...timestamps);
+                            };
+
+                            return parseDate(b.from) - parseDate(a.from);
+                        });
+                        break;
+
+                    case 'date-asc': // Older first
+                        this.filtered.sort((a, b) => {
+                            const parseDate = (from) => {
+                                if (!from) return 0;
+
+                                const pattern = /\b(?:code|Code|gamenight|Gamenight)\s*(?:\()?([A-Za-z]+)\.?\s*(\d{4})\)?/gi;
+                                const matches = [...from.matchAll(pattern)];
+
+                                if (matches.length === 0) return 0;
+
+                                const months = {
+                                    'jan': 0, 'feb': 1, 'mar': 2, 'apr': 3, 'may': 4, 'jun': 5,
+                                    'jul': 6, 'aug': 7, 'sep': 8, 'sept': 8, 'oct': 9, 'nov': 10, 'dec': 11
+                                };
+
+                                const timestamps = matches.map(match => {
+                                    const monthStr = match[1].toLowerCase();
+                                    const month = months[monthStr];
+                                    const year = parseInt(match[2]);
+
+                                    if (month === undefined) return 0;
+                                    return new Date(year, month).getTime();
+                                });
+
+                                return Math.max(...timestamps);
+                            };
+
+                            return parseDate(a.from) - parseDate(b.from);
+                        });
+                        break;
+
                     case 'price-asc':
                         this.filtered.sort((a, b) => {
                             const priceA = a.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(a.price || 0) || Number.MAX_SAFE_INTEGER);
@@ -1977,10 +2098,8 @@
 
         // Initialize
         const catalog = new Catalog();
-
-
-
     </script>
+    <script src="./js/auth.js"></script>
 </body>
 
 </html>
