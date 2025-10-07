@@ -443,7 +443,7 @@
 .auth-button {
     position: absolute;
     top: 20px;
-    right: 70px;
+    right: 10px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -661,7 +661,7 @@
     }
 
     .auth-button {
-        right: 60px;
+        right: 10px;
         padding: 9px 16px;
         font-size: 13px;
     }
