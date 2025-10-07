@@ -5,14 +5,14 @@ function checkRateLimit(ip, limit = 10, window = 60000) {
     const now = Date.now();
     const key = `${ip}`;
     const requests = rateLimits.get(key) || [];
-    
+
     // Clean old requests
     const recent = requests.filter(time => now - time < window);
-    
+
     if (recent.length >= limit) {
         return false;
     }
-    
+
     recent.push(now);
     rateLimits.set(key, recent);
     return true;
@@ -95,7 +95,7 @@ async function handleVerifyCode(request, env) {
     }
 
     const now = Date.now();
-    
+
     // Create or update user
     await env.DBA.prepare(`
         INSERT INTO users (user_id, username, display_name, avatar_url, created_at, last_online)
@@ -179,7 +179,7 @@ async function handleLogout(request, env) {
 async function handleUpdateRole(request, env) {
     const authHeader = request.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '');
-    
+
     // Check if requester is admin
     const session = await env.DBA.prepare(`
         SELECT u.role, u.user_id FROM sessions s
@@ -195,7 +195,7 @@ async function handleUpdateRole(request, env) {
     }
 
     const { userId, role } = await request.json();
-    
+
     if (!['user', 'vip', 'moderator', 'admin'].includes(role)) {
         return new Response(JSON.stringify({ error: 'Invalid role' }), {
             status: 400,
@@ -206,6 +206,60 @@ async function handleUpdateRole(request, env) {
     await env.DBA.prepare('UPDATE users SET role = ? WHERE user_id = ?').bind(role, userId).run();
 
     return new Response(JSON.stringify({ success: true }), {
+        headers: { 'Content-Type': 'application/json' }
+    });
+}
+
+async function handleCheckCode(request, env) {
+    const { code } = await request.json();
+
+    if (!code) {
+        return new Response(JSON.stringify({ error: 'Code required' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    // Check if code was used and get the session
+    const authCode = await env.DBA.prepare(`
+        SELECT ac.*, s.token, s.user_id 
+        FROM auth_codes ac
+        LEFT JOIN sessions s ON ac.code = s.token
+        WHERE ac.code = ? AND ac.used = 1
+    `).bind(code).first();
+
+    if (!authCode) {
+        return new Response(JSON.stringify({ verified: false }), {
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    // Get the actual session for this user (most recent)
+    const session = await env.DBA.prepare(`
+        SELECT s.token, u.* FROM sessions s
+        JOIN users u ON s.user_id = u.user_id
+        WHERE s.user_id = ? AND s.expires_at > ?
+        ORDER BY s.created_at DESC
+        LIMIT 1
+    `).bind(authCode.user_id, Date.now()).first();
+
+    if (session) {
+        return new Response(JSON.stringify({
+            verified: true,
+            token: session.token,
+            user: {
+                userId: session.user_id,
+                username: session.username,
+                displayName: session.display_name,
+                avatarUrl: session.avatar_url,
+                role: session.role
+            }
+        }), {
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    return new Response(JSON.stringify({ verified: false }), {
         headers: { 'Content-Type': 'application/json' }
     });
 }
@@ -235,6 +289,9 @@ export async function onRequest(context) {
                 break;
             case 'verify-code':
                 response = await handleVerifyCode(request, env);
+                break;
+            case 'check-code':  // ADD THIS
+                response = await handleCheckCode(request, env);
                 break;
             case 'session':
                 response = await handleGetSession(request, env);

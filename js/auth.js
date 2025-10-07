@@ -150,25 +150,41 @@ class Auth {
     }
 
     startPolling(code) {
-        // Poll every 2 seconds to check if code was used
-        this.pollInterval = setInterval(async () => {
-            // This is a simple approach - in production you'd want websockets
-            // For now, we just check if our session is valid
-            await this.checkSession();
+    // Poll every 2 seconds to check if code was verified
+    this.pollInterval = setInterval(async () => {
+        try {
+            const response = await fetch('https://emwiki.site/api/auth/check-code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code })
+            });
 
-            if (this.user) {
+            const data = await response.json();
+
+            if (data.verified && data.token) {
+                // Store the token
+                localStorage.setItem('auth_token', data.token);
+                this.token = data.token;
+                this.user = data.user;
+
+                // Clear intervals
                 clearInterval(this.pollInterval);
-
-                // Clear timer too
                 if (this.timerInterval) {
                     clearInterval(this.timerInterval);
                 }
 
+                // Update UI
+                this.updateUI();
                 this.closeModal();
-                alert(`Welcome, ${this.user.username}!`);
+
+                // Show success message
+                alert(`Welcome, ${this.user.username}! 🎉`);
             }
-        }, 2000);
-    }
+        } catch (error) {
+            console.error('Polling error:', error);
+        }
+    }, 2000);
+}
 
     updateUI() {
         if (!this.user) return;
