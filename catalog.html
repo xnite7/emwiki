@@ -454,7 +454,7 @@
                     </h3>
                     <h3 style="margin: 0; font-size: 23px; font-variant: all-petite-caps; cursor: pointer; opacity: 0.5;"
                         id="favorites-tab" onclick="catalog.switchListMode('favorites')">
-                        ❤️ Favorites
+                        <svg viewBox="0 0 16 16" style="width:21px;margin-bottom:-4px;" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.247 2.247A4.243 4.243 0 0 0 1.25 8.25L8 15l6.75-6.75a4.243 4.243 0 0 0-5.997-6.003L8 3zM8 12.172l5.336-5.336a2.243 2.243 0 1 0-3.172-3.172L8 5.828 5.836 3.664a2.243 2.243 0 1 0-3.172 3.172z"/></svg> Favorites
                     </h3>
                 </div>
                 <div id="wishlist-items" class="catalog-grid"></div>
@@ -629,7 +629,7 @@
 
                 // Add to recently viewed
                 this.catalog.addToRecentlyViewed(item.name);
-                catalog.updateStatsIfOpen(); // Add this line
+                catalog.updateStatsIfOpen();
             }
 
             updateContent(item) {
