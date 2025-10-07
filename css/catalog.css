@@ -1135,6 +1135,7 @@ button {
     border: 1px solid #ffffff61;
     display: flex;
     border-radius: 50px;
+        white-space: nowrap;
     gap: 4px;
     font: 1000 12px 'BuilderSans';
     color: #ffffff;
@@ -1143,6 +1144,11 @@ button {
     backdrop-filter: blur(6px);
     transition: filter 0.1s ease-out;
     filter: drop-shadow(0px 0px 0px #00000000);
+}
+
+#recent-viewed-items .item-price {
+    font-size: 10px;
+    padding: 2px 6px;
 }
 
 .item:hover .item-price {
