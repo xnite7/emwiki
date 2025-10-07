@@ -34,13 +34,17 @@ class Auth {
 
     openModal() {
         document.getElementById('auth-container').style.display = 'flex';
+        // Add show class for animation
+        setTimeout(() => {
+            document.getElementById('auth-container').classList.add('show');
+        }, 10);
     }
 
     closeModal() {
-        document.getElementById('auth-container').style.display = 'none';
-        if (this.pollInterval) {
-            clearInterval(this.pollInterval);
-        }
+       document.getElementById('auth-container').classList.remove('show');
+        setTimeout(() => {
+            document.getElementById('auth-container').style.display = 'none';
+        }, 300);
     }
 
     async generateCode() {

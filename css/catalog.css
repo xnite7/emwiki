@@ -61,7 +61,7 @@ header {
     position: relative;
 }
 
-header svg {
+header a svg {
     max-width: 300px;
     width: 30%;
     min-width: 250px;
@@ -83,116 +83,6 @@ header a svg {
     overflow: visible;
 }
 
-/* Auth System */
-#auth-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.9);
-    z-index: 3000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.auth-modal {
-    background: var(--bg-secondary);
-    border-radius: 20px;
-    padding: 40px;
-    max-width: 400px;
-    width: 90%;
-    text-align: center;
-    border: 2px solid var(--border-color);
-    position: relative;
-}
-
-.close-auth {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 30px;
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-}
-
-.auth-btn {
-    padding: 15px 40px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    border-radius: 25px;
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.2s;
-    margin-top: 20px;
-}
-
-.auth-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-}
-
-.auth-code {
-    font-size: 48px;
-    font-weight: bold;
-    font-family: 'Courier New', monospace;
-    color: #667eea;
-    padding: 20px;
-    background: var(--bg-item);
-    border-radius: 15px;
-    margin: 20px 0;
-    letter-spacing: 8px;
-}
-
-.auth-instructions {
-    color: var(--text-secondary);
-    font-size: 14px;
-    margin-top: 15px;
-}
-
-#user-profile-btn {
-    position: absolute;
-    top: 20px;
-    right: 70px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 15px;
-    background: var(--bg-item);
-    border-radius: 25px;
-    cursor: pointer;
-    border: 2px solid var(--border-color);
-    transition: all 0.3s;
-}
-
-#user-profile-btn:hover {
-    background: var(--bg-item-hover);
-}
-
-.dropdown-item.disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
-#user-profile-btn img {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-}
-
-.online-indicator {
-    width: 10px;
-    height: 10px;
-    background: #24ff5a;
-    border-radius: 50%;
-    box-shadow: 0 0 10px #24ff5a;
-}
 
 svg #cloud {
     transition: all 0.2s ease-in-out;
