@@ -1255,7 +1255,7 @@
 
             populateSeasonFilter() {
                 const seasonMenu = document.getElementById('season-menu');
-                const seasons = Array.from(this.seasons).sort((a, b) => a - b);
+                const seasons = Array.from(this.seasons).sort((a, b) => b - a);
                 seasonMenu.querySelector('.dropdown-item').onclick = () => this.selectSeason('all');
                 seasons.forEach(season => {
                     const item = document.createElement('div');
@@ -1899,6 +1899,7 @@
                     this.toggleWishlist(data.name);
                     const rect = wishlistBtn.getBoundingClientRect();
                     wishlistBtn.classList.toggle('active');
+                    wishlistBtn.title = this.wishlist.includes(data.name) ? 'Remove from Wishlist' : 'Add to Wishlist';
                 };
                 wishlistBtn.title = this.wishlist.includes(data.name) ? 'Remove from Wishlist' : 'Add to Wishlist';
                 item.appendChild(wishlistBtn);
@@ -1907,12 +1908,13 @@
                 const heart = document.createElement('div');
                 heart.className = 'heart-button';
                 heart.textContent = this.favorites.includes(data.name) ? '❤️' : '🤍';
+                heart.title = this.favorites.includes(data.name) ? 'Remove from Favorites' : 'Add to Favorites';
                 if (this.favorites.includes(data.name)) {
                     heart.classList.add('red');
                 }
                 heart.onclick = (e) => {
                     e.stopPropagation();
-
+                    
                     // Create particles at click position
                     const rect = heart.getBoundingClientRect();
 
@@ -1920,6 +1922,7 @@
                     heart.textContent = this.favorites.includes(data.name) ? '❤️' : '🤍';
                     heart.classList.toggle('red');
                     if (heart.classList.contains('red')) this.createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                    heart.title = this.favorites.includes(data.name) ? 'Remove from Favorites' : 'Add to Favorites';
                 }
                 item.appendChild(heart);
 
