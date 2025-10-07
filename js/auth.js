@@ -1,8 +1,10 @@
 class Auth {
     constructor() {
+        this.currentCode = null;
         this.user = null;
         this.token = localStorage.getItem('auth_token');
         this.pollInterval = null;
+        this.timerInterval = null; // Add this line
         this.init();
     }
 
@@ -41,7 +43,7 @@ class Auth {
     }
 
     closeModal() {
-       document.getElementById('auth-container').classList.remove('show');
+        document.getElementById('auth-container').classList.remove('show');
         setTimeout(() => {
             document.getElementById('auth-container').style.display = 'none';
         }, 300);
@@ -59,14 +61,18 @@ class Auth {
             }
 
             const { code, expiresIn } = await response.json();
-            
+
             document.getElementById('auth-step-1').style.display = 'none';
             document.getElementById('auth-step-2').style.display = 'block';
             document.getElementById('auth-code-display').textContent = code;
 
+            this.currentCode = code;
+
+            this.displayCodeWithAnimation(code);
+
             // Start countdown
             this.startTimer(expiresIn);
-            
+
             // Start polling for verification
             this.startPolling(code);
         } catch (error) {
@@ -74,20 +80,71 @@ class Auth {
         }
     }
 
+    async copyCode() {
+        if (!this.currentCode) return;
+
+        try {
+            await navigator.clipboard.writeText(this.currentCode);
+
+            const btn = document.querySelector('.copy-code-btn');
+
+            btn.classList.add('copied');
+
+            setTimeout(() => {
+                btn.classList.remove('copied');
+
+            }, 2000);
+        } catch (error) {
+            console.error('Failed to copy:', error);
+            alert('Code: ' + this.currentCode);
+        }
+    }
+
+    joinGame() {
+        // Replace with your actual game URL
+        const gameUrl = 'https://www.roblox.com/games/122649225404413/Epic-Catalogue';
+        window.open(gameUrl, '_blank');
+    }
+
+    displayCodeWithAnimation(code) {
+        const display = document.getElementById('auth-code-display');
+        display.innerHTML = '';
+
+        // Split code into individual digits
+        const digits = code.split('');
+
+        digits.forEach((digit, index) => {
+            const span = document.createElement('span');
+            span.textContent = digit;
+            display.appendChild(span);
+        });
+    }
+
     startTimer(seconds) {
         let remaining = seconds;
         const timerEl = document.getElementById('code-timer');
-        
-        const interval = setInterval(() => {
+
+        // Clear any existing interval
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+        }
+
+        this.timerInterval = setInterval(() => {
             remaining--;
             const mins = Math.floor(remaining / 60);
             const secs = remaining % 60;
             timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
-            
+
             if (remaining <= 0) {
-                clearInterval(interval);
-                this.closeModal();
-                alert('Code expired. Please try again.');
+                clearInterval(this.timerInterval);
+
+                // Clear polling interval too
+                if (this.pollInterval) {
+                    clearInterval(this.pollInterval);
+                }
+
+                // Generate new code automatically
+                this.generateCode();
             }
         }, 1000);
     }
@@ -98,9 +155,15 @@ class Auth {
             // This is a simple approach - in production you'd want websockets
             // For now, we just check if our session is valid
             await this.checkSession();
-            
+
             if (this.user) {
                 clearInterval(this.pollInterval);
+
+                // Clear timer too
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                }
+
                 this.closeModal();
                 alert(`Welcome, ${this.user.username}!`);
             }
@@ -133,7 +196,7 @@ class Auth {
                 headers: { 'Authorization': `Bearer ${this.token}` }
             });
         }
-        
+
         localStorage.removeItem('auth_token');
         this.token = null;
         this.user = null;
