@@ -1431,6 +1431,8 @@
             toggleEvent() {
                 const menu = document.getElementById('event-menu');
                 menu.classList.toggle('show');
+                const menu2 = document.getElementById('season-menu');
+                menu2.classList.remove('show');
             }
 
             selectEvent(event) {
@@ -1450,6 +1452,8 @@
             toggleSeason() {
                 const menu = document.getElementById('season-menu');
                 menu.classList.toggle('show');
+                const menu2 = document.getElementById('event-menu');
+                menu2.classList.remove('show');
             }
 
 
