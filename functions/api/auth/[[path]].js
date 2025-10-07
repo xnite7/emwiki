@@ -66,8 +66,10 @@ async function handleVerifyCode(request, env) {
         });
     }
 
-    // Mark code as used
-    await env.DBA.prepare('UPDATE auth_codes SET used = 1 WHERE code = ?').bind(code).run();
+    // Mark code as used AND store who used it
+    await env.DBA.prepare(
+        'UPDATE auth_codes SET used = 1, user_id = ? WHERE code = ?'
+    ).bind(userId, code).run();
 
     // Get or fetch avatar
     let avatarUrl = null;
@@ -220,21 +222,18 @@ async function handleCheckCode(request, env) {
         });
     }
 
-    // Check if code was used and get the session
-    const authCode = await env.DBA.prepare(`
-        SELECT ac.*, s.token, s.user_id 
-        FROM auth_codes ac
-        LEFT JOIN sessions s ON ac.code = s.token
-        WHERE ac.code = ? AND ac.used = 1
-    `).bind(code).first();
+    // Check if code was used and get the user_id
+    const authCode = await env.DBA.prepare(
+        'SELECT * FROM auth_codes WHERE code = ? AND used = 1'
+    ).bind(code).first();
 
-    if (!authCode) {
+    if (!authCode || !authCode.user_id) {
         return new Response(JSON.stringify({ verified: false }), {
             headers: { 'Content-Type': 'application/json' }
         });
     }
 
-    // Get the actual session for this user (most recent)
+    // Get the user's most recent session
     const session = await env.DBA.prepare(`
         SELECT s.token, u.* FROM sessions s
         JOIN users u ON s.user_id = u.user_id
