@@ -26,17 +26,18 @@
     border-radius: 20px;
     padding: 45px 40px 40px;
     max-width: 460px;
+    font-family: BuilderSans;
     width: 90%;
     text-align: center;
     border: 2px solid #2a2a2a;
-    box-shadow: 
+    box-shadow:
         0 30px 80px rgba(0, 0, 0, 0.7),
         inset -4px -4px 10px rgba(0, 0, 0, 0.6),
         inset 2px 2px 4px rgba(255, 255, 255, 0.02);
     position: relative;
     transform: scale(0.92) translateY(20px);
     transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    
+
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
         border-radius: 30px;
@@ -53,23 +54,65 @@
     position: absolute;
     top: 0;
     left: 20%;
+    
     right: 20%;
     height: 3px;
-    background: linear-gradient(90deg, transparent, #4a9eff, transparent);
+    background: linear-gradient(90deg, transparent, #5f5f5f, transparent);
     border-radius: 0 0 3px 3px;
 }
 
 .auth-modal h2 {
+    margin-top: 10px;
     font-size: 32px;
     margin-bottom: 10px;
     color: #ffffff;
     font-weight: 800;
-    letter-spacing: -0.5px;
-    text-shadow: 
+    letter-spacing: -0.65px;
+    text-shadow:
         -1.3px -1.3px 0 #000,
         1.3px -1.3px 0 #000,
         -1.3px 1.3px 0 #000,
         1.3px 1.3px 0 #000;
+}
+
+/* Bouncing Arrow */
+.auth-btn-arrow {
+    display: inline-flex;
+    animation: bounceArrow 1.5s ease-in-out infinite;
+}
+
+@keyframes bounceArrow {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(6px);
+    }
+}
+
+.auth-btn:hover~.auth-btn-arrow {
+    animation: bounceArrowFast 0.6s ease-in-out infinite;
+}
+
+@keyframes bounceArrowFast {
+    0%, 100% {
+        transform: translateX(0) scale(1);
+    }
+    50% {
+        transform: translateX(8px) scale(1.1);
+    }
+}
+.auth-btn-arrow{
+    position: absolute;
+    bottom: 5px;
+    left: 49%;
+    rotate: -90deg;
+}
+/* Arrow SVG styling */
+.auth-btn-arrow svg {
+    width: 20px;
+    height: 20px;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
 }
 
 .auth-modal p {
@@ -112,20 +155,18 @@
 }
 
 .auth-btn {
+    font-family: 'BuilderSans';
     padding: 16px 50px;
-    background: linear-gradient(180deg, #ffffff 0%, #e8e8e8 100%);
-    border: 2px solid #ffffff;
+    background: linear-gradient(180deg, #17d5a5 0%, #0a77c1 100%);
+    border: 2px solid #3aafff;
     border-radius: 12px;
-    color: #000;
+    color: #fff;
     font-size: 14px;
     font-weight: 800;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     margin-top: 28px;
-    box-shadow: 
-        0 8px 30px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.8),
-        inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
     position: relative;
     overflow: hidden;
     text-transform: uppercase;
@@ -139,11 +180,10 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(255, 255, 255, 0.5), 
-        transparent
-    );
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.5),
+            transparent);
     transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -152,9 +192,9 @@
 }
 
 .auth-btn:hover {
-    background: linear-gradient(180deg, #fff 0%, #f5f5f5 100%);
+    background: linear-gradient(180deg, #28ffc9 0%, #0f81cf 100%);
     transform: translateY(-2px);
-    box-shadow: 
+    box-shadow:
         0 12px 40px rgba(0, 0, 0, 0.5),
         inset 0 1px 0 rgba(255, 255, 255, 0.9),
         inset 0 -2px 4px rgba(0, 0, 0, 0.1);
@@ -162,7 +202,7 @@
 
 .auth-btn:active {
     transform: translateY(0);
-    box-shadow: 
+    box-shadow:
         0 6px 25px rgba(0, 0, 0, 0.4),
         inset 0 1px 0 rgba(255, 255, 255, 0.8),
         inset 0 -2px 4px rgba(0, 0, 0, 0.15);
@@ -181,7 +221,7 @@
     white-space: nowrap;
     font-family: 'Courier New', monospace;
     color: #ffffff;
-    text-shadow: 
+    text-shadow:
         -2px -2px 0 #000,
         2px -2px 0 #000,
         -2px 2px 0 #000,
@@ -192,14 +232,14 @@
     border-radius: 16px;
     letter-spacing: 16px;
     border: 2px solid #3a3a3a;
-    box-shadow: 
+    box-shadow:
         0 10px 40px rgba(0, 0, 0, 0.6),
         inset -4px -4px 12px rgba(0, 0, 0, 0.7),
         inset 3px 3px 6px rgba(255, 255, 255, 0.03);
     position: relative;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     user-select: none;
-    
+
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
         border-radius: 28px;
@@ -212,12 +252,29 @@
     animation: rollIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
 }
 
-.auth-code span:nth-child(1) { animation-delay: 0.1s; }
-.auth-code span:nth-child(2) { animation-delay: 0.2s; }
-.auth-code span:nth-child(3) { animation-delay: 0.3s; }
-.auth-code span:nth-child(4) { animation-delay: 0.4s; }
-.auth-code span:nth-child(5) { animation-delay: 0.5s; }
-.auth-code span:nth-child(6) { animation-delay: 0.6s; }
+.auth-code span:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.auth-code span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.auth-code span:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.auth-code span:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.auth-code span:nth-child(5) {
+    animation-delay: 0.5s;
+}
+
+.auth-code span:nth-child(6) {
+    animation-delay: 0.6s;
+}
 
 @keyframes rollIn {
     0% {
@@ -225,9 +282,11 @@
         opacity: 0;
         filter: blur(4px);
     }
+
     50% {
         opacity: 0.5;
     }
+
     100% {
         transform: translateY(0) rotateX(0);
         opacity: 1;
@@ -273,12 +332,13 @@
     z-index: 2;
     position: absolute;
     right: 10px;
+    pointer-events: none;
     top: 13px;
     opacity: 0.3;
     transition: opacity 0.3s ease;
 }
 
-.auth-code:hover~.copy-icon{
+.auth-code:hover~.copy-icon {
     opacity: 1;
 }
 
@@ -302,6 +362,7 @@
 /* Join Game Button */
 .join-game-btn {
     flex: 1;
+    font-family: 'BuilderSans';
     min-width: 180px;
     padding: 16px 30px;
     background: linear-gradient(180deg, #4a9eff 0%, #3a7ed6 100%);
@@ -312,7 +373,7 @@
     font-weight: 800;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 
+    box-shadow:
         0 8px 30px rgba(74, 158, 255, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.3),
         inset 0 -2px 4px rgba(0, 0, 0, 0.2);
@@ -330,11 +391,10 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(255, 255, 255, 0.3), 
-        transparent
-    );
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.3),
+            transparent);
     transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -343,9 +403,10 @@
 }
 
 .join-game-btn:hover {
+    letter-spacing: 4px;
     background: linear-gradient(180deg, #5aa7ff 0%, #4a9eff 100%);
     transform: translateY(-2px);
-    box-shadow: 
+    box-shadow:
         0 12px 40px rgba(74, 158, 255, 0.4),
         inset 0 1px 0 rgba(255, 255, 255, 0.4),
         inset 0 -2px 4px rgba(0, 0, 0, 0.2);
@@ -353,7 +414,7 @@
 
 .join-game-btn:active {
     transform: translateY(0);
-    box-shadow: 
+    box-shadow:
         0 6px 25px rgba(74, 158, 255, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.3),
         inset 0 -2px 4px rgba(0, 0, 0, 0.25);
@@ -391,12 +452,12 @@
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 10px;
-    color: white;
+    color: var(--text-primary);
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 
+    box-shadow:
         0 4px 20px rgba(0, 0, 0, 0.3),
         inset -2px -2px 4px rgba(0, 0, 0, 0.3);
 }
@@ -404,7 +465,7 @@
 .auth-button:hover {
     background: rgba(255, 255, 255, 0.12);
     transform: translateY(-2px);
-    box-shadow: 
+    box-shadow:
         0 6px 25px rgba(0, 0, 0, 0.4),
         inset -2px -2px 4px rgba(0, 0, 0, 0.3);
     border-color: rgba(255, 255, 255, 0.25);
@@ -433,7 +494,7 @@
     cursor: pointer;
     border: 1px solid rgba(255, 255, 255, 0.15);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 
+    box-shadow:
         0 4px 20px rgba(0, 0, 0, 0.3),
         inset -2px -2px 4px rgba(0, 0, 0, 0.3);
 }
@@ -442,7 +503,7 @@
     background: rgba(255, 255, 255, 0.12);
     border-color: rgba(255, 255, 255, 0.25);
     transform: translateY(-2px);
-    box-shadow: 
+    box-shadow:
         0 6px 25px rgba(0, 0, 0, 0.4),
         inset -2px -2px 4px rgba(0, 0, 0, 0.3);
 }
@@ -456,7 +517,7 @@
 }
 
 #user-profile-btn span {
-    color: white;
+    color: var(--text-primary);
     font-weight: 600;
     font-size: 14px;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
@@ -468,15 +529,22 @@
     background: linear-gradient(145deg, #24ff5a, #1acc47);
     border-radius: 50%;
     border: 1px solid rgba(36, 255, 90, 0.3);
-    box-shadow: 
+    box-shadow:
         0 0 8px rgba(36, 255, 90, 0.6),
         inset 0 1px 1px rgba(255, 255, 255, 0.3);
     animation: pulse-indicator 2s ease-in-out infinite;
 }
 
 @keyframes pulse-indicator {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
 }
 
 /* Light theme */
@@ -487,7 +555,7 @@
 .light-theme .auth-modal {
     background: linear-gradient(145deg, #ffffff 0%, #f8f8f8 100%);
     border: 2px solid #e0e0e0;
-    box-shadow: 
+    box-shadow:
         0 30px 80px rgba(0, 0, 0, 0.15),
         inset -3px -3px 8px rgba(0, 0, 0, 0.05),
         inset 2px 2px 4px rgba(255, 255, 255, 0.8);
@@ -499,7 +567,7 @@
 
 .light-theme .auth-modal h2 {
     color: #000;
-    text-shadow: 
+    text-shadow:
         -1.3px -1.3px 0 #fff,
         1.3px -1.3px 0 #fff,
         -1.3px 1.3px 0 #fff,
@@ -515,13 +583,13 @@
     color: #000;
     background: linear-gradient(145deg, #f0f0f0 0%, #e8e8e8 100%);
     border-color: #d0d0d0;
-    text-shadow: 
+    text-shadow:
         -1.5px -1.5px 0 #fff,
         1.5px -1.5px 0 #fff,
         -1.5px 1.5px 0 #fff,
         1.5px 1.5px 0 #fff,
         0 2px 4px rgba(0, 0, 0, 0.1);
-    box-shadow: 
+    box-shadow:
         0 10px 40px rgba(0, 0, 0, 0.1),
         inset -3px -3px 10px rgba(0, 0, 0, 0.08),
         inset 2px 2px 4px rgba(255, 255, 255, 0.8);
@@ -547,10 +615,10 @@
 
 .light-theme .auth-btn {
     background: linear-gradient(180deg, #000 0%, #1a1a1a 100%);
-    color: white;
     border-color: #000;
+    color: #fff;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-    box-shadow: 
+    box-shadow:
         0 8px 30px rgba(0, 0, 0, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.1),
         inset 0 -2px 4px rgba(0, 0, 0, 0.3);
@@ -558,7 +626,7 @@
 
 .light-theme .auth-btn:hover {
     background: linear-gradient(180deg, #1a1a1a 0%, #000 100%);
-    box-shadow: 
+    box-shadow:
         0 12px 40px rgba(0, 0, 0, 0.4),
         inset 0 1px 0 rgba(255, 255, 255, 0.15),
         inset 0 -2px 4px rgba(0, 0, 0, 0.3);
@@ -585,13 +653,13 @@
         padding: 35px 30px 30px;
         margin: 20px;
     }
-    
+
     .auth-code {
         font-size: 56px;
         letter-spacing: 12px;
         padding: 28px 20px 26px;
     }
-    
+
     .auth-button {
         right: 60px;
         padding: 9px 16px;
@@ -612,11 +680,11 @@
         font-size: 48px;
         letter-spacing: 8px;
     }
-    
+
     .auth-button span {
         display: none;
     }
-    
+
     .auth-button {
         padding: 10px;
         border-radius: 8px;
@@ -639,14 +707,14 @@
     border-radius: 16px;
     padding: 20px;
     min-width: 280px;
-    box-shadow: 
+    box-shadow:
         0 20px 60px rgba(0, 0, 0, 0.7),
         inset -3px -3px 8px rgba(0, 0, 0, 0.6),
         inset 2px 2px 4px rgba(255, 255, 255, 0.02);
     display: none;
     z-index: 2500;
     animation: slideDown 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    
+
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
         border-radius: 24px;
@@ -662,6 +730,7 @@
         opacity: 0;
         transform: translateY(-20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -692,7 +761,7 @@
 .profile-dropdown-name {
     font-size: 16px;
     font-weight: 700;
-    color: white;
+    color: var(--text-primary);
     margin-bottom: 4px;
 }
 
@@ -754,7 +823,7 @@
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 10px;
-    color: white;
+    color: var(--text-primary);
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
@@ -782,6 +851,7 @@
 
 /* Celebration Card */
 .celebration-card {
+    font-family: BuilderSans;
     position: fixed;
     top: 50%;
     left: 50%;
@@ -793,7 +863,7 @@
     max-width: 400px;
     width: 90%;
     text-align: center;
-    box-shadow: 
+    box-shadow:
         0 30px 80px rgba(0, 0, 0, 0.7),
         inset -4px -4px 10px rgba(0, 0, 0, 0.6),
         inset 2px 2px 4px rgba(255, 255, 255, 0.02);
@@ -801,7 +871,7 @@
     opacity: 0;
     pointer-events: none;
     transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    
+
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
         border-radius: 30px;
@@ -821,11 +891,12 @@
     left: 20%;
     right: 20%;
     height: 3px;
-    background: linear-gradient(90deg, transparent, #24ff5a, transparent);
+    background: linear-gradient(90deg, transparent, #707070, transparent);
     border-radius: 0 0 3px 3px;
 }
 
 .celebration-icon {
+    font-family: 'Twemoji';
     font-size: 80px;
     margin-bottom: 20px;
     animation: celebrate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -835,9 +906,11 @@
     0% {
         transform: scale(0) rotate(-180deg);
     }
+
     50% {
         transform: scale(1.2) rotate(10deg);
     }
+
     100% {
         transform: scale(1) rotate(0);
     }
@@ -848,7 +921,7 @@
     font-weight: 800;
     color: #24ff5a;
     margin-bottom: 10px;
-    text-shadow: 
+    text-shadow:
         -1.3px -1.3px 0 #000,
         1.3px -1.3px 0 #000,
         -1.3px 1.3px 0 #000,
@@ -861,10 +934,24 @@
     margin-bottom: 25px;
     line-height: 1.6;
 }
+/* Confetti Canvas */
+#confetti-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 3500;
+    display: none;
+}
 
+#confetti-canvas.active {
+    display: block;
+}
 .celebration-close-btn {
     padding: 14px 40px;
-    background: linear-gradient(180deg, #24ff5a 0%, #1acc47 100%);
+    background: linear-gradient(180deg, #fffe24 0%, #2fcc1a 100%);
     border: 2px solid #24ff5a;
     border-radius: 12px;
     color: #000;
@@ -874,19 +961,19 @@
     transition: all 0.2s;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    box-shadow: 
+    box-shadow:
         0 8px 30px rgba(36, 255, 90, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .celebration-close-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 
+    box-shadow:
         0 12px 40px rgba(36, 255, 90, 0.4),
         inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
-/* Toast Notifications */
+/* Toast Notifications - Website Style */
 .toast-container {
     position: fixed;
     top: 80px;
@@ -894,58 +981,62 @@
     z-index: 5000;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     pointer-events: none;
 }
 
 .toast {
-    background: linear-gradient(145deg, #1f1f1f 0%, #1a1a1a 100%);
-    border: 2px solid #2a2a2a;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
     border-radius: 12px;
-    padding: 16px 20px;
-    min-width: 300px;
-    max-width: 400px;
-    box-shadow: 
-        0 10px 40px rgba(0, 0, 0, 0.6),
-        inset -2px -2px 6px rgba(0, 0, 0, 0.6),
-        inset 1px 1px 3px rgba(255, 255, 255, 0.02);
+    padding: 14px 18px;
+    min-width: 320px;
+    max-width: 420px;
+    box-shadow:
+        0 10px 30px var(--shadow-color),
+        inset -3px -3px 6px rgba(0, 0, 0, 0.6),
+        inset 2px 2px 4px rgba(255, 255, 255, 0.02);
     display: flex;
     align-items: center;
     gap: 12px;
     pointer-events: all;
-    animation: toastSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    
+    animation: toastSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
-        border-radius: 18px;
+        border-radius: 35px;
     }
 }
 
 @keyframes toastSlideIn {
     from {
         opacity: 0;
-        transform: translateX(400px);
+        transform: translateX(400px) scale(0.9);
     }
+
     to {
         opacity: 1;
-        transform: translateX(0);
+        transform: translateX(0) scale(1);
     }
 }
 
 .toast.hiding {
-    animation: toastSlideOut 0.3s ease forwards;
+    animation: toastSlideOut 0.25s ease forwards;
 }
 
 @keyframes toastSlideOut {
     to {
         opacity: 0;
-        transform: translateX(400px);
+        transform: translateX(400px) scale(0.9);
     }
 }
 
 .toast-icon {
-    font-size: 24px;
+    font-size: 28px;
     flex-shrink: 0;
+    line-height: 1;
+    filter: drop-shadow(0px 0px 2px rgba(0, 0, 0, 0.5));
 }
 
 .toast-content {
@@ -955,117 +1046,180 @@
 .toast-title {
     font-size: 14px;
     font-weight: 700;
-    color: white;
-    margin-bottom: 4px;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+    text-shadow:
+        -1px -1px 0 rgba(0, 0, 0, 0.8),
+        1px -1px 0 rgba(0, 0, 0, 0.8),
+        -1px 1px 0 rgba(0, 0, 0, 0.8),
+        1px 1px 0 rgba(0, 0, 0, 0.8);
 }
 
 .toast-message {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.7);
-    line-height: 1.4;
+    color: var(--text-secondary);
+    line-height: 1.5;
 }
 
 .toast-close {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.05);
-    border: none;
-    color: rgba(255, 255, 255, 0.5);
+    background: var(--bg-item);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 18px;
+    font-size: 20px;
     line-height: 0;
     flex-shrink: 0;
+    box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.4);
 }
 
 .toast-close:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+    background: var(--bg-item-hover);
+    color: var(--text-primary);
+    transform: scale(1.05);
 }
 
+.toast-close:active {
+    transform: scale(0.95);
+}
+
+/* Error Toast */
 .toast.error {
-    border-color: rgba(255, 80, 80, 0.4);
+    background: rgba(255, 80, 80, 0.3);
 }
 
 .toast.error::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
+    left: 20%;
+    right: 20%;
     height: 3px;
-    background: linear-gradient(90deg, transparent, #ff5050, transparent);
-    border-radius: 12px 12px 0 0;
+    background: linear-gradient(90deg, transparent, #64363d, transparent);
+    border-radius: 0 0 3px 3px;
 }
 
+.toast.error .toast-icon {
+    color: #ff5050;
+}
+
+/* Success Toast */
 .toast.success {
-    border-color: rgba(36, 255, 90, 0.4);
+    background: rgba(36, 255, 90, 0.3);
 }
 
 .toast.success::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
+    left: 20%;
+    right: 20%;
     height: 3px;
-    background: linear-gradient(90deg, transparent, #24ff5a, transparent);
-    border-radius: 12px 12px 0 0;
+    background: linear-gradient(90deg, transparent, #1a4d27, transparent);
+    border-radius: 0 0 3px 3px;
 }
 
+.toast.success .toast-icon {
+    color: #24ff5a;
+}
+
+/* Info Toast */
 .toast.info {
-    border-color: rgba(74, 158, 255, 0.4);
+    background: rgba(74, 158, 255, 0.3);
 }
 
 .toast.info::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
+    left: 20%;
+    right: 20%;
     height: 3px;
-    background: linear-gradient(90deg, transparent, #4a9eff, transparent);
-    border-radius: 12px 12px 0 0;
+    background: linear-gradient(90deg, transparent, #325377, transparent);
+    border-radius: 0 0 3px 3px;
+}
+
+.toast.info .toast-icon {
+    color: #4a9eff;
+}
+
+/* Warning Toast */
+.toast.warning {
+    background: rgba(255, 193, 7, 0.3);
+}
+
+.toast.warning::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20%;
+    right: 20%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #645827, transparent);
+    border-radius: 0 0 3px 3px;
+}
+
+.toast.warning .toast-icon {
+    color: #ffc107;
 }
 
 /* Light theme adjustments */
-.light-theme .profile-dropdown,
-.light-theme .celebration-card,
 .light-theme .toast {
-    background: linear-gradient(145deg, #ffffff 0%, #f8f8f8 100%);
-    border-color: #e0e0e0;
-    box-shadow: 
-        0 20px 60px rgba(0, 0, 0, 0.15),
-        inset -2px -2px 6px rgba(0, 0, 0, 0.05),
-        inset 1px 1px 3px rgba(255, 255, 255, 0.8);
+    background: var(--bg-secondary);
+    box-shadow:
+        0 10px 30px var(--shadow-color),
+        inset -2px -2px 4px rgba(0, 0, 0, 0.08),
+        inset 1px 1px 2px rgba(255, 255, 255, 0.8);
 }
 
-.light-theme .profile-dropdown-name,
-.light-theme .celebration-title,
 .light-theme .toast-title {
-    color: #000;
+    text-shadow:
+        -1px -1px 0 rgba(255, 255, 255, 0.8),
+        1px -1px 0 rgba(255, 255, 255, 0.8),
+        -1px 1px 0 rgba(255, 255, 255, 0.8),
+        1px 1px 0 rgba(255, 255, 255, 0.8);
 }
 
-.light-theme .celebration-title {
-    color: #1acc47;
+.light-theme .toast-close {
+    box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* Mobile responsive */
 @media screen and (max-width: 768px) {
-    .profile-dropdown {
-        right: 10px;
-        top: 60px;
-        min-width: 260px;
-    }
-    
     .toast-container {
-        right: 10px;
-        left: 10px;
+        right: 12px;
+        left: 12px;
+        top: 70px;
     }
-    
+
     .toast {
         min-width: auto;
         max-width: none;
+        padding: 12px 14px;
+    }
+
+    .toast-icon {
+        font-size: 24px;
+    }
+
+    .toast-title {
+        font-size: 13px;
+    }
+
+    .toast-message {
+        font-size: 12px;
+    }
+}
+
+@media screen and (max-width: 400px) {
+    .toast {
+        padding: 10px 12px;
+    }
+
+    .toast-icon {
+        font-size: 22px;
     }
 }
