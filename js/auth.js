@@ -1,3 +1,11 @@
+// ============================================
+//        FEATURE FLAGS - TOGGLE FEATURES
+// ============================================
+const FEATURES = {
+    DONATION_SYSTEM: false  // Set to true when ready to launch!
+};
+// ============================================
+
 class Auth {
     constructor() {
         this.currentCode = null;
@@ -11,7 +19,9 @@ class Auth {
     async init() {
         if (this.token) {
             await this.checkSession();
-            //await this.checkDonationStatus();
+            if (FEATURES.DONATION_SYSTEM) {
+                await this.checkDonationStatus();
+            }
         } else {
             const authButton = document.getElementById('auth-button');
             if (authButton) {
@@ -283,10 +293,11 @@ class Auth {
                     this.closeModal();
                     this.showCelebration(this.user.username);
 
-                    // Check donation status after linking
-                    setTimeout(() => {
-                        //this.checkDonationStatus();
-                    }, 3000); // Wait 3 seconds after welcome celebration
+                    if (FEATURES.DONATION_SYSTEM) {
+                        setTimeout(() => {
+                            this.checkDonationStatus();
+                        }, 3000);
+                    }
                 }
             } catch (error) {
                 console.error('Polling error:', error);
@@ -317,7 +328,7 @@ class Auth {
 
 
     async checkDonationStatus() {
-        if (!this.token) return;
+        if (!this.token || !FEATURES.DONATION_SYSTEM) return;
 
         try {
             const response = await fetch('https://emwiki.site/api/auth/donation-status', {
