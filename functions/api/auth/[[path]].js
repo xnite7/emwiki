@@ -290,7 +290,7 @@ async function handleDonationStatus(request, env) {
 
     // Get donation data from KV
     const donationKey = `purchase:${session.user_id}`;
-    const donationData = await env.donator.get(donationKey);
+    const donationData = await env.DONATIONS_KV.get(donationKey);
 
     let totalSpent = 0;
     let purchases = 0;

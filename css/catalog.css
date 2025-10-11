@@ -119,6 +119,7 @@ svg:hover #cloud {
     border: 2px solid var(--border-color);
     opacity: 0.5;
 }
+
 .theme-toggle:hover {
     width: 60px;
     opacity: 1;
@@ -455,11 +456,14 @@ body.light-theme .controls-bar {
     color: var(--text-secondary);
     transition: color 0.14s;
 }
-#wishlist-tab, #favorites-tab {
+
+#wishlist-tab,
+#favorites-tab {
     transition: opacity 0.3s ease;
 }
 
-#wishlist-tab:hover, #favorites-tab:hover {
+#wishlist-tab:hover,
+#favorites-tab:hover {
     opacity: 1 !important;
 }
 
@@ -492,11 +496,11 @@ body.light-theme .controls-bar {
     color: var(--text-primary);
 }
 
-svg{
+svg {
     fill: var(--text-primary);
 }
 
-.chest-menu svg{
+.chest-menu svg {
     fill: #fff;
 }
 
@@ -630,24 +634,24 @@ svg{
     position: absolute;
     top: calc(100% + 10px);
     background: linear-gradient(180deg, #2a1810, #1a0f08);
-    border: 2px solid #CD853F;
+    border: 2px solid #7f4814;
     border-radius: 15px;
-    min-width: 254px;
+    min-width: 245px;
     height: 46vh;
     overflow-y: auto;
     display: none;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    box-shadow: 0px 8px 10px 1px rgba(0, 0, 0, 0.8);
     animation: slideDown 0.3s ease;
 }
 
 .chest-menu::-webkit-scrollbar {
-    width: 13px;
+    width: 10px;
 }
 
 .chest-menu::-webkit-scrollbar-thumb {
-    background: #cd853f;
-    box-shadow: inset 2px 2px 5px 0 rgb(255 255 255 / 50%);
-    border: 2px inset #8B4513;
+    background: #6e442b;
+    box-shadow: inset -2px -2px 5px 0 rgb(0 0 0 / 31%);
+    border: 2px solid #000000;
     border-radius: 10px;
 }
 
@@ -670,10 +674,10 @@ svg{
 .chest-item {
     display: flex;
     align-items: center;
-    padding: 15px 20px;
+    padding: 13px 15px;
     cursor: pointer;
     transition: all 0.2s;
-    border-bottom: 1px solid rgba(205, 133, 63, 0.1);
+    border-bottom: 1px solid rgb(205 133 63 / 35%);
     position: relative;
 }
 
@@ -791,7 +795,7 @@ svg{
 
 #wishlist-items {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        padding: 12px;
+    padding: 12px;
 }
 
 @keyframes fadeIn {
@@ -901,9 +905,9 @@ svg{
 
 }
 
-img{
-        -webkit-user-drag: none;
-        user-select: none;
+img {
+    -webkit-user-drag: none;
+    user-select: none;
 }
 
 .item>svg {
@@ -1076,8 +1080,7 @@ button {
     background: linear-gradient(to top, #0000008f, #69696940);
     padding: 3px 7px;
     backdrop-filter: blur(6px);
-    transition: filter 0.1s 
-ease-out;
+    transition: filter 0.1s ease-out;
     filter: drop-shadow(0px 0px 0px #00000000);
 
 }
