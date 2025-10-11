@@ -2113,8 +2113,27 @@
             }
 
             formatPrice(price) {
+                function parseValue(str) {
+                    str = str.trim().toLowerCase();
+
+                    // Check if already has k or M suffix
+                    if (str.endsWith('k')) {
+                        const num = parseFloat(str.slice(0, -1));
+                        return isNaN(num) ? null : num * 1000;
+                    }
+                    if (str.endsWith('m')) {
+                        const num = parseFloat(str.slice(0, -1));
+                        return isNaN(num) ? null : num * 1_000_000;
+                    }
+
+                    // Otherwise parse as regular number
+                    const num = parseFloat(str);
+                    return isNaN(num) ? null : num;
+                }
+
                 function formatNum(num) {
-                    if (isNaN(num)) return null; // skip invalid parts
+                    if (num === null || isNaN(num)) return null;
+
                     if (num >= 1_000_000) {
                         let val = (num / 1_000_000).toFixed(1);
                         val = val.replace(/\.0$/, '');
@@ -2131,7 +2150,7 @@
 
                 if (str.includes('-')) {
                     const parts = str.split('-').map(p => {
-                        const num = parseInt(p.trim());
+                        const num = parseValue(p);
                         return formatNum(num);
                     });
 
@@ -2141,7 +2160,7 @@
                     return parts.map((v, i) => v ?? str.split('-')[i].trim()).join('-');
                 }
 
-                const num = parseInt(str);
+                const num = parseValue(str);
                 const formatted = formatNum(num);
 
                 return formatted ?? str;
