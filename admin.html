@@ -3207,13 +3207,11 @@ if (!isTouch) {
                         label.style.fontWeight = '500';
                         label.style.textShadow = '0 0 6px rgb(199 0 255)';
                     } else if (text.includes("[EXPIRED]")) {
-                        label.style.textShadow = '0 0 10px black';
-                        label.style.fontSize = '16px';
-                        label.style.fontVariant = 'unicase';
-                        label.style.fontFamily = 'Comic Sans';
-                        label.style.color = 'rgb(255 31 31)';
+                        label.style.fontFamily = 'inconsolata';
+                        label.style.fontWeight = 'bold';
+                        label.style.color = 'red';
                     } else if (text.includes("[ACTIVE]")) {
-                        label.style.fontFamily = 'Comic Sans';
+                        label.style.fontFamily = 'inconsolata';
                         label.style.color = 'rgb(251 255 68)';
                     } else if (text.includes("Unobtainable")) {
                         icon.src = './imgs/Red_x.png';
