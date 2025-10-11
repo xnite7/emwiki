@@ -2,7 +2,7 @@
 //        FEATURE FLAGS - TOGGLE FEATURES
 // ============================================
 const FEATURES = {
-    DONATION_SYSTEM: false  // Set to true when ready to launch!
+    DONATION_SYSTEM: true  // Set to true when ready to launch!
 };
 // ============================================
 
@@ -20,7 +20,7 @@ class Auth {
         if (this.token) {
             await this.checkSession();
             if (FEATURES.DONATION_SYSTEM) {
-                await this.checkDonationStatus();
+                await this.checkDonationStatus(true);
             }
         } else {
             const authButton = document.getElementById('auth-button');
@@ -126,6 +126,11 @@ class Auth {
                 <button class="profile-action-btn" onclick="window.open('https://www.roblox.com/users/${this.user.userId}/profile', '_blank')">
                     <svg style="width:20px;" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m10 17.55-1.77 1.72a2.47 2.47 0 0 1-3.5-3.5l4.54-4.55a2.46 2.46 0 0 1 3.39-.09l.12.1a1 1 0 0 0 1.4-1.43 3 3 0 0 0-.18-.21 4.46 4.46 0 0 0-6.09.22l-4.6 4.55a4.48 4.48 0 0 0 6.33 6.33L11.37 19A1 1 0 0 0 10 17.55M20.69 3.31a4.49 4.49 0 0 0-6.33 0L12.63 5A1 1 0 0 0 14 6.45l1.73-1.72a2.47 2.47 0 0 1 3.5 3.5l-4.54 4.55a2.46 2.46 0 0 1-3.39.09l-.12-.1a1 1 0 0 0-1.4 1.43 3 3 0 0 0 .23.21 4.47 4.47 0 0 0 6.09-.22l4.55-4.55a4.49 4.49 0 0 0 .04-6.33"/></svg> View Roblox Profile
                 </button>
+
+                <button class="profile-action-btn donator locked" onclick="auth.checkDonationStatus()">
+                    <svg style="width:18px;" viewBox="0 -32 576 576" xmlns="http://www.w3.org/2000/svg"><path d="M464 0H112c-4 0-7.8 2-10 5.4L2 152.6c-2.9 4.4-2.6 10.2.7 14.2l276 340.8c4.8 5.9 13.8 5.9 18.6 0l276-340.8c3.3-4.1 3.6-9.8.7-14.2L474.1 5.4C471.8 2 468.1 0 464 0m-19.3 48 63.3 96h-68.4l-51.7-96zm-202.1 0h90.7l51.7 96H191zm-111.3 0h56.8l-51.7 96H68zm-43 144h51.4L208 352zm102.9 0h193.6L288 435.3zM368 352l68.2-160h51.4z"/></svg> Donator Settings
+                </button>
+
                 <button class="profile-action-btn logout" onclick="auth.logout()">
                     <svg style="width: 16px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><path d="M21 48.5v-3c0-.8-.7-1.5-1.5-1.5h-10c-.8 0-1.5-.7-1.5-1.5v-33C8 8.7 8.7 8 9.5 8h10c.8 0 1.5-.7 1.5-1.5v-3c0-.8-.7-1.5-1.5-1.5H6C3.8 2 2 3.8 2 6v40c0 2.2 1.8 4 4 4h13.5c.8 0 1.5-.7 1.5-1.5"></path><path d="M49.6 27c.6-.6.6-1.5 0-2.1L36.1 11.4c-.6-.6-1.5-.6-2.1 0l-2.1 2.1c-.6.6-.6 1.5 0 2.1l5.6 5.6c.6.6.2 1.7-.7 1.7H15.5c-.8 0-1.5.6-1.5 1.4v3c0 .8.7 1.6 1.5 1.6h21.2c.9 0 1.3 1.1.7 1.7l-5.6 5.6c-.6.6-.6 1.5 0 2.1l2.1 2.1c.6.6 1.5.6 2.1 0z"></path></svg> Logout
                 </button>
@@ -295,7 +300,7 @@ class Auth {
 
                     if (FEATURES.DONATION_SYSTEM) {
                         setTimeout(() => {
-                            this.checkDonationStatus();
+                            this.checkDonationStatus(true);
                         }, 3000);
                     }
                 }
@@ -327,7 +332,7 @@ class Auth {
     }
 
 
-    async checkDonationStatus() {
+    async checkDonationStatus(initial = false) {
         if (!this.token || !FEATURES.DONATION_SYSTEM) return;
 
         try {
@@ -349,7 +354,7 @@ class Auth {
                 if (data.justBecameDonator) {
                     this.showDonatorCelebration(data.totalSpent);
                     confetti.start(); // Trigger confetti!
-                } else if (!data.isDonator) {
+                } else if (!data.isDonator && !initial) {
                     // Show progress if not yet a donator
                     this.showDonationProgress(data);
                 }
@@ -365,16 +370,14 @@ class Auth {
         const progressFill = progressBar.querySelector('.progress-bar-fill');
         const progressPercentage = document.getElementById('progress-percentage');
         const totalDonated = document.getElementById('total-donated');
-        const robuxRemaining = document.getElementById('robux-remaining');
+
 
         // Update values
         totalDonated.textContent = data.totalSpent;
-        robuxRemaining.textContent = data.remaining;
         progressPercentage.textContent = `${Math.round(data.progress)}%`;
 
         // Show container
         container.classList.add('show');
-        console.log('Showing donation progress:', data);
 
         // Animate progress bar
         setTimeout(() => {
@@ -410,6 +413,7 @@ class Auth {
         document.getElementById('donator-celebration').classList.remove('show');
         confetti.stop();
     }
+
     async logout() {
         if (this.token) {
             await fetch('https://emwiki.site/api/auth/logout', {
