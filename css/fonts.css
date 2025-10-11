@@ -66,11 +66,16 @@
     src: url("../fonts/Twemoji-Mozilla.ttf") format('truetype');
 }
 
-
 @font-face {
     font-family: 'Slapstick';
     font-style: normal;
     font-weight: normal;
+    src: url("../fonts/SF-Slapstick-Comic.ttf") format('truetype');
+}
+@font-face {
+    font-family: 'Slapstick';
+    font-style: normal;
+    font-weight: bold;
     src: url("../fonts/SF-Slapstick-Comic-Bold.ttf") format('truetype');
 }
 
