@@ -1092,6 +1092,7 @@
 
 .toast-message {
     font-size: 13px;
+    text-shadow: 0 0 3px black;
     color: #ffffff;
     line-height: 1.5;
 }

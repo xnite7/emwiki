@@ -532,7 +532,7 @@
             </div>
 
         </div>
-        <a class="chest-expand-toggle" onclick="catalog.toggleChestExpand()">/\</a>
+        <a class="chest-expand-toggle" onclick="catalog.toggleChestExpand()"><span class="icon-down"></span></a>
     </div>
 
 
@@ -1437,15 +1437,11 @@
             }
 
             toggleChestExpand() {
-                const chestDropdown = document.querySelector('.chest-dropdown-btn');
-                const filtersDropdown = document.querySelector('.filters-dropdown');
-                const sortDropdown = document.querySelector('.sort-dropdown');
-                const expandToggle = document.querySelector('.chest-expand-toggle');
+                const sortDropdown = document.querySelector('.chest-dropdown');
+                const expandToggle = document.querySelector('.chest-expand-toggle .icon-down');
 
-                chestDropdown.classList.toggle('collapsed');
-                filtersDropdown.classList.toggle('collapsed');
                 sortDropdown.classList.toggle('collapsed');
-                expandToggle.textContent = '/\\';
+                expandToggle.classList.toggle('flipped');
                 // Save state to localStorage
                 const isCollapsed = chestDropdown.classList.contains('collapsed');
                 localStorage.setItem('chestDropdownCollapsed', isCollapsed);
@@ -1453,7 +1449,6 @@
                 // Close the menu if it's open when collapsing
                 if (isCollapsed) {
                     document.getElementById('chest-menu').classList.remove('show');
-                    expandToggle.textContent = '\\/';
                 }
             }
 
