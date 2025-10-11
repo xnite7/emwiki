@@ -2900,7 +2900,15 @@
                         handle: '.desc-item',
                         group: { name: 'desc', pull: false, put: false },
                         sort: true,
-                        filter: '.editing',
+                        filter: '.editing, input, button',  // ← ADD 'input, button'
+                        preventOnFilter: false,  // ← ADD THIS
+                        onStart: function (evt) {
+                            // Prevent dragging if clicking on input
+                            if (evt.originalEvent.target.tagName === 'INPUT' ||
+                                evt.originalEvent.target.tagName === 'BUTTON') {
+                                return false;
+                            }
+                        }
                     });
                 }
             },
@@ -2913,15 +2921,23 @@
                 prices.forEach(price => this.createPriceItem(price));
 
                 // Initialize Sortable
-                if (!isTouch) {
-                    Sortable.create(container, {
-                        animation: 150,
-                        handle: '.prc-item',
-                        group: { name: 'prc', pull: false, put: false },
-                        sort: true,
-                        filter: '.editing',
-                    });
-                }
+if (!isTouch) {
+    Sortable.create(container, {
+        animation: 150,
+        handle: '.prc-item',
+        group: { name: 'prc', pull: false, put: false },
+        sort: true,
+        filter: '.editing, input, button',  // ← ADD 'input, button'
+        preventOnFilter: false,  // ← ADD THIS
+        onStart: function(evt) {
+            // Prevent dragging if clicking on input
+            if (evt.originalEvent.target.tagName === 'INPUT' || 
+                evt.originalEvent.target.tagName === 'BUTTON') {
+                return false;
+            }
+        }
+    });
+}
             },
 
             createDescItem(value = '', isGamenight = false, focus = false) {
@@ -2954,6 +2970,11 @@
                     value: value || '',
                 });
 
+
+                input.addEventListener('mousedown', (e) => e.stopPropagation());
+                input.addEventListener('click', (e) => e.stopPropagation());
+                input.addEventListener('pointerdown', (e) => e.stopPropagation());
+
                 const monthsWrapper = this.createElement('div', {
                     style: 'cursor:initial;justify-content:space-evenly;display:none;flex-wrap:wrap;gap:4px;flex-grow:1'
                 });
@@ -2965,6 +2986,24 @@
                     placeholder: 'Year',
                     style: 'background: #3a3a3a;font-weight:700;font-size:14px;width:50px;display:none;border:none;border-radius:4px;padding:4px 6px'
                 });
+
+                yearInput.addEventListener('mousedown', (e) => e.stopPropagation());
+                yearInput.addEventListener('click', (e) => e.stopPropagation());
+                yearInput.addEventListener('pointerdown', (e) => e.stopPropagation());
+
+                const quantityInput = this.createElement('input', {
+                    type: 'number',
+                    min: 1,
+                    max: 99,
+                    value: 1,
+                    placeholder: 'x',
+                    title: 'Quantity',
+                    style: 'background: #3a3a3a;font-weight:700;font-size:14px;width:40px;display:none;border:none;border-radius:4px;padding:4px 6px;margin-right:8px'
+                });
+
+                quantityInput.addEventListener('mousedown', (e) => e.stopPropagation());
+                quantityInput.addEventListener('click', (e) => e.stopPropagation());
+                quantityInput.addEventListener('pointerdown', (e) => e.stopPropagation());
 
                 // Create month buttons
                 months.forEach(month => {
@@ -2994,6 +3033,11 @@
 
                 // Parse existing gamenight data
                 if (isGamenight && /\(.+\)/.test(value)) {
+                    // Parse quantity if present (e.g., "x2 Gamenight (Mar. 2025)")
+                    const quantityMatch = value.match(/^x(\d+)\s+/);
+                    const quantity = quantityMatch ? parseInt(quantityMatch[1]) : 1;
+                    quantityInput.value = quantity;
+
                     const match = value.match(/\((.+)\s(\d{4})\)/);
                     if (match) {
                         const [_, monthsStr, year] = match;
@@ -3012,6 +3056,7 @@
                 // Setup edit/done functions with dynamic original check
                 const edit = () => {
                     li.classList.add('editing');
+                        li.setAttribute('data-draggable', 'false');  // ← ADD THIS
                     deleteBtn.style.display = 'none';
                     okBtn.style.display = 'inline-block';
                     label.style.display = 'none';
@@ -3022,6 +3067,7 @@
                     if (isGamenight) {
                         monthsWrapper.style.display = 'flex';
                         yearInput.style.display = 'inline-block';
+                        quantityInput.style.display = 'inline-block';
                     } else {
                         input.style.display = 'inline-block';
                         setTimeout(() => input.focus(), 100);
@@ -3034,11 +3080,14 @@
                 const done = () => {
                     if (!li.classList.contains('editing')) return;
                     li.classList.remove('editing');
+                    li.removeAttribute('data-draggable');  // ← ADD THIS
                     deleteBtn.style.display = 'inline-block';
                     okBtn.style.display = 'none';
 
                     if (isGamenight) {
-                        value = `Gamenight (${[...selectedMonths].join(', ')}${yearInput.value ? ' ' + yearInput.value : ''})`;
+                        const qty = parseInt(quantityInput.value) || 1;
+                        const prefix = qty > 1 ? `x${qty} ` : '';
+                        value = `${prefix}Gamenight (${[...selectedMonths].join(', ')}${yearInput.value ? ' ' + yearInput.value : ''})`;
                     } else {
                         value = input.value.trim();
                         if (!value) {
@@ -3052,6 +3101,7 @@
                     input.style.display = 'none';
                     monthsWrapper.style.display = 'none';
                     yearInput.style.display = 'none';
+                    quantityInput.style.display = 'none';
                     editBtn.style.display = 'inline-block';
 
                     // Re-check if the new value is original after editing
@@ -3086,7 +3136,7 @@
 
                 // Append elements
                 if (isGamenight) {
-                    monthsWrapper.append(yearInput, okBtn);
+                    monthsWrapper.append(quantityInput, yearInput, okBtn);
                     li.append(label, input, monthsWrapper, editBtn, deleteBtn);
                 } else {
                     li.append(label, input, yearInput, monthsWrapper, editBtn, deleteBtn, okBtn);
@@ -3128,6 +3178,10 @@
                     type: 'text',
                     value: value || '',
                 });
+
+                input.addEventListener('mousedown', (e) => e.stopPropagation());
+                input.addEventListener('click', (e) => e.stopPropagation());
+                input.addEventListener('pointerdown', (e) => e.stopPropagation());
 
                 const formatLabel = () => {
                     const text = input.value.trim();
@@ -3191,6 +3245,7 @@
                 // Setup edit/done functions with dynamic original check
                 const edit = () => {
                     deleteBtn.style.display = 'none';
+                        li.setAttribute('data-draggable', 'false');  // ← ADD THIS
                     okBtn.style.display = 'inline-block';
                     label.style.display = 'none';
                     editBtn.style.display = 'none';
@@ -3206,6 +3261,7 @@
                 const done = () => {
                     if (!li.classList.contains('editing')) return;
                     li.classList.remove('editing');
+                    li.removeAttribute('data-draggable');  // ← ADD THIS
                     deleteBtn.style.display = 'inline-block';
                     okBtn.style.display = 'none';
 

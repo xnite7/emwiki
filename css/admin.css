@@ -543,6 +543,7 @@ main {
     justify-items: center;
 }
 
+
 .panel {
     scale: 1;
     background: var(--panel);
@@ -3749,4 +3750,20 @@ body.dragging-panel {
 .item-card.new-item {
     box-shadow: 0 0 0 2px #fbbf24, 0 0 12px #fbbf2466 !important;
     animation: none;
+}
+
+
+.desc-item input,
+.prc-item input {
+    pointer-events: auto !important;
+    cursor: text !important;
+}
+
+.desc-item input[type="number"],
+.prc-item input[type="number"] {
+    cursor: pointer !important;
+}
+
+.editing {
+    cursor: default !important;
 }
