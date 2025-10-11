@@ -66,11 +66,12 @@
     src: url("../fonts/Twemoji-Mozilla.ttf") format('truetype');
 }
 
+
 @font-face {
-    font-family: 'Unikled';
+    font-family: 'Slapstick';
     font-style: normal;
     font-weight: normal;
-    src: url("../fonts/Unikled-Bold.ttf") format('truetype');
+    src: url("../fonts/SF-Slapstick-Comic-Bold.ttf") format('truetype');
 }
 
 @font-face {
