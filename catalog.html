@@ -17,6 +17,98 @@
 </div>
 
 <body>
+    <!-- Donation Progress Bar -->
+<div id="donation-progress-container" class="donation-progress-container">
+    <div class="donation-progress-card">
+        <button class="close-donation-progress" onclick="auth.closeDonationProgress()">×</button>
+        
+        <div class="donation-progress-header">
+            <h3>💎 Support Epic Catalogue</h3>
+            <p class="donation-progress-subtitle">Become a Donator and unlock exclusive perks!</p>
+        </div>
+        
+        <div class="donation-stats">
+            <div class="donation-stat">
+                <div class="donation-stat-value" id="total-donated">0</div>
+                <div class="donation-stat-label">Robux Donated</div>
+            </div>
+            <div class="donation-stat">
+                <div class="donation-stat-value" id="robux-remaining">500</div>
+                <div class="donation-stat-label">Until Donator</div>
+            </div>
+        </div>
+        
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="donation-progress-bar">
+                <div class="progress-bar-fill"></div>
+                <div class="progress-bar-shine"></div>
+            </div>
+            <div class="progress-percentage" id="progress-percentage">0%</div>
+        </div>
+        
+        <div class="donation-perks">
+            <h4>🎁 Unlock at 500 Robux:</h4>
+            <div class="perk-list">
+                <div class="perk-item">
+                    <span class="perk-icon">✨</span>
+                    <span>Donator Role Badge</span>
+                </div>
+                <div class="perk-item">
+                    <span class="perk-icon">🎨</span>
+                    <span>Custom Profile Colors</span>
+                </div>
+                <div class="perk-item">
+                    <span class="perk-icon">🏆</span>
+                    <span>Public Donators List</span>
+                </div>
+            </div>
+        </div>
+        
+        <button class="donate-now-btn" onclick="auth.joinGame()">
+            💰 Donate in Game
+        </button>
+    </div>
+</div>
+
+<!-- Donator Achievement Celebration -->
+<div id="donator-celebration" class="donator-celebration">
+    <div class="donator-celebration-card">
+        <button class="close-donator-celebration" onclick="auth.closeDonatorCelebration()">×</button>
+        
+        <div class="achievement-badge">
+            <div class="achievement-glow"></div>
+            <div class="achievement-icon">💎</div>
+        </div>
+        
+        <h2 class="achievement-title">DONATOR UNLOCKED!</h2>
+        <p class="achievement-message">Thank you for supporting Epic Catalogue! You've unlocked exclusive features.</p>
+        
+        <div class="unlocked-features">
+            <h3>✨ Your New Perks</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">💎</div>
+                    <div class="feature-name">Donator Role</div>
+                    <div class="feature-desc">Special badge on your profile</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <div class="feature-name">Custom Colors</div>
+                    <div class="feature-desc">Personalize your profile</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏆</div>
+                    <div class="feature-name">Hall of Fame</div>
+                    <div class="feature-desc">Featured on donators list</div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="achievement-close-btn" onclick="auth.closeDonatorCelebration()">
+            Awesome! 🎉
+        </button>
+    </div>
+</div>
     <header>
         <a href="https://emwiki.site">
             <svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
@@ -84,7 +176,7 @@
                     style="filter:opacity(.9)" />
             </svg>
         </a>
-        <button class="auth-button" onclick="auth.openModal()" id="auth-button">
+        <button style="display: none;" class="auth-button" onclick="auth.openModal()" id="auth-button">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
                 <path
                     d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
@@ -106,7 +198,7 @@
                     <span>Generate Code</span>
 
                 </button>
-                                <span class="auth-btn-arrow">
+                <span class="auth-btn-arrow">
                     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                         <path
                             d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z" />
@@ -542,8 +634,8 @@
     </div>
 
     <!-- Toast Container -->
-     <!-- Confetti Canvas -->
-<canvas id="confetti-canvas"></canvas>
+    <!-- Confetti Canvas -->
+    <canvas id="confetti-canvas"></canvas>
     <div id="toast-container" class="toast-container"></div>
     <script>
 
@@ -648,6 +740,7 @@
                 let touchStartX = 0;
 
                 this.elements.container.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
                     touchStartX = e.touches[0].clientX;
                 });
 
@@ -910,6 +1003,7 @@
             }
 
             async init() {
+
                 this.setupParticleCanvas();
                 this.loadTheme();
                 this.renderCategoryCarousel();
@@ -920,12 +1014,10 @@
                 this.setupEventListeners();
                 this.applyFilters();
                 this.loadBatch();
-
+                document.querySelector('.bn').style.display = 'none';
                 this.updateTagCounts();
 
-                setTimeout(() => {
-                    document.querySelector('.bn').style.display = 'none';
-                }, 5000);
+
             }
 
             loadFromStorage(key, defaultValue) {

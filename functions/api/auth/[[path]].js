@@ -263,6 +263,71 @@ async function handleCheckCode(request, env) {
     });
 }
 
+async function handleDonationStatus(request, env) {
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!token) {
+        return new Response(JSON.stringify({ error: 'No token provided' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    // Get user from session
+    const session = await env.DBA.prepare(`
+        SELECT u.* FROM sessions s
+        JOIN users u ON s.user_id = u.user_id
+        WHERE s.token = ? AND s.expires_at > ?
+    `).bind(token, Date.now()).first();
+
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'Invalid session' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    // Get donation data from KV
+    const donationKey = `purchase:${session.user_id}`;
+    const donationData = await env.donator.get(donationKey);
+
+    let totalSpent = 0;
+    let purchases = 0;
+
+    if (donationData) {
+        const data = JSON.parse(donationData);
+        totalSpent = data.totalSpent || 0;
+        purchases = data.purchases || 0;
+    }
+
+    const isDonator = totalSpent >= 500;
+    const progress = Math.min((totalSpent / 500) * 100, 100);
+    const remaining = Math.max(500 - totalSpent, 0);
+
+    // Check if user just became a donator (had role !== 'donator' but now qualifies)
+    const justBecameDonator = isDonator && session.role !== 'donator';
+
+    // Update role if they became a donator
+    if (justBecameDonator) {
+        await env.DBA.prepare(
+            'UPDATE users SET role = ? WHERE user_id = ?'
+        ).bind('donator', session.user_id).run();
+    }
+
+    return new Response(JSON.stringify({
+        totalSpent,
+        purchases,
+        isDonator,
+        progress,
+        remaining,
+        justBecameDonator,
+        role: justBecameDonator ? 'donator' : session.role
+    }), {
+        headers: { 'Content-Type': 'application/json' }
+    });
+}
+
 export async function onRequest(context) {
     const { request, env } = context;
     const url = new URL(request.url);
@@ -291,6 +356,9 @@ export async function onRequest(context) {
                 break;
             case 'check-code':  // ADD THIS
                 response = await handleCheckCode(request, env);
+                break;
+            case 'donation-status':
+                response = await handleDonationStatus(request, env);
                 break;
             case 'session':
                 response = await handleGetSession(request, env);

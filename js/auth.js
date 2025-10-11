@@ -11,6 +11,12 @@ class Auth {
     async init() {
         if (this.token) {
             await this.checkSession();
+            //await this.checkDonationStatus();
+        } else {
+            const authButton = document.getElementById('auth-button');
+            if (authButton) {
+                authButton.style.display = 'flex';
+            }
         }
 
         // Close dropdown when clicking outside
@@ -132,9 +138,20 @@ class Auth {
             } else {
                 localStorage.removeItem('auth_token');
                 this.token = null;
+
+                const authButton = document.getElementById('auth-button');
+                if (authButton) {
+                    authButton.style.display = 'none';
+                }
+
             }
         } catch (error) {
             console.error('Session check failed:', error);
+
+            const authButton = document.getElementById('auth-button');
+            if (authButton) {
+                authButton.style.display = 'none';
+            }
         }
     }
 
@@ -241,7 +258,6 @@ class Auth {
     }
 
     startPolling(code) {
-        // Poll every 2 seconds to check if code was verified
         this.pollInterval = setInterval(async () => {
             try {
                 const response = await fetch('https://emwiki.site/api/auth/check-code', {
@@ -253,12 +269,10 @@ class Auth {
                 const data = await response.json();
 
                 if (data.verified && data.token) {
-                    // Store the token
                     localStorage.setItem('auth_token', data.token);
                     this.token = data.token;
                     this.user = data.user;
 
-                    // Clear intervals
                     clearInterval(this.pollInterval);
                     if (this.timerInterval) {
                         clearInterval(this.timerInterval);
@@ -266,8 +280,13 @@ class Auth {
 
                     // Update UI
                     this.updateUI();
-
+                    this.closeModal();
                     this.showCelebration(this.user.username);
+
+                    // Check donation status after linking
+                    setTimeout(() => {
+                        //this.checkDonationStatus();
+                    }, 3000); // Wait 3 seconds after welcome celebration
                 }
             } catch (error) {
                 console.error('Polling error:', error);
@@ -297,7 +316,88 @@ class Auth {
     }
 
 
+    async checkDonationStatus() {
+        if (!this.token) return;
 
+        try {
+            const response = await fetch('https://emwiki.site/api/auth/donation-status', {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                // Update user role if changed
+                if (data.role) {
+                    this.user.role = data.role;
+                }
+
+                // Show donator celebration if they just became a donator
+                if (data.justBecameDonator) {
+                    this.showDonatorCelebration(data.totalSpent);
+                    confetti.start(); // Trigger confetti!
+                } else if (!data.isDonator) {
+                    // Show progress if not yet a donator
+                    this.showDonationProgress(data);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to check donation status:', error);
+        }
+    }
+
+    showDonationProgress(data) {
+        const container = document.getElementById('donation-progress-container');
+        const progressBar = document.getElementById('donation-progress-bar');
+        const progressFill = progressBar.querySelector('.progress-bar-fill');
+        const progressPercentage = document.getElementById('progress-percentage');
+        const totalDonated = document.getElementById('total-donated');
+        const robuxRemaining = document.getElementById('robux-remaining');
+
+        // Update values
+        totalDonated.textContent = data.totalSpent;
+        robuxRemaining.textContent = data.remaining;
+        progressPercentage.textContent = `${Math.round(data.progress)}%`;
+
+        // Show container
+        container.classList.add('show');
+
+        // Animate progress bar
+        setTimeout(() => {
+            progressFill.style.width = `${data.progress}%`;
+        }, 100);
+
+        // If at 100%, make it gold
+        if (data.progress >= 100) {
+            progressBar.classList.add('gold');
+        }
+    }
+
+    closeDonationProgress() {
+        document.getElementById('donation-progress-container').classList.remove('show');
+    }
+
+    showDonatorCelebration(totalSpent) {
+        const celebration = document.getElementById('donator-celebration');
+        celebration.classList.add('show');
+
+        // Start confetti
+        confetti.start();
+
+        // Show toast
+        this.showToast(
+            'Donator Status Achieved! 💎',
+            `You've donated ${totalSpent} Robux! Thank you for your support!`,
+            'success'
+        );
+    }
+
+    closeDonatorCelebration() {
+        document.getElementById('donator-celebration').classList.remove('show');
+        confetti.stop();
+    }
     async logout() {
         if (this.token) {
             await fetch('https://emwiki.site/api/auth/logout', {

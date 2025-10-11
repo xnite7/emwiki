@@ -1030,10 +1030,10 @@ button {
 }
 
 .item-price {
-    border: 1px solid #ffffff61;
+    border: 1px solid #000;
     display: flex;
     border-radius: 50px;
-        white-space: nowrap;
+    white-space: nowrap;
     gap: 4px;
     font: 1000 12px 'BuilderSans';
     color: #ffffff;
