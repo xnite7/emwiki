@@ -159,6 +159,12 @@ body.light-theme .theme-toggle:hover::before {
     text-decoration: none;
 }
 
+.nav-link:not(:first-child) {
+
+    pointer-events: none; opacity: 0.5; cursor: not-allowed;
+}
+
+
 .nav-link:hover {
     background: var(--bg-item-hover);
 }
