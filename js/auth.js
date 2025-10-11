@@ -2,7 +2,7 @@
 //        FEATURE FLAGS - TOGGLE FEATURES
 // ============================================
 const FEATURES = {
-    DONATION_SYSTEM: true  // Set to true when ready to launch!
+    DONATION_SYSTEM: false  // Set to true when ready to launch!
 };
 // ============================================
 
