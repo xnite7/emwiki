@@ -18,93 +18,99 @@
 
 <body>
     <!-- Donation Progress Bar -->
-<div id="donation-progress-container" class="donation-progress-container">
-    <div class="donation-progress-card">
-        <button class="close-donation-progress" onclick="auth.closeDonationProgress()">×</button>
-        
-        <div class="donation-progress-header">
-            <h3>Support Epic Catalogue</h3>
-            <p class="donation-progress-subtitle">Become a Donator and unlock exclusive perks!</p>
-        </div>
+    <div id="donation-progress-container" class="donation-progress-container">
+        <div class="donation-progress-card">
+            <button class="close-donation-progress" onclick="auth.closeDonationProgress()">×</button>
+
+            <div class="donation-progress-header">
+                <h3>Support Epic Catalogue</h3>
+                <p class="donation-progress-subtitle">Become a Donator and unlock exclusive perks!</p>
+            </div>
             <div class="donation-stat">
                 <div class="donation-stat-value" id="total-donated">0</div>
                 <div class="strike"></div>
                 <div class="donation-stat-value">500</div>
                 <div class="donation-stat-label">Until Donator</div>
             </div>
-        
-        
-        <div class="progress-bar-container">
-            <div class="progress-bar" id="donation-progress-bar">
-                <div class="progress-bar-fill"></div>
-                <div class="progress-bar-shine"></div>
-            </div>
-            <div class="progress-percentage" id="progress-percentage">0%</div>
-        </div>
-        
-        <div class="donation-perks">
-            <h4>🎁 Unlock at <svg style="width: 15px;transform: translateY(2px);margin-left: 4px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18"><path d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z" fill="#ffd700" fill-rule="evenodd"></path></svg> 500:</h4>
-            <div class="perk-list">
-                <div class="perk-item">
-                    <span class="perk-icon">✨</span>
-                    <span>Donator Role Badge</span>
-                </div>
-                <div class="perk-item">
-                    <span class="perk-icon">🎨</span>
-                    <span>Custom Profile Colors</span>
-                </div>
-                <div class="perk-item">
-                    <span class="perk-icon">🏆</span>
-                    <span>Public Donators List</span>
-                </div>
-            </div>
-        </div>
-        
-        <button class="donate-now-btn" onclick="auth.joinGame()">
-            Donate!
-        </button>
-    </div>
-</div>
 
-<!-- Donator Achievement Celebration -->
-<div id="donator-celebration" class="donator-celebration">
-    <div class="donator-celebration-card">
-        <button class="close-donator-celebration" onclick="auth.closeDonatorCelebration()">×</button>
-        
-        <div class="achievement-badge">
-            <div class="achievement-glow"></div>
-            <div class="achievement-icon">💎</div>
-        </div>
-        
-        <h2 class="achievement-title">DONATOR UNLOCKED!</h2>
-        <p class="achievement-message">Thank you for supporting Epic Catalogue! You've unlocked exclusive features.</p>
-        
-        <div class="unlocked-features">
-            <h3>✨ Your New Perks</h3>
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">💎</div>
-                    <div class="feature-name">Donator Role</div>
-                    <div class="feature-desc">Special badge on your profile</div>
+
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="donation-progress-bar">
+                    <div class="progress-bar-fill"></div>
+                    <div class="progress-bar-shine"></div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🎨</div>
-                    <div class="feature-name">Custom Colors</div>
-                    <div class="feature-desc">Personalize your profile</div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🏆</div>
-                    <div class="feature-name">Hall of Fame</div>
-                    <div class="feature-desc">Featured on donators list</div>
+                <div class="progress-percentage" id="progress-percentage">0%</div>
+            </div>
+
+            <div class="donation-perks">
+                <h4>🎁 Unlock at <svg style="width: 15px;transform: translateY(2px);margin-left: 4px;"
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
+                        <path
+                            d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
+                            fill="#ffd700" fill-rule="evenodd"></path>
+                    </svg> 500:</h4>
+                <div class="perk-list">
+                    <div class="perk-item">
+                        <span class="perk-icon">✨</span>
+                        <span>Donator Role Badge</span>
+                    </div>
+                    <div class="perk-item">
+                        <span class="perk-icon">🎨</span>
+                        <span>Custom Profile Colors</span>
+                    </div>
+                    <div class="perk-item">
+                        <span class="perk-icon">🏆</span>
+                        <span>Public Donators List</span>
+                    </div>
                 </div>
             </div>
+
+            <button class="donate-now-btn" onclick="auth.joinGame()">
+                Donate!
+            </button>
         </div>
-        
-        <button class="achievement-close-btn" onclick="auth.closeDonatorCelebration()">
-            Awesome! 🎉
-        </button>
     </div>
-</div>
+
+    <!-- Donator Achievement Celebration -->
+    <div id="donator-celebration" class="donator-celebration">
+        <div class="donator-celebration-card">
+            <button class="close-donator-celebration" onclick="auth.closeDonatorCelebration()">×</button>
+
+            <div class="achievement-badge">
+                <div class="achievement-glow"></div>
+                <div class="achievement-icon">💎</div>
+            </div>
+
+            <h2 class="achievement-title">DONATOR UNLOCKED!</h2>
+            <p class="achievement-message">Thank you for supporting Epic Catalogue! You've unlocked exclusive features.
+            </p>
+
+            <div class="unlocked-features">
+                <h3>✨ Your New Perks</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">💎</div>
+                        <div class="feature-name">Donator Role</div>
+                        <div class="feature-desc">Special badge on your profile</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎨</div>
+                        <div class="feature-name">Custom Colors</div>
+                        <div class="feature-desc">Personalize your profile</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🏆</div>
+                        <div class="feature-name">Hall of Fame</div>
+                        <div class="feature-desc">Featured on donators list</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="achievement-close-btn" onclick="auth.closeDonatorCelebration()">
+                Awesome! 🎉
+            </button>
+        </div>
+    </div>
     <header>
         <a href="https://emwiki.site">
             <svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
@@ -173,12 +179,12 @@
             </svg>
         </a>
 
-    <div class="nav-links">
-        <a href="/catalog" class="nav-link active">Catalog</a>
-        <a href="/trading" class="nav-link">Trading Hub</a>
-        <a href="/gallery" class="nav-link">Gallery</a>
-        <a href="/forum" class="nav-link">Forum</a>
-    </div>
+        <div class="nav-links">
+            <a href="/catalog" class="nav-link active">Catalog</a>
+            <a href="/trading" class="nav-link">Trading Hub</a>
+            <a href="/gallery" class="nav-link">Gallery</a>
+            <a href="/forum" class="nav-link">Forum</a>
+        </div>
         <button style="display: none;" class="auth-button" onclick="auth.openModal()" id="auth-button">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
                 <path
@@ -1340,13 +1346,14 @@
                                             this.seasons.add(seasonNum);
                                         }
                                     });
+                                    // Extract event names with priority handling
                                     const eventPatterns = [
+                                        /Art Contest\s*(?:\d{4})?/gi,  // Check Art Contest FIRST
                                         /Summer\s*(?:\d{4})?/gi,
                                         /\bEaster\s*(?:\d{4})?/gi,
                                         /Valentine(?:'s)?\s*(?:\d{4})?/gi,
                                         /Halloween\s*(?:\d{4})?/gi,
                                         /Christmas\s*(?:\d{4})?/gi,
-                                        /Art Contest\s*(?:\d{4})?/gi,
                                         /4th of July\s*(?:\d{4})?/gi,
                                         /10th Anniversary\s*(?:\d{4})?/gi,
                                         /1B Update\s*(?:\d{4})?/gi,
@@ -1355,43 +1362,56 @@
                                         /RODIS\s*(?:\d{4})?/gi,
                                     ];
 
-                                    eventPatterns.forEach(pattern => {
-                                        const fieldsToMatch = [item.name, item.from, item['price/code/rarity']];
-                                        fieldsToMatch.forEach(field => {
-                                            // Ensure field is not null/undefined
-                                            if (field) {
-                                                const matches = [...field.matchAll(pattern)];
+                                    const fieldsToMatch = [item.name, item.from, item['price/code/rarity']];
 
-                                                matches.forEach(match => {
-                                                    // Remove the year if it exists
-                                                    let eventName = match[0].replace(/\s*\d{4}/, '').trim();
+                                    // Check if it's an Art Contest item first
+                                    let isArtContest = false;
+                                    fieldsToMatch.forEach(field => {
+                                        if (field && /Art Contest/i.test(field)) {
+                                            isArtContest = true;
+                                        }
+                                    });
 
-                                                    // Normalize event names to avoid duplicates
-                                                    const normalizeEvent = (name) => {
-                                                        const normalizations = {
-                                                            "valentine": "Valentine's",
-                                                            "Valentine": "Valentine's",
-                                                            "valentine's": "Valentine's",
-                                                            "christmas": "Christmas",
-                                                            "rodis": "RODIS",
+                                    // If it's Art Contest, ONLY add Art Contest
+                                    if (isArtContest) {
+                                        if (!eventNames.includes('Art Contest')) {
+                                            eventNames.push('Art Contest');
+                                            this.events.add('Art Contest');
+                                        }
+                                    } else {
+                                        // Otherwise, check all other patterns normally
+                                        eventPatterns.forEach(pattern => {
+                                            fieldsToMatch.forEach(field => {
+                                                if (field) {
+                                                    const matches = [...field.matchAll(pattern)];
+
+                                                    matches.forEach(match => {
+                                                        let eventName = match[0].replace(/\s*\d{4}/, '').trim();
+
+                                                        const normalizeEvent = (name) => {
+                                                            const normalizations = {
+                                                                "valentine": "Valentine's",
+                                                                "Valentine": "Valentine's",
+                                                                "valentine's": "Valentine's",
+                                                                "christmas": "Christmas",
+                                                                "rodis": "RODIS",
+                                                            };
+
+                                                            const lower = name.toLowerCase();
+                                                            return normalizations[lower] || name;
                                                         };
 
-                                                        const lower = name.toLowerCase();
-                                                        return normalizations[lower] || name;
-                                                    };
+                                                        eventName = normalizeEvent(eventName);
 
-                                                    eventName = normalizeEvent(eventName);
-
-                                                    // If it's not already in the eventNames array, add it
-                                                    if (!eventNames.includes(eventName)) {
-                                                        eventNames.push(eventName);
-                                                        this.events.add(eventName);
-                                                    }
-                                                });
-                                            }
-                                        })
+                                                        if (!eventNames.includes(eventName)) {
+                                                            eventNames.push(eventName);
+                                                            this.events.add(eventName);
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        });
                                     }
-                                    );
 
                                     this.items.push({
                                         ...item,
