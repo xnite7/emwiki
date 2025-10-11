@@ -50,15 +50,20 @@ body {
     position: fixed;
     z-index: 222;
     width: 100%;
-    animation: slideup 0.3s ease 4.5s forwards;
+    animation: slideup 0.3s ease 1s forwards;
 }
 
 header {
     text-align: center;
-    padding: 20px;
     background: var(--bg-secondary);
-    box-shadow: 0 2px 4px var(--shadow-color);
     position: relative;
+    border-bottom: 2px solid var(--border-color);
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    box-shadow: 0 4px 20px var(--shadow-color);
+    flex-direction: column;
 }
 
 header a svg {
@@ -144,6 +149,26 @@ body.light-theme .theme-toggle:hover::before {
 }
 
 
+.nav-link {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 15px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.nav-link:hover {
+    background: var(--bg-item-hover);
+}
+
+.nav-link.active {
+    background: var(--bg-item);
+    color: #4a9eff;
+}
+
+
 /* Controls Bar */
 .controls-bar {
     position: sticky;
@@ -167,6 +192,7 @@ body.light-theme .controls-bar {
     flex-wrap: wrap;
     margin-bottom: 10px;
 }
+
 
 
 .recent-items {
@@ -500,6 +526,10 @@ svg {
     fill: var(--text-primary);
 }
 
+header svg * {
+    pointer-events: none;
+}
+
 .chest-menu svg {
     fill: #fff;
 }
@@ -628,6 +658,8 @@ svg {
     width: 24px;
     height: 24px;
 }
+
+
 
 .chest-menu {
     left: 0;
@@ -1310,7 +1342,6 @@ button {
 /* Category Carousel */
 .category-carousel-container {
     position: relative;
-    padding: 33px 0;
     overflow: hidden;
 }
 
@@ -1320,7 +1351,8 @@ button {
     align-items: center;
     justify-content: center;
     position: relative;
-    height: 150px;
+    height: 155px;
+    padding-top: 10px;
     transition: transform 0.3s ease;
 }
 
@@ -1412,13 +1444,10 @@ button {
 }
 
 
-
-
-
 .category-item {
     position: absolute;
-    width: 120px;
-    height: 120px;
+    width: 100px;
+    height: 100px;
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -1448,7 +1477,7 @@ button {
 
 .category-item span {
     font-variant: petite-caps;
-    font-size: 12px;
+    font-size: 10px;
     color: var(--text-secondary);
     font-weight: 600;
     text-transform: uppercase;
@@ -1458,8 +1487,8 @@ button {
 
 
 .category-item[data-pos="0"] img {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
     filter: none;
 }
 
@@ -1475,7 +1504,7 @@ button {
 }
 
 .category-item[data-pos="0"] span {
-    font-size: 14px;
+    font-size: 11px;
     color: var(--text-primary);
 }
 
