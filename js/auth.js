@@ -17,6 +17,29 @@ class Auth {
     }
 
     async init() {
+
+        document.querySelector('header').insertAdjacentHTML('beforeend', `
+            <button style="top: 20px;left: 12px;position: absolute;" class="btn" id="installBtn">
+				<svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+					<path fill="none" stroke="currentColor" stroke-width="2"
+						d="M12 6v10zm0-5c6.075 0 11 4.925 11 11s-4.925 11-11 11S1 18.075 1 12 5.925 1 12 1Zm5 11-5 5-5-5" />
+				</svg>
+				Install App
+			</button>
+            <div id="profile-dropdown" class="profile-dropdown"></div>
+            <div class="header-actions">
+                <button	style="display: none;" class="btn" onclick="auth.openModal()" id="auth-button">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                    </svg>
+                    <span>Link Account</span>
+                </button>
+                <div id="user-profile-btn" style="display: none;"></div>
+                <div class="theme-toggle" onclick="catalog.toggleTheme()"></div>
+		</div>
+        `);
+
         if (this.token) {
             await this.checkSession();
             if (FEATURES.DONATION_SYSTEM) {
@@ -37,41 +60,26 @@ class Auth {
                 dropdown.classList.remove('show');
             }
         });
+
+        
+
     }
-    // Toast notification system
-    showToast(title, message, type = 'info') {
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
 
-        const icons = {
-            error: '<svg style="width: 24px; height: 24px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
-            success: '<svg style="width: 24px; height: 24px;" viewBox="0 0 24 24" data-name="Line Color" xmlns="http://www.w3.org/2000/svg"><path style="fill:none;stroke:#fff;stroke-linecap:round;stroke-linejoin:round;stroke-width:2" d="m5 12 5 5 9-9"/></svg>',
-            info: '<svg fill="#fff" style="width: 24px; height: 24px;" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 10a1 1 0 0 0-1 1v6a1 1 0 0 0 2 0v-6a1 1 0 0 0-1-1m0-4a1.25 1.25 0 1 0 1.25 1.25A1.25 1.25 0 0 0 12 6"/></svg>',
-            warning: '<svg style="width: 24px; height: 24px;" fill="#fff" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><path d="M30.33 25.54 20.59 7.6a3 3 0 0 0-5.27 0L5.57 25.54A3 3 0 0 0 8.21 30h19.48a3 3 0 0 0 2.64-4.43Zm-13.87-12.8a1.49 1.49 0 0 1 3 0v6.89a1.49 1.49 0 1 1-3 0ZM18 26.25a1.72 1.72 0 1 1 1.72-1.72A1.72 1.72 0 0 1 18 26.25"/><path fill="none" d="M0 0h36v36H0z"/></svg>'
-        };
-
-        toast.innerHTML = `
-            <div class="toast-icon">${icons[type]}</div>
-            <div class="toast-content">
-                <div class="toast-title">${title}</div>
-                <div class="toast-message">${message}</div>
-            </div>
-            <button class="toast-close" onclick="this.parentElement.remove()">×</button>
-        `;
-
-        container.appendChild(toast);
-
-        // Auto remove after 5 seconds
-        setTimeout(() => {
-            toast.classList.add('hiding');
-            setTimeout(() => toast.remove(), 300);
-        }, 5000);
-    }
 
     // Celebration card
     showCelebration(username) {
         document.querySelector('.auth-modal').style.display = 'none';
+
+        document.body.insertAdjacentHTML('beforeend', `
+            <div id="celebration-card" class="celebration-card">
+                <div class="celebration-icon">🎉</div>
+                <div class="celebration-title">Account Linked!</div>
+                <div class="celebration-message">Welcome to Epic Catalogue! Your Roblox account has been successfully linked.
+                </div>
+                <button class="celebration-close-btn" onclick="auth.closeCelebration()">Epic!</button>
+            </div>
+        `);
+
         const card = document.getElementById('celebration-card');
         const message = card.querySelector('.celebration-message');
         message.innerHTML = `Welcome, <strong>${username}!</strong><br>Your Roblox account has been successfully linked to Epic Catalogue.`;
@@ -83,6 +91,9 @@ class Auth {
     closeCelebration() {
         this.closeModal();
         document.getElementById('celebration-card').classList.remove('show');
+        setTimeout(() => {
+            document.querySelector('.auth-modal').style.display = 'block';
+        }, 300);
         confetti.stop();
     }
 
@@ -126,6 +137,8 @@ class Auth {
                 <button class="profile-action-btn" onclick="window.open('https://www.roblox.com/users/${this.user.userId}/profile', '_blank')">
                     <svg style="width:20px;" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m10 17.55-1.77 1.72a2.47 2.47 0 0 1-3.5-3.5l4.54-4.55a2.46 2.46 0 0 1 3.39-.09l.12.1a1 1 0 0 0 1.4-1.43 3 3 0 0 0-.18-.21 4.46 4.46 0 0 0-6.09.22l-4.6 4.55a4.48 4.48 0 0 0 6.33 6.33L11.37 19A1 1 0 0 0 10 17.55M20.69 3.31a4.49 4.49 0 0 0-6.33 0L12.63 5A1 1 0 0 0 14 6.45l1.73-1.72a2.47 2.47 0 0 1 3.5 3.5l-4.54 4.55a2.46 2.46 0 0 1-3.39.09l-.12-.1a1 1 0 0 0-1.4 1.43 3 3 0 0 0 .23.21 4.47 4.47 0 0 0 6.09-.22l4.55-4.55a4.49 4.49 0 0 0 .04-6.33"/></svg> View Roblox Profile
                 </button>
+
+                <button class="profile-action-btn" onclick="catalog.openStats()">My Lists</button>
 
                 <button class="profile-action-btn donator locked" onclick="auth.checkDonationStatus()">
                     <svg style="width:18px;" viewBox="0 -32 576 576" xmlns="http://www.w3.org/2000/svg"><path d="M464 0H112c-4 0-7.8 2-10 5.4L2 152.6c-2.9 4.4-2.6 10.2.7 14.2l276 340.8c4.8 5.9 13.8 5.9 18.6 0l276-340.8c3.3-4.1 3.6-9.8.7-14.2L474.1 5.4C471.8 2 468.1 0 464 0m-19.3 48 63.3 96h-68.4l-51.7-96zm-202.1 0h90.7l51.7 96H191zm-111.3 0h56.8l-51.7 96H68zm-43 144h51.4L208 352zm102.9 0h193.6L288 435.3zM368 352l68.2-160h51.4z"/></svg> Donator Settings
@@ -206,7 +219,7 @@ class Auth {
             this.startTimer(expiresIn);
             this.startPolling(code);
         } catch (error) {
-            this.showToast('Connection Error', error.message, 'error');
+            Utils.showToast('Connection Error', error.message, 'error');
         }
     }
 
@@ -217,14 +230,14 @@ class Auth {
             await navigator.clipboard.writeText(this.currentCode);
             const display = document.getElementById('auth-code-display');
             display.classList.add('copied');
-            this.showToast('Copied!', 'Code copied to clipboard', 'success');
+            Utils.showToast('Copied!', 'Code copied to clipboard', 'success');
 
             setTimeout(() => {
                 display.classList.remove('copied');
 
             }, 2000);
         } catch (error) {
-            this.showToast('Copy Failed', 'Code: ' + this.currentCode, 'error');
+            Utils.showToast('Copy Failed', 'Code: ' + this.currentCode, 'error');
         }
     }
 
@@ -354,9 +367,12 @@ class Auth {
                 if (data.justBecameDonator) {
                     this.showDonatorCelebration(data.totalSpent);
                     confetti.start(); // Trigger confetti!
+                    document.querySelector('.profile-action-btn.donator').classList.remove('locked');
                 } else if (!data.isDonator && !initial) {
                     // Show progress if not yet a donator
                     this.showDonationProgress(data);
+                } else if (data.isDonator) {
+                    document.querySelector('.profile-action-btn.donator').classList.remove('locked');
                 }
             }
         } catch (error) {
@@ -402,7 +418,7 @@ class Auth {
         confetti.start();
 
         // Show toast
-        this.showToast(
+        Utils.showToast(
             'Donator Status Achieved! 💎',
             `You've donated ${totalSpent} Robux! Thank you for your support!`,
             'success'
@@ -433,7 +449,7 @@ class Auth {
         }
 
         document.getElementById('user-profile-btn').style.display = 'none';
-        this.showToast('Logged Out', 'You have been successfully logged out', 'info');
+        Utils.showToast('Logged Out', 'You have been successfully logged out', 'info');
 
         setTimeout(() => location.reload(), 1500);
     }
@@ -444,7 +460,9 @@ const auth = new Auth();
 // Confetti System
 class Confetti {
     constructor() {
-        this.canvas = document.getElementById('confetti-canvas');
+        this.canvas = document.createElement('canvas');
+        this.canvas.id = 'confetti-canvas';
+        document.body.appendChild(this.canvas);
         this.ctx = this.canvas.getContext('2d');
         this.particles = [];
         this.animationFrame = null;

@@ -1,1796 +1,1496 @@
-// ============================================
-// CONFIGURATION & CONSTANTS
-// ============================================
-const APP_CONFIG = {
-  touch: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
-
-  colors: {
-    gears: "rgb(91, 254, 106)",
-    deaths: "rgb(255, 122, 94)",
-    titles: "rgb(201, 96, 254)",
-    pets: "rgb(55, 122, 250)",
-    effects: "rgb(255, 177, 53)"
-  },
-
-  modalColors: {
-    pets: "rgb(39, 102, 221)",
-    effects: "rgb(243, 164, 37)",
-    deaths: "rgb(221, 89, 62)",
-    titles: "rgb(154, 45, 209)",
-    gears: "rgb(55, 205, 68)"
-  },
-
-  icons: {
-    premium: "./imgs/prem.png",
-    untradable: "https://i.imgur.com/WLjbELh.png",
-    retired: "./imgs/Red_x.png",
-    robux: "./imgs/cf8ZvY7.png",
-    coins: "./imgs/Coin.webp",
-    stars: "./imgs/WKeX5AS.png",
-    visors: "./imgs/7IoLZCN.png",
-    pumpkins: "./imgs/bHRBTrU.png",
-    eggs: "./imgs/qMxjgQy.png",
-    opals: "./imgs/wwMMAvr.png",
-    baubles: "./imgs/bauble.png",
-    tokens: "./imgs/Cy9r140.png"
-  },
-
-  tilt: {
-    max: "10",
-    speed: "500",
-    perspective: "1800",
-    glare: true,
-    maxGlare: "0.1",
-    scale: "1.03",
-    reset: "true"
-  }
-};
-
-// ============================================
-// STATE MANAGEMENT
-// ============================================
-class AppState {
-  constructor() {
-    this.currentItem = null;
-    this.items = [];
-    this.favorites = this.loadFavorites();
-    this.searchHistory = this.loadSearchHistory();
-    this.isModalOpen = false;
-    this.isSwiping = false;
-    this.showingFavoritesOnly = false;
-  }
-
-  loadFavorites() {
-    const match = document.cookie.match(/(?:^|; )favorites=([^;]*)/);
-    return match ? decodeURIComponent(match[1]).split("|") : [];
-  }
-
-  saveFavorites() {
-    const value = encodeURIComponent(this.favorites.join("|"));
-    document.cookie = `favorites=${value}; path=/; max-age=31536000`;
-  }
-
-  toggleFavorite(name) {
-    const index = this.favorites.indexOf(name);
-    if (index > -1) {
-      this.favorites.splice(index, 1);
-    } else {
-      this.favorites.push(name);
-    }
-    this.saveFavorites();
-    return this.favorites.includes(name);
-  }
-
-  loadSearchHistory() {
-    return JSON.parse(localStorage.getItem("searchHistory") || "[]");
-  }
-
-  saveSearchHistory(name) {
-    this.searchHistory = this.searchHistory.filter(item => item !== name);
-    this.searchHistory.unshift(name);
-    if (this.searchHistory.length > 4) {
-      this.searchHistory = this.searchHistory.slice(0, 4);
-    }
-    localStorage.setItem("searchHistory", JSON.stringify(this.searchHistory));
-  }
-}
-
-const appState = new AppState();
-
-// ============================================
-// MODAL SYSTEM
-// ============================================
-class ModalSystem {
-  constructor() {
-    this.cache = null;
-    this.init();
-  }
-
-
-  init() {
-    this.createModalStructure();
-    this.setupEventListeners();
-  }
-
-  createModalStructure() {
-    const modal = document.createElement('div');
-    modal.id = 'product-modal';
-    modal.className = 'modal';
-
-    const content = this.createModalContent();
-    modal.appendChild(content);
-
-    // Add navigation arrows
-    const leftArrow = document.createElement("div");
-    leftArrow.id = "modal-left-arrow";
-    leftArrow.className = "modal-arrow";
-    leftArrow.innerHTML = "←";
-    modal.appendChild(leftArrow);
-
-    const rightArrow = document.createElement("div");
-    rightArrow.id = "modal-right-arrow";
-    rightArrow.className = "modal-arrow";
-    rightArrow.innerHTML = "→";
-    modal.appendChild(rightArrow);
-
-    document.body.appendChild(modal);
-
-    // Cache references
-    this.cache = {
-      modal: modal,
-      content: content,
-      title: content.querySelector('#modal-title'),
-      prc: content.querySelector('#modal-prc'),
-      description: content.querySelector('#modal-description'),
-      price: content.querySelector('#modal-price-value'),
-      popo: content.querySelector('#popo'),
-      retired: content.querySelector('#modal-retired'),
-      premium: content.querySelector('#modal-premium'),
-      untradable: content.querySelector('#modal-untradable'),
-      button: content.querySelector('#tour-button'),
-      leftArrow: leftArrow,
-      rightArrow: rightArrow
-    };
-  }
-
-  createModalContent() {
-    const content = document.createElement('div');
-    content.id = 'modal-content';
-    content.className = 'modal-content expand';
-
-    // Apply tilt data attributes
-    Object.entries(APP_CONFIG.tilt).forEach(([key, value]) => {
-      content.dataset[`tilt${key.charAt(0).toUpperCase() + key.slice(1)}`] = value;
-    });
-
-    const overlay2 = document.createElement('div');
-    overlay2.className = 'inner-border-overlay';
-
-    content.append(overlay2);
-
-
-    const contentArea = this.createContentArea();
-    const closeBtn = document.createElement('span');
-    closeBtn.id = 'close-modal';
-    closeBtn.className = 'close-btn';
-
-    // Glare effects
-    const glare1 = this.createGlareElement();
-    const glare2 = this.createGlareElement();
-
-    // Assemble
-    [contentArea, closeBtn, glare1, glare2]
-      .forEach(el => content.appendChild(el));
-
-    return content;
-  }
-
-  createContentArea() {
-    const area = document.createElement('div');
-    area.id = 'content-area';
-    area.className = 'content-area';
-
-    const overlay = document.createElement('div');
-    overlay.className = 'gradient-overlay';
-
-    const TPcontainer = document.createElement('div');
-    TPcontainer.className = 'title-price-container';
-
-    const title = document.createElement('h3');
-    title.id = 'modal-title';
-    title.className = 'modal-title';
-    title.setAttribute('data-tilt-transform-element', '');
-
-    const price = document.createElement('h3');
-    price.id = 'modal-prc';
-    price.className = 'modal-prc';
-
-    TPcontainer.append(title, price);
-
-    const priceImg = document.createElement('img');
-    priceImg.id = 'modal-price-value';
-
-    const description = document.createElement('p');
-    description.id = 'modal-description';
-
-    const priceDiv = document.createElement('div');
-    priceDiv.id = 'popo';
-    priceDiv.className = 'price';
-
-    const priceText = document.createElement('p');
-    priceText.textContent = '0';
-
-    priceDiv.append(priceImg, priceText);
-
-    const tourButton = document.createElement('button');
-    tourButton.id = 'tour-button';
-    tourButton.className = 'tour-button';
-    tourButton.innerHTML = `
-      Visit
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" style="margin-bottom: -4px;scale: 0.9;stroke-width: 3px;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 5l7 7-7 7"></path>
-        <path d="M5 12h14"></path>
-      </svg>
-    `;
-
-    const dock = document.createElement('div');
-    dock.className = 'dock';
-
-    const premium = document.createElement('img');
-    premium.id = 'modal-premium';
-    premium.className = 'modal-icon';
-    premium.src = APP_CONFIG.icons.premium;
-
-    const retired = document.createElement('h3');
-    retired.id = 'modal-retired';
-    retired.textContent = 'Retired';
-
-    const untradable = document.createElement('img');
-    untradable.id = 'modal-untradable';
-    untradable.className = 'modal-icon';
-    untradable.src = APP_CONFIG.icons.untradable;
-
-    dock.append(premium, retired, untradable);
-
-    area.append(overlay, TPcontainer, description, priceDiv, tourButton, dock);
-
-    return area;
-  }
-
-  createGlareElement() {
-    const wrap = document.createElement('div');
-    wrap.className = 'js-tilt-glare';
-    const inner = document.createElement('div');
-    inner.className = 'js-tilt-glare-inner';
-    wrap.appendChild(inner);
-    return wrap;
-  }
-
-  setupEventListeners() {
-    // Close modal
-    window.addEventListener('click', (e) => {
-      if (e.target === this.cache.modal) this.close();
-    });
-
-    // Navigation
-    this.cache.leftArrow.addEventListener('click', () => this.navigate('prev'));
-    this.cache.rightArrow.addEventListener('click', () => this.navigate('next'));
-
-    // Keyboard navigation
-    document.addEventListener('keydown', (e) => {
-      if (!appState.isModalOpen) return;
-      if (e.key === 'ArrowLeft') this.navigate('prev');
-      if (e.key === 'ArrowRight') this.navigate('next');
-      if (e.key === 'Escape') this.close();
-    });
-
-    // Touch support
-    if (APP_CONFIG.touch) {
-      this.setupTouchHandlers();
-    }
-
-    // Show arrows on hover
-    this.cache.modal.addEventListener('mousemove', () => this.showArrows());
-  }
-
-  setupTouchHandlers() {
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    this.cache.content.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      touchStartX = e.changedTouches[0].screenX;
-    }, false);
-
-    this.cache.content.addEventListener('touchend', (e) => {
-      touchEndX = e.changedTouches[0].screenX;
-      const delta = touchEndX - touchStartX;
-
-      if (Math.abs(delta) > 50) {
-        this.navigate(delta < 0 ? 'next' : 'prev');
-      }
-    }, false);
-  }
-
-  open(item) {
-    if (appState.isModalOpen) return;
-
-    const itemElement = item.element || item;
-    appState.currentItem = itemElement;
-    appState.isModalOpen = true;
-
-    // Mark item as showing
-    document.querySelectorAll('.item').forEach(el => el.classList.remove('showing'));
-    itemElement.classList.add('showing');
-
-    document.body.classList.add('modal-open');
-    //disable scrolling without overflowy = hidden
-
-    // Populate modal content
-    this.populateContent(item);
-
-    // Show modal with animation
-    this.cache.modal.style.display = 'flex';
-    this.cache.modal.classList.add('show');
-
-    // Apply smart title sizing
-    this.optimizeTitleSize();
-
-    // Update URL
-
-    this.updateURL(item.name);
-
-    // Update navigation arrows
-    this.updateNavigationArrows();
-  }
-
-  populateContent(item) {
-    const data = this.extractItemData(item.element || item);
-
-    // Reset visibility
-    ['retired', 'premium', 'untradable'].forEach(key => {
-      this.cache[key].style.visibility = 'hidden';
-    });
-
-    // Set content
-    this.cache.title.textContent = data.title;
-    this.cache.description.textContent = data.description; 
-    this.cache.prc.innerHTML = `<img src="./imgs/rap.png" style="filter: drop-shadow(0px 1px 5px #49444454);height:44px;float:left;">${itemFactory.formatPrice(data.price) || 0}`;
-
-    // Handle visibility
-    this.cache.prc.style.display = 'flex'
-
-    if (data.price === 'N/A' || data.price === '0' || data.price === '') {
-      this.cache.prc.style.display = 'none';
-    }
-
-    // Set badges
-    if (data.isRetired) this.cache.retired.style.visibility = 'visible';
-    if (data.isPremium) this.cache.premium.style.visibility = 'visible';
-    if (data.isUntradable) this.cache.untradable.style.visibility = 'visible';
-
-    // Set background color
-    const categoryColor = APP_CONFIG.modalColors[data.category];
-    if (categoryColor) {
-      this.cache.content.style.backgroundColor = categoryColor;
-    }
-
-    // Handle images
-    this.handleModalImages(data);
-
-    // Handle prices
-    this.handleModalPrices(data);
-  }
-
-  extractItemData(element) {
-
-    return {
-      title: element.getAttribute('data-title-name'),
-      description: element.getAttribute('description'),
-      price: element.getAttribute('price'),
-      priceCodeRarity: element.getAttribute('prc'),
-      image: element.dataset.image,
-      svg: element.querySelector('svg')?.outerHTML || '',
-      category: element.id,
-      isRetired: !!element.querySelector('.retired'),
-      isPremium: !!element.querySelector('.premium'),
-      isUntradable: !!element.querySelector('.untradable')
-    };
-  }
-
-  handleModalImages(data) {
-    // Remove existing canvas and SVG
-    const existingCanvas = this.cache.content.querySelector('#content-area canvas');
-    if (existingCanvas) existingCanvas.remove();
-
-    const existingSvg = this.cache.content.querySelector('#content-area .modal-svg-title');
-    if (existingSvg) existingSvg.remove();
-
-    // Remove font elements
-    this.cache.content.querySelectorAll('.font').forEach(el => el.remove());
-
-    if (data.image) {
-      const canvas = document.createElement('canvas');
-      canvas.style.cssText = `
-      width: 100%;
-      margin: -11px 0 -11px;
-      place-self: center;
-      display: block;
-      user-select: none;
-      z-index: 99;
-    `;
-
-      const contentArea = this.cache.content.querySelector('#content-area');
-      contentArea.insertBefore(canvas, this.cache.description);
-
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-      };
-      img.src = data.image;
-    }
-    // Handle SVG titles in modal
-    else if (data.svg && data.category === 'titles') {
-      const svgContainer = document.createElement('div');
-      svgContainer.className = 'modal-svg-title';
-
-      svgContainer.innerHTML = data.svg;
-
-      Object.assign(svgContainer.style, {
-        width: '100%',
-        height: '-webkit-fill-available',
-        display: 'flex',
-        alignItems: 'center',
-        zIndex: '22',
-      });
-
-      // Scale up the SVG for modal display
-      const svg = svgContainer.querySelector('svg');
-      if (svg) {
-        svg.style.width = '100%';
-        svg.style.overflow = 'visible';
-        svg.style.textShadow = 'none';
-        svg.style.height = 'auto';
-        svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-      }
-
-      const contentArea = this.cache.content.querySelector('#content-area');
-      contentArea.insertBefore(svgContainer, this.cache.description);
-    }
-    // Handle old format titles
-    else if (data.category === 'titles') {
-      const itemElement = document.querySelector('.item.showing');
-      if (itemElement) {
-        const h3Element = itemElement.querySelector('#h3');
-        if (h3Element) {
-          const clone = h3Element.cloneNode(true);
-          Object.assign(clone.style, {
-            height: '100%',
-            paddingTop: '4px',
-            zoom: '2',
-            width: '-webkit-fill-available',
-            zIndex: '22',
-            margin: '31px 0px 46px 0px',
-            alignSelf: 'center',
-            position: 'relative',
-            alignContent: 'center'
-          });
-          clone.classList.add('font');
-
-          const contentArea = this.cache.content.querySelector('#content-area');
-          contentArea.insertBefore(clone, this.cache.description);
+// ==================== UTILITIES ====================
+const Utils = {
+    loadFromStorage(key, defaultValue) {
+        try {
+            const stored = localStorage.getItem(key);
+            return stored ? JSON.parse(stored) : defaultValue;
+        } catch (e) {
+            return defaultValue;
         }
-      }
-    }
-  }
+    },
 
-  handleModalPrices(data) {
-    // Clear existing price elements
-    this.cache.popo.parentElement.querySelectorAll('.price').forEach((el, idx) => {
-      if (idx > 0) el.remove();
-    });
-
-    const prices = data.priceCodeRarity.split('\n').filter((line, index, self) =>
-      self.findIndex(l => l.toLowerCase() === line.toLowerCase()) === index
-    );
-
-    // Set first price
-    this.cache.price.src = './imgs/trs.png';
-    const firstPriceText = this.cache.price.nextSibling;
-    if (firstPriceText) {
-      firstPriceText.textContent = prices[0] || '';
-      Object.assign(firstPriceText.style, {
-        color: '#e1e1e1',
-        fontSize: '30px',
-        fontWeight: 400,
-        display: 'block'
-      });
-    }
-
-    // Add additional prices
-    prices.slice(1).forEach(priceText => {
-      const newPriceDiv = this.cache.popo.cloneNode(true);
-      newPriceDiv.childNodes[1].textContent = priceText;
-      this.cache.popo.parentElement.appendChild(newPriceDiv);
-    });
-
-    // Style prices based on content
-    this.stylePrices();
-  }
-
-  stylePrices() {
-    this.cache.popo.parentElement.querySelectorAll('.price').forEach(priceEl => {
-      const [img, text] = priceEl.children;
-      if (!text || !text.textContent) {
-        priceEl.style.display = 'none';
-        return;
-      }
-      modalCache.button.style.display = '';
-      const content = text.textContent;
-      //clear style sheet
-      Object.assign(text.style, {
-        color: '',
-        fontWeight: '',
-        textShadow: '',
-        fontFamily: '',
-        fontSize: '',
-        textStroke: '',
-        webkitTextStroke: ''
-      });
-
-      // Apply special styling
-      if (content.includes('Tokens')) {
-        console.log(content);
-        Object.assign(text.style, {
-          fontWeight: 500,
-          textStroke: '1px rgb(255, 83, 219)',
-          webkitTextStroke: '1px rgb(255, 83, 219)'
-        });
-      }
-
-      if (content.includes('Robux')) {
-        text.style.fontWeight = '700';
-      }
-
-      // Set icon based on currency
-      Object.entries(APP_CONFIG.icons).forEach(([key, src]) => {
-        if (content.toLowerCase().includes(key.toLowerCase())) {
-          text.textContent = content.toLowerCase().replace(` ${key.toLowerCase()}`, '');
-          img.src = src;
+    saveToStorage(key, value) {
+        try {
+            localStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {
+            console.error('Failed to save to localStorage:', e);
         }
-      });
+    },
 
-      // Special cases
-      if (content.includes('%')) {
-        Object.assign(text.style, {
-          color: 'rgb(193 68 255)',
-          fontWeight: 500,
-          textShadow: '0 0 6px rgb(199 0 255)'
-        });
-      } else if (content.includes('[EXPIRED]')) {
-        Object.assign(text.style, {
-          textShadow: '0 0 10px black',
-          fontFamily: 'monospace',
-          fontSize: '23px',
-          color: '#cd1f1f'
-        });
-      } else if (content.includes('[ACTIVE]')) {
-        Object.assign(text.style, {
-          fontFamily: 'monospace',
-          fontSize: '23px',
-          color: 'rgb(251 255 68)'
-        });
-      } else if (content.includes('Unobtainable')) {
-        img.src = './imgs/Red_x.png';
-        text.style.color = 'rgb(255 44 44)';
-      } else if (content.includes('www.')) {
-        modalCache.button.style.display = 'unset';
-        text.style.display = 'none';
-        modalCache.button.setAttribute('onclick', `window.open('${content.includes('http') ? '' : 'https://'}${content}', '_blank')`);
-
-      }
-
-      priceEl.style.display = text.textContent ? 'flex' : 'none';
-    });
-  }
-
-  optimizeTitleSize() {
-    requestAnimationFrame(() => {
-      const title = this.cache.title;
-      const prc = this.cache.prc;
-      if (!title || !prc) return;
-
-      // Fixed configuration - no more dependency on char/word count
-      const config = {
-        maxFontSize: 50,
-        minFontSize: 24,
-        padding: 25,
-      };
-
-      // Set initial styles with max font size
-      title.style.cssText = `
-      font-size: ${config.maxFontSize}px;
-      line-height: 1.15;
-      font: 900 ${config.maxFontSize}px 'Source Sans Pro';
-      text-shadow: 0px 1px 5px #49444499;
-      z-index: 22;
-      transform: translateZ(20px);
-      text-align: left;
-      transition: font-size 0.1s ease;
-    `;
-
-      // Calculate available space
-      const container = title.parentElement;
-      const containerWidth = container.offsetWidth;
-      const prcWidth = prc.offsetWidth;
-      const availableWidth = containerWidth - prcWidth - config.padding;
-
-      // Binary search for optimal size based on actual width
-      let low = config.minFontSize;
-      let high = config.maxFontSize;
-      let optimal = config.minFontSize;
-
-      while (low <= high) {
-        const mid = Math.floor((low + high) / 2);
-        title.style.fontSize = `${mid}px`;
-
-        // Force reflow to get accurate measurements
-        title.offsetHeight;
-
-        if (title.offsetWidth <= availableWidth) {
-          optimal = mid;
-          low = mid + 1;
-        } else {
-          high = mid - 1;
+    formatPrice(price) {
+        function parseValue(str) {
+            str = str.trim().toLowerCase();
+            if (str.endsWith('k')) {
+                const num = parseFloat(str.slice(0, -1));
+                return isNaN(num) ? null : num * 1000;
+            }
+            if (str.endsWith('m')) {
+                const num = parseFloat(str.slice(0, -1));
+                return isNaN(num) ? null : num * 1_000_000;
+            }
+            const num = parseFloat(str);
+            return isNaN(num) ? null : num;
         }
-      }
 
-      // Apply the optimal font size
-      title.style.fontSize = `${optimal}px`;
-
-      // Width-based special handling for very short content
-      // If title takes up less than 40% of available width, enhance typography
-      if (title.offsetWidth < availableWidth * 0.4) {
-        title.style.fontWeight = '900';
-        title.style.letterSpacing = '-0.02em';
-      }
-
-      title.style.opacity = this.cache.content.querySelector('canvas') ? '1' : '0';
-    });
-  }
-
-  navigate(direction) {
-    if (appState.isSwiping) return;
-
-    const current = document.querySelector('.item.showing');
-    if (!current) return;
-
-    const sibling = direction === 'next'
-      ? current.nextElementSibling
-      : current.previousElementSibling;
-
-    if (!sibling || !sibling.classList.contains('item')) return;
-    console.log(1);
-    // Animate transition
-    appState.isSwiping = true;
-    this.cache.content.classList.add(direction === 'next' ? 'swipeLeft' : 'swipeRight');
-    console.log(2);
-    setTimeout(() => {
-      document.body.classList.remove('modal-open');
-      appState.isModalOpen = false;
-      sibling.click();
-      console.log(sibling);
-    }, 140);
-
-    setTimeout(() => {
-      this.cache.content.style.transition = 'left 0s ease';
-      this.cache.content.classList.remove('swipeLeft', 'swipeRight');
-      this.cache.content.classList.add(direction === 'next' ? 'swipeRight' : 'swipeLeft');
-    }, 100);
-
-    setTimeout(() => {
-      this.cache.content.style.transition = '';
-      this.cache.content.classList.remove('swipeLeft', 'swipeRight');
-      appState.isSwiping = false;
-    }, 250);
-  }
-
-  updateNavigationArrows() {
-    const current = document.querySelector('.item.showing');
-    if (!current) return;
-
-    this.cache.leftArrow.style.display = current.previousElementSibling ? 'block' : 'none';
-    this.cache.rightArrow.style.display = current.nextElementSibling ? 'block' : 'none';
-  }
-
-  showArrows() {
-    this.cache.leftArrow.classList.add('show');
-    this.cache.rightArrow.classList.add('show');
-
-    clearTimeout(this.arrowTimeout);
-    this.arrowTimeout = setTimeout(() => {
-      this.cache.leftArrow.classList.remove('show');
-      this.cache.rightArrow.classList.remove('show');
-    }, 2000);
-  }
-
-  updateURL(itemName) {
-    const slug = itemName.toLowerCase().replace(/\s+/g, '-');
-    const url = new URL(window.location);
-    url.searchParams.set('item', slug);
-    history.pushState(null, '', url.toString());
-  }
-
-  close() {
-    appState.isModalOpen = false;
-    appState.isSwiping = false;
-
-    document.body.classList.remove('modal-open');
-    this.cache.content.classList.remove('expand');
-    this.cache.modal.classList.remove('show');
-
-    document.documentElement.style.overflowY = 'scroll';
-
-    // Clear URL
-    const url = new URL(window.location);
-    url.searchParams.delete('item');
-    history.pushState(null, '', url.toString());
-  }
-}
-
-// Initialize modal system
-const modalSystem = new ModalSystem();
-
-// Export for global access
-window.modalCache = modalSystem.cache;
-window.Modal = (event) => {
-  const item = event.target.closest('.item');
-  if (item) modalSystem.open({ element: item, name: item.getAttribute('data-title-name') });
-};
-
-// ============================================
-// ITEM CREATION & CATALOG SYSTEM
-// ============================================
-
-
-class ItemFactory {
-  constructor() {
-    this.itemCount = 0;
-  }
-
-  create(data, color) {
-    const item = document.createElement('div');
-    item.classList.add('item', 'item-refresh-animate');
-    item.id = this.getCategoryId(color);
-    item.setAttribute('data-title-name', data.name);
-
-    // Set outline for weekly star items
-    if (data.weeklystar) {
-      this.setWeeklyStarOutline(item, data['price/code/rarity']);
-    }
-
-    // Add badges
-    this.addBadges(item, data, color);
-
-    // Add content
-    this.addItemContent(item, data, color);
-
-    // Add pricing
-    this.addPricing(item, data);
-
-    // Add hidden data
-    this.addHiddenData(item, data);
-
-    // Add favorite button
-    this.addFavoriteButton(item, data.name);
-
-    // Add staff class if applicable
-    if (data.from?.toLowerCase().includes('staff item')) {
-      item.classList.add('staff');
-    }
-
-
-    return item;
-  }
-
-  getCategoryId(color) {
-    const categoryMap = {
-      'rgb(55, 122, 250)': 'pets',
-      'rgb(255, 177, 53)': 'effects',
-      'rgb(255, 122, 94)': 'deaths',
-      'rgb(201, 96, 254)': 'titles',
-      'rgb(91, 254, 106)': 'gears'
-    };
-    return categoryMap[color] || 'item';
-  }
-
-  setWeeklyStarOutline(item, priceCode) {
-    const outlineColors = {
-      '60': '#b31aff',
-      '30': '#ff2a00',
-      '15': '#fae351',
-      '5': '#e0e6df'
-    };
-
-    Object.entries(outlineColors).forEach(([num, color]) => {
-      if (priceCode?.toLowerCase().includes(num)) {
-        item.style.outlineColor = color;
-      }
-    });
-  }
-
-  addBadges(item, data, color) {
-    if (data.retired) {
-      const retired = document.createElement('img');
-      retired.className = 'retired';
-      retired.style.cssText = `
-        display: none;
-        width: 17%;
-        height: auto;
-        position: sticky;
-        margin-right: -73%;
-        margin-top: -18px;
-      `;
-      retired.setAttribute('draggable', false);
-      item.appendChild(retired);
-    }
-
-    if (data.premium) {
-      const premium = document.createElement('img');
-      premium.className = 'premium';
-      premium.src = APP_CONFIG.icons.premium;
-      premium.style.cssText = `
-        width: 17%;
-        height: auto;
-        position: sticky;
-        margin-right: -73%;
-        margin-top: -18px;
-      `;
-      premium.setAttribute('draggable', false);
-      item.appendChild(premium);
-    }
-
-    if (data.tradable === false) {
-      const untradable = document.createElement('img');
-      untradable.className = 'untradable';
-      untradable.src = APP_CONFIG.icons.untradable;
-      untradable.style.cssText = `
-        width: 17%;
-        height: auto;
-        position: absolute;
-        z-index: 100;
-        bottom: 5px;
-        ${data.premium ? 'left: 5px;' : 'right: 5px;'}
-      `;
-      untradable.setAttribute('draggable', false);
-      item.appendChild(untradable);
-
-      if (color === 'rgb(201, 96, 254)') {
-        item.style.order = '1';
-      }
-    }
-
-    if (data.new) {
-      const canvas = this.createNewBadge();
-      item.appendChild(canvas);
-    }
-  }
-
-  createNewBadge() {
-    const canvas = document.createElement('canvas');
-    canvas.id = 'new-badge';
-    canvas.style.cssText = `
-      width: 50%;
-      height: auto;
-      position: absolute;
-      top: 0;
-      z-index: 9;
-      left: 0;
-      pointer-events: none;
-    `;
-
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    img.onload = function () {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
-    };
-    img.src = './imgs/new.png';
-
-    return canvas;
-  }
-
-  addItemContent(item, data, color) {
-    // Add image if exists
-    if (data.img) {
-      const canvas = document.createElement('canvas');
-      item.dataset.image = data.img;
-      canvas.id = 'img';
-      canvas.style.cssText = `
-      max-width: 100%;
-      max-height: 100%;
-      display: block;
-      margin: 0 auto;
-      user-select: none;
-      pointer-events: none;
-      ${data.new ? 'padding-top: 9px;' : ''}
-      ${color === 'rgb(201, 96, 254)' ? 'position: absolute;' : ''}
-    `;
-
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      img.onload = function () {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-      };
-      img.src = data.img;
-
-      item.appendChild(canvas);
-    }
-
-    // Handle SVG titles (new format)
-    if (data.svg) {
-      item.innerHTML = data.svg;
-
-      // Ensure SVG scales properly
-      const svg = item.querySelector('svg');
-      if (svg) {
-        svg.style.width = '100%';
-        svg.style.height = 'auto';
-      }
-
-    }else {
-      const name = this.createNameElement(data, color);
-      item.appendChild(name);}
-  }
-
-createNameElement(data, color) {
-    const name = document.createElement('div');
-    name.id = 'h3';
-    name.innerText = data.name;
-
-    if (data.new) {
-      name.style.order = '-1';
-      name.style.paddingTop = '0px';
-    }
-
-    // Hide name if has image and is title
-    if (data.svg) {
-      name.style.visibility = 'hidden';
-    }
-
-    return name;
-  }
-
-  addPricing(item, data) {
-    const price = document.createElement('p');
-    const formattedPrice = this.formatPrice(data.price);
-    price.innerHTML = `<img src="./imgs/iZGLVYo.png" draggable="false">${formattedPrice}`;
-
-    if (data.price === 'N/A' || data.price === '0' || data.price === '') price.style.display = 'none';
-
-    item.appendChild(price);
-  }
-
-  formatPrice(price) {
-    if (typeof price !== 'string' && typeof price !== 'number') return '';
-
-    const num = parseInt(price, 10);
-    if (num >= 1000) {
-      return (num / 1000).toString().replace(/\.0$/, '') + 'k';
-    }
-    return price.toString();
-  }
-
-  addHiddenData(item, data) {
-    item.setAttribute('description', data.from.replace(/<br>/g, '\n') || '');
-    item.setAttribute('prc', data['price/code/rarity'].replace(/<br>/g, '\n') || '');
-    item.setAttribute('price', data.price || 'N/A');
-  }
-
-  addFavoriteButton(item, itemName) {
-    const heartBtn = document.createElement('div');
-    heartBtn.className = 'heart-button';
-    heartBtn.style.cssText = `
-      position: absolute;
-      top: -7px;
-      right: -11px;
-      z-index: 999;
-      height: fit-content;
-      font-size: 28px;
-      font-family: Twemoji;
-      cursor: pointer;
-      user-select: none;
-      border-radius: 50%;
-      padding: 2px 6px;
-      text-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      transition: opacity 0.2s ease, transform 0.2s ease;
-    `;
-
-    const isFavorited = appState.favorites.includes(itemName);
-    if (isFavorited) {
-      heartBtn.classList.add('favorited');
-    }
-    heartBtn.innerHTML = isFavorited ? '❤️' : '🤍';
-
-    // Setup interaction
-    if (APP_CONFIG.touch) {
-      this.setupTouchFavorite(item, heartBtn, itemName);
-    } else {
-      this.setupClickFavorite(heartBtn, itemName);
-    }
-
-    item.appendChild(heartBtn);
-  }
-
-  setupTouchFavorite(item, button, itemName) {
-    let touchTimer;
-    let moved = false;
-    let touchDownTime;
-
-    item.addEventListener('touchstart', (e) => {
-      moved = false;
-      touchDownTime = Date.now();
-
-      touchTimer = setTimeout(() => {
-        e.stopPropagation();
-        e.preventDefault();
-
-        const isFavorited = appState.toggleFavorite(itemName);
-        button.innerHTML = isFavorited ? '❤️' : '🤍';
-        button.classList.toggle('favorited', isFavorited);
-        button.classList.add('heart-pulsing');
-
-        setTimeout(() => button.classList.remove('heart-pulsing'), 400);
-      }, 400);
-    });
-
-    item.addEventListener('touchmove', () => {
-      moved = true;
-      clearTimeout(touchTimer);
-    });
-
-    item.addEventListener('touchend', (e) => {
-      clearTimeout(touchTimer);
-
-      if (moved) return;
-
-      const duration = Date.now() - touchDownTime;
-      if (duration < 400) {
-        item.click();
-      }
-
-      e.stopPropagation();
-      e.preventDefault();
-    });
-  }
-
-  setupClickFavorite(button, itemName) {
-    button.onclick = (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-
-      const isFavorited = appState.toggleFavorite(itemName);
-      button.innerHTML = isFavorited ? '❤️' : '🤍';
-      button.classList.toggle('favorited', isFavorited);
-      button.classList.add('heart-pulsing');
-
-      setTimeout(() => button.classList.remove('heart-pulsing'), 500);
-    };
-
-    button.addEventListener('mousedown', e => {
-      e.stopPropagation();
-      document.body.classList.add('pressing-heart');
-    });
-
-    button.addEventListener('mouseup', () => {
-      document.body.classList.remove('pressing-heart');
-    });
-
-    button.addEventListener('mouseleave', () => {
-      document.body.classList.remove('pressing-heart');
-    });
-  }
-}
-
-// ============================================
-// CATALOG MANAGER
-// ============================================
-
-class CatalogManager {
-  constructor(itemFactory) {
-    this.itemFactory = itemFactory;
-    this.grids = new Map();
-  }
-
-  populateGrid(gridId, items, limit = null) {
-    const grid = document.getElementById(gridId);
-    if (!grid) return;
-
-    grid.innerHTML = '';
-
-    const itemsToDisplay = limit ? items.slice(0, limit) : items;
-    const fragment = document.createDocumentFragment();
-
-    itemsToDisplay.forEach(item => {
-      const element = this.itemFactory.create(item, item._color || APP_CONFIG.colors.gears);
-      element.onclick = (event) => Modal(event);
-      fragment.appendChild(element);
-    });
-
-    grid.appendChild(fragment);
-    this.resizeToFit(grid);
-  }
-
-resizeToFit(grid) {
-  const items = grid.querySelectorAll('.item #h3');
-  
-  // Prevent visual jump
-  items.forEach(div => {
-    if (!div) return;
-    div.style.opacity = '0';
-    div.style.transition = 'opacity 0.2s ease';
-  });
-  
-  // Batch resize after next frame
-  requestAnimationFrame(() => {
-    items.forEach(div => {
-      
-      if (!div || !div.textContent) return;
-      
-      // Binary search (5x faster than your while loop)
-      let low = 8, high = 20, optimal = 18;
-      
-      while (low <= high) {
-        const mid = Math.floor((low + high) / 2);
-        div.style.fontSize = `${mid}px`;
-        console.log(optimal);
-        if (div.scrollWidth <= 120) {
-          
-          optimal = mid;
-          low = mid + 1;
-        } else {
-          high = mid - 1;
+        function formatNum(num) {
+            if (num === null || isNaN(num)) return null;
+            if (num >= 1_000_000) {
+                let val = (num / 1_000_000).toFixed(1);
+                val = val.replace(/\.0$/, '');
+                return val + 'M';
+            } else if (num >= 1000) {
+                let val = (num / 1000).toFixed(1);
+                val = val.replace(/\.0$/, '');
+                return val + 'k';
+            }
+            return num.toLocaleString();
         }
-      }
-      
-      div.style.fontSize = `${optimal}px`;
-      div.style.opacity = '1';
-    });
-  });
-}
-  populateRandom(arr, colors) {
-    const randomGrid = document.getElementById('random');
-    if (!randomGrid) return;
 
-    const categories = [
-      { data: arr.gears, color: colors.gears },
-      { data: arr.deaths, color: colors.deaths },
-      { data: arr.titles, color: colors.titles },
-      { data: arr.pets, color: colors.pets },
-      { data: arr.effects, color: colors.effects }
-    ];
+        const str = String(price);
+        if (str.includes('-')) {
+            const parts = str.split('-').map(p => {
+                const num = parseValue(p);
+                return formatNum(num);
+            });
+            if (parts.every(v => v === null)) return str;
+            return parts.map((v, i) => v ?? str.split('-')[i].trim()).join('-');
+        }
 
-    randomGrid.innerHTML = '';
-    const fragment = document.createDocumentFragment();
+        const num = parseValue(str);
+        const formatted = formatNum(num);
+        return formatted ?? str;
+    },
 
-    for (let i = 0; i < 4; i++) {
-      const category = categories[Math.floor(Math.random() * categories.length)];
-      const item = category.data[Math.floor(Math.random() * category.data.length)];
+    showToast(title, message, type = 'info') {
+        if (!document.getElementById('toast-container')) {
+            const container = document.createElement('div');
+            container.classList.add('toast-container');
+            container.id = 'toast-container';
+            document.body.appendChild(container);
+        }
+        const container = document.getElementById('toast-container');
+        if (!container) return;
 
-      const element = this.itemFactory.create(item, category.color);
-      element.onclick = (event) => Modal(event);
-      fragment.appendChild(element);
-    }
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
 
-    randomGrid.appendChild(fragment);
-    this.resizeToFit(randomGrid);
-  }
-
-  filterFavorites() {
-    const items = document.querySelectorAll('.item');
-    const btn = document.getElementById('favorite-toggle');
-
-    if (!appState.showingFavoritesOnly) {
-      items.forEach(item => {
-        const name = item.getAttribute('data-title-name');
-        item.style.display = appState.favorites.includes(name) ? 'flex' : 'none';
-      });
-      if (btn) btn.textContent = '🔁 Show All';
-      appState.showingFavoritesOnly = true;
-    } else {
-      items.forEach(item => item.style.display = 'flex');
-      if (btn) btn.textContent = '❤️ Show Favorites';
-      appState.showingFavoritesOnly = false;
-    }
-  }
-
-  setupLazyLoading(data, colors) {
-    const observer = new IntersectionObserver((entries, obs) => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-
-        const gridId = entry.target.id;
-        const categoryMap = {
-          gears: { data: data.gears, color: colors.gears },
-          deaths: { data: data.deaths, color: colors.deaths },
-          titles: { data: data.titles, color: colors.titles },
-          pets: { data: data.pets, color: colors.pets },
-          effects: { data: data.effects, color: colors.effects }
+        const icons = {
+            error: '<svg style="width: 24px; height: 24px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+            success: '<svg style="width: 24px; height: 24px;" viewBox="0 0 24 24" data-name="Line Color" xmlns="http://www.w3.org/2000/svg"><path style="fill:none;stroke:#fff;stroke-linecap:round;stroke-linejoin:round;stroke-width:2" d="m5 12 5 5 9-9"/></svg>',
+            info: '<svg fill="#fff" style="width: 24px; height: 24px;" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 10a1 1 0 0 0-1 1v6a1 1 0 0 0 2 0v-6a1 1 0 0 0-1-1m0-4a1.25 1.25 0 1 0 1.25 1.25A1.25 1.25 0 0 0 12 6"/></svg>',
+            warning: '<svg style="width: 24px; height: 24px;" fill="#fff" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><path d="M30.33 25.54 20.59 7.6a3 3 0 0 0-5.27 0L5.57 25.54A3 3 0 0 0 8.21 30h19.48a3 3 0 0 0 2.64-4.43Zm-13.87-12.8a1.49 1.49 0 0 1 3 0v6.89a1.49 1.49 0 1 1-3 0ZM18 26.25a1.72 1.72 0 1 1 1.72-1.72A1.72 1.72 0 0 1 18 26.25"/><path fill="none" d="M0 0h36v36H0z"/></svg>'
         };
 
-        const page = window.location.pathname.split('/').pop() || 'index';
+        toast.innerHTML = `
+            <div class="toast-icon">${icons[type]}</div>
+            <div class="toast-content">
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+            <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+        `;
 
-        if (gridId === 'random') {
-          this.populateRandom(data, colors);
-        } else if (gridId === 'ctlg') {
-          // Handle catalog page
-          let items = data;
-          let color = 'rgb(0, 0, 0)';
+        container.appendChild(toast);
 
-          const pageName = page.replace('.html', '');
-          if (pageName in categoryMap) {
-            items = categoryMap[pageName].data;
-            color = categoryMap[pageName].color;
-          }
-
-          const itemsWithColor = Array.isArray(items)
-            ? items.map(item => ({ ...item, _color: color }))
-            : Object.values(items).flat().map(item => ({ ...item, _color: color }));
-
-          this.populateGrid(gridId, itemsWithColor);
-        } else {
-          // Handle filtered grids
-          const filteredItems = Object.entries(colors).flatMap(([key, catColor]) =>
-            (data[key]?.filter(item => item[gridId] === true) || [])
-              .map(item => ({ ...item, _color: catColor }))
-          );
-
-          this.populateGrid(gridId, filteredItems);
-        }
-
-        if (entry.target.children.length === 0) {
-          entry.target.parentElement.style.display = 'none';
-        }
-
-        obs.unobserve(entry.target);
-      });
-    }, { rootMargin: '100px' });
-
-    document.querySelectorAll('.catalog-grid').forEach(grid => observer.observe(grid));
-  }
-}
-
-// ============================================
-// INITIALIZATION
-// ============================================
-
-const itemFactory = new ItemFactory();
-const catalogManager = new CatalogManager(itemFactory);
-
-// Export for global access
-window.catalogManager = catalogManager;
-window.filterFavorites = () => catalogManager.filterFavorites();
-
-
-// ============================================
-// SEARCH SYSTEM
-// ============================================
-
-class SearchSystem {
-  constructor() {
-    this.fuse = null;
-    this.searchInput = null;
-    this.resultsContainer = null;
-    this.activeIndex = -1;
-    this.itemList = [];
-  }
-
-  init(itemList, defaultColor) {
-    this.itemList = itemList;
-    this.searchInput = document.getElementById('search-bar');
-    this.resultsContainer = document.getElementById('search-results');
-
-    if (!this.searchInput || !this.resultsContainer) return;
-
-    // Initialize Fuse.js
-    this.fuse = new Fuse(itemList, {
-      keys: ['name'],
-      threshold: 0.3,
-    });
-
-    this.setupEventListeners();
-  }
-
-  setupEventListeners() {
-    this.searchInput.addEventListener('input', () => this.handleSearch());
-    this.searchInput.addEventListener('focus', () => this.handleSearch());
-    this.searchInput.addEventListener('keydown', (e) => this.handleKeyNavigation(e));
-
-    document.addEventListener('click', (e) => {
-      if (!this.searchInput.contains(e.target) && !this.resultsContainer.contains(e.target)) {
-        this.clearResults();
-      }
-    });
-  }
-
-  handleSearch() {
-    const query = this.searchInput.value.trim();
-    this.clearResults();
-    this.activeIndex = -1;
-
-    if (!query) {
-      this.showSearchHistory();
-      return;
-    }
-
-    const results = this.fuse.search(query).slice(0, 6);
-    this.displayResults(results);
-  }
-
-  displayResults(results) {
-    const fragment = document.createDocumentFragment();
-
-    results.forEach(result => {
-      const item = result.item;
-      const div = this.createResultItem(item);
-
-      div.addEventListener('click', () => {
-        this.selectItem(item);
-      });
-
-      fragment.appendChild(div);
-    });
-
-    this.resultsContainer.appendChild(fragment);
-  }
-
-  createResultItem(item, isHistory = false) {
-    const div = document.createElement('div');
-    div.className = 'search-item';
-    div.textContent = isHistory ? `↩ ${item.name}` : item.name;
-
-    Object.assign(div.style, {
-      textShadow: '-2px -2px 0 #000, 0 -2px 0 #000, 2px -2px 0 #000, 2px 0 0 #000, 2px 2px 0 #000, 0 2px 0 #000, -2px 2px 0 #000, -2px 0 0 #000',
-      padding: '8px 14px',
-      cursor: 'pointer',
-      borderBottom: '1px solid #333',
-      whiteSpace: 'nowrap',
-      backgroundColor: item._color || APP_CONFIG.colors.gears
-    });
-
-    div.addEventListener('mouseenter', () => {
-      const rgb = this.parseColor(item._color);
-      if (rgb) {
-        div.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`;
-      } else {
-        div.style.backgroundColor = '#444';
-      }
-    });
-
-    div.addEventListener('mouseleave', () => {
-      div.style.backgroundColor = item._color || APP_CONFIG.colors.gears;
-    });
-
-    return div;
-  }
-
-  parseColor(color) {
-    if (!color) return null;
-    const match = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-    if (match) {
-      return { r: match[1], g: match[2], b: match[3] };
-    }
-    return null;
-  }
-
-  showSearchHistory() {
-    const fragment = document.createDocumentFragment();
-
-    appState.searchHistory.forEach(name => {
-      const item = this.itemList.find(i => i.name === name);
-      if (!item) return;
-
-      const div = this.createResultItem(item, true);
-      div.addEventListener('click', () => {
-        this.selectItem(item);
-      });
-
-      fragment.appendChild(div);
-    });
-
-    this.resultsContainer.appendChild(fragment);
-  }
-
-  selectItem(item) {
-    this.searchInput.value = item.name;
-    this.clearResults();
-    appState.saveSearchHistory(item.name);
-    this.showSelectedItem(item);
-  }
-
-  showSelectedItem(item) {
-    // Clear existing items
-    document.querySelectorAll('#itemlist .item').forEach(el => el.remove());
-
-    // Create and show new item
-    const element = itemFactory.create(item, item._color);
-    element.onclick = (event) => {
-      modalSystem.open({ element, name: item.name });
-    };
-
-    const itemList = document.getElementById('itemlist');
-    if (itemList) {
-      itemList.appendChild(element);
-      element.click();
-    }
-  }
-
-  handleKeyNavigation(e) {
-    const items = this.resultsContainer.querySelectorAll('.search-item');
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        this.activeIndex = (this.activeIndex + 1) % items.length;
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        this.activeIndex = (this.activeIndex - 1 + items.length) % items.length;
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (this.searchInput.value.trim() === 'dev') {
-          window.location.href = 'https://emwiki.site/admin';
-          return;
-        }
-
-        if (this.activeIndex === -1 && items.length > 0) {
-          this.activeIndex = 0;
-        }
-        items[this.activeIndex].click();
-
-        break;
-      case 'Escape':
-        this.clearResults();
-        this.searchInput.blur();
-        return;
-      default:
-        return;
-    }
-
-    items.forEach((item, i) => {
-      item.classList.toggle('active', i === this.activeIndex);
-      if (i === this.activeIndex) {
-        item.style.filter = 'brightness(0.8)';
-      } else {
-        item.style.filter = '';
-      }
-    });
-  }
-
-  clearResults() {
-    this.resultsContainer.innerHTML = '';
-    this.activeIndex = -1;
-  }
-}
-
-// ============================================
-// NAVIGATION SYSTEM
-// ============================================
-
-class NavigationSystem {
-  constructor() {
-    this.navButtons = [
-      { id: 'gamenightstab', href: './gamenights', img: './imgs/gn.png' },
-      { id: 'catalogstab', href: './catalog', img: './imgs/all.png' },
-      { id: 'scammerstab', href: './scammers', img: './imgs/SK5csOS.png' }
-    ];
-  }
-
-  init() {
-    this.insertNavButtons();
-    this.setupRefreshButton();
-  }
-
-  insertNavButtons() {
-    const nav = document.querySelector('nav');
-    if (!nav) return;
-
-    let current = location.pathname.split('/').pop();
-    if (!current || current === '') current = 'index';
-
-    nav.innerHTML = this.navButtons
-      .filter(btn => !btn.href.endsWith(current.replace('.html', '')))
-      .map(btn => `
-        <a id="${btn.id}" href="${btn.href}">
-          <img src="${btn.img}" style="max-width: -webkit-fill-available;" draggable="false" onmousedown="return false">
-        </a>
-      `).join('\n');
-  }
-
-  setupRefreshButton() {
-    const refreshBtn = document.getElementById('refresh-button');
-    if (!refreshBtn) return;
-
-    refreshBtn.onclick = () => {
-      // Animate refresh icon
-      const icon = refreshBtn.children[0];
-      if (icon) {
-        icon.style.animation = '';
-        icon.style.webkitAnimation = '';
-
+        // Auto remove after 5 seconds
         setTimeout(() => {
-          icon.style.animation = 'rotate 0.7s ease-in-out 0s 1 alternate';
-          icon.style.webkitAnimation = 'rotate 0.7s ease-in-out 0s 1 alternate';
-        }, 50);
-      }
+            toast.classList.add('hiding');
+            setTimeout(() => toast.remove(), 300);
+        }, 5000);
+    }
+};
 
-      // Refresh random grid
-      if (window._randomArr && window._randomCategoryColors) {
-        catalogManager.populateRandom(window._randomArr, window._randomCategoryColors);
-      }
-    };
-  }
-}
+// ==================== BASE APP CLASS ====================
+class BaseApp {
+    constructor() {
+        this.items = [];
+        this.currentListMode = 'wishlist';
+        this.categories = ['gears', 'deaths', 'pets', 'effects', 'titles'];
+        this.allItems = [];
+        this.searchFuse = null;
 
-// ============================================
-// INTRO ANIMATION SYSTEM
-// ============================================
+        this.modal = new ItemModal(this);
+        this.favorites = Utils.loadFromStorage('favorites', []);
+        this.wishlist = Utils.loadFromStorage('wishlist', []);
+        this.recentlyViewed = Utils.loadFromStorage('recentlyViewed', []);
 
-class IntroAnimationSystem {
-  constructor() {
-    this.hasShownToday = false;
-  }
+        this.particleCanvas = document.createElement('canvas');
+        this.particleCanvas.id = 'particle-canvas';
+        document.body.appendChild(this.particleCanvas);
 
-  init() {
-    const today = new Date().toISOString().split('T')[0];
-    const lastShown = localStorage.getItem('lastShownDate');
-    this.hasShownToday = lastShown === today;
+        this.loadTheme();
+        this.particleSystem = new ParticleSystem(this.particleCanvas);
+        this.initializeSearch();
 
-    if (this.hasShownToday) {
-      this.skipIntro();
-    } else {
-      this.playIntro();
-      localStorage.setItem('lastShownDate', today);
+        document.body.insertAdjacentHTML('beforeend', `
+            
+            
+            <div id="donation-progress-container" class="donation-progress-container">
+        <div class="donation-progress-card">
+            <button class="close-donation-progress" onclick="auth.closeDonationProgress()">×</button>
+
+            <div class="donation-progress-header">
+                <h3>Support Epic Catalogue</h3>
+                <p class="donation-progress-subtitle">Become a Donator and unlock exclusive perks!</p>
+            </div>
+            <div class="donation-stat">
+                <div class="donation-stat-value" id="total-donated">0</div>
+                <div class="strike"></div>
+                <div class="donation-stat-value">500</div>
+                <div class="donation-stat-label">Until Donator</div>
+            </div>
+
+
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="donation-progress-bar">
+                    <div class="progress-bar-fill"></div>
+                    <div class="progress-bar-shine"></div>
+                </div>
+                <div class="progress-percentage" id="progress-percentage">0%</div>
+            </div>
+
+            <div class="donation-perks">
+                <h4>🎁 Unlock at <svg style="width: 15px;transform: translateY(2px);margin-left: 4px;"
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
+                        <path
+                            d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
+                            fill="#ffd700" fill-rule="evenodd"></path>
+                    </svg> 500:</h4>
+                <div class="perk-list">
+                    <div class="perk-item">
+                        <span class="perk-icon">✨</span>
+                        <span>Donator Role Badge</span>
+                    </div>
+                    <div class="perk-item">
+                        <span class="perk-icon">🎨</span>
+                        <span>Custom Profile Colors</span>
+                    </div>
+                    <div class="perk-item">
+                        <span class="perk-icon">🏆</span>
+                        <span>Public Donators List</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="donate-now-btn" onclick="auth.joinGame()">
+                Donate!
+            </button>
+        </div>
+    </div>
+
+    <!-- Donator Achievement Celebration -->
+    <div id="donator-celebration" class="donator-celebration">
+        <div class="donator-celebration-card">
+            <button class="close-donator-celebration" onclick="auth.closeDonatorCelebration()">×</button>
+
+            <div class="achievement-badge">
+                <div class="achievement-glow"></div>
+                <div class="achievement-icon">💎</div>
+            </div>
+
+            <h2 class="achievement-title">DONATOR UNLOCKED!</h2>
+            <p class="achievement-message">Thank you for supporting Epic Catalogue! You've unlocked exclusive features.
+            </p>
+
+            <div class="unlocked-features">
+                <h3>✨ Your New Perks</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">💎</div>
+                        <div class="feature-name">Donator Role</div>
+                        <div class="feature-desc">Special badge on your profile</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎨</div>
+                        <div class="feature-name">Custom Colors</div>
+                        <div class="feature-desc">Personalize your profile</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🏆</div>
+                        <div class="feature-name">Hall of Fame</div>
+                        <div class="feature-desc">Featured on donators list</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="achievement-close-btn" onclick="auth.closeDonatorCelebration()">
+                Awesome! 🎉
+            </button>
+        </div>
+    </div>
+    <div id="auth-container" style="display: none;">
+        <div class="auth-modal">
+            <button class="close-auth" onclick="auth.closeModal()">×</button>
+            <h2>Link Your <strong>Roblox Account</strong></h2>
+            <div id="auth-step-1">
+                <p>Click below to generate your unique code</p>
+
+                <button class="auth-btn" onclick="auth.generateCode()">
+                    <span>Generate Code</span>
+
+                </button>
+                <span class="auth-btn-arrow">
+                    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z" />
+                    </svg>
+                </span>
+            </div>
+            <div id="auth-step-2" style="display: none;">
+                <p>Your code is:</p>
+                <div class="auth-code-container">
+                    <div class="auth-code" id="auth-code-display" onclick="auth.copyCode()"></div>
+                    <svg class="copy-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
+                    </svg>
+                </div>
+                <p class="auth-instructions">
+                    Join the game and enter this code!<br>
+                    Code expires in <span id="code-timer">5:00</span>
+                </p>
+                <div class="auth-actions">
+                    <button class="join-game-btn" onclick="auth.joinGame()">
+                        <span>Join Game</span>
+                    </button>
+                </div>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 15px;">Checking for verification...
+                </p>
+            </div>
+        </div>
+    </div>
+            
+            
+            <div id="stats-dashboard" class="stats-dashboard">
+                <div class="stats-content">
+                    <div class="stats-header">
+                        <h2 style="font-size: 41px;letter-spacing: 2px;font-family: pacifico;">My Lists</h2>
+                        <span class="close-stats" onclick="catalog.closeStats()">×</span>
+                    </div>
+
+                    <div class="wishlist-section">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0px 10px 7px;">
+                            <h3 style="margin: 0; font-size: 23px; font-variant: all-petite-caps; cursor: pointer;"
+                                id="wishlist-tab" class="active" onclick="catalog.switchListMode('wishlist')">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                                    style="width:26px;margin-bottom:-7px;">
+                                    <path
+                                        d="M14 10h-1V9c0-.6-.4-1-1-1s-1 .4-1 1v1h-1c-.6 0-1 .4-1 1s.4 1 1 1h1v1c0 .6.4 1 1 1s1-.4 1-1v-1h1c.6 0 1-.4 1-1s-.4-1-1-1" />
+                                    <path
+                                        d="M19 3H5c-.6 0-1 .4-1 1s.4 1 1 1v14.1c0 .7.4 1.4 1.1 1.8.3.2.6.2.9.2.4 0 .8-.1 1.1-.3l3.9-2.6 3.9 2.6c.6.4 1.4.5 2.1.1.7-.3 1.1-1 1.1-1.8V5c.6 0 1-.4 1-1s-.5-1-1.1-1m-2 16.1-3.9-2.6c-.3-.2-.7-.3-1.1-.3s-.8.1-1.1.3L7 19.1V5h10z" />
+                                </svg> Wishlist
+                            </h3>
+                            <h3 style="margin: 0; font-size: 23px; font-variant: all-petite-caps; cursor: pointer; opacity: 0.5;"
+                                id="favorites-tab" onclick="catalog.switchListMode('favorites')">
+                                <svg viewBox="0 0 16 16" style="width:21px;margin-bottom:-4px;"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd"
+                                        d="M7.247 2.247A4.243 4.243 0 0 0 1.25 8.25L8 15l6.75-6.75a4.243 4.243 0 0 0-5.997-6.003L8 3zM8 12.172l5.336-5.336a2.243 2.243 0 1 0-3.172-3.172L8 5.828 5.836 3.664a2.243 2.243 0 1 0-3.172 3.172z" />
+                                </svg> Favorites
+                            </h3>
+                        </div>
+                        <div id="wishlist-items" class="catalog-grid"></div>
+                        <div class="wishlist-total">
+                            <span id="list-mode-label">Wishlist</span> Total Value:
+                            <svg style="margin-right: 3px;margin-left: 3px;width: 18px;transform: translateY(4px);"
+                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
+                                <path
+                                    d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
+                                    fill-rule="evenodd"></path>
+                            </svg><span id="wishlist-value"> 0</span>
+                        </div>
+                    </div>
+
+                    <div class="recent-section">
+                        <h3 style="margin-bottom: 15px;font-size: 23px;font-variant: all-petite-caps;"><svg stroke="#fff"
+                                viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="width:23px;margin-bottom:-6px;">
+                                <path d="M20.59 22 15 16.41V7h2v8.58l5 5.01z"></path>
+                                <path d="M16 2A13.94 13.94 0 0 0 6 6.23V2H4v8h8V8H7.08A12 12 0 1 1 4 16H2A14 14 0 1 0 16 2">
+                                </path>
+                            </svg> Recently Viewed</h3>
+                        <div id="recent-viewed-items" class="catalog-grid"></div>
+                    </div>
+                </div>
+            </div>`
+        );
+        // wait till DOM is ready
+        setTimeout(() => this.updateStatsIfOpen(), 1500);
     }
 
-    this.setupRandomLogo();
-  }
+    async loadData() {
+        try {
+            const res = await fetch('https://emwiki.site/api/gist-version');
+            const data = await res.json();
+            const parsed = JSON.parse(data.files?.['auto.json']?.content);
 
-  skipIntro() {
-    const intro = document.querySelector('.intro');
-    const header = document.querySelector('.headersheet');
-    const main = document.querySelector('main');
+            this.categories.forEach(cat => {
+                this.items[cat] = parsed[cat] || [];
+            });
 
-    if (!intro || !header || !main) return;
+            // Flatten all items with category info
+            this.categories.forEach(cat => {
+                if (parsed[cat]) {
+                    parsed[cat].forEach(item => {
+                        this.allItems.push({
+                            ...item,
+                            category: cat
+                        });
+                    });
+                }
+            });
 
-    window.scrollTo(0, 0);
-    document.body.classList.add('fonts-loaded');
-
-    intro.style.transition = '0.5s';
-    intro.style.backdropFilter = 'blur(0px)';
-    intro.style.filter = 'opacity(0) blur(9px)';
-    intro.style.top = '-100vh';
-
-    header.style.opacity = '1';
-    main.style.scale = '1';
-    main.style.filter = 'opacity(1)';
-
-    document.documentElement.style.overflow = 'scroll';
-    document.documentElement.style.overflowX = 'hidden';
-
-    const parallaxBg = document.querySelector('.parallax-bg');
-    if (parallaxBg) {
-      parallaxBg.style.transition = APP_CONFIG.touch
-        ? 'transform 0.1s ease-out, opacity 0.2s ease'
-        : 'none';
-      parallaxBg.style.backgroundSize = 'cover';
+            return this.items;
+        } catch (error) {
+            console.error('Failed to load data:', error);
+            Utils.showToast('Error', 'Failed to load items', 'error');
+            return null;
+        }
     }
-  }
 
-  playIntro() {
-    const intro = document.querySelector('.intro');
-    const logoSpans = document.querySelectorAll('.logo');
-    const logo3 = document.querySelector('.logo3');
-    const header = document.querySelector('.headersheet');
-    const main = document.querySelector('main');
-    const credit = document.querySelector('.credit');
+    toggleTheme() {
+        document.body.classList.toggle('light-theme');
+        const isLight = document.body.classList.contains('light-theme');
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    }
 
-    if (!intro || !header || !main) return;
+    loadTheme() {
+        const theme = localStorage.getItem('theme') || 'dark';
+        if (theme === 'light') {
+            document.body.classList.add('light-theme');
+        }
 
-    window.scrollTo(0, 0);
+        function pickRandom(rarities) {
+            // Calculate chances for common
+            var filler = 100 - rarities.map(r => r.chance).reduce((sum, current) => sum + current);
 
-    document.fonts.ready.then(() => {
-      if (credit) credit.style.color = '#ffffffb0';
+            if (filler <= 0) {
+                return;
+            }
 
-      setTimeout(() => {
-        window.scrollTo(0, 0);
+            // Create an array of 100 elements, based on the chances field
+            var probability = rarities.map((r, i) => Array(r.chance === 0 ? filler : r.chance).fill(i)).reduce((c, v) => c.concat(v), []);
 
-        // Activate logos
-        logoSpans.forEach((span, idx) => {
-          setTimeout(() => {
-            span.classList.add('active');
-            if (logo3) logo3.classList.add('active');
-            document.body.classList.add('fonts-loaded');
-          }, (idx + 1) * 400);
+            // Pick one
+            var pIndex = Math.floor(Math.random() * 100);
+            var rarity = rarities[probability[pIndex]];
+
+            return rarity.type;
+        }
+
+        //if halloween
+        const now = new Date();
+
+        var rarities = [{
+            type: "https://emwiki.site/imgs/epicfaces/tran.webp",
+            chance: 10
+        }, {
+            type: "https://emwiki.site/imgs/epicfaces/3d.png",
+            chance: 2
+        }, {
+            type: "https://emwiki.site/imgs/epicfaces/Epic_Banana.webp",
+            chance: 8
+        }, {
+            type: "https://emwiki.site/imgs/epicfaces/XRmpB1c.png",
+            chance: 0
+        }, {
+            type: "https://emwiki.site/imgs/burrito.png",
+            chance: 3
+        }];
+
+        var titleColors = [
+            ['#24ff5d', '#ff0']
+        ];
+
+        if (now.getMonth() === 9) { // if october
+
+            rarities = [{
+                type: "https://emwiki.site/imgs/epicfaces/kitta.png",
+                chance: 15
+            }, {
+                type: "https://emwiki.site/imgs/epicfaces/devlil.png",
+                chance: 15
+            }, {
+                type: "https://emwiki.site/imgs/epicfaces/Ghost_Epic_Face.webp",
+                chance: 15
+            }, {
+                type: "https://emwiki.site/imgs/epicfaces/pmupkin.png",
+                chance: 0
+            }, {
+                type: "https://emwiki.site/imgs/epicfaces/Uncanny_Epic_Face.webp",
+                chance: 3
+            }];
+
+
+            titleColors = [
+                ['#ff7518', '#000000']
+            ];
+
+        } else if (now.getMonth() === 11) { // if december
+
+            rarities = [{
+                type: "https://emwiki.site/imgs/epicfaces/xmas.png",
+                chance: 20
+            }, {
+                type: "https://emwiki.site/imgs/epicfaces/rudolf.png",
+                chance: 20
+            }, {
+                type: "https://emwiki.site/imgs/epicfaces/santa.png",
+                chance: 0
+            }];
+
+            titleColors = [
+                ['red', 'white']
+            ];
+
+        }
+
+        // Get the gradient stops by their IDs
+        const grad1Stops = document.querySelectorAll('#eppp1 stop');
+        const grad2Stops = document.querySelectorAll('#eppp2 stop');
+
+        // Update gradient 1
+        grad1Stops[0].setAttribute('style', `stop-color: ${titleColors[0][1]}`);
+        grad1Stops[1].setAttribute('style', `stop-color: ${titleColors[0][0]}`);
+
+        // Update gradient 2
+        grad2Stops[0].setAttribute('style', `stop-color: ${titleColors[0][1]}`);
+        grad2Stops[1].setAttribute('style', `stop-color: ${titleColors[0][0]}`);
+
+        document.getElementById('epic-image').setAttribute('href', pickRandom(rarities));
+    }
+
+    getItemCategory(item) {
+        return item.category || this.categories.find(cat =>
+            this.items[cat]?.includes(item)
+        );
+    }
+
+    createItemElement(item) {
+        const div = document.createElement('div');
+        div.className = 'item';
+        this.modal.displayed.push(item);
+
+        const categoryColors = {
+            gears: 'gear',
+            deaths: 'death',
+            pets: 'pet',
+            effects: 'effect',
+            titles: 'title'
+        };
+
+        const category = this.getItemCategory(item);
+        if (category) {
+            //div.style.background = `linear-gradient(135deg, ${categoryColors[category]}20, ${categoryColors[category]}10)`;
+            //div.style.borderColor = categoryColors[category] + '40';
+            div.id = categoryColors[category] || '';
+        }
+
+        // Image/SVG
+        if (item.img) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.onload = function () {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+            };
+            img.src = item.img;
+            div.appendChild(canvas);
+        } else if (item.svg) {
+            div.innerHTML = item.svg;
+        }
+
+        // Name
+        const name = document.createElement('div');
+        name.className = 'item-name';
+        name.textContent = item.name;
+        div.appendChild(name);
+
+        // Price
+        if (item.price && item.price !== 'N/A') {
+            const price = document.createElement('div');
+            price.className = 'item-price';
+            price.textContent = Utils.formatPrice(item.price);
+            div.appendChild(price);
+        }
+
+        // Badges
+        // Badges
+        this.addBadges(div, item);
+
+
+        const wishlistBtn = document.createElement('div');
+        wishlistBtn.className = 'wishlist-button';
+        wishlistBtn.textContent = '⭐';
+        if (this.wishlist.includes(item.name)) {
+            wishlistBtn.classList.add('active');
+        }
+        wishlistBtn.onclick = (e) => {
+            e.stopPropagation();
+            this.toggleWishlist(item.name);
+            wishlistBtn.classList.toggle('active');
+        };
+        wishlistBtn.title = 'Add to Wishlist';
+        div.appendChild(wishlistBtn);
+
+
+        const heart = document.createElement('div');
+        heart.className = 'heart-button';
+        const isFavorite = this.favorites.includes(item.name);
+        heart.textContent = isFavorite ? '❤️' : '🤍';
+        if (isFavorite) heart.classList.add('red');
+        heart.onclick = (e) => {
+            e.stopPropagation();
+            const rect = heart.getBoundingClientRect();
+            const wasFavorite = heart.classList.contains('red');
+            this.toggleFavorite(item.name);
+            heart.textContent = !wasFavorite ? '❤️' : '🤍';
+            heart.classList.toggle('red');
+            if (!wasFavorite && this.particleSystem) {
+                this.particleSystem.createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2);
+            }
+        };
+        heart.title = 'Add to Favorites';
+        div.appendChild(heart);
+
+        div.onclick = () => this.modal.open(item);
+
+        return div;
+    }
+
+    addBadges(element, item) {
+        if (item.premium) {
+            const badge = document.createElement('img');
+            badge.className = 'badge premium';
+            badge.src = './imgs/prem.png';
+            badge.title = 'Roblox Premium';
+            element.appendChild(badge);
+        }
+
+        if (item.removed) {
+            const badge = document.createElement('div');
+            badge.className = 'badge removed';
+            badge.innerText = 'Removed';
+            element.appendChild(badge);
+        }
+
+        if (item.from?.toLowerCase().includes('unreleased') ||
+            item.from?.toLowerCase().includes('@zarabelle') ||
+            item.from?.toLowerCase().includes('@typicaltype')) {
+            const badge = document.createElement('div');
+            badge.className = 'badge staff';
+            badge.title = 'Staff/Unreleased';
+            badge.innerHTML = '<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="a" x2="0" y2="100%"><stop style="stop-color:#d5d5d5"/><stop offset=".3" style="stop-color:#6b6b6b"/><stop offset=".4" style="stop-color:#6b6b6b"/><stop offset=".5" style="stop-color:#3b3b3b"/><stop offset=".6" style="stop-color:#3b3b3b"/><stop offset=".9" style="stop-color:#0c0c0c"/></linearGradient></defs><path stroke="#000" fill="url(#a)" d="M31.25 7.4a44 44 0 0 1-6.62-2.35 45 45 0 0 1-6.08-3.21L18 1.5l-.54.35a45 45 0 0 1-6.08 3.21A44 44 0 0 1 4.75 7.4L4 7.59v8.34c0 13.39 13.53 18.4 13.66 18.45l.34.12.34-.12c.14 0 13.66-5.05 13.66-18.45V7.59Z"/></svg>';
+            element.appendChild(badge);
+        }
+
+        if (!item.tradable) {
+            const badge = document.createElement('img');
+            badge.className = 'badge untradable';
+            badge.title = 'Untradable';
+            badge.src = 'data:image/svg+xml,%3Csvg%20viewBox%3D%22-1%200%2077%2077%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20fill%3D%22%23fff%22%20d%3D%22M14%2022v11h26v4l27-10-27-9v4zm47%2032V43H35v-4L8%2049l27%209v-4z%22%2F%3E%3Cpath%20fill%3D%22red%22%20d%3D%22M37.5%208.5c6.7%200%2012.85%202.25%2017.85%206L13.6%2056.25c-3.75-5-6-11.15-6-17.85C7.6%2021.95%2021%208.55%2037.5%208.5m0%2059.75c-6.7%200-12.85-2.25-17.85-6L61.4%2020.5c3.75%205%206%2011.15%206%2017.85C67.4%2054.8%2054%2068.2%2037.55%2068.2m38.4-29.85c0-21.2-17.2-38.4-38.4-38.4s-38.4%2017.2-38.4%2038.4%2017.2%2038.4%2038.4%2038.4%2038.4-17.2%2038.4-38.4%22%2F%3E%3C%2Fsvg%3E';
+            element.appendChild(badge);
+        }
+
+        if (item.new) {
+            const badge = document.createElement('img');
+            badge.src = './imgs/new.png';
+            badge.className = 'badge new';
+            element.appendChild(badge);
+        }
+
+        if (item.retired) {
+            const badge = document.createElement('span');
+            badge.className = 'badge retired';
+            badge.textContent = 'RETIRED';
+            element.appendChild(badge);
+        }
+    }
+
+    initializeSearch() {
+        const searchBar = document.getElementById('search-bar');
+        const searchResults = document.getElementById('search-results');
+        if (!searchBar || !searchResults) return;
+
+        // Initialize Fuse.js
+        this.searchFuse = new Fuse(this.allItems, {
+            keys: ['name'],
+            threshold: 0.3
         });
 
-        if (credit) credit.style.color = '#000000b0';
+        searchBar.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            if (!query) {
+                searchResults.style.display = 'none';
+                return;
+            }
 
-        // Fade logos
-        setTimeout(() => {
-          logoSpans.forEach((span, idx) => {
+            const results = this.searchFuse.search(query).slice(0, 6);
+            this.displaySearchResults(results);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!searchBar.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+    }
+
+    displaySearchResults(results) {
+        const searchResults = document.getElementById('search-results');
+        searchResults.innerHTML = '';
+
+        if (results.length === 0) {
+            searchResults.style.display = 'none';
+            return;
+        }
+
+        results.forEach(result => {
+            const item = result.item;
+            const div = document.createElement('div');
+            div.className = 'search-result-item';
+            div.style.padding = '12px';
+            div.style.cursor = 'pointer';
+            div.style.borderBottom = '1px solid var(--border-color)';
+            div.textContent = item.name;
+            div.onclick = () => {
+                this.modal.open(item);
+                searchResults.style.display = 'none';
+            };
+            searchResults.appendChild(div);
+        });
+
+        searchResults.style.display = 'block';
+    }
+
+    toggleFavorite(name) {
+        const index = this.favorites.indexOf(name);
+        if (index > -1) {
+            this.favorites.splice(index, 1);
+        } else {
+            this.favorites.push(name);
+        }
+        Utils.saveToStorage('favorites', this.favorites);
+        this.updateStatsIfOpen(); // Add this line
+    }
+
+    toggleWishlist(name) {
+        const index = this.wishlist.indexOf(name);
+        if (index > -1) {
+            this.wishlist.splice(index, 1);
+        } else {
+            this.wishlist.push(name);
+        }
+        Utils.saveToStorage('wishlist', this.wishlist);
+        this.updateStatsIfOpen();
+    }
+
+    showRecentItems() {
+        if (this.recentlyViewed.length === 0) return;
+
+        const recentDiv = document.getElementById('recent-items');
+        recentDiv.innerHTML = '';
+
+        const recent = this.recentlyViewed.slice(0, 5);
+        recent.forEach(itemName => {
+            const item = this.items.find(i => i.name === itemName);
+            if (item) {
+                const div = document.createElement('div');
+                div.className = 'recent-item';
+                div.innerHTML = `
+                            ${item.img ? `<img src="${item.img}" alt="${item.name}">` : '<div style="width:30px;height:30px;background:#666;border-radius:5px;"></div>'}
+                            <span>${item.name}</span>
+                        `;
+                div.onclick = () => {
+                    document.getElementById('search-bar').value = item.name;
+                    this.filters.search = item.name.toLowerCase();
+                    this.applyFilters();
+                    recentDiv.classList.remove('show');
+                };
+                recentDiv.appendChild(div);
+            }
+        });
+
+        recentDiv.classList.add('show');
+    }
+
+    addToRecentlyViewed(name) {
+        const index = this.recentlyViewed.indexOf(name);
+        if (index > -1) {
+            this.recentlyViewed.splice(index, 1);
+        }
+        this.recentlyViewed.unshift(name);
+        this.recentlyViewed = this.recentlyViewed.slice(0, 5); // Keep last 4
+        Utils.saveToStorage('recentlyViewed', this.recentlyViewed);
+    }
+
+    openStats() {
+        document.getElementById('stats-dashboard').classList.add('show');
+        this.updateStatsIfOpen();
+        document.getElementById('profile-dropdown').classList.remove('show');
+ 
+    }
+
+    closeStats() {
+        document.getElementById('stats-dashboard').classList.remove('show');
+    }
+
+    switchListMode(mode) {
+        this.currentListMode = mode;
+
+        // Update tab styling
+        const wishlistTab = document.getElementById('wishlist-tab');
+        const favoritesTab = document.getElementById('favorites-tab');
+        const listLabel = document.getElementById('list-mode-label');
+
+        if (mode === 'wishlist') {
+            favoritesTab.classList.remove('active');
+            wishlistTab.classList.add('active');
+            listLabel.textContent = 'Wishlist';
+        } else {
+            wishlistTab.classList.remove('active');
+            favoritesTab.classList.add('active');
+            listLabel.textContent = 'Favorites';
+        }
+
+        this.updateStatsIfOpen();
+    }
+
+    updateStatsIfOpen() {
+        if (!document.getElementById('stats-dashboard').classList.contains('show')) return;
+
+        // Update wishlist or favorites based on mode
+        const wishlistDiv = document.getElementById('wishlist-items');
+        wishlistDiv.innerHTML = '';
+        let totalValue = 0;
+
+        const itemsToShow = this.currentListMode === 'wishlist' ? this.wishlist : this.favorites;
+        itemsToShow.forEach(itemName => {
+            const item = this.items.find(i => i.name === itemName);
+            if (item) {
+                console.log('Processing item:', item);
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.innerHTML = `
+                    <div class="item-name">${item.name}</div>
+                    ${item.price != 'N/A' && item.price != '' ? `<div class="item-price">${Utils.formatPrice(item.price)}</div>` : ''}
+                    <div class="remove-wishlist">×</div>
+                `;
+
+                if (item.img) {
+                    const canvas = document.createElement('canvas');
+
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    img.onload = function () {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                    };
+                    img.src = item.img;
+                    div.appendChild(canvas);
+                } else if (item.svg) {
+                    div.insertAdjacentHTML('beforeend', item.svg);
+                }
+                div.querySelector('.remove-wishlist').onclick = (e) => {
+                    e.stopPropagation();
+                    if (this.currentListMode === 'wishlist') {
+                        this.toggleWishlist(item.name);
+                    } else {
+                        this.toggleFavorite(item.name);
+                    }
+                };
+                div.onclick = () => {
+                    this.modal.open(item);
+                };
+                wishlistDiv.appendChild(div);
+
+                if (item.price && item.price !== 'N/A') {
+                    totalValue += parseInt(item.price) || 0;
+                }
+            }
+        });
+
+        document.getElementById('wishlist-value').textContent = Utils.formatPrice(totalValue);
+
+        // Update recently viewed
+        const recentDiv = document.getElementById('recent-viewed-items');
+        recentDiv.innerHTML = '';
+
+        this.recentlyViewed.slice(0, 5).forEach(itemName => {
+            const item = this.items.find(i => i.name === itemName);
+            if (item) {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.innerHTML = `<div class="item-name" style="z-index:2;font-size:10px;margin-top:5px;">${item.name}</div>
+                            ${item.price != 'N/A' && item.price != '' ? `<div class="item-price">${Utils.formatPrice(item.price)}</div>` : ''}
+                        `;
+                if (item.img) {
+                    const canvas = document.createElement('canvas');
+
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    img.onload = function () {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                    };
+
+                    img.src = item.img;
+
+                    div.appendChild(canvas);
+                } else if (item.svg) {
+                    div.insertAdjacentHTML('beforeend', item.svg);
+                }
+
+
+                div.onclick = () => {
+                    this.modal.open(item);
+                };
+                recentDiv.appendChild(div);
+            }
+        });
+    }
+
+}
+
+// ==================== PARTICLE SYSTEM ====================
+class ParticleSystem {
+    constructor(canvas) {
+        this.canvas = canvas;
+
+        if (!this.canvas) return;
+
+        this.ctx = this.canvas.getContext('2d');
+        this.particles = [];
+        this.setupCanvas();
+        this.animate();
+    }
+
+    setupCanvas() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+        window.addEventListener('resize', () => {
+            this.canvas.width = window.innerWidth;
+            this.canvas.height = window.innerHeight;
+        });
+    }
+
+    createParticles(x, y, colors = ['#ff0000', '#ff4444', '#ff8888', '#ffaaaa']) {
+        for (let i = 0; i < 20; i++) {
+            this.particles.push({
+                x: x,
+                y: y,
+                vx: (Math.random() - 0.5) * 8,
+                vy: (Math.random() - 0.5) * 8,
+                size: Math.random() * 3 + 2,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                life: 1.0
+            });
+        }
+    }
+
+    animate() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            const p = this.particles[i];
+
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy -= 0.3;
+            p.life -= 0.03;
+
+            if (p.life <= 0) {
+                this.particles.splice(i, 1);
+                continue;
+            }
+
+            this.ctx.globalAlpha = p.life;
+            this.ctx.fillStyle = p.color;
+            this.ctx.fillRect(p.x, p.y, p.size, p.size);
+        }
+
+        requestAnimationFrame(() => this.animate());
+    }
+}
+
+// ==================== PRICE GRAPH ====================
+const PriceGraph = {
+    createGraph(priceHistory, canvasId) {
+        if (!priceHistory || priceHistory.length < 2) return null;
+
+        const canvas = document.createElement('canvas');
+        canvas.id = canvasId;
+        canvas.style.cssText = 'width: 100%; height: 200px;';
+
+        requestAnimationFrame(() => {
+            const ctx = canvas.getContext('2d');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: priceHistory.map(h => new Date(h.timestamp)),
+                    datasets: [{
+                        label: 'Price',
+                        data: priceHistory.map(h => h.price),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            displayColors: false,
+                            callbacks: {
+                                title: (items) => {
+                                    const date = new Date(items[0].parsed.x);
+                                    return date.toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric'
+                                    });
+                                },
+                                label: (context) => {
+                                    const item = priceHistory[context.dataIndex];
+                                    return [
+                                        `Price: ${Utils.formatPrice(item.price)}`,
+                                        item.admin ? `Changed by: ${item.admin}` : ''
+                                    ].filter(Boolean);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                displayFormats: { day: 'MMM d' }
+                            },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                callback: (value) => Utils.formatPrice(value)
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        });
+
+        return canvas;
+    }
+};
+
+class ItemModal {
+    constructor(catalog) {
+        this.catalog = catalog;
+        this.isOpen = false;
+        this.currentItem = null;
+        this.currentIndex = -1;
+
+        this.displayed = [];
+        this.elements = {};
+        this.init();
+    }
+
+    init() {
+        this.createModal();
+        this.setupEventListeners();
+    }
+
+    createModal() {
+        // Create modal HTML
+        const modalHTML = `
+        <div id="item-modal" class="item-modal">
+            <div class="modal-overlay"></div>
+            <button class="modal-nav modal-prev">‹</button>
+            <button class="modal-nav modal-next">›</button>
+            <div class="modal-container">
+                <div class="modal-content-wrapper">
+                    <!-- Front Side -->
+                    <div class="modal-content modal-front">
+                        <div class="modal-header">
+                            <h2 class="modal-title"></h2>
+                            <div class="modal-price"></div>
+                        </div>
+
+                        <canvas class="modal-image" style="display:none;"></canvas>
+                        <div class="modal-svg" style="display:none;"></div>
+
+                        <div class="modal-description"></div>
+                        
+                        <div class="modal-details"></div>
+                        
+                        <div class="modal-badges">
+                            <span class="badge-premium" style="display:none;">Premium</span>
+                            <span class="badge-retired" style="display:none;">Retired</span>
+                            <span class="badge-removed" style="display:none;">Removed</span>
+                            <span class="badge-untradable" style="display:none;">Untradable</span>
+                        </div>
+                    </div>
+
+                    <!-- Back Side (Graph & Metadata) -->
+                    <div class="modal-content modal-back" style="display:none;">
+                        <div class="modal-back-header">
+                            <h3>Additional Info</h3>
+                        </div>
+                        
+                        <div class="modal-graph-section" style="display:none;">
+                            <h4>Price History</h4>
+                            <div class="modal-graph-container"></div>
+                            <div class="modal-last-admin"></div>
+                        </div>
+                        
+                        <div class="modal-metadata-section" style="display:none;">
+                            <div class="metadata-item" id="modal-aliases" style="display:none;">
+                                <strong>Aliases:</strong> <span></span>
+                            </div>
+                            <div class="metadata-item" id="modal-quantity" style="display:none;">
+                                <strong>Quantity Given:</strong> <span></span>
+                            </div>
+                            <div class="metadata-item" id="modal-author" style="display:none;">
+                                <strong>Author:</strong> <span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flip Button (only shown when back content exists) -->
+                <button class="modal-flip-btn" style="display:none;">
+                    <span class="flip-icon">⟲</span>
+                    <span class="flip-text">More Info</span>
+                </button>
+            </div>
+        </div>
+    `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        // Cache elements
+        this.elements = {
+            modal: document.getElementById('item-modal'),
+            overlay: document.querySelector('.modal-overlay'),
+            container: document.querySelector('.modal-container'),
+            contentWrapper: document.querySelector('.modal-content-wrapper'),
+            frontContent: document.querySelector('.modal-front'),
+            backContent: document.querySelector('.modal-back'),
+            title: document.querySelector('.modal-title'),
+            price: document.querySelector('.modal-price'),
+            image: document.querySelector('.modal-image'),
+            svg: document.querySelector('.modal-svg'),
+            description: document.querySelector('.modal-description'),
+            details: document.querySelector('.modal-details'),
+            flipBtn: document.querySelector('.modal-flip-btn'),
+            prevBtn: document.querySelector('.modal-prev'),
+            nextBtn: document.querySelector('.modal-next'),
+            graphSection: document.querySelector('.modal-graph-section'),
+            graphContainer: document.querySelector('.modal-graph-container'),
+            lastAdmin: document.querySelector('.modal-last-admin'),
+            metadataSection: document.querySelector('.modal-metadata-section'),
+            badges: {
+                premium: document.querySelector('.badge-premium'),
+                retired: document.querySelector('.badge-retired'),
+                removed: document.querySelector('.badge-removed'),
+                untradable: document.querySelector('.badge-untradable')
+            }
+        };
+    }
+
+    setupEventListeners() {
+        // Close events
+        this.elements.overlay.addEventListener('click', () => this.close());
+
+        // Navigation
+        this.elements.prevBtn.addEventListener('click', () => this.navigate(-1));
+        this.elements.nextBtn.addEventListener('click', () => this.navigate(1));
+
+        // Flip button
+        this.elements.flipBtn.addEventListener('click', () => {
+            const isFlipped = this.elements.contentWrapper.classList.toggle('flipped');
+            this.updateFlipButton(isFlipped);
+        });
+
+        // Keyboard
+        document.addEventListener('keydown', (e) => {
+            if (!this.isOpen) return;
+
+            switch (e.key) {
+                case 'Escape': this.close(); break;
+                case 'ArrowLeft': this.navigate(-1); break;
+                case 'ArrowRight': this.navigate(1); break;
+            }
+        });
+
+        // Touch gestures
+        let touchStartX = 0;
+
+        this.elements.container.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        });
+
+        this.elements.container.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const diff = touchStartX - touchEndX;
+
+            if (Math.abs(diff) > 50) {
+                this.navigate(diff > 0 ? 1 : -1);
+            }
+        });
+    }
+
+    open(item) {
+        this.currentItem = item;
+        this.currentIndex = this.displayed.findIndex(i => i.name === item.name);
+
+        // Update content
+        this.updateContent(item);
+
+        // Check if item has back content
+        const hasHistory = item.priceHistory && item.priceHistory.length >= 2;
+        const hasMetadata = item.aliases || item.quantity || item.author;
+        const hasBackContent = hasHistory || hasMetadata;
+
+        // Show/hide flip button
+        this.elements.flipBtn.style.display = hasBackContent ? 'flex' : 'none';
+
+        // Update back content if exists
+        if (hasBackContent) {
+            this.updateBackContent(item);
+        }
+
+        // Reset to front side
+        this.elements.contentWrapper.classList.remove('flipped');
+        this.updateFlipButton(false);
+
+        // Show modal
+        this.elements.modal.classList.add('active');
+        this.isOpen = true;
+        document.body.style.overflow = 'hidden';
+
+        // Update URL
+        this.updateURL(item.name);
+
+        // Update navigation buttons
+        this.updateNavButtons();
+
+        // Add to recently viewed
+        this.catalog.addToRecentlyViewed(item.name);
+        this.catalog.updateStatsIfOpen();
+    }
+
+    updateBackContent(item) {
+        const hasHistory = item.priceHistory && item.priceHistory.length >= 2;
+        const hasMetadata = item.aliases || item.quantity || item.author;
+
+        // Update graph section
+        if (hasHistory) {
+            this.elements.graphSection.style.display = 'block';
+            this.elements.graphContainer.innerHTML = '';
+
+            const graph = PriceGraph.createGraph(item.priceHistory, `graph-${Date.now()}`);
+            if (graph) {
+                this.elements.graphContainer.appendChild(graph);
+            }
+
+            // Show last admin
+            const lastChange = item.priceHistory[item.priceHistory.length - 1];
+            if (lastChange.admin) {
+                this.elements.lastAdmin.textContent = `Last updated by ${lastChange.admin}`;
+                this.elements.lastAdmin.style.display = 'block';
+            } else {
+                this.elements.lastAdmin.style.display = 'none';
+            }
+        } else {
+            this.elements.graphSection.style.display = 'none';
+        }
+
+        // Update metadata section
+        if (hasMetadata) {
+            this.elements.metadataSection.style.display = 'block';
+
+            const aliasesEl = document.getElementById('modal-aliases');
+            const quantityEl = document.getElementById('modal-quantity');
+            const authorEl = document.getElementById('modal-author');
+
+            if (item.aliases) {
+                aliasesEl.style.display = 'block';
+                aliasesEl.querySelector('span').textContent = item.aliases;
+            } else {
+                aliasesEl.style.display = 'none';
+            }
+
+            if (item.quantity) {
+                quantityEl.style.display = 'block';
+                quantityEl.querySelector('span').textContent = item.quantity;
+            } else {
+                quantityEl.style.display = 'none';
+            }
+
+            if (item.author) {
+                authorEl.style.display = 'block';
+                authorEl.querySelector('span').textContent = item.author;
+            } else {
+                authorEl.style.display = 'none';
+            }
+        } else {
+            this.elements.metadataSection.style.display = 'none';
+        }
+    }
+
+    updateFlipButton(isFlipped) {
+        const flipText = this.elements.flipBtn.querySelector('.flip-text');
+        const flipIcon = this.elements.flipBtn.querySelector('.flip-icon');
+
+        if (isFlipped) {
+            flipText.textContent = 'Back';
+            flipIcon.style.transform = 'scaleX(-1)';
+        } else {
+            flipText.textContent = 'More Info';
+            flipIcon.style.transform = 'scaleX(1)';
+        }
+    }
+
+    updateContent(item) {
+        // Basic info
+        this.elements.title.textContent = item.name;
+        this.elements.description.innerHTML = item.from || '';
+
+        // Price
+        if (item.price && item.price !== 'N/A') {
+            this.elements.price.innerHTML = `
+                    <img src="./imgs/rap.png" alt="RAP">
+                    ${Utils.formatPrice(item.price)}
+                `;
+            this.elements.price.style.display = 'flex';
+        } else {
+            this.elements.price.style.display = 'none';
+        }
+
+        // Image/SVG
+        if (item.img) {
+            const ctx = this.elements.image.getContext('2d');
+            const img = new Image();
+            img.onload = function () {
+                this.elements.image.width = img.width;
+                this.elements.image.height = img.height;
+                ctx.drawImage(img, 0, 0);
+            }.bind(this);
+            img.src = item.img;
+
+            this.elements.image.style.display = 'block';
+            this.elements.svg.style.display = 'none';
+            this.elements.title.style.opacity = 'unset';
+        } else if (item.svg) {
+            this.elements.svg.outerHTML = item.svg;
+            this.elements.svg = this.elements.container.querySelector('svg');
+            this.elements.svg.classList.add('modal-svg');
+            this.elements.svg.style.display = 'unset';
+            this.elements.image.style.display = 'none';
+            this.elements.title.style.opacity = '0';
+
+        } else {
+            this.elements.image.style.display = 'none';
+            this.elements.svg.style.display = 'none';
+        }
+
+        // Additional details
+        if (item['price/code/rarity']) {
+            const details = item['price/code/rarity'].split('<br>').filter(Boolean);
+            const appendedDetails = new Set();
+            this.elements.details.innerHTML = details.map(detail => {
+                if (appendedDetails.has(detail)) return '';
+                appendedDetails.add(detail);
+                return this.formatDetail(detail);
+            }).join('');
+        } else {
+            this.elements.details.innerHTML = '';
+        }
+
+        // Badges
+        this.elements.badges.premium.style.display = item.premium ? 'inline-block' : 'none';
+        this.elements.badges.retired.style.display = item.retired ? 'inline-block' : 'none';
+        this.elements.badges.removed.style.display = item.removed ? 'inline-block' : 'none';
+        this.elements.badges.untradable.style.display = !item.tradable ? 'inline-block' : 'none';
+
+        // Set theme color based on category
+        const colors = {
+            gears: '#37cd44',
+            deaths: '#dd592e',
+            titles: '#9a2dd1',
+            pets: '#2766dd',
+            effects: '#f3a425'
+        };
+
+        this.elements.container.style.backgroundColor = colors[item.category] || '#333';
+    }
+
+    formatDetail(detail) {
+        // Check if it's a URL first
+        const urlPattern = /https?:\/\/[^\s]+/;
+        if (urlPattern.test(detail)) {
+            const url = detail.match(urlPattern)[0];
+            const isRoblox = url.includes('roblox.com');
+
+            return `
+            <a href="${url}" target="_blank" class="detail-link-btn">
+                <span>${isRoblox ? 'Visit' : 'Open Link'}</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+                </svg>
+            </a>
+        `;
+        }
+
+        // Add icons for special currencies
+        const icons = {
+            unobtainable: "./imgs/Red_x.png",
+            robux: "./imgs/cf8ZvY7.png",
+            coins: "./imgs/Coin.webp",
+            stars: "./imgs/WKeX5AS.png",
+            visors: "./imgs/7IoLZCN.png",
+            pumpkins: "./imgs/bHRBTrU.png",
+            eggs: "./imgs/qMxjgQy.png",
+            opals: "./imgs/wwMMAvr.png",
+            baubles: "./imgs/bauble.png",
+            tokens: "./imgs/Cy9r140.png"
+        };
+        const styles = {
+            unobtainable: "filter: saturate(0) brightness(4.5);font-family: 'BuilderSans';color: #3d3d3d;",
+            '%': "color: #f06bff;text-shadow: 0 0 4px #ab00ff;",
+            rank: "font-variant: all-small-caps; font-weight: 600; color: #ffd700; text-shadow: 0 0 3px #ffae00;",
+            expired: "font-weight: bold;color: red;font-family: inconsolata;",
+            active: "font-weight: bold;color: #45ff45;font-family: inconsolata;",
+            robux: "font: 1000 17px 'buildersans'",
+            tokens: "text-shadow: -1.3px -1.3px 0 #ff00e7, 0 -1.3px 0 #ff00e7, 1.3px -1.3px 0 #ff00e7, 1.3px 0 0 #ff00e7, 1.3px 1.3px 0 #ff00e7, 0 1.3px 0 #ff00e7, -1.3px 1.3px 0 #ff00e7, -1.3px 0 0 #ff00e7"
+        };
+        const matchedKey = Object.keys(styles).find(key =>
+            detail.toLowerCase().includes(key.toLowerCase())
+        );
+
+        let formatted = `<div class="detail-item" style="${matchedKey ? styles[matchedKey] : ''}">${detail}</div>`;
+
+        Object.entries(icons).forEach(([key, src]) => {
+            if (detail.toLowerCase().includes(key)) {
+                formatted = `<div class="detail-item" style="${key in styles ? styles[key] : ''}"> <img src="${src}" title="${key.charAt(0).toUpperCase() + key.slice(1)}" class="detail-icon"> ${/\d+(?!\%)/.test(detail) ? detail.replace(new RegExp(key, 'i'), '').trim() : detail}</div>`;
+            }
+        });
+
+        return formatted;
+    }
+
+    navigate(direction) {
+        const newIndex = this.currentIndex + direction;
+
+        if (newIndex >= 0 && newIndex < this.displayed.length) {
+            this.currentIndex = newIndex;
+            this.currentItem = this.displayed[newIndex];
+
+            // Animate transition
+            this.elements.container.classList.add('transitioning');
+
             setTimeout(() => {
-              span.classList.remove('active');
-              span.classList.add('fade');
-              if (logo3) {
-                logo3.classList.remove('active');
-                logo3.classList.add('fade');
-              }
-            }, (idx + 1) * 20);
-          });
-        }, 2100);
-
-        // Complete animation
-        setTimeout(() => {
-          intro.style.transition = '0.5s';
-          intro.style.backdropFilter = 'blur(0px)';
-          intro.style.filter = 'opacity(0) blur(9px)';
-          document.documentElement.style.overflow = 'scroll';
-          document.documentElement.style.overflowX = 'hidden';
-          if (credit) credit.style.color = '#ffffffb0';
-        }, 2440);
-
-        setTimeout(() => {
-          intro.style.top = '-100vh';
-          header.style.opacity = '1';
-          main.style.scale = '1';
-          main.style.filter = 'opacity(1)';
-        }, 2800);
-
-        // Setup parallax
-        setTimeout(() => {
-          const parallaxBg = document.querySelector('.parallax-bg');
-          if (parallaxBg) {
-            parallaxBg.style.transition = APP_CONFIG.touch
-              ? 'transform 0.1s ease-out, opacity 0.2s ease'
-              : 'none';
-          }
-        }, 3700);
-      });
-    });
-  }
-
-  setupRandomLogo() {
-    const logos = [document.querySelector('.logo3'), document.querySelector('.logo4')];
-    const random = Math.random();
-
-    let imgSrc = './imgs/XRmpB1c.png';
-    if (random > 0.97) imgSrc = './imgs/burrito.png';
-    else if (random > 0.93) imgSrc = './imgs/tran.webp';
-    else if (random > 0.87) imgSrc = './imgs/o7IJiwl.png';
-
-    logos.forEach(logo => {
-      if (logo) logo.src = imgSrc;
-    });
-
-    localStorage.setItem('ranimg', imgSrc);
-  }
-}
-
-// ============================================
-// UTILITIES
-// ============================================
-
-function slugify(text) {
-  return text.toLowerCase().replace(/\s+/g, '-');
-}
-
-function openModalFromURL(itemList) {
-  const params = new URLSearchParams(window.location.search);
-  let itemSlug = params.get('item');
-  if (!itemSlug) return;
-
-  itemSlug = decodeURIComponent(decodeURIComponent(itemSlug));
-
-  const foundItem = itemList.find(item => {
-    const name = item.name || '';
-    return slugify(name) === itemSlug;
-  });
-
-  if (foundItem) {
-    searchSystem.showSelectedItem(foundItem);
-  }
-}
-
-async function fetchData() {
-  try {
-    const res = await fetch('https://emwiki.site/api/gist-version');
-    if (!res.ok) throw new Error('Failed to fetch data');
-    const data = await res.json();
-    return JSON.parse(data.files?.['auto.json']?.content);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    return null;
-  }
-}
-
-
-// ============================================
-// MAIN APPLICATION INITIALIZATION
-// ============================================
-
-const searchSystem = new SearchSystem();
-const navigationSystem = new NavigationSystem();
-const introAnimation = new IntroAnimationSystem();
-
-async function initializeApp() {
-  try {
-    // Initialize navigation
-    navigationSystem.init();
-
-    // Initialize intro animation
-    introAnimation.init();
-
-    // Fetch data
-    const data = await fetchData();
-    if (!data) return;
-
-    window._randomArr = data;
-    window._randomCategoryColors = APP_CONFIG.colors;
-
-    // Prepare flat item list
-    const flatItemList = Object.entries(APP_CONFIG.colors).flatMap(([key, color]) =>
-      (data[key] || []).map(item => ({ ...item, _color: color }))
-    );
-
-    // Initialize search
-    searchSystem.init(flatItemList, APP_CONFIG.colors.gears);
-
-    // Setup lazy loading
-    catalogManager.setupLazyLoading(data, APP_CONFIG.colors);
-
-    // Handle URL parameters
-    window.addEventListener('popstate', () => {
-      openModalFromURL(flatItemList);
-    });
-
-    // Check for initial URL item
-    openModalFromURL(flatItemList);
-
-    // Add touch class if needed
-    if (APP_CONFIG.touch) {
-      document.body.classList.add('is-touch');
+                this.updateContent(this.currentItem);
+                this.updateNavButtons();
+                this.updateURL(this.currentItem.name);
+                this.catalog.addToRecentlyViewed(this.currentItem.name);
+                this.elements.container.classList.remove('transitioning');
+            }, 150);
+        }
     }
 
-    // Setup item count display
-    const itemCount = document.getElementById('zd');
-    if (itemCount) {
-      const observer = new MutationObserver(() => {
-        const count = document.querySelectorAll('#ctlg .item').length;
-        itemCount.textContent = `${count} item${count === 1 ? '' : 's'}`;
-      });
-
-      const catalog = document.getElementById('ctlg');
-      if (catalog) {
-        observer.observe(catalog, { childList: true, subtree: true });
-      }
+    updateNavButtons() {
+        this.elements.prevBtn.disabled = this.currentIndex <= 0;
+        this.elements.nextBtn.disabled = this.currentIndex >= this.displayed.length - 1;
     }
 
-  } catch (error) {
-    console.error('Failed to initialize app:', error);
-  }
+    updateURL(itemName) {
+        const slug = itemName.toLowerCase().replace(/\s+/g, '-');
+        const url = new URL(window.location);
+        url.searchParams.set('item', slug);
+        history.pushState(null, '', url.toString());
+    }
+
+    close() {
+        this.elements.modal.classList.remove('active');
+        this.isOpen = false;
+        document.body.style.overflow = '';
+
+        // Clear URL
+        const url = new URL(window.location);
+        url.searchParams.delete('item');
+        history.pushState(null, '', url.toString());
+    }
 }
 
-// Start the application
-document.addEventListener('DOMContentLoaded', initializeApp);
+// ==================== COUNTDOWN SYSTEM ====================
+class CountdownManager {
+    constructor() {
+        this.countdowns = [];
+    }
 
-// Export necessary functions for global access
-window.slugify = slugify;
-window.searchSystem = searchSystem;
+    add(elementId) {
+        this.countdowns.push(elementId);
+    }
+
+    start() {
+        const updateCountdowns = () => {
+            const now = new Date();
+            const nextReset = new Date();
+            nextReset.setDate(nextReset.getDate() + (7 - nextReset.getDay()));
+            nextReset.setHours(0, 0, 0, 0);
+
+            const diff = nextReset - now;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            const timeString = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+            this.countdowns.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = timeString;
+            });
+        };
+
+        updateCountdowns();
+        setInterval(updateCountdowns, 1000);
+    }
+}
+
+// Export for use in both pages
+if (typeof window !== 'undefined') {
+    window.Utils = Utils;
+    window.BaseApp = BaseApp;
+    window.PriceGraph = PriceGraph;
+    window.CountdownManager = CountdownManager;
+}

@@ -1767,6 +1767,9 @@
             },
 
             async saveData() {
+                // Track price changes before saving
+                this.updatePriceHistory();
+
                 // Clean up the data before saving
                 const cleanedData = JSON.parse(JSON.stringify(state.jsData)); // Deep clone
 
@@ -1778,6 +1781,11 @@
                             if (!item.price || item.price === '' || item.price === 'N/A' || item.price === 'undefined') {
                                 item.price = '0';
                             }
+
+                            // Ensure priceHistory exists
+                            if (!item.priceHistory) {
+                                item.priceHistory = [];
+                            }
                         });
                     }
                 });
@@ -1786,12 +1794,72 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        content: state.jsData,
+                        content: cleanedData,
                         username: state.adminName,
                         version: state.gistVersion
                     })
                 });
                 return response;
+            },
+
+            // Add this new method to API object:
+            updatePriceHistory() {
+                const now = Date.now();
+
+                // Iterate through all items in the current state
+                state.allItems.forEach(item => {
+                    // Initialize priceHistory if it doesn't exist
+                    if (!item.priceHistory) {
+                        item.priceHistory = [];
+                    }
+
+                    // Check if this item was modified
+                    const isModified = ChangeTracker.isModifiedItem(item.name);
+                    const isNew = ChangeTracker.isNewItem(item.name);
+
+                    if (isModified || isNew) {
+                        const originalJson = ChangeTracker.originalItems.get(item.name);
+                        let oldPrice = null;
+
+                        if (originalJson && !isNew) {
+                            const original = JSON.parse(originalJson);
+                            oldPrice = this.normalizePrice(original.price);
+                        }
+
+                        const newPrice = this.normalizePrice(item.price);
+
+                        // Only add to history if price actually changed
+                        if (oldPrice !== newPrice) {
+                            // Check if the last entry in history matches current price
+                            const lastEntry = item.priceHistory[item.priceHistory.length - 1];
+                            const shouldAdd = !lastEntry ||
+                                this.normalizePrice(lastEntry.price) !== newPrice;
+
+                            if (shouldAdd) {
+                                item.priceHistory.push({
+                                    price: parseInt(newPrice) || 0,
+                                    timestamp: now,
+                                    admin: state.adminName
+                                });
+
+                                // Keep only last 50 entries to prevent bloat
+                                if (item.priceHistory.length > 50) {
+                                    item.priceHistory = item.priceHistory.slice(-50);
+                                }
+                            }
+                        }
+                    }
+                });
+            },
+
+            // Add this helper method to API object:
+            normalizePrice(price) {
+                if (!price || price === '' || price === 'N/A' || price === 'undefined') {
+                    return '0';
+                }
+                // Remove any non-numeric characters except decimals
+                const cleaned = String(price).replace(/[^\d.]/g, '');
+                return cleaned || '0';
             },
 
             async loadHistory() {
@@ -2921,23 +2989,23 @@
                 prices.forEach(price => this.createPriceItem(price));
 
                 // Initialize Sortable
-if (!isTouch) {
-    Sortable.create(container, {
-        animation: 150,
-        handle: '.prc-item',
-        group: { name: 'prc', pull: false, put: false },
-        sort: true,
-        filter: '.editing, input, button',  // ← ADD 'input, button'
-        preventOnFilter: false,  // ← ADD THIS
-        onStart: function(evt) {
-            // Prevent dragging if clicking on input
-            if (evt.originalEvent.target.tagName === 'INPUT' || 
-                evt.originalEvent.target.tagName === 'BUTTON') {
-                return false;
-            }
-        }
-    });
-}
+                if (!isTouch) {
+                    Sortable.create(container, {
+                        animation: 150,
+                        handle: '.prc-item',
+                        group: { name: 'prc', pull: false, put: false },
+                        sort: true,
+                        filter: '.editing, input, button',  // ← ADD 'input, button'
+                        preventOnFilter: false,  // ← ADD THIS
+                        onStart: function (evt) {
+                            // Prevent dragging if clicking on input
+                            if (evt.originalEvent.target.tagName === 'INPUT' ||
+                                evt.originalEvent.target.tagName === 'BUTTON') {
+                                return false;
+                            }
+                        }
+                    });
+                }
             },
 
             createDescItem(value = '', isGamenight = false, focus = false) {
@@ -3056,7 +3124,7 @@ if (!isTouch) {
                 // Setup edit/done functions with dynamic original check
                 const edit = () => {
                     li.classList.add('editing');
-                        li.setAttribute('data-draggable', 'false');  // ← ADD THIS
+                    li.setAttribute('data-draggable', 'false');  // ← ADD THIS
                     deleteBtn.style.display = 'none';
                     okBtn.style.display = 'inline-block';
                     label.style.display = 'none';
@@ -3243,7 +3311,7 @@ if (!isTouch) {
                 // Setup edit/done functions with dynamic original check
                 const edit = () => {
                     deleteBtn.style.display = 'none';
-                        li.setAttribute('data-draggable', 'false');  // ← ADD THIS
+                    li.setAttribute('data-draggable', 'false');  // ← ADD THIS
                     okBtn.style.display = 'inline-block';
                     label.style.display = 'none';
                     editBtn.style.display = 'none';

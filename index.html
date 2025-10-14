@@ -2,1247 +2,430 @@
 <html lang="en">
 
 <head>
-	<link rel="apple-touch-startup-image" href="./imgs/cat-kiss.gif">
-	<meta name="apple-mobile-web-app-capable" content="yes">
-	<style>
-		.blackscreen {
-			background: rgb(0, 0, 0);
-			transition: all 500ms cubic-bezier(1, -0.01, .65, 1.04) 600ms;
-		}
-
-		.intro {
-			opacity: 0;
-		}
-
-		html {
-			overflow: hidden;
-		}
-
-		.parallax-bg {
-			opacity: 0;
-		}
-
-		.logo3,
-		main {
-			filter: blur(0) opacity(0)
-		}
-
-		.catalog,
-		main {
-			text-align: center
-		}
-
-		body,
-		html {
-			overflow-x: hidden
-		}
-
-
-
-		@media (max-width:600px) {
-			.logo-container {
-				margin-bottom: 18px;
-				transform: scale(.8);
-				z-index: 1;
-				position: relative
-			}
-
-			.logo4 {
-				width: 135px;
-				transform: rotate(25deg);
-				left: 85%;
-				position: absolute;
-				bottom: -44px
-			}
-
-			.logo5 {
-				left: -50%;
-				bottom: -72px
-			}
-
-			.logo6 {
-				left: 10%;
-				top: 113%
-			}
-
-			.logo-header {
-				scale: 0.6
-			}
-		}
-
-		.intro,
-		body {
-			width: -webkit-fill-available
-		}
-
-		body {
-			font-family: 'Playpen Sans', cursive, sans-serif;
-			background-color: #000;
-			color: #fff;
-			margin: 0;
-			padding: 0;
-		}
-
-		.intro {
-			position: fixed;
-			z-index: 1272;
-			display: grid;
-			top: 0;
-			left: 0;
-			background: linear-gradient(180deg, #e9e9e9, #ffffff80);
-			backdrop-filter: blur(10px)
-		}
-
-		.logo4 {
-			width: 135px;
-			transform: rotate(25deg);
-			left: 180px;
-			position: absolute;
-			bottom: -42px
-		}
-	</style>
-
-	<script type="application/ld+json">
-		{
-		"@context": "https://schema.org",
-		"@type": "WebSite",
-		"name": "Epic Catalogue",
-		"url": "https://emwiki.site/",
-		"description": "A fan-made Epic Minigames catalogue with items, chat, games, and community content.",
-		"publisher": {
-			"@type": "Person",
-			"name": "xnite",
-			"url": "https://emwiki.site"
-		},
-		"potentialAction": {
-			"@type": "SearchAction",
-			"target": "https://emwiki.site/search?q={search_term_string}",
-			"query-input": "required name=search_term_string"
-		},
-		"hasPart": [
-			{
-			"@type": "WebPage",
-			"name": "Gears",
-			"url": "https://emwiki.site/gears.html"
-			},
-			{
-			"@type": "WebPage",
-			"name": "Deaths",
-			"url": "https://emwiki.site/deaths.html"
-			},
-			{
-			"@type": "WebPage",
-			"name": "Pets",
-			"url": "https://emwiki.site/pets.html"
-			},
-			{
-			"@type": "WebPage",
-			"name": "Titles",
-			"url": "https://emwiki.site/titles.html"
-			},
-			{
-			"@type": "WebPage",
-			"name": "Effects",
-			"url": "https://emwiki.site/effects.html"
-			},
-			{
-			"@type": "WebPage",
-			"name": "Chests",
-			"url": "https://emwiki.site/chests.html"
-			},
-			{
-			"@type": "WebPage",
-			"name": "Scammers",
-			"url": "https://emwiki.site/scammers.html"
-			},
-			{
-			"@type": "WebPage",
-			"name": "Burrito Mini-Game",
-			"url": "https://emwiki.site/burrito"
-			}
-		]
-		}
-		</script>
-
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>EM Wiki - The Complete Epic Minigames Wiki</title>
-	<meta name="googlebot" content="notranslate">
-	<meta name="keywords" content="Epic minigames, Epic minigames wiki, emwiki, em wiki, Epic Minigames Values, Epic Minigames Item Values, Epic Minigames Value List, Epic Minigames Worth List, Epic Minigames Roblox Values, Epic Minigames Roblox Value List, Epic Minigames Value Worth List, Epic Minigames Item Worth List, Epic minigames items, Epic minigames gears, Epic minigames pets, Epic minigames deaths, Epic minigames effects, Epic minigames titles, Epic minigames chests, Epic minigames scammers, Epic minigames shop, Epic minigames weekly shop, Epic minigames weekly rotation, Epic minigames new items, Epic minigames random items, Epic minigames donators, Epic minigames donation, Epic minigames community, Epic minigames games, Epic minigames chat, Epic minigames gamenight, Epic minigames prizes, Epic minigames burrito game, Epic minigames item list, epic minigames item value list, epic minigames values">
+
+	<!-- Meta tags -->
 	<meta name="description"
-		content="by @xnite! .˚○ • ° A fun little corner of the web where you can check out all the Epic Minigames items on Roblox, always updating! Enjoy!" />
-	<meta
-		content="by @xnite! .˚○ • ° A fun little corner of the web where you can check out all the Epic Minigames items on Roblox, always updating! Enjoy!"
-		property="og:description">
-	<meta name="author" content="@xnite">
-
-	<!-- image -->
-	<meta content="Epic Catalogue - The Complete EM Catalogue" property="og:title">
+		content="by @xnite! A fun corner of the web where you can check out all the Epic Minigames items on Roblox, always updating!" />
+	<meta name="keywords" content="Epic minigames, Epic minigames wiki, emwiki, em wiki, Epic Minigames Values">
+	<meta property="og:title" content="Epic Catalogue - The Complete EM Catalogue">
 	<meta property="og:image" content="https://emwiki.site/imgs/QgWIUWf.png" />
-	<meta content="Epic Catalogue" property="og:site_name">
-	<meta property="twitter:image" content="https://emwiki.site/imgs/QgWIUWf.png" />
+	<meta property="og:description"
+		content="by @xnite! A fun corner of the web where you can check out all the Epic Minigames items on Roblox!">
 
-
-	<link rel="icon" href="./imgs/favicon.png" type="image/png">
-	<meta name="theme-color" content="#000000">
+	<link rel="icon" href="./imgs/epicfaces/pmupkin.png" type="image/png">
 	<link rel="apple-touch-icon" href="./imgs/apphalloween.png">
 	<link rel="manifest" href="/site.webmanifest">
+	<meta name="theme-color" content="#000000">
+	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-	<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
-
+	<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 
-<div style="display: none;" class="bn">
-	🛠️ Site updated May 31 — <a style="color: #33c5ff;" href="#patchnotes">See
-		what's new</a> — All the items have been added!
-</div>
-<div class="blackscreen" style="display:block;position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:999;">
-</div>
-
-<ul style="display: none;">
-  <li><a href="/titles">Titles</a></li>
-  <li><a href="/gears">Gears</a></li>
-  <li><a href="/deaths">Deaths</a></li>
-  <li><a href="/effects">Effects</a></li>
-  <li><a href="/pets">Pets</a></li>
-  <li><a href="/chests">Chests</a></li>
-</ul>
-
-<body id="body">
-	<div class="grad"></div>
-	<div class="parallax-bg"></div>
-	<div class="content">
-
-		<div id="iosInstallPopup" style="
-		display: none;
-		position: fixed;
-		zoom: 1.5;
-		bottom: 70px;
-		left: 50%;
-		transform: translateX(-50%);
-		background: rgba(0, 0, 0, 0.85);
-		color: white;
-		padding: 1.2rem 1.5rem;
-		border-radius: 12px;
-		font-size: 1rem;
-		max-width: 320px;
-		text-align: center;
-		z-index: 9999;
-		box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-		opacity: 0;
-		transition: bottom 0.6s ease, opacity 0.6s ease;
-		">
-			📱 To install: Tap <b>Share</b> → <b>Add to Home Screen</b><br>
-			<button onclick="hideIosPopup()"
-				style="margin-top: 10px; background: #fff; color: #000; border: none; border-radius: 8px; padding: 6px 12px; cursor: pointer;">
-				Got it
-			</button>
-		</div>
-
-		<div class="intro" style="pointer-events:none ;">
-			<h1 class="logo-header"><img class="logo3" src="./imgs/XRmpB1c.png">
-				<span class="logo">Epic<span class="logo2">Epic</span></span>
-				<span class="logo" id="two">Catalogue<span class="logo2">Catalogue</span></span>
-			</h1>
-		</div>
-
-		<div class="poll-box"
-			style="right: 3%; position: fixed; margin: auto; background: linear-gradient(45deg, rgba(0, 0, 0, 0.98), rgba(24, 24, 24, 0.6)); box-shadow: rgba(0, 0, 0, 0.58) -6px 6px 11px; z-index: 222; bottom: 35px; padding: 3%; border-radius: 16px; color: white; backdrop-filter: blur(59px); font-family: &quot;Segoe UI&quot;, sans-serif; display: none;">
-			<button onclick="document.querySelector('.poll-box').style.display='none'"
-				style="position: absolute;top: 0px;right: -10px;background: none;border: none;color: white;font-size: 34px;cursor: pointer;">×</button>
-
-			<h2 style="text-align: left;font-size: 22px;margin: 0 37px 30px 0;font-family: monospace;">Should
-				we add RAP?</h2>
-
-			<div class="ff" id="gears" style="display: flex;margin: 30px auto;">
-				<div id="pricecoderarity"
-					style="margin-top: -18px;text-align-last: center;background: #333333d9;/* margin-left: 70px; *//* margin-top: -21px; *//* padding: 4%; */font-weight: 700;position: relative;right: 0;/* padding-top: 0px; */place-self: flex-end;padding-bottom: 10px;width: 36%;border-radius: 32%;">
-					<img src="./imgs/cf8ZvY7.png"
-						style="width: 27%;position: relative;top: 5px;margin: 4px 3px 0 0;">299
-				</div>
-				<img id="img" src=".\imgs\gears\50btZsI.png" width="512" height="512"
-					style="max-width: 70%;max-height: 70%;display: block;margin: 0px auto;user-select: none;pointer-events: none;">
-				<div id="h3" style="font-size: 123%;text-align: -webkit-center;">Berry
-					Sweet Boba</div>
-				<p><img loading="lazy" src="./imgs/iZGLVYo.png" draggable="false">0</p>
-				<div id="from" style="display: none;">Bundle (Valentine's 2025)</div>
-			</div>
-
-			<!-- Voting Buttons -->
-			<div style="display: flex; justify-content: space-around; margin-top: 15px;">
-				<button data-vote="like" onclick="submitVote('like')" class="vote-button like">✓</button>
-				<button data-vote="dislike" onclick="submitVote('dislike')" class="vote-button dislike">x</button>
-			</div>
-
-			<!-- Results -->
-			<div id="pollResult" style="margin-top: 15px;text-align: center;FONT-SIZE: 162%;display: block;"></div>
-			<div id="pollTotals" style="margin-top: 1em;FONT-SIZE: 210%;margin-bottom: 1em;text-align: center;"></div>
-		</div>
-
-		<header>
-			<div class="headersheet" style="
-							opacity: 0;
-							transition: 3s;
-							justify-self: center;
-							width: 200px;">
-				<img loading="lazy" src="./imgs/TWOKPhY.png" class="cloud" style="
-
-								top: 49px;
-
-
-								filter: opacity(0.7);
-								height: auto;
-								left: -289px;
-								justify-self: anchor-center;
-							">
-				<img loading="lazy" src="./imgs/TWOKPhY.png" class="cloud2" style="
-
-								top: 122px;
-
-								filter: opacity(0.7);
-								height: auto;
-								z-index: 124;
-								left: -219px;
-								justify-self: anchor-center;
-						"><img loading="lazy" src="./imgs/8UUB0Gt.png" class="cloud3" style="
-
-							top: 116px;
-							pointer-events: none;
-
-							left: 233px;
-							filter: opacity(0.8);
-							height: auto;
-							z-index: 123;
-							justify-self: anchor-center;
-						"><img loading="lazy" src="./imgs/oYKd3nJ.png" class="cloud4" style="
-
-							top: 38px;
-
-							left: 50%;
-							filter: opacity(0.9);
-							height: auto;
-							position: absolute;
-						">
-				<img src="./imgs/clood.webp" style="
-				position: absolute;
-				justify-self: anchor-center;
-				top: 3vw;
-				left: 19%;
-				filter: blur(13px);
-				opacity: 0.8;
-				width: 66vw;
-				pointer-events: none;
-				    z-index: -1;
-				">
-				<img src="./imgs/clood.webp" style="
-					position: absolute;
-					pointer-events:none ;
-					justify-self: anchor-center;
-					left: 12px;
-					filter: blur(13px);
-					opacity: 0.87;
-					width: 80vw;
-					top: 31px;
-					    z-index: -1;
-				">
-
-				<div class="logo-container">
-					<a href="index.html">
-						<h1 class="logo-header2"><img class="logo4" src="./imgs/XRmpB1c.png">
-							<span class="logo5">Epic
-								<span class="logo2">Epic</span></span>
-							<span class="logo6">Catalogue
-								<span class="logo2">Catalogue</span></span>
-						</h1>
-					</a>
-
-					<div class="rotate">
-						<div class="glow"></div>
-						<div class="angle">
-							<div class="size">
-								<div class="position">
-									<div class="pulse">
-										<img loading="lazy" src="./imgs/DQZSDMM.png" class="particle">
-										<div class="flash"></div>
-
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="angle">
-							<div class="size">
-								<div class="position">
-									<div class="pulse">
-										<img loading="lazy" src="./imgs/DQZSDMM.png" class="particle">
-										<div class="flash"></div>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="angle">
-							<div class="size">
-								<div class="position">
-									<div class="pulse">
-										<img loading="lazy" src="./imgs/DQZSDMM.png" class="particle">
-										<div class="flash"></div>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="angle">
-							<div class="size">
-								<div class="position">
-									<div class="pulse">
-										<img loading="lazy" src="./imgs/DQZSDMM.png" class="particle">
-										<div class="flash"></div>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="angle">
-							<div class="size">
-								<div class="position">
-									<div class="pulse">
-										<img loading="lazy" src="./imgs/DQZSDMM.png" class="particle">
-										<div class="flash"></div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</header>
-
-		<p class="credit"
-			style="font-family: 'Playpen Sans';font-size: 25px;-webkit-user-select: none;-ms-user-select: none;user-select: none;position: fixed; top: 0;right: 0;z-index: 9999;color: rgba(255, 255, 255, 0);transition: 1s;">
-			by
-			@xnite</p>
-		<div id="credits-modal">
-			<!-- Modal Content -->
-			<div id="credits-content">
-				<!-- Close Button -->
-				<div id="close-credits">&times;</div>
-				<h2>Sources</h2>
-				<p>
-					Huge thanks to those who contributed to the <strong>EM item list
-					Google Doc.</strong><br> Link to doc below
-				</p>
-				<div>
-					<div>
-						<h3 style="margin-top: 3px;color: #ffdd57;">Creator</h3>
-						<p><strong>Mason</strong> (@Kypsus)</p>
-					</div>
-
-					<div>
-						<h3 style="margin-top: 3px;color: #57c3ff;">Co-Creator</h3>
-						<p><strong>Enzo</strong> (@Espretion)</p>
-					</div>
-					<div style="
-								width: 115px;
-							">
-						<p style="
-							font-size: 29px;
-							place-self: anchor-center;
-							">❤</p>
-					</div>
-					<div>
-						<h3 style="margin-top: 3px;color: #ffa8dc;">Contributors</h3>
-						<p><strong>Jay</strong> (@Jayvoux)<br><strong>Nuppa</strong>
-							(@Icsdee_Bro)<br><strong>Street</strong> (@GhostOfPlazma)</p>
-					</div>
-
-					<div>
-						<h3 style="margin-top: 3px;color: #a5ff90;">Editors</h3>
-						<p><strong>Elie</strong> (@31iee)<br><strong>Cat</strong>
-							(@kittyywawa)<br><strong>Nooby_Dev</strong> (@Linkinthegamer)</p>
-					</div>
-				</div>
-			</div>
-		</div>
-		<main class="main" style="position: inherit;z-index: -1;">
-			<nav>
-
-			</nav>
-			<section class="welcome">
-				<div class="butts">
-					<div class="circlebutton" id="credits-button">❤</div>
-					<div class="circlebutton" id="installBtn" style="    text-decoration: underline;display: none;">↓
-					</div>
-					<div class="circlebutton" style="display: none" id="polls-button"
-						onclick="document.querySelector('.poll-box').style.display='block'">RAP</div>
-				</div>
-
-				<h1 style="margin-top: 10px;">Welcome to Epic Catalogue!</h1>
-
-				<div id="search-wrapper">
-					<input id="search-bar" type="text" placeholder="Search items..." autocomplete="off" />
-					<div id="search-results"></div>
-				</div>
-
-				<div class="catalog-grid" id="ctlg" data-loaded="false" style="
-					display: flex;
-					gap: 1.5rem;
-					display: none;
-					justify-content: center;
-					flex-wrap: wrap;">
-				</div>
-				<div id="itemlist"></div>
-			</section>
-			<section class="catalog">
-				<h2 class="title">🎈 Newest items 🎈</h2>
-
-				<div class="catalog-grid" data-loaded="false" style="padding-top: 2.5%;" id="new">
-				</div>
-			</section>
-			<section class="catalog">
-				<h2 class="title">📆 Weekly Shop 📆</h2>
-				<div id="countdown2">Loading...</div>
-
-				<div class="catalog-grid" data-loaded="false" id="weekly">
-				</div>
-			</section>
-			<section class="catalog">
-				<h2 class="title">⭐ Weekly Rotation ⭐</h2>
-				<div id="countdown">Loading...</div>
-				<div class="catalog-grid" data-loaded="false" id="weeklystar">
-				</div>
-			</section>
-			<section id="leaderboard" style="display: none;">
-				<h2>🏆 Team</h2>
-				<ol>
-					<li>xnite</li>
-					<li></li>
-					<li></li>
-				</ol>
-			</section>
-			<section id="join" style="display: none;">
-				<div id="messages">
-					<div id="indicator"></div>
-				</div>
-				<input type="text" id="chatInput" placeholder="Type a message and hit enter..." autocomplete="off" />
-
-			</section>
-			<section class="catalog">
-				<div class="circlebutton" id="refresh-button" onclick="rinse();">
-					<div>↻</div>
-				</div>
-				<h2 class="title">🎲 Random items 🎲</h2>
-
-				<div class="catalog-grid" id="random" style="
-					display: flex;
-					gap: 1.5rem;
-					justify-content: center;
-					flex-wrap: wrap;">
-				</div>
-			</section>
-			<!-- Add somewhere in your HTML for top donators -->
-			<section class="half" style="overflow: hidden;" id="top-donators">
-				<h1 class="title">🧡 Donators 🧡</h1>
-
-				<div id="donators-list" style="
-				display: inline-flex;
-				flex-direction: row-reverse;
-				gap: 17px;
-				padding: 3px;
-				flex-wrap: wrap;
-				justify-content: space-evenly;">
-					<li>Loading...</li>
-				</div>
-
-				<button id="donate-btn"
-					onclick='window.open("www.roblox.com/developer-product/7469027374/product/3306385516", "_blank")'>Donate</button>
-				<small style="white-space: nowrap;top: 9px;color: #959595;position: relative;">all ur donations are deeply appreciated, thank u &lt;3</small>
-				<canvas id="tentacles-canvas"></canvas>
-
+<body>
+	<!-- Header with modern catalog style -->
+	<header>
+		<a href="https://emwiki.site">
+			<svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
 				<style>
-					#water-waves {
-						position: absolute;
-						top: 0;
-						left: 0;
-						width: 100%;
-						height: 100%;
-						z-index: 0;
-						/* Under donate button and text */
-						pointer-events: none;
+					@keyframes floatAnim {
+
+						0%,
+						to {
+							transform: translateY(0)
+						}
+
+						50% {
+							transform: translateY(-4px)
+						}
 					}
 
+					@keyframes glowPulse {
 
+						0%,
+						to {
+							filter: drop-shadow(0 0 0#fff)
+						}
 
+						50% {
+							filter: drop-shadow(0 0 8px #ff0) drop-shadow(0 0 15px #24ff5a)
+						}
+					}
 
+					@keyframes gradientShift {
 
-					/* Canvas covers button area exactly */
-					#tentacles-canvas {
-						position: absolute;
-						pointer-events: none;
-						/* so it doesn't block mouse */
-						left: 0;
-						z-index: -1;
-						top: 17px;
-						transition: opacity 0.5s ease;
+						0%,
+						to {
+							stop-color: #ff0
+						}
+
+						50% {
+							stop-color: #24ff5a
+						}
 					}
 				</style>
+				<defs>
+					<linearGradient id="eppp1" y1="1" x2="0">
+						<stop offset=".2" style="stop-color:#ff0" />
+						<stop offset="1" style="stop-color:#24ff5a" />
+					</linearGradient>
+					<linearGradient id="eppp2" y1="1" x2="0">
+						<stop offset="0" style="stop-color:#24ff5d" />
+						<stop offset="1" style="stop-color:#ff0" />
+					</linearGradient>
+				</defs>
+				<image id="cloud" x="461" y="459" href="https://emwiki.site/imgs/TWOKPhY.png" height="60" width="60"
+					style="filter:opacity(.6)" />
+				<text x="489" y="503" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
+					stroke-linejoin="round" fill="url(#eppp1)"
+					style="animation:floatAnim 12s ease-in-out infinite;font:200 46px Slapstick">EM</text>
+				<image id="epic-image" x="464" y="463" href="https://emwiki.site/imgs/epicfaces/kitta.png" height="60"
+					width="60"
+					style="scale:.48;transform:translate(846px,103px);rotate:20deg;transform-origin:center;animation:floatAnim2 15s ease-in-out 1s infinite alternate" />
+				<image id="cloud" x="495" y="477" href="https://emwiki.site/imgs/8UUB0Gt.png" height="60" width="60"
+					style="filter:opacity(.86)" />
+				<text x="516" y="514" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
+					stroke-linejoin="round" fill="url(#eppp2)"
+					style="animation:floatAnim 12s ease-in-out infinite;animation-delay:5.5s;font:200 16px Slapstick">wiki</text>
+				<image id="cloud" x="445" y="487" href="https://emwiki.site/imgs/oYKd3nJ.png" height="28" width="42"
+					style="filter:opacity(.8)" />
+			</svg>
 
-			</section>
-			<section
-				style="display: flex;flex-direction: column;flex-wrap: nowrap;justify-content: center;align-items: flex-start;"
-				class="half" id="patchnotes">
-				<h2 style="margin-bottom: 3px;font-size: 2.2em;margin-top: 0;margin-left: 13px;">Patch
-					Notes</h2>
-				<p style="font-size: 1.1rem;font-family: monospace;margin: 13px 16px;"><strong>Last
-						updated:</strong> June 28, 2025</p>
-				<ul
-					style="display: flex;flex-direction: column;flex-wrap: nowrap;align-content: flex-start;justify-content: center;align-items: flex-start;">
-					<li
-						style="font-size: 120%; text-shadow: 0 0 6px rgb(0, 139, 46);text-align: start; color: rgb(128, 240, 128);">
-						Download
-						as App! (works on all devices!)</li>
-					<li style="font-size: 120%; text-align: start; color: rgb(255, 255, 255);">Added
-						Gamenight prizes page.</li>
-					<li style="font-size: 120%; text-align: start; color: rgb(255, 255, 255);">Scammers
-						list now shows Alts.</li>
-					<li style="font-size: 120%; text-align: start; color: rgb(255, 255, 255);">Fixed
-						titles.</li>
-					<li style="font-size: 120%; text-align: start; color: rgb(255, 255, 255);">Added
-						Untradable, Premium, Retired tags to item cards.</li>
-				</ul>
-			</section>
+		</a>
+
+		<div class="nav-links">
+			<a href="/catalog" class="nav-link">Catalog</a>
+			<a href="/trading" class="nav-link">Trading Hub</a>
+			<a href="/forum" class="nav-link">Forum</a>
+			<a href="/gallery" class="nav-link">Gallery</a>
+			<a href="/gamenights" class="nav-link">Gamenights</a>
+			<a href="/scammers" class="nav-link">Scammers</a>
+		</div>
 
 
+	</header>
 
+	<!-- Hero Section -->
+	<section class="hero-section">
+		<div class="hero-content">
+			<h1 class="hero-title">
+				<span class="hero-epic">Epic Minigames</span>
+				<span class="hero-catalogue">Wiki</span>
+			</h1>
+			<p class="hero-subtitle">The Complete Epic Minigames Wiki</p>
 
-			<div style="width: -webkit-fill-available;">
-				<a href="https://discord.com/invite/tg"
-					style="margin:6px;display:inline-block;width: 66px;background: #5769e9;height: 66px;border: solid 1px rgb(54, 54, 158);float: none;"
-					class="circlebutton"><img style="width: 64px;" src="./imgs/discord.png"></a>
-				<a href="/404"><img class="circlebutton" src="./imgs/sef.png" style="    width: 66px;
-    background: #4848ff;
-    height: 66px;
-    border: solid 1px blue;
-	display: none;
-    float: none;"></a>
-				<a href="/burrito" class="circlebutton"
-					style="margin:6px;display:inline-block;width: 66px;background: #4848ff;height: 66px;border: solid 1px blue;float: none;"><img
-						src="./imgs/burrito.png" style="width: 64px;"></a>
+			<!-- Search Bar -->
+			<div class="search-container">
+				<input id="search-bar" type="text" placeholder="Search items..." />
+				<button class="search-btn">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+						<circle cx="11" cy="11" r="8"></circle>
+						<path d="m21 21-4.35-4.35"></path>
+					</svg>
+				</button>
+				<div id="search-results" class="search-results"></div>
 			</div>
-			<a href="/cat" class="circlebutton"
-				style="margin:6px;display:inline-block;width: 66px;background: #dd67c4;height: 66px;border: solid 1px rgb(139 0 115);float: none;"><img
-					src="./imgs/cats/heart.png" style="width: 64px;"></a>
+
+			<!-- Quick Stats -->
+			<div class="quick-stats">
+				<div class="stat-card">
+					<div class="stat-value" id="total-items">0</div>
+					<div class="stat-label">Total Items</div>
+				</div>
+				<div style="display: none;" class="stat-card">
+					<div class="stat-value" id="weekly-items">0</div>
+					<div class="stat-label">Weekly Items</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-value" id="new-items">0</div>
+					<div class="stat-label">New Items</div>
+				</div>
+			</div>
+		</div>
+		<button style="margin-top: 20px;" class="stats-btn" onclick="catalog.openStats()">My Lists</button>
+	</section>
+
+	<!-- Category Navigation -->
+	<div style="display: none;" class="category-nav-container">
+		<div class="category-nav">
+			<button class="category-btn active" data-category="all">
+				<img src="./imgs/XwkWVJJ.png" alt="All">
+				<span>All Items</span>
+			</button>
+			<button class="category-btn" data-category="gears">
+				<img src="./imgs/AYUbTJv.png" alt="Gears">
+				<span>Gears</span>
+			</button>
+			<button class="category-btn" data-category="deaths">
+				<img src="./imgs/fADZwOh.png" alt="Deaths">
+				<span>Deaths</span>
+			</button>
+			<button class="category-btn" data-category="pets">
+				<img src="./imgs/GHXB0nC.png" alt="Pets">
+				<span>Pets</span>
+			</button>
+			<button class="category-btn" data-category="effects">
+				<img src="./imgs/l90cgxf.png" alt="Effects">
+				<span>Effects</span>
+			</button>
+			<button class="category-btn" data-category="titles">
+				<img src="./imgs/ZOP8l9g.png" alt="Titles">
+				<span>Titles</span>
+			</button>
+		</div>
 	</div>
+
+	<!-- Main Content -->
+	<main>
+		<div class="lists-grid">
+			<!-- Newest Items Section -->
+			<section class="content-section">
+				<div class="section-header">
+					<h2 class="section-title">🎈 Newest Items</h2>
+					<a href="/catalog?filter=new" class="see-all-btn">See All →</a>
+				</div>
+				<div class="items-grid" id="new-items-grid"></div>
+			</section>
+
+			<!-- Weekly Shop Section -->
+			<section class="content-section">
+				<div class="section-header">
+					<h2 class="section-title">📆 Weekly Shop</h2>
+					<div class="countdown" id="countdown-shop">00:00:00</div>
+				</div>
+				<div class="items-grid" id="weekly-shop-grid"></div>
+			</section>
+
+			<!-- Weekly Rotation Section -->
+			<section class="content-section">
+				<div class="section-header">
+					<h2 class="section-title">⭐ Weekly Rotation</h2>
+					<div class="countdown" id="countdown-rotation">00:00:00</div>
+				</div>
+				<div class="items-grid" id="weekly-rotation-grid"></div>
+			</section>
+
+
+		</div>
+
+		<!-- Info Cards Row -->
+		<div class="info-cards-row">
+			<!-- Donators Card -->
+			<div class="info-card donators-card">
+				<h3 class="card-title">🧡 Top Donators</h3>
+				<div id="donators-list" class="donators-list">
+					<div class="donator-skeleton">Loading...</div>
+				</div>
+				<button class="donate-btn"
+					onclick="window.open('https://www.roblox.com/developer-product/7469027374/product/3306385516', '_blank');">
+					<span>Donate</span>
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+						<path fill="#000"
+							d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+					</svg>
+				</button>
+				<small class="donate-note">all ur donations are deeply appreciated &lt;3</small>
+			</div>
+
+			<!-- Patch Notes Card -->
+			<div class="info-card patch-notes-card">
+				<h3 class="card-title">📝 Patch Notes</h3>
+				<div class="patch-date">Last updated: Oct 15, 2025</div>
+				<ul class="patch-list">
+					<li class="patch-new">New updates coming soon!</li>
+					<li>Revamped UI</li>
+					<li>Some features may be broken</li>
+					<li>Reported bugs will be fixed</li>
+					<li>Suggestions are welcomed aswell!</li>
+				</ul>
+				<div class="patch-link">View Full Changelog →</div>
+			</div>
+			<!-- Random Items Section -->
+			<div class="info-card refresh">
+				<div class="section-header">
+					<h2 class="section-title">🎲 Random Item</h2>
+					<button class="refresh-btn" onclick="catalog.refreshRandom()">
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+							<path
+								d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+						</svg>
+					</button>
+				</div>
+				<div class="items-grid" id="random-items-grid"></div>
+			</div>
+		</div>
+
+
+
+		<!-- Quick Links -->
+		<div class="quick-links">
+			<a href="https://discord.com/invite/tg" class="quick-link discord">
+				<img src="./imgs/discord.png" alt="Discord">
+				<span>Discord</span>
+			</a>
+			<a href="/burrito" class="quick-link burrito">
+				<img src="./imgs/burrito.png" alt="Burrito Game">
+				<span>Burrito</span>
+			</a>
+			<a href="/cat" class="quick-link cat">
+				<img src="./imgs/cats/heart.png" alt="Cat">
+				<span>Cat</span>
+			</a>
+		</div>
 	</main>
-<footer >
 
-	  <ul style="list-style: none; margin: 0; padding: 0; text-align: right; transform: translateX(-18px); float: right;">
-    <li><a href="/gears" style="color:#aaa; text-decoration:none;">gears</a></li>
-    <li><a href="/titles" style="color:#aaa; text-decoration:none;">titles</a></li>
-    <li><a href="/deaths" style="color:#aaa; text-decoration:none;">deaths</a></li>
-    <li><a href="/effects" style="color:#aaa; text-decoration:none;">effects</a></li>
-    <li><a href="/pets" style="color:#aaa; text-decoration:none;">pets</a></li>
-    <li><a href="/chests" style="color:#aaa; text-decoration:none;">chests</a></li>
-    <li><a href="/scammers" style="color:#aaa; text-decoration:none;">scammers</a></li>
-  </ul>
-    <p>💬 Found a bug or have a suggestion?<br>Reach out to <b>@xnite</b> on Discord!</p>
-    
-    <p style="
-      font-size: 1rem;
-      text-wrap-style: balance;
-      padding: 0 0 10px 0;
-      margin: 0;">
-      <a style="color: #33c5ff;"
-        href="https://docs.google.com/spreadsheets/d/11qKj8UTf2-x0Z7bNMuguEFKALCWI1v7QtkDbNlBzy9M/edit?gid=0#gid=0">
-        Original item list Google Doc by @Kypsus
-      </a>
-    </p>
-  <o style="color:#777; font-size:0.85rem; margin-top:1rem; font-family: monospace;margin-bottom: 20px;">
-    © 2025 emwiki.site • made by xnite<br> <br> </o>
-    <button class="gyro" onclick="requestGyroPermission()" style="margin-bottom: 15px;">Enable Gyro</button>
+	<!-- Footer -->
+	<footer>
+		<div class="footer-content">
+			<div class="footer-section">
+				<h4>Browse</h4>
+				<a href="/catalog">Catalog</a>
+				<a href="/gamenights">Gamenight Dates</a>
+				<a href="/scammers">Scammers List</a>
+				<a href="/admin">Admin Portal</a>
+			</div>
+			<div class="footer-section">
+				<h4>Community</h4>
+				<a href="/forum">Forum</a>
+				<a href="/trading">Trading</a>
+				<a href="/gallery">Gallery</a>
+				<a href="https://discord.com/invite/tg">Typical Games Discord</a>
+			</div>
+			<div class="footer-section">
+				<h4>Contact</h4>
+				<p>Found a bug? Reach out to <b>@xnite</b> on Discord!</p>
+				<a href="https://docs.google.com/spreadsheets/d/11qKj8UTf2-x0Z7bNMuguEFKALCWI1v7QtkDbNlBzy9M">Original
+					Google Doc</a>
+			</div>
+		</div>
+		<div class="footer-bottom">
+			<p>© 2025 emwiki.site • made with ❤ by xnite</p>
+		</div>
+	</footer>
 
+	<link rel="stylesheet" href="./css/style.css">
 
-</footer>
+	<script src="./js/script.js"></script>
+	<script>
+		class Catalog extends BaseApp {
+			constructor() {
+				super();
+				this.currentCategory = 'all';
+				this.countdownManager = new CountdownManager();
+				this.init();
 
+			}
 
+			async init() {
+				await this.loadData();
+				this.setupEventListeners();
+				this.countdownManager.add('countdown-shop');
+				this.countdownManager.add('countdown-rotation');
+				//this.countdownManager.start();
+				document.querySelector('.patch-link').addEventListener('click', () => {
+					Utils.showToast(':3','poop update coming soon', 'info');
+				});
+				
+				this.loadDonators();
+				this.populateGrids();
+				this.initializeSearch();
 
+				// Update stats
+				const totalItems = this.allItems.length;
+				document.getElementById('total-items').textContent = totalItems;
+				const newItems = this.allItems.filter(item => item.new).length;
+				document.getElementById('new-items').textContent = newItems;
+			}
+
+			setupEventListeners() {
+				document.querySelectorAll('.category-btn').forEach(btn => {
+					btn.addEventListener('click', () => {
+						document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+						btn.classList.add('active');
+						this.currentCategory = btn.dataset.category;
+						this.populateGrids();
+					});
+				});
+			}
+
+			populateGrids() {
+				const newItems = this.allItems.filter(item => item.new).slice(0, 8);
+				this.renderItems('new-items-grid', newItems);
+
+				const weeklyShop = this.allItems.filter(item => item.weekly).slice(0, 8);
+				this.renderItems('weekly-shop-grid', weeklyShop);
+
+				const weeklyRotation = this.allItems.filter(item => item.weeklystar).slice(0, 8);
+				this.renderItems('weekly-rotation-grid', weeklyRotation);
+
+				this.refreshRandom();
+			}
+
+			renderItems(gridId, items) {
+				const grid = document.getElementById(gridId);
+				if (!grid) return;
+
+				grid.innerHTML = '';
+
+				items.forEach(item => {
+					grid.appendChild(this.createItemElement(item));
+					this.items.push({
+						...item
+					});
+				});
+			}
+
+			refreshRandom() {
+				const randomItems = [];
+				const myButton = document.querySelector('.refresh-btn');
+
+				myButton.addEventListener('click', () => {
+					myButton.classList.add('active');
+					setTimeout(() => myButton.classList.remove('active'), 300);
+				});
+
+				for (let i = 0; i < 1; i++) {
+					const randomIndex = Math.floor(Math.random() * this.allItems.length);
+					randomItems.push(this.allItems[randomIndex]);
+				}
+
+				this.renderItems('random-items-grid', randomItems);
+			}
+
+			async loadDonators() {
+				try {
+					const res = await fetch('https://emwiki.site/api/donations');
+					const data = await res.json();
+
+					const donatorsList = document.getElementById('donators-list');
+					donatorsList.innerHTML = '';
+
+					const topDonators = data.sort((a, b) => b.amount - a.amount).slice(0, 4);
+
+					topDonators.forEach(donator => {
+						const div = document.createElement('div');
+						div.className = 'donator-item';
+						div.innerHTML = `
+                    <img class="donator-avatar" src="${donator.avatar || 'https://emwiki.site/imgs/plr.jpg'}" alt="${donator.displayName}">
+                    <div class="donator-name">${donator.displayName}</div>
+                    <div class="donator-amount">${Utils.formatPrice(donator.totalSpent)}</div>
+                `;
+						donatorsList.appendChild(div);
+					});
+				} catch (error) {
+					console.error('Failed to load donators:', error);
+				}
+			}
+		}
+
+		window.catalog = new Catalog();
+	</script>
+	<script src="./js/auth.js"></script>
 
 </body>
 
 </html>
-
-<script async src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js">
-
-	VanillaTilt.init(document.querySelectorAll("[data-tilt]"), {
-		max: 15,
-		speed: 400,
-		glare: true,
-		"max-glare": 0.4,
-		gyroscope: true,
-		gyroscopeMinAngleX: -45,
-		gyroscopeMaxAngleX: 45,
-		gyroscopeMinAngleY: -45,
-		gyroscopeMaxAngleY: 45,
-	});
-
-</script>
-
-
-<link rel="preload" href="./css/style.css?version=3.2" as="style" onload="this.rel='stylesheet'">
-<noscript>
-	<link rel="stylesheet" href="./css/style.css?version=3.2">
-</noscript>
-
-<script>
-	if ('serviceWorker' in navigator) {
-		navigator.serviceWorker.register('/sw.js');
-	}
-</script>
-
-<!-- Donate options modal -->
-<div id="donate-modal" style="width: 33vw;width: 360px;display:none; position:fixed; top:50%; left:50%; transform: translate(-50%, -50%);
-     background:#333; padding:20px; border-radius:10px; box-shadow: 0 0 15px black; color:#fff; z-index:1000;">
-	<button id="close-donate-modal"
-		style="cursor: pointer;right: 2px;top: 2px;font: 900 36px 'Arimo';position: absolute;padding: 4px 11px;color: #ffffff45;background: transparent;">✕</button>
-	<h3 style="font-size: 28px;text-emphasis-style: '❤️';margin: 6px 0 21px;">Choose Donation Amount:</h3>
-	<img src="./imgs/cat-kiss.gif" alt="Thank you for ur donations <3" style="width: 42%;">
-	<ul style="list-style: none;padding: 0;gap: 8px;display: flex;flex-wrap: wrap;flex-direction: row;">
-		<li class="dnt" id="thous"><a href="https://www.roblox.com/developer-product/7469027374/product/3306391883"
-				target="_blank">10000</a></li>
-		<li class="dnt"><a href="https://www.roblox.com/developer-product/7469027374/product/3306391406"
-				target="_blank">2500</a></li>
-		<li class="dnt"><a href="https://www.roblox.com/developer-product/7469027374/product/3306391272"
-				target="_blank">500</a></li>
-		<li class="dnt"><a href="https://www.roblox.com/developer-product/7469027374/product/3306385668"
-				target="_blank">200</a></li>
-		<li class="dnt"><a href="https://www.roblox.com/developer-product/7469027374/product/3306385516"
-				target="_blank">100</a></li>
-		<li class="dnt"><a href="https://www.roblox.com/developer-product/7469027374/product/3306385370"
-				target="_blank">50</a></li>
-	</ul>
-
-</div>
-
-<!-- Modal background overlay -->
-<div id="modal-overlay"
-	style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5s); z-index:999;">
-</div>
-
-
-
-<script defer src="./js/sparkles.js"></script>
-
-
-<script>
-
-	function fetchDonations() {
-		const donatorsList = document.getElementById('donators-list');
-		if (!donatorsList) return;
-
-		const loadDonations = () => {
-			fetch('https://emwiki.site/api/donations')
-				.then(res => {
-					if (!res.ok) throw new Error('Failed to fetch donation data');
-					return res.json();
-				})
-				.then(data => {
-					donatorsList.innerHTML = '';
-					const topDonators = data.sort((a, b) => b.amount - a.amount).slice(0, 4);
-					topDonators.forEach(user => {
-						const li = document.createElement('li');
-						const img = document.createElement('img');
-						img.src = user.avatar || 'https://emwiki.site/imgs/plr.jpg';
-						img.alt = user.displayName || user.name || 'User avatar';
-						img.className = 'avatar';
-						li.appendChild(img);
-						li.style.listStyleType = "none";
-						li.style.display = "flex";
-						li.style.alignItems = "center";
-						li.style.flexDirection = "column";
-						li.style.fontWeight = "300";
-						img.style.width = "100px";
-						img.style.filter = "drop-shadow(0px 0px 6px #00000069)";
-						li.appendChild(document.createTextNode(`${user.displayName}`));
-						const amountSpan = document.createElement('span');
-						amountSpan.textContent = `${user.totalSpent} Robux`;
-						amountSpan.style.color = "#ffcc00";
-						amountSpan.style.fontWeight = "bold";
-						li.appendChild(amountSpan);
-						donatorsList.appendChild(li);
-					});
-				})
-				.catch(err => {
-					console.error('Error fetching donations:', err);
-					donatorsList.innerHTML = '<li>Error loading donators</li>';
-				});
-		};
-
-		if (window.requestIdleCallback) {
-			requestIdleCallback(loadDonations, { timeout: 2000 });
-		} else {
-			setTimeout(loadDonations, 100);
-		}
-	}
-
-	document.addEventListener('DOMContentLoaded', fetchDonations);
-
-	const donateBtn = document.getElementById('donate-btn');
-	const donateModal = document.getElementById('donate-modal');
-	const closeModalBtn = document.getElementById('close-donate-modal');
-	const modalOverlay = document.getElementById('modal-overlay');
-
-	donateBtn.onclick = () => {
-		setTimeout(() => {
-			donateModal.style.display = 'block';
-			modalOverlay.style.display = 'block';
-		}, 250)
-
-	};
-
-	closeModalBtn.onclick = () => {
-		donateModal.style.display = 'none';
-		modalOverlay.style.display = 'none';
-	};
-
-	modalOverlay.onclick = () => {
-		donateModal.style.display = 'none';
-		modalOverlay.style.display = 'none';
-	};
-
-	const installBtn = document.getElementById('installBtn');
-	const iosPopup = document.getElementById('iosInstallPopup');
-	const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-	const isStandalone = window.navigator.standalone === true;
-	let deferredPrompt;
-
-	if (!(isIOS && isStandalone)) {
-		installBtn.style.display = 'inline';
-	}
-
-	window.addEventListener('beforeinstallprompt', (e) => {
-		e.preventDefault();
-		deferredPrompt = e;
-
-		if (!isIOS) {
-			installBtn.style.display = 'inline';
-		}
-
-		installBtn.addEventListener('click', async () => {
-			if (deferredPrompt) {
-				installBtn.style.display = 'none';
-				deferredPrompt.prompt();
-				const { outcome } = await deferredPrompt.userChoice;
-				console.log(`Install outcome: ${outcome}`);
-				deferredPrompt = null;
-
-				if (outcome === 'dismissed') {
-					installBtn.style.display = 'inline';
-				} else {
-					installBtn.style.display = 'none';
-				}
-			}
-		});
-	});
-
-	if (isIOS && !isStandalone) {
-		installBtn.addEventListener('click', () => {
-			iosPopup.style.display = 'block';
-			requestAnimationFrame(() => {
-				iosPopup.style.bottom = '20px';
-				iosPopup.style.opacity = '1';
-			});
-
-			setTimeout(() => {
-				hideIosPopup();
-			}, 8000);
-		});
-	}
-
-	function hideIosPopup() {
-		iosPopup.style.bottom = '-150px';
-		iosPopup.style.opacity = '0';
-		setTimeout(() => {
-			iosPopup.style.display = 'none';
-		}, 600);
-	}
-
-	const creditsmodal = document.getElementById("credits-modal");
-	const content = document.getElementById("credits-content");
-	const button = document.getElementById("credits-button");
-	const close = document.getElementById("close-credits");
-
-	const isTouche = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-	function showModal(e) {
-		creditsmodal.style.display = "block";
-		creditsmodal.style.pointerEvents = "auto";
-
-		if (!isTouche) {
-			const x = button.getBoundingClientRect().left - content.getBoundingClientRect().width;
-			const y = button.getBoundingClientRect().top - 30;
-			content.style.position = "absolute";
-			content.style.left = `${x}px`;
-			content.style.top = `${y}px`;
-			close.style.display = "none";
-			creditsmodal.style.padding = "0";
-		} else {
-			creditsmodal.style.position = "fixed";
-			creditsmodal.style.top = "0";
-			creditsmodal.style.left = "0";
-			creditsmodal.style.width = "-webkit-fill-available";
-			creditsmodal.style.height = "-webkit-fill-available";
-			creditsmodal.style.backdropFilter = "blur(6px)";
-			creditsmodal.style.backgroundColor = "rgba(0,0,0,0.5)";
-			content.style.position = "relative";
-			content.style.margin = "60px auto";
-		}
-	}
-
-	function hideModal() {
-		creditsmodal.style.display = "none";
-		creditsmodal.style.pointerEvents = "none";
-	}
-
-	button.addEventListener("touchend", (e) => {
-		showModal(e);
-	});
-	button.addEventListener("mouseover", (e) => {
-		if (!isTouche) showModal(e);
-	});
-	button.addEventListener("mouseout", (e) => {
-		if (!isTouche) hideModal();
-	});
-	close.addEventListener("click", hideModal);
-	creditsmodal.addEventListener("click", (e) => {
-		if (e.target === creditsmodal) hideModal();
-	});
-
-	const bg = document.querySelector('.parallax-bg');
-	const isTouchr = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-	if (!isTouchr) {
-		window.addEventListener('scroll', () => {
-			const scrollY = window.scrollY;
-			bg.style.transform = `translateY(${scrollY * -0.4}px)`;
-			const fadePoint = 2500;
-			const opacity = Math.max(0, 1 - scrollY / fadePoint);
-			bg.style.opacity = opacity.toFixed(2);
-		});
-	}
-
-	const API_URL = 'https://emwiki-poll.xnite7.workers.dev/api/poll';
-	const pollResult = document.getElementById('pollResult');
-	const pollTotals = document.getElementById('pollTotals');
-	const voteButtons = document.querySelectorAll('.vote-button');
-
-	const alreadyVoted = localStorage.getItem('hasVoted') === 'true';
-
-	function disableVoting(message) {
-		voteButtons.forEach(btn => { btn.style.display = "none"; btn.disabled = true });
-		pollResult.textContent = message;
-		pollResult.style.display = 'block';
-	}
-
-	async function fetchResults() {
-		try {
-			const res = await fetch(API_URL);
-			const data = await res.json();
-			pollTotals.textContent = `👍 ${data.like} · 👎 ${data.dislike}`;
-		} catch {
-			pollTotals.textContent = '⚠️ Error loading poll results.';
-		}
-	}
-
-	async function submitVote(vote) {
-		if (alreadyVoted) return;
-
-		try {
-			const res = await fetch(API_URL, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ vote })
-			});
-
-			if (res.status === 403) {
-				disableVoting('You have already voted.');
-				document.querySelector('.poll-box').style.display = 'none'
-			} else if (res.ok) {
-				disableVoting('Thanks for voting!');
-			} else {
-				pollResult.textContent = 'Error submitting vote.';
-				pollResult.style.display = 'block';
-				return;
-			}
-
-			localStorage.setItem('hasVoted', 'true');
-			await fetchResults();
-		} catch {
-			pollResult.textContent = 'Network error.';
-			pollResult.style.display = 'block';
-		}
-	}
-
-	voteButtons.forEach(button => {
-		button.addEventListener('click', () => {
-			const vote = button.getAttribute('data-vote');
-			submitVote(vote);
-		});
-	});
-
-	if (alreadyVoted) {
-		disableVoting('You have already voted.');
-		document.querySelector('.poll-box').style.display = 'none'
-	}
-
-	const countdownEl = document.getElementById("countdown");
-	const countdownEl2 = document.getElementById("countdown2");
-
-	const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
-	const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-
-	const baseStart = new Date(Date.UTC(2025, 4, 24, 24));
-	const baseStart2 = new Date(Date.UTC(2025, 4, 29, 24));
-
-	let cachedUTC = null;
-	let cachedAt = 0;
-
-	async function getAccurateUTC() {
-		const now = Date.now();
-		if (cachedUTC && (now - cachedAt < 5 * 60 * 1000)) {
-			return new Date(cachedUTC.getTime() + (now - cachedAt));
-		}
-		try {
-			const res = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
-			const text = await res.text();
-			let data;
-			try {
-				data = JSON.parse(text);
-			} catch {
-				throw new Error(text);
-			}
-			cachedUTC = new Date(data.utc_datetime);
-			cachedAt = Date.now();
-			return cachedUTC;
-		} catch (e) {
-			console.warn("Falling back to device UTC time:", e);
-			return new Date(Date.now());
-		}
-	}
-
-	let lastUTC = null;
-	let lastUTCAt = 0;
-
-	async function syncUTC() {
-		lastUTC = await getAccurateUTC();
-		lastUTCAt = Date.now();
-	}
-
-	function getCurrentUTC() {
-		if (!lastUTC) return new Date(Date.now());
-		const now = Date.now();
-		return new Date(lastUTC.getTime() + (now - lastUTCAt));
-	}
-
-	function updateCountdown() {
-		const utcNow = getCurrentUTC();
-
-		const elapsed = utcNow - baseStart;
-		const elapsed2 = utcNow - baseStart2;
-		const timeIntoCurrentCycle = elapsed % WEEK_MS;
-		const timeIntoCurrentCycle2 = elapsed2 % WEEK_MS;
-
-		const timeLeft = WEEK_MS - timeIntoCurrentCycle;
-		const timeLeft2 = WEEK_MS - timeIntoCurrentCycle2;
-
-		countdownEl.style.color = timeLeft < SIX_HOURS_MS ? "#ff9999" : "#cccccc";
-		countdownEl2.style.color = timeLeft2 < SIX_HOURS_MS ? "#ff9999" : "#cccccc";
-
-		const formatTime = (ms) => {
-			const totalSeconds = Math.floor(ms / 1000);
-			const days = Math.floor(totalSeconds / (24 * 3600));
-			const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
-			const minutes = Math.floor((totalSeconds % 3600) / 60);
-			const seconds = totalSeconds % 60;
-			const pad = (n) => n.toString().padStart(2, '0');
-			return `${pad(days)}:${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-		};
-
-		countdownEl.textContent = formatTime(timeLeft);
-		countdownEl2.textContent = formatTime(timeLeft2);
-	}
-	setInterval(updateCountdown, 1000);
-
-	window.addEventListener('load', () => {
-		const container = document.getElementById('top-donators');
-		const canvas = document.getElementById('tentacles-canvas');
-		const ctx = canvas.getContext('2d');
-		const btn = document.getElementById('donate-btn');
-
-		let w, h;
-		let centerX, centerY;
-
-		const tentaclesCount = 8;
-		const maxTentacleLength = 120;
-		const suckerCount = 6;
-
-		let animationProgress = 0;
-		let targetProgress = 0;
-
-		let isActive = false;
-
-		function resize() {
-			w = canvas.width = container.clientWidth;
-			h = canvas.height = container.clientHeight;
-			canvas.style.width = w + 'px';
-			canvas.style.height = h + 'px';
-
-			centerX = w / 2;
-			centerY = h / 2;
-		}
-
-		window.addEventListener('resize', resize);
-		resize();
-
-		function cubicBezier(p0, p1, p2, p3, t) {
-			const mt = 1 - t;
-			return mt * mt * mt * p0 + 3 * mt * mt * t * p1 + 3 * mt * t * t * p2 + t * t * t * p3;
-		}
-
-		function getBezierPoint(path, t) {
-			const { startX, startY, cp1X, cp1Y, cp2X, cp2Y, endX, endY } = path;
-			const x = cubicBezier(startX, cp1X, cp2X, endX, t);
-			const y = cubicBezier(startY, cp1Y, cp2Y, endY, t);
-			return { x, y };
-		}
-
-		function getTentaclePath(baseAngle, progress, time) {
-			const length = maxTentacleLength * progress;
-
-			const startX = centerX;
-			const startY = centerY;
-
-			const endX = centerX + Math.cos(baseAngle) * length;
-			const endY = centerY + Math.sin(baseAngle) * length;
-
-			const waveAmplitude = progress > 0 ? 15 : 0;
-			const waveFreq = 3;
-
-			const cp1Dist = length * 0.4 * progress;
-			const cp2Dist = length * 0.7 * progress;
-
-			const cp1Angle = baseAngle - Math.PI / 4 + (progress * Math.sin(time * waveFreq) * 0.3);
-			const cp2Angle = baseAngle + Math.PI / 4 + (progress * Math.cos(time * waveFreq + Math.PI / 2) * 0.3);
-
-			const cp1X = centerX + Math.cos(cp1Angle) * cp1Dist + Math.sin(time * waveFreq) * waveAmplitude * progress;
-			const cp1Y = centerY + Math.sin(cp1Angle) * cp1Dist + Math.cos(time * waveFreq) * waveAmplitude * progress;
-
-			const cp2X = centerX + Math.cos(cp2Angle) * cp2Dist + Math.cos(time * waveFreq) * waveAmplitude * progress;
-			const cp2Y = centerY + Math.sin(cp2Angle) * cp2Dist + Math.sin(time * waveFreq) * waveAmplitude * progress;
-
-			return { startX, startY, cp1X, cp1Y, cp2X, cp2Y, endX, endY };
-		}
-
-		function drawTentacle(path, time) {
-			ctx.lineWidth = 6;
-
-			if (isActive) {
-				ctx.shadowColor = 'gold';
-				ctx.shadowBlur = 15;
-				ctx.strokeStyle = 'rgba(255, 215, 0, 0.9)';
-			} else {
-				ctx.shadowColor = 'rgba(150, 100, 255, 0.6)';
-				ctx.shadowBlur = 6;
-				const grad = ctx.createLinearGradient(path.startX, path.startY, path.endX, path.endY);
-				grad.addColorStop(0, 'rgba(128,0,128,0.8)');
-				grad.addColorStop(1, 'rgba(255,0,255,0.5)');
-				ctx.strokeStyle = grad;
-			}
-
-			ctx.lineCap = 'round';
-
-			ctx.beginPath();
-			ctx.moveTo(path.startX, path.startY);
-			ctx.bezierCurveTo(path.cp1X, path.cp1Y, path.cp2X, path.cp2Y, path.endX, path.endY);
-			ctx.stroke();
-
-			for (let i = 1; i <= suckerCount; i++) {
-				const t = i / (suckerCount + 1);
-				const pos = getBezierPoint(path, t);
-				const suckerRadius = 4 + Math.sin(time * 10 + i) * 1;
-
-				ctx.beginPath();
-				ctx.fillStyle = isActive ? 'rgba(255, 223, 100, 0.8)' : 'rgba(200,150,255,0.7)';
-				ctx.shadowColor = isActive ? 'rgba(255, 215, 0, 0.8)' : 'rgba(150,100,255,0.6)';
-				ctx.shadowBlur = isActive ? 10 : 4;
-				ctx.arc(pos.x, pos.y, suckerRadius, 0, 2 * Math.PI);
-				ctx.fill();
-				ctx.shadowBlur = 0;
-			}
-		}
-
-		function animate(time = 0) {
-			ctx.clearRect(0, 0, w, h);
-
-			const speed = 0.05;
-			animationProgress += (targetProgress - animationProgress) * speed;
-
-			if (animationProgress > 0.01) {
-				for (let i = 0; i < tentaclesCount; i++) {
-					const baseAngle = (i / tentaclesCount) * Math.PI * 2;
-					const path = getTentaclePath(baseAngle, animationProgress, time / 1000);
-					drawTentacle(path, time / 1000);
-				}
-			}
-
-			requestAnimationFrame(animate);
-		}
-
-		animate();
-
-		btn.addEventListener('mouseenter', () => {
-			targetProgress = 1;
-		});
-
-		btn.addEventListener('mouseleave', () => {
-			targetProgress = 0;
-		});
-
-		btn.addEventListener('mousedown', () => {
-			isActive = true;
-		});
-
-		btn.addEventListener('mouseup', () => {
-			isActive = false;
-		});
-
-		btn.addEventListener('mouseleave', () => {
-			isActive = false;
-		});
-	});
-
-	document.querySelector('a[href="#patchnotes"]').addEventListener("click", (e) => {
-		const patch = document.getElementById("patchnotes");
-		patch.classList.remove("animate");
-		void patch.offsetWidth;
-		patch.classList.add("animate");
-	});
-
-	function updateVh() {
-		const vh = window.innerHeight * 0.01;
-		document.documentElement.style.setProperty('--vh', `${vh}px`);
-	}
-
-	const debounce = (func, wait) => {
-		let timeout;
-		return (...args) => {
-			clearTimeout(timeout);
-			timeout = setTimeout(() => func.apply(this, args), wait);
-		};
-	};
-
-	window.addEventListener('load', debounce(updateVh, 100));
-	window.addEventListener('resize', debounce(updateVh, 100));
-	window.addEventListener('orientationchange', debounce(updateVh, 100));
-
-	setTimeout(updateVh, 500);
-
-</script>
-<script src="./js/script.js"></script>
