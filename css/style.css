@@ -605,6 +605,7 @@ main {
     font-family: 'BuilderSans', monospace;
     font-size: 1rem;
     font-weight: bold;
+    display: none;
     color: #ffd700;
 }
 
@@ -670,12 +671,12 @@ main {
 }
 
 .items-grid::-webkit-scrollbar-thumb {
-    background: linear-gradient(to bottom, #4a9eff, #2629c7);
+    background: linear-gradient(to bottom, #4a9eff, #255cf1);
     border-radius: 10px;
 }
 
 .items-grid::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(to bottom, #5fa3f1, #4649f3);
+    background: linear-gradient(to bottom, rgb(54, 138, 248), #3c22d1);
 }
 
 .item {
@@ -1010,13 +1011,23 @@ div#random-items-grid {
     display: block;
     text-align: center;
     margin-top: 8px;
-    background: linear-gradient(253deg, #ffffff1a, #ffffff4f);
+    background: linear-gradient(90deg, #ffffff28, #ffffff7e, #ffffff28);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+      background-size: 200% 200%;
+  animation: gradient-animation 9s ease-out infinite alternate;
     font-style: italic;
     font-size: 0.85rem;
 }
+
+
+@keyframes gradient-animation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 
 .patch-date {
     color: var(--text-secondary);
