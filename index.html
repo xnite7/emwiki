@@ -136,17 +136,14 @@
 					<div class="stat-value" id="total-items">0</div>
 					<div class="stat-label">Total Items</div>
 				</div>
-				<div style="display: none;" class="stat-card">
-					<div class="stat-value" id="weekly-items">0</div>
-					<div class="stat-label">Weekly Items</div>
-				</div>
+
 				<div class="stat-card">
 					<div class="stat-value" id="new-items">0</div>
 					<div class="stat-label">New Items</div>
 				</div>
 			</div>
 		</div>
-		<button style="margin-top: 20px;" class="stats-btn" onclick="catalog.openStats()">My Lists</button>
+		<button class="stats-btn" onclick="catalog.openStats()">My Lists</button>
 	</section>
 
 	<!-- Category Navigation -->
@@ -185,7 +182,7 @@
 			<!-- Newest Items Section -->
 			<section class="content-section">
 				<div class="section-header">
-					<h2 class="section-title">🎈 Newest Items</h2>
+					<h2 class="section-title"> New Items</h2>
 					<a href="/catalog?filter=new" class="see-all-btn">See All →</a>
 				</div>
 				<div class="items-grid" id="new-items-grid"></div>
@@ -203,7 +200,7 @@
 			<!-- Weekly Rotation Section -->
 			<section class="content-section">
 				<div class="section-header">
-					<h2 class="section-title">⭐ Weekly Rotation</h2>
+					<h2 class="section-title"> Weekly Rotation</h2>
 					<div class="countdown" id="countdown-rotation">00:00:00</div>
 				</div>
 				<div class="items-grid" id="weekly-rotation-grid"></div>
@@ -216,7 +213,7 @@
 		<div class="info-cards-row">
 			<!-- Donators Card -->
 			<div class="info-card donators-card">
-				<h3 class="card-title">🧡 Top Donators</h3>
+				<h3 class="card-title"> Donations</h3>
 				<div id="donators-list" class="donators-list">
 					<div class="donator-skeleton">Loading...</div>
 				</div>
@@ -233,7 +230,7 @@
 
 			<!-- Patch Notes Card -->
 			<div class="info-card patch-notes-card">
-				<h3 class="card-title">📝 Patch Notes</h3>
+				<h3 class="card-title"> Patch Notes</h3>
 				<div class="patch-date">Last updated: Oct 15, 2025</div>
 				<ul class="patch-list">
 					<li class="patch-new">New updates coming soon!</li>
@@ -245,9 +242,9 @@
 				<div class="patch-link">View Full Changelog →</div>
 			</div>
 			<!-- Random Items Section -->
-			<div class="info-card refresh">
+			<div class="info-card refresh-card">
 				<div class="section-header">
-					<h2 class="section-title">🎲 Random Item</h2>
+					<h2 class="card-title"> Random Item</h2>
 					<button class="refresh-btn" onclick="catalog.refreshRandom()">
 						<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
 							<path
@@ -327,9 +324,9 @@
 				this.countdownManager.add('countdown-rotation');
 				//this.countdownManager.start();
 				document.querySelector('.patch-link').addEventListener('click', () => {
-					Utils.showToast(':3','poop update coming soon', 'info');
+					Utils.showToast(':3', 'poop update coming soon', 'info');
 				});
-				
+
 				this.loadDonators();
 				this.populateGrids();
 				this.initializeSearch();
@@ -372,7 +369,29 @@
 				grid.innerHTML = '';
 
 				items.forEach(item => {
-					grid.appendChild(this.createItemElement(item));
+					const div = this.createItemElement(item)
+
+					if (item.weeklystar) {
+						div.querySelector('.item-price').textContent = item['price/code/rarity'].split('<br>')[0].replace(' Stars', '');
+						div.querySelector('.item-price').classList.replace('item-price', 'star-price');
+						const outlineColors = {
+							'60': '#b31aff',
+							'30': '#ff2a00',
+							'15': '#fae351',
+							'5': '#e0e6df'
+						};
+						Object.entries(outlineColors).forEach(([num, color]) => {
+							if (item['price/code/rarity']?.toLowerCase().includes(num)) {
+								div.style.outline = `4px solid ${color}`;
+								div.style.background = 'unset';
+							}
+						});
+					} else if (item.weekly) {
+						div.querySelector('.item-price').textContent = item['price/code/rarity'].split('<br>')[0].replace(' Coins', '');
+						div.querySelector('.item-price').classList.add('star-price', 'coin-price');
+					}
+
+					grid.appendChild(div);
 					this.items.push({
 						...item
 					});
