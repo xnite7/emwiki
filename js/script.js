@@ -508,7 +508,7 @@ class BaseApp {
         div.appendChild(name);
 
         // Price
-        if (item.price && item.price !== 'N/A') {
+        if (item.price !== '0') {
             const price = document.createElement('div');
             price.className = 'item-price';
             price.textContent = Utils.formatPrice(item.price);
@@ -774,7 +774,7 @@ class BaseApp {
                 div.className = 'item';
                 div.innerHTML = `
                     <div class="item-name">${item.name}</div>
-                    ${item.price != 'N/A' && item.price != '' ? `<div class="item-price">${Utils.formatPrice(item.price)}</div>` : ''}
+                    ${item.price != '0' && item.price != '' ? `<div class="item-price">${Utils.formatPrice(item.price)}</div>` : ''}
                     <div class="remove-wishlist">×</div>
                 `;
 
@@ -806,7 +806,7 @@ class BaseApp {
                 };
                 wishlistDiv.appendChild(div);
 
-                if (item.price && item.price !== 'N/A') {
+                if (item.price !== '0') {
                     totalValue += parseInt(item.price) || 0;
                 }
             }
@@ -824,7 +824,7 @@ class BaseApp {
                 const div = document.createElement('div');
                 div.className = 'item';
                 div.innerHTML = `<div class="item-name" style="z-index:2;font-size:10px;margin-top:5px;">${item.name}</div>
-                            ${item.price != 'N/A' && item.price != '' ? `<div class="item-price">${Utils.formatPrice(item.price)}</div>` : ''}
+                            ${item.price != '0' && item.price != '' ? `<div class="item-price">${Utils.formatPrice(item.price)}</div>` : ''}
                         `;
                 if (item.img) {
                     const canvas = document.createElement('canvas');
@@ -1285,7 +1285,7 @@ class ItemModal {
         this.elements.description.innerHTML = item.from || '';
 
         // Price
-        if (item.price && item.price !== 'N/A') {
+        if (item.price !== '0') {
             this.elements.price.innerHTML = `
                     <img src="./imgs/rap.png" alt="RAP">
                     ${Utils.formatPrice(item.price)}

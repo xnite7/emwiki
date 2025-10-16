@@ -373,7 +373,7 @@ body.light-theme .theme-toggle:hover::before {
     grid-template-columns: repeat(2, 1fr);
     gap: 15px;
     max-width: 380px;
-    margin: 0 auto;
+    margin: 0 auto 20px;
 }
 
 .stat-card {
@@ -424,7 +424,6 @@ body.light-theme .theme-toggle:hover::before {
     border-radius: 25px;
     color: white;
     cursor: pointer;
-    margin-top: 20px;
     transition: all 0.3s;
     font-size: 14px;
     font-weight: 600;
