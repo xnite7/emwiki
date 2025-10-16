@@ -2234,12 +2234,15 @@ body.light-theme .controls-bar {
 .wishlist-section {
     margin-bottom: 30px;
     border: 3px solid var(--border-color);
-    border-radius: inherit;
+    border-radius: 8px;
     padding: 10px 0px 0px;
     max-height: 37vh;
-    overflow-y: scroll;
+    overflow-y: auto;
 }
 
+.wishlist-section::-webkit-scrollbar-track {
+    background: linear-gradient(transparent 82%, #313131 86%, #292828);
+}
 
 .wishlist-section::-webkit-scrollbar {
     width: 8px;
@@ -2256,15 +2259,14 @@ body.light-theme .controls-bar {
 .wishlist-total {
     font-variant: all-petite-caps;
     color: var(--text-secondary);
-    background: linear-gradient(180deg, transparent 0px, #000000 22px);
-    padding: 22px 15px 16px 15px;
-    border-radius: 15px;
+    background: linear-gradient(transparent, #313131 16px, #292828);
+    padding: 26px 15px 14px 15px;
     text-align: center;
     font-size: 21px;
     position: sticky;
-    width: -webkit-fill-available;
-    bottom: 0;
-    backdrop-filter: blur(1px);
+    width: 100%;
+    bottom: 0px;
+    filter: drop-shadow(0px -2px 4px black);
     z-index: 3;
     font-weight: 600;
 }
@@ -2323,7 +2325,7 @@ header svg * {
         font-variant: all-petite-caps;
         color: var(--text-secondary);
         background: #6f6f6f70;
-        padding: 5px 14px 7px;
+        padding: 1px 14px 7px;
         border: 3px solid #575757;
         border-radius: 15px;
         text-align: center;
