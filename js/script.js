@@ -264,11 +264,9 @@ class BaseApp {
             <div id="stats-dashboard" class="stats-dashboard">
                 <div class="stats-content">
                     <div class="stats-header">
-                        <h2 style="font-size: 41px;letter-spacing: 2px;font-family: pacifico;">My Lists</h2>
+                        <h2>My Lists</h2>
                         <span class="close-stats" onclick="catalog.closeStats()">×</span>
                     </div>
-
-                    <div class="wishlist-section">
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 0px 10px 7px;">
                             <h3 style="margin: 0; font-size: 23px; font-variant: all-petite-caps; cursor: pointer;"
                                 id="wishlist-tab" class="active" onclick="catalog.switchListMode('wishlist')">
@@ -289,6 +287,8 @@ class BaseApp {
                                 </svg> Favorites
                             </h3>
                         </div>
+                    <div class="wishlist-section">
+                        
                         <div id="wishlist-items" class="catalog-grid"></div>
                         <div class="wishlist-total">
                             <span id="list-mode-label">Wishlist</span> Total Value:

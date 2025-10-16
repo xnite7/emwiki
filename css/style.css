@@ -2163,10 +2163,10 @@ body.light-theme .controls-bar {
     padding: 20px 30px;
     border: 1px solid var(--bg-item-hover);
     outline: 5px solid #000000;
-    max-width: 702px;
+    max-width: 700px;
     width: 90%;
     max-height: 80vh;
-    overflow-y: auto;
+    overflow-y: hidden;
     overflow-x: hidden;
     position: relative;
 }
@@ -2189,6 +2189,9 @@ body.light-theme .controls-bar {
 }
 
 .stats-header h2 {
+    font-size: 41px;
+    letter-spacing: 2px;
+    font-family: pacifico;
     margin: 0;
     color: var(--text-primary);
 }
@@ -2233,7 +2236,7 @@ body.light-theme .controls-bar {
     border: 3px solid var(--border-color);
     border-radius: inherit;
     padding: 10px 0px 0px;
-    height: 37vh;
+    max-height: 37vh;
     overflow-y: scroll;
 }
 
@@ -2257,7 +2260,7 @@ body.light-theme .controls-bar {
     padding: 22px 15px 16px 15px;
     border-radius: 15px;
     text-align: center;
-    font-size: 20px;
+    font-size: 21px;
     position: sticky;
     width: -webkit-fill-available;
     bottom: 0;
@@ -2308,6 +2311,14 @@ header svg * {
 /* Responsive */
 @media (max-width: 768px) {
 
+    .stats-header h2 {
+    font-size: 37px;
+    letter-spacing: 2px;
+    font-family: pacifico;
+    margin: 0;
+    color: var(--text-primary);
+}
+
     .wishlist-total {
         font-variant: all-petite-caps;
         color: var(--text-secondary);
@@ -2316,7 +2327,7 @@ header svg * {
         border: 3px solid #575757;
         border-radius: 15px;
         text-align: center;
-        font-size: 19px;
+        font-size: 16px;
         backdrop-filter: blur(48px);
         position: sticky;
         box-shadow: inset 0 0 20px 0px #bccbc8bf, 0 0 9px 1px #00000094;
