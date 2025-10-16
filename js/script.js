@@ -485,6 +485,12 @@ class BaseApp {
             div.id = categoryColors[category] || '';
         }
 
+        // Name
+        const name = document.createElement('div');
+        name.className = 'item-name';
+        name.textContent = item.name;
+        div.appendChild(name);
+
         // Image/SVG
         if (item.img) {
             const canvas = document.createElement('canvas');
@@ -498,21 +504,21 @@ class BaseApp {
             img.src = item.img;
             div.appendChild(canvas);
         } else if (item.svg) {
-            div.innerHTML = item.svg;
+            div.insertAdjacentHTML('beforeend', item.svg);
         }
 
-        // Name
-        const name = document.createElement('div');
-        name.className = 'item-name';
-        name.textContent = item.name;
-        div.appendChild(name);
+
 
         // Price
-        if (item.price !== '0') {
-            const price = document.createElement('div');
-            price.className = 'item-price';
-            price.textContent = Utils.formatPrice(item.price);
-            div.appendChild(price);
+        const price = document.createElement('div');
+        price.className = 'item-price';
+        price.textContent = Utils.formatPrice(item.price);
+        div.appendChild(price);
+
+        if (item.price == '0') {
+            price.style.opacity = '0';
+            price.style.height = '16px';
+
         }
 
         // Badges
@@ -729,7 +735,7 @@ class BaseApp {
         document.getElementById('stats-dashboard').classList.add('show');
         this.updateStatsIfOpen();
         document.getElementById('profile-dropdown').classList.remove('show');
- 
+
     }
 
     closeStats() {

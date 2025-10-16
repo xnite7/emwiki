@@ -38,7 +38,7 @@ body.light-theme {
 body {
     background: var(--bg-primary);
     color: var(--text-primary);
-    font-family: 'Source Sans Pro', Twemoji;
+    font-family: 'Source Sans Pro', sans-serif, Twemoji;
     overflow-x: hidden;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
@@ -794,14 +794,13 @@ main {
 
 .item:has(>svg) .item-name {
     opacity: 0;
+    white-space: nowrap;
 }
 
 .item>svg {
-    position: absolute;
     width: 90%;
     height: auto;
     pointer-events: none;
-    place-self: anchor-center;
 }
 
 .item-name {
@@ -1030,8 +1029,10 @@ div#random-items-grid {
 
 .patch-date {
     color: var(--text-secondary);
-    font-variant: all-small-caps;
-    font-size: 0.85rem;
+    font-variant: all-petite-caps;
+    font-size: 15px;
+    font-weight: bolder;
+    opacity: 0.5;
 }
 
 .patch-list {
@@ -1044,7 +1045,7 @@ div#random-items-grid {
     color: var(--text-secondary);
     position: relative;
     line-height: 1.5;
-    font-size: 0.92rem;
+    font-size: 15px;
 }
 
 .patch-list li::before {
@@ -1052,7 +1053,7 @@ div#random-items-grid {
     position: absolute;
     left: 0;
     color: var(--text-secondary);
-    font-size: 1.3rem;
+    font-size: 17px;
     line-height: 1;
 }
 
