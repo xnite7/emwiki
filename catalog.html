@@ -761,14 +761,6 @@
 
                 sortDropdown.classList.toggle('collapsed');
                 expandToggle.classList.toggle('flipped');
-                // Save state to localStorage
-                const isCollapsed = chestDropdown.classList.contains('collapsed');
-                localStorage.setItem('chestDropdownCollapsed', isCollapsed);
-
-                // Close the menu if it's open when collapsing
-                if (isCollapsed) {
-                    document.getElementById('chest-menu').classList.remove('show');
-                }
             }
 
             populateChests() {
