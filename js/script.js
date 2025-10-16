@@ -780,7 +780,7 @@ class BaseApp {
                 div.className = 'item';
                 div.innerHTML = `
                     <div class="item-name">${item.name}</div>
-                    ${item.price != '0' && item.price != '' ? `<div class="item-price">${Utils.formatPrice(item.price)}</div>` : ''}
+                    
                     <div class="remove-wishlist">×</div>
                 `;
 
@@ -799,6 +799,9 @@ class BaseApp {
                 } else if (item.svg) {
                     div.insertAdjacentHTML('beforeend', item.svg);
                 }
+
+                div.insertAdjacentHTML('beforeend', `${item.price != '0' && item.price != '' ? `<div class="item-price">${Utils.formatPrice(item.price)}</div>` : ''}`);
+
                 div.querySelector('.remove-wishlist').onclick = (e) => {
                     e.stopPropagation();
                     if (this.currentListMode === 'wishlist') {
@@ -829,9 +832,7 @@ class BaseApp {
             if (item) {
                 const div = document.createElement('div');
                 div.className = 'item';
-                div.innerHTML = `<div class="item-name" style="z-index:2;font-size:10px;margin-top:5px;">${item.name}</div>
-                            ${item.price != '0' && item.price != '' ? `<div class="item-price">${Utils.formatPrice(item.price)}</div>` : ''}
-                        `;
+                div.innerHTML = `<div class="item-name" style="z-index:2;font-size:10px;margin-top:5px;">${item.name}</div>`;
                 if (item.img) {
                     const canvas = document.createElement('canvas');
 
@@ -849,6 +850,8 @@ class BaseApp {
                 } else if (item.svg) {
                     div.insertAdjacentHTML('beforeend', item.svg);
                 }
+
+                div.insertAdjacentHTML('beforeend', `${item.price != '0' && item.price != '' ? `<div class="item-price">${Utils.formatPrice(item.price)}</div>` : ''}`);
 
 
                 div.onclick = () => {
