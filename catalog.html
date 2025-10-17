@@ -87,14 +87,14 @@
         </a>
 
 
-		<div class="nav-links">
-			<a href="/catalog" class="nav-link active">Catalog</a>
-			<a href="/trading" class="nav-link">Trading Hub</a>
-			<a href="/forum" class="nav-link">Forum</a>
-			<a href="/gallery" class="nav-link">Gallery</a>
-			<a href="/gamenights" class="nav-link">Gamenights</a>
-			<a href="/scammers" class="nav-link">Scammers</a>
-		</div>
+        <div class="nav-links">
+            <a href="/catalog" class="nav-link active">Catalog</a>
+            <a href="/trading" class="nav-link">Trading Hub</a>
+            <a href="/forum" class="nav-link">Forum</a>
+            <a href="/gallery" class="nav-link">Gallery</a>
+            <a href="/gamenights" class="nav-link">Gamenights</a>
+            <a href="/scammers" class="nav-link">Scammers</a>
+        </div>
     </header>
 
     <!-- Category Carousel -->
@@ -1041,11 +1041,9 @@
             }
 
             applyFilters() {
-
                 this.filtered = this.items.filter(item => {
                     // Chest filter
                     if (this.chestFilter !== 'all') {
-                        // Check if item is in the selected chest's mapping
                         const chestItems = this.chestMappings[this.chestFilter] || [];
                         if (!chestItems.includes(item.name) && item.chest !== this.chestFilter) {
                             return false;
@@ -1072,11 +1070,8 @@
                         return false;
                     }
 
-
-
                     // Tag filters
                     for (let tag of this.filters.tags) {
-
                         switch (tag) {
                             case 'new':
                                 if (!item.new) return false;
@@ -1110,10 +1105,8 @@
                                 break;
                         }
                     }
-
                     return true;
                 });
-
 
                 this.sortItems();
 
@@ -1132,6 +1125,31 @@
                         document.getElementById('chest-label').textContent = `${selectedChest.textContent} (${chestCount})`;
                     }
                 }
+            }
+
+            parsePrice(price) {
+                
+
+                if (!price || price.toLowerCase() === 'o/c') return Number.MAX_SAFE_INTEGER;
+                const str = String(price).replace('+', '').toLowerCase();
+
+                // Handle ranges like "5-10"
+                if (str.includes('-')) {
+                    const parts = str.split('-').map(p => {
+                        p = p.trim();
+                        if (p.endsWith('k')) return parseFloat(p) * 1000;
+                        if (p.endsWith('m')) return parseFloat(p) * 1_000_000;
+                        return parseFloat(p);
+                    });
+                    // Return average of range
+                    return parts.reduce((a, b) => a + b, 0) / parts.length;
+                }
+
+                // Handle k/m suffixes
+                if (str.endsWith('k')) return parseFloat(str) * 1000;
+                if (str.endsWith('m')) return parseFloat(str) * 1_000_000;
+
+                return parseFloat(str) || 0;
             }
 
             sortItems() {
@@ -1204,15 +1222,17 @@
 
                     case 'price-asc':
                         this.filtered.sort((a, b) => {
-                            const priceA = a.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(a.price || 0) || Number.MAX_SAFE_INTEGER);
-                            const priceB = b.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(b.price || 0) || Number.MAX_SAFE_INTEGER);
-                            return priceA - priceB;
+                            const priceA = this.parsePrice(a.price);
+                            const priceB = this.parsePrice(b.price);
+                            const valA = priceA === 0 ? Number.MAX_SAFE_INTEGER : priceA;
+                            const valB = priceB === 0 ? Number.MAX_SAFE_INTEGER : priceB;
+                            return valA - valB;
                         });
                         break;
                     case 'price-desc':
                         this.filtered.sort((a, b) => {
-                            const priceA = a.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(a.price || 0) || 0);
-                            const priceB = b.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(b.price || 0) || 0);
+                            const priceA = this.parsePrice(a.price);
+                            const priceB = this.parsePrice(b.price);
                             return priceB - priceA;
                         });
                         break;
