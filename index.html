@@ -372,7 +372,7 @@
 					const div = this.createItemElement(item)
 
 					if (item.weeklystar) {
-						div.querySelector('.item-price').textContent = item['price/code/rarity'].split('<br>')[0].replace(' Stars', '');
+						div.querySelector('.item-price').textContent = item['price/code/rarity'].split('<br>').pop().replace(' Stars', '');
 						div.querySelector('.item-price').classList.replace('item-price', 'star-price');
 						const outlineColors = {
 							'60': '#b31aff',
@@ -387,7 +387,7 @@
 							}
 						});
 					} else if (item.weekly) {
-						div.querySelector('.item-price').textContent = item['price/code/rarity'].split('<br>')[0].replace(' Coins', '');
+						div.querySelector('.item-price').textContent = item['price/code/rarity'].split('<br>').pop().replace(' Coins', '');
 						div.querySelector('.item-price').classList.add('star-price', 'coin-price');
 					}
 
