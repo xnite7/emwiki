@@ -75,7 +75,7 @@ async function handleVerifyCode(request, env) {
     let avatarUrl = null;
     const cachedAvatar = await env.DBA.prepare(
         'SELECT avatar_url FROM avatar_cache WHERE user_id = ? AND cached_at > ?'
-    ).bind(userId, Date.now() - (7 * 24 * 60 * 60 * 1000)).first(); // Cache for 7 days
+    ).bind(userId, Date.now() - (24 * 60 * 60 * 1000)).first(); // Cache for 24 hours
 
     if (cachedAvatar) {
         avatarUrl = cachedAvatar.avatar_url;
@@ -328,6 +328,173 @@ async function handleDonationStatus(request, env) {
     });
 }
 
+// ==================== USER PREFERENCES ====================
+
+async function handleSavePreferences(request, env) {
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!token) {
+        return new Response(JSON.stringify({ error: 'No token provided' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    // Get user from session
+    const session = await env.DBA.prepare(`
+        SELECT u.user_id FROM sessions s
+        JOIN users u ON s.user_id = u.user_id
+        WHERE s.token = ? AND s.expires_at > ?
+    `).bind(token, Date.now()).first();
+
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'Invalid session' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    const preferences = await request.json();
+    const now = Date.now();
+
+    // Save each preference key
+    for (const [key, value] of Object.entries(preferences)) {
+        const valueJson = JSON.stringify(value);
+        
+        await env.DBA.prepare(`
+            INSERT INTO user_preferences (user_id, preference_key, preference_value, updated_at)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(user_id, preference_key) DO UPDATE SET
+                preference_value = excluded.preference_value,
+                updated_at = excluded.updated_at
+        `).bind(session.user_id, key, valueJson, now).run();
+    }
+
+    return new Response(JSON.stringify({ success: true }), {
+        headers: { 'Content-Type': 'application/json' }
+    });
+}
+
+async function handleLoadPreferences(request, env) {
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!token) {
+        return new Response(JSON.stringify({ error: 'No token provided' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    // Get user from session
+    const session = await env.DBA.prepare(`
+        SELECT u.user_id FROM sessions s
+        JOIN users u ON s.user_id = u.user_id
+        WHERE s.token = ? AND s.expires_at > ?
+    `).bind(token, Date.now()).first();
+
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'Invalid session' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    const url = new URL(request.url);
+    const key = url.searchParams.get('key');
+
+    if (key) {
+        // Load specific preference
+        const pref = await env.DBA.prepare(
+            'SELECT preference_value FROM user_preferences WHERE user_id = ? AND preference_key = ?'
+        ).bind(session.user_id, key).first();
+
+        if (pref) {
+            return new Response(JSON.stringify({
+                [key]: JSON.parse(pref.preference_value)
+            }), {
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        return new Response(JSON.stringify({}), {
+            headers: { 'Content-Type': 'application/json' }
+        });
+    } else {
+        // Load all preferences
+        const prefs = await env.DBA.prepare(
+            'SELECT preference_key, preference_value FROM user_preferences WHERE user_id = ?'
+        ).bind(session.user_id).all();
+
+        const result = {};
+        prefs.results.forEach(pref => {
+            result[pref.preference_key] = JSON.parse(pref.preference_value);
+        });
+
+        return new Response(JSON.stringify(result), {
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+}
+
+async function handleMigratePreferences(request, env) {
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!token) {
+        return new Response(JSON.stringify({ error: 'No token provided' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    // Get user from session
+    const session = await env.DBA.prepare(`
+        SELECT u.user_id FROM sessions s
+        JOIN users u ON s.user_id = u.user_id
+        WHERE s.token = ? AND s.expires_at > ?
+    `).bind(token, Date.now()).first();
+
+    if (!session) {
+        return new Response(JSON.stringify({ error: 'Invalid session' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    const localData = await request.json();
+    const now = Date.now();
+
+    // Check if user already has preferences (avoid overwriting cloud data)
+    const existingPrefs = await env.DBA.prepare(
+        'SELECT COUNT(*) as count FROM user_preferences WHERE user_id = ?'
+    ).bind(session.user_id).first();
+
+    // Only migrate if no existing preferences
+    if (existingPrefs.count === 0) {
+        for (const [key, value] of Object.entries(localData)) {
+            const valueJson = JSON.stringify(value);
+            
+            await env.DBA.prepare(`
+                INSERT INTO user_preferences (user_id, preference_key, preference_value, updated_at)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(user_id, preference_key) DO UPDATE SET
+                    preference_value = excluded.preference_value,
+                    updated_at = excluded.updated_at
+            `).bind(session.user_id, key, valueJson, now).run();
+        }
+
+        return new Response(JSON.stringify({ success: true, migrated: true }), {
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    return new Response(JSON.stringify({ success: true, migrated: false, message: 'User already has cloud preferences' }), {
+        headers: { 'Content-Type': 'application/json' }
+    });
+}
+
 export async function onRequest(context) {
     const { request, env } = context;
     const url = new URL(request.url);
@@ -354,7 +521,7 @@ export async function onRequest(context) {
             case 'verify-code':
                 response = await handleVerifyCode(request, env);
                 break;
-            case 'check-code':  // ADD THIS
+            case 'check-code':
                 response = await handleCheckCode(request, env);
                 break;
             case 'donation-status':
@@ -368,6 +535,17 @@ export async function onRequest(context) {
                 break;
             case 'admin/update-role':
                 response = await handleUpdateRole(request, env);
+                break;
+            // NEW PREFERENCE ENDPOINTS
+            case 'user/preferences':
+                if (request.method === 'POST') {
+                    response = await handleSavePreferences(request, env);
+                } else if (request.method === 'GET') {
+                    response = await handleLoadPreferences(request, env);
+                }
+                break;
+            case 'user/preferences/migrate':
+                response = await handleMigratePreferences(request, env);
                 break;
             default:
                 response = new Response(JSON.stringify({ error: 'Not found' }), {

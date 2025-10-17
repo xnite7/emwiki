@@ -19,6 +19,7 @@
 .filters {
     display: flex;
     gap: 12px;
+    width: 100%;
     flex-wrap: wrap;
     justify-content: center;
 }

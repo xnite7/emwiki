@@ -1912,6 +1912,57 @@
     color: #e0a800;
 }
 
+
+.profile-dropdown-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+    margin: 12px 0;
+}
+
+.profile-tax-mode {
+    padding: 10px 15px;
+}
+
+.tax-mode-options {
+    display: flex;
+    gap: 8px;
+}
+
+.tax-mode-btn {
+    flex: 1;
+    padding: 10px 6px;
+    border: 2px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-weight: 600;
+    color: white;
+}
+
+.tax-mode-btn:hover {
+    border-color: rgba(51, 197, 255, 0.5);
+    background: rgba(51, 197, 255, 0.1);
+}
+
+.tax-mode-btn.active {
+    border-color: #33c5ff;
+    background: rgba(51, 197, 255, 0.25);
+}
+
+.tax-mode-desc {
+    font-size: 9px;
+    opacity: 0.7;
+    font-weight: 400;
+    white-space: nowrap;
+}
+
+
+
 /* Mobile */
 @media screen and (max-width: 768px) {
 

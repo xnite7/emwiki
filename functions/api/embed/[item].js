@@ -1,5 +1,3 @@
-// Example: /functions/[item].js
-
 export async function onRequest(context) {
   const { params, request } = context;
   const item = params.item;
@@ -55,7 +53,6 @@ export async function onRequest(context) {
 
 <meta property="og:title" content="${title} - Epic Catalogue" />
 <meta property="og:image" content="${imageUrl}" />
-<meta property="og:description" content="${descriptionText}" />
 <meta property="og:url" content="${base}/?item=${encodeURIComponent(item)}" />
 <meta name="twitter:card" content="summary_large_image" />
 </head>

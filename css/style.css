@@ -1992,7 +1992,7 @@ body.light-theme .controls-bar {
 .dropdown-content {
     position: absolute;
     top: 100%;
-    left: 0;
+    width: min-content;
     background: var(--bg-secondary);
     border: 2px solid var(--border-color);
     border-radius: 10px;
@@ -2357,7 +2357,7 @@ header svg * {
         top: 20px;
         left: 112px;
         width: 178px;
-        overflow: scroll;
+        overflow-y: scroll;
     }
 
     .chest-menu {
