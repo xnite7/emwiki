@@ -47,18 +47,21 @@ const Utils = {
         }
 
         const str = String(price);
-        if (str.includes('-')) {
-            const parts = str.split('-').map(p => {
+        const hasPlus = str.includes('+');
+        const cleanStr = str.replace('+', '');
+
+        if (cleanStr.includes('-')) {
+            const parts = cleanStr.split('-').map(p => {
                 const num = parseValue(p);
                 return formatNum(num);
             });
             if (parts.every(v => v === null)) return str;
-            return parts.map((v, i) => v ?? str.split('-')[i].trim()).join('-');
+            return parts.map((v, i) => v ?? cleanStr.split('-')[i].trim()).join('-') + (hasPlus ? '+' : '');
         }
 
-        const num = parseValue(str);
+        const num = parseValue(cleanStr);
         const formatted = formatNum(num);
-        return formatted ?? str;
+        return (formatted ?? str) + (hasPlus ? '+' : '');
     },
 
     showToast(title, message, type = 'info') {
