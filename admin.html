@@ -929,14 +929,71 @@
                 this.modal.innerHTML = `<div class=item-adder-container><div class=item-adder-header><h2>Add New Item</h2><button class=close-btn id=item-adder-close>×</button></div><div class=item-adder-steps><div class="active step"data-step=1><span class=step-number>1</span> <span class=step-label>Category</span></div><div class=step data-step=2><span class=step-number>2</span> 
                     <span class=step-label>Details</span></div><div class=step data-step=3><span class=step-number>3</span> <span class=step-label>Properties</span></div></div><div class=item-adder-body><div class="active step-content"id=step-1><h3>Select Category</h3><div class=category-grid>${Object.keys(state.jsData).map(cat => ` <button class=category-option data-category=${cat}>
                         <span class=category-icon>${this.CATEGORY_ICONS[cat] || this.CATEGORY_ICONS['accessories']}</span> <span class=category-name>${cat.charAt(0).toUpperCase() + cat.slice(1)}</span> <span class=category-count>${state.jsData[cat].length} items</span></button> `).join('')}</div></div><div class=step-content id=step-2><h3>Item Details</h3><div class=form-group>
-                            <label>Name<strong>*</strong></label> <input type="text" id=item-name placeholder="Enter item name..."autocomplete=off></div><div class=form-group><label>Icon<strong>*</strong></label><div class=image-upload-section><div class=image-preview id=image-preview><img alt=Preview id=preview-img src=""style=display:none> <span id=preview-placeholder>No image selected</span>
-                                <button class=remove-image-btn id=remove-image style=display:none>×</button></div><div class=upload-tabs><button class="active upload-tab"data-tab=upload><svg fill=currentColor height=16 viewBox="0 0 24 24"width=16><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg> Upload File</button> <button class=upload-tab data-tab=url>
-                                    <svg fill=currentColor height=16 viewBox="0 0 24 24"width=16>
-                                    <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg> Enter URL
-                    </button></div><div class="active upload-content"id=upload-content-upload><div class=file-upload-area><input id=item-file-upload type=file accept=image/* style=display:none><div class=upload-dropzone id=upload-dropzone><svg fill=currentColor height=48 viewBox="0 0 24 24"width=48 style=opacity:.3><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-                        </svg><p>Click to select or drag & drop image here</p><small>PNG, JPG, GIF up to 5MB</small></div><div class=upload-status id=upload-status style=display:none><div class=upload-progress><div class=progress-bar id=upload-progress-bar></div></div><span id=upload-status-text>Uploading...</span></div></div></div><div class=upload-content id=upload-content-url>
-                            <input type="text" id=item-img placeholder=imgs/category/filename.png autocomplete=off> <small>Enter the image URL or path</small></div></div></div><div class=form-group><label>RAP</label> <input type="text" id=item-price placeholder="Enter price e.g.(69)"autocomplete=off></div><div class=form-group><label>Description</label> <textarea id=item-from placeholder="Obtainment method/@author/season x/tip"rows=3>
-                                </textarea> <small>Separate multiple lines with Enter</small></div><div class=form-group><label>Price/Code/Rarity</label> <textarea id=item-rarity placeholder="Code, rarity, or shop price"rows=3></textarea> <small>Separate multiple lines with Enter</small></div></div><div class=step-content id=step-3><h3>Item Properties</h3><div class=properties-grid><label class=property-toggle>
+                            <label>Name<strong>*</strong></label> <input type="text" id=item-name placeholder="Enter item name..."autocomplete=off></div>
+                            <div class="form-group" id="image-upload-group">
+                                <label>Icon<strong>*</strong></label>
+                                <div class=image-upload-section>
+                                    <div class=image-preview id=image-preview>
+                                        <img alt=Preview id=preview-img src="" style=display:none> 
+                                        <span id=preview-placeholder>No image selected</span>
+                                        <button class=remove-image-btn id=remove-image style=display:none>×</button>
+                                    </div>
+                                    <div class=upload-tabs>
+                                        <button class="active upload-tab" data-tab=upload>
+                                            <svg fill=currentColor height=16 viewBox="0 0 24 24" width=16>
+                                                <path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/>
+                                            </svg> Upload File
+                                        </button> 
+                                        <button class=upload-tab data-tab=url>
+                                            <svg fill=currentColor height=16 viewBox="0 0 24 24" width=16>
+                                                <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+                                            </svg> Enter URL
+                                        </button>
+                                    </div>
+                                    <div class="active upload-content" id=upload-content-upload>
+                                        <div class=file-upload-area>
+                                            <input id=item-file-upload type=file accept=image/* style=display:none>
+                                            <div class=upload-dropzone id=upload-dropzone>
+                                                <svg fill=currentColor height=48 viewBox="0 0 24 24" width=48 style=opacity:.3>
+                                                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                                                </svg>
+                                                <p>Click to select or drag & drop image here</p>
+                                                <small>PNG, JPG, GIF up to 5MB</small>
+                                            </div>
+                                            <div class=upload-status id=upload-status style=display:none>
+                                                <div class=upload-progress>
+                                                    <div class=progress-bar id=upload-progress-bar></div>
+                                                </div>
+                                                <span id=upload-status-text>Uploading...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class=upload-content id=upload-content-url>
+                                        <input type="text" id=item-img placeholder="imgs/category/filename.png" autocomplete=off> 
+                                        <small>Enter the image URL or path</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- NEW: SVG Input Group (hidden by default) -->
+                            <div class="form-group" id="svg-input-group" style="display: none;">
+                                <label>SVG Code<strong>*</strong></label>
+                                <textarea id="item-svg-input" placeholder="<svg width=&quot;230&quot; height=&quot;100&quot;...>" 
+                                    rows="6" style="background: #1f2937;">
+                                </textarea>
+                                <small>Paste your SVG code here</small>
+                                
+                                <!-- SVG Preview -->
+                                <div style="margin-top: 12px; padding: 12px; background: #111827; border-radius: 4px; 
+                                    min-height: 80px; display: flex; align-items: center; justify-content: center;">
+                                    <div id="svg-input-preview">
+                                        <span style="color: #666;">SVG preview will appear here</span>
+                                    </div>
+                                </div>
+                            </div>
+                        
+                        <div class=form-group><label>RAP</label> <input type="text" id=item-price placeholder="Enter price e.g.(69)"autocomplete=off></div><div class=form-group><label>Description</label> <textarea id=item-from placeholder="Obtainment method/@author/season x/tip"rows=3>
+                                    </textarea> <small>Separate multiple lines with Enter</small></div><div class=form-group><label>Price/Code/Rarity</label> <textarea id=item-rarity placeholder="Code, rarity, or shop price"rows=3></textarea> <small>Separate multiple lines with Enter</small></div></div><div class=step-content id=step-3><h3>Item Properties</h3><div class=properties-grid><label class=property-toggle>
                                     <input id=item-untradable type=checkbox checked> <span>Untradable</span></label> <label class=property-toggle><input id=item-new type=checkbox> <span>New</span></label> <label class=property-toggle><input id=item-weekly type=checkbox> <span>Weekly Shop</span></label> <label class=property-toggle><input id=item-weeklystar type=checkbox> <span>Star Shop</span></label> <label class=property-toggle>
                                         <input id=item-retired type=checkbox> <span>Retired</span></label> <label class=property-toggle><input id=item-premium type=checkbox> <span>Premium</span></label></div><div class=item-preview><h4>Preview</h4>
                                             <div class=preview-card id=item-preview-card></div></div></div></div><div class=item-adder-footer><button class="small-btn ghost"id=item-adder-back style=display:none>Back</button> 
@@ -952,14 +1009,16 @@
                 document.getElementById('item-adder-close').addEventListener('click', () => this.closeModal());
 
                 // Category selection
-                document.querySelectorAll('.category-option').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        this.newItemData.category = btn.dataset.category;
-                        document.querySelectorAll('.category-option').forEach(b => b.classList.remove('selected'));
-                        btn.classList.add('selected');
-                        document.getElementById('item-adder-next').disabled = false;
-                    });
-                });
+document.querySelectorAll('.category-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+        this.newItemData.category = btn.dataset.category;
+        this.newItemData.isTitle = btn.dataset.category === 'titles';
+        
+        document.querySelectorAll('.category-option').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        document.getElementById('item-adder-next').disabled = false;
+    });
+});
 
                 // Navigation buttons
                 document.getElementById('item-adder-next').addEventListener('click', () => this.nextStep());
@@ -1049,6 +1108,42 @@
                     }
                 });
             },
+
+toggleInputMode() {
+    const isTitle = this.newItemData.isTitle;
+    const imageGroup = document.getElementById('image-upload-group');
+    const svgGroup = document.getElementById('svg-input-group');
+    
+    if (isTitle) {
+        // Show SVG input, hide image upload
+        imageGroup.style.display = 'none';
+        svgGroup.style.display = 'block';
+        
+        // Setup SVG preview
+        const svgInput = document.getElementById('item-svg-input');
+        const svgPreview = document.getElementById('svg-input-preview');
+        
+        svgInput.oninput = () => {
+            const svgCode = svgInput.value.trim();
+            if (svgCode && svgCode.startsWith('<svg')) {
+                svgPreview.innerHTML = svgCode;
+            } else {
+                svgPreview.innerHTML = '<span style="color: #666;">SVG preview will appear here</span>';
+            }
+        };
+        
+        // Set default SVG template
+        if (!svgInput.value) {
+            const name = document.getElementById('item-name').value.trim() || 'Title';
+            svgInput.value = `<svg width="230" height="100" viewBox="457.90625 471 84.751953125 39" xmlns="http://www.w3.org/2000/svg"><text x="500" y="500" xmlns="http://www.w3.org/2000/svg" text-anchor="middle" stroke="#545454" stroke-width="3" paint-order="stroke" stroke-miterlimit="3" fill="#cbcbcb" style="font: 700 27px Arimo;">${name}</text></svg>`;
+            svgInput.oninput();
+        }
+    } else {
+        // Show image upload, hide SVG input
+        imageGroup.style.display = 'block';
+        svgGroup.style.display = 'none';
+    }
+},
 
             switchUploadTab(tabName) {
                 // Update tab buttons
@@ -1189,28 +1284,42 @@
                         ErrorHandler.showToast('Please select a category', 'error');
                         return;
                     }
+                     setTimeout(() => this.toggleInputMode(), 50);
                 } else if (this.currentStep === 2) {
-                    const name = document.getElementById('item-name').value.trim();
-                    if (!name) {
-                        ErrorHandler.showToast('Please enter an item name', 'error');
-                        return;
-                    }
+    const name = document.getElementById('item-name').value.trim();
+    if (!name) {
+        ErrorHandler.showToast('Please enter an item name', 'error');
+        return;
+    }
 
-                    const categoryItems = state.jsData[this.newItemData.category] || [];
-                    if (categoryItems.some(item => item.name.toLowerCase() === name.toLowerCase())) {
-                        ErrorHandler.showToast('An item with this name already exists in this category', 'error');
-                        return;
-                    }
+    const categoryItems = state.jsData[this.newItemData.category] || [];
+    if (categoryItems.some(item => item.name.toLowerCase() === name.toLowerCase())) {
+        ErrorHandler.showToast('An item with this name already exists in this category', 'error');
+        return;
+    }
 
-                    this.newItemData.name = name;
-                    // Use uploaded image URL or manual URL input
-                    this.newItemData.img = this.uploadedImageUrl || document.getElementById('item-img').value.trim() || '';
-                    this.newItemData.price = document.getElementById('item-price').value.trim() || 'N/A';
-                    this.newItemData.from = document.getElementById('item-from').value.trim().replace(/\n/g, '<br>') || '';
-                    this.newItemData['price/code/rarity'] = document.getElementById('item-rarity').value.trim().replace(/\n/g, '<br>') || '';
+    this.newItemData.name = name;
+    
+    // Handle SVG or Image based on type
+    if (this.newItemData.isTitle) {
+        const svgCode = document.getElementById('item-svg-input').value.trim();
+        if (!svgCode || !svgCode.startsWith('<svg')) {
+            ErrorHandler.showToast('Please provide valid SVG code', 'error');
+            return;
+        }
+        this.newItemData.svg = svgCode;
+        this.newItemData.img = ''; // Titles don't use img
+    } else {
+        this.newItemData.img = this.uploadedImageUrl || document.getElementById('item-img').value.trim() || '';
+        this.newItemData.svg = ''; // Regular items don't use svg
+    }
+    
+    this.newItemData.price = document.getElementById('item-price').value.trim() || 'N/A';
+    this.newItemData.from = document.getElementById('item-from').value.trim().replace(/\n/g, '<br>') || '';
+    this.newItemData['price/code/rarity'] = document.getElementById('item-rarity').value.trim().replace(/\n/g, '<br>') || '';
 
-                    this.updatePreview();
-                }
+    this.updatePreview();
+}
 
                 if (this.currentStep < 3) {
                     this.currentStep++;
@@ -1248,98 +1357,113 @@
             },
 
             updatePreview() {
-                const previewCard = document.getElementById('item-preview-card');
-                const item = {
-                    ...this.newItemData,
-                    tradable: !document.getElementById('item-untradable').checked,
-                    new: document.getElementById('item-new').checked,
-                    weekly: document.getElementById('item-weekly').checked,
-                    weeklystar: document.getElementById('item-weeklystar').checked,
-                    retired: document.getElementById('item-retired').checked,
-                    premium: document.getElementById('item-premium').checked
-                };
+    const previewCard = document.getElementById('item-preview-card');
+    const item = {
+        ...this.newItemData,
+        tradable: !document.getElementById('item-untradable').checked,
+        new: document.getElementById('item-new').checked,
+        weekly: document.getElementById('item-weekly').checked,
+        weeklystar: document.getElementById('item-weeklystar').checked,
+        retired: document.getElementById('item-retired').checked,
+        premium: document.getElementById('item-premium').checked
+    };
 
-                previewCard.innerHTML = `
-            <div class="item-card" style="pointer-events: none;">
-                ${item.img ? `<img src="${item.img}" alt="${item.name}" />` : '<div style="height:80px;background:#333;"></div>'}
-                <div class="item-name">${item.name}</div>
-                <label class="price-label">${Utils.formatThousands(item.price) || ''}</label>
+    // Handle SVG or Image display
+    let imageDisplay = '';
+    if (item.svg) {
+        imageDisplay = item.svg;
+    } else if (item.img) {
+        imageDisplay = `<img src="${item.img}" alt="${item.name}" />`;
+    } else {
+        imageDisplay = '<div style="height:80px;background:#333;"></div>';
+    }
+
+    previewCard.innerHTML = `
+        <div class="item-card" style="pointer-events: none;">
+            ${imageDisplay}
+            <div class="item-name">${item.name}</div>
+            <label class="price-label">${Utils.formatThousands(item.price) || ''}</label>
+        </div>
+        <div style="margin-top: 10px; font-size: 12px; color: #999;">
+            <div>Category: ${this.newItemData.category}</div>
+            ${item.from ? `<div>From: ${item.from.replace(/<br>/g, ', ')}</div>` : ''}
+            <div style="margin-top: 5px;">
+                ${item.new ? '<span class="tag-pill" style="background:#1abc9c33;color:#1abc9c;border-color:#1abc9c;margin:2px;">New</span>' : ''}
+                ${item.weekly ? '<span class="tag-pill" style="background:#3498db33;color:#3498db;border-color:#3498db;margin:2px;">Weekly</span>' : ''}
+                ${item.weeklystar ? '<span class="tag-pill" style="background:#f1c40f33;color:#f1c40f;border-color:#f1c40f;margin:2px;">Star</span>' : ''}
+                ${item.retired ? '<span class="tag-pill" style="background:#9b59b633;color:#9b59b6;border-color:#9b59b6;margin:2px;">Retired</span>' : ''}
+                ${item.premium ? '<span class="tag-pill" style="background:#e67e2233;color:#e67e22;border-color:#e67e22;margin:2px;">Premium</span>' : ''}
+                ${!item.tradable ? '<span class="tag-pill" style="background:#e74c3c33;color:#e74c3c;border-color:#e74c3c;margin:2px;">Untradable</span>' : ''}
             </div>
-            <div style="margin-top: 10px; font-size: 12px; color: #999;">
-                <div>Category: ${this.newItemData.category}</div>
-                ${item.from ? `<div>From: ${item.from.replace(/<br>/g, ', ')}</div>` : ''}
-                <div style="margin-top: 5px;">
-                    ${item.new ? '<span class="tag-pill" style="background:#1abc9c33;color:#1abc9c;border-color:#1abc9c;margin:2px;">New</span>' : ''}
-                    ${item.weekly ? '<span class="tag-pill" style="background:#3498db33;color:#3498db;border-color:#3498db;margin:2px;">Weekly</span>' : ''}
-                    ${item.weeklystar ? '<span class="tag-pill" style="background:#f1c40f33;color:#f1c40f;border-color:#f1c40f;margin:2px;">Star</span>' : ''}
-                    ${item.retired ? '<span class="tag-pill" style="background:#9b59b633;color:#9b59b6;border-color:#9b59b6;margin:2px;">Retired</span>' : ''}
-                    ${item.premium ? '<span class="tag-pill" style="background:#e67e2233;color:#e67e22;border-color:#e67e22;margin:2px;">Premium</span>' : ''}
-                    ${!item.tradable ? '<span class="tag-pill" style="background:#e74c3c33;color:#e74c3c;border-color:#e74c3c;margin:2px;">Untradable</span>' : ''}
-                </div>
-            </div>
-        `;
-            },
+        </div>
+    `;
+},
 
-            addItem() {
-                const newItem = {
-                    name: this.newItemData.name,
-                    img: this.newItemData.img || '',
-                    price: this.newItemData.price || 'N/A',
-                    from: this.newItemData.from || '',
-                    'price/code/rarity': this.newItemData['price/code/rarity'] || '',
-                    tradable: !document.getElementById('item-untradable').checked,
-                    new: document.getElementById('item-new').checked,
-                    weekly: document.getElementById('item-weekly').checked,
-                    weeklystar: document.getElementById('item-weeklystar').checked,
-                    retired: document.getElementById('item-retired').checked,
-                    premium: document.getElementById('item-premium').checked
-                };
+addItem() {
+    const newItem = {
+        name: this.newItemData.name,
+        price: this.newItemData.price || 'N/A',
+        from: this.newItemData.from || '',
+        'price/code/rarity': this.newItemData['price/code/rarity'] || '',
+        tradable: !document.getElementById('item-untradable').checked,
+        new: document.getElementById('item-new').checked,
+        weekly: document.getElementById('item-weekly').checked,
+        weeklystar: document.getElementById('item-weeklystar').checked,
+        retired: document.getElementById('item-retired').checked,
+        premium: document.getElementById('item-premium').checked
+    };
+    
+    // ADD THIS: Include svg field if it's a title
+    if (this.newItemData.svg) {
+        newItem.svg = this.newItemData.svg;
+    } else {
+        newItem.img = this.newItemData.img || '';
+    }
 
-                const category = this.newItemData.category;
-                if (!state.jsData[category]) {
-                    state.jsData[category] = [];
-                }
+    const category = this.newItemData.category;
+    if (!state.jsData[category]) {
+        state.jsData[category] = [];
+    }
 
-                const categoryItems = state.jsData[category];
-                let insertIndex = categoryItems.findIndex(item =>
-                    item.name.toLowerCase() > newItem.name.toLowerCase()
-                );
+    const categoryItems = state.jsData[category];
+    let insertIndex = categoryItems.findIndex(item =>
+        item.name.toLowerCase() > newItem.name.toLowerCase()
+    );
 
-                if (insertIndex === -1) {
-                    insertIndex = categoryItems.length;
-                }
+    if (insertIndex === -1) {
+        insertIndex = categoryItems.length;
+    }
 
-                categoryItems.splice(insertIndex, 0, newItem);
-                state.allItems = Object.values(state.jsData).flat();
+    categoryItems.splice(insertIndex, 0, newItem);
+    state.allItems = Object.values(state.jsData).flat();
 
-                // Mark as new item (not modified)
-                ChangeTracker.markAsNew(newItem.name);
+    // Mark as new item (not modified)
+    ChangeTracker.markAsNew(newItem.name);
 
-                // Record for undo
-                UndoRedoManager.recordChange({
-                    type: 'add',
-                    itemName: newItem.name,
-                    category: category,
-                    newState: newItem
-                });
+    // Record for undo
+    UndoRedoManager.recordChange({
+        type: 'add',
+        itemName: newItem.name,
+        category: category,
+        newState: newItem
+    });
 
-                UI.renderItems();
-                UI.renderShops();
-                ChangeTracker.updateHighlights();
+    UI.renderItems();
+    UI.renderShops();
+    ChangeTracker.updateHighlights();
 
-                ErrorHandler.showToast(`✓ Added "${newItem.name}" to ${category}`, 'success');
+    ErrorHandler.showToast(`✓ Added "${newItem.name}" to ${category}`, 'success');
 
-                this.closeModal();
+    this.closeModal();
 
-                setTimeout(() => {
-                    const newCard = document.querySelector(`[data-name="${newItem.name}"]`);
-                    if (newCard) {
-                        newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        newCard.style.animation = 'pulse-highlight 1s ease-in-out 3';
-                    }
-                }, 100);
-            },
-
+    setTimeout(() => {
+        const newCard = document.querySelector(`[data-name="${newItem.name}"]`);
+        if (newCard) {
+            newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            newCard.style.animation = 'pulse-highlight 1s ease-in-out 3';
+        }
+    }, 100);
+},
             openModal() {
                 this.modal.classList.remove('hidden');
                 this.currentStep = 1;
@@ -2400,8 +2524,12 @@
                 this.setupEditableTitle(item);
 
                 // Setup editable image
+                if (document.querySelectorAll('#svg-editor')) {
+                    document.querySelectorAll('#svg-editor').forEach(editor => editor.remove());
+                }
                 this.setupEditableImage(item);
-
+                // Setup SVG editor if item has svg field
+                this.setupSVGEditor(item);
                 // Setup price input
                 priceInput.placeholder = "RAP";
                 priceInput.value = '';
@@ -2675,6 +2803,91 @@
                 }
             },
 
+            setupSVGEditor(item) {
+                // Check if this is a title item (has svg field)
+                const isTitle = !!item.svg;
+
+                if (!isTitle) return;
+
+                // Hide the image editor
+                const imgContainer = document.getElementById('quick-editor-img');
+                if (imgContainer) imgContainer.style.display = 'none';
+
+                // Create SVG editor
+                const svgEditor = document.createElement('div');
+                svgEditor.id = 'svg-editor';
+                svgEditor.style.cssText = `width: 35%;`;
+
+                svgEditor.innerHTML = `
+        
+        <textarea id="svg-input" placeholder="Paste SVG code here..." 
+            style="width: 100%; min-height: 120px; padding: 8px; background: #1f2937; 
+            border: 1px solid #374151; border-radius: 4px; color: white; font-size: 12px;
+            font-family: monospace; resize: vertical;">${item.svg || ''}</textarea>
+        
+        <div id="svg-preview" style="margin-top: 12px; padding: 12px; background: #111827; 
+            border-radius: 4px; min-height: 60px; display: flex; align-items: center; 
+            justify-content: center;">
+            ${item.svg || '<span style="color: #666;">Preview will appear here</span>'}
+        </div>
+        
+        <button id="apply-svg-btn" class="small-btn" style="margin-top: 12px; width: 100%;">
+            Apply SVG
+        </button>
+    `;
+
+                // Insert after image
+                const img = DOM.get('image-edit-container');
+                img.parentNode.insertBefore(svgEditor, img.nextSibling);
+
+                // Live preview on input
+                const svgInput = document.getElementById('svg-input');
+                const svgPreview = document.getElementById('svg-preview');
+
+                svgInput.addEventListener('input', () => {
+                    const svgCode = svgInput.value.trim();
+                    if (svgCode) {
+                        svgPreview.innerHTML = svgCode;
+                    } else {
+                        svgPreview.innerHTML = '<span style="color: #666;">Preview will appear here</span>';
+                    }
+                });
+
+                // Apply button
+                document.getElementById('apply-svg-btn').addEventListener('click', () => {
+                    const svgCode = svgInput.value.trim();
+
+                    if (!svgCode) {
+                        ErrorHandler.showToast('SVG code cannot be empty', 'error');
+                        return;
+                    }
+
+                    // Basic validation
+                    if (!svgCode.startsWith('<svg') || !svgCode.includes('</svg>')) {
+                        ErrorHandler.showToast('Invalid SVG format', 'error');
+                        return;
+                    }
+
+                    const previousState = JSON.parse(JSON.stringify(item));
+                    item.svg = svgCode;
+
+                    ChangeTracker.checkModifications(item);
+
+                    if (!UndoRedoManager.isApplyingChange) {
+                        UndoRedoManager.recordChange({
+                            type: 'edit',
+                            itemName: item.name,
+                            previousState: previousState,
+                            newState: JSON.parse(JSON.stringify(item))
+                        });
+                    }
+
+                    UI.renderItems(true);
+                    UI.renderShops();
+                    ChangeTracker.updateHighlights();
+                    ErrorHandler.showToast('SVG updated', 'success');
+                });
+            },
             async handleFileUpload(item, file, imgElement) {
 
                 // Validate file
