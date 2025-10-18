@@ -2259,14 +2259,14 @@ body.light-theme .controls-bar {
 .wishlist-total {
     font-variant: all-petite-caps;
     color: var(--text-secondary);
-    background: linear-gradient(transparent, #313131 16px, #292828);
+    background: linear-gradient(transparent, var(--bg-secondary) 16px, var(--bg-primary));
     padding: 26px 15px 14px 15px;
     text-align: center;
     font-size: 21px;
     position: sticky;
     width: 100%;
     bottom: 0px;
-    filter: drop-shadow(0px -2px 4px black);
+    filter: drop-shadow(0px -2px 4px var(--shadow-color));
     z-index: 3;
     font-weight: 600;
 }
@@ -2326,13 +2326,13 @@ header svg * {
         color: var(--text-secondary);
         background: #6f6f6f70;
         padding: 1px 14px 7px;
-        border: 3px solid #575757;
+        border: 3px solid var(--border-color);
         border-radius: 15px;
         text-align: center;
         font-size: 16px;
         backdrop-filter: blur(48px);
         position: sticky;
-        box-shadow: inset 0 0 20px 0px #bccbc8bf, 0 0 9px 1px #00000094;
+        box-shadow: inset 0 0 20px 0px #bccbc8bf, 0 0 9px 1px var(--shadow-color);
         width: fit-content;
         bottom: 6px;
         float: right;

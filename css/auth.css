@@ -714,7 +714,7 @@
     position: absolute;
     top: 70px;
     right: 70px;
-    background: linear-gradient(90deg, #4d4d4d 0%, #212121 100%);
+    background: linear-gradient(90deg, #454545 0%, #212121 100%);
     border: 2px solid #2a2a2a;
     border-radius: 16px;
     padding: 20px;
@@ -783,6 +783,12 @@
     background: linear-gradient(45deg, #a1a1a1, #000000);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
+
+.light-theme .profile-dropdown-header img {
+    border: 2px solid rgb(189 189 189);
+    background: linear-gradient(45deg, #cfcfcf, #ffffff);
+}
+
 
 .profile-dropdown-info {
     flex: 1;
@@ -890,8 +896,18 @@
     color: rgba(255, 255, 255, 0.4);
 }
 
+.light-theme .profile-action-btn.donator.locked {
+    background: var(--bg-item);
+    border: 1px solid var(--border-color);
+    color: rgb(0 0 0 / 40%);
+}
+
 .profile-action-btn.donator.locked svg {
     fill: rgba(255, 255, 255, 0.4);
+}
+
+.light-theme .profile-action-btn.donator.locked svg {
+    fill: rgba(0, 0, 0, 0.4);
 }
 
 .profile-action-btn.donator.locked::after {
@@ -1915,13 +1931,10 @@
 
 .profile-dropdown-divider {
     height: 1px;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     margin: 12px 0;
 }
 
-.profile-tax-mode {
-    padding: 10px 15px;
-}
 
 .tax-mode-options {
     display: flex;
@@ -1931,8 +1944,8 @@
 .tax-mode-btn {
     flex: 1;
     padding: 10px 6px;
-    border: 2px solid rgba(255,255,255,0.15);
-    background: rgba(255,255,255,0.05);
+    border: 2px solid var(--border-color);
+    background: var(--bg-item);
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
@@ -1941,7 +1954,7 @@
     align-items: center;
     gap: 3px;
     font-weight: 600;
-    color: white;
+    color: var(--text-primary);
 }
 
 .tax-mode-btn:hover {
