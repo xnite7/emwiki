@@ -203,10 +203,6 @@ class BaseApp {
 
         this.modal = new ItemModal(this);
 
-        this.favorites = Utils.loadFromStorage('favorites', []);
-        this.wishlist = Utils.loadFromStorage('wishlist', []);
-        this.recentlyViewed = Utils.loadFromStorage('recentlyViewed', []);
-
         this.particleCanvas = document.createElement('canvas');
         this.particleCanvas.id = 'particle-canvas';
         document.body.appendChild(this.particleCanvas);
