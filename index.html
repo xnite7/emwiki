@@ -350,7 +350,7 @@
 			}
 
 			populateGrids() {
-				const newItems = this.allItems.filter(item => item.new).slice(0, 8);
+				const newItems = this.allItems.filter(item => item.new).slice(0, 50);
 				this.renderItems('new-items-grid', newItems);
 
 				const weeklyShop = this.allItems.filter(item => item.weekly).slice(0, 8);
