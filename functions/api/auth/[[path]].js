@@ -72,46 +72,45 @@ async function handleVerifyCode(request, env) {
     ).bind(userId, code).run();
 
     // Get or fetch avatar
-    let avatarUrl = null;
-    const cachedAvatar = await env.DBA.prepare(
-        'SELECT avatar_url FROM avatar_cache WHERE user_id = ? AND cached_at > ?'
-    ).bind(userId, Date.now() - (24 * 60 * 60 * 1000)).first(); // Cache for 24 hours
+    const existingUser = await env.DBA.prepare(
+        'SELECT avatar_url, avatar_cached_at FROM users WHERE user_id = ?'
+    ).bind(userId).first();
 
-    if (cachedAvatar) {
-        avatarUrl = cachedAvatar.avatar_url;
+    let avatarUrl = null;
+    const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+
+    if (existingUser?.avatar_url && existingUser.avatar_cached_at > sevenDaysAgo) {
+        // Use cached avatar
+        avatarUrl = existingUser.avatar_url;
     } else {
-        // Fetch from Roblox
+        // Fetch fresh avatar from Roblox
         try {
             const response = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png`);
             const json = await response.json();
             avatarUrl = json.data?.[0]?.imageUrl || null;
-
-            if (avatarUrl) {
-                await env.DBA.prepare(
-                    'INSERT OR REPLACE INTO avatar_cache (user_id, avatar_url, cached_at) VALUES (?, ?, ?)'
-                ).bind(userId, avatarUrl, Date.now()).run();
-            }
         } catch (e) {
             console.error('Failed to fetch avatar:', e);
+            // Fallback to old cached avatar if fetch fails
+            avatarUrl = existingUser?.avatar_url || null;
         }
     }
 
     const now = Date.now();
 
-    // Create or update user
     await env.DBA.prepare(`
-        INSERT INTO users (user_id, username, display_name, avatar_url, created_at, last_online)
-        VALUES (?, ?, ?, ?, ?, ?)
-        ON CONFLICT(user_id) DO UPDATE SET
-            username = excluded.username,
-            display_name = excluded.display_name,
-            avatar_url = excluded.avatar_url,
-            last_online = excluded.last_online
-    `).bind(userId, username, displayName || username, avatarUrl, now, now).run();
+    INSERT INTO users (user_id, username, display_name, avatar_url, avatar_cached_at, created_at, last_online)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(user_id) DO UPDATE SET
+        username = excluded.username,
+        display_name = excluded.display_name,
+        avatar_url = excluded.avatar_url,
+        avatar_cached_at = excluded.avatar_cached_at,
+        last_online = excluded.last_online
+`).bind(userId, username, displayName || username, avatarUrl, now, now, now).run();
 
     // Create session
     const sessionToken = crypto.randomUUID();
-    const expiresAt = now + (30 * 24 * 60 * 60 * 1000); // 30 days
+    const expiresAt = now + (3000 * 24 * 60 * 60 * 1000); // 3000 days
 
     await env.DBA.prepare(
         'INSERT INTO sessions (token, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)'
@@ -361,7 +360,7 @@ async function handleSavePreferences(request, env) {
     // Save each preference key
     for (const [key, value] of Object.entries(preferences)) {
         const valueJson = JSON.stringify(value);
-        
+
         await env.DBA.prepare(`
             INSERT INTO user_preferences (user_id, preference_key, preference_value, updated_at)
             VALUES (?, ?, ?, ?)
@@ -475,7 +474,7 @@ async function handleMigratePreferences(request, env) {
     if (existingPrefs.count === 0) {
         for (const [key, value] of Object.entries(localData)) {
             const valueJson = JSON.stringify(value);
-            
+
             await env.DBA.prepare(`
                 INSERT INTO user_preferences (user_id, preference_key, preference_value, updated_at)
                 VALUES (?, ?, ?, ?)
