@@ -891,7 +891,6 @@ class BaseApp {
         itemsToShow.forEach(itemName => {
             const item = this.allItems.find(i => i.name === itemName);
             if (item) {
-                console.log('Processing item:', item);
                 const div = document.createElement('div');
                 div.className = 'item';
                 div.innerHTML = `
