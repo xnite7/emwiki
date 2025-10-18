@@ -990,7 +990,7 @@ class BaseApp {
             btn.classList.toggle('active', btn.dataset.tax === taxMode);
         });
 
-        const labels = { 'nt': 'NT', 'wt': 'WT', 'gp': 'GP' };
+        const labels = { 'nt': 'Flat', 'gp': 'Gamepass', 'wt': 'Shop Stand' };
         const taxLabel = document.getElementById('tax-label');
         if (taxLabel) taxLabel.textContent = labels[taxMode];
 
@@ -1664,9 +1664,9 @@ class ItemModal {
 
         const convertedPrice = this.catalog.convertPrice(item.price);
         const taxLabels = {
-            'nt': { short: 'NT', full: 'No Tax - What seller receives' },
-            'wt': { short: 'WT', full: 'With Tax - What buyer pays on stands (40% tax)' },
-            'gp': { short: 'GP', full: 'Gamepass - What buyer pays via pass (30% tax)' }
+            'nt': { short: 'Flat', full: 'What seller receives' },
+            'gp': { short: 'Gamepass', full: 'What buyer pays via pass (30% tax)' },
+            'wt': { short: 'Shop Stand', full: 'What buyer pays on stands (40% tax)' }
         };
 
         const currentTax = taxLabels[this.catalog.taxMode];
@@ -2039,15 +2039,17 @@ class Auth {
                 <label style="font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; display: block;">Tax Mode</label>
                 <div class="tax-mode-options">
                     <button class="tax-mode-btn active" data-tax="nt" onclick="catalog.selectTax('nt')">
-                        <span style="font-size: 14px; font-weight: 700;">NT</span>
+                        <span style="font-size: 14px; font-weight: 700;">Flat</span>
                         <span class="tax-mode-desc">No Tax</span>
                     </button>
+
                     <button class="tax-mode-btn" data-tax="wt" onclick="catalog.selectTax('wt')">
-                        <span style="font-size: 14px; font-weight: 700;">WT</span>
-                        <span class="tax-mode-desc">Stands 40%</span>
+                        <span style="font-size: 14px; font-weight: 700;">Stand</span>
+                        <span class="tax-mode-desc">Shop Stand 40%</span>
                     </button>
+                    
                     <button class="tax-mode-btn" data-tax="gp" onclick="catalog.selectTax('gp')">
-                        <span style="font-size: 14px; font-weight: 700;">GP</span>
+                        <span style="font-size: 14px; font-weight: 700;">Gamepass</span>
                         <span class="tax-mode-desc">Pass 30%</span>
                     </button>
                 </div>
