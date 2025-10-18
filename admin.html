@@ -448,7 +448,7 @@
 
                 // List of fields to check
                 const fields = ['name', 'img', 'svg', 'price', 'from', 'price/code/rarity',
-    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed'];
+                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed'];
 
                 // Check each field for changes
                 for (const field of fields) {
@@ -1009,16 +1009,16 @@
                 document.getElementById('item-adder-close').addEventListener('click', () => this.closeModal());
 
                 // Category selection
-document.querySelectorAll('.category-option').forEach(btn => {
-    btn.addEventListener('click', () => {
-        this.newItemData.category = btn.dataset.category;
-        this.newItemData.isTitle = btn.dataset.category === 'titles';
-        
-        document.querySelectorAll('.category-option').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        document.getElementById('item-adder-next').disabled = false;
-    });
-});
+                document.querySelectorAll('.category-option').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        this.newItemData.category = btn.dataset.category;
+                        this.newItemData.isTitle = btn.dataset.category === 'titles';
+
+                        document.querySelectorAll('.category-option').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        document.getElementById('item-adder-next').disabled = false;
+                    });
+                });
 
                 // Navigation buttons
                 document.getElementById('item-adder-next').addEventListener('click', () => this.nextStep());
@@ -1109,41 +1109,41 @@ document.querySelectorAll('.category-option').forEach(btn => {
                 });
             },
 
-toggleInputMode() {
-    const isTitle = this.newItemData.isTitle;
-    const imageGroup = document.getElementById('image-upload-group');
-    const svgGroup = document.getElementById('svg-input-group');
-    
-    if (isTitle) {
-        // Show SVG input, hide image upload
-        imageGroup.style.display = 'none';
-        svgGroup.style.display = 'block';
-        
-        // Setup SVG preview
-        const svgInput = document.getElementById('item-svg-input');
-        const svgPreview = document.getElementById('svg-input-preview');
-        
-        svgInput.oninput = () => {
-            const svgCode = svgInput.value.trim();
-            if (svgCode && svgCode.startsWith('<svg')) {
-                svgPreview.innerHTML = svgCode;
-            } else {
-                svgPreview.innerHTML = '<span style="color: #666;">SVG preview will appear here</span>';
-            }
-        };
-        
-        // Set default SVG template
-        if (!svgInput.value) {
-            const name = document.getElementById('item-name').value.trim() || 'Title';
-            svgInput.value = `<svg width="230" height="100" viewBox="457.90625 471 84.751953125 39" xmlns="http://www.w3.org/2000/svg"><text x="500" y="500" xmlns="http://www.w3.org/2000/svg" text-anchor="middle" stroke="#545454" stroke-width="3" paint-order="stroke" stroke-miterlimit="3" fill="#cbcbcb" style="font: 700 27px Arimo;">${name}</text></svg>`;
-            svgInput.oninput();
-        }
-    } else {
-        // Show image upload, hide SVG input
-        imageGroup.style.display = 'block';
-        svgGroup.style.display = 'none';
-    }
-},
+            toggleInputMode() {
+                const isTitle = this.newItemData.isTitle;
+                const imageGroup = document.getElementById('image-upload-group');
+                const svgGroup = document.getElementById('svg-input-group');
+
+                if (isTitle) {
+                    // Show SVG input, hide image upload
+                    imageGroup.style.display = 'none';
+                    svgGroup.style.display = 'block';
+
+                    // Setup SVG preview
+                    const svgInput = document.getElementById('item-svg-input');
+                    const svgPreview = document.getElementById('svg-input-preview');
+
+                    svgInput.oninput = () => {
+                        const svgCode = svgInput.value.trim();
+                        if (svgCode && svgCode.startsWith('<svg')) {
+                            svgPreview.innerHTML = svgCode;
+                        } else {
+                            svgPreview.innerHTML = '<span style="color: #666;">SVG preview will appear here</span>';
+                        }
+                    };
+
+                    // Set default SVG template
+                    if (!svgInput.value) {
+                        const name = document.getElementById('item-name').value.trim() || 'Title';
+                        svgInput.value = `<svg width="230" height="100" viewBox="457.90625 471 84.751953125 39" xmlns="http://www.w3.org/2000/svg"><text x="500" y="500" xmlns="http://www.w3.org/2000/svg" text-anchor="middle" stroke="#545454" stroke-width="3" paint-order="stroke" stroke-miterlimit="3" fill="#cbcbcb" style="font: 700 27px Arimo;">${name}</text></svg>`;
+                        svgInput.oninput();
+                    }
+                } else {
+                    // Show image upload, hide SVG input
+                    imageGroup.style.display = 'block';
+                    svgGroup.style.display = 'none';
+                }
+            },
 
             switchUploadTab(tabName) {
                 // Update tab buttons
@@ -1284,42 +1284,42 @@ toggleInputMode() {
                         ErrorHandler.showToast('Please select a category', 'error');
                         return;
                     }
-                     setTimeout(() => this.toggleInputMode(), 50);
+                    setTimeout(() => this.toggleInputMode(), 50);
                 } else if (this.currentStep === 2) {
-    const name = document.getElementById('item-name').value.trim();
-    if (!name) {
-        ErrorHandler.showToast('Please enter an item name', 'error');
-        return;
-    }
+                    const name = document.getElementById('item-name').value.trim();
+                    if (!name) {
+                        ErrorHandler.showToast('Please enter an item name', 'error');
+                        return;
+                    }
 
-    const categoryItems = state.jsData[this.newItemData.category] || [];
-    if (categoryItems.some(item => item.name.toLowerCase() === name.toLowerCase())) {
-        ErrorHandler.showToast('An item with this name already exists in this category', 'error');
-        return;
-    }
+                    const categoryItems = state.jsData[this.newItemData.category] || [];
+                    if (categoryItems.some(item => item.name.toLowerCase() === name.toLowerCase())) {
+                        ErrorHandler.showToast('An item with this name already exists in this category', 'error');
+                        return;
+                    }
 
-    this.newItemData.name = name;
-    
-    // Handle SVG or Image based on type
-    if (this.newItemData.isTitle) {
-        const svgCode = document.getElementById('item-svg-input').value.trim();
-        if (!svgCode || !svgCode.startsWith('<svg')) {
-            ErrorHandler.showToast('Please provide valid SVG code', 'error');
-            return;
-        }
-        this.newItemData.svg = svgCode;
-        this.newItemData.img = ''; // Titles don't use img
-    } else {
-        this.newItemData.img = this.uploadedImageUrl || document.getElementById('item-img').value.trim() || '';
-        this.newItemData.svg = ''; // Regular items don't use svg
-    }
-    
-    this.newItemData.price = document.getElementById('item-price').value.trim() || 'N/A';
-    this.newItemData.from = document.getElementById('item-from').value.trim().replace(/\n/g, '<br>') || '';
-    this.newItemData['price/code/rarity'] = document.getElementById('item-rarity').value.trim().replace(/\n/g, '<br>') || '';
+                    this.newItemData.name = name;
 
-    this.updatePreview();
-}
+                    // Handle SVG or Image based on type
+                    if (this.newItemData.isTitle) {
+                        const svgCode = document.getElementById('item-svg-input').value.trim();
+                        if (!svgCode || !svgCode.startsWith('<svg')) {
+                            ErrorHandler.showToast('Please provide valid SVG code', 'error');
+                            return;
+                        }
+                        this.newItemData.svg = svgCode;
+                        this.newItemData.img = ''; // Titles don't use img
+                    } else {
+                        this.newItemData.img = this.uploadedImageUrl || document.getElementById('item-img').value.trim() || '';
+                        this.newItemData.svg = ''; // Regular items don't use svg
+                    }
+
+                    this.newItemData.price = document.getElementById('item-price').value.trim() || 'N/A';
+                    this.newItemData.from = document.getElementById('item-from').value.trim().replace(/\n/g, '<br>') || '';
+                    this.newItemData['price/code/rarity'] = document.getElementById('item-rarity').value.trim().replace(/\n/g, '<br>') || '';
+
+                    this.updatePreview();
+                }
 
                 if (this.currentStep < 3) {
                     this.currentStep++;
@@ -1357,28 +1357,28 @@ toggleInputMode() {
             },
 
             updatePreview() {
-    const previewCard = document.getElementById('item-preview-card');
-    const item = {
-        ...this.newItemData,
-        tradable: !document.getElementById('item-untradable').checked,
-        new: document.getElementById('item-new').checked,
-        weekly: document.getElementById('item-weekly').checked,
-        weeklystar: document.getElementById('item-weeklystar').checked,
-        retired: document.getElementById('item-retired').checked,
-        premium: document.getElementById('item-premium').checked
-    };
+                const previewCard = document.getElementById('item-preview-card');
+                const item = {
+                    ...this.newItemData,
+                    tradable: !document.getElementById('item-untradable').checked,
+                    new: document.getElementById('item-new').checked,
+                    weekly: document.getElementById('item-weekly').checked,
+                    weeklystar: document.getElementById('item-weeklystar').checked,
+                    retired: document.getElementById('item-retired').checked,
+                    premium: document.getElementById('item-premium').checked
+                };
 
-    // Handle SVG or Image display
-    let imageDisplay = '';
-    if (item.svg) {
-        imageDisplay = item.svg;
-    } else if (item.img) {
-        imageDisplay = `<img src="${item.img}" alt="${item.name}" />`;
-    } else {
-        imageDisplay = '<div style="height:80px;background:#333;"></div>';
-    }
+                // Handle SVG or Image display
+                let imageDisplay = '';
+                if (item.svg) {
+                    imageDisplay = item.svg;
+                } else if (item.img) {
+                    imageDisplay = `<img src="${item.img}" alt="${item.name}" />`;
+                } else {
+                    imageDisplay = '<div style="height:80px;background:#333;"></div>';
+                }
 
-    previewCard.innerHTML = `
+                previewCard.innerHTML = `
         <div class="item-card" style="pointer-events: none;">
             ${imageDisplay}
             <div class="item-name">${item.name}</div>
@@ -1397,73 +1397,73 @@ toggleInputMode() {
             </div>
         </div>
     `;
-},
+            },
 
-addItem() {
-    const newItem = {
-        name: this.newItemData.name,
-        price: this.newItemData.price || 'N/A',
-        from: this.newItemData.from || '',
-        'price/code/rarity': this.newItemData['price/code/rarity'] || '',
-        tradable: !document.getElementById('item-untradable').checked,
-        new: document.getElementById('item-new').checked,
-        weekly: document.getElementById('item-weekly').checked,
-        weeklystar: document.getElementById('item-weeklystar').checked,
-        retired: document.getElementById('item-retired').checked,
-        premium: document.getElementById('item-premium').checked
-    };
-    
-    // ADD THIS: Include svg field if it's a title
-    if (this.newItemData.svg) {
-        newItem.svg = this.newItemData.svg;
-    } else {
-        newItem.img = this.newItemData.img || '';
-    }
+            addItem() {
+                const newItem = {
+                    name: this.newItemData.name,
+                    price: this.newItemData.price || 'N/A',
+                    from: this.newItemData.from || '',
+                    'price/code/rarity': this.newItemData['price/code/rarity'] || '',
+                    tradable: !document.getElementById('item-untradable').checked,
+                    new: document.getElementById('item-new').checked,
+                    weekly: document.getElementById('item-weekly').checked,
+                    weeklystar: document.getElementById('item-weeklystar').checked,
+                    retired: document.getElementById('item-retired').checked,
+                    premium: document.getElementById('item-premium').checked
+                };
 
-    const category = this.newItemData.category;
-    if (!state.jsData[category]) {
-        state.jsData[category] = [];
-    }
+                // ADD THIS: Include svg field if it's a title
+                if (this.newItemData.svg) {
+                    newItem.svg = this.newItemData.svg;
+                } else {
+                    newItem.img = this.newItemData.img || '';
+                }
 
-    const categoryItems = state.jsData[category];
-    let insertIndex = categoryItems.findIndex(item =>
-        item.name.toLowerCase() > newItem.name.toLowerCase()
-    );
+                const category = this.newItemData.category;
+                if (!state.jsData[category]) {
+                    state.jsData[category] = [];
+                }
 
-    if (insertIndex === -1) {
-        insertIndex = categoryItems.length;
-    }
+                const categoryItems = state.jsData[category];
+                let insertIndex = categoryItems.findIndex(item =>
+                    item.name.toLowerCase() > newItem.name.toLowerCase()
+                );
 
-    categoryItems.splice(insertIndex, 0, newItem);
-    state.allItems = Object.values(state.jsData).flat();
+                if (insertIndex === -1) {
+                    insertIndex = categoryItems.length;
+                }
 
-    // Mark as new item (not modified)
-    ChangeTracker.markAsNew(newItem.name);
+                categoryItems.splice(insertIndex, 0, newItem);
+                state.allItems = Object.values(state.jsData).flat();
 
-    // Record for undo
-    UndoRedoManager.recordChange({
-        type: 'add',
-        itemName: newItem.name,
-        category: category,
-        newState: newItem
-    });
+                // Mark as new item (not modified)
+                ChangeTracker.markAsNew(newItem.name);
 
-    UI.renderItems();
-    UI.renderShops();
-    ChangeTracker.updateHighlights();
+                // Record for undo
+                UndoRedoManager.recordChange({
+                    type: 'add',
+                    itemName: newItem.name,
+                    category: category,
+                    newState: newItem
+                });
 
-    ErrorHandler.showToast(`✓ Added "${newItem.name}" to ${category}`, 'success');
+                UI.renderItems();
+                UI.renderShops();
+                ChangeTracker.updateHighlights();
 
-    this.closeModal();
+                ErrorHandler.showToast(`✓ Added "${newItem.name}" to ${category}`, 'success');
 
-    setTimeout(() => {
-        const newCard = document.querySelector(`[data-name="${newItem.name}"]`);
-        if (newCard) {
-            newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            newCard.style.animation = 'pulse-highlight 1s ease-in-out 3';
-        }
-    }, 100);
-},
+                this.closeModal();
+
+                setTimeout(() => {
+                    const newCard = document.querySelector(`[data-name="${newItem.name}"]`);
+                    if (newCard) {
+                        newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        newCard.style.animation = 'pulse-highlight 1s ease-in-out 3';
+                    }
+                }, 100);
+            },
             openModal() {
                 this.modal.classList.remove('hidden');
                 this.currentStep = 1;
@@ -3726,6 +3726,8 @@ addItem() {
                 ['Removed', 'removed'],
                 ['Premium', 'premium'],
                 ['Tradable', 'tradable'],
+                ['Icon', 'img'], 
+                ['Text', 'svg'],  
                 ['RAP', 'price'],
                 ['Description', 'from'],
                 ['Price/Code/Rarity', 'price/code/rarity']
@@ -3907,6 +3909,26 @@ addItem() {
                 return output;
             },
 
+            formatImageItem(item) {
+                const getFilename = (url) => {
+                    if (!url) return 'none';
+                    const parts = url.split('/');
+                    return parts[parts.length - 1];
+                };
+
+                const oldFile = getFilename(item.oldImg);
+                const newFile = getFilename(item.newImg);
+
+                // If filename is the same, it's just a domain change
+                if (oldFile === newFile) {
+                    const oldDomain = item.oldImg.split('/')[2] || 'old source';
+                    const newDomain = item.newImg.split('/')[2] || 'new source';
+                    return `<strong>[${item.item}]</strong> moved: ${oldDomain} → ${newDomain}`;
+                }
+
+                return `<strong>[${item.item}]</strong> <span class="old">${oldFile}</span> → <span class="new">${newFile}</span>`;
+            },
+
             formatAddedItem(item) {
                 return `${this.ICONS.added} <strong>${item.name}</strong>`;
             },
@@ -3922,7 +3944,9 @@ addItem() {
                     ...this.BOOLEAN_FIELDS.map(field => [field, []]),
                     ['price', []],
                     ['from', []],
-                    ['price/code/rarity', []]
+                    ['price/code/rarity', []],
+                    ['img', []],
+                    ['svg', []]
                 ]);
 
                 for (const line of diffLines) {
@@ -3957,6 +3981,10 @@ addItem() {
                         changes.from.push(this.processDescriptionChange(item, oldVal, newVal));
                     } else if (field === 'price/code/rarity') {
                         changes['price/code/rarity'].push(this.processDescriptionChange(item, oldVal, newVal));
+                    } else if (field === 'img') {  // ADD THIS
+                        changes.img.push({ item, oldImg: oldRaw, newImg: newRaw });
+                    } else if (field === 'svg') {  // ADD THIS
+                        changes.svg.push({ item, oldImg: oldRaw, newImg: newRaw });
                     }
                 }
 
@@ -4043,6 +4071,8 @@ addItem() {
                     removed: this.formatBooleanItem,
                     premium: this.formatBooleanItem,
                     tradable: this.formatBooleanItem,
+                    img: this.formatImageItem,  // Changed from 'icon' to 'img'
+                    svg: this.formatImageItem,  // Added svg formatter
                     price: this.formatPriceItem,
                     from: this.formatDescriptionItem,
                     'price/code/rarity': this.formatDescriptionItem
@@ -5273,7 +5303,7 @@ addItem() {
             compareItems(original, current) {
                 const changes = [];
                 const fields = ['name', 'img', 'svg', 'price', 'from', 'price/code/rarity',
-    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed'];
+                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed'];
 
                 fields.forEach(field => {
                     const oldVal = this.normalizeValue(field, original[field]);
