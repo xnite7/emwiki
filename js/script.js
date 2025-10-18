@@ -611,7 +611,8 @@ class BaseApp {
         // Price
         const price = document.createElement('div');
         price.className = 'item-price';
-        price.textContent = Utils.formatPrice(item.price);
+        price.textContent = this.convertPrice(Utils.formatPrice(item.price));
+        
         div.appendChild(price);
 
         if (item.price == '0') {
@@ -914,7 +915,7 @@ class BaseApp {
                     div.insertAdjacentHTML('beforeend', item.svg);
                 }
 
-                div.insertAdjacentHTML('beforeend', `${item.price != '0' && item.price != '' ? `<div class="item-price">${Utils.formatPrice(item.price)}</div>` : ''}`);
+                div.insertAdjacentHTML('beforeend', `${item.price != '0' && item.price != '' ? `<div class="item-price">${this.convertPrice(Utils.formatPrice(item.price))}</div>` : ''}`);
 
                 div.querySelector('.remove-wishlist').onclick = (e) => {
                     e.stopPropagation();
@@ -965,7 +966,7 @@ class BaseApp {
                     div.insertAdjacentHTML('beforeend', item.svg);
                 }
 
-                div.insertAdjacentHTML('beforeend', `${item.price != '0' && item.price != '' ? `<div class="item-price">${Utils.formatPrice(item.price)}</div>` : ''}`);
+                div.insertAdjacentHTML('beforeend', `${item.price != '0' && item.price != '' ? `<div class="item-price">${this.convertPrice(Utils.formatPrice(item.price))}</div>` : ''}`);
 
 
                 div.onclick = () => {
