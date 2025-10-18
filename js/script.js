@@ -23,7 +23,7 @@ const Utils = {
         if (!token) return false;
 
         try {
-            const response = await fetch('https://emwiki.site/api/user/preferences', {
+            const response = await fetch('https://emwiki.site/api/auth/user/preferences', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -43,7 +43,7 @@ const Utils = {
         if (!token) return defaultValue;
 
         try {
-            const response = await fetch(`https://emwiki.site/api/user/preferences?key=${key}`, {
+            const response = await fetch(`https://emwiki.site/api/auth/user/preferences?key=${key}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -75,7 +75,7 @@ const Utils = {
         if (!hasData) return;
 
         try {
-            const response = await fetch('https://emwiki.site/api/user/preferences/migrate', {
+            const response = await fetch('https://emwiki.site/api/auth/user/preferences/migrate', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
