@@ -5304,6 +5304,15 @@ addItem() {
 
             formatFieldChange(field, oldValue, newValue) {
                 const formatters = {
+                    'img': (old, val) => {
+                        const getFilename = (url) => {
+                            if (!url) return 'none';
+                            const parts = url.split('/');
+                            return parts[parts.length - 1] || url;
+                        };
+                        return `Image: ${getFilename(old)} → ${getFilename(val)}`;
+                    },
+                    'svg': (old, val) => `SVG code updated`,
                     'price': (old, val) => `RAP: ${old || '0'} → ${val || '0'}`,
                     'from': (old, val) => `Description changed`,
                     'price/code/rarity': (old, val) => `Price/Code/Rarity changed`,
