@@ -33,6 +33,11 @@
     display: grid;
     align-content: space-between;
     justify-items: center;
+
+    @supports (corner-shape: squircle) {
+        corner-shape: squircle;
+        border-radius: 65px;
+    }
 }
 
 .modal-content canvas {
@@ -59,8 +64,19 @@ body:has(.item-modal.active) {
     max-height: 90vh;
     min-height: 500px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0px 0px 0px 11px #00000047;
-    transition: all 0.3s ease;
+    transition: all 0.3s ease, transform 0.6s;
+    transform-style: preserve-3d;
+
+    @supports (corner-shape: squircle) {
+        corner-shape: squircle;
+        border-radius: 65px;
+    }
 }
+
+.modal-container:has(.flipped) {
+    transform: rotateY(180deg);
+}
+
 
 .modal-container.transitioning {
     transform: scale(0.95);
@@ -286,7 +302,7 @@ body:has(.item-modal.active) {
 
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
-        border-radius: 15px;
+        border-radius: 65px;
     }
 }
 
@@ -386,14 +402,12 @@ body:has(.item-modal.active) {
     transition: transform 0.6s;
 }
 
-.modal-content-wrapper.flipped {
-    transform: rotateY(180deg);
-}
 
 .modal-front,
 .modal-back {
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    transition: opacity 0.3s;
 }
 
 .modal-back {
@@ -405,6 +419,20 @@ body:has(.item-modal.active) {
     transform: rotateY(180deg);
     overflow-y: auto;
     padding: 20px;
+    opacity: 0;
+}
+
+.modal-front {
+    opacity: 1;
+}
+
+.flipped .modal-back {
+    opacity: 1;
+        align-content: stretch;
+}
+
+.flipped .modal-front {
+    opacity: 0;
 }
 
 /* Flip Button */
@@ -412,11 +440,10 @@ body:has(.item-modal.active) {
     position: absolute;
     bottom: 20px;
     right: 20px;
-    background: rgba(59, 130, 246, 0.9);
-    color: white;
+    background: transparent;
+    color: #ffffffad;
     border: none;
-    border-radius: 25px;
-    padding: 10px 20px;
+    padding: 9px 18px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -425,18 +452,35 @@ body:has(.item-modal.active) {
     font-size: 14px;
     transition: all 0.3s;
     z-index: 10;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    opacity: 1;
+
+    @starting-style {
+        opacity: 0;
+    }
+
+    @supports (corner-shape: squircle) {
+        corner-shape: squircle;
+        border-radius: 65px;
+    }
 }
 
+
+
 .modal-flip-btn:hover {
-    background: rgba(59, 130, 246, 1);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    color: #ffffff;
 }
 
 .modal-flip-btn .flip-icon {
     font-size: 18px;
     transition: transform 0.3s;
+}
+
+
+.flipped~.modal-flip-btn {
+    background: rgba(246, 59, 130, 0.9);
+    transform: rotateY(180deg);
+    color: #fff;
 }
 
 /* Back Content Styling */
@@ -448,6 +492,7 @@ body:has(.item-modal.active) {
 
 .modal-graph-section {
     margin-bottom: 30px;
+    width: -webkit-fill-available;
 }
 
 .modal-graph-section h4 {

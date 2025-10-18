@@ -1930,14 +1930,11 @@
             updatePriceHistory() {
                 const now = Date.now();
 
-                // Iterate through all items in the current state
                 state.allItems.forEach(item => {
-                    // Initialize priceHistory if it doesn't exist
                     if (!item.priceHistory) {
                         item.priceHistory = [];
                     }
 
-                    // Check if this item was modified
                     const isModified = ChangeTracker.isModifiedItem(item.name);
                     const isNew = ChangeTracker.isNewItem(item.name);
 
@@ -1947,26 +1944,33 @@
 
                         if (originalJson && !isNew) {
                             const original = JSON.parse(originalJson);
-                            oldPrice = this.normalizePrice(original.price);
+                            oldPrice = original.price;  // ← Use raw price, not normalized
                         }
 
-                        const newPrice = this.normalizePrice(item.price);
+                        const currentPrice = item.price;  // ← Use raw price
 
                         // Only add to history if price actually changed
-                        if (oldPrice !== newPrice) {
-                            // Check if the last entry in history matches current price
+                        if (oldPrice !== currentPrice) {
                             const lastEntry = item.priceHistory[item.priceHistory.length - 1];
-                            const shouldAdd = !lastEntry ||
-                                this.normalizePrice(lastEntry.price) !== newPrice;
+
+                            // Convert price to number for storage (handle ranges by taking first value)
+                            let priceValue = 0;
+                            if (currentPrice && currentPrice !== 'N/A') {
+                                // If it's a range like "50-100", take the first number
+                                const match = String(currentPrice).match(/^\d+/);
+                                priceValue = match ? parseInt(match[0]) : 0;
+                            }
+
+                            const shouldAdd = !lastEntry || lastEntry.price !== priceValue;
 
                             if (shouldAdd) {
                                 item.priceHistory.push({
-                                    price: parseInt(newPrice) || 0,
+                                    price: priceValue,
                                     timestamp: now,
                                     admin: state.adminName
                                 });
 
-                                // Keep only last 50 entries to prevent bloat
+                                // Keep only last 50 entries
                                 if (item.priceHistory.length > 50) {
                                     item.priceHistory = item.priceHistory.slice(-50);
                                 }
@@ -1975,7 +1979,6 @@
                     }
                 });
             },
-
             // Add this helper method to API object:
             normalizePrice(price) {
                 if (!price || price === '' || price === 'N/A' || price === 'undefined') {
@@ -3726,8 +3729,8 @@
                 ['Removed', 'removed'],
                 ['Premium', 'premium'],
                 ['Tradable', 'tradable'],
-                ['Icon', 'img'], 
-                ['Text', 'svg'],  
+                ['Icon', 'img'],
+                ['Text', 'svg'],
                 ['RAP', 'price'],
                 ['Description', 'from'],
                 ['Price/Code/Rarity', 'price/code/rarity']

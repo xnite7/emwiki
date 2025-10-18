@@ -92,52 +92,57 @@ const Utils = {
         return false;
     },
 
-    formatPrice(price) {
-        function parseValue(str) {
-            str = str.trim().toLowerCase();
-            if (str.endsWith('k')) {
-                const num = parseFloat(str.slice(0, -1));
-                return isNaN(num) ? null : num * 1000;
-            }
-            if (str.endsWith('m')) {
-                const num = parseFloat(str.slice(0, -1));
-                return isNaN(num) ? null : num * 1_000_000;
-            }
-            const num = parseFloat(str);
-            return isNaN(num) ? null : num;
+formatPrice(price) {
+    function parseValue(str) {
+        str = str.trim().toLowerCase();
+        if (str.endsWith('k')) {
+            const num = parseFloat(str.slice(0, -1));
+            return isNaN(num) ? null : num * 1000;
         }
-
-        function formatNum(num) {
-            if (num === null || isNaN(num)) return null;
-            if (num >= 1_000_000) {
-                let val = (num / 1_000_000).toFixed(1);
-                val = val.replace(/\.0$/, '');
-                return val + 'M';
-            } else if (num >= 1000) {
-                let val = (num / 1000).toFixed(1);
-                val = val.replace(/\.0$/, '');
-                return val + 'k';
-            }
-            return num.toLocaleString();
+        if (str.endsWith('m')) {
+            const num = parseFloat(str.slice(0, -1));
+            return isNaN(num) ? null : num * 1_000_000;
         }
+        const num = parseFloat(str);
+        return isNaN(num) ? null : num;
+    }
 
-        const str = String(price);
-        const hasPlus = str.includes('+');
-        const cleanStr = str.replace('+', '');
-
-        if (cleanStr.includes('-')) {
-            const parts = cleanStr.split('-').map(p => {
-                const num = parseValue(p);
-                return formatNum(num);
-            });
-            if (parts.every(v => v === null)) return str;
-            return parts.map((v, i) => v ?? cleanStr.split('-')[i].trim()).join('-') + (hasPlus ? '+' : '');
+    function formatNum(num) {
+        if (num === null || isNaN(num)) return null;
+        if (num >= 1_000_000) {
+            let val = (num / 1_000_000).toFixed(1);
+            val = val.replace(/\.0$/, '');
+            return val + 'M';
+        } else if (num >= 1000) {
+            let val = (num / 1000).toFixed(1);
+            val = val.replace(/\.0$/, '');
+            return val + 'k';
         }
+        return num.toLocaleString();
+    }
 
-        const num = parseValue(cleanStr);
-        const formatted = formatNum(num);
-        return (formatted ?? str) + (hasPlus ? '+' : '');
-    },
+    const str = String(price);
+    const hasPlus = str.includes('+');
+    const cleanStr = str.replace('+', '').trim();
+
+    // CRITICAL: Check for range FIRST before any other processing
+    // Use a more specific regex to detect actual ranges (number-number)
+    if (/\d+\s*-\s*\d+/.test(cleanStr)) {
+        const parts = cleanStr.split('-');
+        const formattedParts = parts.map(p => {
+            const num = parseValue(p.trim());
+            return formatNum(num);
+        });
+        if (formattedParts.every(v => v !== null)) {
+            return formattedParts.join('-') + (hasPlus ? '+' : '');
+        }
+    }
+
+    // Single value
+    const num = parseValue(cleanStr);
+    const formatted = formatNum(num);
+    return (formatted ?? str) + (hasPlus ? '+' : '');
+},
 
     showToast(title, message, type = 'info') {
         if (!document.getElementById('toast-container')) {
@@ -612,7 +617,7 @@ class BaseApp {
         const price = document.createElement('div');
         price.className = 'item-price';
         price.textContent = this.convertPrice(Utils.formatPrice(item.price));
-        
+
         div.appendChild(price);
 
         if (item.price == '0') {
@@ -943,7 +948,7 @@ class BaseApp {
         recentDiv.innerHTML = '';
 
         this.recentlyViewed.slice(0, 5).forEach(itemName => {
-            const item = this.items.find(i => i.name === itemName);
+            const item = this.allItems.find(i => i.name === itemName);
             if (item) {
                 const div = document.createElement('div');
                 div.className = 'item';
@@ -1132,6 +1137,13 @@ const PriceGraph = {
     createGraph(priceHistory, canvasId) {
         if (!priceHistory || priceHistory.length < 2) return null;
 
+        // Filter out entries with 0 price (initial entries)
+        priceHistory = priceHistory.filter(h => h.price !== 0 && h.price !== '0');
+
+        // Re-check if we still have enough data points after filtering
+        console.log(priceHistory.length);
+        if (priceHistory.length < 2) return null;
+
         const canvas = document.createElement('canvas');
         canvas.id = canvasId;
         canvas.style.cssText = 'width: 100%; height: 200px;';
@@ -1270,12 +1282,12 @@ class ItemModal {
                     </div>
 
                     <!-- Back Side (Graph & Metadata) -->
-                    <div class="modal-content modal-back" style="display:none;">
+                    <div class="modal-content modal-back">
                         <div class="modal-back-header">
                             <h3>Additional Info</h3>
                         </div>
                         
-                        <div class="modal-graph-section" style="display:none;">
+                        <div class="modal-graph-section">
                             <h4>Price History</h4>
                             <div class="modal-graph-container"></div>
                             <div class="modal-last-admin"></div>
@@ -1386,7 +1398,7 @@ class ItemModal {
         this.updateContent(item);
 
         // Check if item has back content
-        const hasHistory = item.priceHistory && item.priceHistory.length >= 2;
+        const hasHistory = item.priceHistory && item.priceHistory.filter(h => h.price !== 0 && h.price !== '0').length >= 2;
         const hasMetadata = item.aliases || item.quantity || item.author;
         const hasBackContent = hasHistory || hasMetadata;
 
@@ -1627,6 +1639,24 @@ class ItemModal {
 
             setTimeout(() => {
                 this.updateContent(this.currentItem);
+                // Check if item has back content
+                const hasHistory = this.currentItem.priceHistory && this.currentItem.priceHistory.filter(h => h.price !== 0 && h.price !== '0').length >= 2;
+                const hasMetadata = this.currentItem.aliases || this.currentItem.quantity || this.currentItem.author;
+                const hasBackContent = hasHistory || hasMetadata;
+
+                // Show/hide flip button
+                this.elements.flipBtn.style.display = hasBackContent ? 'flex' : 'none';
+
+                // Update back content if exists
+                if (hasBackContent) {
+                    this.updateBackContent(this.currentItem);
+                }
+
+                // Reset to front side
+                this.elements.contentWrapper.classList.remove('flipped');
+                this.updateFlipButton(false);
+
+
                 this.updateNavButtons();
                 this.updateURL(this.currentItem.name);
                 this.catalog.addToRecentlyViewed(this.currentItem.name);
