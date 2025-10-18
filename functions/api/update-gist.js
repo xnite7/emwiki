@@ -90,16 +90,11 @@ export async function onRequestPost(context) {
     const timestamp = new Date().toISOString();
 
     // Combine new diff with previous log (prepend)
-    const previousLog = gistData.files["history.log"]?.content || "";
-    const fullHistoryLog = readableDiff.trim()
-      ? `Updated by ${username} at ${timestamp}\n${readableDiff}\n\n---\n\n${previousLog}`
-      : previousLog;
 
     // Prepare gist update payload
     const updatedGist = {
       files: {
-        "auto.json": { content: JSON.stringify(newContent, null, 2) },
-        "history.log": { content: fullHistoryLog }
+        "auto.json": { content: JSON.stringify(newContent, null, 2) }
       }
     };
 

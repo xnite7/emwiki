@@ -1895,18 +1895,14 @@
                 this.updatePriceHistory();
 
                 // Clean up the data before saving
-                const cleanedData = JSON.parse(JSON.stringify(state.jsData)); // Deep clone
+                const cleanedData = JSON.parse(JSON.stringify(state.jsData));
 
-                // Iterate through all categories and items to fix prices
                 Object.values(cleanedData).forEach(categoryItems => {
                     if (Array.isArray(categoryItems)) {
                         categoryItems.forEach(item => {
-                            // Convert empty, null, undefined, or "N/A" prices to "0"
                             if (!item.price || item.price === '' || item.price === 'N/A' || item.price === 'undefined') {
                                 item.price = '0';
                             }
-
-                            // Ensure priceHistory exists
                             if (!item.priceHistory) {
                                 item.priceHistory = [];
                             }
@@ -1914,11 +1910,16 @@
                     }
                 });
 
+                // ✅ MINIFY THE JSON (no spaces/indents)
+                const minifiedContent = JSON.stringify(cleanedData);
+
+                console.log(`📦 JSON size: ${(minifiedContent.length / 1024).toFixed(2)} KB`);
+
                 const response = await fetch(CONFIG.API_URLS.UPDATE_GIST, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        content: cleanedData,
+                        content: cleanedData,  // Send as object, server will stringify
                         username: state.adminName,
                         version: state.gistVersion
                     })
