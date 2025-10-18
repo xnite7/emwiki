@@ -447,8 +447,8 @@
                 };
 
                 // List of fields to check
-                const fields = ['name', 'img', 'price', 'from', 'price/code/rarity',
-                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed'];
+                const fields = ['name', 'img', 'svg', 'price', 'from', 'price/code/rarity',
+    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed'];
 
                 // Check each field for changes
                 for (const field of fields) {
@@ -5272,7 +5272,8 @@ addItem() {
             // Compare two items and return list of changes
             compareItems(original, current) {
                 const changes = [];
-                const fields = ['price', 'from', 'price/code/rarity', 'weekly', 'weeklystar', 'new', 'retired', 'removed', 'premium', 'tradable', 'name'];
+                const fields = ['name', 'img', 'svg', 'price', 'from', 'price/code/rarity',
+    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed'];
 
                 fields.forEach(field => {
                     const oldVal = this.normalizeValue(field, original[field]);
