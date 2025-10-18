@@ -61,19 +61,15 @@ const Utils = {
     async migrateToAccount() {
         const token = localStorage.getItem('auth_token');
         if (!token) return;
-
         // Gather all localStorage data
         const localData = {
             favorites: Utils.loadFromStorage('favorites', []),
             wishlist: Utils.loadFromStorage('wishlist', [])
         };
-
         // Only migrate if there's data
         const hasData = localData.favorites.length > 0 ||
             localData.wishlist.length > 0;
-
         if (!hasData) return;
-
         try {
             const response = await fetch('https://emwiki.site/api/auth/user/preferences/migrate', {
                 method: 'POST',
@@ -83,19 +79,16 @@ const Utils = {
                 },
                 body: JSON.stringify(localData)
             });
-
             if (response.ok) {
                 // Clear localStorage after successful migration
                 localStorage.removeItem('favorites');
                 localStorage.removeItem('wishlist');
-
                 Utils.showToast('Data Synced', 'Your preferences have been synced to your account!', 'success');
                 return true;
             }
         } catch (error) {
             console.error('Failed to migrate data:', error);
         }
-
         return false;
     },
 
@@ -896,14 +889,13 @@ class BaseApp {
 
         const itemsToShow = this.currentListMode === 'wishlist' ? this.wishlist : this.favorites;
         itemsToShow.forEach(itemName => {
-            const item = this.items.find(i => i.name === itemName);
+            const item = this.allItems.find(i => i.name === itemName);
             if (item) {
                 console.log('Processing item:', item);
                 const div = document.createElement('div');
                 div.className = 'item';
                 div.innerHTML = `
                     <div class="item-name">${item.name}</div>
-                    
                     <div class="remove-wishlist">×</div>
                 `;
 
