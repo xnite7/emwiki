@@ -1241,7 +1241,7 @@ footer {
 
 .catalog-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
     gap: 23px 15px;
     animation: fadeIn 0.5s;
     justify-items: center;
@@ -2395,7 +2395,7 @@ header svg * {
         font-size: 1.5rem;
     }
 
-    .item {
+    .catalog-grid, .items-grid {
         zoom: 0.87;
     }
 
@@ -2425,10 +2425,7 @@ header svg * {
         zoom: 0.8;
     }
 
-    .catalog-grid {
-        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-        gap: 23px 10px;
-    }
+
 
     #wishlist-items {
         gap: 5px 5px;
@@ -2444,19 +2441,13 @@ header svg * {
         display: none;
     }
 
-    .catalog-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 23px 10px;
-        animation: fadeIn 0.5s;
-    }
 
     .hero-title {
         font-size: 2.2rem;
     }
 
 
-    .item {
+    .catalog-grid, .items-grid {
         zoom: 0.75;
     }
 }
