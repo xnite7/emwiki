@@ -851,7 +851,7 @@
 .profile-stat-value {
     font-size: 18px;
     font-weight: 800;
-    background: -webkit-linear-gradient(#87caff, #3f91ef 50%, #5fa9ff 100%);
+    background: -webkit-linear-gradient(#009bff 25%, #0062ff 50%, #00a1ff 75%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
