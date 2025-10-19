@@ -365,6 +365,17 @@ body:has(.item-modal.active) {
     width: -webkit-fill-available;
 }
 
+
+.modal-container:has(.modal-flip-btn:not(.hidden)) .modal-content-wrapper .modal-front .modal-badges {
+    width: 50%;
+    justify-self: start;
+}
+
+
+
+
+
+
 .modal-badges span {
     padding: 4px 13px;
     flex: 1 1 10%;

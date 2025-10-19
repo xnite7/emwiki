@@ -2045,6 +2045,10 @@ body.light-theme .controls-bar {
     pointer-events: none;
 }
 
+.light-theme .dropdown-item.disabled {
+    background: #a7a7a7;
+}
+
 .tag-checkbox {
     width: 18px;
     height: 18px;

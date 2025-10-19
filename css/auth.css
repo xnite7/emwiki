@@ -1911,22 +1911,7 @@
     transform: translateY(0);
 }
 
-/* Light Theme */
-.light-theme .donation-progress-card,
-.light-theme .donator-celebration-card {
-    background: linear-gradient(145deg, #ffffff 0%, #f8f8f8 100%);
-    border-color: #ffd700;
-    box-shadow:
-        0 30px 80px rgba(0, 0, 0, 0.15),
-        0 0 40px rgba(255, 215, 0, 0.2),
-        inset -3px -3px 8px rgba(0, 0, 0, 0.05),
-        inset 2px 2px 4px rgba(255, 215, 0, 0.1);
-}
 
-.light-theme .donation-progress-header h3,
-.light-theme .achievement-title {
-    color: #e0a800;
-}
 
 
 .profile-dropdown-divider {

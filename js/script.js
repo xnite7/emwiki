@@ -1407,6 +1407,7 @@ class ItemModal {
 
         // Show/hide flip button
         this.elements.flipBtn.style.display = hasBackContent ? 'flex' : 'none';
+        this.elements.flipBtn.classList.toggle('hidden', !hasBackContent);
 
         // Update back content if exists
         if (hasBackContent) {
