@@ -187,7 +187,7 @@ formatPrice(price) {
         }, 5000);
     }
 };
-
+console.log('1. Before BaseApp');
 // ==================== BASE APP CLASS ====================
 class BaseApp {
     constructor() {

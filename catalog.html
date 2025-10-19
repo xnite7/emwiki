@@ -730,7 +730,7 @@
                                         });
                                     }
 
-                                    this.items.push({
+                                    this.allItems.push({
                                         ...item,
                                         category: cat,
                                         seasons: seasons,
@@ -742,7 +742,7 @@
                         }
                     });
 
-                    document.getElementById('total').textContent = this.items.length;
+                    document.getElementById('total').textContent = this.allItems.length;
                 } catch (error) {
                     console.error('Failed to load data:', error);
                 }
@@ -791,7 +791,7 @@
                 }
 
                 // Map items to chests based on their descriptions
-                this.items.forEach(item => {
+                this.allItems.forEach(item => {
                     const from = (item.from || '').toLowerCase();
                     const name = item.name.toLowerCase();
                     let assignedChest = null;
@@ -978,7 +978,7 @@
                 Object.keys(this.tagCounts).forEach(key => this.tagCounts[key] = 0);
 
                 // Count items for each tag
-                this.items.forEach(item => {
+                this.allItems.forEach(item => {
                     if (item.new) this.tagCounts.new++;
                     if (item.tradable === false) this.tagCounts.untradable++;
                     if (item.premium) this.tagCounts.premium++;
@@ -1058,7 +1058,7 @@
             }
 
             applyFilters() {
-                this.filtered = this.items.filter(item => {
+                this.filtered = this.allItems.filter(item => {
                     // Chest filter
                     if (this.chestFilter !== 'all') {
                         const chestItems = this.chestMappings[this.chestFilter] || [];
