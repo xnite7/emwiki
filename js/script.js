@@ -1838,13 +1838,6 @@ class Auth {
             return;
         }
 
-        const roleColors = {
-            admin: 'admin',
-            vip: 'vip',
-            moderator: 'moderator',
-            user: ''
-        };
-
         dropdown.classList.add('show');
     }
     async checkSession() {
@@ -2049,6 +2042,7 @@ class Auth {
             admin: 'admin',
             vip: 'vip',
             moderator: 'moderator',
+            donator: 'donator',
             user: ''
         };
 
@@ -2128,18 +2122,15 @@ class Auth {
             if (response.ok) {
                 const data = await response.json();
 
-                // Update user role if changed
                 if (data.role) {
                     this.user.role = data.role;
                 }
 
-                // Show donator celebration if they just became a donator
                 if (data.justBecameDonator) {
                     this.showDonatorCelebration(data.totalSpent);
-                    confetti.start(); // Trigger confetti!
+                    confetti.start();
                     document.querySelector('.profile-action-btn.donator').classList.remove('locked');
                 } else if (!data.isDonator && !initial) {
-                    // Show progress if not yet a donator
                     this.showDonationProgress(data);
                 } else if (data.isDonator) {
                     document.querySelector('.profile-action-btn.donator').classList.remove('locked');

@@ -822,6 +822,16 @@
     color: #ffd700;
 }
 
+.profile-dropdown-role.donator {
+    background: rgb(255 73 0 / 15%);
+    color: #ff9b00;
+}
+
+.profile-dropdown-role.moderator {
+    background: rgb(255 25 225 / 15%);
+    color: #ff58d2;
+}
+
 .profile-dropdown-stats {
     display: grid;
     grid-template-columns: 1fr 1fr;
