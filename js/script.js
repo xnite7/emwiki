@@ -97,57 +97,57 @@ const Utils = {
         return false;
     },
 
-formatPrice(price) {
-    function parseValue(str) {
-        str = str.trim().toLowerCase();
-        if (str.endsWith('k')) {
-            const num = parseFloat(str.slice(0, -1));
-            return isNaN(num) ? null : num * 1000;
+    formatPrice(price) {
+        function parseValue(str) {
+            str = str.trim().toLowerCase();
+            if (str.endsWith('k')) {
+                const num = parseFloat(str.slice(0, -1));
+                return isNaN(num) ? null : num * 1000;
+            }
+            if (str.endsWith('m')) {
+                const num = parseFloat(str.slice(0, -1));
+                return isNaN(num) ? null : num * 1_000_000;
+            }
+            const num = parseFloat(str);
+            return isNaN(num) ? null : num;
         }
-        if (str.endsWith('m')) {
-            const num = parseFloat(str.slice(0, -1));
-            return isNaN(num) ? null : num * 1_000_000;
+
+        function formatNum(num) {
+            if (num === null || isNaN(num)) return null;
+            if (num >= 1_000_000) {
+                let val = (num / 1_000_000).toFixed(1);
+                val = val.replace(/\.0$/, '');
+                return val + 'M';
+            } else if (num >= 1000) {
+                let val = (num / 1000).toFixed(1);
+                val = val.replace(/\.0$/, '');
+                return val + 'k';
+            }
+            return num.toLocaleString();
         }
-        const num = parseFloat(str);
-        return isNaN(num) ? null : num;
-    }
 
-    function formatNum(num) {
-        if (num === null || isNaN(num)) return null;
-        if (num >= 1_000_000) {
-            let val = (num / 1_000_000).toFixed(1);
-            val = val.replace(/\.0$/, '');
-            return val + 'M';
-        } else if (num >= 1000) {
-            let val = (num / 1000).toFixed(1);
-            val = val.replace(/\.0$/, '');
-            return val + 'k';
+        const str = String(price);
+        const hasPlus = str.includes('+');
+        const cleanStr = str.replace('+', '').trim();
+
+        // CRITICAL: Check for range FIRST before any other processing
+        // Use a more specific regex to detect actual ranges (number-number)
+        if (/\d+\s*-\s*\d+/.test(cleanStr)) {
+            const parts = cleanStr.split('-');
+            const formattedParts = parts.map(p => {
+                const num = parseValue(p.trim());
+                return formatNum(num);
+            });
+            if (formattedParts.every(v => v !== null)) {
+                return formattedParts.join('-') + (hasPlus ? '+' : '');
+            }
         }
-        return num.toLocaleString();
-    }
 
-    const str = String(price);
-    const hasPlus = str.includes('+');
-    const cleanStr = str.replace('+', '').trim();
-
-    // CRITICAL: Check for range FIRST before any other processing
-    // Use a more specific regex to detect actual ranges (number-number)
-    if (/\d+\s*-\s*\d+/.test(cleanStr)) {
-        const parts = cleanStr.split('-');
-        const formattedParts = parts.map(p => {
-            const num = parseValue(p.trim());
-            return formatNum(num);
-        });
-        if (formattedParts.every(v => v !== null)) {
-            return formattedParts.join('-') + (hasPlus ? '+' : '');
-        }
-    }
-
-    // Single value
-    const num = parseValue(cleanStr);
-    const formatted = formatNum(num);
-    return (formatted ?? str) + (hasPlus ? '+' : '');
-},
+        // Single value
+        const num = parseValue(cleanStr);
+        const formatted = formatNum(num);
+        return (formatted ?? str) + (hasPlus ? '+' : '');
+    },
 
     showToast(title, message, type = 'info') {
         if (!document.getElementById('toast-container')) {
@@ -187,11 +187,16 @@ formatPrice(price) {
         }, 5000);
     }
 };
-console.log('1. Before BaseApp');
+
 // ==================== BASE APP CLASS ====================
 class BaseApp {
     constructor() {
-        this.items = [];
+        this.domCache = {
+            searchBar: null,
+            searchResults: null,
+            catalog: null
+        };
+
         this.currentListMode = 'wishlist';
         this.categories = ['gears', 'deaths', 'pets', 'effects', 'titles'];
         this.allItems = [];
@@ -402,8 +407,8 @@ class BaseApp {
                 </div>
             </div>`
         );
-        
-        
+
+
         setTimeout(() => this.updateStatsIfOpen(), 1500);
     }
 
@@ -432,16 +437,16 @@ class BaseApp {
 
 
             // Flatten all items with category info
-        this.categories.forEach(cat => {
-            if (parsed[cat]) {
-                parsed[cat].forEach(item => {
-                    this.allItems.push({
-                        ...item,
-                        category: cat
+            this.categories.forEach(cat => {
+                if (parsed[cat]) {
+                    parsed[cat].forEach(item => {
+                        this.allItems.push({
+                            ...item,
+                            category: cat
+                        });
                     });
-                });
-            }
-        });
+                }
+            });
 
             return this.allItems;
         } catch (error) {
@@ -718,9 +723,9 @@ class BaseApp {
     }
 
     initializeSearch() {
-        const searchBar = document.getElementById('search-bar');
-        const searchResults = document.getElementById('search-results');
-        if (!searchBar || !searchResults) return;
+        this.domCache.searchBar = document.getElementById('search-bar');
+        this.domCache.searchResults = document.getElementById('search-results');
+        if (!this.domCache.searchBar || !this.domCache.searchResults) return;
 
         // Initialize Fuse.js
         this.searchFuse = new Fuse(this.allItems, {
@@ -728,10 +733,10 @@ class BaseApp {
             threshold: 0.3
         });
 
-        searchBar.addEventListener('input', (e) => {
+        this.domCache.searchBar.addEventListener('input', (e) => {
             const query = e.target.value.trim();
             if (!query) {
-                searchResults.style.display = 'none';
+                this.domCache.searchResults.style.display = 'none';
                 return;
             }
 
@@ -740,8 +745,8 @@ class BaseApp {
         });
 
         document.addEventListener('click', (e) => {
-            if (!searchBar.contains(e.target) && !searchResults.contains(e.target)) {
-                searchResults.style.display = 'none';
+            if (!this.domCache.searchBar.contains(e.target) && !this.domCache.searchResults.contains(e.target)) {
+                this.domCache.searchResults.style.display = 'none';
             }
         });
     }
@@ -1085,9 +1090,15 @@ class ParticleSystem {
     setupCanvas() {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
+
+        // ✅ Debounce resize
+        let resizeTimeout;
         window.addEventListener('resize', () => {
-            this.canvas.width = window.innerWidth;
-            this.canvas.height = window.innerHeight;
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }, 150);
         });
     }
 
@@ -1106,6 +1117,9 @@ class ParticleSystem {
     }
 
     animate() {
+        if (this.particles.length === 0) {
+            return; // ✅ Stop animation when no particles
+        }
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         for (let i = this.particles.length - 1; i >= 0; i--) {
@@ -1126,7 +1140,9 @@ class ParticleSystem {
             this.ctx.fillRect(p.x, p.y, p.size, p.size);
         }
 
-        requestAnimationFrame(() => this.animate());
+        if (this.particles.length > 0) {
+            this.animationFrame = requestAnimationFrame(() => this.animate());
+        }
     }
 }
 
@@ -1404,6 +1420,10 @@ class ItemModal {
         this.elements.flipBtn.style.display = hasBackContent ? 'flex' : 'none';
         this.elements.flipBtn.classList.toggle('hidden', !hasBackContent);
 
+        if (this.displayed.length > 100) {
+            this.displayed = this.displayed.slice(-100);
+        }
+
         // Update back content if exists
         if (hasBackContent) {
             this.updateBackContent(item);
@@ -1604,7 +1624,7 @@ class ItemModal {
         };
         const styles = {
             unobtainable: "filter: saturate(0) brightness(4.5);font-family: 'BuilderSans';color: #3d3d3d;",
-            '%': "color: #f06bff;text-shadow: 0 0 4px #ab00ff;",
+            '%': "font-size: 20px;font-weight: 700;color: #f176ff;text-shadow: 0 0 4px #ab00ff;",
             rank: "font-variant: all-small-caps; font-weight: 600; color: #ffd700; text-shadow: 0 0 3px #ffae00;",
             expired: "font-weight: bold;color: red;font-family: inconsolata;",
             active: "font-weight: bold;color: #45ff45;font-family: inconsolata;",
