@@ -841,9 +841,16 @@ main {
 }
 
 .hide-prices .item-price,
-.hide-prices .wishlist-total,
-.hide-prices .modal-price {
+.hide-prices .wishlist-total {
     opacity: 0;
+}
+.hide-prices .modal-price {
+    width: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    opacity: 0;
+
 }
 
 .item-price::before {
