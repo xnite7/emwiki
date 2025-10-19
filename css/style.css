@@ -1585,7 +1585,7 @@ footer {
 
 .badge.retired {
     position: absolute;
-    top: 31px;
+    top: 83px;
     left: -1px;
     line-height: 0;
     font-variant: all-petite-caps;
@@ -1600,6 +1600,7 @@ footer {
     border-right: 8px solid transparent;
     color: #fff;
 }
+
 
 .badge.untradable {
     right: 8px;

@@ -770,7 +770,7 @@
     display: flex;
     align-items: center;
     gap: 15px;
-    padding-bottom: 15px;
+    padding-bottom: 11px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     margin-bottom: 15px;
 }
@@ -810,6 +810,8 @@
     background: rgba(74, 158, 255, 0.15);
     border-radius: 6px;
     display: inline-block;
+    font-variant: all-petite-caps;
+    font-weight: 700;
 }
 
 .profile-dropdown-role.admin {
@@ -859,6 +861,10 @@
     font-size: 11px;
     color: var(--text-secondary);
     margin-top: 4px;
+}
+
+.profile-stat-value, .profile-stat-label {
+    filter: drop-shadow(0px 0px 0.5px #00000080) drop-shadow(0px 0px 0.5px #00000080) drop-shadow(0px 0px 0.5px #00000080) drop-shadow(0px 0px 0.5px #00000080) drop-shadow(0px 0px 0.5px #00000080);
 }
 
 .profile-dropdown-actions {
