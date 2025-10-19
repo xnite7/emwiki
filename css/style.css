@@ -262,7 +262,7 @@ body.light-theme .theme-toggle:hover::before {
     }
 
     100% {
-        filter: hue-rotate(15deg) brightness(1.1);
+        filter: hue-rotate(25deg) brightness(1.1);
     }
 }
 
@@ -2450,3 +2450,4 @@ header svg * {
         zoom: 0.75;
     }
 }
+

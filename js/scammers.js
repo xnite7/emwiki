@@ -1,28 +1,59 @@
-if (document.querySelector('.blackscreen')) {
-  document.querySelector('.blackscreen').style.background = 'rgba(0,0,0,0)'
+// Utility: Safe DOM query
+const $ = (selector) => document.querySelector(selector);
+const $$ = (selector) => document.querySelectorAll(selector);
 
-  document.querySelector('.blackscreen').addEventListener('transitionend', () => {
-    document.querySelector('.blackscreen').style.display = 'none';
-  });
+// Initial page setup
+function initPage() {
+  const blackscreen = $('.blackscreen');
+  if (blackscreen) {
+    blackscreen.style.background = 'rgba(0,0,0,0)';
+    blackscreen.addEventListener('transitionend', () => {
+      blackscreen.style.display = 'none';
+    });
+  }
+  
+  document.documentElement.style.overflow = "scroll";
+  document.documentElement.style.overflowX = "hidden";
+  const main = $("main");
+  if (main) {
+    main.style.filter = 'unset';
+    main.style.scale = '1';
+  }
 }
-document.documentElement.style.overflow = "scroll"
-document.documentElement.style.overflowX = "hidden"
-document.querySelector("main").style.filter = 'unset'
-document.querySelector("main").style.scale = '1'
 
-// Filter function
+// Filter/Search function - Fixed selector
 function filterItems() {
-  const searchValue = document.getElementById('search-bar').value.toLowerCase();
-  const items = document.querySelectorAll('.grid .scammer-block');
+  const searchValue = $('#search-bar').value.toLowerCase().trim();
+  const items = $$('.catalog-grid .scammer-block');
+  let visibleCount = 0;
 
   items.forEach(item => {
-    const itemText = item.querySelector('h2')?.textContent.toLowerCase() || "";
-    const itemText2 = item.querySelector('p')?.textContent.toLowerCase() || "";
-    item.style.display = (itemText.includes(searchValue) || itemText2.includes(searchValue)) ? 'block' : 'none';
+    const name = item.querySelector('h2')?.textContent.toLowerCase() || "";
+    const details = item.querySelector('.scammer-info')?.textContent.toLowerCase() || "";
+    const isMatch = name.includes(searchValue) || details.includes(searchValue);
+    
+    item.style.display = isMatch ? 'block' : 'none';
+    if (isMatch) visibleCount++;
   });
+
+  // Update count if search is active
+  if (searchValue && $('#scammer-count')) {
+    $('#scammer-count').textContent = 
+      `🔍 ${visibleCount} Scammer${visibleCount !== 1 ? 's' : ''} Found`;
+  } else if ($('#scammer-count')) {
+    updateScammerCount(items.length);
+  }
 }
 
-// Create scammer block
+// Update scammer count display
+function updateScammerCount(count) {
+  const countEl = $('#scammer-count');
+  if (countEl) {
+    countEl.textContent = `🚨 ${count} Reported Scammer${count !== 1 ? 's' : ''}`;
+  }
+}
+
+// Create scammer block - Optimized
 async function createScammerBlock(scammer, container) {
   const {
     robloxUser = "Unknown",
@@ -31,34 +62,55 @@ async function createScammerBlock(scammer, container) {
     discordDisplay = null,
     victims = null,
     itemsScammed = null,
-    robloxAlts = null
+    robloxAlts = null,
+    severity = null // Optional: for warning badges
   } = scammer;
-
-  console.log(scammer);
 
   const block = document.createElement('section');
   block.className = 'scammer-block';
 
+  // Build alt accounts HTML
+  const altsHTML = Array.isArray(robloxAlts) && robloxAlts.length > 0
+    ? `<p><strong>Alts:</strong> ${robloxAlts.map(alt => 
+        `<a href="${alt.profile}" target="_blank" rel="noopener noreferrer">${alt.name}</a>`
+      ).join(", ")}</p>`
+    : "";
+
+  // Build Discord display - removed inline styles, using CSS instead
+  const discordHTML = discordDisplay && discordDisplay.trim() !== "NA"
+    ? `<p><img src="./imgs/discord.png" alt="Discord"> ${discordDisplay}</p>`
+    : "";
+
+  // Optional: High severity warning badge
+  const warningBadge = severity === "high" 
+    ? '<span class="scammer-warning">⚠️ High Risk</span>' 
+    : "";
+
   block.innerHTML = `
+    ${warningBadge}
     <div class="scammer-content">
-      <img class="scammer-img" src="${avatar}" alt="Avatar of ${robloxUser}" />
+      <img class="scammer-img" src="${avatar}" 
+           alt="Avatar of ${robloxUser}" 
+           loading="lazy"
+           onerror="this.src='imgs/plr.jpg'" />
       <div class="scammer-info">
-        <a href="${robloxProfile}"><h2>${robloxUser}<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 5l7 7-7 7"></path>
-            <path d="M5 12h14"></path>
-          </svg></h2></a>
-        ${discordDisplay && discordDisplay.trim() !== "NA"
-      ? `<p style="color: #ffffff;align-self: center;width: fit-content;border-radius: 21px;padding: 7px 14px;background: cornflowerblue;filter: brightness(0.7);"><img src="../imgs/discord.png" style="width: 28px;"> ${discordDisplay}</p>`
-      : ""}
-        ${victims && victims.trim() !== "NA"
-      ? `<p><strong>Victims:</strong> ${victims}</p>`
-      : ""}
-        ${itemsScammed && itemsScammed.trim() !== "NA"
-      ? `<p><strong>Items Scammed:</strong> ${itemsScammed}</p>`
-      : ""}
-        ${Array.isArray(robloxAlts) && robloxAlts.length > 0
-      ? `<p><strong>Alts:</strong> ${robloxAlts.map(alt => `<a href="${alt.profile}" target="_blank">${alt.name}</a>`).join(", ")}</p>`
-      : ""}
+        <a href="${robloxProfile}" target="_blank" rel="noopener noreferrer">
+          <h2>
+            ${robloxUser}
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 5l7 7-7 7"></path>
+              <path d="M5 12h14"></path>
+            </svg>
+          </h2>
+        </a>
+        ${discordHTML}
+        ${victims && victims.trim() !== "NA" 
+          ? `<p><strong>Victims:</strong> ${victims}</p>` 
+          : ""}
+        ${itemsScammed && itemsScammed.trim() !== "NA" 
+          ? `<p><strong>Items Scammed:</strong> ${itemsScammed}</p>` 
+          : ""}
+        ${altsHTML}
       </div>
     </div>
   `;
@@ -66,55 +118,110 @@ async function createScammerBlock(scammer, container) {
   container.appendChild(block);
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const container = document.getElementById('scammers-container');
-  if (!container) return console.error('Missing #scammers-container in HTML');
-
-  container.innerHTML = '<p class="loading">Loading scammers...</p>';
-
-  fetch('https://emwiki.site/api/roblox-proxy?mode=discord-scammers')
-    .then(res => res.json())
-
-    .then(data => {
-      container.innerHTML = '';
-
-      // scammers is now an array directly on data
-      if (data && Array.isArray(data.scammers)) {
-        data.scammers.forEach(scammer => createScammerBlock(scammer, container));
-      } else {
-        console.error("Scammers data is not an array", data && data.scammers, data);
-        container.innerHTML = `<p class="error">Failed to load scammers list. Please try again later.</p>`;
-      }
-    })
-
-    .catch(err => {
-      container.innerHTML = `<p class="error">Failed to load scammers. Please try again later.</p>`;
-      console.error("Failed to fetch scammers:", err);
-    });
-});
-//<a href="${robloxProfile}" class="tour-button">
-//         View Roblox Profile
-//        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-//       <path d="M12 5l7 7-7 7"></path>
-//         <path d="M5 12h14"></path>
-//      </svg>
-//   </a>
-const navButtons = [
-      { id: 'gamenightstab', href: './gamenights', img: './imgs/gn.png' },
-      { id: 'catalogstab', href: './catalog', img: './imgs/all.png' },
-      { id: 'scammerstab', href: './scammers', img: './imgs/SK5csOS.png' }
-];
-function insertNavButtons() {
-  const nav = document.querySelector("nav");
-  console.log(nav);
-  if (!nav) return;
-  // Get current page filename, default to "index" if blank
-  let current = location.pathname.split('/').pop();
-  if (!current || current === "") current = "index";
-  nav.innerHTML = navButtons
-    .filter(btn => !btn.href.endsWith(current.replace('.html', '')))
-    .map(btn =>
-      `<a id="${btn.id}" href="${btn.href}"><img src="${btn.img}" style="max-width: -webkit-fill-available;" draggable="false" display="none" onmousedown="return false"></a>`
-    ).join('\n');
+// Loading skeleton
+function showLoadingSkeleton(container) {
+  container.innerHTML = `
+    <div class="scammer-skeleton"></div>
+    <div class="scammer-skeleton"></div>
+    <div class="scammer-skeleton"></div>
+    <div class="scammer-skeleton"></div>
+  `;
 }
-insertNavButtons()
+
+// Load scammers data
+async function loadScammers() {
+  const container = $('#scammers-container');
+  if (!container) {
+    console.error('Missing #scammers-container in HTML');
+    return;
+  }
+
+  showLoadingSkeleton(container);
+
+  try {
+    const response = await fetch('https://emwiki.site/api/roblox-proxy?mode=discord-scammers');
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    container.innerHTML = '';
+
+    if (data && Array.isArray(data.scammers)) {
+      // Update count
+      updateScammerCount(data.scammers.length);
+      
+      // Sort by name (optional)
+      const sortedScammers = data.scammers.sort((a, b) => 
+        (a.robloxUser || "Unknown").localeCompare(b.robloxUser || "Unknown")
+      );
+      
+      // Create all scammer blocks
+      sortedScammers.forEach(scammer => createScammerBlock(scammer, container));
+      
+      console.log(`✅ Loaded ${data.scammers.length} scammers`);
+    } else {
+      throw new Error("Invalid data format");
+    }
+  } catch (error) {
+    console.error("Failed to fetch scammers:", error);
+    container.innerHTML = `
+      <p class="error">
+        ⚠️ Failed to load scammers list. Please try again later.
+        <br><small>${error.message}</small>
+      </p>
+    `;
+    
+    // Update count element
+    const countEl = $('#scammer-count');
+    if (countEl) {
+      countEl.textContent = '❌ Failed to load';
+      countEl.style.background = 'rgba(255, 107, 107, 0.2)';
+    }
+  }
+}
+
+// Debounce search for better performance
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Initialize on DOM ready
+document.addEventListener("DOMContentLoaded", () => {
+  initPage();
+  loadScammers();
+  
+  // Add debounced search
+  const searchBar = $('#search-bar');
+  if (searchBar) {
+    searchBar.addEventListener('input', debounce(filterItems, 300));
+    
+    // Also trigger on Enter key
+    searchBar.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        filterItems();
+      }
+    });
+  }
+});
+
+// Optional: Add refresh functionality
+function refreshScammers() {
+  const container = $('#scammers-container');
+  if (container) {
+    showLoadingSkeleton(container);
+    loadScammers();
+  }
+}
+
+// Optional: Auto-refresh every 5 minutes
+// setInterval(refreshScammers, 5 * 60 * 1000);
