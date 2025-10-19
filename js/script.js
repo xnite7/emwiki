@@ -1173,7 +1173,7 @@ const PriceGraph = {
                         label: 'Price',
                         data: priceHistory.map(h => h.price),
                         borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
                         borderWidth: 3,
                         tension: 0.4,
                         fill: true,
@@ -1194,7 +1194,7 @@ const PriceGraph = {
                         tooltip: {
                             backgroundColor: 'rgba(0, 0, 0, 0.8)',
                             padding: 12,
-                            titleColor: '#fff',
+                            titleColor: '#ffffffa1',
                             bodyColor: '#fff',
                             displayColors: false,
                             callbacks: {
@@ -1223,12 +1223,12 @@ const PriceGraph = {
                                 unit: 'day',
                                 displayFormats: { day: 'MMM d' }
                             },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.25)' },
                             ticks: { color: 'rgba(255, 255, 255, 0.7)' }
                         },
                         y: {
                             beginAtZero: true,
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.25)' },
                             ticks: {
                                 color: 'rgba(255, 255, 255, 0.7)',
                                 callback: (value) => Utils.formatPrice(value)

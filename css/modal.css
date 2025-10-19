@@ -433,6 +433,7 @@ body:has(.item-modal.active) {
     overflow-y: auto;
     padding: 20px;
     opacity: 0;
+    align-content: stretch;
 }
 
 .modal-front {
@@ -441,7 +442,6 @@ body:has(.item-modal.active) {
 
 .flipped .modal-back {
     opacity: 1;
-        align-content: stretch;
 }
 
 .flipped .modal-front {
@@ -519,6 +519,7 @@ body:has(.item-modal.active) {
 
 .modal-graph-section {
     margin-bottom: 30px;
+        padding: 20px;
     width: -webkit-fill-available;
 }
 
