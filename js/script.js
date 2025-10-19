@@ -430,23 +430,20 @@ class BaseApp {
             const data = await res.json();
             const parsed = JSON.parse(data.files?.['auto.json']?.content);
 
-            this.categories.forEach(cat => {
-                this.items[cat] = parsed[cat] || [];
-            });
 
             // Flatten all items with category info
-            this.categories.forEach(cat => {
-                if (parsed[cat]) {
-                    parsed[cat].forEach(item => {
-                        this.allItems.push({
-                            ...item,
-                            category: cat
-                        });
+        this.categories.forEach(cat => {
+            if (parsed[cat]) {
+                parsed[cat].forEach(item => {
+                    this.allItems.push({
+                        ...item,
+                        category: cat
                     });
-                }
-            });
+                });
+            }
+        });
 
-            return this.items;
+            return this.allItems;
         } catch (error) {
             console.error('Failed to load data:', error);
             Utils.showToast('Error', 'Failed to load items', 'error');
@@ -567,9 +564,7 @@ class BaseApp {
     }
 
     getItemCategory(item) {
-        return item.category || this.categories.find(cat =>
-            this.items[cat]?.includes(item)
-        );
+        return item.category;
     }
 
     createItemElement(item) {
@@ -820,7 +815,7 @@ class BaseApp {
 
         const recent = this.recentlyViewed.slice(0, 5);
         recent.forEach(itemName => {
-            const item = this.items.find(i => i.name === itemName);
+            const item = this.allItems.find(i => i.name === itemName);
             if (item) {
                 const div = document.createElement('div');
                 div.className = 'recent-item';
@@ -1006,7 +1001,7 @@ class BaseApp {
         const items = Array.from(document.querySelectorAll('.item'));
         items.forEach(el => {
             const itemName = el.querySelector('.item-name')?.textContent;
-            const item = this.items.find(i => i.name === itemName);
+            const item = this.allItems.find(i => i.name === itemName);
             if (item) {
                 const priceEl = el.querySelector('.item-price');
                 if (priceEl) priceEl.textContent = this.convertPrice(item.price);
