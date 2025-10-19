@@ -1585,7 +1585,7 @@ footer {
 
 .badge.retired {
     position: absolute;
-    top: 83px;
+    top: 31px;
     left: -1px;
     line-height: 0;
     font-variant: all-petite-caps;
@@ -1601,7 +1601,13 @@ footer {
     color: #fff;
 }
 
+svg~.badge.retired {
+    top: 18px;
+}
 
+.hide-prices .badge.retired {
+    top: 83px;
+}
 .badge.untradable {
     right: 8px;
     bottom: 8px;
