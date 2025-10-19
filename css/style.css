@@ -2382,7 +2382,7 @@ header svg * {
     top: 49%;
     transform: translateY(-50%);
     transition: all 0.3s ease;
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .hide-prices .price-toggle:hover::before {
