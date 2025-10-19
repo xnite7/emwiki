@@ -1626,7 +1626,7 @@ class ItemModal {
             unobtainable: "filter: saturate(0) brightness(4.5);font-family: 'BuilderSans';color: #3d3d3d;",
             '%': "font-size: 20px;font-weight: 700;color: #f176ff;text-shadow: 0 0 4px #ab00ff;",
             rank: "font-variant: all-small-caps; font-weight: 600; color: #ffd700; text-shadow: 0 0 3px #ffae00;",
-            expired: "font-weight: bold;color: red;font-family: inconsolata;",
+            expired: "text-shadow: 0 1px 6px #570000b0;font-weight: bold;color: red;font-family: inconsolata;",
             active: "font-weight: bold;color: #45ff45;font-family: inconsolata;",
             robux: "font: 1000 17px 'buildersans'",
             tokens: "text-shadow: -1.3px -1.3px 0 #ff00e7, 0 -1.3px 0 #ff00e7, 1.3px -1.3px 0 #ff00e7, 1.3px 0 0 #ff00e7, 1.3px 1.3px 0 #ff00e7, 0 1.3px 0 #ff00e7, -1.3px 1.3px 0 #ff00e7, -1.3px 0 0 #ff00e7"

@@ -351,6 +351,7 @@ body:has(.item-modal.active) {
     width: 85%;
     height: auto;
     margin: 45px 0px;
+    overflow: visible;
 }
 
 .detail-icon {
