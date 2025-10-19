@@ -19,14 +19,16 @@ export async function onRequest(context) {
         return new Response('Missing or invalid fields', { status: 400, headers: corsHeaders });
       }
 
-      const key = `purchase:${userId}`;
-      const existingRaw = await kv.get(key);
-      let existing = existingRaw ? JSON.parse(existingRaw) : { userId, totalSpent: 0, purchases: 0 };
-
-      existing.totalSpent += price;
-      existing.purchases += 1;
-
-      await kv.put(key, JSON.stringify(existing));
+      // ✅ Store each purchase separately with unique timestamp
+      const timestamp = Date.now();
+      const purchaseKey = `purchase:${userId}:${timestamp}:${productId}`;
+      
+      await kv.put(purchaseKey, JSON.stringify({
+        userId,
+        productId,
+        price,
+        timestamp
+      }));
 
       return new Response(JSON.stringify({ status: 'ok' }), { headers: corsHeaders });
     } catch (e) {
@@ -36,33 +38,69 @@ export async function onRequest(context) {
 
   if (request.method === 'GET') {
     try {
+      // Get all purchases
       const list = await kv.list({ prefix: 'purchase:', limit: 1000 });
 
-      const users = await Promise.all(
+      // Aggregate by userId
+      const userTotals = {};
+      
+      await Promise.all(
         list.keys.map(async (entry) => {
           const raw = await kv.get(entry.name);
-          if (!raw) return null;
+          if (!raw) return;
+          
           try {
-            const data = JSON.parse(raw);
-            const res = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${data.userId}&mode=lite`);
+            const purchase = JSON.parse(raw);
+            const userId = purchase.userId;
+            
+            if (!userTotals[userId]) {
+              userTotals[userId] = {
+                userId,
+                totalSpent: 0,
+                purchases: 0
+              };
+            }
+            
+            userTotals[userId].totalSpent += purchase.price;
+            userTotals[userId].purchases += 1;
+          } catch (err) {
+            console.error('Failed to parse purchase:', err);
+          }
+        })
+      );
+
+      // Fetch profiles for users
+      const users = await Promise.all(
+        Object.values(userTotals).map(async (userData) => {
+          try {
+            const res = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${userData.userId}&mode=lite`);
             const profile = res.ok ? await res.json() : {};
+            
             return {
-              userId: data.userId,
-              totalSpent: data.totalSpent,
+              userId: userData.userId,
+              totalSpent: userData.totalSpent,
+              purchases: userData.purchases,
               name: profile.name || null,
               displayName: profile.displayName || null,
               avatar: profile.avatar || null,
             };
           } catch {
-            return null;
+            return {
+              userId: userData.userId,
+              totalSpent: userData.totalSpent,
+              purchases: userData.purchases,
+              name: null,
+              displayName: null,
+              avatar: null,
+            };
           }
         })
       );
 
-      const filtered = users.filter(Boolean);
-      filtered.sort((a, b) => b.totalSpent - a.totalSpent);
+      // Sort by total spent
+      users.sort((a, b) => b.totalSpent - a.totalSpent);
 
-      return new Response(JSON.stringify(filtered.slice(0, 50)), {
+      return new Response(JSON.stringify(users.slice(0, 50)), {
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     } catch (e) {
