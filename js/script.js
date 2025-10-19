@@ -229,7 +229,8 @@ class BaseApp {
                     <div class="donation-progress-header">
                         <h3>Support Epic Catalogue</h3>
                         <p class="donation-progress-subtitle">Become a Donator and unlock exclusive perks!</p>
-                    </div>
+                        <img style="width: 60px;" src="./imgs/Epic.png" alt="Donation Icon" />
+                        </div>
                     <div class="donation-stat">
                         <div class="donation-stat-value" id="total-donated">0</div>
                         <div class="strike"></div>
@@ -245,7 +246,7 @@ class BaseApp {
                     </div>
 
                     <div class="donation-perks">
-                        <h4>🎁 Unlock at <svg style="width: 15px;transform: translateY(2px);margin-left: 4px;"
+                        <h4><svg viewBox="19 18 38 40" stroke="#000" fill="#fff" style="width:19px;translate:-2px 1px;fill:gold"><path d="M34 28h8v29h-8zm-15 0h14v9H19zm24 0h14v9H43zM21 38h12v19H21zm22 0h12v19H43zm-5.25-11.006C35.336 26.945 25 25.533 25 22c0-4 3-4 4-4 .973 0 5.967 4.535 9 4.741C41.033 22.535 46.027 18 47 18c1 0 4 0 4 4 0 3.533-10.336 4.945-12.75 4.994zM40.5 24.5s8-1.25 8-3.25-8 3.25-8 3.25m-5 0s-8-5.25-8-3.25 8 3.25 8 3.25"/></svg> Unlock at <svg style="width: 15px;transform: translateY(2px);margin-left: 4px;"
                                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
                                 <path
                                     d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
