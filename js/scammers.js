@@ -1,3 +1,110 @@
+// Lightweight app for scammers page
+class ScammersApp {
+  constructor() {
+    this.loadTheme();
+    this.initPage();
+  }
+
+  initPage() {
+    const blackscreen = document.querySelector('.blackscreen');
+    if (blackscreen) {
+      blackscreen.style.background = 'rgba(0,0,0,0)';
+      blackscreen.addEventListener('transitionend', () => {
+        blackscreen.style.display = 'none';
+      });
+    }
+    
+    document.documentElement.style.overflow = "scroll";
+    document.documentElement.style.overflowX = "hidden";
+    const main = document.querySelector("main");
+    if (main) {
+      main.style.filter = 'unset';
+      main.style.scale = '1';
+    }
+  }
+
+  loadTheme() {
+    const theme = localStorage.getItem('theme') || 'dark';
+    if (theme === 'light') {
+      document.body.classList.add('light-theme');
+    }
+
+    // Theme toggle
+    const themeToggle = document.querySelector('.theme-toggle');
+    if (themeToggle) {
+      themeToggle.addEventListener('click', this.toggleTheme.bind(this));
+    }
+
+    this.updateSeasonalTheme();
+  }
+
+  toggleTheme() {
+    document.body.classList.toggle('light-theme');
+    const isLight = document.body.classList.contains('light-theme');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  }
+
+  updateSeasonalTheme() {
+    // Copy the seasonal theme logic from BaseApp
+    function pickRandom(rarities) {
+      var filler = 100 - rarities.map(r => r.chance).reduce((sum, current) => sum + current);
+      if (filler <= 0) return;
+      var probability = rarities.map((r, i) => Array(r.chance === 0 ? filler : r.chance).fill(i)).reduce((c, v) => c.concat(v), []);
+      var pIndex = Math.floor(Math.random() * 100);
+      return rarities[probability[pIndex]].type;
+    }
+
+    const now = new Date();
+    let rarities = [
+      { type: "https://emwiki.site/imgs/epicfaces/tran.webp", chance: 10 },
+      { type: "https://emwiki.site/imgs/epicfaces/3d.png", chance: 2 },
+      { type: "https://emwiki.site/imgs/epicfaces/Epic_Banana.webp", chance: 8 },
+      { type: "https://emwiki.site/imgs/epicfaces/XRmpB1c.png", chance: 0 },
+      { type: "https://emwiki.site/imgs/burrito.png", chance: 3 }
+    ];
+    let titleColors = [['#24ff5d', '#ff0']];
+
+    if (now.getMonth() === 9) {
+      rarities = [
+        { type: "https://emwiki.site/imgs/epicfaces/kitta.png", chance: 15 },
+        { type: "https://emwiki.site/imgs/epicfaces/devlil.png", chance: 15 },
+        { type: "https://emwiki.site/imgs/epicfaces/Ghost_Epic_Face.webp", chance: 15 },
+        { type: "https://emwiki.site/imgs/epicfaces/pmupkin.png", chance: 0 },
+        { type: "https://emwiki.site/imgs/epicfaces/Uncanny_Epic_Face.webp", chance: 3 }
+      ];
+      titleColors = [['#ff7518', '#000000']];
+    } else if (now.getMonth() === 11) {
+      rarities = [
+        { type: "https://emwiki.site/imgs/epicfaces/xmas.png", chance: 20 },
+        { type: "https://emwiki.site/imgs/epicfaces/rudolf.png", chance: 20 },
+        { type: "https://emwiki.site/imgs/epicfaces/santa.png", chance: 0 }
+      ];
+      titleColors = [['red', 'white']];
+    }
+
+    const grad1Stops = document.querySelectorAll('#eppp1 stop');
+    const grad2Stops = document.querySelectorAll('#eppp2 stop');
+
+    if (grad1Stops.length >= 2) {
+      grad1Stops[0].setAttribute('style', `stop-color: ${titleColors[0][1]}`);
+      grad1Stops[1].setAttribute('style', `stop-color: ${titleColors[0][0]}`);
+    }
+    if (grad2Stops.length >= 2) {
+      grad2Stops[0].setAttribute('style', `stop-color: ${titleColors[0][1]}`);
+      grad2Stops[1].setAttribute('style', `stop-color: ${titleColors[0][0]}`);
+    }
+
+    const epicImage = document.getElementById('epic-image');
+    if (epicImage) {
+      epicImage.setAttribute('href', pickRandom(rarities));
+    }
+  }
+}
+
+// Initialize app
+const scammersApp = new ScammersApp();
+
+
 // Utility: Safe DOM query
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => document.querySelectorAll(selector);
