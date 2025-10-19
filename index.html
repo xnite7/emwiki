@@ -22,9 +22,10 @@
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.js"></script>
+	<script
+		src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 </head>
 
 <body>
@@ -347,6 +348,13 @@
 						this.currentCategory = btn.dataset.category;
 						this.populateGrids();
 					});
+				});
+
+								// Add dev shortcut
+				document.getElementById('search-bar').addEventListener('keypress', (e) => {
+					if (e.key === 'Enter' && e.target.value.toLowerCase().trim() === 'dev') {
+						window.location.href = '/admin';
+					}
 				});
 			}
 
