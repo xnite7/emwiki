@@ -923,7 +923,7 @@ class BaseApp {
                     div.insertAdjacentHTML('beforeend', item.svg);
                 }
 
-                div.insertAdjacentHTML('beforeend', `${item.price != '0' && item.price != '' ? `<div class="item-price">${this.convertPrice(Utils.formatPrice(item.price))}</div>` : ''}`);
+                div.insertAdjacentHTML('beforeend', `${item.price != '' ? `<div class="item-price" style="${item.price == '0' ? 'opacity: 0; height: 16px;' : ''}">${this.convertPrice(Utils.formatPrice(item.price))}</div>` : ''}`);
 
                 div.querySelector('.remove-wishlist').onclick = (e) => {
                     e.stopPropagation();
@@ -974,7 +974,7 @@ class BaseApp {
                     div.insertAdjacentHTML('beforeend', item.svg);
                 }
 
-                div.insertAdjacentHTML('beforeend', `${item.price != '0' && item.price != '' ? `<div class="item-price">${this.convertPrice(Utils.formatPrice(item.price))}</div>` : ''}`);
+div.insertAdjacentHTML('beforeend', `${item.price != '' ? `<div class="item-price" style="${item.price == '0' ? 'opacity: 0; height: 16px;' : ''}">${this.convertPrice(Utils.formatPrice(item.price))}</div>` : ''}`);
 
 
                 div.onclick = () => {
