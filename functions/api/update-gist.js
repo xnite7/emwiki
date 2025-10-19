@@ -36,6 +36,23 @@ function getReadableDiff(oldData, newData) {
   return output.join("\n");
 }
 
+function trimData(data) {
+  const trimmed = JSON.parse(JSON.stringify(data)); // Deep clone
+  
+  for (const category in trimmed) {
+    if (Array.isArray(trimmed[category])) {
+      trimmed[category].forEach(item => {
+        // Trim priceHistory to last 15 entries only
+        if (item.priceHistory && item.priceHistory.length > 15) {
+          item.priceHistory = item.priceHistory.slice(-15);
+        }
+      });
+    }
+  }
+  
+  return trimmed;
+}
+
 export async function onRequestPost(context) {
   const GITHUB_TOKEN = context.env.GITHUB_TOKEN;
   const GIST_ID = "0d0a3800287f3e7c6e5e944c8337fa91";
@@ -44,7 +61,7 @@ export async function onRequestPost(context) {
   try {
     const body = await context.request.json();
     const username = body.username || "unknown";
-    const newContent = body.content;
+    const newContent = trimData(body.content);
     const CURRENT_GIST_VERSION = body.version; // sent from client
 
     // Fetch current gist content (before update)
@@ -94,7 +111,7 @@ export async function onRequestPost(context) {
     // Prepare gist update payload
     const updatedGist = {
       files: {
-        "auto.json": { content: JSON.stringify(newContent, null, 2) }
+        "auto.json": { content: JSON.stringify(newContent) }
       }
     };
 

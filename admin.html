@@ -1913,8 +1913,6 @@
                 // ✅ MINIFY THE JSON (no spaces/indents)
                 const minifiedContent = JSON.stringify(cleanedData);
 
-                console.log(`📦 JSON size: ${(minifiedContent.length / 1024).toFixed(2)} KB`);
-
                 const response = await fetch(CONFIG.API_URLS.UPDATE_GIST, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
