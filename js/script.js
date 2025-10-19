@@ -201,6 +201,7 @@ class BaseApp {
         this.categories = ['gears', 'deaths', 'pets', 'effects', 'titles'];
         this.allItems = [];
         this.searchFuse = null;
+        this.showPrices = true;
         this.isLoggedIn = !!localStorage.getItem('auth_token');
 
         // These will be loaded async
@@ -425,6 +426,9 @@ class BaseApp {
             this.taxMode = Utils.loadFromStorage('taxMode', 'nt');
         }
 
+        this.showPrices = Utils.loadFromStorage('showPrices', true);
+        this.LoadPrice();
+
         this.selectTax(this.taxMode);
         this.updateStatsIfOpen();
     }
@@ -454,6 +458,32 @@ class BaseApp {
             Utils.showToast('Error', 'Failed to load items', 'error');
             return null;
         }
+    }
+
+
+    async togglePrice() {
+        this.showPrices = !this.showPrices;
+
+        // Save preference
+        Utils.saveToStorage('showPrices', this.showPrices);
+        this.LoadPrice();
+
+        // Show toast
+        //Utils.showToast(
+            //this.showPrices ? 'Prices Shown' : 'Prices Hidden',
+            //this.showPrices ? 'All prices are now visible' : 'All prices are now hidden',
+            //'info'
+        //);
+    }
+
+    LoadPrice() {
+        document.body.classList.toggle('hide-prices', !this.showPrices);
+
+        // Update toggle button state
+        const toggleBtn = document.querySelector('.price-toggle');
+        if (!toggleBtn) return;
+
+        toggleBtn.classList.toggle('active', !this.showPrices);
     }
 
     toggleTheme() {
@@ -974,7 +1004,7 @@ class BaseApp {
                     div.insertAdjacentHTML('beforeend', item.svg);
                 }
 
-div.insertAdjacentHTML('beforeend', `${item.price != '' ? `<div class="item-price" style="${item.price == '0' ? 'opacity: 0; height: 16px;' : ''}">${this.convertPrice(Utils.formatPrice(item.price))}</div>` : ''}`);
+                div.insertAdjacentHTML('beforeend', `${item.price != '' ? `<div class="item-price" style="${item.price == '0' ? 'opacity: 0; height: 16px;' : ''}">${this.convertPrice(Utils.formatPrice(item.price))}</div>` : ''}`);
 
 
                 div.onclick = () => {
@@ -1630,7 +1660,7 @@ class ItemModal {
         };
         const styles = {
             unobtainable: "filter: saturate(0) brightness(4.5);font-family: 'BuilderSans';color: #3d3d3d;",
-            '%': "font-size: 20px;font-weight: 700;color: #f176ff;text-shadow: 0 0 4px #ab00ff;",
+            '%': "font-size: 18px;font-weight: 700;color: #f176ff;text-shadow: 0 0 4px #ab00ff;",
             rank: "font-variant: all-small-caps; font-weight: 600; color: #ffd700; text-shadow: 0 0 3px #ffae00;",
             expired: "text-shadow: 0 1px 6px #570000b0;font-weight: bold;color: red;font-family: inconsolata;",
             active: "font-weight: bold;color: #45ff45;font-family: inconsolata;",
@@ -1773,7 +1803,6 @@ class Auth {
                     <span>Link Account</span>
                 </button>
                 <div id="user-profile-btn" style="display: none;"></div>
-                <div class="theme-toggle" onclick="catalog.toggleTheme()"></div>
 		</div>
         `);
 
@@ -2102,6 +2131,11 @@ class Auth {
                         <span class="tax-mode-desc">Pass 30%</span>
                     </button>
                 </div>
+            </div>
+            <div class="profile-dropdown-divider"></div>
+            <div class="toggles">
+                <div class="theme-toggle" onclick="catalog.toggleTheme()"></div>
+                <div class="price-toggle" onclick="catalog.togglePrice()"></div>
             </div>
         `;
 
