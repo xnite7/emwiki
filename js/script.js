@@ -1309,7 +1309,7 @@ class ItemModal {
 
                 <!-- Flip Button (only shown when back content exists) -->
                 <button class="modal-flip-btn" style="display:none;">
-                    <span class="flip-icon">⟲</span>
+                    <span class="flip-icon">↩</span>
                     <span class="flip-text">More Info</span>
                 </button>
             </div>
@@ -1495,10 +1495,10 @@ class ItemModal {
 
         if (isFlipped) {
             flipText.textContent = 'Back';
-            flipIcon.style.transform = 'scaleX(-1)';
+            flipIcon.style.transform = 'scaleX(1)';
         } else {
             flipText.textContent = 'More Info';
-            flipIcon.style.transform = 'scaleX(1)';
+            flipIcon.style.transform = 'scaleX(-1)';
         }
     }
 

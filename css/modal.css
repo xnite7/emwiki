@@ -478,7 +478,6 @@ body:has(.item-modal.active) {
 
 
 .flipped~.modal-flip-btn {
-    background: rgba(246, 59, 130, 0.9);
     transform: rotateY(180deg);
     color: #fff;
 }
@@ -487,7 +486,7 @@ body:has(.item-modal.active) {
 .modal-back-header h3 {
     margin: 0 0 20px 0;
     font-size: 24px;
-    color: var(--text-primary);
+    color: white;
 }
 
 .modal-graph-section {
@@ -498,7 +497,7 @@ body:has(.item-modal.active) {
 .modal-graph-section h4 {
     margin: 0 0 15px 0;
     font-size: 18px;
-    color: var(--text-primary);
+    color: white;
 }
 
 .modal-graph-container {
@@ -511,7 +510,7 @@ body:has(.item-modal.active) {
 
 .modal-last-admin {
     font-size: 13px;
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.75);
     text-align: right;
     font-style: italic;
 }
@@ -526,7 +525,7 @@ body:has(.item-modal.active) {
 .metadata-item {
     margin: 10px 0;
     font-size: 14px;
-    color: var(--text-primary);
+    color: white;
 }
 
 .metadata-item strong {
