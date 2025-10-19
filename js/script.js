@@ -281,7 +281,9 @@ class BaseApp {
 
                     <div class="achievement-badge">
                         <div class="achievement-glow"></div>
-                        <div class="achievement-icon">💎</div>
+                        <div class="achievement-icon">
+                            <img style="width: 110px;" src="./imgs/Epic.png" alt="Donation Icon">
+                        </div>
                     </div>
 
                     <h2 class="achievement-title">DONATOR UNLOCKED!</h2>
@@ -310,8 +312,7 @@ class BaseApp {
                     </div>
 
                     <button class="achievement-close-btn" onclick="auth.closeDonatorCelebration()">
-                        Awesome! 🎉
-                    </button>
+                    Epic!</button>
                 </div>
             </div>
             <div id="auth-container" style="display: none;">
