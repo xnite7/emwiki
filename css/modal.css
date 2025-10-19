@@ -65,7 +65,7 @@ body:has(.item-modal.active) {
     max-height: 90vh;
     min-height: 500px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0px 0px 0px 11px #00000047;
-    transition: all 0.3s ease, transform 0.6s;
+    transition: all 0.3s ease, transform 0.6s ease-in-out;
     transform-style: preserve-3d;
 
     @supports (corner-shape: squircle) {
