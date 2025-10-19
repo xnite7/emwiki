@@ -13,7 +13,7 @@ class ScammersApp {
         blackscreen.style.display = 'none';
       });
     }
-    
+
     document.documentElement.style.overflow = "scroll";
     document.documentElement.style.overflowX = "hidden";
     const main = document.querySelector("main");
@@ -118,7 +118,7 @@ function initPage() {
       blackscreen.style.display = 'none';
     });
   }
-  
+
   document.documentElement.style.overflow = "scroll";
   document.documentElement.style.overflowX = "hidden";
   const main = $("main");
@@ -138,14 +138,14 @@ function filterItems() {
     const name = item.querySelector('h2')?.textContent.toLowerCase() || "";
     const details = item.querySelector('.scammer-info')?.textContent.toLowerCase() || "";
     const isMatch = name.includes(searchValue) || details.includes(searchValue);
-    
+
     item.style.display = isMatch ? 'block' : 'none';
     if (isMatch) visibleCount++;
   });
 
   // Update count if search is active
   if (searchValue && $('#scammer-count')) {
-    $('#scammer-count').textContent = 
+    $('#scammer-count').textContent =
       `🔍 ${visibleCount} Scammer${visibleCount !== 1 ? 's' : ''} Found`;
   } else if ($('#scammer-count')) {
     updateScammerCount(items.length);
@@ -178,9 +178,9 @@ async function createScammerBlock(scammer, container) {
 
   // Build alt accounts HTML
   const altsHTML = Array.isArray(robloxAlts) && robloxAlts.length > 0
-    ? `<p><strong>Alts:</strong> ${robloxAlts.map(alt => 
-        `<a href="${alt.profile}" target="_blank" rel="noopener noreferrer">${alt.name}</a>`
-      ).join(", ")}</p>`
+    ? `<p><strong>Alts:</strong> ${robloxAlts.map(alt =>
+      `<a href="${alt.profile}" target="_blank" rel="noopener noreferrer">${alt.name}</a>`
+    ).join(", ")}</p>`
     : "";
 
   // Build Discord display - removed inline styles, using CSS instead
@@ -189,8 +189,8 @@ async function createScammerBlock(scammer, container) {
     : "";
 
   // Optional: High severity warning badge
-  const warningBadge = severity === "high" 
-    ? '<span class="scammer-warning">⚠️ High Risk</span>' 
+  const warningBadge = severity === "high"
+    ? '<span class="scammer-warning">⚠️ High Risk</span>'
     : "";
 
   block.innerHTML = `
@@ -211,12 +211,12 @@ async function createScammerBlock(scammer, container) {
           </h2>
         </a>
         ${discordHTML}
-        ${victims && victims.trim() !== "NA" 
-          ? `<p><strong>Victims:</strong> ${victims}</p>` 
-          : ""}
-        ${itemsScammed && itemsScammed.trim() !== "NA" 
-          ? `<p><strong>Items Scammed:</strong> ${itemsScammed}</p>` 
-          : ""}
+        ${victims && victims.trim() !== "NA"
+      ? `<p><strong>Victims:</strong> ${victims}</p>`
+      : ""}
+        ${itemsScammed && itemsScammed.trim() !== "NA"
+      ? `<p><strong>Items Scammed:</strong> ${itemsScammed}</p>`
+      : ""}
         ${altsHTML}
       </div>
     </div>
@@ -228,6 +228,17 @@ async function createScammerBlock(scammer, container) {
 // Loading skeleton
 function showLoadingSkeleton(container) {
   container.innerHTML = `
+    <div class="scammer-skeleton"></div>
+    <div class="scammer-skeleton"></div>
+    <div class="scammer-skeleton"></div>
+    <div class="scammer-skeleton"></div>
+    <div class="scammer-skeleton"></div>
+    <div class="scammer-skeleton"></div>
+    <div class="scammer-skeleton"></div>
+    <div class="scammer-skeleton"></div>
+    <div class="scammer-skeleton"></div>
+    <div class="scammer-skeleton"></div>
+    <div class="scammer-skeleton"></div>
     <div class="scammer-skeleton"></div>
     <div class="scammer-skeleton"></div>
     <div class="scammer-skeleton"></div>
@@ -247,26 +258,26 @@ async function loadScammers() {
 
   try {
     const response = await fetch('https://emwiki.site/api/roblox-proxy?mode=discord-scammers');
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     const data = await response.json();
     container.innerHTML = '';
 
     if (data && Array.isArray(data.scammers)) {
       // Update count
       updateScammerCount(data.scammers.length);
-      
+
       // Sort by name (optional)
-      const sortedScammers = data.scammers.sort((a, b) => 
+      const sortedScammers = data.scammers.sort((a, b) =>
         (a.robloxUser || "Unknown").localeCompare(b.robloxUser || "Unknown")
       );
-      
+
       // Create all scammer blocks
       sortedScammers.forEach(scammer => createScammerBlock(scammer, container));
-      
+
       console.log(`✅ Loaded ${data.scammers.length} scammers`);
     } else {
       throw new Error("Invalid data format");
@@ -279,7 +290,7 @@ async function loadScammers() {
         <br><small>${error.message}</small>
       </p>
     `;
-    
+
     // Update count element
     const countEl = $('#scammer-count');
     if (countEl) {
@@ -306,12 +317,12 @@ function debounce(func, wait) {
 document.addEventListener("DOMContentLoaded", () => {
   initPage();
   loadScammers();
-  
+
   // Add debounced search
   const searchBar = $('#search-bar');
   if (searchBar) {
     searchBar.addEventListener('input', debounce(filterItems, 300));
-    
+
     // Also trigger on Enter key
     searchBar.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
