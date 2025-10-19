@@ -472,9 +472,9 @@ class BaseApp {
 
         // Show toast
         //Utils.showToast(
-            //this.showPrices ? 'Prices Shown' : 'Prices Hidden',
-            //this.showPrices ? 'All prices are now visible' : 'All prices are now hidden',
-            //'info'
+        //this.showPrices ? 'Prices Shown' : 'Prices Hidden',
+        //this.showPrices ? 'All prices are now visible' : 'All prices are now hidden',
+        //'info'
         //);
     }
 
@@ -1782,10 +1782,15 @@ class Auth {
         this.token = localStorage.getItem('auth_token');
         this.pollInterval = null;
         this.timerInterval = null; // Add this line
+        this.scammersList = []; // ✅ ADD THIS
         this.init();
     }
 
     async init() {
+
+
+
+
 
         document.querySelector('header').insertAdjacentHTML('beforeend', `
             <button style="top: 20px;left: 12px;position: absolute;" class="btn" id="installBtn">
@@ -1808,6 +1813,8 @@ class Auth {
 		</div>
         `);
 
+        await this.loadScammersList();
+
         if (this.token) {
             await this.checkSession();
             await this.checkDonationStatus(true);
@@ -1828,6 +1835,209 @@ class Auth {
         });
     }
 
+
+    async loadScammersList() {
+        try {
+            const response = await fetch('https://emwiki.site/api/roblox-proxy?mode=discord-scammers');
+            if (response.ok) {
+                const data = await response.json();
+                this.scammersList = data.scammers || [];
+            }
+        } catch (error) {
+            console.error('Failed to load scammers list:', error);
+        }
+    }
+    isUserScammer() {
+        if (!this.user || !this.scammersList.length) return false;
+
+        return this.scammersList.some(scammer => {
+            if (scammer.robloxProfile?.includes(`/${this.user.userId}/`)) return true;
+
+            if (scammer.robloxAlts) {
+                return scammer.robloxAlts.some(alt =>
+                    alt.profile?.includes(`/${this.user.userId}/`)
+                );
+            }
+            return false;
+        });
+    }
+    triggerJumpScare() {
+        const scareImages = [
+            './imgs/scammerbg.jpeg',
+            './imgs/Babadook.png'
+        ];
+
+        const scareType = Math.floor(Math.random() * 3);
+
+        if (scareType === 0) {
+            this.imageJumpScare(scareImages);
+        } else if (scareType === 1) {
+            this.glitchScare();
+        } else {
+            this.spinScare();
+        }
+    }
+
+    imageJumpScare(scareImages) {
+
+        const screamSounds = [
+            './imgs/jumpscare.mp3'
+        ];
+
+        const screamUrl = screamSounds[Math.floor(Math.random() * screamSounds.length)];
+
+        const scream = new Audio(screamUrl);
+        scream.volume = 1.0;
+
+        scream.play();
+
+        const scareImage = scareImages[Math.floor(Math.random() * scareImages.length)];
+
+        const overlay = document.createElement('div');
+        overlay.id = 'scammer-jumpscare';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: scale(1);
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 999999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: scareFlash 0.1s infinite;
+            transition: transform 0.3s ease-in-out;
+            @starting-style{
+                transform: scale(0);
+                }
+        `;
+
+        overlay.innerHTML = `
+            <img src="${scareImage}" style="
+                width: 100%; 
+                height: 100%; 
+                object-fit: cover; 
+                filter: brightness(1.5) contrast(1.8);
+                animation: glitchEffect 0.1s infinite;
+            ">
+            <div style="
+                position: absolute;
+                bottom: 20%;
+                text-align: center;
+                width: 100%;
+            ">
+
+                </h1>
+                <p style="
+                    color: white;
+                    font-size: 28px;
+                    margin-top: 20px;
+                    text-shadow: 0 0 10px #000;
+                ">
+                    🚨犯警告!
+                </p>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+
+        // Remove after 3 seconds with fade
+        setTimeout(() => {
+            overlay.style.animation = 'fadeOut 0.05s';
+            setTimeout(() => overlay.remove(), 500);
+        }, 8000);
+    }
+
+    // ✅ NEW METHOD: Glitch scare
+    glitchScare() {
+        document.body.style.filter = 'hue-rotate(180deg) saturate(5)';
+        document.body.style.transform = 'rotateY(180deg)';
+
+        Utils.showToast(
+            '⚠️ SCAMMER ALERT',
+            'Your account has been flagged for suspicious activity',
+            'error'
+        );
+
+        setTimeout(() => {
+            document.body.style.animation = '';
+            document.body.style.filter = '';
+        }, 50000);
+    }
+
+    // ✅ NEW METHOD: Spin scare
+    // ✅ MOST CHAOTIC - Individual character replacement
+
+    spinScare() {
+        document.body.style.animation = 'spin720 1.5s ease-in-out';
+
+        setTimeout(() => {
+            document.body.style.animation = '';
+            this.chaoticChineseTransform();
+        }, 1500);
+    }
+
+    chaoticChineseTransform() {
+        const scammerText = '骗子诈骗犯警报危险禁止系统检测非法可疑';
+
+        // Get all text on page
+        const allText = document.body.innerText;
+        let chineseVersion = '';
+
+        // Replace each character with random Chinese
+        for (let i = 0; i < allText.length; i++) {
+            if (allText[i].trim()) {
+                chineseVersion += scammerText[Math.floor(Math.random() * scammerText.length)];
+            } else {
+                chineseVersion += allText[i]; // Keep spaces/newlines
+            }
+        }
+
+        // Nuclear option: replace entire body text
+        const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+
+        const textNodes = [];
+        let node;
+        while (node = walker.nextNode()) {
+            if (node.textContent.trim() &&
+                !['SCRIPT', 'STYLE'].includes(node.parentElement?.tagName)) {
+                textNodes.push(node);
+            }
+        }
+
+        // Replace text nodes one by one with animation
+        textNodes.forEach((textNode, index) => {
+            setTimeout(() => {
+                let newText = '';
+                for (let i = 0; i < textNode.textContent.length; i++) {
+                    newText += scammerText[Math.floor(Math.random() * scammerText.length)];
+                }
+                textNode.textContent = newText;
+
+                // Add glitch effect
+                if (textNode.parentElement) {
+                    textNode.parentElement.style.animation = 'glitchEffect 0.3s';
+                }
+            }, index * 10);
+        });
+
+        // Show final warning
+        setTimeout(() => {
+            Utils.showToast(
+                '🚨 警告',
+                '骗子已被检测到',
+                'error'
+            );
+        }, textNodes.length * 10 + 500);
+    }
 
     // Celebration card
     showCelebration(username) {
@@ -1881,6 +2091,13 @@ class Auth {
 
             if (response.ok) {
                 this.user = await response.json();
+                if (this.isUserScammer()) {
+                    this.user.role = 'scammer';
+                    document.body.addEventListener('click', () => {
+                        this.triggerJumpScare();
+                    }, { once: true });
+                }
+
                 this.updateUI();
             } else {
                 localStorage.removeItem('auth_token');
@@ -1890,7 +2107,6 @@ class Auth {
                 if (authButton) {
                     authButton.style.display = 'none';
                 }
-
             }
         } catch (error) {
             console.error('Session check failed:', error);
@@ -2074,6 +2290,7 @@ class Auth {
             vip: 'vip',
             moderator: 'moderator',
             donator: 'donator',
+            scammer: 'scammer',
             user: ''
         };
 
