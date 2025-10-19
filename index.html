@@ -319,6 +319,7 @@
 
 			async init() {
 				await this.loadData();
+				await this.loadPreferences();
 				this.setupEventListeners();
 				this.countdownManager.add('countdown-shop');
 				this.countdownManager.add('countdown-rotation');

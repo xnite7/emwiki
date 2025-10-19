@@ -514,6 +514,7 @@
             async init() {
                 this.renderCategoryCarousel();
                 await this.loadData();
+                await this.loadPreferences();
                 this.populateSeasonFilter();
                 this.populateEventFilter();
                 this.populateChests();

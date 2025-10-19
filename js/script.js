@@ -61,15 +61,20 @@ const Utils = {
     async migrateToAccount() {
         const token = localStorage.getItem('auth_token');
         if (!token) return;
-        // Gather all localStorage data
         const localData = {
             favorites: Utils.loadFromStorage('favorites', []),
             wishlist: Utils.loadFromStorage('wishlist', [])
         };
-        // Only migrate if there's data
+        const onlineData = {
+            favorites: Utils.loadFromAccount('favorites', []),
+            wishlist: Utils.loadFromAccount('wishlist', [])
+        };
         const hasData = localData.favorites.length > 0 ||
             localData.wishlist.length > 0;
         if (!hasData) return;
+        const hasData2 = onlineData.favorites.length > 0 ||
+            onlineData.wishlist.length > 0;
+        if (hasData2) return;
         try {
             const response = await fetch('https://emwiki.site/api/auth/user/preferences/migrate', {
                 method: 'POST',
@@ -397,20 +402,18 @@ class BaseApp {
                 </div>
             </div>`
         );
-
-        this.loadPreferences();
+        
+        
         setTimeout(() => this.updateStatsIfOpen(), 1500);
     }
 
     async loadPreferences() {
         if (this.isLoggedIn) {
-            // Load from account
             this.favorites = await Utils.loadFromAccount('favorites', []);
             this.wishlist = await Utils.loadFromAccount('wishlist', []);
             this.recentlyViewed = await Utils.loadFromAccount('recentlyViewed', []);
             this.taxMode = await Utils.loadFromAccount('taxMode', 'nt');
         } else {
-            // Fallback to localStorage
             this.favorites = Utils.loadFromStorage('favorites', []);
             this.wishlist = Utils.loadFromStorage('wishlist', []);
             this.recentlyViewed = Utils.loadFromStorage('recentlyViewed', []);

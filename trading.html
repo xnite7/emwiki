@@ -4,2284 +4,518 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Epic Catalogue - Catalogue</title>
-    <link rel="stylesheet" href="./css/catalog.css">
-    <link rel="stylesheet" href="./css/modal.css">
-    <link rel="stylesheet" href="./css/auth.css">
-    <link rel="manifest" href="/dev.webmanifest">
-    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+    <title>Trading Hub - Epic Catalogue</title>
+    
+    <meta name="description" content="Trade Epic Minigames items with other players safely and easily!">
+    <meta property="og:title" content="Trading Hub - Epic Catalogue">
+    <meta property="og:image" content="https://emwiki.site/imgs/QgWIUWf.png">
+    
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="icon" href="./imgs/favicon.png" type="image/png">
+    <meta name="theme-color" content="#000000">
 </head>
-<div class="bn">
-    🛠️ Site updated May 31 — <a style="color: #33c5ff;" href="#patchnotes">See
-        what's new</a> — All the items have been added!
-</div>
+
+<style>
+
+
+.trading-stats {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.trading-stat {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    padding: 15px 25px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.trading-stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+    font-family: 'BuilderSans';
+}
+
+.trading-stat-label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 5px;
+}
+
+/* Filters Section */
+.filters-section {
+    background: var(--bg-secondary);
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.filters-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.filter-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-select {
+    padding: 10px 15px;
+    background: var(--bg-item);
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-select:hover {
+    background: var(--bg-item-hover);
+    transform: translateY(-1px);
+}
+
+.create-trade-btn {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #667eea, #4a9eff);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.create-trade-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Trades Grid */
+.trades-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+.trades-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 25px;
+}
+
+/* Trade Card */
+.trade-card {
+    background: var(--bg-item);
+    border: 2px solid var(--border-color);
+    border-radius: 15px;
+    padding: 20px;
+    transition: all 0.3s;
+    box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.trade-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px var(--shadow-color), inset -2px -2px 4px rgba(0, 0, 0, 0.4);
+    background: var(--bg-item-hover);
+}
+
+.trade-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.trader-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+}
+
+.trader-info {
+    flex: 1;
+}
+
+.trader-name {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 15px;
+}
+
+.trade-time {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.trade-status {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.trade-status.open {
+    background: rgba(17, 245, 74, 0.2);
+    color: #11f54a;
+}
+
+.trade-status.pending {
+    background: rgba(255, 208, 0, 0.2);
+    color: #ffd700;
+}
+
+.trade-status.completed {
+    background: rgba(102, 126, 234, 0.2);
+    color: #667eea;
+}
+
+/* Trade Items */
+.trade-items {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.trade-side {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.trade-side-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.trade-item-mini {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.trade-item-img {
+    width: 35px;
+    height: 35px;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+.trade-item-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.trade-arrow {
+    color: #4a9eff;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* Trade Actions */
+.trade-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.trade-action-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.trade-action-btn.primary {
+    background: linear-gradient(135deg, #667eea, #4a9eff);
+    color: white;
+}
+
+.trade-action-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.trade-action-btn.secondary {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.trade-action-btn.secondary:hover {
+    background: var(--bg-item-hover);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.empty-state-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.empty-state-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+.empty-state-text {
+    color: var(--text-secondary);
+    margin-bottom: 25px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.8rem;
+    }
+    
+    .quick-stats {
+        grid-template-columns: 1fr;
+        max-width: 300px;
+    }
+    
+    .trades-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .filters-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+</style>
 
 <body>
-    <!-- Donation Progress Bar -->
-<div id="donation-progress-container" class="donation-progress-container">
-    <div class="donation-progress-card">
-        <button class="close-donation-progress" onclick="auth.closeDonationProgress()">×</button>
+	<header>
+		<a href="https://emwiki.site">
+			<svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
+				<style>
+					@keyframes floatAnim {
+
+						0%,
+						to {
+							transform: translateY(0)
+						}
+
+						50% {
+							transform: translateY(-4px)
+						}
+					}
+
+					@keyframes glowPulse {
+
+						0%,
+						to {
+							filter: drop-shadow(0 0 0#fff)
+						}
+
+						50% {
+							filter: drop-shadow(0 0 8px #ff0) drop-shadow(0 0 15px #24ff5a)
+						}
+					}
+
+					@keyframes gradientShift {
+
+						0%,
+						to {
+							stop-color: #ff0
+						}
+
+						50% {
+							stop-color: #24ff5a
+						}
+					}
+				</style>
+				<defs>
+					<linearGradient id="eppp1" y1="1" x2="0">
+						<stop offset=".2" style="stop-color:#ff0" />
+						<stop offset="1" style="stop-color:#24ff5a" />
+					</linearGradient>
+					<linearGradient id="eppp2" y1="1" x2="0">
+						<stop offset="0" style="stop-color:#24ff5d" />
+						<stop offset="1" style="stop-color:#ff0" />
+					</linearGradient>
+				</defs>
+				<image id="cloud" x="461" y="459" href="https://emwiki.site/imgs/TWOKPhY.png" height="60" width="60"
+					style="filter:opacity(.6)" />
+				<text x="489" y="503" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
+					stroke-linejoin="round" fill="url(#eppp1)"
+					style="animation:floatAnim 12s ease-in-out infinite;font:200 46px Slapstick">EM</text>
+				<image id="epic-image" x="464" y="463" href="https://emwiki.site/imgs/epicfaces/kitta.png" height="60"
+					width="60"
+					style="scale:.48;transform:translate(846px,103px);rotate:20deg;transform-origin:center;animation:floatAnim2 15s ease-in-out 1s infinite alternate" />
+				<image id="cloud" x="495" y="477" href="https://emwiki.site/imgs/8UUB0Gt.png" height="60" width="60"
+					style="filter:opacity(.86)" />
+				<text x="516" y="514" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
+					stroke-linejoin="round" fill="url(#eppp2)"
+					style="animation:floatAnim 12s ease-in-out infinite;animation-delay:5.5s;font:200 16px Slapstick">wiki</text>
+				<image id="cloud" x="445" y="487" href="https://emwiki.site/imgs/oYKd3nJ.png" height="28" width="42"
+					style="filter:opacity(.8)" />
+			</svg>
+
+		</a>
+
+		<div class="nav-links">
+			<a href="/catalog" class="nav-link">Catalog</a>
+			<a href="/trading" class="nav-link active">Trading Hub</a>
+			<a href="/forum" class="nav-link">Forum</a>
+			<a href="/gallery" class="nav-link">Gallery</a>
+			<a href="/scammers" class="nav-link">Scammers</a>
+		</div>
+
+
+	</header>
+
+    <!-- Trading Hero -->
+<!-- Trading Hero - UPDATED -->
+<section class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">
+            <span class="hero-epic">Trading</span>
+            <span class="hero-catalogue">Hub</span>
+        </h1>
+        <p class="hero-subtitle">Trade Epic Minigames items safely with other players</p>
         
-        <div class="donation-progress-header">
-            <h3>Support Epic Catalogue</h3>
-            <p class="donation-progress-subtitle">Become a Donator and unlock exclusive perks!</p>
-        </div>
-            <div class="donation-stat">
-                <div class="donation-stat-value" id="total-donated">0</div>
-                <div class="strike"></div>
-                <div class="donation-stat-value">500</div>
-                <div class="donation-stat-label">Until Donator</div>
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+            <div class="stat-card">
+                <div class="stat-value" id="total-trades">0</div>
+                <div class="stat-label">Active Trades</div>
             </div>
-        
-        
-        <div class="progress-bar-container">
-            <div class="progress-bar" id="donation-progress-bar">
-                <div class="progress-bar-fill"></div>
-                <div class="progress-bar-shine"></div>
+
+            <div class="stat-card">
+                <div class="stat-value" id="total-traders">0</div>
+                <div class="stat-label">Traders</div>
             </div>
-            <div class="progress-percentage" id="progress-percentage">0%</div>
-        </div>
-        
-        <div class="donation-perks">
-            <h4>🎁 Unlock at <svg style="width: 15px;transform: translateY(2px);margin-left: 4px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18"><path d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z" fill="#ffd700" fill-rule="evenodd"></path></svg> 500:</h4>
-            <div class="perk-list">
-                <div class="perk-item">
-                    <span class="perk-icon">✨</span>
-                    <span>Donator Role Badge</span>
-                </div>
-                <div class="perk-item">
-                    <span class="perk-icon">🎨</span>
-                    <span>Custom Profile Colors</span>
-                </div>
-                <div class="perk-item">
-                    <span class="perk-icon">🏆</span>
-                    <span>Public Donators List</span>
-                </div>
-            </div>
-        </div>
-        
-        <button class="donate-now-btn" onclick="auth.joinGame()">
-            Donate!
-        </button>
-    </div>
-</div>
 
-<!-- Donator Achievement Celebration -->
-<div id="donator-celebration" class="donator-celebration">
-    <div class="donator-celebration-card">
-        <button class="close-donator-celebration" onclick="auth.closeDonatorCelebration()">×</button>
-        
-        <div class="achievement-badge">
-            <div class="achievement-glow"></div>
-            <div class="achievement-icon">💎</div>
-        </div>
-        
-        <h2 class="achievement-title">DONATOR UNLOCKED!</h2>
-        <p class="achievement-message">Thank you for supporting Epic Catalogue! You've unlocked exclusive features.</p>
-        
-        <div class="unlocked-features">
-            <h3>✨ Your New Perks</h3>
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">💎</div>
-                    <div class="feature-name">Donator Role</div>
-                    <div class="feature-desc">Special badge on your profile</div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🎨</div>
-                    <div class="feature-name">Custom Colors</div>
-                    <div class="feature-desc">Personalize your profile</div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🏆</div>
-                    <div class="feature-name">Hall of Fame</div>
-                    <div class="feature-desc">Featured on donators list</div>
-                </div>
-            </div>
-        </div>
-        
-        <button class="achievement-close-btn" onclick="auth.closeDonatorCelebration()">
-            Awesome! 🎉
-        </button>
-    </div>
-</div>
-    <header>
-        <a href="https://emwiki.site">
-            <svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
-                <style>
-                    @keyframes floatAnim {
-
-                        0%,
-                        to {
-                            transform: translateY(0)
-                        }
-
-                        50% {
-                            transform: translateY(-4px)
-                        }
-                    }
-
-                    @keyframes glowPulse {
-
-                        0%,
-                        to {
-                            filter: drop-shadow(0 0 0#fff)
-                        }
-
-                        50% {
-                            filter: drop-shadow(0 0 8px #ff0) drop-shadow(0 0 15px #24ff5a)
-                        }
-                    }
-
-                    @keyframes gradientShift {
-
-                        0%,
-                        to {
-                            stop-color: #ff0
-                        }
-
-                        50% {
-                            stop-color: #24ff5a
-                        }
-                    }
-                </style>
-                <defs>
-                    <linearGradient id="eppp1" y1="1" x2="0">
-                        <stop offset=".2" style="stop-color:#ff0" />
-                        <stop offset="1" style="stop-color:#24ff5a" />
-                    </linearGradient>
-                    <linearGradient id="eppp2" y1="1" x2="0">
-                        <stop offset="0" style="stop-color:#24ff5d" />
-                        <stop offset="1" style="stop-color:#ff0" />
-                    </linearGradient>
-                </defs>
-                <image id="cloud" x="464" y="463" href="https://emwiki.site/imgs/TWOKPhY.png" height="60" width="60"
-                    style="filter:opacity(.6)" /><text x="489" y="503" text-anchor="middle" stroke="#000"
-                    stroke-width="2.3" paint-order="stroke" stroke-linejoin="round" fill="url(#eppp1)"
-                    style="animation:floatAnim 12s ease-in-out infinite;font:200 46px Bunny Flowers">Epic</text>
-
-                <image id="epic-image" x="464" y="463" href="https://emwiki.site/imgs/XRmpB1c.png" height="60"
-                    width="60"
-                    style="scale:0.48;transform:translate(846px,103px);rotate:20deg;transform-origin:center;animation:floatAnim2 15s ease-in-out 1s infinite alternate" />
-
-                <image id="cloud" x="495" y="478" href="https://emwiki.site/imgs/8UUB0Gt.png" height="60" width="60"
-                    style="filter:opacity(.86)" /><text x="516" y="514" text-anchor="middle" stroke="#000"
-                    stroke-width="2.3" paint-order="stroke" stroke-linejoin="round" fill="url(#eppp2)"
-                    style="animation:floatAnim 12s ease-in-out infinite;animation-delay:5.5s;font:200 16px Bunny Flowers">Catalogue</text>
-                <image id="cloud" x="438" y="489" href="https://emwiki.site/imgs/oYKd3nJ.png" height="28" width="42"
-                    style="filter:opacity(.9)" />
-            </svg>
-        </a>
-        <button style="display: none;" class="auth-button" onclick="auth.openModal()" id="auth-button">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                <path
-                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
-            </svg>
-            <span>Link Account</span>
-        </button>
-        <div class="theme-toggle" onclick="catalog.toggleTheme()"></div>
-    </header>
-
-    <!-- Auth UI -->
-    <div id="auth-container" style="display: none;">
-        <div class="auth-modal">
-            <button class="close-auth" onclick="auth.closeModal()">×</button>
-            <h2>Link Your <strong>Roblox Account</strong></h2>
-            <div id="auth-step-1">
-                <p>Click below to generate your unique code</p>
-
-                <button class="auth-btn" onclick="auth.generateCode()">
-                    <span>Generate Code</span>
-
-                </button>
-                <span class="auth-btn-arrow">
-                    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z" />
-                    </svg>
-                </span>
-            </div>
-            <div id="auth-step-2" style="display: none;">
-                <p>Your code is:</p>
-                <div class="auth-code-container">
-                    <div class="auth-code" id="auth-code-display" onclick="auth.copyCode()"></div>
-                    <svg class="copy-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
-                    </svg>
-                </div>
-                <p class="auth-instructions">
-                    Join the game and enter this code!<br>
-                    Code expires in <span id="code-timer">5:00</span>
-                </p>
-                <div class="auth-actions">
-                    <button class="join-game-btn" onclick="auth.joinGame()">
-                        <span>Join Game</span>
-                    </button>
-                </div>
-                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 15px;">Checking for verification...
-                </p>
+            <div class="stat-card">
+                <div class="stat-value" id="trades-today">0</div>
+                <div class="stat-label">Today</div>
             </div>
         </div>
     </div>
+</section>
 
-    <!-- User Profile Button (when logged in) -->
-    <div id="user-profile-btn" style="display: none;"></div>
+    <!-- Filters -->
+    <section class="filters-section">
+        <div class="filters-container">
+            <div class="filter-group">
+                <select class="filter-select" id="filter-category">
+                    <option value="all">All Categories</option>
+                    <option value="gears">Gears</option>
+                    <option value="deaths">Deaths</option>
+                    <option value="pets">Pets</option>
+                    <option value="effects">Effects</option>
+                    <option value="titles">Titles</option>
+                </select>
 
-    <!-- Category Carousel -->
-    <div class="category-carousel-container">
-        <div class="category-carousel" id="categoryCarousel"></div>
-        <div class="carousel-nav prev" onclick="catalog.prevCategory()"></div>
-        <div class="carousel-nav next" onclick="catalog.nextCategory()"></div>
-    </div>
+                <select class="filter-select" id="filter-status">
+                    <option value="all">All Status</option>
+                    <option value="open">Open</option>
+                    <option value="pending">Pending</option>
+                    <option value="completed">Completed</option>
+                </select>
 
-    <!-- Controls Bar -->
-    <div class="controls-bar">
-        <div class="controls-row">
-            <!-- Search with Recent Items -->
-            <div class="search-wrapper">
-                <input id="search-bar" type="text" placeholder="Search items..." />
-                <div id="recent-items" class="recent-items"></div>
+                <select class="filter-select" id="filter-sort">
+                    <option value="recent">Most Recent</option>
+                    <option value="value-high">Highest Value</option>
+                    <option value="value-low">Lowest Value</option>
+                </select>
+            </div>
+
+            <button class="create-trade-btn" onclick="tradingHub.openCreateTrade()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                </svg>
+                Create Trade
+            </button>
+        </div>
+    </section>
+
+    <!-- Trades -->
+    <main class="trades-container">
+        <div class="trades-grid" id="trades-grid">
+            <!-- Trades will be loaded here -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Browse</h4>
+                <a href="/catalog">Catalog</a>
+                <a href="/scammers">Scammers List</a>
+                <a href="/admin">Admin Portal</a>
+            </div>
+            <div class="footer-section">
+                <h4>Community</h4>
+                <a href="/forum">Forum</a>
+                <a href="/trading">Trading</a>
+                <a href="/gallery">Gallery</a>
+                <a href="https://discord.com/invite/tg">Typical Games Discord</a>
+            </div>
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <p>Found a bug? Reach out to <b>@xnite</b> on Discord!</p>
             </div>
         </div>
-        <div class="chest-dropdown">
-
-
-            <div class="filters">
-                <!-- Sort Dropdown -->
-                <div class="sort-dropdown">
-                    <button class="dropdown-btn" onclick="catalog.toggleSort()">
-                        <span>Sort:</span> <span id="sort-label">Categorical</span> ▼
-                    </button>
-                    <div id="sort-menu" class="dropdown-content">
-                        <div class="dropdown-item" data-sort="default">Categorical</div>
-                        <div class="dropdown-item" data-sort="name-asc">Name: A ➔ Z</div>
-                        <div class="dropdown-item" data-sort="name-desc">Name: Z ➔ A</div>
-                        <div class="dropdown-item" data-sort="price-asc">Price: Low to High</div>
-                        <div class="dropdown-item" data-sort="price-desc">Price: High to Low</div>
-                        <div class="dropdown-item disabled" data-sort="date-desc">Newer First</div>
-                        <div class="dropdown-item disabled" data-sort="date-asc">Older First</div>
-                    </div>
-                </div>
-
-                <!-- Stats Dashboard -->
-                <button class="stats-btn" onclick="catalog.openStats()">My Lists</button>
-
-                <!-- Filters Dropdown -->
-                <div class="filters-dropdown">
-                    <button class="dropdown-btn" onclick="catalog.toggleFilters()">
-                        <span>Filters:</span>
-                        <span id="filters-label">None</span>
-                        <span class="filter-count" id="filter-count" style="display: none;">0</span>
-                        <span>▼</span>
-                    </button>
-
-                    <div id="filters-menu" class="dropdown-content">
-                        <!-- Regular Filters -->
-                        <div class="dropdown-item" data-filter="new">
-                            <div class="tag-checkbox"></div>
-                            <span class="icon newest-icon"></span>
-                            <div class="tag-label">New</div>
-                            <div class="tag-count" id="count-new">0</div>
-                        </div>
-
-                        <div class="dropdown-item" data-filter="untradable">
-                            <div class="tag-checkbox"></div>
-                            <span class="icon untradable-icon"></span>
-                            <div class="tag-label">Untradable</div>
-                            <div class="tag-count" id="count-untradable">0</div>
-                        </div>
-
-                        <div class="dropdown-item" data-filter="retired">
-                            <div class="tag-checkbox"></div>
-                            <span class="icon retired-icon"></span>
-                            <div class="tag-label">Retired</div>
-                            <div class="tag-count" id="count-retired">0</div>
-                        </div>
-
-                        <div style="display: none;" class="dropdown-item" data-filter="favorites">
-                            <div class="tag-checkbox"></div>
-                            <span class="icon favorites-icon"></span>
-                            <div class="tag-label">Favorites</div>
-                            <div class="tag-count" id="count-favorites">0</div>
-                        </div>
-
-                        <div class="dropdown-item" data-filter="gamenight">
-                            <div class="tag-checkbox"></div>
-                            <span class="icon gamenight-icon"></span>
-                            <div class="tag-label">Gamenight</div>
-                            <div class="tag-count" id="count-gamenight">0</div>
-                        </div>
-
-                        <div class="dropdown-item" data-filter="unreleased">
-                            <div class="tag-checkbox"></div>
-                            <span class="icon unreleased-icon"></span>
-                            <div class="tag-label">Unreleased</div>
-                            <div class="tag-count" id="count-unreleased">0</div>
-                        </div>
-
-
-                        <div class="dropdown-item" data-filter="removed">
-                            <div class="tag-checkbox"></div>
-                            <span class="icon removed-icon"></span>
-                            <div class="tag-label">Removed</div>
-                            <div class="tag-count" id="count-removed">0</div>
-                        </div>
-
-                        <div class="dropdown-item" data-filter="code">
-                            <div class="tag-checkbox"></div>
-                            <span class="icon code-icon"></span>
-                            <div class="tag-label">Code</div>
-                            <div class="tag-count" id="count-code">0</div>
-                        </div>
-
-                        <!-- Seasons Submenu -->
-                        <div class="submenu" onclick="catalog.toggleSeason()">
-                            <span class="tag-label">Seasons ▸</span>
-                            <div class="dropdown-content" id="season-menu">
-                                <div class="dropdown-item active" data-season="all">All Seasons</div>
-                                <!-- scrollable list -->
-                            </div>
-                        </div>
-                        <!-- Events Submenu -->
-                        <div class="submenu" onclick="catalog.toggleEvent()">
-                            <span class="tag-label">Events ▸</span>
-                            <div class="dropdown-content" id="event-menu">
-                                <div class="dropdown-item active" data-event="all">All Events</div>
-                                <!-- populated dynamically -->
-                            </div>
-                        </div>
-
-
-                    </div>
-                </div>
-
-                <button class="chest-dropdown-btn" onclick="catalog.toggleChestMenu()">
-                    <span>Chest:</span>
-                    <span id="chest-label">None</span>
-                    <span>▼</span>
-                    <div id="chest-menu" class="chest-menu">
-                        <div class="chest-item" data-chest="all" onclick="catalog.selectChest('all')">
-                            <svg style="width: 32px;margin: 0 18px 0 4px;" viewBox="0 0 1920 1920" fill="url(#nostops)"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <defs>
-                                    <linearGradient id="nostops" y2="100%">
-                                        <stop style="stop-color:#fff6ee" />
-                                        <stop offset="1" style="stop-color:#555" />
-                                    </linearGradient>
-                                </defs>
-                                <path stroke="#fff" paint-order="stroke" stroke-width="5"
-                                    d="M213.333 960c0-167.36 56-321.707 149.44-446.4L1406.4 1557.227c-124.693 93.44-279.04 149.44-446.4 149.44-411.627 0-746.667-335.04-746.667-746.667m1493.334 0c0 167.36-56 321.707-149.44 446.4L513.6 362.773c124.693-93.44 279.04-149.44 446.4-149.44 411.627 0 746.667 335.04 746.667 746.667M960 0C429.76 0 0 429.76 0 960s429.76 960 960 960 960-429.76 960-960S1490.24 0 960 0"
-                                    fill-rule="evenodd" />
-                            </svg>
-                            <div class="chest-item-info">
-                                <div class="chest-name">None</div>
-                                <div class="chest-meta">Show everything</div>
-                            </div>
-                        </div>
-                        <div class="chest-item" data-chest="itemcrate" onclick="catalog.selectChest('itemcrate')">
-                            <img src="https://emwiki.site/imgs/lZXN7AA.png" alt="Item Crate">
-                            <div class="chest-item-info">
-                                <div class="chest-name">Item Crate</div>
-                                <div class="chest-meta">
-                                    <span class="chest-timer"><svg fill="#87ceeb"
-                                            style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
-                                            viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
-                                        </svg> 15:00</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chest-item" data-chest="luckychest" onclick="catalog.selectChest('luckychest')">
-                            <img src="https://emwiki.site/imgs/WFdzb0V.png" alt="Lucky Chest">
-                            <div class="chest-item-info">
-                                <div class="chest-name">Lucky Chest</div>
-                                <div class="chest-meta">
-                                    <span class="chest-timer"><svg fill="#87ceeb"
-                                            style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
-                                            viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
-                                        </svg> 30:00</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chest-item" data-chest="1hrplaytime" onclick="catalog.selectChest('1hrplaytime')">
-                            <img src="https://emwiki.site/imgs/IBCeaLF.png" alt="1 Hour Playtime">
-                            <div class="chest-item-info">
-                                <div class="chest-name">1 Hour Playtime</div>
-                                <div class="chest-meta">
-                                    <span class="chest-timer"><svg fill="#87ceeb"
-                                            style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
-                                            viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
-                                        </svg> 1:00:00</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chest-item" data-chest="mysterybag" onclick="catalog.selectChest('mysterybag')">
-                            <img src="https://emwiki.site/imgs/mLNEYGn.png" alt="Mystery Bag">
-                            <div class="chest-item-info">
-                                <div class="chest-name">Mystery Bag</div>
-                                <div class="chest-meta">Random rewards</div>
-                            </div>
-                        </div>
-                        <div class="chest-item" data-chest="typicalchest" onclick="catalog.selectChest('typicalchest')">
-                            <img src="https://emwiki.site/imgs/bpigTac.png" alt="Typical Chest">
-                            <div class="chest-item-info">
-                                <div class="chest-name">Typical Chest</div>
-                                <div class="chest-meta">
-                                    <span class="chest-price"><img src="./imgs/Coin.webp"
-                                            style="transform: translateY(2px);margin-right: 2px;margin-left: 3px;width: 12px;height: 12px;">
-                                        250</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chest-item" data-chest="dailyrewards" onclick="catalog.selectChest('dailyrewards')">
-                            <img src="https://emwiki.site/imgs/IBCeaLF.png" alt="Daily Rewards Secret Item">
-                            <div class="chest-item-info">
-                                <div class="chest-name">Daily Rewards Secret Item</div>
-                                <div class="chest-meta">
-                                    <span class="chest-timer"><svg fill="#87ceeb"
-                                            style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
-                                            viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
-                                        </svg> 24H</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chest-item" data-chest="premiumchest" onclick="catalog.selectChest('premiumchest')">
-                            <img src="https://emwiki.site/imgs/vwb0OJv.png" alt="Premium Chest">
-                            <div class="chest-item-info">
-                                <div class="chest-name">Premium Chest</div>
-                                <div class="chest-meta">
-                                    <span class="chest-price"><svg
-                                            style="margin-right: 3px;margin-left: 3px;width: 12px;transform: translateY(4px);"
-                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
-                                            <path
-                                                d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
-                                                fill="#FFD700" fill-rule="evenodd"></path>
-                                        </svg> 99</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chest-item" data-chest="steelchest" onclick="catalog.selectChest('steelchest')">
-                            <img src="https://emwiki.site/imgs/joSfryH.png" alt="Steel Chest">
-                            <div class="chest-item-info">
-                                <div class="chest-name">Steel Chest</div>
-                                <div class="chest-meta">Rare items</div>
-                            </div>
-                        </div>
-                        <div class="chest-item" data-chest="elusivebag" onclick="catalog.selectChest('elusivebag')">
-                            <img src="https://emwiki.site/imgs/MmrUfl7.png" alt="Elusive Bag">
-                            <div class="chest-item-info">
-                                <div class="chest-name">Elusive Bag</div>
-                                <div class="chest-meta">Ultra rare</div>
-                            </div>
-                        </div>
-                        <div class="chest-item" data-chest="legendarychest"
-                            onclick="catalog.selectChest('legendarychest')">
-                            <img src="https://emwiki.site/imgs/9Fph277.png" alt="Legendary Chest">
-                            <div class="chest-item-info">
-                                <div class="chest-name">Legendary Chest</div>
-                                <div class="chest-meta">Legendary items</div>
-                            </div>
-                        </div>
-                        <div class="chest-item" data-chest="epicchest" onclick="catalog.selectChest('epicchest')">
-                            <img src="https://emwiki.site/imgs/Efwzbme.png" alt="Epic Chest">
-                            <div class="chest-item-info">
-                                <div class="chest-name">Epic Chest</div>
-                                <div class="chest-meta">
-                                    <span class="chest-price" style="
-    					font-family: arimo;
-    					font-weight: 500;
-    					color: #fff;
-    					/* -webkit-text-stroke: 1px rgb(255, 83, 219); */
-    					text-shadow: -1.3px -1.3px 0 #ff53db, 0 -1.3px 0 #ff53db, 1.3px -1.3px 0 #ff53db, 1.3px 0 0 #ff53db, 1.3px 1.3px 0 #ff53db, 0 1.3px 0 #ff53db, -1.3px 1.3px 0 #ff53db, -1.3px 0 0 #ff53db;
-    					"><img src="https://emwiki.site/imgs/Cy9r140.png"
-                                            style="transform: translateY(2px);margin-right: 3px;margin-left: 3px;width: 12px;height: 12px;">500</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chest-item" data-chest="birthdaychest"
-                            onclick="catalog.selectChest('birthdaychest')">
-                            <img src="https://emwiki.site/imgs/61c1df478cf7c4297798fbafe4784899.png"
-                                alt="Birthday Chest">
-                            <div class="chest-item-info">
-                                <div class="chest-name">Birthday Chest</div>
-                                <div class="chest-meta">
-                                    <span class="chest-price"><svg
-                                            style="margin-right: 3px;margin-left: 3px;width: 12px;transform: translateY(4px);"
-                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
-                                            <path
-                                                d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
-                                                fill="#FFD700" fill-rule="evenodd"></path>
-                                        </svg> 99</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </button>
-            </div>
-
+        <div class="footer-bottom">
+            <p>© 2025 emwiki.site • made with ❤ by xnite</p>
         </div>
-        <a class="chest-expand-toggle" onclick="catalog.toggleChestExpand()"><span class="icon-down"></span></a>
-    </div>
+    </footer>
 
-
-
-
-
-    <!-- Stats -->
-    <div class="stats">
-        Showing <span id="showing">0</span><span id="total">0</span> items
-    </div>
-
-    <!-- Season Label -->
-    <h1 id="season-label">
-    </h1>
-
-    <!-- Catalog -->
-    <div class="catalog-container">
-        <div id="catalog" class="catalog-grid"></div>
-        <div class="load-more">
-            <button id="loadMore" class="load-button">Load More Items</button>
-        </div>
-    </div>
-
-    <!-- Stats Dashboard Modal -->
-    <div id="stats-dashboard" class="stats-dashboard">
-        <div class="stats-content">
-            <div class="stats-header">
-                <h2 style="font-size: 41px;letter-spacing: 2px;font-family: pacifico;">My Lists</h2>
-                <span class="close-stats" onclick="catalog.closeStats()">×</span>
-            </div>
-
-            <div class="wishlist-section">
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0px 10px 7px;">
-                    <h3 style="margin: 0; font-size: 23px; font-variant: all-petite-caps; cursor: pointer;"
-                        id="wishlist-tab" onclick="catalog.switchListMode('wishlist')">
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-                            style="width:26px;margin-bottom:-7px;">
-                            <path
-                                d="M14 10h-1V9c0-.6-.4-1-1-1s-1 .4-1 1v1h-1c-.6 0-1 .4-1 1s.4 1 1 1h1v1c0 .6.4 1 1 1s1-.4 1-1v-1h1c.6 0 1-.4 1-1s-.4-1-1-1" />
-                            <path
-                                d="M19 3H5c-.6 0-1 .4-1 1s.4 1 1 1v14.1c0 .7.4 1.4 1.1 1.8.3.2.6.2.9.2.4 0 .8-.1 1.1-.3l3.9-2.6 3.9 2.6c.6.4 1.4.5 2.1.1.7-.3 1.1-1 1.1-1.8V5c.6 0 1-.4 1-1s-.5-1-1.1-1m-2 16.1-3.9-2.6c-.3-.2-.7-.3-1.1-.3s-.8.1-1.1.3L7 19.1V5h10z" />
-                        </svg> Wishlist
-                    </h3>
-                    <h3 style="margin: 0; font-size: 23px; font-variant: all-petite-caps; cursor: pointer; opacity: 0.5;"
-                        id="favorites-tab" onclick="catalog.switchListMode('favorites')">
-                        <svg viewBox="0 0 16 16" style="width:21px;margin-bottom:-4px;"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd"
-                                d="M7.247 2.247A4.243 4.243 0 0 0 1.25 8.25L8 15l6.75-6.75a4.243 4.243 0 0 0-5.997-6.003L8 3zM8 12.172l5.336-5.336a2.243 2.243 0 1 0-3.172-3.172L8 5.828 5.836 3.664a2.243 2.243 0 1 0-3.172 3.172z" />
-                        </svg> Favorites
-                    </h3>
-                </div>
-                <div id="wishlist-items" class="catalog-grid"></div>
-                <div class="wishlist-total">
-                    <span id="list-mode-label">Wishlist</span> Total Value:
-                    <svg style="margin-right: 3px;margin-left: 3px;width: 18px;transform: translateY(4px);"
-                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
-                        <path
-                            d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
-                            fill-rule="evenodd"></path>
-                    </svg><span id="wishlist-value"> 0</span>
-                </div>
-            </div>
-
-            <div class="recent-section">
-                <h3 style="margin-bottom: 15px;font-size: 23px;font-variant: all-petite-caps;"><svg stroke="#fff"
-                        viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="width:23px;margin-bottom:-6px;">
-                        <path d="M20.59 22 15 16.41V7h2v8.58l5 5.01z"></path>
-                        <path d="M16 2A13.94 13.94 0 0 0 6 6.23V2H4v8h8V8H7.08A12 12 0 1 1 4 16H2A14 14 0 1 0 16 2">
-                        </path>
-                    </svg> Recently Viewed</h3>
-                <div id="recent-viewed-items" class="catalog-grid"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Item Modal -->
-    <div id="product-modal" class="modal">
-        <!-- Modal content will be created by JavaScript -->
-    </div>
-
-    <!-- Particle Canvas -->
-    <canvas id="particle-canvas"></canvas>
-
-    <button
-        style="margin-left: 15px; padding: 5px 10px; border-radius: 8px; background: #33c5ff; border: none; cursor: pointer;"
-        onclick="window.location.href=`https://emwiki.site/admin.html`">Admin</button>
-
-    <!-- Profile Dropdown -->
-    <div id="profile-dropdown" class="profile-dropdown"></div>
-
-    <!-- Celebration Card -->
-    <div id="celebration-card" class="celebration-card">
-        <div class="celebration-icon">🎉</div>
-        <div class="celebration-title">Account Linked!</div>
-        <div class="celebration-message">Welcome to Epic Catalogue! Your Roblox account has been successfully linked.
-        </div>
-        <button class="celebration-close-btn" onclick="auth.closeCelebration()">Epic!</button>
-    </div>
-
-    <!-- Toast Container -->
-    <!-- Confetti Canvas -->
-    <canvas id="confetti-canvas"></canvas>
-    <div id="toast-container" class="toast-container"></div>
-    <script>
-
-
-        class ItemModal {
-            constructor(catalog) {
-                this.catalog = catalog;
-                this.isOpen = false;
-                this.currentItem = null;
-                this.currentIndex = -1;
-
-                this.elements = {};
-                this.init();
-            }
-
-            init() {
-                this.createModal();
-                this.setupEventListeners();
-            }
-
-            createModal() {
-                // Create modal HTML
-                const modalHTML = `
-            <div id="item-modal" class="item-modal">
-                <div class="modal-overlay"></div>
-                <button class="modal-nav modal-prev">‹</button>
-                <button class="modal-nav modal-next">›</button>
-                <div class="modal-container">
-
-                    
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h2 class="modal-title"></h2>
-                            <div class="modal-price"></div>
-                        </div>
-
-                        <img class="modal-image" style="display:none;">
-                        <div class="modal-svg" style="display:none;"></div>
-
-                        
-                        <div class="modal-description"></div>
-                        
-                        <div class="modal-details"></div>
-                        
-                        <div class="modal-badges">
-                            <span class="badge-premium" style="display:none;">Premium</span>
-                            <span class="badge-retired" style="display:none;">Retired</span>
-                            <span class="badge-removed" style="display:none;">Removed</span>
-                            <span class="badge-untradable" style="display:none;">Untradable</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-                document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-                // Cache elements
-                this.elements = {
-                    modal: document.getElementById('item-modal'),
-                    overlay: document.querySelector('.modal-overlay'),
-                    container: document.querySelector('.modal-container'),
-                    title: document.querySelector('.modal-title'),
-                    price: document.querySelector('.modal-price'),
-                    image: document.querySelector('.modal-image'),
-                    svg: document.querySelector('.modal-svg'),
-                    description: document.querySelector('.modal-description'),
-                    details: document.querySelector('.modal-details'),
-
-                    prevBtn: document.querySelector('.modal-prev'),
-                    nextBtn: document.querySelector('.modal-next'),
-                    badges: {
-                        premium: document.querySelector('.badge-premium'),
-                        retired: document.querySelector('.badge-retired'),
-                        removed: document.querySelector('.badge-removed'),
-                        untradable: document.querySelector('.badge-untradable')
-                    }
-                };
-            }
-
-            setupEventListeners() {
-                // Close events
-
-                this.elements.overlay.addEventListener('click', () => this.close());
-
-                // Navigation
-                this.elements.prevBtn.addEventListener('click', () => this.navigate(-1));
-                this.elements.nextBtn.addEventListener('click', () => this.navigate(1));
-
-                // Keyboard
-                document.addEventListener('keydown', (e) => {
-                    if (!this.isOpen) return;
-
-                    switch (e.key) {
-                        case 'Escape': this.close(); break;
-                        case 'ArrowLeft': this.navigate(-1); break;
-                        case 'ArrowRight': this.navigate(1); break;
-                    }
-                });
-
-                // Touch gestures
-                let touchStartX = 0;
-
-                this.elements.container.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    touchStartX = e.touches[0].clientX;
-                });
-
-                this.elements.container.addEventListener('touchend', (e) => {
-                    const touchEndX = e.changedTouches[0].clientX;
-                    const diff = touchStartX - touchEndX;
-
-                    if (Math.abs(diff) > 50) {
-                        this.navigate(diff > 0 ? 1 : -1);
-                    }
-                });
-            }
-
-            open(item) {
-                this.currentItem = item;
-                this.currentIndex = this.catalog.displayed.findIndex(i => i.name === item.name);
-
-                // Update content
-                this.updateContent(item);
-
-                // Show modal
-                this.elements.modal.classList.add('active');
-                this.isOpen = true;
-                document.body.style.overflow = 'hidden';
-
-                // Update URL
-                this.updateURL(item.name);
-
-                // Update navigation buttons
-                this.updateNavButtons();
-
-                // Add to recently viewed
-                this.catalog.addToRecentlyViewed(item.name);
-                catalog.updateStatsIfOpen();
-            }
-
-            updateContent(item) {
-                // Basic info
-                this.elements.title.textContent = item.name;
-                this.elements.description.innerHTML = item.from || '';
-
-                // Price
-                if (item.price && item.price !== 'N/A') {
-                    this.elements.price.innerHTML = `
-                <img src="./imgs/rap.png" alt="RAP">
-                ${this.catalog.formatPrice(item.price)}
-            `;
-                    this.elements.price.style.display = 'flex';
-                } else {
-                    this.elements.price.style.display = 'none';
-                }
-
-                // Image/SVG
-                if (item.img) {
-                    this.elements.image.src = item.img;
-                    this.elements.image.style.display = 'block';
-                    this.elements.svg.style.display = 'none';
-                    this.elements.title.style.opacity = 'unset';
-                } else if (item.svg) {
-                    this.elements.svg.outerHTML = item.svg;
-                    this.elements.svg = this.elements.container.querySelector('svg');
-                    this.elements.svg.classList.add('modal-svg');
-                    this.elements.svg.style.display = 'unset';
-                    this.elements.image.style.display = 'none';
-                    this.elements.title.style.opacity = '0';
-
-
-                    this.elements.svg.style.width = '85%';
-                    this.elements.svg.style.height = 'auto';
-                    this.elements.svg.style.margin = '45px 0px';
-
-                } else {
-                    this.elements.image.style.display = 'none';
-                    this.elements.svg.style.display = 'none';
-                }
-
-                // Additional details
-                if (item['price/code/rarity']) {
-                    const details = item['price/code/rarity'].split('<br>').filter(Boolean);
-                    const appendedDetails = new Set();
-                    this.elements.details.innerHTML = details.map(detail => {
-                        if (appendedDetails.has(detail)) return '';
-                        appendedDetails.add(detail);
-                        return this.formatDetail(detail);
-                    }).join('');
-                } else {
-                    this.elements.details.innerHTML = '';
-                }
-
-                // Badges
-                this.elements.badges.premium.style.display = item.premium ? 'inline-block' : 'none';
-                this.elements.badges.retired.style.display = item.retired ? 'inline-block' : 'none';
-                this.elements.badges.removed.style.display = item.removed ? 'inline-block' : 'none';
-                this.elements.badges.untradable.style.display = !item.tradable ? 'inline-block' : 'none';
-
-                // Set theme color based on category
-                const colors = {
-                    gears: '#37cd44',
-                    deaths: '#dd592e',
-                    titles: '#9a2dd1',
-                    pets: '#2766dd',
-                    effects: '#f3a425'
-                };
-
-                this.elements.container.style.backgroundColor = colors[item.category] || '#333';
-            }
-
-            formatDetail(detail) {
-                // Add icons for special currencies
-                const icons = {
-                    unobtainable: "./imgs/Red_x.png",
-                    robux: "./imgs/cf8ZvY7.png",
-                    coins: "./imgs/Coin.webp",
-                    stars: "./imgs/WKeX5AS.png",
-                    visors: "./imgs/7IoLZCN.png",
-                    pumpkins: "./imgs/bHRBTrU.png",
-                    eggs: "./imgs/qMxjgQy.png",
-                    opals: "./imgs/wwMMAvr.png",
-                    baubles: "./imgs/bauble.png",
-                    tokens: "./imgs/Cy9r140.png"
-                };
-                const styles = {
-                    unobtainable: "filter: sepia(1) contrast(0.1) brightness(1.6);",
-                    '%': "color: #ce00ff;text-shadow: 0 0 2px #ab00ff;",
-                    rank: "font-variant: all-small-caps; font-weight: 600; color: #ffd700; text-shadow: 0 0 3px #ffae00;",
-                    expired: "font-weight: bold;color: red;font-family: inconsolata;",
-                    active: "font-weight: bold;color: #45ff45;font-family: inconsolata;",
-                    robux: "font: 1000 17px 'buildersans'",
-                    tokens: "text-shadow: -1.3px -1.3px 0 #ff00e7, 0 -1.3px 0 #ff00e7, 1.3px -1.3px 0 #ff00e7, 1.3px 0 0 #ff00e7, 1.3px 1.3px 0 #ff00e7, 0 1.3px 0 #ff00e7, -1.3px 1.3px 0 #ff00e7, -1.3px 0 0 #ff00e7"
-                };
-                const matchedKey = Object.keys(styles).find(key =>
-                    detail.toLowerCase().includes(key.toLowerCase())
-                );
-
-                let formatted = `<div class="detail-item" style="${matchedKey ? styles[matchedKey] : ''}">${detail}</div>`;
-
-                Object.entries(icons).forEach(([key, src]) => {
-                    if (detail.toLowerCase().includes(key)) {
-                        formatted = `<div class="detail-item" style="${key in styles ? styles[key] : ''}"> <img src="${src}" title="${key.charAt(0).toUpperCase() + key.slice(1)}" class="detail-icon"> ${/\d+(?!\%)/.test(detail) ? detail.replace(new RegExp(key, 'i'), '').trim() : detail}</div>`;
-                    }
-                });
-
-                return formatted;
-            }
-
-            navigate(direction) {
-                const newIndex = this.currentIndex + direction;
-
-                if (newIndex >= 0 && newIndex < this.catalog.displayed.length) {
-                    this.currentIndex = newIndex;
-                    this.currentItem = this.catalog.displayed[newIndex];
-
-                    // Animate transition
-                    this.elements.container.classList.add('transitioning');
-
-                    setTimeout(() => {
-                        this.updateContent(this.currentItem);
-                        this.updateNavButtons();
-                        this.updateURL(this.currentItem.name);
-                        this.catalog.addToRecentlyViewed(this.currentItem.name);
-                        this.elements.container.classList.remove('transitioning');
-                    }, 150);
-                }
-            }
-
-            updateNavButtons() {
-                this.elements.prevBtn.disabled = this.currentIndex <= 0;
-                this.elements.nextBtn.disabled = this.currentIndex >= this.catalog.displayed.length - 1;
-            }
-
-            updateURL(itemName) {
-                const slug = itemName.toLowerCase().replace(/\s+/g, '-');
-                const url = new URL(window.location);
-                url.searchParams.set('item', slug);
-                history.pushState(null, '', url.toString());
-            }
-
-            close() {
-                this.elements.modal.classList.remove('active');
-                this.isOpen = false;
-                document.body.style.overflow = '';
-
-                // Clear URL
-                const url = new URL(window.location);
-                url.searchParams.delete('item');
-                history.pushState(null, '', url.toString());
-            }
-        }
-        // Clean, simple catalog system
-        class Catalog {
-            constructor() {
-                this.items = [];
-                this.filtered = [];
-                this.displayed = [];
-                this.batchSize = 50;
-                this.currentBatch = 0;
-                this.currentListMode = 'wishlist';
-                this.loading = false;
-                this.currentCategoryIndex = 0;
-                this.sortBy = 'default';
-                this.seasonFilter = 'all';
-                this.chestFilter = 'all';
-                this.seasons = new Set();
-                this.events = new Set();
-                this.eventFilter = 'all';
-                this.modal = new ItemModal(this);
-
-                this.categories = [
-                    { id: 'all', name: 'All', img: './imgs/XwkWVJJ.png', color: '#667eea' },
-                    { id: 'gears', name: 'Gears', img: './imgs/AYUbTJv.png', color: '#5bfe6a' },
-                    { id: 'deaths', name: 'Deaths', img: './imgs/fADZwOh.png', color: '#ff7a5e' },
-                    { id: 'pets', name: 'Pets', img: './imgs/GHXB0nC.png', color: '#377afa' },
-                    { id: 'effects', name: 'Effects', img: './imgs/l90cgxf.png', color: '#ffb135' },
-                    { id: 'titles', name: 'Titles', img: './imgs/ZOP8l9g.png', color: '#c960fe' }
-                ];
-
-                this.filters = {
-                    category: 'all',
-                    tags: new Set(),
-                    search: ''
-                };
-
-                // Tag counts for display
-                this.tagCounts = {
-                    new: 0,
-                    untradable: 0,
-                    premium: 0,
-                    retired: 0,
-                    removed: 0,
-                    favorites: 0,
-                    gamenight: 0,
-                    unreleased: 0,
-                    code: 0
-                };
-
-                this.favorites = this.loadFromStorage('favorites', []);
-                this.wishlist = this.loadFromStorage('wishlist', []);
-                this.recentlyViewed = this.loadFromStorage('recentlyViewed', []);
-
-                this.particleCanvas = document.getElementById('particle-canvas');
-                this.particleCtx = this.particleCanvas.getContext('2d');
-                this.particles = [];
-
-                this.chestMappings = {
-                    'itemcrate': [],
-                    'luckychest': [],
-                    '1hrplaytime': [],
-                    'mysterybag': [],
-                    'dailyrewards': [],
-                    'typicalchest': [],
-                    'premiumchest': [],
-                    'steelchest': [],
-                    'elusivebag': [],
-                    'legendarychest': [],
-                    'epicchest': [],
-                    'birthdaychest': [],
-                };
-
-                this.init();
-            }
-
-            async init() {
-
-                this.setupParticleCanvas();
-                this.loadTheme();
-                this.renderCategoryCarousel();
-                await this.loadData();
-                this.populateSeasonFilter();
-                this.populateEventFilter();
-                this.populateChests();
-                this.setupEventListeners();
-                this.applyFilters();
-                this.loadBatch();
-                document.querySelector('.bn').style.display = 'none';
-                this.updateTagCounts();
-
-
-            }
-
-            loadFromStorage(key, defaultValue) {
-                try {
-                    const stored = localStorage.getItem(key);
-                    return stored ? JSON.parse(stored) : defaultValue;
-                } catch (e) {
-                    return defaultValue;
-                }
-            }
-
-            saveToStorage(key, value) {
-                try {
-                    localStorage.setItem(key, JSON.stringify(value));
-                } catch (e) {
-                    console.error('Failed to save to localStorage:', e);
-                }
-            }
-
-            loadTheme() {
-                const theme = localStorage.getItem('theme') || 'dark';
-                if (theme === 'light') {
-                    document.body.classList.add('light-theme');
-                }
-
-                function pickRandom(rarities) {
-                    // Calculate chances for common
-                    var filler = 100 - rarities.map(r => r.chance).reduce((sum, current) => sum + current);
-                    console.log(rarities)
-
-                    if (filler <= 0) {
-                        console.log(filler)
-                        console.log("chances sum is higher than 100!");
-                        return;
-                    }
-
-                    // Create an array of 100 elements, based on the chances field
-                    var probability = rarities.map((r, i) => Array(r.chance === 0 ? filler : r.chance).fill(i)).reduce((c, v) => c.concat(v), []);
-
-                    // Pick one
-                    var pIndex = Math.floor(Math.random() * 100);
-                    var rarity = rarities[probability[pIndex]];
-
-                    return rarity.type;
-                }
-
-                //if halloween
-                const now = new Date();
-
-                var rarities = [{
-                    type: "https://emwiki.site/imgs/epicfaces/tran.webp",
-                    chance: 10
-                }, {
-                    type: "https://emwiki.site/imgs/epicfaces/3d.png",
-                    chance: 2
-                }, {
-                    type: "https://emwiki.site/imgs/epicfaces/Epic_Banana.webp",
-                    chance: 8
-                }, {
-                    type: "https://emwiki.site/imgs/epicfaces/XRmpB1c.png",
-                    chance: 0
-                }, {
-                    type: "https://emwiki.site/imgs/burrito.png",
-                    chance: 3
-                }];
-
-                var titleColors = [
-                    ['#24ff5d', '#ff0']
-                ];
-
-                if (now.getMonth() === 9) { // if october
-
-                    rarities = [{
-                        type: "https://emwiki.site/imgs/epicfaces/kitta.png",
-                        chance: 15
-                    }, {
-                        type: "https://emwiki.site/imgs/epicfaces/devlil.png",
-                        chance: 15
-                    }, {
-                        type: "https://emwiki.site/imgs/epicfaces/Ghost_Epic_Face.webp",
-                        chance: 15
-                    }, {
-                        type: "https://emwiki.site/imgs/epicfaces/pmupkin.png",
-                        chance: 0
-                    }, {
-                        type: "https://emwiki.site/imgs/epicfaces/Uncanny_Epic_Face.webp",
-                        chance: 3
-                    }];
-
-
-                    titleColors = [
-                        ['#ff7518', '#000000']
-                    ];
-
-                } else if (now.getMonth() === 11) { // if december
-
-                    rarities = [{
-                        type: "https://emwiki.site/imgs/epicfaces/xmas.png",
-                        chance: 20
-                    }, {
-                        type: "https://emwiki.site/imgs/epicfaces/rudolf.png",
-                        chance: 20
-                    }, {
-                        type: "https://emwiki.site/imgs/epicfaces/santa.png",
-                        chance: 0
-                    }];
-
-                    titleColors = [
-                        ['red', 'white']
-                    ];
-
-                }
-
-                // Get the gradient stops by their IDs
-                const grad1Stops = document.querySelectorAll('#eppp1 stop');
-                const grad2Stops = document.querySelectorAll('#eppp2 stop');
-
-                // Update gradient 1
-                grad1Stops[0].setAttribute('style', `stop-color: ${titleColors[0][1]}`);
-                grad1Stops[1].setAttribute('style', `stop-color: ${titleColors[0][0]}`);
-
-                // Update gradient 2
-                grad2Stops[0].setAttribute('style', `stop-color: ${titleColors[0][1]}`);
-                grad2Stops[1].setAttribute('style', `stop-color: ${titleColors[0][0]}`);
-
-                document.getElementById('epic-image').setAttribute('href', pickRandom(rarities));
-            }
-
-
-            toggleTheme() {
-                document.body.classList.toggle('light-theme');
-                const theme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
-                localStorage.setItem('theme', theme);
-            }
-
-            toggleChestMenu() {
-                const menu = document.getElementById('chest-menu');
-                menu.classList.toggle('show');
-
-                // Close other menus
-                document.getElementById('sort-menu').classList.remove('show');
-                document.getElementById('season-menu').classList.remove('show');
-            }
-
-            selectChest(chest) {
-                this.chestFilter = chest;
-
-                // Update UI
-                const chestItems = document.querySelectorAll('.chest-item');
-                chestItems.forEach(item => {
-                    if (item.dataset.chest === chest) {
-                        item.classList.add('active');
-                    } else {
-                        item.classList.remove('active');
-                    }
-                });
-
-                const selectedChest = document.querySelector(`.chest-item[data-chest="${chest}"] .chest-name`);
-                document.getElementById('chest-label').textContent = selectedChest ? selectedChest.textContent : 'All Items';
-
-                document.getElementById('chest-menu').classList.remove('show');
-                this.applyFilters();
-            }
-
-            setupParticleCanvas() {
-                this.particleCanvas.width = window.innerWidth;
-                this.particleCanvas.height = window.innerHeight;
-                window.addEventListener('resize', () => {
-                    this.particleCanvas.width = window.innerWidth;
-                    this.particleCanvas.height = window.innerHeight;
-                });
-                this.animateParticles();
-            }
-
-            createParticles(x, y, colors = ['#ff0000', '#ff4444', '#ff8888', '#ffaaaa']) {
-                for (let i = 0; i < 20; i++) {
-                    this.particles.push({
-                        x: x,
-                        y: y,
-                        vx: (Math.random() - 0.5) * 8,
-                        vy: (Math.random() - 0.5) * 8,
-                        size: Math.random() * 3 + 2,
-                        color: colors[Math.floor(Math.random() * colors.length)],
-                        life: 1.0
-                    });
-                }
-            }
-
-            animateParticles() {
-                this.particleCtx.clearRect(0, 0, this.particleCanvas.width, this.particleCanvas.height);
-
-                for (let i = this.particles.length - 1; i >= 0; i--) {
-                    const p = this.particles[i];
-
-                    p.x += p.vx;
-                    p.y += p.vy;
-                    p.vy -= 0.3; // Gravity
-                    p.life -= 0.03;
-
-                    if (p.life <= 0) {
-                        this.particles.splice(i, 1);
-                        continue;
-                    }
-
-                    this.particleCtx.globalAlpha = p.life;
-                    this.particleCtx.fillStyle = p.color;
-                    this.particleCtx.fillRect(p.x, p.y, p.size, p.size);
-                }
-
-                requestAnimationFrame(() => this.animateParticles());
-            }
-
-            renderCategoryCarousel() {
-                const carousel = document.getElementById('categoryCarousel');
-
-                // Create items only once
-                if (!carousel.dataset.initialized) {
-                    this.categories.forEach((cat, index) => {
-                        const item = document.createElement('div');
-                        item.className = 'category-item';
-                        item.dataset.category = cat.id;
-
-                        if (cat.img) {
-                            const img = document.createElement('img');
-                            img.src = cat.img;
-                            img.alt = cat.name;
-                            item.appendChild(img);
-                        }
-
-                        const label = document.createElement('span');
-                        label.textContent = cat.name;
-                        item.appendChild(label);
-
-                        item.onclick = () => this.selectCategory(index);
-
-                        carousel.appendChild(item);
-                    });
-
-                    carousel.dataset.initialized = "true";
-                }
-
-                // Update positions & active state
-                const items = carousel.querySelectorAll('.category-item');
-                const total = this.categories.length;
-
-                items.forEach((item, index) => {
-                    let relativePos = index - this.currentCategoryIndex;
-
-                    // Wrap relativePos to shortest path (-N/2 .. N/2)
-                    if (relativePos > total / 2) {
-                        relativePos -= total;
-                    } else if (relativePos < -total / 2) {
-                        relativePos += total;
-                    }
-
-                    item.dataset.pos = relativePos;
-
-                    if (index === this.currentCategoryIndex) {
-                        item.classList.add('active');
-                        item.style.borderColor = this.categories[index].color;
-                        item.style.backgroundColor = this.categories[index].color + '33';
-                    } else {
-                        item.classList.remove('active');
-                        item.style.borderColor = '';
-                        item.style.backgroundColor = '';
-                    }
-                });
-
-                return carousel;
-            }
-
-            selectCategory(index) {
-                this.currentCategoryIndex = index;
-                this.filters.category = this.categories[index].id;
-                this.renderCategoryCarousel();
-                this.applyFilters();
-            }
-
-            prevCategory() {
-                if (this.currentCategoryIndex > 0) {
-                    this.selectCategory(this.currentCategoryIndex - 1);
-                } else {
-                    this.selectCategory(this.categories.length - 1);
-                }
-            }
-
-            nextCategory() {
-                if (this.currentCategoryIndex < this.categories.length - 1) {
-                    this.selectCategory(this.currentCategoryIndex + 1);
-                } else {
-                    this.selectCategory(0);
-                }
-            }
-
-            async loadData() {
-                try {
-                    const response = await fetch('https://emwiki.site/api/gist-version');
-                    const data = await response.json();
-                    const parsed = JSON.parse(data.files?.['auto.json']?.content);
-
-                    const categories = ['gears', 'deaths', 'titles', 'pets', 'effects'];
-
-                    categories.forEach(cat => {
-                        if (parsed[cat]) {
-                            parsed[cat].forEach(item => {
-                                // Extract ALL seasons from description
-                                const seasons = [];
-                                const eventNames = [];
-                                if (item.from) {
-                                    // Use matchAll with global flag to find all season mentions
-                                    const seasonMatches = [...item.from.matchAll(/Season (\d+)/gi)];
-
-                                    seasonMatches.forEach(match => {
-                                        const seasonNum = parseInt(match[1]);
-                                        if (!seasons.includes(seasonNum)) {
-                                            seasons.push(seasonNum);
-                                            this.seasons.add(seasonNum);
-                                        }
-                                    });
-                                    const eventPatterns = [
-                                        /Summer\s*(?:\d{4})?/gi,
-                                        /\bEaster\s*(?:\d{4})?/gi,
-                                        /Valentine(?:'s)?\s*(?:\d{4})?/gi,
-                                        /Halloween\s*(?:\d{4})?/gi,
-                                        /Christmas\s*(?:\d{4})?/gi,
-                                        /Art Contest\s*(?:\d{4})?/gi,
-                                        /4th of July\s*(?:\d{4})?/gi,
-                                        /10th Anniversary\s*(?:\d{4})?/gi,
-                                        /1B Update\s*(?:\d{4})?/gi,
-                                        /2B Update\s*(?:\d{4})?/gi,
-                                        /Squid Game\s*(?:\d{4})?/gi,
-                                        /RODIS\s*(?:\d{4})?/gi,
-                                    ];
-
-                                    eventPatterns.forEach(pattern => {
-                                        const fieldsToMatch = [item.name, item.from, item['price/code/rarity']];
-                                        fieldsToMatch.forEach(field => {
-                                            // Ensure field is not null/undefined
-                                            if (field) {
-                                                const matches = [...field.matchAll(pattern)];
-
-                                                matches.forEach(match => {
-                                                    // Remove the year if it exists
-                                                    let eventName = match[0].replace(/\s*\d{4}/, '').trim();
-
-                                                    // Normalize event names to avoid duplicates
-                                                    const normalizeEvent = (name) => {
-                                                        const normalizations = {
-                                                            "valentine": "Valentine's",
-                                                            "Valentine": "Valentine's",
-                                                            "valentine's": "Valentine's",
-                                                            "christmas": "Christmas",
-                                                            "rodis": "RODIS",
-                                                        };
-
-                                                        const lower = name.toLowerCase();
-                                                        return normalizations[lower] || name;
-                                                    };
-
-                                                    eventName = normalizeEvent(eventName);
-
-                                                    // If it's not already in the eventNames array, add it
-                                                    if (!eventNames.includes(eventName)) {
-                                                        eventNames.push(eventName);
-                                                        this.events.add(eventName);
-                                                    }
-                                                });
-                                            }
-                                        })
-                                    }
-                                    );
-
-                                    this.items.push({
-                                        ...item,
-                                        category: cat,
-                                        seasons: seasons,
-                                        events: eventNames
-                                    });
-                                }
-
-                            })
-                        }
-                    });
-
-                    document.getElementById('total').textContent = this.items.length;
-                } catch (error) {
-                    console.error('Failed to load data:', error);
-                }
-            }
-
-            populateSeasonFilter() {
-                const seasonMenu = document.getElementById('season-menu');
-                const seasons = Array.from(this.seasons).sort((a, b) => b - a);
-                seasonMenu.querySelector('.dropdown-item').onclick = () => this.selectSeason('all');
-                seasons.forEach(season => {
-                    const item = document.createElement('div');
-                    item.className = 'dropdown-item';
-                    item.dataset.season = season;
-                    item.textContent = `Season ${season}`;
-                    item.onclick = () => this.selectSeason(season);
-                    seasonMenu.appendChild(item);
-                });
-            }
-
-            populateEventFilter() {
-                const eventMenu = document.getElementById('event-menu');
-                const events = Array.from(this.events).sort();
-                eventMenu.querySelector('.dropdown-item').onclick = () => this.selectEvent('all');
-                events.forEach(event => {
-                    const item = document.createElement('div');
-                    item.className = 'dropdown-item';
-                    item.dataset.event = event;
-                    item.textContent = event;
-                    item.onclick = () => this.selectEvent(event);
-                    eventMenu.appendChild(item);
-                });
-            }
-
-            toggleChestExpand() {
-                const sortDropdown = document.querySelector('.chest-dropdown');
-                const expandToggle = document.querySelector('.chest-expand-toggle .icon-down');
-
-                sortDropdown.classList.toggle('collapsed');
-                expandToggle.classList.toggle('flipped');
-                // Save state to localStorage
-                const isCollapsed = chestDropdown.classList.contains('collapsed');
-                localStorage.setItem('chestDropdownCollapsed', isCollapsed);
-
-                // Close the menu if it's open when collapsing
-                if (isCollapsed) {
-                    document.getElementById('chest-menu').classList.remove('show');
-                }
-            }
-
-            populateChests() {
-                // Clear existing mappings
-                for (let chest in this.chestMappings) {
-                    this.chestMappings[chest] = [];
-                }
-
-                // Map items to chests based on their descriptions
-                this.items.forEach(item => {
-                    const from = (item.from || '').toLowerCase();
-                    const name = item.name.toLowerCase();
-                    let assignedChest = null;
-
-                    // Check for specific chest mentions
-                    if (from.includes('item crate')) {
-                        assignedChest = 'itemcrate';
-                    } else if (from.includes('lucky chest')) {
-                        assignedChest = 'luckychest';
-                    } else if (from.includes('mystery bag')) {
-                        assignedChest = 'mysterybag';
-                    } else if (from.includes('typical chest')) {
-                        assignedChest = 'typicalchest';
-                    } else if (from.includes('premium chest')) {
-                        assignedChest = 'premiumchest';
-                    } else if (from.includes('steel chest')) {
-                        assignedChest = 'steelchest';
-                    } else if (from.includes('elusive bag')) {
-                        assignedChest = 'elusivebag';
-                    } else if (from.includes('legendary chest')) {
-                        assignedChest = 'legendarychest';
-                    } else if (from.includes('epic chest')) {
-                        assignedChest = 'epicchest';
-                    } else if (from.includes('birthday chest')) {
-                        assignedChest = 'birthdaychest';
-                    } else if (from.includes('daily rewards')) {
-                        assignedChest = 'dailyrewards';
-                    } else if (from.includes('1hr playtime rewards')) {
-                        assignedChest = '1hrplaytime';
-                    }
-
-
-
-                    // Add item to chest mapping
-                    if (assignedChest) {
-                        this.chestMappings[assignedChest].push(item.name);
-                        // Store chest association on the item itself for filtering
-                        item.chest = assignedChest;
-                    } else {
-                        // Items without specific chest assignment
-                        item.chest = 'all';
-                    }
-                });
-            }
-
-            selectSeason(season) {
-                this.seasonFilter = season;
-                document.getElementById('season-label').textContent = season === 'all' ? '' : `Season ${season}`;
-                document.querySelectorAll('#season-menu .dropdown-item').forEach(item => {
-                    item.classList.toggle('active', item.dataset.season == season);
-                });
-                this.updateTagsLabel();
-                this.applyFilters();
-            }
-
-            toggleEvent() {
-                const menu = document.getElementById('event-menu');
-                menu.classList.toggle('show');
-                const menu2 = document.getElementById('season-menu');
-                menu2.classList.remove('show');
-            }
-
-            selectEvent(event) {
-                this.eventFilter = event;
-                document.querySelectorAll('#event-menu .dropdown-item').forEach(item => {
-                    item.classList.toggle('active', item.dataset.event == event);
-                });
-                this.updateTagsLabel();
-                this.applyFilters();
-            }
-
-            toggleSort() {
-                const menu = document.getElementById('sort-menu');
-                menu.classList.toggle('show');
-            }
-
-            toggleSeason() {
-                const menu = document.getElementById('season-menu');
-                menu.classList.toggle('show');
-                const menu2 = document.getElementById('event-menu');
-                menu2.classList.remove('show');
-            }
-
-
-            toggleFilters() {
-                const menu = document.getElementById('filters-menu');
-                menu.classList.toggle('show');
-            }
-
-            selectSort(sortType) {
-                this.sortBy = sortType;
-                const labels = {
-                    'default': 'Categorical',
-                    'price-asc': '$ ➔ $$$',
-                    'price-desc': '$$$ ➔ $',
-                    'name-asc': 'A ➔ Z',
-                    'name-desc': 'Z ➔ A',
-                    'date-desc': 'Newer First',
-                    'date-asc': 'Older First'
-                };
-                document.getElementById('sort-label').textContent = labels[sortType];
-
-                document.querySelectorAll('#sort-menu .dropdown-item').forEach(item => {
-                    item.classList.toggle('active', item.dataset.sort === sortType);
-                });
-
-                this.toggleSort(); // Close dropdown
-                this.applyFilters();
-            }
-
-            setupEventListeners() {
-
-                // Tag menu items
-                document.querySelectorAll('#filters-menu>.dropdown-item').forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        this.selectTag(item, item.dataset.filter);
-                    });
-                });
-
-                // Close menus when clicking outside
-                document.addEventListener('click', (e) => {
-                    if (!e.target.closest('.filters-dropdown')) {
-                        document.getElementById('filters-menu').classList.remove('show');
-                    }
-                    if (!e.target.closest('.chest-dropdown')) {
-                        document.getElementById('chest-menu').classList.remove('show');
-                    }
-                    if (!e.target.closest('.sort-dropdown')) {
-                        document.getElementById('sort-menu').classList.remove('show');
-                    }
-                    if (!e.target.closest('.submenu')) {
-                        document.getElementById('season-menu').classList.remove('show');
-                    }
-                    if (!e.target.closest('.submenu')) {
-                        document.getElementById('event-menu').classList.remove('show');
-                    }
-                });
-
-                // Sort dropdown items
-                document.querySelectorAll('#sort-menu .dropdown-item').forEach(item => {
-                    item.addEventListener('click', () => {
-                        this.selectSort(item.dataset.sort);
-                    });
-                });
-
-
-
-                // Search with recent items
-                const searchBar = document.getElementById('search-bar');
-                let searchTimeout;
-
-                searchBar.addEventListener('focus', () => {
-                    //this.showRecentItems();
-                });
-
-                searchBar.addEventListener('blur', () => {
-                    setTimeout(() => {
-                        document.getElementById('recent-items').classList.remove('show');
-                    }, 200);
-                });
-
-                searchBar.addEventListener('input', (e) => {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        this.filters.search = e.target.value.toLowerCase();
-                        this.applyFilters();
-                    }, 300);
-                });
-
-                // Load more button
-                document.getElementById('loadMore').addEventListener('click', () => {
-                    this.loadBatch();
-                });
-
-                // Infinite scroll
-                window.addEventListener('scroll', () => {
-                    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
-                        this.loadBatch();
-                    }
-                });
-
-
-            }
-
-            updateTagCounts() {
-                // Reset counts
-                Object.keys(this.tagCounts).forEach(key => this.tagCounts[key] = 0);
-
-                // Count items for each tag
-                this.items.forEach(item => {
-                    if (item.new) this.tagCounts.new++;
-                    if (item.tradable === false) this.tagCounts.untradable++;
-                    if (item.premium) this.tagCounts.premium++;
-                    if (item.retired) this.tagCounts.retired++;
-                    if (item.removed) this.tagCounts.removed++;
-                    if (this.favorites.includes(item.name)) this.tagCounts.favorites++;
-
-                    const from = (item.from || '').toLowerCase();
-                    if (from.includes('gamenight') || from.includes('rodis')) this.tagCounts.gamenight++;
-                    if (from.includes('unreleased') || from.includes('@zarabelle') || from.includes('@typicaltype')) {
-                        this.tagCounts.unreleased++;
-                    }
-
-                    if (from.includes('code')) this.tagCounts.code++;
-                });
-
-                // Update UI counts
-                Object.keys(this.tagCounts).forEach(tag => {
-                    const countEl = document.getElementById(`count-${tag}`);
-                    if (countEl) {
-                        countEl.textContent = this.tagCounts[tag];
-                    }
-                });
-            }
-
-            selectTag(tagElement, tagName) {
-                tagElement.classList.toggle('selected');
-
-                if (this.filters.tags.has(tagName)) {
-                    this.filters.tags.delete(tagName);
-                } else {
-                    this.filters.tags.add(tagName);
-                }
-
-                // Enable/disable date sorting based on code/gamenight filters
-                const hasDateFilters = this.filters.tags.has('code') || this.filters.tags.has('gamenight');
-                const dateOptions = document.querySelectorAll('[data-sort="date-desc"], [data-sort="date-asc"]');
-
-                dateOptions.forEach(option => {
-                    if (hasDateFilters) {
-                        option.classList.remove('disabled');
-                    } else {
-                        option.classList.add('disabled');
-                        // Reset to default if currently using date sorting
-                        if (this.sortBy === 'date-desc' || this.sortBy === 'date-asc') {
-                            this.selectSort('default');
-                        }
-                    }
-                });
-
-                // Auto-switch to date-desc when activating code/gamenight
-                if ((tagName === 'code' || tagName === 'gamenight') &&
-                    this.filters.tags.has(tagName) &&
-                    this.sortBy === 'default') {
-                    this.selectSort('date-desc');
-                }
-
-                this.updateTagsLabel();
-                this.applyFilters();
-            }
-
-            updateTagsLabel() {
-
-                const selectedCount = this.filters.tags.size + (this.seasonFilter !== 'all' ? 1 : 0) + (this.eventFilter !== 'all' ? 1 : 0);
-                const tagLabel = document.getElementById('filters-label');
-                const tagCount = document.getElementById('filter-count');
-
-                if (selectedCount === 0) {
-                    tagLabel.textContent = 'None';
-                    tagCount.style.display = 'none';
-                } else {
-                    const tagNames = Array.from(this.filters.tags);
-                    tagLabel.textContent = '';
-                    tagCount.textContent = selectedCount;
-                    tagCount.style.display = 'inline-block';
-                }
-            }
-
-            applyFilters() {
-
-                this.filtered = this.items.filter(item => {
-                    // Chest filter
-                    if (this.chestFilter !== 'all') {
-                        // Check if item is in the selected chest's mapping
-                        const chestItems = this.chestMappings[this.chestFilter] || [];
-                        if (!chestItems.includes(item.name) && item.chest !== this.chestFilter) {
-                            return false;
-                        }
-                    }
-
-                    // Category filter
-                    if (this.filters.category !== 'all' && item.category !== this.filters.category) {
-                        return false;
-                    }
-
-                    // Season filter
-                    if (this.seasonFilter !== 'all' && item.seasons && !item.seasons.includes(this.seasonFilter)) {
-                        return false;
-                    }
-
-                    // Event filter
-                    if (this.eventFilter !== 'all' && item.events && !item.events.includes(this.eventFilter)) {
-                        return false;
-                    }
-
-                    // Search filter
-                    if (this.filters.search && !item.name.toLowerCase().includes(this.filters.search)) {
-                        return false;
-                    }
-
-
-
-                    // Tag filters
-                    for (let tag of this.filters.tags) {
-
-                        switch (tag) {
-                            case 'new':
-                                if (!item.new) return false;
-                                break;
-                            case 'untradable':
-                                if (item.tradable !== false) return false;
-                                break;
-                            case 'premium':
-                                if (!item.premium) return false;
-                                break;
-                            case 'gamenight':
-                                if (!item.from.toLowerCase().includes('gamenight') && !item.from.toLowerCase().includes('rodis')) return false;
-                                break;
-                            case 'code':
-                                if (!item.from.toLowerCase().includes('code')) return false;
-                                break;
-                            case 'unreleased':
-                                if (!item.from.toLowerCase().includes('unreleased')) return false;
-                                break;
-                            case 'retired':
-                                if (!item.retired) return false;
-                                break;
-                            case 'favorites':
-                                if (!this.favorites.includes(item.name)) return false;
-                                break;
-                            case 'wishlist':
-                                if (!this.wishlist.includes(item.name)) return false;
-                                break;
-                            case 'removed':
-                                if (!item.removed) return false;
-                                break;
-                        }
-                    }
-
-                    return true;
-                });
-
-
-                this.sortItems();
-
-                // Reset display
-                this.currentBatch = 0;
-                this.displayed = [];
-                document.getElementById('catalog').innerHTML = '';
-
-                // Load first batch
-                this.loadBatch();
-
-                // Update chest label with item count
-                if (this.chestFilter !== 'all') {
-                    const chestCount = this.filtered.length;
-                    const selectedChest = document.querySelector(`.chest-item[data-chest="${this.chestFilter}"] .chest-name`);
-                    if (selectedChest) {
-                        document.getElementById('chest-label').textContent = `${selectedChest.textContent} (${chestCount})`;
-                    }
-                }
-            }
-
-            sortItems() {
-                switch (this.sortBy) {
-                    case 'date-desc': // Newer first
-                        this.filtered.sort((a, b) => {
-                            const parseDate = (from) => {
-                                if (!from) return 0;
-
-                                let pattern = this.filters.tags.has('code') ? /\b(?:code|Code)\s*(?:\()?([A-Za-z]+)\.?\s*(\d{4})\)?/gi : /\b(?:gamenight|Gamenight)\s*(?:\()?([A-Za-z]+)\.?\s*(\d{4})\)?/gi;
-                                if (this.filters.tags.has('code') && this.filters.tags.has('gamenight')) {
-                                    // If both tags are selected, match either
-                                    pattern = /\b(?:code|Code|gamenight|Gamenight)\s*(?:\()?([A-Za-z]+)\.?\s*(\d{4})\)?/gi;
-                                }
-                                const matches = [...from.matchAll(pattern)];
-
-                                if (matches.length === 0) return 0;
-
-                                const months = {
-                                    'jan': 0, 'feb': 1, 'mar': 2, 'apr': 3, 'may': 4, 'jun': 5,
-                                    'jul': 6, 'aug': 7, 'sep': 8, 'sept': 8, 'oct': 9, 'nov': 10, 'dec': 11
-                                };
-
-                                const timestamps = matches.map(match => {
-                                    const monthStr = match[1].toLowerCase();
-                                    const month = months[monthStr];
-                                    const year = parseInt(match[2]);
-
-                                    if (month === undefined) return 0;
-                                    return new Date(year, month).getTime();
-                                });
-
-                                return Math.max(...timestamps);
-                            };
-
-                            return parseDate(b.from) - parseDate(a.from);
-                        });
-                        break;
-
-                    case 'date-asc': // Older first
-                        this.filtered.sort((a, b) => {
-                            const parseDate = (from) => {
-                                if (!from) return 0;
-
-                                const pattern = /\b(?:code|Code|gamenight|Gamenight)\s*(?:\()?([A-Za-z]+)\.?\s*(\d{4})\)?/gi;
-                                const matches = [...from.matchAll(pattern)];
-
-                                if (matches.length === 0) return 0;
-
-                                const months = {
-                                    'jan': 0, 'feb': 1, 'mar': 2, 'apr': 3, 'may': 4, 'jun': 5,
-                                    'jul': 6, 'aug': 7, 'sep': 8, 'sept': 8, 'oct': 9, 'nov': 10, 'dec': 11
-                                };
-
-                                const timestamps = matches.map(match => {
-                                    const monthStr = match[1].toLowerCase();
-                                    const month = months[monthStr];
-                                    const year = parseInt(match[2]);
-
-                                    if (month === undefined) return 0;
-                                    return new Date(year, month).getTime();
-                                });
-
-                                return Math.max(...timestamps);
-                            };
-
-                            return parseDate(a.from) - parseDate(b.from);
-                        });
-                        break;
-
-                    case 'price-asc':
-                        this.filtered.sort((a, b) => {
-                            const priceA = a.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(a.price || 0) || Number.MAX_SAFE_INTEGER);
-                            const priceB = b.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(b.price || 0) || Number.MAX_SAFE_INTEGER);
-                            return priceA - priceB;
-                        });
-                        break;
-                    case 'price-desc':
-                        this.filtered.sort((a, b) => {
-                            const priceA = a.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(a.price || 0) || 0);
-                            const priceB = b.price?.toLowerCase() === 'o/c' ? Number.MAX_SAFE_INTEGER : (parseInt(b.price || 0) || 0);
-                            return priceB - priceA;
-                        });
-                        break;
-                    case 'name-asc':
-                        this.filtered.sort((a, b) => a.name.localeCompare(b.name));
-                        break;
-                    case 'name-desc':
-                        this.filtered.sort((a, b) => b.name.localeCompare(a.name));
-                        break;
-                    default:
-                        // Keep original order
-                        break;
-                }
-            }
-
-            loadBatch() {
-                if (this.loading) return;
-                const start = this.currentBatch * this.batchSize;
-                const end = start + this.batchSize;
-                const batch = this.filtered.slice(start, end);
-
-                if (batch.length === 0) {
-                    document.getElementById('loadMore').disabled = true;
-                    document.getElementById('loadMore').textContent = 'No more items';
-                    return;
-                }
-
-                this.loading = true;
-                document.getElementById('loadMore').disabled = true;
-                document.getElementById('loadMore').innerHTML = '<div class="loading-spinner"></div>';
-
-                setTimeout(() => {
-                    batch.forEach(item => {
-                        this.displayed.push(item);
-                        this.renderItem(item);
-                    });
-
-
-                    this.currentBatch++;
-                    this.loading = false;
-
-                    document.getElementById('showing').textContent = this.displayed.length;
-
-                    if (this.displayed.length >= this.filtered.length) {
-                        document.getElementById('loadMore').textContent = 'All items loaded';
-                        document.getElementById('loadMore').disabled = true;
-                    } else {
-                        document.getElementById('loadMore').textContent = 'Load More Items';
-                        document.getElementById('loadMore').disabled = false;
-                    }
-                }, 300);
-            }
-
-            renderItem(data) {
-                const item = document.createElement('div');
-                item.className = 'item';
-
-                const colors = {
-                    gears: '#5bfe6a',
-                    deaths: '#ff7a5e',
-                    titles: '#c960fe',
-                    pets: '#377afa',
-                    effects: '#ffb135'
-                };
-                item.style.backgroundColor = colors[data.category] || 'transparent';
-
-
-
-                if (data.img) {
-                    const img = document.createElement('img');
-                    img.src = data.img;
-                    img.loading = 'lazy';
-                    item.appendChild(img);
-                } else if (data.svg) {
-                    item.innerHTML = data.svg;
-                }
-
-                // Add name
-                const name = document.createElement('div');
-                name.className = 'item-name';
-                name.textContent = data.name;
-                item.appendChild(name);
-
-                // Add price
-                if (data.price && data.price !== 'N/A') {
-                    const price = document.createElement('div');
-                    price.className = 'item-price';
-                    price.innerHTML = `<svg style="width: 13px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18"><path d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z" fill="#fff" fill-rule="evenodd"></path></svg>${this.formatPrice(data.price)}`;
-                    item.appendChild(price);
-                }
-
-                // Add badges
-                if (data.premium) {
-                    const badge = document.createElement('img');
-                    badge.className = 'badge premium';
-                    badge.src = './imgs/prem.png';
-                    badge.title = 'Roblox Premium';
-                    item.appendChild(badge);
-                }
-
-                if (data.retired) {
-                    const badge = document.createElement('div');
-                    badge.className = 'badge retired';
-                    badge.innerText = 'Retired';
-                    item.appendChild(badge);
-                }
-
-                if (data.removed) {
-                    const badge = document.createElement('div');
-                    badge.className = 'badge removed';
-                    badge.innerText = 'Removed';
-                    item.appendChild(badge);
-                }
-
-                if (data.from.toLowerCase().includes('unreleased') || data.from.toLowerCase().includes('@zarabelle') || data.from.toLowerCase().includes('@typicaltype')) {
-                    const badge = document.createElement('div');
-                    badge.className = 'badge staff';
-                    badge.title = 'Staff/Unreleased';
-                    badge.innerHTML = '<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="a" x2="0" y2="100%"><stop style="stop-color:#d5d5d5"/><stop offset=".3" style="stop-color:#6b6b6b"/><stop offset=".4" style="stop-color:#6b6b6b"/><stop offset=".5" style="stop-color:#3b3b3b"/><stop offset=".6" style="stop-color:#3b3b3b"/><stop offset=".9" style="stop-color:#0c0c0c"/></linearGradient></defs><path stroke="#000" fill="url(#a)" d="M31.25 7.4a44 44 0 0 1-6.62-2.35 45 45 0 0 1-6.08-3.21L18 1.5l-.54.35a45 45 0 0 1-6.08 3.21A44 44 0 0 1 4.75 7.4L4 7.59v8.34c0 13.39 13.53 18.4 13.66 18.45l.34.12.34-.12c.14 0 13.66-5.05 13.66-18.45V7.59Z"/></svg>';
-                    item.appendChild(badge);
-                }
-
-                if (data.new) {
-                    const badge = document.createElement('img');
-                    badge.className = 'badge new';
-                    badge.src = './imgs/new.png';
-                    item.appendChild(badge);
-                }
-
-                if (!data.tradable) {
-                    const badge = document.createElement('img');
-                    badge.className = 'badge untradable';
-                    badge.title = 'Untradable';
-                    badge.src = 'data:image/svg+xml,%3Csvg%20viewBox%3D%22-1%200%2077%2077%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20fill%3D%22%23fff%22%20d%3D%22M14%2022v11h26v4l27-10-27-9v4zm47%2032V43H35v-4L8%2049l27%209v-4z%22%2F%3E%3Cpath%20fill%3D%22red%22%20d%3D%22M37.5%208.5c6.7%200%2012.85%202.25%2017.85%206L13.6%2056.25c-3.75-5-6-11.15-6-17.85C7.6%2021.95%2021%208.55%2037.5%208.5m0%2059.75c-6.7%200-12.85-2.25-17.85-6L61.4%2020.5c3.75%205%206%2011.15%206%2017.85C67.4%2054.8%2054%2068.2%2037.55%2068.2m38.4-29.85c0-21.2-17.2-38.4-38.4-38.4s-38.4%2017.2-38.4%2038.4%2017.2%2038.4%2038.4%2038.4%2038.4-17.2%2038.4-38.4%22%2F%3E%3C%2Fsvg%3E';
-                    item.appendChild(badge);
-                }
-
-                // Add wishlist button
-                const wishlistBtn = document.createElement('div');
-                wishlistBtn.className = 'wishlist-button';
-
-                wishlistBtn.textContent = '⭐';
-                if (this.wishlist.includes(data.name)) {
-                    wishlistBtn.classList.add('active');
-                }
-                wishlistBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    this.toggleWishlist(data.name);
-                    const rect = wishlistBtn.getBoundingClientRect();
-                    wishlistBtn.classList.toggle('active');
-                    wishlistBtn.title = this.wishlist.includes(data.name) ? 'Remove from Wishlist' : 'Add to Wishlist';
-                };
-                wishlistBtn.title = this.wishlist.includes(data.name) ? 'Remove from Wishlist' : 'Add to Wishlist';
-                item.appendChild(wishlistBtn);
-
-                // Add favorite button with particle effect
-                const heart = document.createElement('div');
-                heart.className = 'heart-button';
-                heart.textContent = this.favorites.includes(data.name) ? '❤️' : '🤍';
-                heart.title = this.favorites.includes(data.name) ? 'Remove from Favorites' : 'Add to Favorites';
-                if (this.favorites.includes(data.name)) {
-                    heart.classList.add('red');
-                }
-                heart.onclick = (e) => {
-                    e.stopPropagation();
-
-                    // Create particles at click position
-                    const rect = heart.getBoundingClientRect();
-
-                    this.toggleFavorite(data.name);
-                    heart.textContent = this.favorites.includes(data.name) ? '❤️' : '🤍';
-                    heart.classList.toggle('red');
-                    if (heart.classList.contains('red')) this.createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2);
-                    heart.title = this.favorites.includes(data.name) ? 'Remove from Favorites' : 'Add to Favorites';
-                }
-                item.appendChild(heart);
-
-                // Click to open modal
-                item.onclick = () => {
-                    this.modal.open(data);
-
-                };
-
-                document.getElementById('catalog').appendChild(item);
-            }
-
-            formatPrice(price) {
-                function formatNum(num) {
-                    if (isNaN(num)) return null; // skip invalid parts
-                    if (num >= 1_000_000) {
-                        let val = (num / 1_000_000).toFixed(1);
-                        val = val.replace(/\.0$/, '');
-                        return val + 'M';
-                    } else if (num >= 1000) {
-                        let val = (num / 1000).toFixed(1);
-                        val = val.replace(/\.0$/, '');
-                        return val + 'k';
-                    }
-                    return num.toLocaleString();
-                }
-
-                const str = String(price);
-
-                if (str.includes('-')) {
-                    const parts = str.split('-').map(p => {
-                        const num = parseInt(p.trim());
-                        return formatNum(num);
-                    });
-
-                    // if all failed → return original string
-                    if (parts.every(v => v === null)) return str;
-
-                    return parts.map((v, i) => v ?? str.split('-')[i].trim()).join('-');
-                }
-
-                const num = parseInt(str);
-                const formatted = formatNum(num);
-
-                return formatted ?? str;
-            }
-
-            toggleFavorite(name) {
-                const index = this.favorites.indexOf(name);
-                if (index > -1) {
-                    this.favorites.splice(index, 1);
-                } else {
-                    this.favorites.push(name);
-                }
-                this.saveToStorage('favorites', this.favorites);
-                this.updateTagCounts();
-                this.updateStatsIfOpen(); // Add this line
-            }
-
-            toggleWishlist(name) {
-                const index = this.wishlist.indexOf(name);
-                if (index > -1) {
-                    this.wishlist.splice(index, 1);
-                } else {
-                    this.wishlist.push(name);
-                }
-                this.saveToStorage('wishlist', this.wishlist);
-                this.updateStatsIfOpen();
-            }
-
-            showRecentItems() {
-                if (this.recentlyViewed.length === 0) return;
-
-                const recentDiv = document.getElementById('recent-items');
-                recentDiv.innerHTML = '';
-
-                const recent = this.recentlyViewed.slice(0, 5);
-                recent.forEach(itemName => {
-                    const item = this.items.find(i => i.name === itemName);
-                    if (item) {
-                        const div = document.createElement('div');
-                        div.className = 'recent-item';
-                        div.innerHTML = `
-                            ${item.img ? `<img src="${item.img}" alt="${item.name}">` : '<div style="width:30px;height:30px;background:#666;border-radius:5px;"></div>'}
-                            <span>${item.name}</span>
-                        `;
-                        div.onclick = () => {
-                            document.getElementById('search-bar').value = item.name;
-                            this.filters.search = item.name.toLowerCase();
-                            this.applyFilters();
-                            recentDiv.classList.remove('show');
-                        };
-                        recentDiv.appendChild(div);
-                    }
-                });
-
-                recentDiv.classList.add('show');
-            }
-
-            addToRecentlyViewed(name) {
-                const index = this.recentlyViewed.indexOf(name);
-                if (index > -1) {
-                    this.recentlyViewed.splice(index, 1);
-                }
-                this.recentlyViewed.unshift(name);
-                this.recentlyViewed = this.recentlyViewed.slice(0, 5); // Keep last 4
-                this.saveToStorage('recentlyViewed', this.recentlyViewed);
-            }
-
-            openStats() {
-                document.getElementById('stats-dashboard').classList.add('show');
-                this.updateStatsIfOpen();
-            }
-
-            closeStats() {
-                document.getElementById('stats-dashboard').classList.remove('show');
-            }
-
-            switchListMode(mode) {
-                this.currentListMode = mode;
-
-                // Update tab styling
-                const wishlistTab = document.getElementById('wishlist-tab');
-                const favoritesTab = document.getElementById('favorites-tab');
-                const listLabel = document.getElementById('list-mode-label');
-
-                if (mode === 'wishlist') {
-                    wishlistTab.style.opacity = '1';
-                    favoritesTab.style.opacity = '0.5';
-                    listLabel.textContent = 'Wishlist';
-                } else {
-                    wishlistTab.style.opacity = '0.5';
-                    favoritesTab.style.opacity = '1';
-                    listLabel.textContent = 'Favorites';
-                }
-
-                this.updateStatsIfOpen();
-            }
-
-            updateStatsIfOpen() {
-                if (!document.getElementById('stats-dashboard').classList.contains('show')) return;
-
-                // Update wishlist or favorites based on mode
-                const wishlistDiv = document.getElementById('wishlist-items');
-                wishlistDiv.innerHTML = '';
-                let totalValue = 0;
-
-                const itemsToShow = this.currentListMode === 'wishlist' ? this.wishlist : this.favorites;
-
-                itemsToShow.forEach(itemName => {
-                    const item = this.items.find(i => i.name === itemName);
-                    if (item) {
-                        const div = document.createElement('div');
-                        div.className = 'item';
-                        div.innerHTML = `
-                            ${item.img ? `<img src="${item.img}" alt="${item.name}">` : item.svg ? item.svg : '<div style="width:50px;height:50px;background:#666;border-radius:5px;"></div>'}
-                            <div class="item-name">${item.name}</div>
-                            ${item.price != 'N/A' && item.price != '' ? `<div class="item-price"><svg style="width: 13px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18"><path d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z" fill="#fff" fill-rule="evenodd"></path></svg>${this.formatPrice(item.price)}</div>` : ''}
-                            <div class="remove-wishlist">×</div>
-                        `;
-                        div.querySelector('.remove-wishlist').onclick = (e) => {
-                            e.stopPropagation();
-                            if (this.currentListMode === 'wishlist') {
-                                this.toggleWishlist(item.name);
-                            } else {
-                                this.toggleFavorite(item.name);
-                            }
-                        };
-                        div.onclick = () => {
-                            this.modal.open(item);
-                        };
-                        wishlistDiv.appendChild(div);
-
-                        if (item.price && item.price !== 'N/A') {
-                            totalValue += parseInt(item.price) || 0;
-                        }
-                    }
-                });
-
-                document.getElementById('wishlist-value').textContent = this.formatPrice(totalValue);
-
-                // Update recently viewed
-                const recentDiv = document.getElementById('recent-viewed-items');
-                recentDiv.innerHTML = '';
-
-                this.recentlyViewed.slice(0, 5).forEach(itemName => {
-                    const item = this.items.find(i => i.name === itemName);
-                    if (item) {
-                        const div = document.createElement('div');
-                        div.className = 'item';
-                        div.innerHTML = `<div class="item-name" style="z-index:2;font-size:10px;margin-top:5px;">${item.name}</div>
-                            ${item.img ? `<img src="${item.img}" alt="${item.name}">` : item.svg ? item.svg : '<div style="width:50px;height:50px;background:#666;border-radius:5px;"></div>'}
-                            ${item.price != 'N/A' && item.price != '' ? `<div class="item-price"><svg style="width: 13px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18"><path d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z" fill="#fff" fill-rule="evenodd"></path></svg>${this.formatPrice(item.price)}</div>` : ''}
-                        `;
-
-                        div.onclick = () => {
-                            this.modal.open(item);
-                        };
-                        recentDiv.appendChild(div);
-                    }
-                });
-            }
-        }
-
-        // Initialize
-        const catalog = new Catalog();
-    </script>
-    <script src="./js/auth.js"></script>
-
+    <script src="./js/script.js"></script>
+    <script src="./js/trading.js"></script>
 </body>
 
 </html>
