@@ -1373,6 +1373,12 @@ class ItemModal {
         // Flip button
         this.elements.flipBtn.addEventListener('click', () => {
             const isFlipped = this.elements.contentWrapper.classList.toggle('flipped');
+            if (!isFlipped) {
+                this.elements.contentWrapper.classList.add('unflipping');
+                setTimeout(() => {
+                    this.elements.contentWrapper.classList.remove('unflipping');
+                }, 400);
+            }
             this.updateFlipButton(isFlipped);
         });
 
