@@ -5,445 +5,604 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trading Hub - Epic Catalogue</title>
-    
+
     <meta name="description" content="Trade Epic Minigames items with other players safely and easily!">
     <meta property="og:title" content="Trading Hub - Epic Catalogue">
     <meta property="og:image" content="https://emwiki.site/imgs/QgWIUWf.png">
-    
+
     <link rel="stylesheet" href="./css/style.css">
     <link rel="icon" href="./imgs/favicon.png" type="image/png">
     <meta name="theme-color" content="#000000">
 </head>
 
 <style>
-
-
-.trading-stats {
-    display: flex;
-    gap: 30px;
-    justify-content: center;
-    margin-top: 20px;
-    flex-wrap: wrap;
-}
-
-.trading-stat {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    padding: 15px 25px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.trading-stat-value {
-    font-size: 2rem;
-    font-weight: 800;
-    color: white;
-    font-family: 'BuilderSans';
-}
-
-.trading-stat-label {
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.8);
-    margin-top: 5px;
-}
-
-/* Filters Section */
-.filters-section {
-    background: var(--bg-secondary);
-    padding: 20px;
-    border-bottom: 1px solid var(--border-color);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-
-.filters-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    display: flex;
-    gap: 15px;
-    align-items: center;
-    flex-wrap: wrap;
-    justify-content: space-between;
-}
-
-.filter-group {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.filter-select {
-    padding: 10px 15px;
-    background: var(--bg-item);
-    border: 2px solid var(--border-color);
-    border-radius: 10px;
-    color: var(--text-primary);
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.filter-select:hover {
-    background: var(--bg-item-hover);
-    transform: translateY(-1px);
-}
-
-.create-trade-btn {
-    padding: 12px 24px;
-    background: linear-gradient(135deg, #667eea, #4a9eff);
-    border: none;
-    border-radius: 10px;
-    color: white;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
-
-.create-trade-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-}
-
-/* Trades Grid */
-.trades-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 30px 20px;
-}
-
-.trades-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 25px;
-}
-
-/* Trade Card */
-.trade-card {
-    background: var(--bg-item);
-    border: 2px solid var(--border-color);
-    border-radius: 15px;
-    padding: 20px;
-    transition: all 0.3s;
-    box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.4);
-}
-
-.trade-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px var(--shadow-color), inset -2px -2px 4px rgba(0, 0, 0, 0.4);
-    background: var(--bg-item-hover);
-}
-
-.trade-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.trader-avatar {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    border: 2px solid var(--border-color);
-}
-
-.trader-info {
-    flex: 1;
-}
-
-.trader-name {
-    font-weight: 700;
-    color: var(--text-primary);
-    font-size: 15px;
-}
-
-.trade-time {
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-.trade-status {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.trade-status.open {
-    background: rgba(17, 245, 74, 0.2);
-    color: #11f54a;
-}
-
-.trade-status.pending {
-    background: rgba(255, 208, 0, 0.2);
-    color: #ffd700;
-}
-
-.trade-status.completed {
-    background: rgba(102, 126, 234, 0.2);
-    color: #667eea;
-}
-
-/* Trade Items */
-.trade-items {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: 15px;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.trade-side {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.trade-side-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.trade-item-mini {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px;
-    background: var(--bg-secondary);
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-}
-
-.trade-item-img {
-    width: 35px;
-    height: 35px;
-    object-fit: contain;
-    border-radius: 6px;
-}
-
-.trade-item-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-primary);
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.trade-arrow {
-    color: #4a9eff;
-    font-size: 24px;
-    font-weight: 700;
-}
-
-/* Trade Actions */
-.trade-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.trade-action-btn {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.trade-action-btn.primary {
-    background: linear-gradient(135deg, #667eea, #4a9eff);
-    color: white;
-}
-
-.trade-action-btn.primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
-
-.trade-action-btn.secondary {
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-}
-
-.trade-action-btn.secondary:hover {
-    background: var(--bg-item-hover);
-}
-
-/* Empty State */
-.empty-state {
-    text-align: center;
-    padding: 80px 20px;
-}
-
-.empty-state-icon {
-    font-size: 80px;
-    margin-bottom: 20px;
-    opacity: 0.5;
-}
-
-.empty-state-title {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 10px;
-}
-
-.empty-state-text {
-    color: var(--text-secondary);
-    margin-bottom: 25px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .hero-title {
-        font-size: 2.8rem;
+    /* Trading Stats */
+    .trading-stats {
+        display: flex;
+        gap: 30px;
+        justify-content: center;
+        margin-top: 20px;
+        flex-wrap: wrap;
     }
-    
-    .quick-stats {
-        grid-template-columns: 1fr;
-        max-width: 300px;
+
+    .trading-stat {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        padding: 15px 25px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
-    
-    .trades-grid {
-        grid-template-columns: 1fr;
+
+    .trading-stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: white;
+        font-family: 'BuilderSans';
     }
-    
+
+    .trading-stat-label {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.8);
+        margin-top: 5px;
+    }
+
+    /* Filters Section */
+    .filters-section {
+        background: var(--bg-secondary);
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--border-color);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
     .filters-container {
-        flex-direction: column;
-        align-items: stretch;
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: space-between;
     }
+
+    .filter-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .filter-select {
+        padding: 8px 12px;
+        background: var(--bg-item);
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .filter-select:hover {
+        background: var(--bg-item-hover);
+        border-color: #667eea;
+    }
+
+
+    ::picker(select) {
+        opacity: 0;
+        transition: all 0.4s allow-discrete;
+    }
+
+    ::picker(select):popover-open {
+        opacity: 1;
+
+
+    }
+
+    @starting-style {
+  ::picker(select):popover-open {
+    opacity: 0;
+  }
 }
+
+    .create-trade-btn {
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #667eea, #4a9eff);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .create-trade-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    /* View Toggle */
+    .view-toggle {
+        display: flex;
+        gap: 5px;
+        background: var(--bg-item);
+        padding: 4px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    .view-btn {
+        padding: 8px 12px;
+        background: transparent;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        color: var(--text-secondary);
+        transition: all 0.2s;
+    }
+
+    .view-btn:hover {
+        color: var(--text-primary);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .view-btn.active {
+        background: #667eea;
+        color: white;
+    }
+
+    /* Trades Grid */
+    .trades-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .trades-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 15px;
+    }
+
+    .trades-grid.list-view {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    /* Trade Card - Compact Grid View */
+    .trade-card {
+        background: var(--bg-item);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 12px;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    .trade-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px var(--shadow-color);
+        background: var(--bg-item-hover);
+        border-color: #667eea;
+    }
+
+    /* List View Style */
+    .trades-grid.list-view .trade-card {
+        display: grid;
+        grid-template-columns: auto 1fr auto auto auto;
+        gap: 15px;
+        align-items: center;
+        padding: 10px 15px;
+    }
+
+    .trades-grid.list-view .trade-header {
+        margin: 0;
+        padding: 0;
+        border: none;
+        min-width: 150px;
+    }
+
+    .trades-grid.list-view .trade-items {
+        margin: 0;
+        flex: 1;
+    }
+
+    .trades-grid.list-view .trade-value {
+        margin: 0;
+    }
+
+    .trades-grid.list-view .trade-actions {
+        margin: 0;
+    }
+
+    /* Trade Header */
+    .trade-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .trader-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 2px solid var(--border-color);
+    }
+
+    .trader-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .trader-name {
+        font-weight: 700;
+        color: var(--text-primary);
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .trust-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        font-size: 10px;
+    }
+
+    .trust-badge.verified {
+        background: #11f54a;
+        color: white;
+    }
+
+    .trust-badge.trusted {
+        background: #4a9eff;
+        color: white;
+    }
+
+    .trust-badge.caution {
+        background: #ffd700;
+        color: #000;
+    }
+
+    .trust-rating {
+        font-size: 11px;
+        color: var(--text-secondary);
+        font-weight: 600;
+    }
+
+    .trade-time {
+        font-size: 11px;
+        color: var(--text-secondary);
+    }
+
+    .trade-status {
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .trade-status.open {
+        background: rgba(17, 245, 74, 0.2);
+        color: #11f54a;
+    }
+
+    .trade-status.pending {
+        background: rgba(255, 208, 0, 0.2);
+        color: #ffd700;
+    }
+
+    .trade-status.completed {
+        background: rgba(102, 126, 234, 0.2);
+        color: #667eea;
+    }
+
+    /* Trade Items - Compact */
+    .trade-items {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .trade-side {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .trade-side-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .trade-item-mini {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 8px;
+        background: var(--bg-secondary);
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+    }
+
+    .trade-item-img {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+        border-radius: 4px;
+    }
+
+    .trade-item-name {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-primary);
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .trade-arrow {
+        color: #4a9eff;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    /* Trade Value Section */
+    .trade-value {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px;
+        background: var(--bg-secondary);
+        border-radius: 6px;
+        margin-bottom: 10px;
+        gap: 10px;
+    }
+
+    .value-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+    }
+
+    .value-label {
+        font-size: 9px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .value-amount {
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--text-primary);
+    }
+
+    .value-amount.positive {
+        color: #11f54a;
+    }
+
+    .value-amount.negative {
+        color: #ff4757;
+    }
+
+    .demand-indicator {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 8px;
+        background: rgba(17, 245, 74, 0.15);
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .demand-indicator.high {
+        background: rgba(17, 245, 74, 0.15);
+        color: #11f54a;
+    }
+
+    .demand-indicator.medium {
+        background: rgba(255, 208, 0, 0.15);
+        color: #ffd700;
+    }
+
+    .demand-indicator.low {
+        background: rgba(255, 71, 87, 0.15);
+        color: #ff4757;
+    }
+
+    /* Trade Actions */
+    .trade-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .trade-action-btn {
+        flex: 1;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .trade-action-btn.primary {
+        background: linear-gradient(135deg, #667eea, #4a9eff);
+        color: white;
+    }
+
+    .trade-action-btn.primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+    }
+
+    .trade-action-btn.secondary {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+
+    .trade-action-btn.secondary:hover {
+        background: var(--bg-item-hover);
+        border-color: #667eea;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+    }
+
+    .empty-state-icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .empty-state-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+    }
+
+    .empty-state-text {
+        color: var(--text-secondary);
+        margin-bottom: 25px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.8rem;
+        }
+
+        .quick-stats {
+            grid-template-columns: 1fr;
+            max-width: 300px;
+        }
+
+        .trades-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .filters-container {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .trades-grid.list-view .trade-card {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .view-toggle {
+            order: -1;
+        }
+    }
 </style>
 
 <body>
-	<header>
-		<a href="https://emwiki.site">
-			<svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
-				<style>
-					@keyframes floatAnim {
+    <header>
+        <a href="https://emwiki.site">
+            <svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="eppp1" y1="1" x2="0">
+                        <stop offset=".2" style="stop-color:#ff0" />
+                        <stop offset="1" style="stop-color:#24ff5a" />
+                    </linearGradient>
+                    <linearGradient id="eppp2" y1="1" x2="0">
+                        <stop offset="0" style="stop-color:#24ff5d" />
+                        <stop offset="1" style="stop-color:#ff0" />
+                    </linearGradient>
+                </defs>
+                <image id="cloud" x="461" y="459" href="https://emwiki.site/imgs/TWOKPhY.png" height="60" width="60"
+                    style="filter:opacity(.6)" />
+                <text x="489" y="503" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
+                    stroke-linejoin="round" fill="url(#eppp1)"
+                    style="animation:floatAnim 12s ease-in-out infinite;font:200 46px Slapstick">EM</text>
+                <image id="epic-image" x="464" y="463" href="https://emwiki.site/imgs/epicfaces/kitta.png" height="60"
+                    width="60"
+                    style="scale:.48;transform:translate(846px,103px);rotate:20deg;transform-origin:center;animation:floatAnim2 15s ease-in-out 1s infinite alternate" />
+                <image id="cloud" x="495" y="477" href="https://emwiki.site/imgs/8UUB0Gt.png" height="60" width="60"
+                    style="filter:opacity(.86)" />
+                <text x="516" y="514" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
+                    stroke-linejoin="round" fill="url(#eppp2)"
+                    style="animation:floatAnim 12s ease-in-out infinite;animation-delay:5.5s;font:200 16px Slapstick">wiki</text>
+                <image id="cloud" x="445" y="487" href="https://emwiki.site/imgs/oYKd3nJ.png" height="28" width="42"
+                    style="filter:opacity(.8)" />
+            </svg>
 
-						0%,
-						to {
-							transform: translateY(0)
-						}
+        </a>
 
-						50% {
-							transform: translateY(-4px)
-						}
-					}
-
-					@keyframes glowPulse {
-
-						0%,
-						to {
-							filter: drop-shadow(0 0 0#fff)
-						}
-
-						50% {
-							filter: drop-shadow(0 0 8px #ff0) drop-shadow(0 0 15px #24ff5a)
-						}
-					}
-
-					@keyframes gradientShift {
-
-						0%,
-						to {
-							stop-color: #ff0
-						}
-
-						50% {
-							stop-color: #24ff5a
-						}
-					}
-				</style>
-				<defs>
-					<linearGradient id="eppp1" y1="1" x2="0">
-						<stop offset=".2" style="stop-color:#ff0" />
-						<stop offset="1" style="stop-color:#24ff5a" />
-					</linearGradient>
-					<linearGradient id="eppp2" y1="1" x2="0">
-						<stop offset="0" style="stop-color:#24ff5d" />
-						<stop offset="1" style="stop-color:#ff0" />
-					</linearGradient>
-				</defs>
-				<image id="cloud" x="461" y="459" href="https://emwiki.site/imgs/TWOKPhY.png" height="60" width="60"
-					style="filter:opacity(.6)" />
-				<text x="489" y="503" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
-					stroke-linejoin="round" fill="url(#eppp1)"
-					style="animation:floatAnim 12s ease-in-out infinite;font:200 46px Slapstick">EM</text>
-				<image id="epic-image" x="464" y="463" href="https://emwiki.site/imgs/epicfaces/kitta.png" height="60"
-					width="60"
-					style="scale:.48;transform:translate(846px,103px);rotate:20deg;transform-origin:center;animation:floatAnim2 15s ease-in-out 1s infinite alternate" />
-				<image id="cloud" x="495" y="477" href="https://emwiki.site/imgs/8UUB0Gt.png" height="60" width="60"
-					style="filter:opacity(.86)" />
-				<text x="516" y="514" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
-					stroke-linejoin="round" fill="url(#eppp2)"
-					style="animation:floatAnim 12s ease-in-out infinite;animation-delay:5.5s;font:200 16px Slapstick">wiki</text>
-				<image id="cloud" x="445" y="487" href="https://emwiki.site/imgs/oYKd3nJ.png" height="28" width="42"
-					style="filter:opacity(.8)" />
-			</svg>
-
-		</a>
-
-		<div class="nav-links">
-			<a href="/catalog" class="nav-link">Catalog</a>
-			<a href="/trading" class="nav-link active">Trading Hub</a>
-			<a href="/forum" class="nav-link">Forum</a>
-			<a href="/gallery" class="nav-link">Gallery</a>
-			<a href="/scammers" class="nav-link">Scammers</a>
-		</div>
+        <div class="nav-links">
+            <a href="/catalog" class="nav-link">Catalog</a>
+            <a href="/trading" class="nav-link active">Trading Hub</a>
+            <a href="/forum" class="nav-link">Forum</a>
+            <a href="/gallery" class="nav-link">Gallery</a>
+            <a href="/scammers" class="nav-link">Scammers</a>
+        </div>
 
 
-	</header>
+    </header>
 
     <!-- Trading Hero -->
-<!-- Trading Hero - UPDATED -->
-<section class="hero-section">
-    <div class="hero-content">
-        <h1 class="hero-title">
-            <span class="hero-epic">Trading</span>
-            <span class="hero-catalogue">Hub</span>
-        </h1>
-        <p class="hero-subtitle">Trade Epic Minigames items safely with other players</p>
-        
-        <!-- Quick Stats -->
-        <div class="quick-stats">
-            <div class="stat-card">
-                <div class="stat-value" id="total-trades">0</div>
-                <div class="stat-label">Active Trades</div>
-            </div>
+    <!-- Trading Hero - UPDATED -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="hero-epic">Trading</span>
+                <span class="hero-catalogue">Hub</span>
+            </h1>
+            <p class="hero-subtitle">Trade Epic Minigames items safely with other players</p>
 
-            <div class="stat-card">
-                <div class="stat-value" id="total-traders">0</div>
-                <div class="stat-label">Traders</div>
-            </div>
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-trades">0</div>
+                    <div class="stat-label">Active Trades</div>
+                </div>
 
-            <div class="stat-card">
-                <div class="stat-value" id="trades-today">0</div>
-                <div class="stat-label">Today</div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-traders">0</div>
+                    <div class="stat-label">Traders</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-value" id="trades-today">0</div>
+                    <div class="stat-label">Today</div>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
     <!-- Filters -->
     <section class="filters-section">
@@ -474,10 +633,22 @@
 
             <button class="create-trade-btn" onclick="tradingHub.openCreateTrade()">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                 </svg>
                 Create Trade
             </button>
+            <div class="view-toggle">
+                <button class="view-btn active" data-view="grid" onclick="tradingHub.setView('grid')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z" />
+                    </svg>
+                </button>
+                <button class="view-btn" data-view="list" onclick="tradingHub.setView('list')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 4h18v2H3zm0 7h18v2H3zm0 7h18v2H3z" />
+                    </svg>
+                </button>
+            </div>
         </div>
     </section>
 

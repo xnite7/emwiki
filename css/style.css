@@ -140,15 +140,6 @@ svg:hover #cloud {
     color: #4a9eff;
 }
 
-.header-actions {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-    position: absolute;
-    top: 20px;
-    right: 20px;
-}
-
 .btn {
     display: flex;
     align-items: center;
@@ -2468,6 +2459,21 @@ header svg * {
     }
 }
 
+@keyframes floatAnim {
+
+    0%,
+    to {
+        transform: translateY(0)
+    }
+
+    50% {
+        transform: translateY(-4px)
+    }
+}
+
+
+
+
 .profile-dropdown-role.scammer {
     background: linear-gradient(135deg, #ff0000, #8b0000);
     color: white;
@@ -2584,9 +2590,7 @@ header svg * {
         left: -100px;
     }
 
-    .header-actions {
-        flex-direction: column;
-    }
+
 
     .btn {
         font-size: 12px;

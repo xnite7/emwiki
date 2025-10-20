@@ -222,57 +222,56 @@ class BaseApp {
 
 
         document.body.insertAdjacentHTML('beforeend', `
-                <div id="donation-progress-container" class="donation-progress-container">
-                <div class="donation-progress-card">
-                    <button class="close-donation-progress" onclick="auth.closeDonationProgress()">×</button>
+                    <dialog class="donation-progress-card" id="donation-progress-card">
+                        <button class="close-donation-progress" onclick="auth.closeDonationProgress()">×</button>
 
-                    <div class="donation-progress-header">
-                        <h3>Support Epic Catalogue</h3>
-                        <p class="donation-progress-subtitle">Become a Donator and unlock exclusive perks!</p>
-                        <img style="width: 60px;" src="./imgs/Epic.png" alt="Donation Icon" />
+                        <div class="donation-progress-header">
+                            <h3>Support Epic Catalogue</h3>
+                            <p class="donation-progress-subtitle">Become a Donator and unlock exclusive perks!</p>
+                            <img style="width: 60px;" src="./imgs/Epic.png" alt="Donation Icon" />
+                            </div>
+                        <div class="donation-stat">
+                            <div class="donation-stat-value" id="total-donated">0</div>
+                            <div class="strike"></div>
+                            <div class="donation-stat-value">500</div>
+                            <div class="donation-stat-label">Until Donator</div>
                         </div>
-                    <div class="donation-stat">
-                        <div class="donation-stat-value" id="total-donated">0</div>
-                        <div class="strike"></div>
-                        <div class="donation-stat-value">500</div>
-                        <div class="donation-stat-label">Until Donator</div>
-                    </div>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" id="donation-progress-bar">
-                            <div class="progress-bar-fill"></div>
-                            <div class="progress-bar-shine"></div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="donation-progress-bar">
+                                <div class="progress-bar-fill"></div>
+                                <div class="progress-bar-shine"></div>
+                            </div>
+                            <div class="progress-percentage" id="progress-percentage">0%</div>
                         </div>
-                        <div class="progress-percentage" id="progress-percentage">0%</div>
-                    </div>
 
-                    <div class="donation-perks">
-                        <h4><svg viewBox="19 18 38 40" stroke="#000" fill="#fff" style="width:19px;translate:-2px 1px;fill:gold"><path d="M34 28h8v29h-8zm-15 0h14v9H19zm24 0h14v9H43zM21 38h12v19H21zm22 0h12v19H43zm-5.25-11.006C35.336 26.945 25 25.533 25 22c0-4 3-4 4-4 .973 0 5.967 4.535 9 4.741C41.033 22.535 46.027 18 47 18c1 0 4 0 4 4 0 3.533-10.336 4.945-12.75 4.994zM40.5 24.5s8-1.25 8-3.25-8 3.25-8 3.25m-5 0s-8-5.25-8-3.25 8 3.25 8 3.25"/></svg> Unlock at <svg style="width: 15px;transform: translateY(2px);margin-left: 4px;"
-                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
-                                <path
-                                    d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
-                                    fill="#ffd700" fill-rule="evenodd"></path>
-                            </svg> 500:</h4>
-                        <div class="perk-list">
-                            <div class="perk-item">
-                                <span class="perk-icon">✨</span>
-                                <span>Donator Role Badge</span>
-                            </div>
-                            <div class="perk-item">
-                                <span class="perk-icon">🎨</span>
-                                <span>Custom Profile Colors</span>
-                            </div>
-                            <div class="perk-item">
-                                <span class="perk-icon">🏆</span>
-                                <span>Public Donators List</span>
+                        <div class="donation-perks">
+                            <h4><svg viewBox="19 18 38 40" stroke="#000" fill="#fff" style="width:19px;translate:-2px 1px;fill:gold"><path d="M34 28h8v29h-8zm-15 0h14v9H19zm24 0h14v9H43zM21 38h12v19H21zm22 0h12v19H43zm-5.25-11.006C35.336 26.945 25 25.533 25 22c0-4 3-4 4-4 .973 0 5.967 4.535 9 4.741C41.033 22.535 46.027 18 47 18c1 0 4 0 4 4 0 3.533-10.336 4.945-12.75 4.994zM40.5 24.5s8-1.25 8-3.25-8 3.25-8 3.25m-5 0s-8-5.25-8-3.25 8 3.25 8 3.25"/></svg> Unlock at <svg style="width: 15px;transform: translateY(2px);margin-left: 4px;"
+                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
+                                    <path
+                                        d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
+                                        fill="#ffd700" fill-rule="evenodd"></path>
+                                </svg> 500:</h4>
+                            <div class="perk-list">
+                                <div class="perk-item">
+                                    <span class="perk-icon">✨</span>
+                                    <span>Donator Role Badge</span>
+                                </div>
+                                <div class="perk-item">
+                                    <span class="perk-icon">🎨</span>
+                                    <span>Custom Profile Colors</span>
+                                </div>
+                                <div class="perk-item">
+                                    <span class="perk-icon">🏆</span>
+                                    <span>Public Donators List</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <button class="donate-now-btn" onclick="auth.joinGame()">
-                        Donate!
-                    </button>
-                </div>
-            </div>
+                        <button class="donate-now-btn" onclick="auth.joinGame()">
+                            Donate!
+                        </button>
+                    </dialog>
+            
 
             <!-- Donator Achievement Celebration -->
             <div id="donator-celebration" class="donator-celebration">
@@ -1798,19 +1797,20 @@ class Auth {
 					<path fill="none" stroke="currentColor" stroke-width="2"
 						d="M12 6v10zm0-5c6.075 0 11 4.925 11 11s-4.925 11-11 11S1 18.075 1 12 5.925 1 12 1Zm5 11-5 5-5-5" />
 				</svg>
-				Install App
-			</button>
-            <div id="profile-dropdown" class="profile-dropdown"></div>
-            <div class="header-actions">
-                <button	style="display: none;" class="btn" onclick="auth.openModal()" id="auth-button">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                        <path
-                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
-                    </svg>
-                    <span>Link Account</span>
-                </button>
-                <div id="user-profile-btn" style="display: none;"></div>
-		</div>
+				Install App</button>
+
+            <div popover id="profile-dropdown" class="profile-dropdown"></div>
+            
+            <button	style="display: none;" class="btn" onclick="auth.openModal()" id="auth-button">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                </svg>
+                <span>Link Account</span>
+            </button>
+
+            <button id="user-profile-btn" style="display: none;" popovertarget="profile-dropdown" popovertargetaction="toggle"></button>
+		    
         `);
 
         await this.loadScammersList();
@@ -1825,14 +1825,7 @@ class Auth {
             }
         }
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            const dropdown = document.getElementById('profile-dropdown');
-            const profileBtn = document.getElementById('user-profile-btn');
-            if (dropdown && profileBtn && !dropdown.contains(e.target) && !profileBtn.contains(e.target)) {
-                dropdown.classList.remove('show');
-            }
-        });
+
     }
 
 
@@ -2070,17 +2063,7 @@ class Auth {
         confetti.stop();
     }
 
-    // Profile dropdown
-    showProfileMenu() {
-        const dropdown = document.getElementById('profile-dropdown');
 
-        if (dropdown.classList.contains('show')) {
-            dropdown.classList.remove('show');
-            return;
-        }
-
-        dropdown.classList.add('show');
-    }
     async checkSession() {
         try {
             const response = await fetch('https://emwiki.site/api/auth/session', {
@@ -2358,7 +2341,6 @@ class Auth {
             </div>
         `;
 
-        profileBtn.onclick = () => this.showProfileMenu();
     }
 
 
@@ -2395,7 +2377,7 @@ class Auth {
     }
 
     showDonationProgress(data) {
-        const container = document.getElementById('donation-progress-container');
+        const card = document.getElementById('donation-progress-card');
         const progressBar = document.getElementById('donation-progress-bar');
         const progressFill = progressBar.querySelector('.progress-bar-fill');
         const progressPercentage = document.getElementById('progress-percentage');
@@ -2406,8 +2388,8 @@ class Auth {
         totalDonated.textContent = data.totalSpent;
         progressPercentage.textContent = `${Math.round(data.progress)}%`;
 
-        // Show container
-        container.classList.add('show');
+        // Show card
+        card.showModal();
 
         // Animate progress bar
         setTimeout(() => {
@@ -2421,7 +2403,7 @@ class Auth {
     }
 
     closeDonationProgress() {
-        document.getElementById('donation-progress-container').classList.remove('show');
+        document.getElementById('donation-progress-card').close();
     }
 
     showDonatorCelebration(totalSpent) {
