@@ -1809,7 +1809,7 @@ class Auth {
                 <span>Link Account</span>
             </button>
 
-            <button id="user-profile-btn" style="display: none;" popovertarget="profile-dropdown" popovertargetaction="toggle"></button>
+            <button class="btn" id="user-profile-btn" style="display: none;" popovertarget="profile-dropdown" popovertargetaction="toggle"></button>
 		    
         `);
 
