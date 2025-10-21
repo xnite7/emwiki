@@ -2818,12 +2818,12 @@
                 // Create SVG editor
                 const svgEditor = document.createElement('div');
                 svgEditor.id = 'svg-editor';
-                svgEditor.style.cssText = `width: 35%;`;
+                svgEditor.style.cssText = `width: -webkit-fill-available;`;
 
                 svgEditor.innerHTML = `
         
         <textarea id="svg-input" placeholder="Paste SVG code here..." 
-            style="width: 100%; min-height: 120px; padding: 8px; background: #1f2937; 
+            style="width: -webkit-fill-available; min-height: 120px; padding: 8px; background: #1f2937; 
             border: 1px solid #374151; border-radius: 4px; color: white; font-size: 12px;
             font-family: monospace; resize: vertical;">${item.svg || ''}</textarea>
         
@@ -2853,6 +2853,7 @@
                     } else {
                         svgPreview.innerHTML = '<span style="color: #666;">Preview will appear here</span>';
                     }
+                    svgPreview.querySelector('svg').style.width = '-webkit-fill-available';
                 });
 
                 // Apply button

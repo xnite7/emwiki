@@ -547,6 +547,11 @@
     }
 }
 
+[popover]:popover-open::backdrop {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+}
+
 .profile-dropdown-header {
     display: flex;
     align-items: center;
