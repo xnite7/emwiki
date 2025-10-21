@@ -21,7 +21,13 @@
     --border-color: light-dark(rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0.1));
     --shadow-color: light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.5));
     --edges-color: light-dark(rgba(255, 255, 255, 0.4), rgba(0, 0, 0, 0.3));
+
+    &:has(.light-theme) {
+        color-scheme: light;
+    }
 }
+
+
 
 body {
     background: #eaf0f3;
@@ -107,7 +113,6 @@ svg:hover #cloud {
 .nav-link {
     font-weight: 600;
     font-size: 15px;
-    color: CanvasText;
     padding: 8px 16px;
     border-radius: 10px;
     transition: all 0.2s;
@@ -129,6 +134,9 @@ svg:hover #cloud {
 }
 
 .btn {
+    top: 20px;
+    right: 20px;
+    position: absolute;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -179,11 +187,6 @@ svg:hover #cloud {
 .theme-toggle:hover::before {
     left: 34px
 }
-
-
-
-
-
 
 .toggles {
     display: flex;
@@ -276,7 +279,7 @@ svg:hover #cloud {
     border-radius: 50px;
     font-size: 16px;
     background: var(--bg-item);
-    box-shadow: 0 20px 40px var(--shadow-color), inset 0px 3px 18px #00000033;
+    box-shadow: 0 0 20px var(--shadow-color), inset 0px 3px 18px #00000033;
     transition: all 0.3s ease;
 }
 
@@ -284,11 +287,11 @@ svg:hover #cloud {
     outline: none;
     transform: translateY(-2px);
     background: var(--border-color);
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 25px 50px var(--shadow-color), inset 0px 3px 18px #85858536;
 }
 
 #search-bar::placeholder {
-    color: #ffffffa8;
+    color: #868686a8;
 }
 
 .search-btn {
@@ -921,7 +924,7 @@ div#random-items-grid {
     font-size: 0.8rem;
     color: #ffd700;
     font-weight: bold;
-    background: linear-gradient(#00000059, #000000);
+    background: #00000096;
     padding: 2px 5px 3px;
     border-radius: 7px;
 }
@@ -1042,7 +1045,7 @@ div#random-items-grid {
 }
 
 .patch-link:hover {
-    background: var(--border-color);
+    background: var(--shadow-color);
     transform: translateX(3px);
     pointer-events: all;
     cursor: pointer;
@@ -1586,6 +1589,7 @@ input,
 select,
 textarea {
     -webkit-tap-highlight-color: transparent;
+    color: CanvasText;
 }
 
 .carousel-nav {
@@ -2219,34 +2223,34 @@ textarea {
 }
 
 
- .wishlist-section::-webkit-scrollbar-thumb {
+.wishlist-section::-webkit-scrollbar-thumb {
     background: #00000033;
     border: 3px solid #ffffff;
     border-radius: 100px;
 }
 
-@media (prefers-color-scheme: dark) {
-    .theme-toggle::before {
+    .light-theme .theme-toggle::before {
         content: '🌙';
     }
 
-    .theme-toggle:hover::before {
-        left: 5px
+    .light-theme .theme-toggle:hover::before {
+        left: 5px;
     }
 
-    .discord img {
-    filter: invert(1);
-}
-body {
-    background: Canvas;
-}
+    .light-theme .discord img {
+        filter: invert(1);
+    }
 
- .wishlist-section::-webkit-scrollbar-thumb {
-    background: #ffffff33;
-    border: 3px solid var(--bg-secondary);
-    border-radius: 100px;
-}
-}
+    .light-theme body {
+        background: Canvas;
+    }
+
+    .light-theme .wishlist-section::-webkit-scrollbar-thumb {
+        background: #ffffff33;
+        border: 3px solid var(--bg-secondary);
+        border-radius: 100px;
+    }
+
 .wishlist-total {
     font-variant: all-petite-caps;
     color: var(--text-secondary);
@@ -2521,6 +2525,9 @@ header svg * {
 
     .btn {
         font-size: 12px;
+        top: unset;
+        right: unset;
+        position: unset;
     }
 
     .hero-title {

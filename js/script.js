@@ -150,14 +150,10 @@ const Utils = {
     },
 
     showToast(title, message, type = 'info') {
-        if (!document.getElementById('toast-container')) {
-            const container = document.createElement('div');
-            container.classList.add('toast-container');
-            container.id = 'toast-container';
-            document.body.appendChild(container);
-        }
         const container = document.getElementById('toast-container');
         if (!container) return;
+        container.hidePopover();
+        container.showPopover();
 
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
@@ -222,8 +218,9 @@ class BaseApp {
 
 
         document.body.insertAdjacentHTML('beforeend', `
-                    <dialog class="donation-progress-card" id="donation-progress-card">
-                        <button class="close-donation-progress" onclick="auth.closeDonationProgress()">×</button>
+                    <div class="toast-container" id="toast-container" popover="manual"></div>
+                    <div popover id="donation-progress-card">
+                        <button class="close-modal" popovertargetaction="hide" popovertarget="donation-progress-card">×</button>
 
                         <div class="donation-progress-header">
                             <h3>Support Epic Catalogue</h3>
@@ -270,7 +267,7 @@ class BaseApp {
                         <button class="donate-now-btn" onclick="auth.joinGame()">
                             Donate!
                         </button>
-                    </dialog>
+                    </div>
             
 
             <!-- Donator Achievement Celebration -->
@@ -314,9 +311,7 @@ class BaseApp {
                     Epic!</button>
                 </div>
             </div>
-            <div id="auth-container" style="display: none;">
-                <div class="auth-modal">
-                    <button class="close-auth" onclick="auth.closeModal()">×</button>
+                <div id="auth-modal" popover>
                     <h2>Link Your <strong>Roblox Account</strong></h2>
                     <div id="auth-step-1">
                         <p>Click below to generate your unique code</p>
@@ -354,7 +349,6 @@ class BaseApp {
                         </p>
                     </div>
                 </div>
-            </div>
             
             
             <div id="stats-dashboard" class="stats-dashboard">
@@ -1792,7 +1786,7 @@ class Auth {
 
 
         document.querySelector('header').insertAdjacentHTML('beforeend', `
-            <button style="top: 20px;left: 12px;position: absolute;" class="btn" id="installBtn">
+            <button style="right:unset;top: 20px;left: 12px;position: absolute;" class="btn" id="installBtn">
 				<svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
 					<path fill="none" stroke="currentColor" stroke-width="2"
 						d="M12 6v10zm0-5c6.075 0 11 4.925 11 11s-4.925 11-11 11S1 18.075 1 12 5.925 1 12 1Zm5 11-5 5-5-5" />
@@ -1801,7 +1795,7 @@ class Auth {
 
             <div popover id="profile-dropdown" class="profile-dropdown"></div>
             
-            <button	style="display: none;" class="btn" onclick="auth.openModal()" id="auth-button">
+            <button	style="display: none;" class="btn" popovertarget="auth-modal" popovertargetaction="show" id="auth-button">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
                     <path
                         d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
@@ -2034,7 +2028,7 @@ class Auth {
 
     // Celebration card
     showCelebration(username) {
-        document.querySelector('.auth-modal').style.display = 'none';
+        document.getElementById('#auth-modal').hidePopover();
 
         document.body.insertAdjacentHTML('beforeend', `
             <div id="celebration-card" class="celebration-card">
@@ -2055,11 +2049,8 @@ class Auth {
     }
 
     closeCelebration() {
-        this.closeModal();
+        document.getElementById('#auth-modal').hidePopover();
         document.getElementById('celebration-card').classList.remove('show');
-        setTimeout(() => {
-            document.querySelector('.auth-modal').style.display = 'block';
-        }, 300);
         confetti.stop();
     }
 
@@ -2101,20 +2092,6 @@ class Auth {
         }
     }
 
-    openModal() {
-        document.getElementById('auth-container').style.display = 'flex';
-        // Add show class for animation
-        setTimeout(() => {
-            document.getElementById('auth-container').classList.add('show');
-        }, 10);
-    }
-
-    closeModal() {
-        document.getElementById('auth-container').classList.remove('show');
-        setTimeout(() => {
-            document.getElementById('auth-container').style.display = 'none';
-        }, 300);
-    }
 
     async generateCode() {
         try {
@@ -2234,7 +2211,6 @@ class Auth {
 
                     // Update UI
                     this.updateUI();
-                    this.closeModal();
                     this.showCelebration(this.user.username);
 
                     setTimeout(() => {
@@ -2388,8 +2364,8 @@ class Auth {
         totalDonated.textContent = data.totalSpent;
         progressPercentage.textContent = `${Math.round(data.progress)}%`;
 
-        // Show card
-        card.showModal();
+        card.showPopover();
+
 
         // Animate progress bar
         setTimeout(() => {
@@ -2400,10 +2376,6 @@ class Auth {
         if (data.progress >= 100) {
             progressBar.classList.add('gold');
         }
-    }
-
-    closeDonationProgress() {
-        document.getElementById('donation-progress-card').close();
     }
 
     showDonatorCelebration(totalSpent) {

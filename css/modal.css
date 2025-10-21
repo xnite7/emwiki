@@ -27,7 +27,7 @@
 }
 
 .modal-content {
-    background: linear-gradient(0deg, #000000e6, transparent);
+    background: linear-gradient(0deg, light-dark(transparent, #000000e6), transparent);
     padding: 30px;
     min-height: 500px;
     border-radius: 20px;
@@ -45,9 +45,6 @@
     filter: drop-shadow(0px 4px 11px #00000040);
 }
 
-.light-theme .modal-content {
-    background: linear-gradient(0deg, #0000000f, transparent);
-}
 
 body:has(.item-modal.active) {
     overflow: hidden;
@@ -241,22 +238,13 @@ body:has(.item-modal.active) {
     text-align: center;
     margin: 12px 0;
     white-space: pre-wrap;
-    background: -webkit-linear-gradient(#fff, #999999);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    background: -webkit-linear-gradient(#00000042, #0000005e);
     height: fit-content;
-}
-
-.light-theme .modal-description {
-    background: linear-gradient(#00000042, #0000005e);
     color: #fff;
     padding: 4px 8px;
-    -webkit-text-fill-color: unset;
-    background-clip: unset;
-    -webkit-background-clip: unset;
     border-radius: 5px;
 }
+
 
 .modal-details {
     margin: 12px 0;
@@ -330,28 +318,11 @@ body:has(.item-modal.active) {
     transform: translateX(2px) translateY(-2px);
 }
 
-/* Light theme */
-.light-theme .detail-link-btn {
-    background: linear-gradient(180deg, #2a7ecf 0%, #4866ca 100%);
-    border-color: #2a7ecf;
-    box-shadow:
-        0 4px 15px rgba(42, 126, 207, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
-}
-
-.light-theme .detail-link-btn:hover {
-    background: linear-gradient(180deg, #3b8edf 0%, #5876db 100%);
-    box-shadow:
-        0 8px 25px rgba(42, 126, 207, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
 .modal-content svg {
     display: unset;
     filter: drop-shadow(0px 4px 11px #00000040);
     width: 85%;
     height: auto;
-    margin: 45px 0px;
     overflow: visible;
 }
 
@@ -466,6 +437,7 @@ body:has(.item-modal.active) {
     transition: all 0.3s;
     z-index: 10;
     opacity: 1;
+
     @starting-style {
         opacity: 0;
     }
@@ -502,9 +474,12 @@ body:has(.item-modal.active) {
 
 
 @keyframes fadeout-in {
-    0%,100% {
+
+    0%,
+    100% {
         opacity: 1;
     }
+
     20% {
         opacity: 0;
     }
@@ -519,7 +494,7 @@ body:has(.item-modal.active) {
 
 .modal-graph-section {
     margin-bottom: 30px;
-        padding: 20px;
+    padding: 20px;
     width: -webkit-fill-available;
 }
 
