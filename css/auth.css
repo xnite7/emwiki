@@ -517,7 +517,7 @@
     top: calc(anchor(bottom) + 10px);
     justify-self: anchor-center;
     background: linear-gradient(90deg, var(--bg-secondary) 0%, Canvas 100%);
-    border: 2px solid var(--border-color);
+    border: 2px solid light-dark(rgb(240, 240, 240),rgb(71, 71, 71));
     border-radius: 16px;
     padding: 20px;
     margin: 0;
