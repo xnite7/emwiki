@@ -1926,6 +1926,7 @@
             },
 
             // Add this new method to API object:
+            // Add this new method to API object:
             updatePriceHistory() {
                 const now = Date.now();
 
@@ -1958,6 +1959,11 @@
                                 // If it's a range like "50-100", take the first number
                                 const match = String(currentPrice).match(/^\d+/);
                                 priceValue = match ? parseInt(match[0]) : 0;
+                            }
+
+                            // ✅ NEW: Skip if price is 0
+                            if (priceValue === 0) {
+                                return; // Don't add to history
                             }
 
                             const shouldAdd = !lastEntry || lastEntry.price !== priceValue;

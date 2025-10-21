@@ -251,6 +251,27 @@ svg:hover #cloud {
     }
 }
 
+/* Add to your CSS file */
+[popover] {
+    touch-action: manipulation;
+}
+
+[popover]:popover-open {
+    pointer-events: auto;
+}
+
+.popover-backdrop {
+    pointer-events: auto !important;
+    cursor: pointer;
+}
+
+/* Ensure content is clickable */
+[popover] > *:not(.popover-backdrop) {
+    pointer-events: auto;
+    position: relative;
+    z-index: 1;
+}
+
 .hero-catalogue {
     font-family: 'Merriweather';
     font-size: 43px;
