@@ -266,7 +266,7 @@ svg:hover #cloud {
 }
 
 /* Ensure content is clickable */
-[popover] > *:not(.popover-backdrop) {
+[popover]>*:not(.popover-backdrop) {
     pointer-events: auto;
     position: relative;
     z-index: 1;
@@ -2250,27 +2250,27 @@ textarea {
     border-radius: 100px;
 }
 
-    .light-theme .theme-toggle::before {
-        content: '🌙';
-    }
+.light-theme .theme-toggle::before {
+    content: '🌙';
+}
 
-    .light-theme .theme-toggle:hover::before {
-        left: 5px;
-    }
+.light-theme .theme-toggle:hover::before {
+    left: 5px;
+}
 
-    .light-theme .discord img {
-        filter: invert(1);
-    }
+.light-theme .discord img {
+    filter: invert(1);
+}
 
-    .light-theme body {
-        background: Canvas;
-    }
+.light-theme body {
+    background: Canvas;
+}
 
-    .light-theme .wishlist-section::-webkit-scrollbar-thumb {
-        background: #ffffff33;
-        border: 3px solid var(--bg-secondary);
-        border-radius: 100px;
-    }
+.light-theme .wishlist-section::-webkit-scrollbar-thumb {
+    background: #ffffff33;
+    border: 3px solid var(--bg-secondary);
+    border-radius: 100px;
+}
 
 .wishlist-total {
     font-variant: all-petite-caps;
@@ -2469,6 +2469,20 @@ header svg * {
     }
 }
 
+@media (hover: none) {
+    *:hover {
+        all: unset !important;
+    }
+
+    button,
+    .btn,
+    a,
+    [onclick] {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        cursor: pointer;
+    }
+}
 
 @media screen and (max-width: 1000px) {
 

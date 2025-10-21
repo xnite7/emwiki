@@ -1418,6 +1418,13 @@ class ItemModal {
             }
         });
 
+        // This is the recommended pattern by framework authors
+        document.addEventListener('touchend', (e) => {
+            if (!popover.contains(e.target)) {
+                popover.hidePopover();
+            }
+        });
+
         // Touch gestures
         let touchStartX = 0;
 
