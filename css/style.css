@@ -2538,7 +2538,9 @@ header svg * {
         z-index: 3;
         font-weight: 600;
     }
-
+    div#random-items-grid {
+        zoom: 1.2;
+    }
 
     .chest-expand-toggle {
         display: inline-flex;
