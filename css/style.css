@@ -1387,6 +1387,7 @@ footer {
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    width: 24px;
     text-shadow: none;
     filter: drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black);
 }
@@ -2519,9 +2520,6 @@ header svg * {
         margin: 0;
     }
 
-    .heart-button.red {
-        filter: none;
-    }
 
     .wishlist-total {
         font-variant: all-petite-caps;
