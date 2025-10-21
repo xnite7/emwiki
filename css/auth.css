@@ -547,7 +547,7 @@
     }
 }
 
-[popover]:popover-open::backdrop {
+.profile-dropdown:popover-open::backdrop {
     opacity: 0;
     backdrop-filter: blur(0px);
 }
