@@ -2470,9 +2470,17 @@ header svg * {
 }
 
 @media (hover: none) {
-    *:hover {
-        all: unset !important;
+    button:hover,
+    .btn:hover,
+    [onclick]:hover,
+    a:hover {
+        /* Reset hover styles to match default state */
+        background: inherit;
+        transform: none;
+        filter: none;
+        opacity: 1;
     }
+
 
     button,
     .btn,
