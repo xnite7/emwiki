@@ -1028,11 +1028,7 @@
         top: 70px;
     }
 
-    #user-profile-btn,
-    .btn {
-        flex-direction: column;
-        padding: 8px 7px 12px 7px;
-    }
+
 
     .toast {
         min-width: auto;

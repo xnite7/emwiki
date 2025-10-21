@@ -30,11 +30,15 @@
 
 
 body {
-    background: #eaf0f3;
+    background: Canvas;
     color: CanvasText;
     font-family: 'Source Sans Pro', sans-serif, Twemoji;
     overflow-x: hidden;
     transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.light-theme body {
+    background: #eaf0f3;
 }
 
 .bn {
@@ -175,8 +179,8 @@ svg:hover #cloud {
     opacity: 1;
 }
 
-.theme-toggle::before {
-    content: '☀️';
+ .theme-toggle::before {
+    content: '🌙';
     position: absolute;
     left: 5px;
     top: 50%;
@@ -184,8 +188,18 @@ svg:hover #cloud {
     transition: all 0.3s ease;
 }
 
-.theme-toggle:hover::before {
+.light-theme .theme-toggle::before {
+    content: '☀️';
+}
+
+.light-theme .theme-toggle:hover::before {
     left: 34px
+}
+
+
+
+.theme-toggle:hover::before {
+    left: 5px;
 }
 
 .toggles {
@@ -2242,35 +2256,21 @@ textarea {
 .wishlist-section::-webkit-scrollbar {
     width: 12px;
 }
-
-
 .wishlist-section::-webkit-scrollbar-thumb {
-    background: #00000033;
-    border: 3px solid #ffffff;
+    background: #8a8a8a65;
+    border: 3px solid var(--bg-secondary);
     border-radius: 100px;
 }
 
-.light-theme .theme-toggle::before {
-    content: '🌙';
-}
 
-.light-theme .theme-toggle:hover::before {
-    left: 5px;
-}
 
 .light-theme .discord img {
     filter: invert(1);
 }
 
-.light-theme body {
-    background: Canvas;
-}
 
-.light-theme .wishlist-section::-webkit-scrollbar-thumb {
-    background: #ffffff33;
-    border: 3px solid var(--bg-secondary);
-    border-radius: 100px;
-}
+
+
 
 .wishlist-total {
     font-variant: all-petite-caps;
