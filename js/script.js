@@ -2600,109 +2600,57 @@ class Confetti {
 }
 
 // ==================== POPOVER MOBILE FIX ====================
+// ==================== POPOVER MOBILE FIX ====================
 class PopoverManager {
     constructor() {
+        this.openPopovers = new Set();
         this.init();
     }
 
     init() {
-        // Wait for DOM to be ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.setupPopovers());
-        } else {
-            this.setupPopovers();
-        }
-    }
-
-    setupPopovers() {
-        // Find all popover elements
-        const popovers = document.querySelectorAll('[popover]');
-        
-        popovers.forEach(popover => {
-            this.makePopoverMobileFriendly(popover);
-        });
-
-        // Also observe for dynamically added popovers
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                mutation.addedNodes.forEach((node) => {
-                    if (node.nodeType === 1 && node.hasAttribute?.('popover')) {
-                        this.makePopoverMobileFriendly(node);
-                    }
-                });
-            });
-        });
-
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-    }
-
-    makePopoverMobileFriendly(popover) {
-        // Skip if already initialized
-        if (popover.dataset.popoverFixed) return;
-        popover.dataset.popoverFixed = 'true';
-
-        // Create backdrop if it doesn't exist
-        let backdrop = popover.querySelector('.popover-backdrop');
-        if (!backdrop) {
-            backdrop = document.createElement('div');
-            backdrop.className = 'popover-backdrop';
-            backdrop.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                z-index: -1;
-                background: transparent;
-            `;
-            popover.prepend(backdrop);
-        }
-
-        // Close on backdrop touch/click
-        const closePopover = (e) => {
-            if (e.target === backdrop || e.target === popover) {
-                e.preventDefault();
-                e.stopPropagation();
-                popover.hidePopover();
+        // Track open popovers
+        document.addEventListener('toggle', (e) => {
+            if (e.target.matches('[popover]')) {
+                if (e.newState === 'open') {
+                    this.openPopovers.add(e.target);
+                } else {
+                    this.openPopovers.delete(e.target);
+                }
             }
+        }, true);
+
+        // Close on outside click/touch
+        this.setupOutsideClickHandler();
+    }
+
+    setupOutsideClickHandler() {
+        // Use a single global handler (more efficient)
+        const closeOnOutsideInteraction = (e) => {
+            // Don't do anything if no popovers are open
+            if (this.openPopovers.size === 0) return;
+
+            this.openPopovers.forEach(popover => {
+                // Check if click/touch was outside the popover
+                const isClickInside = popover.contains(e.target);
+                
+                // Check if click was on a trigger button
+                const trigger = document.querySelector(`[popovertarget="${popover.id}"]`);
+                const isClickOnTrigger = trigger && trigger.contains(e.target);
+
+                // Close if clicked outside and not on trigger
+                if (!isClickInside && !isClickOnTrigger) {
+                    popover.hidePopover();
+                }
+            });
         };
 
-        backdrop.addEventListener('click', closePopover, { passive: false });
-        backdrop.addEventListener('touchend', closePopover, { passive: false });
-
-        // Also close on popover background click (not content)
-        popover.addEventListener('click', (e) => {
-            if (e.target === popover) {
-                popover.hidePopover();
-            }
-        });
-
-        popover.addEventListener('touchend', (e) => {
-            if (e.target === popover) {
-                e.preventDefault();
-                popover.hidePopover();
-            }
-        }, { passive: false });
-
-        // Prevent content clicks from closing
-        const content = popover.children;
-        Array.from(content).forEach(child => {
-            if (child !== backdrop) {
-                child.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                });
-                child.addEventListener('touchend', (e) => {
-                    e.stopPropagation();
-                });
-            }
-        });
+        // Listen to both click and touchend (for mobile)
+        document.addEventListener('click', closeOnOutsideInteraction);
+        document.addEventListener('touchend', closeOnOutsideInteraction);
     }
 }
 
-// Initialize popover manager
+// Initialize
 const popoverManager = new PopoverManager();
 
 // Initialize confetti system
