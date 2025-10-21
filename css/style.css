@@ -2519,6 +2519,10 @@ header svg * {
         margin: 0;
     }
 
+    .heart-button.red {
+        filter: none;
+    }
+
     .wishlist-total {
         font-variant: all-petite-caps;
         color: var(--text-secondary);
