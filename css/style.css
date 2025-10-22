@@ -26,7 +26,7 @@
         color-scheme: light;
     }
 
-        &:has(.dark-theme) {
+    &:has(.dark-theme) {
         color-scheme: dark;
     }
 }
@@ -183,7 +183,7 @@ svg:hover #cloud {
     opacity: 1;
 }
 
- .theme-toggle::before {
+.theme-toggle::before {
     content: '🌙';
     position: absolute;
     left: 5px;
@@ -2147,10 +2147,22 @@ textarea {
     display: none;
     align-items: center;
     justify-content: center;
+    opacity: 0;
+    transition: all 0.25s ease allow-discrete;
+    translate: 0 -20px;
+
+
 }
 
 .stats-dashboard.show {
     display: flex;
+    translate: 0 0px;
+    opacity: 1;
+
+    @starting-style {
+        opacity: 0;
+        translate: 0 20px;
+    }
 }
 
 .stats-content {
@@ -2261,6 +2273,7 @@ textarea {
 .wishlist-section::-webkit-scrollbar {
     width: 12px;
 }
+
 .wishlist-section::-webkit-scrollbar-thumb {
     background: #8a8a8a65;
     border: 3px solid var(--bg-secondary);
@@ -2475,6 +2488,7 @@ header svg * {
 }
 
 @media (hover: none) {
+
     button:hover,
     .btn:hover,
     [onclick]:hover,
@@ -2544,6 +2558,7 @@ header svg * {
         z-index: 3;
         font-weight: 600;
     }
+
     div#random-items-grid {
         zoom: 1.2;
     }

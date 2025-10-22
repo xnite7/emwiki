@@ -881,7 +881,7 @@ class BaseApp {
     openStats() {
         document.getElementById('stats-dashboard').classList.add('show');
         this.updateStatsIfOpen();
-        document.getElementById('profile-dropdown').classList.remove('show');
+        document.getElementById('profile-dropdown').hidePopover();
 
     }
 
