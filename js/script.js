@@ -2049,13 +2049,7 @@ class Auth {
         }
     }
 
-cleanUserRole(roles) {
-    if (!roles || roles.length === 0) return ['user'];
-    
-    const filtered = roles.filter(r => r !== 'user');
-    
-    return filtered.length > 0 ? filtered : ['user'];
-}
+
     async generateCode() {
         try {
             const response = await fetch('https://emwiki.site/api/auth/generate-code', {

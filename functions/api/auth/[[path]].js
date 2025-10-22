@@ -17,7 +17,16 @@ function checkRateLimit(ip, limit = 10, window = 60000) {
     rateLimits.set(key, recent);
     return true;
 }
-
+function cleanUserRole(roles) {
+    // If user has other roles besides 'user', remove 'user'
+    if (!roles || roles.length === 0) return ['user'];
+    
+    const filtered = roles.filter(r => r !== 'user');
+    
+    // If after removing 'user' we have other roles, return them
+    // Otherwise keep ['user'] as default
+    return filtered.length > 0 ? filtered : ['user'];
+}
 function generateCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
