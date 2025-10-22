@@ -1838,6 +1838,7 @@ class Auth {
     }
     isUserScammer() {
         if (!this.user || !this.scammersList.length) return false;
+        if (this.user.role == 'scammer') return true;
 
         return this.scammersList.some(scammer => {
             if (scammer.robloxProfile?.includes(`/${this.user.userId}/`)) return true;
@@ -1859,17 +1860,8 @@ class Auth {
         const scareType = Math.floor(Math.random() * 3);
 
         if (scareType === 0) {
-            this.imageJumpScare(scareImages);
-        } else if (scareType === 1) {
-            this.glitchScare();
-        } else {
-            this.spinScare();
-        }
-    }
-
-    imageJumpScare(scareImages) {
-
-        const screamSounds = [
+            //image jumpscare
+            const screamSounds = [
             './imgs/jumpscare.mp3'
         ];
 
@@ -1938,11 +1930,9 @@ class Auth {
             overlay.style.animation = 'fadeOut 0.05s';
             setTimeout(() => overlay.remove(), 500);
         }, 8000);
-    }
-
-    // ✅ NEW METHOD: Glitch scare
-    glitchScare() {
-        document.body.style.filter = 'hue-rotate(180deg) saturate(5)';
+        } else if (scareType === 1) {
+            //glitch scare
+            document.body.style.filter = 'hue-rotate(180deg) saturate(5)';
         document.body.style.transform = 'rotateY(180deg)';
 
         Utils.showToast(
@@ -1955,78 +1945,71 @@ class Auth {
             document.body.style.animation = '';
             document.body.style.filter = '';
         }, 50000);
-    }
-
-    // ✅ NEW METHOD: Spin scare
-    // ✅ MOST CHAOTIC - Individual character replacement
-
-    spinScare() {
-        document.body.style.animation = 'spin720 1.5s ease-in-out';
+        } else {
+            document.body.style.animation = 'spin720 1.5s ease-in-out';
 
         setTimeout(() => {
             document.body.style.animation = '';
-            this.chaoticChineseTransform();
-        }, 1500);
-    }
+            const scammerText = '骗子诈骗犯警报危险禁止系统检测非法可疑';
 
-    chaoticChineseTransform() {
-        const scammerText = '骗子诈骗犯警报危险禁止系统检测非法可疑';
+            // Get all text on page
+            const allText = document.body.innerText;
+            let chineseVersion = '';
 
-        // Get all text on page
-        const allText = document.body.innerText;
-        let chineseVersion = '';
-
-        // Replace each character with random Chinese
-        for (let i = 0; i < allText.length; i++) {
-            if (allText[i].trim()) {
-                chineseVersion += scammerText[Math.floor(Math.random() * scammerText.length)];
-            } else {
-                chineseVersion += allText[i]; // Keep spaces/newlines
-            }
-        }
-
-        // Nuclear option: replace entire body text
-        const walker = document.createTreeWalker(
-            document.body,
-            NodeFilter.SHOW_TEXT,
-            null,
-            false
-        );
-
-        const textNodes = [];
-        let node;
-        while (node = walker.nextNode()) {
-            if (node.textContent.trim() &&
-                !['SCRIPT', 'STYLE'].includes(node.parentElement?.tagName)) {
-                textNodes.push(node);
-            }
-        }
-
-        // Replace text nodes one by one with animation
-        textNodes.forEach((textNode, index) => {
-            setTimeout(() => {
-                let newText = '';
-                for (let i = 0; i < textNode.textContent.length; i++) {
-                    newText += scammerText[Math.floor(Math.random() * scammerText.length)];
+            // Replace each character with random Chinese
+            for (let i = 0; i < allText.length; i++) {
+                if (allText[i].trim()) {
+                    chineseVersion += scammerText[Math.floor(Math.random() * scammerText.length)];
+                } else {
+                    chineseVersion += allText[i]; // Keep spaces/newlines
                 }
-                textNode.textContent = newText;
+            }
 
-                // Add glitch effect
-                if (textNode.parentElement) {
-                    textNode.parentElement.style.animation = 'glitchEffect 0.3s';
-                }
-            }, index * 10);
-        });
-
-        // Show final warning
-        setTimeout(() => {
-            Utils.showToast(
-                '🚨 警告',
-                '骗子已被检测到',
-                'error'
+            // Nuclear option: replace entire body text
+            const walker = document.createTreeWalker(
+                document.body,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
             );
-        }, textNodes.length * 10 + 500);
+
+            const textNodes = [];
+            let node;
+            while (node = walker.nextNode()) {
+                if (node.textContent.trim() &&
+                    !['SCRIPT', 'STYLE'].includes(node.parentElement?.tagName)) {
+                    textNodes.push(node);
+                }
+            }
+
+            // Replace text nodes one by one with animation
+            textNodes.forEach((textNode, index) => {
+                setTimeout(() => {
+                    let newText = '';
+                    for (let i = 0; i < textNode.textContent.length; i++) {
+                        newText += scammerText[Math.floor(Math.random() * scammerText.length)];
+                    }
+                    textNode.textContent = newText;
+
+                    // Add glitch effect
+                    if (textNode.parentElement) {
+                        textNode.parentElement.style.animation = 'glitchEffect 0.3s';
+                    }
+                }, index * 10);
+            });
+
+            // Show final warning
+            setTimeout(() => {
+                Utils.showToast(
+                    '🚨 警告',
+                    '骗子已被检测到',
+                    'error'
+                );
+            }, textNodes.length * 10 + 500);
+        }, 1500);
+        }
     }
+
 
     // Celebration card
     showCelebration(username) {
@@ -2632,7 +2615,7 @@ class PopoverManager {
             this.openPopovers.forEach(popover => {
                 // Check if click/touch was outside the popover
                 const isClickInside = popover.contains(e.target);
-                
+
                 // Check if click was on a trigger button
                 const trigger = document.querySelector(`[popovertarget="${popover.id}"]`);
                 const isClickOnTrigger = trigger && trigger.contains(e.target);
