@@ -2006,9 +2006,10 @@ textarea {
 
 .profile-dropdown-roles {
     display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
+    align-items: center;
+    gap: 6px;
     margin-top: 5px;
+    flex-wrap: wrap;
 }
 
 .role-badge {
@@ -2046,6 +2047,116 @@ textarea {
     background: linear-gradient(135deg, #2d3436, #636e72);
     color: #ff4757;
     text-decoration: line-through;
+}
+
+.role-badge.primary {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Secondary role icons (minimized) */
+.role-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    cursor: help;
+    transition: transform 0.2s ease;
+}
+
+.role-icon:hover {
+    transform: scale(1.15);
+}
+
+.role-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Admin styles */
+.role-badge.admin {
+    background: linear-gradient(135deg, #ff4757, #ff6348);
+    color: white;
+}
+
+.role-icon.admin {
+    background: linear-gradient(135deg, #ff4757, #ff6348);
+    color: white;
+}
+
+/* Moderator styles */
+.role-badge.moderator {
+    background: linear-gradient(135deg, #5f27cd, #341f97);
+    color: white;
+}
+
+.role-icon.moderator {
+    background: linear-gradient(135deg, #5f27cd, #341f97);
+    color: white;
+}
+
+/* VIP styles */
+.role-badge.vip {
+    background: linear-gradient(135deg, #ffd700, #ffb700);
+    color: #1a1a1a;
+}
+
+.role-icon.vip {
+    background: linear-gradient(135deg, #ffd700, #ffb700);
+    color: #1a1a1a;
+}
+
+/* Donator styles */
+.role-badge.donator {
+    background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+    color: white;
+}
+
+.role-icon.donator {
+    background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+    color: white;
+}
+
+/* Scammer styles */
+.role-badge.scammer {
+    background: linear-gradient(135deg, #2d3436, #636e72);
+    color: #ff4757;
+    text-decoration: line-through;
+}
+
+.role-icon.scammer {
+    background: linear-gradient(135deg, #2d3436, #636e72);
+    color: #ff4757;
+    animation: shake 0.5s infinite;
+}
+
+@keyframes shake {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+}
+
+/* User (default) styles */
+.role-badge:not(.admin):not(.moderator):not(.vip):not(.donator):not(.scammer) {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+}
+
+.role-icon:not(.admin):not(.moderator):not(.vip):not(.donator):not(.scammer) {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
 }
 
 .tag-count {

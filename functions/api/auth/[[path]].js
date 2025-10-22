@@ -158,7 +158,7 @@ async function handleGetSession(request, env) {
         username: session.username,
         displayName: session.display_name,
         avatarUrl: session.avatar_url,
-        roles: JSON.parse(session.role || '["user"]')
+        role: JSON.parse(session.role || '["user"]')
     }), {
         headers: { 'Content-Type': 'application/json' }
     });
@@ -227,7 +227,7 @@ async function handleUpdateRole(request, env) {
     await env.DBA.prepare('UPDATE users SET role = ? WHERE user_id = ?')
         .bind(JSON.stringify(newRoles), userId).run();
 
-    return new Response(JSON.stringify({ success: true, roles: newRoles }), {
+    return new Response(JSON.stringify({ success: true, role: newRoles }), {
         headers: { 'Content-Type': 'application/json' }
     });
 }
