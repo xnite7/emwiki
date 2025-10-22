@@ -162,12 +162,30 @@ async function handleGetSession(request, env) {
     await env.DBA.prepare('UPDATE users SET last_online = ? WHERE user_id = ?')
         .bind(Date.now(), session.user_id).run();
 
+    // Safely parse roles with fallback
+    let userRoles;
+    try {
+        userRoles = session.role ? JSON.parse(session.role) : null;
+    } catch (e) {
+        console.error('Failed to parse user role:', e);
+        userRoles = null;
+    }
+
+    // Ensure it's a valid array
+    if (!Array.isArray(userRoles) || userRoles.length === 0) {
+        userRoles = ['user'];
+        
+        // Update the database with default role for this user
+        await env.DBA.prepare('UPDATE users SET role = ? WHERE user_id = ?')
+            .bind('["user"]', session.user_id).run();
+    }
+
     return new Response(JSON.stringify({
         userId: session.user_id,
         username: session.username,
         displayName: session.display_name,
         avatarUrl: session.avatar_url,
-        role: cleanUserRole(JSON.parse(session.role || '["user"]'))
+        role: cleanUserRole(userRoles)
     }), {
         headers: { 'Content-Type': 'application/json' }
     });
