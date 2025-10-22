@@ -2046,7 +2046,7 @@ class Auth {
                     if (!this.user.role.includes('scammer')) {
                         this.user.role.push('scammer');
                     }
-                    document.body.addEventListener('click', () => {
+                    document.body.addEventListener('touchend', () => {
                         this.triggerJumpScare();
                     }, { once: true });
                 }
