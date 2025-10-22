@@ -1884,43 +1884,89 @@ class Auth {
                 filter: brightness(1.5) contrast(1.8);
                 animation: glitchEffect 0.1s infinite;
             ">
-            <div style="
-                position: absolute;
-                bottom: 20%;
-                text-align: center;
-                width: 100%;
-            ">
 
-                </h1>
-                <p style="
-                    color: white;
-                    font-size: 28px;
-                    margin-top: 20px;
-                    text-shadow: 0 0 10px #000;
-                ">
-                    🚨犯警告!
-                </p>
-            </div>
         `;
 
             document.body.appendChild(overlay);
 
         } else if (scareType === 1) {
-            //glitch scare
-            document.body.style.filter = 'hue-rotate(180deg) saturate(5)';
-            document.body.style.transform = 'rotateY(180deg)';
+    // Glitch scare + alien invasion on all canvases
+    document.body.style.filter = 'hue-rotate(180deg) saturate(5)';
+    document.body.style.transform = 'rotateY(180deg)';
 
-            Utils.showToast(
-                '⚠️ SCAMMER ALERT',
-                'Your account has been flagged for suspicious activity',
-                'error'
-            );
+    Utils.showToast(
+        '⚠️ SCAMMER ALERT',
+        'Your account has been flagged for suspicious activity',
+        'error'
+    );
 
-            setTimeout(() => {
-                document.body.style.animation = '';
-                document.body.style.filter = '';
-            }, 5000);
-        } else {
+    // Get all canvas elements
+    const canvases = document.querySelectorAll('canvas');
+    const alienImage = new Image();
+    alienImage.src = './imgs/alien.png'; // Update path if needed
+    
+    // Store original canvas contents
+    const originalCanvasData = [];
+    
+    alienImage.onload = () => {
+        canvases.forEach((canvas, index) => {
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            
+            // Save original canvas content
+            try {
+                originalCanvasData[index] = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            } catch (e) {
+                console.warn('Could not save canvas data:', e);
+            }
+            
+            // Draw alien image to fill the canvas
+            ctx.save();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Add glitch effect
+            ctx.filter = 'hue-rotate(180deg) saturate(5) contrast(200%)';
+            
+            // Draw alien image scaled to fit canvas
+            ctx.drawImage(alienImage, 0, 0, canvas.width, canvas.height);
+            
+            // Add random glitch artifacts
+            for (let i = 0; i < 20; i++) {
+                ctx.globalAlpha = Math.random() * 0.5;
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const w = Math.random() * 100;
+                const h = Math.random() * 100;
+                ctx.drawImage(alienImage, x, y, w, h);
+            }
+            
+            ctx.restore();
+        });
+    };
+
+    alienImage.onerror = () => {
+        console.error('Failed to load alien.png');
+    };
+
+    setTimeout(() => {
+        document.body.style.animation = '';
+        document.body.style.filter = '';
+        document.body.style.transform = '';
+        
+        // Restore original canvas contents
+        canvases.forEach((canvas, index) => {
+            const ctx = canvas.getContext('2d');
+            if (ctx && originalCanvasData[index]) {
+                try {
+                    ctx.putImageData(originalCanvasData[index], 0, 0);
+                } catch (e) {
+                    // If can't restore, just clear it
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+        });
+    }, 30000);
+} else {
             document.body.style.animation = 'spin720 1.5s ease-in-out';
 
             setTimeout(() => {
