@@ -2146,6 +2146,9 @@ class Auth {
                     localStorage.setItem('auth_token', data.token);
                     this.token = data.token;
                     this.user = data.user;
+                    if (!Array.isArray(this.user.role)) {
+                        this.user.role = ['user'];
+                    }
 
                     clearInterval(this.pollInterval);
                     if (this.timerInterval) {
@@ -2259,6 +2262,8 @@ class Auth {
         };
 
         function getPrimaryRole(role) {
+            // Ensure role is an array
+            if (!Array.isArray(role)) role = ['user'];
             if (!role || role.length === 0) return roleConfig.user;
 
             const sorted = role
@@ -2269,6 +2274,8 @@ class Auth {
         }
 
         function getSecondaryRoles(role) {
+            // Ensure role is an array
+            if (!Array.isArray(role)) role = ['user'];
             if (!role || role.length <= 1) return [];
 
             const primary = getPrimaryRole(role);

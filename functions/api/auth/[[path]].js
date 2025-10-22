@@ -20,9 +20,9 @@ function checkRateLimit(ip, limit = 10, window = 60000) {
 function cleanUserRole(roles) {
     // If user has other roles besides 'user', remove 'user'
     if (!roles || roles.length === 0) return ['user'];
-    
+
     const filtered = roles.filter(r => r !== 'user');
-    
+
     // If after removing 'user' we have other roles, return them
     // Otherwise keep ['user'] as default
     return filtered.length > 0 ? filtered : ['user'];
@@ -128,7 +128,7 @@ ON CONFLICT(user_id) DO UPDATE SET
     return new Response(JSON.stringify({
         success: true,
         token: sessionToken,
-        user: { userId, username, displayName, avatarUrl }
+        user: { userId, username, displayName, avatarUrl, role: ['user'] }  // Add role here
     }), {
         headers: { 'Content-Type': 'application/json' }
     });
