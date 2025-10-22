@@ -98,15 +98,15 @@ async function handleVerifyCode(request, env) {
     const now = Date.now();
 
     await env.DBA.prepare(`
-    INSERT INTO users (user_id, username, display_name, avatar_url, avatar_cached_at, created_at, last_online)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(user_id) DO UPDATE SET
-        username = excluded.username,
-        display_name = excluded.display_name,
-        avatar_url = excluded.avatar_url,
-        avatar_cached_at = excluded.avatar_cached_at,
-        last_online = excluded.last_online
-`).bind(userId, username, displayName || username, avatarUrl, now, now, now).run();
+INSERT INTO users (user_id, username, display_name, avatar_url, avatar_cached_at, created_at, last_online, role)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(user_id) DO UPDATE SET
+    username = excluded.username,
+    display_name = excluded.display_name,
+    avatar_url = excluded.avatar_url,
+    avatar_cached_at = excluded.avatar_cached_at,
+    last_online = excluded.last_online
+`).bind(userId, username, displayName || username, avatarUrl, now, now, now, '["user"]').run();
 
     // Create session
     const sessionToken = crypto.randomUUID();
@@ -158,7 +158,7 @@ async function handleGetSession(request, env) {
         username: session.username,
         displayName: session.display_name,
         avatarUrl: session.avatar_url,
-        role: session.role
+        roles: JSON.parse(session.role || '["user"]')
     }), {
         headers: { 'Content-Type': 'application/json' }
     });
@@ -188,14 +188,15 @@ async function handleUpdateRole(request, env) {
         WHERE s.token = ? AND s.expires_at > ?
     `).bind(token, Date.now()).first();
 
-    if (!session || session.role !== 'admin') {
+    const adminRoles = JSON.parse(session?.role || '["user"]');
+    if (!session || !adminRoles.includes('admin')) {
         return new Response(JSON.stringify({ error: 'Unauthorized' }), {
             status: 403,
             headers: { 'Content-Type': 'application/json' }
         });
     }
 
-    const { userId, role } = await request.json();
+    const { userId, role, action } = await request.json(); // action: 'add' or 'remove'
 
     if (!['user', 'vip', 'moderator', 'admin'].includes(role)) {
         return new Response(JSON.stringify({ error: 'Invalid role' }), {
@@ -204,9 +205,29 @@ async function handleUpdateRole(request, env) {
         });
     }
 
-    await env.DBA.prepare('UPDATE users SET role = ? WHERE user_id = ?').bind(role, userId).run();
+    // Get current roles
+    const user = await env.DBA.prepare('SELECT role FROM users WHERE user_id = ?').bind(userId).first();
+    const currentRoles = JSON.parse(user?.role || '["user"]');
 
-    return new Response(JSON.stringify({ success: true }), {
+    let newRoles;
+    if (action === 'add') {
+        // Add role if not already present
+        newRoles = currentRoles.includes(role) ? currentRoles : [...currentRoles, role];
+    } else if (action === 'remove') {
+        // Remove role, but ensure at least 'user' remains
+        newRoles = currentRoles.filter(r => r !== role);
+        if (newRoles.length === 0) newRoles = ['user'];
+    } else {
+        return new Response(JSON.stringify({ error: 'Action must be "add" or "remove"' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    await env.DBA.prepare('UPDATE users SET role = ? WHERE user_id = ?')
+        .bind(JSON.stringify(newRoles), userId).run();
+
+    return new Response(JSON.stringify({ success: true, roles: newRoles }), {
         headers: { 'Content-Type': 'application/json' }
     });
 }

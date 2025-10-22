@@ -2003,6 +2003,51 @@ textarea {
     display: block;
 }
 
+
+.profile-dropdown-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.role-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: capitalize;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+}
+
+.role-badge.admin {
+    background: linear-gradient(135deg, #ff4757, #ff6348);
+    color: white;
+}
+
+.role-badge.moderator {
+    background: linear-gradient(135deg, #5f27cd, #341f97);
+    color: white;
+}
+
+.role-badge.vip {
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    color: #333;
+}
+
+.role-badge.donator {
+    background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+    color: white;
+}
+
+.role-badge.scammer {
+    background: linear-gradient(135deg, #2d3436, #636e72);
+    color: #ff4757;
+    text-decoration: line-through;
+}
+
 .tag-count {
     justify-self: flex-end;
     position: absolute;

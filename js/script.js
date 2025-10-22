@@ -1836,7 +1836,7 @@ class Auth {
 
     isUserScammer() {
         if (!this.user || !this.scammersList.length) return false;
-        if (this.user.role == 'scammer') return true;
+        if (this.user.roles && this.user.roles.includes('scammer')) return true;
 
         return this.scammersList.some(scammer => {
             if (scammer.robloxProfile?.includes(`/${this.user.userId}/`)) return true;
@@ -2020,7 +2020,10 @@ class Auth {
             if (response.ok) {
                 this.user = await response.json();
                 if (this.isUserScammer()) {
-                    this.user.role = 'scammer';
+                    if (!this.user.roles) this.user.roles = ['user'];
+                    if (!this.user.roles.includes('scammer')) {
+                        this.user.roles.push('scammer');
+                    }
                     document.body.addEventListener('click', () => {
                         this.triggerJumpScare();
                     }, { once: true });
@@ -2207,12 +2210,25 @@ class Auth {
             user: ''
         };
 
+        function getRoleColor(roles) {
+            // Priority order for color (if multiple roles)
+            const priority = ['scammer', 'admin', 'moderator', 'donator', 'vip', 'user'];
+            for (let p of priority) {
+                if (roles && roles.includes(p)) return roleColors[p];
+            }
+            return '';
+        }
+
         dropdown.innerHTML = `
             <div class="profile-dropdown-header">
                 <img src="${this.user.avatarUrl || 'https://www.roblox.com/headshot-thumbnail/image?userId=' + this.user.userId + '&width=150&height=150&format=png'}" alt="${this.user.username}">
                 <div class="profile-dropdown-info">
                     <div class="profile-dropdown-name">${this.user.displayName}</div>
-                    <div class="profile-dropdown-role ${roleColors[this.user.role]}">${this.user.role || 'User'}</div>
+                    <div class="profile-dropdown-roles">
+                        ${(this.user.roles || ['user']).filter(r => r !== 'user').map(role => 
+                            `<span class="role-badge ${roleColors[role]}">${role}</span>`
+                        ).join('') || '<span class="role-badge">User</span>'}
+                    </div>
                 </div>
             </div>
             
@@ -2287,8 +2303,11 @@ class Auth {
             if (response.ok) {
                 const data = await response.json();
 
-                if (data.role) {
-                    this.user.role = data.role;
+                if (data.roles) {
+                    this.user.roles = data.roles;
+                } else if (data.role) {
+                    // Backward compatibility
+                    this.user.roles = [data.role];
                 }
 
                 if (data.justBecameDonator) {
