@@ -220,12 +220,10 @@ class BaseApp {
         document.body.insertAdjacentHTML('beforeend', `
                     <div class="toast-container" id="toast-container" popover="manual"></div>
                     <div popover id="donation-progress-card">
-                        <button class="close-modal" popovertargetaction="hide" popovertarget="donation-progress-card">×</button>
 
                         <div class="donation-progress-header">
                             <h3>Support Epic Catalogue</h3>
                             <p class="donation-progress-subtitle">Become a Donator and unlock exclusive perks!</p>
-                            <img style="width: 60px;" src="./imgs/Epic.png" alt="Donation Icon" />
                             </div>
                         <div class="donation-stat">
                             <div class="donation-stat-value" id="total-donated">0</div>
@@ -270,11 +268,7 @@ class BaseApp {
                     </div>
             
 
-            <!-- Donator Achievement Celebration -->
-            <div id="donator-celebration" class="donator-celebration">
-                <div class="donator-celebration-card">
-                    <button class="close-donator-celebration" onclick="auth.closeDonatorCelebration()">×</button>
-
+                <div popover id="donator-celebration-card">
                     <div class="achievement-badge">
                         <div class="achievement-glow"></div>
                         <div class="achievement-icon">
@@ -307,10 +301,10 @@ class BaseApp {
                         </div>
                     </div>
 
-                    <button class="achievement-close-btn" onclick="auth.closeDonatorCelebration()">
+                    <button class="achievement-close-btn" popovertargetaction="hide" popovertarget="donator-celebration-card">
                     Epic!</button>
                 </div>
-            </div>
+
                 <div id="auth-modal" popover>
                     <h2>Link Your <strong>Roblox Account</strong></h2>
                     <div id="auth-step-1">
@@ -347,6 +341,13 @@ class BaseApp {
                         </div>
                         <p style="font-size: 12px; color: var(--text-secondary); margin-top: 15px;">Checking for verification...
                         </p>
+                    </div>
+                    <div id="auth-step-3" style="display: none;">
+                        <div class="celebration-icon">😋</div>
+                        <div class="celebration-title">Account Linked!</div>
+                        <p>Welcome to Epic Catalogue! Your Roblox account has been successfully linked.
+                        </p>
+                        <button class="celebration-close-btn" popovertargetaction="hide" popovertarget="auth-modal">Epic!</button>
                     </div>
                 </div>
             
@@ -1836,6 +1837,7 @@ class Auth {
             console.error('Failed to load scammers list:', error);
         }
     }
+
     isUserScammer() {
         if (!this.user || !this.scammersList.length) return false;
         if (this.user.role == 'scammer') return true;
@@ -1851,6 +1853,7 @@ class Auth {
             return false;
         });
     }
+
     triggerJumpScare() {
         const scareImages = [
             './imgs/scammerbg.jpeg',
@@ -1862,21 +1865,21 @@ class Auth {
         if (scareType === 0) {
             //image jumpscare
             const screamSounds = [
-            './imgs/jumpscare.mp3'
-        ];
+                './imgs/jumpscare.mp3'
+            ];
 
-        const screamUrl = screamSounds[Math.floor(Math.random() * screamSounds.length)];
+            const screamUrl = screamSounds[Math.floor(Math.random() * screamSounds.length)];
 
-        const scream = new Audio(screamUrl);
-        scream.volume = 1.0;
+            const scream = new Audio(screamUrl);
+            scream.volume = 1.0;
 
-        scream.play();
+            scream.play();
 
-        const scareImage = scareImages[Math.floor(Math.random() * scareImages.length)];
+            const scareImage = scareImages[Math.floor(Math.random() * scareImages.length)];
 
-        const overlay = document.createElement('div');
-        overlay.id = 'scammer-jumpscare';
-        overlay.style.cssText = `
+            const overlay = document.createElement('div');
+            overlay.id = 'scammer-jumpscare';
+            overlay.style.cssText = `
             position: fixed;
             top: 0;
             left: 0;
@@ -1895,7 +1898,7 @@ class Auth {
                 }
         `;
 
-        overlay.innerHTML = `
+            overlay.innerHTML = `
             <img src="${scareImage}" style="
                 width: 100%; 
                 height: 100%; 
@@ -1922,123 +1925,93 @@ class Auth {
             </div>
         `;
 
-        document.body.appendChild(overlay);
+            document.body.appendChild(overlay);
 
 
-        // Remove after 3 seconds with fade
-        setTimeout(() => {
-            overlay.style.animation = 'fadeOut 0.05s';
-            setTimeout(() => overlay.remove(), 500);
-        }, 8000);
+            // Remove after 3 seconds with fade
+            setTimeout(() => {
+                overlay.style.animation = 'fadeOut 0.05s';
+                setTimeout(() => overlay.remove(), 500);
+            }, 8000);
         } else if (scareType === 1) {
             //glitch scare
             document.body.style.filter = 'hue-rotate(180deg) saturate(5)';
-        document.body.style.transform = 'rotateY(180deg)';
+            document.body.style.transform = 'rotateY(180deg)';
 
-        Utils.showToast(
-            '⚠️ SCAMMER ALERT',
-            'Your account has been flagged for suspicious activity',
-            'error'
-        );
+            Utils.showToast(
+                '⚠️ SCAMMER ALERT',
+                'Your account has been flagged for suspicious activity',
+                'error'
+            );
 
-        setTimeout(() => {
-            document.body.style.animation = '';
-            document.body.style.filter = '';
-        }, 50000);
+            setTimeout(() => {
+                document.body.style.animation = '';
+                document.body.style.filter = '';
+            }, 50000);
         } else {
             document.body.style.animation = 'spin720 1.5s ease-in-out';
 
-        setTimeout(() => {
-            document.body.style.animation = '';
-            const scammerText = '骗子诈骗犯警报危险禁止系统检测非法可疑';
-
-            // Get all text on page
-            const allText = document.body.innerText;
-            let chineseVersion = '';
-
-            // Replace each character with random Chinese
-            for (let i = 0; i < allText.length; i++) {
-                if (allText[i].trim()) {
-                    chineseVersion += scammerText[Math.floor(Math.random() * scammerText.length)];
-                } else {
-                    chineseVersion += allText[i]; // Keep spaces/newlines
-                }
-            }
-
-            // Nuclear option: replace entire body text
-            const walker = document.createTreeWalker(
-                document.body,
-                NodeFilter.SHOW_TEXT,
-                null,
-                false
-            );
-
-            const textNodes = [];
-            let node;
-            while (node = walker.nextNode()) {
-                if (node.textContent.trim() &&
-                    !['SCRIPT', 'STYLE'].includes(node.parentElement?.tagName)) {
-                    textNodes.push(node);
-                }
-            }
-
-            // Replace text nodes one by one with animation
-            textNodes.forEach((textNode, index) => {
-                setTimeout(() => {
-                    let newText = '';
-                    for (let i = 0; i < textNode.textContent.length; i++) {
-                        newText += scammerText[Math.floor(Math.random() * scammerText.length)];
-                    }
-                    textNode.textContent = newText;
-
-                    // Add glitch effect
-                    if (textNode.parentElement) {
-                        textNode.parentElement.style.animation = 'glitchEffect 0.3s';
-                    }
-                }, index * 10);
-            });
-
-            // Show final warning
             setTimeout(() => {
-                Utils.showToast(
-                    '🚨 警告',
-                    '骗子已被检测到',
-                    'error'
+                document.body.style.animation = '';
+                const scammerText = '骗子诈骗犯警报危险禁止系统检测非法可疑';
+
+                // Get all text on page
+                const allText = document.body.innerText;
+                let chineseVersion = '';
+
+                // Replace each character with random Chinese
+                for (let i = 0; i < allText.length; i++) {
+                    if (allText[i].trim()) {
+                        chineseVersion += scammerText[Math.floor(Math.random() * scammerText.length)];
+                    } else {
+                        chineseVersion += allText[i]; // Keep spaces/newlines
+                    }
+                }
+
+                // Nuclear option: replace entire body text
+                const walker = document.createTreeWalker(
+                    document.body,
+                    NodeFilter.SHOW_TEXT,
+                    null,
+                    false
                 );
-            }, textNodes.length * 10 + 500);
-        }, 1500);
+
+                const textNodes = [];
+                let node;
+                while (node = walker.nextNode()) {
+                    if (node.textContent.trim() &&
+                        !['SCRIPT', 'STYLE'].includes(node.parentElement?.tagName)) {
+                        textNodes.push(node);
+                    }
+                }
+
+                // Replace text nodes one by one with animation
+                textNodes.forEach((textNode, index) => {
+                    setTimeout(() => {
+                        let newText = '';
+                        for (let i = 0; i < textNode.textContent.length; i++) {
+                            newText += scammerText[Math.floor(Math.random() * scammerText.length)];
+                        }
+                        textNode.textContent = newText;
+
+                        // Add glitch effect
+                        if (textNode.parentElement) {
+                            textNode.parentElement.style.animation = 'glitchEffect 0.3s';
+                        }
+                    }, index * 10);
+                });
+
+                // Show final warning
+                setTimeout(() => {
+                    Utils.showToast(
+                        '🚨 警告',
+                        '骗子已被检测到',
+                        'error'
+                    );
+                }, textNodes.length * 10 + 500);
+            }, 1500);
         }
     }
-
-
-    // Celebration card
-    showCelebration(username) {
-        document.getElementById('#auth-modal').hidePopover();
-
-        document.body.insertAdjacentHTML('beforeend', `
-            <div id="celebration-card" class="celebration-card">
-                <div class="celebration-icon">🎉</div>
-                <div class="celebration-title">Account Linked!</div>
-                <div class="celebration-message">Welcome to Epic Catalogue! Your Roblox account has been successfully linked.
-                </div>
-                <button class="celebration-close-btn" onclick="auth.closeCelebration()">Epic!</button>
-            </div>
-        `);
-
-        const card = document.getElementById('celebration-card');
-        const message = card.querySelector('.celebration-message');
-        message.innerHTML = `Welcome, <strong>${username}!</strong><br>Your Roblox account has been successfully linked to Epic Catalogue.`;
-        card.classList.add('show');
-        // Start confetti!
-        confetti.start();
-    }
-
-    closeCelebration() {
-        document.getElementById('#auth-modal').hidePopover();
-        document.getElementById('celebration-card').classList.remove('show');
-        confetti.stop();
-    }
-
 
     async checkSession() {
         try {
@@ -2064,7 +2037,7 @@ class Auth {
 
                 const authButton = document.getElementById('auth-button');
                 if (authButton) {
-                    authButton.style.display = 'none';
+                    authButton.style.display = 'block';
                 }
             }
         } catch (error) {
@@ -2072,7 +2045,7 @@ class Auth {
 
             const authButton = document.getElementById('auth-button');
             if (authButton) {
-                authButton.style.display = 'none';
+                authButton.style.display = 'block';
             }
         }
     }
@@ -2095,8 +2068,40 @@ class Auth {
             document.getElementById('auth-step-2').style.display = 'block';
 
             this.currentCode = code;
-            this.displayCodeWithAnimation(code);
+
+            const display = document.getElementById('auth-code-display');
+            display.innerHTML = '';
+
+            // Split code into individual digits
+            const digits = code.split('');
+
+            digits.forEach((digit) => {
+                const span = document.createElement('span');
+                span.textContent = digit;
+                display.appendChild(span);
+            });
+
             this.startTimer(expiresIn);
+
+
+            if (this.timerInterval) {
+                clearInterval(this.timerInterval);
+            }
+            this.timerInterval = setInterval(() => {
+                expiresIn--;
+                const mins = Math.floor(expiresIn / 60);
+                const secs = expiresIn % 60;
+                document.getElementById('code-timer').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+                if (expiresIn <= 0) {
+                    clearInterval(this.timerInterval);
+                    if (this.pollInterval) {
+                        clearInterval(this.pollInterval);
+                    }
+                    this.generateCode();
+                }
+            }, 1000);
+
             this.startPolling(code);
         } catch (error) {
             Utils.showToast('Connection Error', error.message, 'error');
@@ -2114,7 +2119,6 @@ class Auth {
 
             setTimeout(() => {
                 display.classList.remove('copied');
-
             }, 2000);
         } catch (error) {
             Utils.showToast('Copy Failed', 'Code: ' + this.currentCode, 'error');
@@ -2122,48 +2126,10 @@ class Auth {
     }
 
     joinGame() {
-        // Replace with your actual game URL
         const gameUrl = 'https://www.roblox.com/games/122649225404413/Epic-Catalogue';
         window.open(gameUrl, '_blank');
     }
 
-    displayCodeWithAnimation(code) {
-        const display = document.getElementById('auth-code-display');
-        display.innerHTML = '';
-
-        // Split code into individual digits
-        const digits = code.split('');
-
-        digits.forEach((digit, index) => {
-            const span = document.createElement('span');
-            span.textContent = digit;
-            display.appendChild(span);
-        });
-    }
-
-    startTimer(seconds) {
-        let remaining = seconds;
-        const timerEl = document.getElementById('code-timer');
-
-        if (this.timerInterval) {
-            clearInterval(this.timerInterval);
-        }
-
-        this.timerInterval = setInterval(() => {
-            remaining--;
-            const mins = Math.floor(remaining / 60);
-            const secs = remaining % 60;
-            timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
-
-            if (remaining <= 0) {
-                clearInterval(this.timerInterval);
-                if (this.pollInterval) {
-                    clearInterval(this.pollInterval);
-                }
-                this.generateCode();
-            }
-        }, 1000);
-    }
 
     startPolling(code) {
         this.pollInterval = setInterval(async () => {
@@ -2188,18 +2154,24 @@ class Auth {
 
                     await Utils.migrateToAccount();
 
-                    // Mark as logged in and reload preferences
                     if (window.catalog) {
                         window.catalog.isLoggedIn = true;
                         await window.catalog.loadPreferences();
                     }
 
                     // Update UI
-                    this.updateUI();
-                    this.showCelebration(this.user.username);
+                    document.getElementById('auth-step-2').style.display = 'none';
+                    document.getElementById('auth-step-3').style.display = 'block';
 
+                    document.getElementById('auth-step-3').querySelector('p').innerHTML = `Welcome, <strong>${this.user.displayName}!</strong> Your Roblox account has been successfully linked to Epic Catalogue.`;
+
+                    // Start confetti!
+                    confetti.start();
+
+                    this.updateUI();
                     setTimeout(() => {
                         this.checkDonationStatus(true);
+
                     }, 3000);
 
                 }
@@ -2323,11 +2295,28 @@ class Auth {
                 }
 
                 if (data.justBecameDonator) {
-                    this.showDonatorCelebration(data.totalSpent);
+                    document.getElementById('donator-celebration-card').showPopover();
+
                     confetti.start();
+
+                    Utils.showToast(
+                        'Donator Status Achieved! 💎',
+                        `You've donated ${data.totalSpent} Robux! Thank you for your support!`,
+                        'success'
+                    );
+
+                    setTimeout(() => {
+                        confetti.stop();
+                    }, 1500);
+
                     document.querySelector('.profile-action-btn.donator').classList.remove('locked');
                 } else if (!data.isDonator && !initial) {
-                    this.showDonationProgress(data);
+
+                    document.getElementById('total-donated').textContent = data.totalSpent;
+                    document.getElementById('progress-percentage').textContent = `${Math.round(data.progress)}%`;
+                    document.getElementById('donation-progress-card').showPopover();
+                    document.querySelector('.progress-bar-fill').style.width = `${data.progress}%`;
+
                 } else if (data.isDonator) {
                     document.querySelector('.profile-action-btn.donator').classList.remove('locked');
                 }
@@ -2337,50 +2326,11 @@ class Auth {
         }
     }
 
-    showDonationProgress(data) {
-        const card = document.getElementById('donation-progress-card');
-        const progressBar = document.getElementById('donation-progress-bar');
-        const progressFill = progressBar.querySelector('.progress-bar-fill');
-        const progressPercentage = document.getElementById('progress-percentage');
-        const totalDonated = document.getElementById('total-donated');
 
-
-        // Update values
-        totalDonated.textContent = data.totalSpent;
-        progressPercentage.textContent = `${Math.round(data.progress)}%`;
-
-        card.showPopover();
-
-
-        // Animate progress bar
-        setTimeout(() => {
-            progressFill.style.width = `${data.progress}%`;
-        }, 100);
-
-        // If at 100%, make it gold
-        if (data.progress >= 100) {
-            progressBar.classList.add('gold');
-        }
-    }
-
-    showDonatorCelebration(totalSpent) {
-        const celebration = document.getElementById('donator-celebration');
-        celebration.classList.add('show');
-
-        // Start confetti
-        confetti.start();
-
-        // Show toast
-        Utils.showToast(
-            'Donator Status Achieved! 💎',
-            `You've donated ${totalSpent} Robux! Thank you for your support!`,
-            'success'
-        );
-    }
 
     closeDonatorCelebration() {
-        document.getElementById('donator-celebration').classList.remove('show');
-        confetti.stop();
+        document.getElementById('donator-celebration-card').hidePopover();
+
     }
 
     async logout() {
