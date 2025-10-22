@@ -2261,7 +2261,6 @@ class Auth {
         function getPrimaryRole(role) {
             if (!role || role.length === 0) return roleConfig.user;
 
-            // Sort by priority (lower number = higher priority)
             const sorted = role
                 .filter(r => roleConfig[r])
                 .sort((a, b) => roleConfig[a].priority - roleConfig[b].priority);
