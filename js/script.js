@@ -484,6 +484,7 @@ class BaseApp {
 
     toggleTheme() {
         document.body.classList.toggle('light-theme');
+        document.body.classList.toggle('dark-theme');
         const isLight = document.body.classList.contains('light-theme');
         localStorage.setItem('theme', isLight ? 'light' : 'dark');
     }
@@ -492,6 +493,8 @@ class BaseApp {
         const theme = localStorage.getItem('theme') || 'dark';
         if (theme === 'light') {
             document.body.classList.add('light-theme');
+        } else {
+            document.body.classList.add('dark-theme');
         }
 
         function pickRandom(rarities) {

@@ -25,6 +25,10 @@
     &:has(.light-theme) {
         color-scheme: light;
     }
+
+        &:has(.dark-theme) {
+        color-scheme: dark;
+    }
 }
 
 
