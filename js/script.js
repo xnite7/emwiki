@@ -2049,7 +2049,13 @@ class Auth {
         }
     }
 
-
+cleanUserRole(roles) {
+    if (!roles || roles.length === 0) return ['user'];
+    
+    const filtered = roles.filter(r => r !== 'user');
+    
+    return filtered.length > 0 ? filtered : ['user'];
+}
     async generateCode() {
         try {
             const response = await fetch('https://emwiki.site/api/auth/generate-code', {
@@ -2220,78 +2226,78 @@ class Auth {
         }
 
         const roleConfig = {
-    admin: { 
-        name: 'Admin', 
-        class: 'admin', 
-        priority: 1,
-        icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>'
-    },
-    moderator: { 
-        name: 'Moderator', 
-        class: 'moderator', 
-        priority: 2,
-        icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>'
-    },
-    donator: { 
-        name: 'Donator', 
-        class: 'donator', 
-        priority: 3,
-        icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
-    },
-    vip: { 
-        name: 'VIP', 
-        class: 'vip', 
-        priority: 4,
-        icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>'
-    },
-    scammer: { 
-        name: 'Scammer', 
-        class: 'scammer', 
-        priority: 0,
-        icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>'
-    },
-    user: { 
-        name: 'User', 
-        class: '', 
-        priority: 99,
-        icon: ''
-    }
-};
+            admin: {
+                name: 'Admin',
+                class: 'admin',
+                priority: 1,
+                icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>'
+            },
+            moderator: {
+                name: 'Moderator',
+                class: 'moderator',
+                priority: 2,
+                icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>'
+            },
+            donator: {
+                name: 'Donator',
+                class: 'donator',
+                priority: 3,
+                icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
+            },
+            vip: {
+                name: 'VIP',
+                class: 'vip',
+                priority: 4,
+                icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>'
+            },
+            scammer: {
+                name: 'Scammer',
+                class: 'scammer',
+                priority: 0,
+                icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>'
+            },
+            user: {
+                name: 'User',
+                class: '',
+                priority: 99,
+                icon: ''
+            }
+        };
 
-function getPrimaryRole(role) {
-    if (!role || role.length === 0) return roleConfig.user;
+        function getPrimaryRole(role) {
+            if (!role || role.length === 0) return roleConfig.user;
 
-    // Sort by priority (lower number = higher priority)
-    const sorted = role
-        .filter(r => roleConfig[r])
-        .sort((a, b) => roleConfig[a].priority - roleConfig[b].priority);
-    
-    return roleConfig[sorted[0]] || roleConfig.user;
-}
+            // Sort by priority (lower number = higher priority)
+            const sorted = role
+                .filter(r => roleConfig[r])
+                .sort((a, b) => roleConfig[a].priority - roleConfig[b].priority);
 
-function getSecondaryRoles(role) {
-    if (!role || role.length <= 1) return [];
+            return roleConfig[sorted[0]] || roleConfig.user;
+        }
 
-    const primary = getPrimaryRole(role);
-    return role
-        .filter(r => roleConfig[r] && r !== Object.keys(roleConfig).find(k => roleConfig[k] === primary))
-        .sort((a, b) => roleConfig[a].priority - roleConfig[b].priority)
-        .map(r => roleConfig[r]);
-}
+        function getSecondaryRoles(role) {
+            if (!role || role.length <= 1) return [];
 
-const primaryRole = getPrimaryRole(this.user.role);
-const secondaryRoles = getSecondaryRoles(this.user.role);
+            const primary = getPrimaryRole(role);
+            return role
+                .filter(r => roleConfig[r] && r !== Object.keys(roleConfig).find(k => roleConfig[k] === primary))
+                .sort((a, b) => roleConfig[a].priority - roleConfig[b].priority)
+                .map(r => roleConfig[r]);
+        }
 
-dropdown.innerHTML = `
+        const primaryRole = getPrimaryRole(this.user.role);
+        const secondaryRoles = getSecondaryRoles(this.user.role);
+
+        dropdown.innerHTML = `
     <div class="profile-dropdown-header">
         <img src="${this.user.avatarUrl || 'https://www.roblox.com/headshot-thumbnail/image?userId=' + this.user.userId + '&width=150&height=150&format=png'}" alt="${this.user.username}">
         <div class="profile-dropdown-info">
             <div class="profile-dropdown-name">${this.user.displayName}</div>
             <div class="profile-dropdown-roles">
                 <span class="role-badge primary ${primaryRole.class}">${primaryRole.name}</span>
-                ${secondaryRoles.map(role => 
-                    `<span class="role-icon ${role.class}" title="${role.name}">${role.icon}</span>`
-                ).join('')}
+                ${secondaryRoles.map(role =>
+            `<span class="role-icon ${role.class}" title="${role.name}">${role.icon}</span>`
+        ).join('')}
             </div>
         </div>
     </div>
@@ -2367,8 +2373,14 @@ dropdown.innerHTML = `
             if (response.ok) {
                 const data = await response.json();
 
-                if (data.role) {
-                    this.user.role = [data.role];
+                if (data.roles) {
+                    this.user.role = data.roles;
+                } else if (data.role) {
+                    // Backward compatibility: if server still sends single role
+                    if (!this.user.role) this.user.role = [];
+                    if (!this.user.role.includes(data.role)) {
+                        this.user.role.push(data.role);
+                    }
                 }
 
                 if (data.justBecameDonator) {

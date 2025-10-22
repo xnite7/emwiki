@@ -158,7 +158,7 @@ async function handleGetSession(request, env) {
         username: session.username,
         displayName: session.display_name,
         avatarUrl: session.avatar_url,
-        role: JSON.parse(session.role || '["user"]')
+        role: cleanUserRole(JSON.parse(session.role || '["user"]'))
     }), {
         headers: { 'Content-Type': 'application/json' }
     });
@@ -213,6 +213,7 @@ async function handleUpdateRole(request, env) {
     if (action === 'add') {
         // Add role if not already present
         newRoles = currentRoles.includes(role) ? currentRoles : [...currentRoles, role];
+        newRoles = cleanUserRole(newRoles); // Add this line
     } else if (action === 'remove') {
         // Remove role, but ensure at least 'user' remains
         newRoles = currentRoles.filter(r => r !== role);
@@ -227,7 +228,7 @@ async function handleUpdateRole(request, env) {
     await env.DBA.prepare('UPDATE users SET role = ? WHERE user_id = ?')
         .bind(JSON.stringify(newRoles), userId).run();
 
-    return new Response(JSON.stringify({ success: true, role: newRoles }), {
+    return new Response(JSON.stringify({ success: true, roles: cleanUserRole(newRoles) }), {
         headers: { 'Content-Type': 'application/json' }
     });
 }
