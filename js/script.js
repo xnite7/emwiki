@@ -463,13 +463,6 @@ class BaseApp {
         // Save preference
         Utils.saveToStorage('showPrices', this.showPrices);
         this.LoadPrice();
-
-        // Show toast
-        //Utils.showToast(
-        //this.showPrices ? 'Prices Shown' : 'Prices Hidden',
-        //this.showPrices ? 'All prices are now visible' : 'All prices are now hidden',
-        //'info'
-        //);
     }
 
     LoadPrice() {
@@ -2084,7 +2077,6 @@ class Auth {
                 display.appendChild(span);
             });
 
-            this.startTimer(expiresIn);
 
 
             if (this.timerInterval) {
