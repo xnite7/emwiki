@@ -1403,7 +1403,7 @@
     max-width: 600px;
     width: 90%;
     text-align: center;
-    position: relative;
+    position: fixed;
     animation: celebrationEntry 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -1548,7 +1548,7 @@
 }
 
 .feature-card {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-item);
     padding: 16px 21px;;
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1666,7 +1666,7 @@
         margin: 20px;
     }
 .perk-list{
-        height: 55px;
+        height: 71px;
     overflow: scroll;
 }
 
