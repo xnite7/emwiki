@@ -14,7 +14,7 @@
 }
 
 :root {
-    color-scheme: light dark;
+    color-scheme: dark ;
     --bg-secondary: light-dark(#fff, #1a1a1a);
     --bg-item: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.05));
     --text-secondary: light-dark(rgba(0, 0, 0, 0.6), rgba(255, 255, 255, 0.7));
