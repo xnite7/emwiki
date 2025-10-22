@@ -336,6 +336,19 @@ async function handleDonationStatus(request, env) {
         });
     }
 
+    // Parse current roles safely
+    let currentRoles;
+    try {
+        currentRoles = session.role ? JSON.parse(session.role) : ['user'];
+    } catch (e) {
+        currentRoles = ['user'];
+    }
+
+    // Ensure it's a valid array
+    if (!Array.isArray(currentRoles) || currentRoles.length === 0) {
+        currentRoles = ['user'];
+    }
+
     // Get donation data from KV
     const donationKey = `purchase:${session.user_id}`;
     const donationData = await env.DONATIONS_KV.get(donationKey);
@@ -353,14 +366,29 @@ async function handleDonationStatus(request, env) {
     const progress = Math.min((totalSpent / 500) * 100, 100);
     const remaining = Math.max(500 - totalSpent, 0);
 
-    // Check if user just became a donator (had role !== 'donator' but now qualifies)
-    const justBecameDonator = isDonator && session.role !== 'donator';
+    // Check if user just became a donator (qualifies but doesn't have the role yet)
+    const hasDonatorRole = currentRoles.includes('donator');
+    const justBecameDonator = isDonator && !hasDonatorRole;
 
-    // Update role if they became a donator
-    if (justBecameDonator) {
+    let updatedRoles = currentRoles;
+
+    // Update roles based on donation status
+    if (isDonator && !hasDonatorRole) {
+        // Add donator role
+        updatedRoles = [...currentRoles, 'donator'];
+        updatedRoles = cleanUserRole(updatedRoles);
+        
         await env.DBA.prepare(
             'UPDATE users SET role = ? WHERE user_id = ?'
-        ).bind('donator', session.user_id).run();
+        ).bind(JSON.stringify(updatedRoles), session.user_id).run();
+    } else if (!isDonator && hasDonatorRole) {
+        // Remove donator role if they no longer qualify (e.g., refund)
+        updatedRoles = currentRoles.filter(r => r !== 'donator');
+        if (updatedRoles.length === 0) updatedRoles = ['user'];
+        
+        await env.DBA.prepare(
+            'UPDATE users SET role = ? WHERE user_id = ?'
+        ).bind(JSON.stringify(updatedRoles), session.user_id).run();
     }
 
     return new Response(JSON.stringify({
@@ -370,7 +398,7 @@ async function handleDonationStatus(request, env) {
         progress,
         remaining,
         justBecameDonator,
-        role: justBecameDonator ? 'donator' : session.role
+        roles: updatedRoles  // Return full roles array instead of single role
     }), {
         headers: { 'Content-Type': 'application/json' }
     });
