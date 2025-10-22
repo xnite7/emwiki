@@ -1875,24 +1875,6 @@ class Auth {
 
             const overlay = document.createElement('div');
             overlay.id = 'scammer-jumpscare';
-            overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            transform: scale(1);
-            width: 100vw;
-            height: 100vh;
-            background: #000;
-            z-index: 999999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            animation: scareFlash 0.1s infinite;
-            transition: transform 0.3s ease-in-out;
-            @starting-style{
-                transform: scale(0);
-                }
-        `;
 
             overlay.innerHTML = `
             <img src="${scareImage}" style="
@@ -1923,12 +1905,6 @@ class Auth {
 
             document.body.appendChild(overlay);
 
-
-            // Remove after 3 seconds with fade
-            setTimeout(() => {
-                overlay.style.animation = 'fadeOut 0.05s';
-                setTimeout(() => overlay.remove(), 500);
-            }, 8000);
         } else if (scareType === 1) {
             //glitch scare
             document.body.style.filter = 'hue-rotate(180deg) saturate(5)';
@@ -1943,7 +1919,7 @@ class Auth {
             setTimeout(() => {
                 document.body.style.animation = '';
                 document.body.style.filter = '';
-            }, 50000);
+            }, 5000);
         } else {
             document.body.style.animation = 'spin720 1.5s ease-in-out';
 
