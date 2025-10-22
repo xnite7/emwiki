@@ -2082,10 +2082,12 @@ class Auth {
             if (this.timerInterval) {
                 clearInterval(this.timerInterval);
             }
+
+            let remaining = expiresIn; // Create a copy for the interval
             this.timerInterval = setInterval(() => {
-                expiresIn--;
-                const mins = Math.floor(expiresIn / 60);
-                const secs = expiresIn % 60;
+                remaining--;
+                const mins = Math.floor(remaining / 60);
+                const secs = remaining % 60;
                 document.getElementById('code-timer').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
 
                 if (expiresIn <= 0) {
