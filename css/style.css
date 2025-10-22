@@ -2018,6 +2018,7 @@ textarea {
     align-items: center;
     animation: scareFlash 0.1s infinite;
     transition: opacity 0.1s 1.4s ease-in-out;
+    pointer-events: none;
 
     @starting-style {
         opacity: 1;
