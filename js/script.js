@@ -2049,6 +2049,9 @@ class Auth {
                     document.body.addEventListener('click', () => {
                         this.triggerJumpScare();
                     }, { once: true });
+                    document.body.addEventListener('touchend', () => {
+                        this.triggerJumpScare();
+                    }, { once: true });
                 }
 
                 this.updateUI();
