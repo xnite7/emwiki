@@ -526,15 +526,16 @@
     top: calc(anchor(bottom) + 10px);
     justify-self: anchor-center;
     background: linear-gradient(90deg, var(--bg-secondary) 0%, Canvas 100%);
-    border: 2px solid light-dark(rgb(240, 240, 240), rgb(71, 71, 71));
+    border: 3px solid light-dark(rgb(216 216 216), rgb(71, 71, 71));
     border-radius: 16px;
     padding: 20px;
     margin: 0;
     margin-right: 18px;
     min-width: 280px;
-    box-shadow: 0 20px 60px var(--shadow-color), inset -3px -3px 8px var(--shadow-color), inset 2px 2px 4px var(--shadow-color);
+    box-shadow: 0 20px 60px var(--shadow-color);
     transition-duration: 0.3s;
-    transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition-timing-function:
+        cubic-bezier(0.34, 1.56, 0.64, 1);
     transition-property: opacity transform overlay;
     transition-behavior: allow-discrete;
     opacity: 0;
@@ -542,7 +543,7 @@
 
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
-        border-radius: 32px;
+        border-radius: 52px;
     }
 }
 
@@ -576,6 +577,7 @@
     border-radius: 12px;
     border: 2px solid var(--border-color);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
         border-radius: 32px;
@@ -668,7 +670,7 @@
 }
 
 .profile-action-btn {
-    
+
     padding: 12px 16px;
     background: var(--bg-item);
     border: 1px solid var(--border-color);
@@ -697,9 +699,9 @@
 }
 
 .profile-action-btn.donator {
-    background: linear-gradient(#ff7f0059, #d7b346e8);
-    border: 1px solid rgb(255 225 27 / 50%);
-    fill: white;
+    background: linear-gradient(light-dark(#ffa810c2,#ff90182b),light-dark(#e57525b8, #ff741921));
+    border-color: light-dark(#ffca00 ,#ffe03257);
+    color: light-dark(white,#ffca00);
 }
 
 .profile-action-btn.donator.locked {
@@ -1555,7 +1557,8 @@
 
 .feature-card {
     background: var(--bg-item);
-    padding: 16px 21px;;
+    padding: 16px 21px;
+    ;
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s;
@@ -1671,26 +1674,27 @@
         padding: 30px 25px;
         margin: 20px;
     }
-.perk-list{
+
+    .perk-list {
         height: 71px;
-    overflow: scroll;
-}
+        overflow: scroll;
+    }
 
 
     .achievement-title {
         font-size: 28px;
-       margin-bottom: 11px; 
+        margin-bottom: 11px;
     }
 
-    .achievement-badge{
+    .achievement-badge {
         margin: -25px auto;
     }
 
-        .achievement-message {
-            margin-bottom: 20px;
+    .achievement-message {
+        margin-bottom: 20px;
     }
 
-       .feature-icon {
+    .feature-icon {
         margin-bottom: 0px;
         float: left;
     }
@@ -1710,5 +1714,5 @@
         font-size: 60px;
     }
 
- 
+
 }
