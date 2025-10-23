@@ -2255,13 +2255,13 @@ class Auth {
                 name: 'Moderator',
                 class: 'moderator',
                 priority: 2,
-                icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>'
+                icon: '<svg viewBox="4 4 24 24" fill="currentColor"><path d="M27.232 3.993h-.8a.8.8 0 0 0-.681.381l-.002.003-9.75 16.058L6.251 4.377a.8.8 0 0 0-.683-.385h-.8a.8.8 0 0 0-.8.8v22.4c0 .442.358.8.8.801h.928a.8.8 0 0 0 .8-.801V9.605l8.437 13.905a.8.8 0 0 0 .684.387h.736a.8.8 0 0 0 .682-.381l.002-.003 8.467-13.915v17.595c.001.442.359.8.801.801h.928a.803.803 0 0 0 .801-.801v-22.4a.8.8 0 0 0-.801-.8z"/></svg>'
             },
             donator: {
                 name: 'Donator',
                 class: 'donator',
                 priority: 3,
-                icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
+                icon: '<svg viewBox="1 3 22 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 10L6 4H18L22 10M2 10L12 20M2 10H22M12 20L22 10M12 20L16 10L12 4L8 10L12 20Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
             },
             vip: {
                 name: 'VIP',
@@ -2337,13 +2337,13 @@ class Auth {
             
             <div class="profile-dropdown-actions">
                 <button class="profile-action-btn" onclick="window.open('https://www.roblox.com/users/${this.user.userId}/profile', '_blank')">
-                    <svg style="width:20px;" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m10 17.55-1.77 1.72a2.47 2.47 0 0 1-3.5-3.5l4.54-4.55a2.46 2.46 0 0 1 3.39-.09l.12.1a1 1 0 0 0 1.4-1.43 3 3 0 0 0-.18-.21 4.46 4.46 0 0 0-6.09.22l-4.6 4.55a4.48 4.48 0 0 0 6.33 6.33L11.37 19A1 1 0 0 0 10 17.55M20.69 3.31a4.49 4.49 0 0 0-6.33 0L12.63 5A1 1 0 0 0 14 6.45l1.73-1.72a2.47 2.47 0 0 1 3.5 3.5l-4.54 4.55a2.46 2.46 0 0 1-3.39.09l-.12-.1a1 1 0 0 0-1.4 1.43 3 3 0 0 0 .23.21 4.47 4.47 0 0 0 6.09-.22l4.55-4.55a4.49 4.49 0 0 0 .04-6.33"/></svg> View Roblox Profile
+                    <svg style="width:18px;" viewBox="0 0 134 134"><path fill="currentcolor" stroke-linejoin="round" stroke-width="12" d="m 134 106 l -103.9 27.8 l -27.9 -104 l 104 -27.9 z m -50 -30 l -25.1 6.7 l -6.7 -25.1 l 25.1 -6.7 z" fill-rule="evenodd"/></svg> View Roblox Profile
                 </button>
 
                 <button class="profile-action-btn" onclick="catalog.openStats()">My Lists</button>
 
                 <button class="profile-action-btn donator locked" onclick="auth.checkDonationStatus()">
-                    <svg style="width:18px;" viewBox="0 -32 576 576" xmlns="http://www.w3.org/2000/svg"><path d="M464 0H112c-4 0-7.8 2-10 5.4L2 152.6c-2.9 4.4-2.6 10.2.7 14.2l276 340.8c4.8 5.9 13.8 5.9 18.6 0l276-340.8c3.3-4.1 3.6-9.8.7-14.2L474.1 5.4C471.8 2 468.1 0 464 0m-19.3 48 63.3 96h-68.4l-51.7-96zm-202.1 0h90.7l51.7 96H191zm-111.3 0h56.8l-51.7 96H68zm-43 144h51.4L208 352zm102.9 0h193.6L288 435.3zM368 352l68.2-160h51.4z"/></svg> Donator Settings
+                    <svg style="width:18px;" viewBox="1 3 22 18" xmlns="http://www.w3.org/2000/svg"><path d="M2 10L6 4H18L22 10M2 10L12 20M2 10H22M12 20L22 10M12 20L16 10L12 4L8 10L12 20Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" stroke-linejoin="round"/></svg> Donator Settings
                 </button>
 
                 <button class="profile-action-btn logout" onclick="auth.logout()">

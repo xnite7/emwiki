@@ -2031,6 +2031,7 @@ textarea {
         gap: 6px;
         margin-top: 5px;
         flex-wrap: wrap;
+        justify-content: flex-start;
     }
 
     .role-badge {
@@ -2044,37 +2045,13 @@ textarea {
         color: var(--text-secondary);
     }
 
-    .role-badge.admin {
-        background: linear-gradient(135deg, #ff4757, #ff6348);
-        color: white;
-    }
 
-    .role-badge.moderator {
-        background: linear-gradient(135deg, #5f27cd, #341f97);
-        color: white;
-    }
-
-    .role-badge.vip {
-        background: linear-gradient(135deg, #ffd700, #ffed4e);
-        color: #333;
-    }
-
-    .role-badge.donator {
-        background: linear-gradient(135deg, #00d2ff, #3a7bd5);
-        color: white;
-    }
-
-    .role-badge.scammer {
-        background: linear-gradient(135deg, #2d3436, #636e72);
-        color: #ff4757;
-        text-decoration: line-through;
-    }
 
     .role-badge.primary {
         display: inline-flex;
         align-items: center;
-        padding: 4px 12px;
-        border-radius: 14px;
+        padding: 3px 10px 4px;
+        border-radius: 5px;
         font-size: 12px;
         font-weight: 700;
         text-transform: uppercase;
@@ -2082,6 +2059,11 @@ textarea {
         background: var(--bg-secondary);
         color: var(--text-secondary);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+            @supports (corner-shape: squircle) {
+        corner-shape: squircle;
+        border-radius: 26px;
+    }
     }
 
     /* Secondary role icons (minimized) */
@@ -2106,58 +2088,26 @@ textarea {
         height: 14px;
     }
 
-    /* Admin styles */
-    .role-badge.admin {
-        background: linear-gradient(135deg, #ff4757, #ff6348);
+    .role-badge.admin,.role-icon.admin {
+        background: linear-gradient(135deg, #ff4757, #b91b00);
         color: white;
     }
 
-    .role-icon.admin {
-        background: linear-gradient(135deg, #ff4757, #ff6348);
+    .role-badge.moderator,.role-icon.moderator {
+        background: linear-gradient(135deg, #FF8FF3, #641bb5);
         color: white;
     }
 
-    /* Moderator styles */
-    .role-badge.moderator {
-        background: linear-gradient(135deg, #5f27cd, #341f97);
-        color: white;
-    }
-
-    .role-icon.moderator {
-        background: linear-gradient(135deg, #5f27cd, #341f97);
-        color: white;
-    }
-
-    /* VIP styles */
-    .role-badge.vip {
+    .role-badge.vip,.role-icon.vip {
         background: linear-gradient(135deg, #ffd700, #ffb700);
         color: #1a1a1a;
     }
-
-    .role-icon.vip {
-        background: linear-gradient(135deg, #ffd700, #ffb700);
-        color: #1a1a1a;
+    .role-badge.donator,.role-icon.donator {
+        background: linear-gradient(135deg, #ffd900, #b55a1b);;
+        color: #fff;
     }
 
-    /* Donator styles */
-    .role-badge.donator {
-        background: linear-gradient(135deg, #00d2ff, #3a7bd5);
-        color: white;
-    }
-
-    .role-icon.donator {
-        background: linear-gradient(135deg, #00d2ff, #3a7bd5);
-        color: white;
-    }
-
-    /* Scammer styles */
-    .role-badge.scammer {
-        background: linear-gradient(135deg, #2d3436, #636e72);
-        color: #ff4757;
-        text-decoration: line-through;
-    }
-
-    .role-icon.scammer {
+    .role-badge.scammer,.role-icon.scammer {
         background: linear-gradient(135deg, #2d3436, #636e72);
         color: #ff4757;
         animation: shake 0.5s infinite;
