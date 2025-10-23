@@ -174,7 +174,7 @@ svg:hover #cloud {
     cursor: pointer;
     transition: all 0.3s;
     border: 2px solid var(--border-color);
-    opacity: 0.5;
+    opacity: 0.75;
     position: relative;
 }
 
@@ -2477,7 +2477,7 @@ textarea {
         cursor: pointer;
         transition: all 0.3s;
         border: 2px solid var(--border-color);
-        opacity: 0.5;
+        opacity: 0.75;
         position: relative;
     }
 
@@ -2490,6 +2490,7 @@ textarea {
         content: '$';
         width: 17px;
         font-weight: 600;
+        line-height: 0.1;
         font-size: 18px;
         position: absolute;
         left: 5px;
