@@ -2332,7 +2332,7 @@ textarea {
 
     .profile-tax-mode,
     .profile-dropdown-divider {
-        transition: all 0.1s 1s, opacity 0.2s 1.3s;
+        transition: all 0.2s 0.2s, opacity 0.2s 0.3s;
         max-height: 80px;
         overflow: hidden;
         opacity: 1;
@@ -2340,7 +2340,7 @@ textarea {
 
     .hide-prices .profile-tax-mode,
     .hide-prices .profile-tax-mode~.profile-dropdown-divider {
-        transition: all 0.2s 1s, opacity 1.3s;
+        transition: all 0.2s 0.2s, opacity 0.2s;
         max-height: 0px;
         opacity: 0;
     }
