@@ -2351,10 +2351,9 @@ class Auth {
                 </button>
             </div>
 
-            <div class="profile-dropdown-divider"></div>
 
             <div class="profile-tax-mode">
-                <label style="font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; display: block;">Tax Mode</label>
+                <label>Tax Mode</label>
                 <div class="tax-mode-options">
                     <button class="tax-mode-btn active" data-tax="nt" onclick="catalog.selectTax('nt')">
                         <span style="font-size: 14px; font-weight: 700;">Flat</span>
