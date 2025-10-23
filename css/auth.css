@@ -637,7 +637,7 @@
 }
 
 .profile-stat {
-    background: rgb(from CanvasText b b b / 0.1);
+    background: linear-gradient(rgb(from CanvasText b b b / 0.1), transparent);
     padding: 10px;
     border-radius: 10px;
     text-align: center;
@@ -671,7 +671,6 @@
 }
 
 .profile-action-btn {
-
     padding: 12px 16px;
     background: var(--bg-item);
     border: 1px solid var(--border-color);
@@ -688,7 +687,7 @@
 }
 
 .profile-action-btn:hover {
-    background: var(--border-color);
+    background: rgb(from var(--bg-item) r g b / 0.2);
     transform: translateX(4px);
 }
 
