@@ -576,6 +576,10 @@
     border-radius: 12px;
     border: 2px solid var(--border-color);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    @supports (corner-shape: squircle) {
+        corner-shape: squircle;
+        border-radius: 32px;
+    }
 }
 
 .profile-dropdown-info {
