@@ -364,12 +364,13 @@
 					} else if (item.weekly) {
 						div.querySelector('.item-price').textContent = item['price/code/rarity'].split('<br>').pop().replace(' Coins', '');
 						div.querySelector('.item-price').classList.add('star-price', 'coin-price');
+					} else if (item.new) {
+						if (item['price/code/rarity']?.toLowerCase().includes('unobtainable')) {
+							div.style.order = 1;
+						}
 					}
 
 					grid.appendChild(div);
-					this.allItems.push({
-						...item
-					});
 				});
 			}
 
