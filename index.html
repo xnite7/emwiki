@@ -275,6 +275,7 @@
 				super();
 				this.currentCategory = 'all';
 				this.countdownManager = new CountdownManager();
+				this.Auth = new Auth();
 				this.init();
 
 			}
@@ -309,10 +310,16 @@
 					});
 				});
 
-								// Add dev shortcut
+				// Add dev shortcut
 				document.getElementById('search-bar').addEventListener('keypress', (e) => {
-					if (e.key === 'Enter' && e.target.value.toLowerCase().trim() === 'dev') {
-						window.location.href = '/admin';
+					if (e.key === 'Enter') {
+						if (e.target.value.toLowerCase().trim() === 'alien') {
+							this.Auth.triggerJumpScare(1);
+						}
+						if (e.target.value.toLowerCase().trim() === 'dev') {
+							window.location.href = '/admin';
+						}
+
 					}
 				});
 			}

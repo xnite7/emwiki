@@ -1850,13 +1850,15 @@ class Auth {
         });
     }
 
-    triggerJumpScare() {
+    triggerJumpScare(type) {
         const scareImages = [
             './imgs/scammerbg.jpeg',
             './imgs/Babadook.png'
         ];
 
-        const scareType = Math.floor(Math.random() * 3);
+        const scareType = type || Math.floor(Math.random() * 3);
+
+
 
         if (scareType === 0) {
             //image jumpscare
@@ -1890,83 +1892,62 @@ class Auth {
             document.body.appendChild(overlay);
 
         } else if (scareType === 1) {
-    // Glitch scare + alien invasion on all canvases
-    document.body.style.filter = 'hue-rotate(180deg) saturate(5)';
-    document.body.style.transform = 'rotateY(180deg)';
+            // Glitch scare + alien invasion on all canvases
+            document.querySelector('html').style.filter = 'hue-rotate(180deg) saturate(5)';
 
-    Utils.showToast(
-        '⚠️ SCAMMER ALERT',
-        'Your account has been flagged for suspicious activity',
-        'error'
-    );
+            Utils.showToast(
+                '🛸👽',
+                'zlorp zlerp zlarp...',
+                'success'
+            );
 
-    // Get all canvas elements
-    const canvases = document.querySelectorAll('canvas');
-    const alienImage = new Image();
-    alienImage.src = './imgs/alien.png'; // Update path if needed
-    
-    // Store original canvas contents
-    const originalCanvasData = [];
-    
-    alienImage.onload = () => {
-        canvases.forEach((canvas, index) => {
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return;
-            
-            // Save original canvas content
-            try {
-                originalCanvasData[index] = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            } catch (e) {
-                console.warn('Could not save canvas data:', e);
+            // Get all canvas elements
+            const canvases = document.querySelectorAll('canvas');
+            const alienImage = new Image();
+            alienImage.src = './imgs/alien.png'; // Update path if needed
+
+            if (document.querySelector('.profile-dropdown-header img')) {
+                document.querySelector('.profile-dropdown-header img').src = './imgs/alien-cat.gif';
+            } if (document.querySelector('#user-profile-btn img')) {
+                document.querySelector('#user-profile-btn img').src = './imgs/alien-cat.gif';
+                
+            }if (document.querySelector('header svg text')) {
+
+            document.querySelector('header svg text').innerHTML = 'zlorp';
             }
-            
-            // Draw alien image to fill the canvas
-            ctx.save();
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Add glitch effect
-            ctx.filter = 'hue-rotate(180deg) saturate(5) contrast(200%)';
-            
-            // Draw alien image scaled to fit canvas
-            ctx.drawImage(alienImage, 0, 0, canvas.width, canvas.height);
-            
-            // Add random glitch artifacts
-            for (let i = 0; i < 20; i++) {
-                ctx.globalAlpha = Math.random() * 0.5;
-                const x = Math.random() * canvas.width;
-                const y = Math.random() * canvas.height;
-                const w = Math.random() * 100;
-                const h = Math.random() * 100;
-                ctx.drawImage(alienImage, x, y, w, h);
-            }
-            
-            ctx.restore();
-        });
-    };
 
-    alienImage.onerror = () => {
-        console.error('Failed to load alien.png');
-    };
+            alienImage.onload = () => {
+                canvases.forEach((canvas) => {
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) return;
 
-    setTimeout(() => {
-        document.body.style.animation = '';
-        document.body.style.filter = '';
-        document.body.style.transform = '';
-        
-        // Restore original canvas contents
-        canvases.forEach((canvas, index) => {
-            const ctx = canvas.getContext('2d');
-            if (ctx && originalCanvasData[index]) {
-                try {
-                    ctx.putImageData(originalCanvasData[index], 0, 0);
-                } catch (e) {
-                    // If can't restore, just clear it
+                    // Draw alien image to fill the canvas
+                    ctx.save();
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
-                }
-            }
-        });
-    }, 30000);
-} else {
+
+                    // Add glitch effect
+                    ctx.filter = 'hue-rotate(180deg) saturate(5) contrast(200%)';
+
+                    // Draw alien image scaled to fit canvas
+                    ctx.drawImage(alienImage, 0, 0, canvas.width, canvas.height);
+
+                    // Add random glitch artifacts
+                    for (let i = 0; i < 20; i++) {
+                        ctx.globalAlpha = Math.random() * 0.5;
+                        const x = Math.random() * canvas.width;
+                        const y = Math.random() * canvas.height;
+                        const w = Math.random() * 100;
+                        const h = Math.random() * 100;
+                        ctx.drawImage(alienImage, x, y, w, h);
+                    }
+                });
+            };
+
+            alienImage.onerror = () => {
+                console.error('Failed to load alien.png');
+            };
+
+        } else {
             document.body.style.animation = 'spin720 1.5s ease-in-out';
 
             setTimeout(() => {
@@ -2705,4 +2686,5 @@ if (typeof window !== 'undefined') {
     window.BaseApp = BaseApp;
     window.PriceGraph = PriceGraph;
     window.CountdownManager = CountdownManager;
+    window.Auth = Auth;
 }
