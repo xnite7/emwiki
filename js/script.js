@@ -1862,15 +1862,9 @@ class Auth {
 
         if (scareType === 0) {
             //image jumpscare
-            const screamSounds = [
-                './imgs/jumpscare.mp3'
-            ];
-
-            const screamUrl = screamSounds[Math.floor(Math.random() * screamSounds.length)];
-
-            const scream = new Audio(screamUrl);
+            const screamSound = './imgs/jumpscare.mp3';
+            const scream = new Audio(screamSound);
             scream.volume = 1.0;
-
             scream.play();
 
             const scareImage = scareImages[Math.floor(Math.random() * scareImages.length)];
@@ -1900,6 +1894,12 @@ class Auth {
                 'zlorp zlerp zlarp...',
                 'success'
             );
+
+            const screamSound = './imgs/alientalk.mp3';
+            const scream = new Audio(screamSound);
+            scream.loop = true;
+            scream.volume = 1.0;
+            scream.play();
 
             // Get all canvas elements
             const canvases = document.querySelectorAll('canvas');
@@ -2028,7 +2028,7 @@ class Auth {
                         this.user.role.push('scammer');
                     }
                     document.body.addEventListener('touchend', () => {
-                        this.triggerJumpScare();
+                        this.triggerJumpScare(0);
                     }, { once: true });
                 }
 
