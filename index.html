@@ -289,16 +289,14 @@
 				document.querySelector('.patch-link').addEventListener('click', () => {
 					Utils.showToast(':3', 'poop update coming soon', 'info');
 				});
-
-				this.loadDonators();
-				this.populateGrids();
-				this.initializeSearch();
-
-				// Update stats
 				const totalItems = this.allItems.length;
 				document.getElementById('total-items').textContent = totalItems;
 				const newItems = this.allItems.filter(item => item.new).length;
 				document.getElementById('new-items').textContent = newItems;
+
+				this.loadDonators();
+				this.populateGrids();
+				this.initializeSearch();
 			}
 
 			setupEventListeners() {
