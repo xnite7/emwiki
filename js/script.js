@@ -1650,7 +1650,8 @@ class ItemModal {
             eggs: "./imgs/qMxjgQy.png",
             opals: "./imgs/wwMMAvr.png",
             baubles: "./imgs/bauble.png",
-            tokens: "./imgs/Cy9r140.png"
+            tokens: "./imgs/Cy9r140.png",
+            candies: "./imgs/candy.png"
         };
         const styles = {
             unobtainable: "filter: saturate(0) brightness(4.5);font-family: 'BuilderSans';color: #3d3d3d;",
