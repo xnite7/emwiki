@@ -8,6 +8,8 @@ class TradingHub {
             sort: 'recent'
         };
         this.apiBase = 'https://emwiki.com/api/trades';
+        this.allItems = [];
+        this.categories = ['gears', 'deaths', 'pets', 'effects', 'titles'];
         //wait till the Auth object is available
         //wait 5 seconds
 
@@ -24,12 +26,38 @@ class TradingHub {
     }
 
     async init() {
-
+        await this.loadItems();
         await this.loadTrades();
         this.setupFilters();
         this.renderTrades();
         this.updateStats();
         this.updateUserUI();
+    }
+
+    async loadItems() {
+        try {
+            const res = await fetch('https://emwiki.site/api/gist-version');
+            const data = await res.json();
+            const parsed = JSON.parse(data.files?.['auto.json']?.content);
+
+            // Flatten all items with category info
+            this.categories.forEach(cat => {
+                if (parsed[cat]) {
+                    parsed[cat].forEach(item => {
+                        this.allItems.push({
+                            ...item,
+                            category: cat
+                        });
+                    });
+                }
+            });
+
+            console.log('Loaded', this.allItems.length, 'items');
+            return this.allItems;
+        } catch (error) {
+            console.error('Failed to load items:', error);
+            return null;
+        }
     }
 
     loadTheme() {
@@ -74,7 +102,9 @@ class TradingHub {
                 title: listing.title,
                 description: listing.description,
                 offering: listing.offering_items,
+                offering_robux: listing.offering_robux || 0,
                 lookingFor: listing.seeking_items || [],
+                seeking_robux: listing.seeking_robux || 0,
                 status: listing.status,
                 createdAt: new Date(listing.created_at),
                 views: listing.views || 0,
@@ -213,6 +243,12 @@ class TradingHub {
                             <span class="trade-item-name">${item.item_name}</span>
                         </div>
                     `).join('')}
+                    ${trade.offering_robux > 0 ? `
+                        <div class="trade-item-mini" style="background: linear-gradient(135deg, #11f54a20, #667eea20);">
+                            <span style="font-size: 20px;">💰</span>
+                            <span class="trade-item-name">${trade.offering_robux} R$</span>
+                        </div>
+                    ` : ''}
                 </div>
 
                 <div class="trade-arrow">⇄</div>
@@ -224,7 +260,14 @@ class TradingHub {
                             <img class="trade-item-img" src="${item.item_image || './imgs/placeholder.png'}" alt="${item.item_name}">
                             <span class="trade-item-name">${item.item_name}</span>
                         </div>
-                    `).join('') : '<div style="text-align: center; color: var(--text-secondary);">Open to offers</div>'}
+                    `).join('') : ''}
+                    ${trade.seeking_robux > 0 ? `
+                        <div class="trade-item-mini" style="background: linear-gradient(135deg, #11f54a20, #667eea20);">
+                            <span style="font-size: 20px;">💰</span>
+                            <span class="trade-item-name">${trade.seeking_robux} R$</span>
+                        </div>
+                    ` : ''}
+                    ${(!trade.lookingFor || trade.lookingFor.length === 0) && (!trade.seeking_robux || trade.seeking_robux === 0) ? '<div style="text-align: center; color: var(--text-secondary);">Open to offers</div>' : ''}
                 </div>
             </div>
 
@@ -440,18 +483,30 @@ class TradingHub {
 
                 <div class="form-group">
                     <label>Items You're Offering</label>
-                    <div id="offering-items-container">
-                        <button type="button" class="add-offering-item-btn" onclick="tradingHub.addOfferingItemInput()">+ Add Item</button>
-                        <div id="offering-items-list"></div>
+                    <div class="item-search-container">
+                        <input type="text" id="offering-search" placeholder="Search items..." class="item-search-input">
+                        <div id="offering-search-results" class="item-search-results"></div>
                     </div>
+                    <div id="offering-items-selected" class="selected-items-grid"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Robux You're Offering (Optional)</label>
+                    <input type="number" name="offering_robux" placeholder="0" min="0" step="1" class="robux-input">
                 </div>
 
                 <div class="form-group">
                     <label>Items You Want (Optional - leave empty for open offers)</label>
-                    <div id="seeking-items-container">
-                        <button type="button" class="add-seeking-item-btn" onclick="tradingHub.addSeekingItemInput()">+ Add Item</button>
-                        <div id="seeking-items-list"></div>
+                    <div class="item-search-container">
+                        <input type="text" id="seeking-search" placeholder="Search items..." class="item-search-input">
+                        <div id="seeking-search-results" class="item-search-results"></div>
                     </div>
+                    <div id="seeking-items-selected" class="selected-items-grid"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Robux You Want (Optional)</label>
+                    <input type="number" name="seeking_robux" placeholder="0" min="0" step="1" class="robux-input">
                 </div>
 
                 <div class="form-actions">
@@ -463,6 +518,12 @@ class TradingHub {
 
         document.body.appendChild(modal);
 
+        // Setup item search for offering
+        this.setupItemSearch('offering-search', 'offering-search-results', 'offering-items-selected', 'offering');
+
+        // Setup item search for seeking
+        this.setupItemSearch('seeking-search', 'seeking-search-results', 'seeking-items-selected', 'seeking');
+
         const form = document.getElementById('create-trade-form');
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -470,65 +531,134 @@ class TradingHub {
         });
     }
 
-    addOfferingItemInput() {
-        const container = document.getElementById('offering-items-list');
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'offering-item-input';
-        itemDiv.innerHTML = `
-            <input type="text" placeholder="Item name" class="offering-item-name">
-            <button type="button" class="remove-btn" onclick="this.parentElement.remove()">×</button>
-        `;
-        container.appendChild(itemDiv);
+    setupItemSearch(searchInputId, resultsContainerId, selectedContainerId, type) {
+        const searchInput = document.getElementById(searchInputId);
+        const resultsContainer = document.getElementById(resultsContainerId);
+        const selectedContainer = document.getElementById(selectedContainerId);
+
+        if (!searchInput || !resultsContainer || !selectedContainer) return;
+
+        const selectedItems = new Set();
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim().toLowerCase();
+
+            if (!query) {
+                resultsContainer.innerHTML = '';
+                resultsContainer.style.display = 'none';
+                return;
+            }
+
+            // Filter items based on search
+            const matches = this.allItems.filter(item =>
+                item.name.toLowerCase().includes(query)
+            ).slice(0, 20); // Limit to 20 results
+
+            if (matches.length === 0) {
+                resultsContainer.innerHTML = '<div class="no-results">No items found</div>';
+                resultsContainer.style.display = 'block';
+                return;
+            }
+
+            resultsContainer.innerHTML = '';
+            resultsContainer.style.display = 'grid';
+
+            matches.forEach(item => {
+                const itemCard = document.createElement('div');
+                itemCard.className = 'search-result-item';
+                itemCard.innerHTML = `
+                    <img src="${item.img || './imgs/placeholder.png'}" alt="${item.name}">
+                    <span class="item-name-small">${item.name}</span>
+                `;
+
+                itemCard.addEventListener('click', () => {
+                    if (selectedItems.has(item.name)) return; // Already selected
+
+                    selectedItems.add(item.name);
+                    this.addSelectedItem(selectedContainer, item, () => {
+                        selectedItems.delete(item.name);
+                    });
+
+                    searchInput.value = '';
+                    resultsContainer.innerHTML = '';
+                    resultsContainer.style.display = 'none';
+                });
+
+                resultsContainer.appendChild(itemCard);
+            });
+        });
+
+        // Close results when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+                resultsContainer.style.display = 'none';
+            }
+        });
     }
 
-    addOfferItemInput() {
-        const container = document.getElementById('offer-items-list');
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'offer-item-input';
-        itemDiv.innerHTML = `
-            <input type="text" placeholder="Item name" class="offer-item-name">
-            <button type="button" class="remove-btn" onclick="this.parentElement.remove()">×</button>
+    addSelectedItem(container, item, onRemove) {
+        const itemCard = document.createElement('div');
+        itemCard.className = 'selected-item-card';
+        itemCard.dataset.itemName = item.name;
+        itemCard.innerHTML = `
+            <img src="${item.img || './imgs/placeholder.png'}" alt="${item.name}">
+            <span class="selected-item-name">${item.name}</span>
+            <button type="button" class="remove-selected-item">×</button>
         `;
-        container.appendChild(itemDiv);
-    }
 
-    addSeekingItemInput() {
-        const container = document.getElementById('seeking-items-list');
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'seeking-item-input';
-        itemDiv.innerHTML = `
-            <input type="text" placeholder="Item name" class="seeking-item-name">
-            <button type="button" class="remove-btn" onclick="this.parentElement.remove()">×</button>
-        `;
-        container.appendChild(itemDiv);
+        const removeBtn = itemCard.querySelector('.remove-selected-item');
+        removeBtn.addEventListener('click', () => {
+            itemCard.remove();
+            if (onRemove) onRemove();
+        });
+
+        container.appendChild(itemCard);
     }
 
     async handleCreateTrade(form) {
         const formData = new FormData(form);
 
-        // Get offering items
-        const offeringItems = Array.from(document.querySelectorAll('.offering-item-name'))
-            .map(input => input.value.trim())
-            .filter(name => name)
-            .map(name => ({ item_name: name }));
+        // Get offering items from selected cards
+        const offeringContainer = document.getElementById('offering-items-selected');
+        const offeringItems = Array.from(offeringContainer.querySelectorAll('.selected-item-card'))
+            .map(card => {
+                const itemName = card.dataset.itemName;
+                const item = this.allItems.find(i => i.name === itemName);
+                return {
+                    item_name: itemName,
+                    item_image: item?.img || null
+                };
+            });
 
-        if (offeringItems.length === 0) {
-            if (window.Utils) Utils.showToast('Error', 'Please add at least one item to offer', 'error');
+        const offeringRobux = parseInt(formData.get('offering_robux')) || 0;
+
+        if (offeringItems.length === 0 && offeringRobux === 0) {
+            if (window.Utils) Utils.showToast('Error', 'Please add at least one item or robux to offer', 'error');
             return;
         }
 
-        // Get seeking items
-        const seekingItems = Array.from(document.querySelectorAll('.seeking-item-name'))
-            .map(input => input.value.trim())
-            .filter(name => name)
-            .map(name => ({ item_name: name }));
+        // Get seeking items from selected cards
+        const seekingContainer = document.getElementById('seeking-items-selected');
+        const seekingItems = Array.from(seekingContainer.querySelectorAll('.selected-item-card'))
+            .map(card => {
+                const itemName = card.dataset.itemName;
+                const item = this.allItems.find(i => i.name === itemName);
+                return {
+                    item_name: itemName,
+                    item_image: item?.img || null
+                };
+            });
+
+        const seekingRobux = parseInt(formData.get('seeking_robux')) || 0;
 
         const listingData = {
             title: formData.get('title'),
             description: formData.get('description'),
             category: formData.get('category'),
             offering_items: offeringItems,
-            seeking_items: seekingItems
+            offering_robux: offeringRobux,
+            seeking_items: seekingItems,
+            seeking_robux: seekingRobux
         };
 
         try {
@@ -572,6 +702,12 @@ class TradingHub {
                                     <span>${item.item_name}</span>
                                 </div>
                             `).join('')}
+                            ${(listing.offering_robux || 0) > 0 ? `
+                                <div class="detail-item" style="background: linear-gradient(135deg, #11f54a15, #667eea15);">
+                                    <span style="font-size: 32px;">💰</span>
+                                    <span style="font-weight: 700; color: #11f54a;">${listing.offering_robux} Robux</span>
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
 
@@ -585,7 +721,14 @@ class TradingHub {
                                     <img src="${item.item_image || './imgs/placeholder.png'}" alt="${item.item_name}">
                                     <span>${item.item_name}</span>
                                 </div>
-                            `).join('') : '<p style="text-align:center;color:var(--text-secondary)">Open to all offers</p>'}
+                            `).join('') : ''}
+                            ${(listing.seeking_robux || 0) > 0 ? `
+                                <div class="detail-item" style="background: linear-gradient(135deg, #11f54a15, #667eea15);">
+                                    <span style="font-size: 32px;">💰</span>
+                                    <span style="font-weight: 700; color: #11f54a;">${listing.seeking_robux} Robux</span>
+                                </div>
+                            ` : ''}
+                            ${(!listing.seeking_items || listing.seeking_items.length === 0) && (!listing.seeking_robux || listing.seeking_robux === 0) ? '<p style="text-align:center;color:var(--text-secondary)">Open to all offers</p>' : ''}
                         </div>
                     </div>
                 </div>
@@ -611,14 +754,23 @@ class TradingHub {
                 (listing.listing?.seeking_items || listing.seeking_items).map(item => `<span class="tag">${item.item_name}</span>`).join('') :
                 '<span class="tag">Any items</span>'}
                     </div>
+                    ${(listing.listing?.seeking_robux || listing.seeking_robux) > 0 ? `
+                        <p style="margin-top: 10px;"><strong>Robux wanted:</strong> ${listing.listing?.seeking_robux || listing.seeking_robux} R$</p>
+                    ` : ''}
                 </div>
 
                 <div class="form-group">
-                    <label>Your Offer</label>
-                    <div id="offer-items-container">
-                        <button type="button" class="add-offer-item-btn" onclick="tradingHub.addOfferItemInput()">+ Add Item</button>
-                        <div id="offer-items-list"></div>
+                    <label>Your Item Offer</label>
+                    <div class="item-search-container">
+                        <input type="text" id="offer-search" placeholder="Search items..." class="item-search-input">
+                        <div id="offer-search-results" class="item-search-results"></div>
                     </div>
+                    <div id="offer-items-selected" class="selected-items-grid"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Robux You're Offering (Optional)</label>
+                    <input type="number" name="offering_robux" placeholder="0" min="0" step="1" class="robux-input">
                 </div>
 
                 <div class="form-group">
@@ -635,6 +787,9 @@ class TradingHub {
 
         document.body.appendChild(modal);
 
+        // Setup item search for offer
+        this.setupItemSearch('offer-search', 'offer-search-results', 'offer-items-selected', 'offer');
+
         const form = document.getElementById('make-offer-form');
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -645,18 +800,28 @@ class TradingHub {
     async handleMakeOffer(listingId, form) {
         const formData = new FormData(form);
 
-        const offeredItems = Array.from(document.querySelectorAll('.offer-item-name'))
-            .map(input => input.value.trim())
-            .filter(name => name)
-            .map(name => ({ item_name: name }));
+        // Get offered items from selected cards
+        const offerContainer = document.getElementById('offer-items-selected');
+        const offeredItems = Array.from(offerContainer.querySelectorAll('.selected-item-card'))
+            .map(card => {
+                const itemName = card.dataset.itemName;
+                const item = this.allItems.find(i => i.name === itemName);
+                return {
+                    item_name: itemName,
+                    item_image: item?.img || null
+                };
+            });
 
-        if (offeredItems.length === 0) {
-            if (window.Utils) Utils.showToast('Error', 'Please add at least one item to offer', 'error');
+        const offeringRobux = parseInt(formData.get('offering_robux')) || 0;
+
+        if (offeredItems.length === 0 && offeringRobux === 0) {
+            if (window.Utils) Utils.showToast('Error', 'Please add at least one item or robux to offer', 'error');
             return;
         }
 
         const offerData = {
             offered_items: offeredItems,
+            offering_robux: offeringRobux,
             message: formData.get('message') || ''
         };
 
