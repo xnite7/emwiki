@@ -21,7 +21,7 @@ class TradingHub {
             this.currentUser = await window.Auth.checkAuth();
         }
 
-        await this.loadTrades();
+        //await this.loadTrades();
         this.setupFilters();
         this.renderTrades();
         this.updateStats();
@@ -83,30 +83,6 @@ class TradingHub {
                 Utils.showToast('Error', 'Failed to load trades from server', 'error');
             }
         }
-    }
-
-    generateMockTrades() {
-        // Fallback mock data
-        return [
-            {
-                id: 1,
-                trader: {
-                    name: 'CoolTrader123',
-                    avatar: './imgs/placeholder.png',
-                    rating: 4.5,
-                    totalTrades: 10
-                },
-                title: 'Trading Epic Sword',
-                offering: [
-                    { item_id: '1', item_name: 'Epic Sword', item_image: './imgs/placeholder.png' }
-                ],
-                lookingFor: [],
-                status: 'active',
-                createdAt: new Date(Date.now() - 1000 * 60 * 30),
-                views: 15,
-                category: 'gears'
-            }
-        ];
     }
 
     setupFilters() {
@@ -303,10 +279,12 @@ class TradingHub {
     }
 
     updateUserUI() {
+        console.log('Current User:', this.currentUser);
         const createBtn = document.querySelector('.create-trade-btn');
         if (createBtn && !this.currentUser) {
             createBtn.disabled = true;
-            createBtn.title = 'Please login to create trades';
+            createBtn.classList.add('create-account');
+            createBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6.75 6.5a5.25 5.25 0 1 1 10.5 0 5.25 5.25 0 0 1-10.5 0m-2.5 12.071a5.32 5.32 0 0 1 5.321-5.321h4.858a5.32 5.32 0 0 1 5.321 5.321 4.18 4.18 0 0 1-4.179 4.179H8.43a4.18 4.18 0 0 1-4.179-4.179" clip-rule="evenodd"/></svg>Please login to create trades';
         }
     }
 
