@@ -417,6 +417,8 @@
 
 #user-profile-btn {
     padding: 5px 13px 5px 7px;
+    right: 12px;
+    left: unset;
 }
 
 
