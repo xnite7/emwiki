@@ -1786,12 +1786,12 @@ class Auth {
 
 
         document.querySelector('header').insertAdjacentHTML('beforeend', `
-            <button style="right:unset;top: 20px;left: 12px;position: absolute;" class="btn" id="installBtn">
+            <button style="display:none" class="btn" id="installBtn">
 				<svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
 					<path fill="none" stroke="currentColor" stroke-width="2"
 						d="M12 6v10zm0-5c6.075 0 11 4.925 11 11s-4.925 11-11 11S1 18.075 1 12 5.925 1 12 1Zm5 11-5 5-5-5" />
-				</svg>
-				Install App</button>
+				</svg>Install App
+            </button>
 
             <div popover id="profile-dropdown" class="profile-dropdown"></div>
             
@@ -2040,7 +2040,7 @@ class Auth {
 
                 const authButton = document.getElementById('auth-button');
                 if (authButton) {
-                    authButton.style.display = 'block';
+                    authButton.style.display = 'flex';
                 }
             }
         } catch (error) {
@@ -2048,7 +2048,7 @@ class Auth {
 
             const authButton = document.getElementById('auth-button');
             if (authButton) {
-                authButton.style.display = 'block';
+                authButton.style.display = 'flex';
             }
         }
     }
@@ -2194,7 +2194,7 @@ class Auth {
         // Hide the auth button
         const authButton = document.getElementById('auth-button');
         if (authButton) {
-            authButton.style.display = 'none';
+            authButton.style.display = 'flex';
         }
 
         // Show profile button

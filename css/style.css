@@ -2726,6 +2726,30 @@ header svg * {
     }
 }
 
+.btn {
+    right:unset;top: 20px;left: 12px;position: absolute;
+}
+
+
+#auth-button {
+    position: absolute;
+    top: 20px;
+    right: 10px;
+    left: unset;
+}
+
+@media screen and (max-width: 768px) {
+    .btn {
+        right:unset;top: unset;left: unset;position: unset;
+    }
+    #auth-button {
+        position: unset;
+        top: unset;
+        right: unset;
+        left: unset;
+    }
+}
+
 @media (hover: none) {
 
     button:hover,
