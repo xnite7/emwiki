@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Trades - Trading Hub</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="icon" href="./imgs/favicon.png" type="image/png">
+    <style>
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .dashboard-header {
+            margin-bottom: 30px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 2rem;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .dashboard-tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--text-secondary);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .listings-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .listing-card {
+            background: var(--bg-item);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.2s;
+        }
+
+        .listing-card:hover {
+            border-color: #667eea;
+        }
+
+        .listing-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .listing-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .listing-meta {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .listing-status {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .listing-status.active {
+            background: rgba(17, 245, 74, 0.2);
+            color: #11f54a;
+        }
+
+        .listing-status.completed {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+        }
+
+        .listing-status.cancelled {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+        }
+
+        .listing-items {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .items-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .item-tag {
+            padding: 6px 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .arrow {
+            color: #4a9eff;
+            font-size: 20px;
+            align-self: center;
+        }
+
+        .listing-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-view {
+            background: linear-gradient(135deg, #667eea, #4a9eff);
+            color: white;
+        }
+
+        .btn-edit {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-cancel {
+            background: #ff4757;
+            color: white;
+        }
+
+        .offer-card {
+            background: var(--bg-item);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .offer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .offer-info h3 {
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            margin: 0 0 5px 0;
+        }
+
+        .offer-from {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .offer-status {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .offer-status.pending {
+            background: rgba(255, 208, 0, 0.2);
+            color: #ffd700;
+        }
+
+        .offer-status.accepted {
+            background: rgba(17, 245, 74, 0.2);
+            color: #11f54a;
+        }
+
+        .offer-status.rejected {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+        }
+
+        .offer-message {
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+            margin: 15px 0;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .offer-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-accept {
+            background: #11f54a;
+            color: #000;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-reject {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 80px;
+            opacity: 0.5;
+        }
+
+        .empty-state h2 {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin: 20px 0 10px;
+        }
+
+        .empty-state p {
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="https://emwiki.site">
+            <svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="eppp1" y1="1" x2="0">
+                        <stop offset=".2" style="stop-color:#ff0" />
+                        <stop offset="1" style="stop-color:#24ff5a" />
+                    </linearGradient>
+                    <linearGradient id="eppp2" y1="1" x2="0">
+                        <stop offset="0" style="stop-color:#24ff5d" />
+                        <stop offset="1" style="stop-color:#ff0" />
+                    </linearGradient>
+                </defs>
+                <image id="cloud" x="461" y="459" href="https://emwiki.site/imgs/TWOKPhY.png" height="60" width="60" style="filter:opacity(.6)" />
+                <text x="489" y="503" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke" stroke-linejoin="round" fill="url(#eppp1)" style="animation:floatAnim 12s ease-in-out infinite;font:200 46px Slapstick">EM</text>
+                <image id="epic-image" x="464" y="463" href="https://emwiki.site/imgs/epicfaces/kitta.png" height="60" width="60" style="scale:.48;transform:translate(846px,103px);rotate:20deg;transform-origin:center;animation:floatAnim2 15s ease-in-out 1s infinite alternate" />
+                <image id="cloud" x="495" y="477" href="https://emwiki.site/imgs/8UUB0Gt.png" height="60" width="60" style="filter:opacity(.86)" />
+                <text x="516" y="514" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke" stroke-linejoin="round" fill="url(#eppp2)" style="animation:floatAnim 12s ease-in-out infinite;animation-delay:5.5s;font:200 16px Slapstick">wiki</text>
+                <image id="cloud" x="445" y="487" href="https://emwiki.site/imgs/oYKd3nJ.png" height="28" width="42" style="filter:opacity(.8)" />
+            </svg>
+        </a>
+        <div class="nav-links">
+            <a href="/catalog" class="nav-link">Catalog</a>
+            <a href="/trading" class="nav-link">Trading Hub</a>
+            <a href="/forum" class="nav-link">Forum</a>
+            <a href="/gallery" class="nav-link">Gallery</a>
+            <a href="/scammers" class="nav-link">Scammers</a>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>My Trading Dashboard</h1>
+        </div>
+
+        <div class="dashboard-tabs">
+            <button class="tab-btn active" onclick="dashboard.switchTab('myListings')">My Listings</button>
+            <button class="tab-btn" onclick="dashboard.switchTab('receivedOffers')">Received Offers</button>
+            <button class="tab-btn" onclick="dashboard.switchTab('sentOffers')">Sent Offers</button>
+        </div>
+
+        <div id="myListings" class="tab-content active">
+            <div class="listings-grid" id="listings-grid"></div>
+        </div>
+
+        <div id="receivedOffers" class="tab-content">
+            <div id="received-offers-grid"></div>
+        </div>
+
+        <div id="sentOffers" class="tab-content">
+            <div id="sent-offers-grid"></div>
+        </div>
+    </div>
+
+    <script src="./js/script.js"></script>
+    <script src="./js/my-trades.js"></script>
+</body>
+</html>
