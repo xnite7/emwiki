@@ -2197,7 +2197,7 @@ class Auth {
         // Hide the auth button
         const authButton = document.getElementById('auth-button');
         if (authButton) {
-            authButton.style.display = 'flex';
+            authButton.style.display = 'none';
         }
 
         // Show profile button
