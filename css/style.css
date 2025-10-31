@@ -407,8 +407,13 @@ svg:hover #cloud {
 }
 
 #installBtn {
-    opacity: 0.2;
-    pointer-events: none;
+    opacity: 1;
+    pointer-events: auto;
+    position: relative;
+    right: auto;
+    left: auto;
+    top: auto;
+    margin-right: 10px;
 }
 
 .stat-value {

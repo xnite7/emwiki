@@ -1776,6 +1776,7 @@ class Auth {
         this.pollInterval = null;
         this.timerInterval = null; // Add this line
         this.scammersList = []; // ✅ ADD THIS
+        this.deferredPrompt = null; // PWA install prompt
         this.init();
     }
 
@@ -1819,6 +1820,8 @@ class Auth {
             }
         }
 
+        // Setup PWA install functionality
+        this.setupPWAInstall();
 
     }
 
@@ -2453,6 +2456,75 @@ class Auth {
         Utils.showToast('Logged Out', 'You have been successfully logged out', 'info');
 
         setTimeout(() => location.reload(), 1500);
+    }
+
+    setupPWAInstall() {
+        const installBtn = document.getElementById('installBtn');
+        if (!installBtn) return;
+
+        // Check if device is suitable for PWA install
+        const isSuitableDevice = () => {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isIOS = /iphone|ipad|ipod/.test(userAgent);
+            const isAndroid = /android/.test(userAgent);
+            const isWindows = /windows/.test(userAgent);
+            const isMac = /macintosh|mac os x/.test(userAgent);
+            const isLinux = /linux/.test(userAgent);
+
+            // PWA install is supported on most modern devices except iOS (which requires manual add to home screen)
+            // Show on desktop (Windows, Mac, Linux) and Android
+            return (isAndroid || isWindows || isMac || isLinux) && !isIOS;
+        };
+
+        // Listen for the beforeinstallprompt event
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the default browser install prompt
+            e.preventDefault();
+
+            // Store the event for later use
+            this.deferredPrompt = e;
+
+            // Only show button on suitable devices
+            if (isSuitableDevice()) {
+                installBtn.style.display = 'flex';
+            }
+        });
+
+        // Handle install button click
+        installBtn.addEventListener('click', async () => {
+            if (!this.deferredPrompt) {
+                return;
+            }
+
+            // Show the install prompt
+            this.deferredPrompt.prompt();
+
+            // Wait for the user to respond to the prompt
+            const { outcome } = await this.deferredPrompt.userChoice;
+
+            if (outcome === 'accepted') {
+                Utils.showToast('App Installed', 'EM Wiki has been installed successfully!', 'success');
+            }
+
+            // Clear the deferred prompt since it can only be used once
+            this.deferredPrompt = null;
+
+            // Hide the button after install attempt
+            installBtn.style.display = 'none';
+        });
+
+        // Check if app is already installed (running in standalone mode)
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+            // App is already installed, don't show the button
+            installBtn.style.display = 'none';
+        }
+
+        // Listen for successful app install
+        window.addEventListener('appinstalled', () => {
+            Utils.showToast('Success', 'EM Wiki has been added to your home screen!', 'success');
+            installBtn.style.display = 'none';
+            this.deferredPrompt = null;
+        });
     }
 }
 
