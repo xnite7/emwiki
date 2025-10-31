@@ -7,7 +7,7 @@ class TradingHub {
             status: 'active',
             sort: 'recent'
         };
-        this.apiBase = '/api/trades';
+        this.apiBase = 'https://emwiki.com/api/trades';
         this.currentUser = null;
 
         this.loadTheme();
@@ -79,7 +79,6 @@ class TradingHub {
         } catch (error) {
             console.error('Error loading trades:', error);
             // Fallback to mock data on error
-            this.trades = this.generateMockTrades();
             if (window.Utils) {
                 Utils.showToast('Error', 'Failed to load trades from server', 'error');
             }

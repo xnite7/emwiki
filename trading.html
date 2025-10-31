@@ -109,6 +109,7 @@
 }
 
     .create-trade-btn {
+        margin: auto;
         padding: 10px 20px;
         background: linear-gradient(135deg, #667eea, #4a9eff);
         border: none;
@@ -170,6 +171,11 @@
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
         gap: 15px;
+    }
+
+    .trades-grid:has(.empty-state) {
+        grid-template-columns: none;
+        justify-content: center;
     }
 
     .trades-grid.list-view {
@@ -478,7 +484,7 @@
     /* Empty State */
     .empty-state {
         text-align: center;
-        padding: 80px 20px;
+        padding: 20px 20px 45px;
     }
 
     .empty-state-icon {
