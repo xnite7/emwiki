@@ -279,10 +279,10 @@ class TradingHub {
     }
 
     updateUserUI() {
-        console.log('Current User:', this.currentUser);
         const createBtn = document.querySelector('.create-trade-btn');
         if (createBtn && !this.currentUser) {
-            createBtn.disabled = true;
+            createBtn.setAttribute('popovertarget', 'auth-modal');
+            createBtn.setAttribute('popovertargetaction', 'show');
             createBtn.classList.add('create-account');
             createBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6.75 6.5a5.25 5.25 0 1 1 10.5 0 5.25 5.25 0 0 1-10.5 0m-2.5 12.071a5.32 5.32 0 0 1 5.321-5.321h4.858a5.32 5.32 0 0 1 5.321 5.321 4.18 4.18 0 0 1-4.179 4.179H8.43a4.18 4.18 0 0 1-4.179-4.179" clip-rule="evenodd"/></svg>Please login to create trades';
         }
