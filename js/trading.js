@@ -294,14 +294,11 @@ class TradingHub {
 
         // Show/hide navigation links based on login status
         const myTradesLink = document.getElementById('my-trades-link');
-        const inventoryLink = document.getElementById('inventory-link');
 
         if (this.currentUser) {
             if (myTradesLink) myTradesLink.style.display = '';
-            if (inventoryLink) inventoryLink.style.display = '';
         } else {
             if (myTradesLink) myTradesLink.style.display = 'none';
-            if (inventoryLink) inventoryLink.style.display = 'none';
         }
     }
 
@@ -328,9 +325,7 @@ class TradingHub {
             return;
         }
 
-        // Load user's inventory
-        const inventory = await this.loadUserInventory();
-        this.showCreateTradeModal(inventory);
+        this.showCreateTradeModal();
     }
 
     async viewTrade(id) {
@@ -356,13 +351,10 @@ class TradingHub {
             return;
         }
 
-        // Load user's inventory and listing details
-        const [inventory, listing] = await Promise.all([
-            this.loadUserInventory(),
-            fetch(`${this.apiBase}/listings/${listingId}`).then(r => r.json())
-        ]);
+        // Load listing details
+        const listing = await fetch(`${this.apiBase}/listings/${listingId}`).then(r => r.json());
 
-        this.showMakeOfferModal(listingId, listing, inventory);
+        this.showMakeOfferModal(listingId, listing);
     }
 
     async createListing(listingData) {
@@ -422,23 +414,7 @@ class TradingHub {
         };
     }
 
-    async loadUserInventory() {
-        if (!this.currentUser) return [];
-
-        try {
-            const headers = await this.getAuthHeaders();
-            const response = await fetch(`${this.apiBase}/inventory`, { headers });
-            if (!response.ok) return [];
-
-            const data = await response.json();
-            return data.inventory || [];
-        } catch (error) {
-            console.error('Error loading inventory:', error);
-            return [];
-        }
-    }
-
-    showCreateTradeModal(inventory) {
+    showCreateTradeModal() {
         const modal = this.createModal('Create Trade Listing', `
             <form id="create-trade-form" class="trade-form">
                 <div class="form-group">
@@ -464,14 +440,9 @@ class TradingHub {
 
                 <div class="form-group">
                     <label>Items You're Offering</label>
-                    <div id="offering-items" class="item-selector">
-                        ${inventory.length > 0 ? inventory.filter(i => i.for_trade).map(item => `
-                            <div class="selectable-item" data-item='${JSON.stringify({ item_id: item.item_id, item_name: item.item_name, item_image: item.item_image })}'>
-                                <img src="${item.item_image || './imgs/placeholder.png'}" alt="${item.item_name}">
-                                <span>${item.item_name}</span>
-                                <input type="checkbox" class="item-checkbox">
-                            </div>
-                        `).join('') : '<p style="text-align:center;color:var(--text-secondary)">No tradeable items in inventory. <a href="/inventory">Add items?</a></p>'}
+                    <div id="offering-items-container">
+                        <button type="button" class="add-offering-item-btn" onclick="tradingHub.addOfferingItemInput()">+ Add Item</button>
+                        <div id="offering-items-list"></div>
                     </div>
                 </div>
 
@@ -499,6 +470,28 @@ class TradingHub {
         });
     }
 
+    addOfferingItemInput() {
+        const container = document.getElementById('offering-items-list');
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'offering-item-input';
+        itemDiv.innerHTML = `
+            <input type="text" placeholder="Item name" class="offering-item-name">
+            <button type="button" class="remove-btn" onclick="this.parentElement.remove()">×</button>
+        `;
+        container.appendChild(itemDiv);
+    }
+
+    addOfferItemInput() {
+        const container = document.getElementById('offer-items-list');
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'offer-item-input';
+        itemDiv.innerHTML = `
+            <input type="text" placeholder="Item name" class="offer-item-name">
+            <button type="button" class="remove-btn" onclick="this.parentElement.remove()">×</button>
+        `;
+        container.appendChild(itemDiv);
+    }
+
     addSeekingItemInput() {
         const container = document.getElementById('seeking-items-list');
         const itemDiv = document.createElement('div');
@@ -513,12 +506,14 @@ class TradingHub {
     async handleCreateTrade(form) {
         const formData = new FormData(form);
 
-        // Get selected offering items
-        const offeringItems = Array.from(document.querySelectorAll('#offering-items .item-checkbox:checked'))
-            .map(cb => JSON.parse(cb.closest('.selectable-item').dataset.item));
+        // Get offering items
+        const offeringItems = Array.from(document.querySelectorAll('.offering-item-name'))
+            .map(input => input.value.trim())
+            .filter(name => name)
+            .map(name => ({ item_name: name }));
 
         if (offeringItems.length === 0) {
-            if (window.Utils) Utils.showToast('Error', 'Please select at least one item to offer', 'error');
+            if (window.Utils) Utils.showToast('Error', 'Please add at least one item to offer', 'error');
             return;
         }
 
@@ -606,7 +601,7 @@ class TradingHub {
         document.body.appendChild(modal);
     }
 
-    showMakeOfferModal(listingId, listing, inventory) {
+    showMakeOfferModal(listingId, listing) {
         const modal = this.createModal('Make an Offer', `
             <form id="make-offer-form" class="trade-form">
                 <div class="offer-context">
@@ -620,14 +615,9 @@ class TradingHub {
 
                 <div class="form-group">
                     <label>Your Offer</label>
-                    <div id="offer-items" class="item-selector">
-                        ${inventory.length > 0 ? inventory.filter(i => i.for_trade).map(item => `
-                            <div class="selectable-item" data-item='${JSON.stringify({ item_id: item.item_id, item_name: item.item_name, item_image: item.item_image })}'>
-                                <img src="${item.item_image || './imgs/placeholder.png'}" alt="${item.item_name}">
-                                <span>${item.item_name}</span>
-                                <input type="checkbox" class="item-checkbox">
-                            </div>
-                        `).join('') : '<p style="text-align:center;color:var(--text-secondary)">No tradeable items. <a href="/inventory">Add items?</a></p>'}
+                    <div id="offer-items-container">
+                        <button type="button" class="add-offer-item-btn" onclick="tradingHub.addOfferItemInput()">+ Add Item</button>
+                        <div id="offer-items-list"></div>
                     </div>
                 </div>
 
@@ -655,11 +645,13 @@ class TradingHub {
     async handleMakeOffer(listingId, form) {
         const formData = new FormData(form);
 
-        const offeredItems = Array.from(document.querySelectorAll('#offer-items .item-checkbox:checked'))
-            .map(cb => JSON.parse(cb.closest('.selectable-item').dataset.item));
+        const offeredItems = Array.from(document.querySelectorAll('.offer-item-name'))
+            .map(input => input.value.trim())
+            .filter(name => name)
+            .map(name => ({ item_name: name }));
 
         if (offeredItems.length === 0) {
-            if (window.Utils) Utils.showToast('Error', 'Please select at least one item to offer', 'error');
+            if (window.Utils) Utils.showToast('Error', 'Please add at least one item to offer', 'error');
             return;
         }
 

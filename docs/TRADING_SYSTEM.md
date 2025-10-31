@@ -21,7 +21,6 @@ The trading system allows users to:
 - Message other traders
 - Complete trades and leave reviews
 - Build a trading reputation
-- Track their inventory
 - Receive notifications for trade activity
 
 ## Architecture
@@ -35,16 +34,15 @@ The trading system allows users to:
 
 ### Database Schema
 
-The system uses 8 main tables:
+The system uses 7 main tables:
 
-1. **user_inventory** - Items owned by users
-2. **trade_listings** - Public trade listings
-3. **trade_offers** - Offers made on listings
-4. **trade_messages** - Private messaging
-5. **completed_trades** - Historical trade records
-6. **trade_reviews** - Reputation system
-7. **user_trade_stats** - Aggregate statistics
-8. **trade_notifications** - In-app notifications
+1. **trade_listings** - Public trade listings
+2. **trade_offers** - Offers made on listings
+3. **trade_messages** - Private messaging
+4. **completed_trades** - Historical trade records
+5. **trade_reviews** - Reputation system
+6. **user_trade_stats** - Aggregate statistics
+7. **trade_notifications** - In-app notifications
 
 See `schema/trading_schema.sql` for complete schema.
 
@@ -345,88 +343,6 @@ Send a message
   "offer_id": 456
 }
 ```
-
-### Trade Inventory
-
-#### GET /api/trades/inventory
-Get user's inventory
-
-**Authentication Optional** (can view others' inventory)
-
-**Query Parameters:**
-- `user_id` - User to get inventory for (defaults to current user)
-- `for_trade` - Filter by for_trade status (true/false)
-
-**Response:**
-```json
-{
-  "items": [
-    {
-      "id": 1,
-      "user_id": "123456",
-      "item_id": "sword_123",
-      "item_name": "Epic Sword",
-      "item_image": "https://...",
-      "quantity": 1,
-      "for_trade": true,
-      "added_at": 1234567890000
-    }
-  ]
-}
-```
-
-#### POST /api/trades/inventory
-Add item to inventory
-
-**Authentication Required:** Yes
-
-**Request Body:**
-```json
-{
-  "item_id": "sword_123",
-  "item_name": "Epic Sword",
-  "item_image": "https://...",
-  "quantity": 1,
-  "for_trade": false
-}
-```
-
-#### POST /api/trades/inventory/bulk
-Add multiple items at once
-
-**Authentication Required:** Yes
-
-**Request Body:**
-```json
-{
-  "items": [
-    {
-      "item_id": "sword_123",
-      "item_name": "Epic Sword",
-      "quantity": 1
-    },
-    ...
-  ]
-}
-```
-
-#### PUT /api/trades/inventory/:id
-Update inventory item
-
-**Authentication Required:** Yes (own items only)
-
-**Request Body:**
-```json
-{
-  "quantity": 2,
-  "for_trade": true
-}
-```
-
-#### DELETE /api/trades/inventory/:id
-Remove item from inventory
-
-**Authentication Required:** Yes (own items only)
 
 ### Trade Reviews
 
