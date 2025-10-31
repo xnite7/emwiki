@@ -163,7 +163,7 @@ async function handlePost({ request, env, params }) {
         httpMetadata: { contentType: file.type }
       });
 
-      const url = `https://pub-49351598fde84dec89feb871921190e9.r2.dev/${key}`;
+      const url = `https://cdn.emwiki.com/${key}`;
 
       return new Response(JSON.stringify({ url, type: file.type }), {
         headers: { 'Content-Type': 'application/json' }
