@@ -2020,7 +2020,11 @@ textarea {
 }
 
 .dropdown-item.selected {
-    background: rgba(102, 126, 234, 0.2);
+    background: rgba(102, 126, 234, 0.4);
+}
+
+.dropdown-item.selected:hover {
+    background: rgba(61, 86, 196, 0.3);
 }
 
 .dropdown-item.disabled {

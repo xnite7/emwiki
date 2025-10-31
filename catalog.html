@@ -604,7 +604,6 @@
                                                 /1B Update\s*(?:\d{4})?/gi,
                                                 /2B Update\s*(?:\d{4})?/gi,
                                                 /Squid Game\s*(?:\d{4})?/gi,
-                                                /RODIS\s*(?:\d{4})?/gi,
                                             ];
 
                                             const fieldsToMatch = [item.name, item.from, item['price/code/rarity']];
@@ -638,8 +637,7 @@
                                                                         "valentine": "Valentine's",
                                                                         "Valentine": "Valentine's",
                                                                         "valentine's": "Valentine's",
-                                                                        "christmas": "Christmas",
-                                                                        "rodis": "RODIS",
+                                                                        "christmas": "Christmas"
                                                                     };
 
                                                                     const lower = name.toLowerCase();
@@ -693,11 +691,10 @@
                         const eventMenu = document.getElementById('event-menu');
                         const events = Array.from(this.events).sort((a, b) => {
                             const order = [
-                                'Leaderboard', 'Art Contest', '4th of July',
+                                'Leaderboard', 'Art Contest',
                                 'Summer', 'Valentine', 'Easter',
-                                'Halloween', 'Christmas',
-                                '1B Update', '2B Update', '10th Anniversary',
-                                'RODIS', 'Squid Game'
+                                'Halloween', 'Christmas', '4th of July',
+                                '1B Update', '2B Update', '10th Anniversary', 'Squid Game'
                             ];
 
                             const indexA = order.findIndex(event => a.toLowerCase().includes(event.toLowerCase()));
@@ -831,7 +828,7 @@
                             }
                         });
 
-                        document.querySelectorAll('.dropdown-item').forEach(item => {
+                        document.querySelectorAll('.chest-item').forEach(item => {
                             item.classList.toggle('active', item.dataset.data == chest);
                         });
 
@@ -974,13 +971,11 @@
                                 this.filters.tags.add(tagName);
                             }
 
-                            // Show/hide retired based on gamenight selection
                             const retiredItem = document.querySelector('.dropdown-item[data-filter="retired"]');
                             if (tagName === 'gamenight' && this.filters.tags.has('gamenight')) {
                                 retiredItem.classList.add('show-retired');
-                            } else if (tagName === 'gamenight' && !this.filters.tags.has('gamenight')) {
+                            } else if (!this.filters.tags.has('gamenight')) {
                                 retiredItem.classList.remove('show-retired');
-                                // Also deselect retired if it was selected
                                 this.filters.tags.delete('retired');
                                 retiredItem.classList.remove('selected');
                             }
@@ -1037,7 +1032,7 @@
                             item.classList.remove('selected');
                         });
 
-                        document.querySelectorAll('.dropdown-item').forEach(item => {
+                        document.querySelectorAll('.chest-item').forEach(item => {
                             item.classList.remove('active');
                         });
 
@@ -1108,7 +1103,7 @@
                             item.classList.toggle('active', item.dataset.sort === sortType);
                         });
 
-                        this.toggleSort(); // Close dropdown
+                        document.getElementById('sort-menu').classList.toggle('show');
                         this.applyFilters();
                     }
 
