@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<title>Gallery - EM Wiki</title>
+	<meta name="description" content="Community gallery for Epic Minigames - Share your favorite screenshots and videos!" />
+	<meta property="og:title" content="Gallery - EM Wiki">
+	<meta property="og:description" content="Community gallery for Epic Minigames - Share your favorite screenshots and videos!">
+	<link rel="icon" href="./imgs/epicfaces/pmupkin.png" type="image/png">
+	<link rel="stylesheet" href="/css/style.css">
+	<link rel="stylesheet" href="/css/gallery.css">
+</head>
+
+<body>
+	<!-- Header -->
+	<header>
+		<a href="https://emwiki.site">
+			<svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
+				<defs>
+					<linearGradient id="eppp1" y1="1" x2="0">
+						<stop offset=".2" style="stop-color:#ff0" />
+						<stop offset="1" style="stop-color:#24ff5a" />
+					</linearGradient>
+					<linearGradient id="eppp2" y1="1" x2="0">
+						<stop offset="0" style="stop-color:#24ff5d" />
+						<stop offset="1" style="stop-color:#ff0" />
+					</linearGradient>
+				</defs>
+				<image id="cloud" x="461" y="459" href="https://emwiki.site/imgs/TWOKPhY.png" height="60" width="60"
+					style="filter:opacity(.6)" />
+				<text x="489" y="503" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
+					stroke-linejoin="round" fill="url(#eppp1)"
+					style="animation:floatAnim 12s ease-in-out infinite;font:200 46px Slapstick">EM</text>
+				<image id="epic-image" x="464" y="463" href="https://emwiki.site/imgs/epicfaces/kitta.png" height="60"
+					width="60"
+					style="scale:.48;transform:translate(846px,103px);rotate:20deg;transform-origin:center;animation:floatAnim2 15s ease-in-out 1s infinite alternate" />
+				<image id="cloud" x="495" y="477" href="https://emwiki.site/imgs/8UUB0Gt.png" height="60" width="60"
+					style="filter:opacity(.86)" />
+				<text x="516" y="514" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
+					stroke-linejoin="round" fill="url(#eppp2)"
+					style="animation:floatAnim 12s ease-in-out infinite;animation-delay:5.5s;font:200 16px Slapstick">wiki</text>
+				<image id="cloud" x="445" y="487" href="https://emwiki.site/imgs/oYKd3nJ.png" height="28" width="42"
+					style="filter:opacity(.8)" />
+			</svg>
+		</a>
+
+		<div class="nav-links">
+			<a href="/catalog" class="nav-link">Catalog</a>
+			<a href="/trading" class="nav-link">Trading Hub</a>
+			<a href="/forum" class="nav-link">Forum</a>
+			<a href="/gallery" class="nav-link active">Gallery</a>
+			<a href="/scammers" class="nav-link">Scammers</a>
+		</div>
+	</header>
+
+	<!-- Gallery Content -->
+	<main class="gallery-container">
+		<div class="gallery-header">
+			<h1 class="gallery-title">Community Gallery</h1>
+			<p class="gallery-subtitle">Share your Epic Minigames moments with the community!</p>
+
+			<div class="gallery-actions">
+				<button id="upload-btn" class="btn-primary" style="display: none;">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+						<polyline points="17 8 12 3 7 8"></polyline>
+						<line x1="12" y1="3" x2="12" y2="15"></line>
+					</svg>
+					Upload Media
+				</button>
+				<button id="my-submissions-btn" class="btn-secondary" style="display: none;">My Submissions</button>
+			</div>
+		</div>
+
+		<!-- Upload Modal -->
+		<div id="upload-modal" class="modal">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h2>Upload Media</h2>
+					<button class="modal-close">&times;</button>
+				</div>
+				<div class="modal-body">
+					<form id="upload-form">
+						<div class="form-group">
+							<label for="media-file">Select Image or Video</label>
+							<input type="file" id="media-file" accept="image/*,video/*" required>
+							<small>Max size: 100MB. Supported formats: JPEG, PNG, GIF, WebP, MP4, WebM, MOV</small>
+						</div>
+
+						<div id="preview-container" class="preview-container"></div>
+
+						<div class="form-group">
+							<label for="media-title">Title *</label>
+							<input type="text" id="media-title" maxlength="100" placeholder="Give your submission a title" required>
+						</div>
+
+						<div class="form-group">
+							<label for="media-description">Description (optional)</label>
+							<textarea id="media-description" maxlength="500" rows="3" placeholder="Tell us about this moment..."></textarea>
+						</div>
+
+						<div class="upload-progress" style="display: none;">
+							<div class="progress-bar">
+								<div class="progress-fill"></div>
+							</div>
+							<p class="progress-text">Uploading...</p>
+						</div>
+
+						<div class="modal-actions">
+							<button type="button" class="btn-secondary modal-cancel">Cancel</button>
+							<button type="submit" class="btn-primary">Submit for Review</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<!-- My Submissions Modal -->
+		<div id="submissions-modal" class="modal">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h2>My Submissions</h2>
+					<button class="modal-close">&times;</button>
+				</div>
+				<div class="modal-body">
+					<div id="my-submissions-list" class="submissions-list">
+						<p class="loading">Loading...</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Gallery Grid -->
+		<div id="gallery-grid" class="gallery-grid">
+			<p class="loading">Loading gallery...</p>
+		</div>
+
+		<!-- Load More -->
+		<div class="load-more-container" style="display: none;">
+			<button id="load-more-btn" class="btn-secondary">Load More</button>
+		</div>
+	</main>
+
+	<!-- Media Viewer Modal -->
+	<div id="viewer-modal" class="modal viewer-modal">
+		<div class="viewer-content">
+			<button class="viewer-close">&times;</button>
+			<div class="viewer-media"></div>
+			<div class="viewer-info">
+				<h3 class="viewer-title"></h3>
+				<p class="viewer-author"></p>
+				<p class="viewer-description"></p>
+				<div class="viewer-meta">
+					<span class="viewer-date"></span>
+					<span class="viewer-views"></span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="/js/script.js"></script>
+	<script src="/js/gallery.js"></script>
+</body>
+
+</html>
