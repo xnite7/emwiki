@@ -82,7 +82,7 @@
 .stats:hover #total::before {
     content: " of ";
 }
-.chest-menu svg {
+#chest-menu svg {
     fill: #fff;
 }
 /* Chest Dropdown - THE STAR OF THE SHOW */
@@ -100,11 +100,11 @@
 
 .chest-dropdown-btn {
     scale: 1;
-    background: linear-gradient(135deg, #8B4513, #A0522D);
-    border: 2px solid #CD853F;
+    background: linear-gradient(#a1522d, #65310c);
+    border: 2px solid #ab621b;
     color: #fff;
-    padding: 12px 20px;
-    border-radius: 12px;
+    padding: 8px 12px 8px 17px;
+    border-radius: 27px;
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
@@ -126,33 +126,33 @@
 
 
 
-.chest-menu {
+#chest-menu {
     left: 0;
     position: absolute;
     top: calc(100% + 10px);
     background: linear-gradient(180deg, #2a1810, #1a0f08);
     border: 2px solid #7f4814;
     border-radius: 15px;
-    min-width: 245px;
-    height: 46vh;
+    min-width: 225px;
+    height: 45vh;
     overflow-y: auto;
     display: none;
     box-shadow: 0px 8px 10px 1px rgba(0, 0, 0, 0.8);
     animation: slideDown 0.3s ease;
 }
 
-.chest-menu::-webkit-scrollbar {
+#chest-menu::-webkit-scrollbar {
     width: 10px;
 }
 
-.chest-menu::-webkit-scrollbar-thumb {
-    background: #6e442b;
+#chest-menu::-webkit-scrollbar-thumb {
+    background: #965c3b;
     box-shadow: inset -2px -2px 5px 0 rgb(0 0 0 / 31%);
     border: 2px solid #000000;
     border-radius: 10px;
 }
 
-.chest-menu.show {
+#chest-menu.show {
     display: block;
 }
 
@@ -171,7 +171,7 @@
 .chest-item {
     display: flex;
     align-items: center;
-    padding: 13px 15px;
+    padding: 9px 15px;
     cursor: pointer;
     transition: all 0.2s;
     border-bottom: 1px solid rgb(205 133 63 / 35%);
@@ -180,7 +180,7 @@
 
 .chest-item:hover {
     background: rgba(205, 133, 63, 0.15);
-    padding-left: 25px;
+    padding-left: 20px;
 }
 
 .chest-item.active {
