@@ -4,19 +4,28 @@ class TradingHub {
         this.trades = [];
         this.filters = {
             category: 'all',
-            status: 'all',
+            status: 'active',
             sort: 'recent'
         };
-        
+        this.apiBase = '/api/trades';
+        this.currentUser = null;
+
         this.loadTheme();
         this.init();
     }
 
     async init() {
+        // Check if user is logged in (from auth system)
+        const sessionToken = localStorage.getItem('sessionToken');
+        if (sessionToken && window.Auth) {
+            this.currentUser = await window.Auth.checkAuth();
+        }
+
         await this.loadTrades();
         this.setupFilters();
         this.renderTrades();
         this.updateStats();
+        this.updateUserUI();
     }
 
     loadTheme() {
@@ -38,48 +47,67 @@ class TradingHub {
     }
 
     async loadTrades() {
-        // TODO: Replace with actual API call
-        // For now, mock data
-        this.trades = this.generateMockTrades();
+        try {
+            const params = new URLSearchParams({
+                status: this.filters.status,
+                ...(this.filters.category !== 'all' && { category: this.filters.category })
+            });
+
+            const response = await fetch(`${this.apiBase}/listings?${params}`);
+            if (!response.ok) throw new Error('Failed to load trades');
+
+            const data = await response.json();
+
+            // Transform API data to match expected format
+            this.trades = data.listings.map(listing => ({
+                id: listing.id,
+                trader: {
+                    name: listing.user.username,
+                    avatar: listing.user.avatar_url || './imgs/placeholder.png',
+                    rating: listing.user.average_rating || 0,
+                    totalTrades: listing.user.total_trades || 0
+                },
+                title: listing.title,
+                description: listing.description,
+                offering: listing.offering_items,
+                lookingFor: listing.seeking_items || [],
+                status: listing.status,
+                createdAt: new Date(listing.created_at),
+                views: listing.views || 0,
+                category: listing.category
+            }));
+        } catch (error) {
+            console.error('Error loading trades:', error);
+            // Fallback to mock data on error
+            this.trades = this.generateMockTrades();
+            if (window.Utils) {
+                Utils.showToast('Error', 'Failed to load trades from server', 'error');
+            }
+        }
     }
 
     generateMockTrades() {
-        const mockTrades = [
+        // Fallback mock data
+        return [
             {
                 id: 1,
                 trader: {
                     name: 'CoolTrader123',
-                    avatar: 'https://www.roblox.com/headshot-thumbnail/image?userId=1&width=150&height=150&format=png'
+                    avatar: './imgs/placeholder.png',
+                    rating: 4.5,
+                    totalTrades: 10
                 },
+                title: 'Trading Epic Sword',
                 offering: [
-                    { name: 'Epic Sword', img: './imgs/placeholder.png', category: 'gears' }
+                    { item_id: '1', item_name: 'Epic Sword', item_image: './imgs/placeholder.png' }
                 ],
-                lookingFor: [
-                    { name: 'Cool Pet', img: './imgs/placeholder.png', category: 'pets' }
-                ],
-                status: 'open',
-                createdAt: new Date(Date.now() - 1000 * 60 * 30), // 30 mins ago
-                value: 50000
-            },
-            {
-                id: 2,
-                trader: {
-                    name: 'ProGamer456',
-                    avatar: 'https://www.roblox.com/headshot-thumbnail/image?userId=2&width=150&height=150&format=png'
-                },
-                offering: [
-                    { name: 'Rare Death', img: './imgs/placeholder.png', category: 'deaths' }
-                ],
-                lookingFor: [
-                    { name: 'Epic Effect', img: './imgs/placeholder.png', category: 'effects' }
-                ],
-                status: 'open',
-                createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-                value: 75000
+                lookingFor: [],
+                status: 'active',
+                createdAt: new Date(Date.now() - 1000 * 60 * 30),
+                views: 15,
+                category: 'gears'
             }
         ];
-
-        return mockTrades;
     }
 
     setupFilters() {
@@ -143,10 +171,8 @@ class TradingHub {
     filterTrades() {
         return this.trades.filter(trade => {
             // Category filter
-            if (this.filters.category !== 'all') {
-                const hasCategory = [...trade.offering, ...trade.lookingFor]
-                    .some(item => item.category === this.filters.category);
-                if (!hasCategory) return false;
+            if (this.filters.category !== 'all' && trade.category !== this.filters.category) {
+                return false;
             }
 
             // Status filter
@@ -181,24 +207,31 @@ class TradingHub {
         card.className = 'trade-card';
 
         const timeAgo = this.getTimeAgo(trade.createdAt);
+        const stars = '★'.repeat(Math.floor(trade.trader.rating)) + '☆'.repeat(5 - Math.floor(trade.trader.rating));
 
         card.innerHTML = `
             <div class="trade-header">
                 <img class="trader-avatar" src="${trade.trader.avatar}" alt="${trade.trader.name}">
                 <div class="trader-info">
                     <div class="trader-name">${trade.trader.name}</div>
-                    <div class="trade-time">${timeAgo}</div>
+                    <div class="trader-stats" style="font-size: 0.75rem; color: var(--text-secondary);">
+                        ${stars} (${trade.trader.totalTrades} trades)
+                    </div>
+                    <div class="trade-time">${timeAgo} • ${trade.views || 0} views</div>
                 </div>
                 <span class="trade-status ${trade.status}">${trade.status}</span>
             </div>
+
+            ${trade.title ? `<div class="trade-title" style="font-weight: 600; margin: 0.5rem 0;">${trade.title}</div>` : ''}
+            ${trade.description ? `<div class="trade-description" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">${trade.description}</div>` : ''}
 
             <div class="trade-items">
                 <div class="trade-side">
                     <div class="trade-side-label">Offering</div>
                     ${trade.offering.map(item => `
                         <div class="trade-item-mini">
-                            <img class="trade-item-img" src="${item.img}" alt="${item.name}">
-                            <span class="trade-item-name">${item.name}</span>
+                            <img class="trade-item-img" src="${item.item_image || './imgs/placeholder.png'}" alt="${item.item_name}">
+                            <span class="trade-item-name">${item.item_name}</span>
                         </div>
                     `).join('')}
                 </div>
@@ -207,12 +240,12 @@ class TradingHub {
 
                 <div class="trade-side">
                     <div class="trade-side-label">Looking For</div>
-                    ${trade.lookingFor.map(item => `
+                    ${trade.lookingFor && trade.lookingFor.length > 0 ? trade.lookingFor.map(item => `
                         <div class="trade-item-mini">
-                            <img class="trade-item-img" src="${item.img}" alt="${item.name}">
-                            <span class="trade-item-name">${item.name}</span>
+                            <img class="trade-item-img" src="${item.item_image || './imgs/placeholder.png'}" alt="${item.item_name}">
+                            <span class="trade-item-name">${item.item_name}</span>
                         </div>
-                    `).join('')}
+                    `).join('') : '<div style="text-align: center; color: var(--text-secondary);">Open to offers</div>'}
                 </div>
             </div>
 
@@ -220,9 +253,11 @@ class TradingHub {
                 <button class="trade-action-btn primary" onclick="tradingHub.viewTrade(${trade.id})">
                     View Details
                 </button>
-                <button class="trade-action-btn secondary" onclick="tradingHub.contactTrader(${trade.id})">
-                    Contact
-                </button>
+                ${this.currentUser && trade.trader.name !== this.currentUser.username ? `
+                    <button class="trade-action-btn secondary" onclick="tradingHub.makeOffer(${trade.id})">
+                        Make Offer
+                    </button>
+                ` : ''}
             </div>
         `;
 
@@ -268,22 +303,121 @@ class TradingHub {
         }
     }
 
-    openCreateTrade() {
-        Utils.showToast('Coming Soon', 'Trade creation will be available soon!', 'info');
-        // TODO: Open create trade modal
-    }
-
-    viewTrade(id) {
-        Utils.showToast('Trade Details', `Viewing trade #${id}`, 'info');
-        // TODO: Open trade details modal
-    }
-
-    contactTrader(id) {
-        const trade = this.trades.find(t => t.id === id);
-        if (trade) {
-            Utils.showToast('Contact', `Opening chat with ${trade.trader.name}...`, 'info');
+    updateUserUI() {
+        const createBtn = document.querySelector('.create-trade-btn');
+        if (createBtn && !this.currentUser) {
+            createBtn.disabled = true;
+            createBtn.title = 'Please login to create trades';
         }
-        // TODO: Open contact modal or redirect to messaging
+    }
+
+    async openCreateTrade() {
+        if (!this.currentUser) {
+            if (window.Utils) {
+                Utils.showToast('Login Required', 'Please login to create a trade', 'warning');
+            }
+            return;
+        }
+
+        if (window.Utils) {
+            Utils.showToast('Coming Soon', 'Trade creation modal coming soon! Use the API directly for now.', 'info');
+        }
+        // TODO: Open create trade modal with form
+    }
+
+    async viewTrade(id) {
+        try {
+            const response = await fetch(`${this.apiBase}/listings/${id}`);
+            if (!response.ok) throw new Error('Failed to load trade details');
+
+            const data = await response.json();
+
+            // TODO: Open modal with full trade details
+            console.log('Trade details:', data);
+            if (window.Utils) {
+                Utils.showToast('Trade Details', `Viewing "${data.title || 'Trade #' + id}"`, 'info');
+            }
+
+            // For now, redirect to a details page if it exists
+            // window.location.href = `/trading/${id}`;
+        } catch (error) {
+            console.error('Error viewing trade:', error);
+            if (window.Utils) {
+                Utils.showToast('Error', 'Failed to load trade details', 'error');
+            }
+        }
+    }
+
+    async makeOffer(listingId) {
+        if (!this.currentUser) {
+            if (window.Utils) {
+                Utils.showToast('Login Required', 'Please login to make an offer', 'warning');
+            }
+            return;
+        }
+
+        if (window.Utils) {
+            Utils.showToast('Coming Soon', 'Offer making interface coming soon!', 'info');
+        }
+        // TODO: Open make offer modal
+        console.log('Making offer on listing:', listingId);
+    }
+
+    async createListing(listingData) {
+        if (!this.currentUser) {
+            throw new Error('Must be logged in to create a listing');
+        }
+
+        const sessionToken = localStorage.getItem('sessionToken');
+        const response = await fetch(`${this.apiBase}/listings`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionToken}`
+            },
+            body: JSON.stringify(listingData)
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to create listing');
+        }
+
+        return await response.json();
+    }
+
+    async submitOffer(listingId, offerData) {
+        if (!this.currentUser) {
+            throw new Error('Must be logged in to make an offer');
+        }
+
+        const sessionToken = localStorage.getItem('sessionToken');
+        const response = await fetch(`${this.apiBase}/offers`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionToken}`
+            },
+            body: JSON.stringify({
+                listing_id: listingId,
+                ...offerData
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to submit offer');
+        }
+
+        return await response.json();
+    }
+
+    async getAuthHeaders() {
+        const sessionToken = localStorage.getItem('sessionToken');
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionToken}`
+        };
     }
 }
 
