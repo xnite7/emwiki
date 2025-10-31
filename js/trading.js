@@ -8,18 +8,22 @@ class TradingHub {
             sort: 'recent'
         };
         this.apiBase = 'https://emwiki.com/api/trades';
-        this.currentUser = null;
+        //wait till the Auth object is available
+        //wait 5 seconds
 
-        this.loadTheme();
-        this.init();
+        window.Auth.addEventListener("sessionReady", () => {
+            console.log("User loaded:", window.Auth.user);
+            this.currentUser = window.Auth.user;
+
+            this.loadTheme();
+            this.init();
+        });
+
+
+
     }
 
     async init() {
-        // Check if user is logged in (from auth system)
-        const sessionToken = localStorage.getItem('sessionToken');
-        if (sessionToken && window.Auth) {
-            this.currentUser = await window.Auth.checkAuth();
-        }
 
         await this.loadTrades();
         this.setupFilters();
@@ -241,7 +245,7 @@ class TradingHub {
 
     getTimeAgo(date) {
         const seconds = Math.floor((new Date() - date) / 1000);
-        
+
         const intervals = {
             year: 31536000,
             month: 2592000,
@@ -281,6 +285,7 @@ class TradingHub {
     updateUserUI() {
         const createBtn = document.querySelector('.create-trade-btn');
         if (createBtn && !this.currentUser) {
+            console.log(this.currentUser);
             createBtn.setAttribute('popovertarget', 'auth-modal');
             createBtn.setAttribute('popovertargetaction', 'show');
             createBtn.classList.add('create-account');
@@ -461,7 +466,7 @@ class TradingHub {
                     <label>Items You're Offering</label>
                     <div id="offering-items" class="item-selector">
                         ${inventory.length > 0 ? inventory.filter(i => i.for_trade).map(item => `
-                            <div class="selectable-item" data-item='${JSON.stringify({item_id: item.item_id, item_name: item.item_name, item_image: item.item_image})}'>
+                            <div class="selectable-item" data-item='${JSON.stringify({ item_id: item.item_id, item_name: item.item_name, item_image: item.item_image })}'>
                                 <img src="${item.item_image || './imgs/placeholder.png'}" alt="${item.item_name}">
                                 <span>${item.item_name}</span>
                                 <input type="checkbox" class="item-checkbox">
@@ -608,8 +613,8 @@ class TradingHub {
                     <p><strong>${listing.listing?.user?.username || listing.user?.username || 'User'}</strong> is looking for:</p>
                     <div class="seeking-preview">
                         ${listing.listing?.seeking_items || listing.seeking_items && (listing.listing?.seeking_items || listing.seeking_items).length > 0 ?
-                            (listing.listing?.seeking_items || listing.seeking_items).map(item => `<span class="tag">${item.item_name}</span>`).join('') :
-                            '<span class="tag">Any items</span>'}
+                (listing.listing?.seeking_items || listing.seeking_items).map(item => `<span class="tag">${item.item_name}</span>`).join('') :
+                '<span class="tag">Any items</span>'}
                     </div>
                 </div>
 
@@ -617,7 +622,7 @@ class TradingHub {
                     <label>Your Offer</label>
                     <div id="offer-items" class="item-selector">
                         ${inventory.length > 0 ? inventory.filter(i => i.for_trade).map(item => `
-                            <div class="selectable-item" data-item='${JSON.stringify({item_id: item.item_id, item_name: item.item_name, item_image: item.item_image})}'>
+                            <div class="selectable-item" data-item='${JSON.stringify({ item_id: item.item_id, item_name: item.item_name, item_image: item.item_image })}'>
                                 <img src="${item.item_image || './imgs/placeholder.png'}" alt="${item.item_name}">
                                 <span>${item.item_name}</span>
                                 <input type="checkbox" class="item-checkbox">

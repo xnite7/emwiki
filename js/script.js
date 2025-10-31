@@ -1768,15 +1768,16 @@ class ItemModal {
     }
 }
 
-class Auth {
+class Auth extends EventTarget {
     constructor() {
+        super();
         this.currentCode = null;
         this.user = null;
         this.token = localStorage.getItem('auth_token');
         this.pollInterval = null;
-        this.timerInterval = null; // Add this line
-        this.scammersList = []; // ✅ ADD THIS
-        this.deferredPrompt = null; // PWA install prompt
+        this.timerInterval = null;
+        this.scammersList = [];
+        this.deferredPrompt = null;
         this.init();
     }
 
@@ -2026,6 +2027,7 @@ class Auth {
 
             if (response.ok) {
                 this.user = await response.json();
+                this.dispatchEvent(new Event("sessionReady"));
                 if (this.isUserScammer()) {
                     if (!this.user.role) this.user.role = ['user'];
                     if (!this.user.role.includes('scammer')) {
@@ -2040,7 +2042,7 @@ class Auth {
             } else {
                 localStorage.removeItem('auth_token');
                 this.token = null;
-
+                this.dispatchEvent(new Event("sessionReady"));
                 const authButton = document.getElementById('auth-button');
                 if (authButton) {
                     authButton.style.display = 'flex';
@@ -2048,7 +2050,7 @@ class Auth {
             }
         } catch (error) {
             console.error('Session check failed:', error);
-
+            this.dispatchEvent(new Event("sessionReady"));
             const authButton = document.getElementById('auth-button');
             if (authButton) {
                 authButton.style.display = 'flex';
@@ -2153,6 +2155,7 @@ class Auth {
                     localStorage.setItem('auth_token', data.token);
                     this.token = data.token;
                     this.user = data.user;
+                    this.dispatchEvent(new Event("sessionReady"));
                     if (!Array.isArray(this.user.role)) {
                         this.user.role = ['user'];
                     }
@@ -2439,6 +2442,8 @@ class Auth {
         localStorage.removeItem('auth_token');
         this.token = null;
         this.user = null;
+        
+
 
         // Mark as logged out
         if (window.catalog) {
@@ -2759,5 +2764,5 @@ if (typeof window !== 'undefined') {
     window.BaseApp = BaseApp;
     window.PriceGraph = PriceGraph;
     window.CountdownManager = CountdownManager;
-    window.Auth = Auth;
+    window.Auth = new Auth();
 }
