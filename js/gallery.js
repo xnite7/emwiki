@@ -14,13 +14,15 @@ class Gallery {
         // Wait for auth to be ready
         if (window.Auth) {
             window.Auth.addEventListener('sessionReady', () => {
-                this.currentUser = window.Auth.userData;
+                this.currentUser = window.Auth.user;
                 this.updateUIForAuth();
+
+
             });
 
             // Check if already authenticated
-            if (window.Auth.userData) {
-                this.currentUser = window.Auth.userData;
+            if (window.Auth.user) {
+                this.currentUser = window.Auth.user;
                 this.updateUIForAuth();
             }
         }
