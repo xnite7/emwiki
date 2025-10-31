@@ -2807,8 +2807,6 @@ header svg * {
     }
 
     #chest-menu {
-        position: absolute;
-        max-height: 36vh;
         left: -100px;
     }
 

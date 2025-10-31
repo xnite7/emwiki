@@ -127,14 +127,10 @@
 
 
 #chest-menu {
-    left: 0;
-    position: absolute;
-    top: calc(100% + 10px);
     background: linear-gradient(180deg, #2a1810, #1a0f08);
     border: 2px solid #7f4814;
     border-radius: 15px;
     min-width: 215px;
-    height: 45vh;
     overflow-y: auto;
     display: none;
     box-shadow: 0px 8px 10px 1px rgba(0, 0, 0, 0.8);
