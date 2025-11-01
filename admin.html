@@ -179,7 +179,7 @@
                         <label style="display: block; margin-bottom: 8px; font-weight: 600;">Search User</label>
                         <div style="display: flex; gap: 8px;">
                             <input type="text" id="user-search-input" placeholder="Enter Roblox username or user ID"
-                                style="flex: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-item); color: CanvasText;">
+                                style="flex: 1; padding: 10px; border: 1px solid #6363637d; border-radius: 6px; background: #63636347; color: white;">
                             <button id="user-search-btn" style="
                                 padding: 10px 20px;
                                 background: linear-gradient(135deg, #4caf50, #8bc34a);
@@ -5853,7 +5853,7 @@
                 if (!token) return;
 
                 try {
-                    const response = await fetch("/api/check-session", {
+                    const response = await fetch("/api/auth/session", {
                         headers: { "Authorization": `Bearer ${token}` }
                     });
 
@@ -5865,7 +5865,7 @@
                             this.authToken = token;
                             this.session = token;
                             this.userData = data;
-                            state.adminName = data.display_name || data.username;
+                            state.adminName = data.displayName || data.username;
                             this.onSuccess();
                         } else {
                             this.showError("Access Denied: You need admin or moderator role to access this panel.");
@@ -6070,6 +6070,8 @@
                 PublishManager.init();
                 UndoRedoManager.init();
                 ItemAdder.init();
+                GalleryMod.init();
+                UserManagement.init();
                 this.initEventListeners();
                 UpdateChecker.start();
 
@@ -7221,7 +7223,7 @@
                         container.appendChild(this.createPendingItem(item));
                     });
                 } catch (error) {
-                    console.error('Failed to load pending items:', error);
+                    console.error('Failed to load pending items:', warnerror);
                     container.innerHTML = '<p class="error">Failed to load pending submissions</p>';
                 }
             },
@@ -7409,8 +7411,8 @@
                 const div = document.createElement('div');
                 div.style.cssText = `
                     padding: 20px;
-                    background: var(--bg-item);
-                    border: 1px solid var(--border-color);
+                    background: #6363631c;
+                    border: 1px solid #6363637d;
                     border-radius: 12px;
                     margin-bottom: 15px;
                 `;
@@ -7554,13 +7556,9 @@
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
                 Auth.init();
-                GalleryMod.init();
-                UserManagement.init();
             });
         } else {
             Auth.init();
-            GalleryMod.init();
-            UserManagement.init();
         }
 
         // Get the accent color from root
