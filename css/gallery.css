@@ -79,7 +79,7 @@
     border: 3px inset #7d542c;
     outline: 6px double #5d4012;
     box-shadow: 0 0 0px 9px #412914, inset -1px 0px 0px 3px #2514067a, 2px 5px 20px 9px #000000b8;
-    corner-shape: scoop;
+    
     border-radius: 5px;
     text-align: center;
     rotate: 8deg;
@@ -88,6 +88,9 @@
     font-family: Caveat;
     font-size: 25px;
     padding: 18px 0px;
+    @supports (corner-shape: scoop) {
+        corner-shape: scoop;
+    }
 }
 
 .gallery-grid:empty::before {

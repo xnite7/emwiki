@@ -2319,16 +2319,20 @@ textarea {
 .role-icon.moderator {
     background: linear-gradient(135deg, #FF8FF3, #641bb5);
     color: #132559;
-    corner-shape: bevel;
     border-radius: 5px;
+    @supports (corner-shape: bevel) {
+        corner-shape: bevel;
+    }
 }
 
 .role-badge.vip,
 .role-icon.vip {
     background: linear-gradient(135deg, #ffd700, #ffb700);
     color: #a36d18;
-    corner-shape: scoop;
     border-radius: 4px;
+    @supports (corner-shape: scoop) {
+        corner-shape: scoop;
+    }
 }
 
 .role-badge.donator,

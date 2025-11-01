@@ -1349,7 +1349,6 @@ hr {
     gap: 6px;
     padding: 12px 23px 14px 17px;
     margin: 8px;
-    corner-shape: squircle;
     font-size: 1.6rem;
     background: linear-gradient(#4e99c5, #2867a9 80%);
     color: #fff;
@@ -1362,6 +1361,9 @@ hr {
     letter-spacing: 1px;
     font-family: caveat;
     overflow: visible;
+        @supports (corner-shape: squircle) {
+        corner-shape: squircle;
+    }
 }
 
 .rocket-btn:hover {
