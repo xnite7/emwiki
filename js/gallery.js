@@ -28,6 +28,7 @@ class Gallery {
         }
 
         this.setupEventListeners();
+        await new Promise(resolve => setTimeout(resolve, 600));
         await this.loadGallery();
     }
 
