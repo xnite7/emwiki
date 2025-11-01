@@ -2296,8 +2296,16 @@ class Auth extends EventTarget {
             directionalLight.position.set(5, 10, 7.5);
             scene.add(directionalLight);
 
-            // Load model
-            const mtlLoader = new THREE.MTLLoader();
+            // Setup loading manager to proxy ALL asset URLs (textures, MTL, OBJ)
+            const manager = new THREE.LoadingManager();
+            manager.setURLModifier((url) => {
+                // Extract hash from URL (could be full CDN URL or just hash)
+                const id = url.includes('rbxcdn.com/') ? url.split('com/')[1] : url;
+                return this.getCdnUrl(id);
+            });
+
+            // Load MTL with manager
+            const mtlLoader = new THREE.MTLLoader(manager);
             mtlLoader.load(mtlUrl, (materials) => {
                 materials.preload();
 
@@ -2306,17 +2314,9 @@ class Auth extends EventTarget {
                     materials.materials[key].transparent = false;
                 }
 
-                const objLoader = new THREE.OBJLoader();
+                // Load OBJ with manager and materials
+                const objLoader = new THREE.OBJLoader(manager);
                 objLoader.setMaterials(materials);
-
-                // Fix texture URLs
-                const manager = new THREE.LoadingManager();
-                manager.setURLModifier((url) => {
-                    // Extract hash from URL (could be full CDN URL or just hash)
-                    const id = url.includes('rbxcdn.com/') ? url.split('com/')[1] : url;
-                    return this.getCdnUrl(id);
-                });
-                objLoader.setManager(manager);
 
                 objLoader.load(objUrl, (object) => {
                     // Animation properties
