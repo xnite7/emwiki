@@ -184,11 +184,11 @@
                         </div>
                     </div>
                     <div id="user-management-results" style="
-    display: inline-flex;
-    flex-direction: row;
-    gap: 11px;
-    flex-wrap: wrap;
-    justify-content: space-evenly;"></div>
+                    display: inline-flex;
+                    flex-direction: row;
+                    gap: 11px;
+                    flex-wrap: wrap;
+                    justify-content: space-evenly;"></div>
                 </div>
             </div>
 
@@ -5115,6 +5115,8 @@
         const PanelsManager = {
             panels: [
                 { id: 'history-section', name: 'History', sectionId: 'history-section' },
+                { id: 'gallery-moderation-section', name: 'Gallery Moderation', sectionId: 'gallery-moderation-section' },
+                { id: 'user-management-section', name: 'User Management', sectionId: 'user-management-section' },
                 { id: 'notes-section', name: 'Notes', sectionId: 'notes-section' }
             ],
 
@@ -6769,6 +6771,9 @@
                 this.elements.mainEl = DOM.query('main');
                 this.elements.spacer = DOM.get('quick-editor-spacer');
                 this.elements.historySection = DOM.get('history-section');
+                this.elements.notesSection = DOM.get('notes-section');
+                this.elements.umSection = DOM.get('user-management-section');
+                this.elements.gmSection = DOM.get('gallery-moderation-section');
 
                 if (this.elements.panel) {
                     this.elements.originalParent = this.elements.panel.parentNode;
@@ -7012,42 +7017,90 @@
             },
 
             // Updated checkAndUpdateOverflow method
-            checkAndUpdateOverflow() {
-                const { panel, spacer, historySection } = this.elements;
-                if (!panel || !spacer || !historySection || this.state.currentMode !== 'sidebar') return;
+checkAndUpdateOverflow() {
+    const { panel, spacer } = this.elements;
+    if (!panel || !spacer || this.state.currentMode !== 'sidebar') return;
 
-                const panelHeight = panel.offsetHeight;
-                const sidebarTop = this.config.SIDEBAR_TOP;
-
-                // Current scroll and viewport data
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                const historyRect = historySection.getBoundingClientRect();
-                const historyTopAbs = scrollTop + historyRect.top;
-
-                // Calculate where panel would end if it stayed fixed
-                const desiredTop = scrollTop + sidebarTop;
-                const panelBottomAbs = desiredTop + panelHeight;
-
-
-
-                if (panelBottomAbs + 40 > historyTopAbs && historyTopAbs > 200 && panelHeight + 34 < this.utils.vh()) {
-                    // Stick panel right above history section
-                    panel.style.position = 'absolute';
-                    panel.style.top = `${historyTopAbs - panelHeight - 34}px`; // 12px margin
-                    spacer.style.height = `${panelHeight + 24}px`; // keep layout stable
-                    panel.dataset.scrollMode = 'stuck';
-                } else {
-                    // Keep it fixed at normal sidebar position
-                    panel.style.position = 'fixed';
-                    panel.style.top = `${sidebarTop}px`;
-                    spacer.style.height = '0px';
-                    delete panel.dataset.scrollMode;
-                }
-
-                panel.style.left = `${spacer.offsetLeft}px`;
-                panel.style.maxHeight = `calc(100vh - ${sidebarTop + 20}px)`;
-                panel.style.overflowY = 'auto';
-            },
+    const panelHeight = panel.offsetHeight;
+    const sidebarTop = this.config.SIDEBAR_TOP;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    // Get panel's horizontal boundaries from spacer
+    const spacerRect = spacer.getBoundingClientRect();
+    const panelLeft = spacerRect.left;
+    const panelRight = spacerRect.right;
+    
+    // Get all sections that could be below
+    const sections = [
+        this.elements.historySection,
+        this.elements.notesSection,
+        this.elements.umSection,
+        this.elements.gmSection
+    ].filter(Boolean);
+    
+    // Find the section that's actually below the panel (horizontally overlapping)
+    let targetSection = null;
+    let minDistance = Infinity;
+    
+    for (const section of sections) {
+        const sectionRect = section.getBoundingClientRect();
+        const sectionLeft = sectionRect.left;
+        const sectionRight = sectionRect.right;
+        
+        // Check if section overlaps horizontally with panel
+        const overlaps = !(sectionRight < panelLeft || sectionLeft > panelRight);
+        
+        if (overlaps) {
+            const sectionTopAbs = scrollTop + sectionRect.top;
+            
+            // Find the closest section below the spacer
+            if (sectionTopAbs < minDistance) {
+                minDistance = sectionTopAbs;
+                targetSection = section;
+            }
+        }
+    }
+    
+    if (targetSection) {
+        const targetRect = targetSection.getBoundingClientRect();
+        const sectionTopAbs = scrollTop + targetRect.top;
+        const gap = 40;
+        
+        // Define gutter boundaries (absolute positions in document)
+        const gutterTop = spacerRect.top + scrollTop; // Where spacer starts in document
+        const gutterBottom = sectionTopAbs - gap; // Where section starts minus gap
+        
+        // Where panel would be if fixed at viewport top
+        const desiredTop = scrollTop + sidebarTop;
+        const desiredBottom = desiredTop + panelHeight;
+        
+        // Check if panel fits in gutter at desired position
+        if (desiredBottom <= gutterBottom) {
+            // Panel fits - use fixed positioning (follows scroll)
+            panel.style.position = 'fixed';
+            panel.style.top = `${sidebarTop}px`;
+            spacer.style.height = '0px';
+            delete panel.dataset.scrollMode;
+        } else {
+            // Panel would overflow gutter - pin to bottom of gutter
+            panel.style.position = 'absolute';
+            panel.style.top = `${gutterBottom - panelHeight}px`;
+            spacer.style.height = `${panelHeight}px`;
+            panel.dataset.scrollMode = 'stuck';
+        }
+    } else {
+        // No section below, stay fixed
+        panel.style.position = 'fixed';
+        panel.style.top = `${sidebarTop}px`;
+        spacer.style.height = '0px';
+        delete panel.dataset.scrollMode;
+    }
+    
+    // Update horizontal position and constraints
+    panel.style.left = `${spacerRect.left}px`;
+    panel.style.maxHeight = `calc(100vh - ${sidebarTop + 20}px)`;
+    panel.style.overflowY = 'auto';
+},
 
 
             // Observer for modal visibility changes

@@ -481,7 +481,7 @@ main {
     border-radius: 12px;
     padding: 16px;
     width: -webkit-fill-available;
-    max-width: 1100px;
+    max-width: 880px;
     margin-bottom: 18px;
     box-shadow: 0 6px 24px var(--shade);
 }
