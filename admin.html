@@ -5935,7 +5935,11 @@
                     }
 
                     try {
-                        const response = await fetch(`/api/auth/check-code?code=${code}`);
+                        const response = await fetch('/api/auth/check-code', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ code })
+                        });
                         if (response.ok) {
                             const data = await response.json();
                             if (data.verified && data.token) {
