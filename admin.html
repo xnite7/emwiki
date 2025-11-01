@@ -5859,7 +5859,7 @@
 
                     if (response.ok) {
                         const data = await response.json();
-                        const roles = JSON.parse(data.role || '["user"]');
+                        const roles = data.role || '["user"]';
 
                         if (roles.includes("admin") || roles.includes("moderator")) {
                             this.authToken = token;
