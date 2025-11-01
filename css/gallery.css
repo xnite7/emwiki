@@ -44,11 +44,16 @@
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #4caf50, #8bc34a);
+    background: linear-gradient(#8bc34a, #3c9f40, #19801e);
+    color: Canvas;
+}
+
+#upload-btn svg{
+    fill: none;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, #4caf50, #8bc34a);
+    background: linear-gradient(#8bc34a, #8bc34a, #19801e);
     box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
 }
 
