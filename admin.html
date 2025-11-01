@@ -5836,7 +5836,7 @@
                                 <span id="admin-auth-code">------</span>
                             </div>
                             <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 10px;">
-                                Go to <a href="https://www.roblox.com/games/122649225404413/EMWIKI-Account-Linker" target="_blank" style="color: #4caf50; text-decoration: underline;">Epic Minigames</a>
+                                Go to <a href="https://www.roblox.com/games/122649225404413/EMWIKI-Account-Linker" target="_blank" style="color: #4caf50; text-decoration: underline;">EMWIKI Account Linker</a>
                                 and type this code in the prompt
                             </p>
                             <div id="admin-auth-timer" style="color: var(--text-secondary); font-weight: 600;"></div>
@@ -5880,10 +5880,11 @@
 
                                 });
                             };
-                            this.showError("Access Denied: You need admin or moderator role to access this panel.");
+                            this.showError("Access Denied: You do not have permission to access this panel, FUCK OFF!");
 
                         }
                     } else {
+                        console.log('poop')
                         localStorage.removeItem("auth_token");
                     }
                 } catch (err) {
@@ -5965,7 +5966,18 @@
                                     state.adminName = data.user.display_name || data.user.username;
                                     this.onSuccess();
                                 } else {
-                                    this.showError("Access Denied: You need admin or moderator role. Contact an administrator if you should have access.");
+                                    DOM.get("admin-auth-login-btn").innerText = "LOGOUT";
+                                    DOM.get("admin-auth-login-btn").style.background = "linear-gradient(180deg, #ff4444, #930000)";
+                                    DOM.get("admin-auth-login-btn").style.border = "1px solid #f95151";
+                                    DOM.get("admin-auth-login-btn").onClick = () => {
+                                        fetch("/api/logout", { method: "POST" }).finally(() => {
+                                            localStorage.removeItem("auth_token");
+                                            location.reload();
+
+                                        });
+                                    };
+
+                                    this.showError("Access Denied: You do not have permission to access this panel, FUCK OFF!");
                                     this.resetAuthUI();
                                 }
                                 return;
