@@ -41,6 +41,13 @@ async function handleGet({ request, env, params }) {
 
   // GET /api/gallery/pending - Get pending items (admin only)
   if (path === 'pending') {
+    if (!user || !isAdmin(user)) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     const items = await env.DBA.prepare(
       `SELECT id, user_id, username, title, description, media_url, media_type,
               status, created_at, views
@@ -224,6 +231,12 @@ async function handlePost({ request, env, params }) {
 
   // POST /api/gallery/moderate/:id - Moderate item (admin only)
   if (path.startsWith('moderate/')) {
+    if (!isAdmin(user)) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
 
     const itemId = path.split('/')[1];
     const data = await request.json();
@@ -298,7 +311,7 @@ async function handleDelete({ request, env, params }) {
   }
 
   // Check if user is owner or admin
-  if (item.user_id !== user.user_id) {
+  if (item.user_id !== user.user_id && !isAdmin(user)) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 403,
       headers: { 'Content-Type': 'application/json' }
