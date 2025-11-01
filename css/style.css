@@ -2409,6 +2409,16 @@ textarea {
 
 }
 
+.image-explosion{
+    transform: scale(1) translate(-50%, -50%);
+        opacity: 1;
+    transition: all 0.24s cubic-bezier(.77,1.12,.57,1.25);
+    @starting-style {
+        opacity: 0;
+        transform: scale(0) translate(-50%, -50%);
+    }
+}
+
 .stats-dashboard.show {
     display: flex;
     translate: 0 0px;
