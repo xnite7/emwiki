@@ -109,10 +109,6 @@ async function handleGet({ request, env, params }) {
 
   try {
     // Try to query with likes (requires gallery_likes table to exist)
-    const orderByClause = sortBy === 'newest'
-      ? 'g.created_at DESC'
-      : 'likes_count DESC, g.created_at DESC';
-
     items = await env.DBA.prepare(
       `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.media_type,
               g.created_at, g.views,
@@ -123,7 +119,7 @@ async function handleGet({ request, env, params }) {
        LEFT JOIN gallery_likes ugl ON g.id = ugl.gallery_item_id AND ugl.user_id = ?
        WHERE g.status = 'approved'
        GROUP BY g.id
-       ORDER BY ${orderByClause}
+       ORDER BY ${sortBy === 'newest' ? 'g.created_at DESC' : 'COUNT(gl.id) DESC, g.created_at DESC'}
        LIMIT ? OFFSET ?`
     ).bind(user?.user_id || null, user?.user_id || null, limit, offset).all();
   } catch (error) {
