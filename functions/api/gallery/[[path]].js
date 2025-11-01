@@ -71,11 +71,14 @@ async function handleGet({ request, env, params }) {
     }
 
     const items = await env.DBA.prepare(
-      `SELECT id, title, description, media_url, media_type, status,
-              created_at, views, rejection_reason
-       FROM gallery_items
-       WHERE user_id = ?
-       ORDER BY created_at DESC`
+      `SELECT g.id, g.title, g.description, g.media_url, g.media_type, g.status,
+              g.created_at, g.views, g.rejection_reason,
+              COUNT(gl.id) as likes_count
+       FROM gallery_items g
+       LEFT JOIN gallery_likes gl ON g.id = gl.gallery_item_id
+       WHERE g.user_id = ?
+       GROUP BY g.id
+       ORDER BY g.created_at DESC`
     ).bind(user.user_id).all();
 
     return new Response(JSON.stringify({ items: items.results || [] }), {
@@ -86,15 +89,27 @@ async function handleGet({ request, env, params }) {
   // GET /api/gallery - Get approved items (public)
   const limit = parseInt(url.searchParams.get('limit')) || 50;
   const offset = parseInt(url.searchParams.get('offset')) || 0;
+  const sortBy = url.searchParams.get('sort') || 'likes'; // 'likes' or 'newest'
+
+  // Determine sort order
+  let orderBy = 'likes_count DESC, created_at DESC';
+  if (sortBy === 'newest') {
+    orderBy = 'created_at DESC';
+  }
 
   const items = await env.DBA.prepare(
-    `SELECT id, user_id, username, title, description, media_url, media_type,
-            created_at, views
-     FROM gallery_items
-     WHERE status = 'approved'
-     ORDER BY created_at DESC
+    `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.media_type,
+            g.created_at, g.views,
+            COUNT(gl.id) as likes_count,
+            CASE WHEN ? IS NOT NULL AND ugl.id IS NOT NULL THEN 1 ELSE 0 END as user_liked
+     FROM gallery_items g
+     LEFT JOIN gallery_likes gl ON g.id = gl.gallery_item_id
+     LEFT JOIN gallery_likes ugl ON g.id = ugl.gallery_item_id AND ugl.user_id = ?
+     WHERE g.status = 'approved'
+     GROUP BY g.id
+     ORDER BY ${orderBy}
      LIMIT ? OFFSET ?`
-  ).bind(limit, offset).all();
+  ).bind(user?.user_id || null, user?.user_id || null, limit, offset).all();
 
   return new Response(JSON.stringify({ items: items.results || [] }), {
     headers: { 'Content-Type': 'application/json' }
@@ -265,6 +280,56 @@ async function handlePost({ request, env, params }) {
     }), {
       headers: { 'Content-Type': 'application/json' }
     });
+  }
+
+  // POST /api/gallery/like/:id - Toggle like on item
+  if (path.startsWith('like/')) {
+    const itemId = path.split('/')[1];
+
+    // Check if item exists and is approved
+    const item = await env.DBA.prepare(
+      'SELECT id FROM gallery_items WHERE id = ? AND status = ?'
+    ).bind(itemId, 'approved').first();
+
+    if (!item) {
+      return new Response(JSON.stringify({ error: 'Item not found or not approved' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Check if user already liked this item
+    const existingLike = await env.DBA.prepare(
+      'SELECT id FROM gallery_likes WHERE user_id = ? AND gallery_item_id = ?'
+    ).bind(user.user_id, itemId).first();
+
+    if (existingLike) {
+      // Unlike - remove the like
+      await env.DBA.prepare(
+        'DELETE FROM gallery_likes WHERE user_id = ? AND gallery_item_id = ?'
+      ).bind(user.user_id, itemId).run();
+
+      return new Response(JSON.stringify({
+        success: true,
+        liked: false,
+        message: 'Like removed'
+      }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } else {
+      // Like - add the like
+      await env.DBA.prepare(
+        'INSERT INTO gallery_likes (user_id, gallery_item_id, created_at) VALUES (?, ?, ?)'
+      ).bind(user.user_id, itemId, Date.now()).run();
+
+      return new Response(JSON.stringify({
+        success: true,
+        liked: true,
+        message: 'Like added'
+      }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
   }
 
   return new Response(JSON.stringify({ error: 'Invalid endpoint' }), {
