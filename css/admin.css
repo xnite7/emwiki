@@ -402,13 +402,13 @@ main {
 @font-face {
     font-family: BuilderSans;
     font-weight: 500;
-    src: url('https://emwiki.site/fonts/BuilderSans-Medium-500.woff2') format('woff2')
+    src: url('https://emwiki.com/fonts/BuilderSans-Medium-500.woff2') format('woff2')
 }
 
 @font-face {
     font-family: BuilderSans;
     font-weight: 700;
-    src: url('https://emwiki.site/fonts/BuilderSans-Bold-700.woff2') format('woff2')
+    src: url('https://emwiki.com/fonts/BuilderSans-Bold-700.woff2') format('woff2')
 }
 
 #quick-editor-price {

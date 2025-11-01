@@ -11,7 +11,7 @@ export async function onRequest(context) {
   const isBot = userAgent.includes("discordbot") || userAgent.includes("bot");
 
   if (item && isBot) {
-    return Response.redirect(`https://emwiki.site/api/embed/${encodeURIComponent(item)}`, 302);
+    return Response.redirect(`https://emwiki.com/api/embed/${encodeURIComponent(item)}`, 302);
   }
 
   return await context.next();

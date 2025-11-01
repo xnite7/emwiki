@@ -4,7 +4,7 @@
                     font-family: 'Bunny Flowers';
                     font-style: normal;
                     font-weight: normal;
-                    src: url("https://emwiki.site/fonts/BunnyFlowers-Regular.woff") format('woff');
+                    src: url("https://emwiki.com/fonts/BunnyFlowers-Regular.woff") format('woff');
                 }
 
                 @font-face {

@@ -23,7 +23,7 @@ const Utils = {
         if (!token) return false;
 
         try {
-            const response = await fetch('https://emwiki.site/api/auth/user/preferences', {
+            const response = await fetch('https://emwiki.com/api/auth/user/preferences', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -43,7 +43,7 @@ const Utils = {
         if (!token) return defaultValue;
 
         try {
-            const response = await fetch(`https://emwiki.site/api/auth/user/preferences?key=${key}`, {
+            const response = await fetch(`https://emwiki.com/api/auth/user/preferences?key=${key}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -76,7 +76,7 @@ const Utils = {
             onlineData.wishlist.length > 0;
         if (hasData2) return;
         try {
-            const response = await fetch('https://emwiki.site/api/auth/user/preferences/migrate', {
+            const response = await fetch('https://emwiki.com/api/auth/user/preferences/migrate', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -433,7 +433,7 @@ class BaseApp {
 
     async loadData() {
         try {
-            const res = await fetch('https://emwiki.site/api/gist-version');
+            const res = await fetch('https://emwiki.com/api/gist-version');
             const data = await res.json();
             const parsed = JSON.parse(data.files?.['auto.json']?.content);
 
@@ -516,19 +516,19 @@ class BaseApp {
         const now = new Date();
 
         var rarities = [{
-            type: "https://emwiki.site/imgs/epicfaces/tran.webp",
+            type: "https://emwiki.com/imgs/epicfaces/tran.webp",
             chance: 10
         }, {
-            type: "https://emwiki.site/imgs/epicfaces/3d.png",
+            type: "https://emwiki.com/imgs/epicfaces/3d.png",
             chance: 2
         }, {
-            type: "https://emwiki.site/imgs/epicfaces/Epic_Banana.webp",
+            type: "https://emwiki.com/imgs/epicfaces/Epic_Banana.webp",
             chance: 8
         }, {
-            type: "https://emwiki.site/imgs/epicfaces/XRmpB1c.png",
+            type: "https://emwiki.com/imgs/epicfaces/XRmpB1c.png",
             chance: 0
         }, {
-            type: "https://emwiki.site/imgs/burrito.png",
+            type: "https://emwiki.com/imgs/burrito.png",
             chance: 3
         }];
 
@@ -539,19 +539,19 @@ class BaseApp {
         if (now.getMonth() === 9) { // if october
 
             rarities = [{
-                type: "https://emwiki.site/imgs/epicfaces/kitta.png",
+                type: "https://emwiki.com/imgs/epicfaces/kitta.png",
                 chance: 15
             }, {
-                type: "https://emwiki.site/imgs/epicfaces/devlil.png",
+                type: "https://emwiki.com/imgs/epicfaces/devlil.png",
                 chance: 15
             }, {
-                type: "https://emwiki.site/imgs/epicfaces/Ghost_Epic_Face.webp",
+                type: "https://emwiki.com/imgs/epicfaces/Ghost_Epic_Face.webp",
                 chance: 15
             }, {
-                type: "https://emwiki.site/imgs/epicfaces/pmupkin.png",
+                type: "https://emwiki.com/imgs/epicfaces/pmupkin.png",
                 chance: 0
             }, {
-                type: "https://emwiki.site/imgs/epicfaces/Uncanny_Epic_Face.webp",
+                type: "https://emwiki.com/imgs/epicfaces/Uncanny_Epic_Face.webp",
                 chance: 3
             }];
 
@@ -563,13 +563,13 @@ class BaseApp {
         } else if (now.getMonth() === 11) { // if december
 
             rarities = [{
-                type: "https://emwiki.site/imgs/epicfaces/xmas.png",
+                type: "https://emwiki.com/imgs/epicfaces/xmas.png",
                 chance: 20
             }, {
-                type: "https://emwiki.site/imgs/epicfaces/rudolf.png",
+                type: "https://emwiki.com/imgs/epicfaces/rudolf.png",
                 chance: 20
             }, {
-                type: "https://emwiki.site/imgs/epicfaces/santa.png",
+                type: "https://emwiki.com/imgs/epicfaces/santa.png",
                 chance: 0
             }];
 
@@ -1845,7 +1845,7 @@ class Auth extends EventTarget {
 
     async loadScammersList() {
         try {
-            const response = await fetch('https://emwiki.site/api/roblox-proxy?mode=discord-scammers');
+            const response = await fetch('https://emwiki.com/api/roblox-proxy?mode=discord-scammers');
             if (response.ok) {
                 const data = await response.json();
                 this.scammersList = data.scammers || [];
@@ -2060,7 +2060,7 @@ class Auth extends EventTarget {
 
     async checkSession() {
         try {
-            const response = await fetch('https://emwiki.site/api/auth/session', {
+            const response = await fetch('https://emwiki.com/api/auth/session', {
                 headers: {
                     'Authorization': `Bearer ${this.token}`
                 }
@@ -2102,7 +2102,7 @@ class Auth extends EventTarget {
 
     async generateCode() {
         try {
-            const response = await fetch('https://emwiki.site/api/auth/generate-code', {
+            const response = await fetch('https://emwiki.com/api/auth/generate-code', {
                 method: 'POST'
             });
 
@@ -2184,7 +2184,7 @@ class Auth extends EventTarget {
     startPolling(code) {
         this.pollInterval = setInterval(async () => {
             try {
-                const response = await fetch('https://emwiki.site/api/auth/check-code', {
+                const response = await fetch('https://emwiki.com/api/auth/check-code', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ code })
@@ -2414,7 +2414,7 @@ class Auth extends EventTarget {
         if (!this.token) return;
 
         try {
-            const response = await fetch('https://emwiki.site/api/auth/donation-status', {
+            const response = await fetch('https://emwiki.com/api/auth/donation-status', {
                 headers: {
                     'Authorization': `Bearer ${this.token}`
                 }
@@ -2474,7 +2474,7 @@ class Auth extends EventTarget {
 
     async logout() {
         if (this.token) {
-            await fetch('https://emwiki.site/api/auth/logout', {
+            await fetch('https://emwiki.com/api/auth/logout', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${this.token}` }
             });

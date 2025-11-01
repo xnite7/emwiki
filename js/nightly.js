@@ -1,4 +1,4 @@
-fetch('https://emwiki.site/api/gist-version')
+fetch('https://emwiki.com/api/gist-version')
   .then(results => results.json())
   .then(data => {
     let arr = JSON.parse(data?.files["auto.json"]?.content);

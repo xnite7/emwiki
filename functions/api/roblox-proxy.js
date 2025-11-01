@@ -210,7 +210,7 @@ export async function onRequestGet({ request, env }) {
             let fetchSuccess = false;
             for (let attempt = 0; attempt < 5; attempt++) {
               try {
-                const res = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${userId}&discordId=${discordid}`);
+                const res = await fetch(`https://emwiki.com/api/roblox-proxy?userId=${userId}&discordId=${discordid}`);
                 if (res.ok) {
                   data = await res.json();
                   await env.DB.prepare(`
@@ -246,7 +246,7 @@ export async function onRequestGet({ request, env }) {
           }
 
           entry.robloxUser = data.displayName || data.name || entry.robloxUser;
-          entry.avatar = data.avatar ?? "https://emwiki.site/imgs/plr.jpg";
+          entry.avatar = data.avatar ?? "https://emwiki.com/imgs/plr.jpg";
           entry.discordDisplay = data.discordDisplayName || entry.discordDisplay;
 
 
