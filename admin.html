@@ -33,9 +33,9 @@
             </div>
             <img src="./imgs/eng.png">
             <div id="welcome-label"></div>
-            <h2>Admin Login</h2>
-            <input type="password" id="admin-key" placeholder="Enter admin key" />
-            <button id="login-btn">Login</button>
+            <h2>Admin Panel</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">Login with your Roblox account to access admin features</p>
+            <div id="auth-container"></div>
             <div id="login-error"></div>
         </div>
     </div>
@@ -168,6 +168,30 @@
                     <div id="pending-gallery-items">
                         <p class="loading">Loading pending submissions...</p>
                     </div>
+                </div>
+            </div>
+
+            <!-- User Management Section -->
+            <div class="section" id="user-management-section">
+                <h2>User Management</h2>
+                <div class="panel">
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Search User</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="user-search-input" placeholder="Enter Roblox username or user ID"
+                                style="flex: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-item); color: CanvasText;">
+                            <button id="user-search-btn" style="
+                                padding: 10px 20px;
+                                background: linear-gradient(135deg, #4caf50, #8bc34a);
+                                color: white;
+                                border: none;
+                                border-radius: 6px;
+                                cursor: pointer;
+                                font-weight: 600;
+                            ">Search</button>
+                        </div>
+                    </div>
+                    <div id="user-management-results"></div>
                 </div>
             </div>
 
@@ -5781,81 +5805,199 @@
         };
 
         // ============================
-        // Authentication
+        // Authentication (Roblox Auth)
         // ============================
         const Auth = {
+            userData: null,
+            authToken: null,
+            session: null,
+
             async init() {
                 if (DEV_MODE.enabled) {
                     console.log('🚀 Running in development mode');
                     state.adminName = DEV_MODE.adminName;
                     return this.onSuccess();
                 }
-                try {
-                    // Check if already logged in via secure cookie
-                    const res = await fetch("/api/check-session");
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data.ok) {
-                            state.adminName = data.name;
-                            return this.onSuccess();
-                        }
-                    }
-                } catch (err) {
-                    console.error("Session check failed:", err);
-                }
 
-                // No valid session, show login
-                this.showLoginForm();
+                this.loadAuthUI();
+                this.checkExistingAuth();
             },
 
-            showLoginForm() {
-                const input = DOM.get("admin-key");
-                const loginBtn = DOM.get("login-btn");
-                const errorDiv = DOM.get("login-error");
+            loadAuthUI() {
+                const container = DOM.get("auth-container");
+                container.innerHTML = `
+                    <div class="auth-status" id="admin-auth-status">
+                        <button class="auth-login-btn" id="admin-auth-login-btn" style="
+                            padding: 12px 32px;
+                            background: linear-gradient(135deg, #4caf50, #8bc34a);
+                            color: white;
+                            border: none;
+                            border-radius: 8px;
+                            font-size: 1.1rem;
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                        ">Login with Roblox</button>
+                        <div id="admin-auth-code-display" style="display: none; margin-top: 15px;">
+                            <p style="margin-bottom: 10px; color: var(--text-secondary);">Enter this code in Epic Minigames:</p>
+                            <div style="font-size: 2.5rem; font-weight: bold; letter-spacing: 0.15em; padding: 20px; background: var(--bg-item); border-radius: 12px; margin-bottom: 15px; border: 2px solid var(--border-color);">
+                                <span id="admin-auth-code">------</span>
+                            </div>
+                            <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 10px;">
+                                Go to <a href="https://www.roblox.com/games/2099441364/Epic-Minigames" target="_blank" style="color: #4caf50; text-decoration: underline;">Epic Minigames</a>
+                                and type this code in chat
+                            </p>
+                            <div id="admin-auth-timer" style="color: var(--text-secondary); font-weight: 600;"></div>
+                        </div>
+                    </div>
+                `;
+
+                const loginBtn = DOM.get("admin-auth-login-btn");
+                if (loginBtn) {
+                    loginBtn.addEventListener("click", () => this.startLogin());
+                }
+            },
+
+            async checkExistingAuth() {
+                const token = localStorage.getItem("auth_token");
+                if (!token) return;
+
+                try {
+                    const response = await fetch("/api/check-session", {
+                        headers: { "Authorization": `Bearer ${token}` }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const roles = JSON.parse(data.role || '["user"]');
+
+                        if (roles.includes("admin") || roles.includes("moderator")) {
+                            this.authToken = token;
+                            this.session = token;
+                            this.userData = data;
+                            state.adminName = data.display_name || data.username;
+                            this.onSuccess();
+                        } else {
+                            this.showError("Access Denied: You need admin or moderator role to access this panel.");
+                            localStorage.removeItem("auth_token");
+                        }
+                    } else {
+                        localStorage.removeItem("auth_token");
+                    }
+                } catch (err) {
+                    console.error("Auth check failed:", err);
+                    localStorage.removeItem("auth_token");
+                }
+            },
+
+            async startLogin() {
+                try {
+                    const response = await fetch("/api/auth/generate-code", {
+                        method: "POST"
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error || "Failed to generate code");
+                    }
+
+                    const { code, expiresIn } = await response.json();
+                    this.showCodeDisplay(code, expiresIn);
+                    this.pollForVerification(code);
+                } catch (err) {
+                    this.showError("Failed to generate login code. " + err.message);
+                    console.error("Login error:", err);
+                }
+            },
+
+            showCodeDisplay(code, expiresIn) {
+                const loginBtn = DOM.get("admin-auth-login-btn");
+                const codeDisplay = DOM.get("admin-auth-code-display");
+                const codeEl = DOM.get("admin-auth-code");
+
+                if (loginBtn) loginBtn.style.display = "none";
+                if (codeDisplay) codeDisplay.style.display = "block";
+                if (codeEl) codeEl.textContent = code;
+
+                let timeLeft = expiresIn;
+                const timerEl = DOM.get("admin-auth-timer");
+                this.timerInterval = setInterval(() => {
+                    timeLeft--;
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    if (timerEl) timerEl.textContent = `Expires in ${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                    if (timeLeft <= 0) {
+                        clearInterval(this.timerInterval);
+                        this.showError("Code expired. Please try again.");
+                        this.resetAuthUI();
+                    }
+                }, 1000);
+            },
+
+            async pollForVerification(code) {
+                const maxAttempts = 60;
                 let attempts = 0;
 
-                const tryLogin = async () => {
-                    const key = input.value.trim();
-                    if (!key) {
-                        errorDiv.textContent = "Please enter an admin key";
+                const poll = async () => {
+                    if (attempts >= maxAttempts) {
                         return;
                     }
 
                     try {
-                        const res = await fetch("/api/admin-login", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ key })
-                        });
+                        const response = await fetch(`/api/auth/check-code?code=${code}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.verified && data.token) {
+                                clearInterval(this.timerInterval);
+                                const roles = JSON.parse(data.user.role || '["user"]');
 
-                        if (res.ok) {
-                            const data = await res.json();
-                            state.adminName = data.name;
-                            this.onSuccess();
-                        } else {
-                            attempts++;
-                            const errorText = res.status === 401 ? "Invalid admin key" : "Server error";
-                            errorDiv.textContent = errorText;
-
-                            if (attempts > 4) {
-                                errorDiv.textContent = "Too many attempts. Please refresh.";
-                                input.disabled = true;
-                                loginBtn.disabled = true;
+                                if (roles.includes("admin") || roles.includes("moderator")) {
+                                    localStorage.setItem("auth_token", data.token);
+                                    this.authToken = data.token;
+                                    this.session = data.token;
+                                    this.userData = data.user;
+                                    state.adminName = data.user.display_name || data.user.username;
+                                    this.onSuccess();
+                                } else {
+                                    this.showError("Access Denied: You need admin or moderator role. Contact an administrator if you should have access.");
+                                    this.resetAuthUI();
+                                }
+                                return;
                             }
-
-                            // shake animation
-                            DOM.query(".login-card").classList.add("shake");
-                            setTimeout(() => DOM.query(".login-card").classList.remove("shake"), 500);
                         }
                     } catch (err) {
-                        errorDiv.textContent = "Network error, try again";
-                        console.error("Login error:", err);
+                        console.error("Poll error:", err);
                     }
+
+                    attempts++;
+                    setTimeout(poll, 5000);
                 };
 
-                loginBtn.addEventListener("click", tryLogin);
-                input.addEventListener("keydown", e => { if (e.key === "Enter") tryLogin(); });
-                input.addEventListener("input", () => { errorDiv.textContent = ""; });
+                poll();
+            },
+
+            showError(message) {
+                const errorDiv = DOM.get("login-error");
+                if (errorDiv) {
+                    errorDiv.textContent = message;
+                    errorDiv.style.color = "#f44336";
+                    errorDiv.style.marginTop = "15px";
+                    errorDiv.style.padding = "10px";
+                    errorDiv.style.background = "rgba(244, 67, 54, 0.1)";
+                    errorDiv.style.borderRadius = "6px";
+                }
+
+                DOM.query(".login-card").classList.add("shake");
+                setTimeout(() => DOM.query(".login-card").classList.remove("shake"), 500);
+            },
+
+            resetAuthUI() {
+                if (this.timerInterval) clearInterval(this.timerInterval);
+                const loginBtn = DOM.get("admin-auth-login-btn");
+                const codeDisplay = DOM.get("admin-auth-code-display");
+                if (loginBtn) loginBtn.style.display = "block";
+                if (codeDisplay) codeDisplay.style.display = "none";
             },
 
             async onSuccess() {
@@ -7210,16 +7352,221 @@
         };
 
         // ============================
+        // User Management
+        // ============================
+        const UserManagement = {
+            async init() {
+                const searchBtn = document.getElementById('user-search-btn');
+                const searchInput = document.getElementById('user-search-input');
+
+                if (searchBtn) {
+                    searchBtn.addEventListener('click', () => this.searchUser());
+                }
+
+                if (searchInput) {
+                    searchInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') this.searchUser();
+                    });
+                }
+            },
+
+            async searchUser() {
+                const searchInput = document.getElementById('user-search-input');
+                const resultsContainer = document.getElementById('user-management-results');
+                const query = searchInput.value.trim();
+
+                if (!query) {
+                    resultsContainer.innerHTML = '<p class="error">Please enter a username or user ID</p>';
+                    return;
+                }
+
+                resultsContainer.innerHTML = '<p class="loading">Searching...</p>';
+
+                try {
+                    // Search in local database first
+                    const response = await fetch(`/api/auth/user/search?q=${encodeURIComponent(query)}`, {
+                        headers: {
+                            'Authorization': `Bearer ${Auth.session}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Search failed');
+                    }
+
+                    const { users } = await response.json();
+
+                    if (users.length === 0) {
+                        resultsContainer.innerHTML = '<p class="loading">No users found in database</p>';
+                        return;
+                    }
+
+                    resultsContainer.innerHTML = '';
+                    users.forEach(user => {
+                        resultsContainer.appendChild(this.createUserCard(user));
+                    });
+                } catch (error) {
+                    console.error('Search error:', error);
+                    resultsContainer.innerHTML = '<p class="error">Failed to search users</p>';
+                }
+            },
+
+            createUserCard(user) {
+                const div = document.createElement('div');
+                div.style.cssText = `
+                    padding: 20px;
+                    background: var(--bg-item);
+                    border: 1px solid var(--border-color);
+                    border-radius: 12px;
+                    margin-bottom: 15px;
+                `;
+
+                const roles = JSON.parse(user.role || '["user"]');
+                const rolesHtml = roles.map(role => {
+                    const colors = {
+                        'admin': '#f44336',
+                        'moderator': '#ff9800',
+                        'vip': '#9c27b0',
+                        'donator': '#4caf50',
+                        'user': '#666'
+                    };
+                    return `<span style="
+                        display: inline-block;
+                        padding: 4px 10px;
+                        background: ${colors[role] || '#666'}22;
+                        color: ${colors[role] || '#666'};
+                        border-radius: 4px;
+                        font-size: 0.85rem;
+                        font-weight: 600;
+                        margin-right: 5px;
+                        margin-bottom: 5px;
+                    ">${role}</span>`;
+                }).join('');
+
+                div.innerHTML = `
+                    <div style="display: flex; gap: 15px; align-items: start; margin-bottom: 15px;">
+                        <img src="${user.avatar_url || '/imgs/default-avatar.png'}" alt="${user.username}"
+                            style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--border-color);">
+                        <div style="flex: 1;">
+                            <div style="font-size: 1.3rem; font-weight: 600; margin-bottom: 5px;">
+                                ${this.escapeHtml(user.display_name || user.username)}
+                            </div>
+                            <div style="color: var(--text-secondary); margin-bottom: 10px;">
+                                @${this.escapeHtml(user.username)} • ID: ${user.user_id}
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                ${rolesHtml}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="border-top: 1px solid var(--border-color); padding-top: 15px;">
+                        <div style="font-weight: 600; margin-bottom: 10px;">Manage Roles</div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                            ${this.createRoleButton('admin', roles, user.user_id)}
+                            ${this.createRoleButton('moderator', roles, user.user_id)}
+                            ${this.createRoleButton('vip', roles, user.user_id)}
+                            ${this.createRoleButton('donator', roles, user.user_id)}
+                        </div>
+                    </div>
+                `;
+
+                // Add event listeners for role buttons
+                div.querySelectorAll('.role-toggle-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const role = btn.dataset.role;
+                        const userId = btn.dataset.userId;
+                        const action = btn.dataset.action;
+                        this.toggleRole(userId, role, action, div);
+                    });
+                });
+
+                return div;
+            },
+
+            createRoleButton(role, currentRoles, userId) {
+                const hasRole = currentRoles.includes(role);
+                const action = hasRole ? 'remove' : 'add';
+                const colors = {
+                    'admin': '#f44336',
+                    'moderator': '#ff9800',
+                    'vip': '#9c27b0',
+                    'donator': '#4caf50'
+                };
+
+                return `
+                    <button class="role-toggle-btn" data-role="${role}" data-user-id="${userId}" data-action="${action}"
+                        style="
+                            padding: 10px 15px;
+                            background: ${hasRole ? colors[role] + '33' : 'transparent'};
+                            color: ${colors[role]};
+                            border: 2px solid ${colors[role]};
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            transition: all 0.2s ease;
+                            text-transform: capitalize;
+                        ">
+                        ${hasRole ? '✓' : '+'} ${role}
+                    </button>
+                `;
+            },
+
+            async toggleRole(userId, role, action, cardElement) {
+                if (!confirm(`Are you sure you want to ${action} the "${role}" role ${action === 'add' ? 'to' : 'from'} this user?`)) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/auth/admin/update-role', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${Auth.session}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            userId: userId,
+                            role: role,
+                            action: action
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to update role');
+                    }
+
+                    // Refresh the user card
+                    const searchInput = document.getElementById('user-search-input');
+                    await this.searchUser();
+
+                    // Show success message
+                    ErrorHandler.showToast(`Successfully ${action}ed ${role} role`, 'success');
+                } catch (error) {
+                    console.error('Role toggle error:', error);
+                    ErrorHandler.showToast('Failed to update role: ' + error.message, 'error');
+                }
+            },
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        };
+
+        // ============================
         // Initialize on DOM ready
         // ============================
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
                 Auth.init();
                 GalleryMod.init();
+                UserManagement.init();
             });
         } else {
             Auth.init();
             GalleryMod.init();
+            UserManagement.init();
         }
 
         // Get the accent color from root
