@@ -2239,13 +2239,10 @@ class Auth extends EventTarget {
         }, 2000);
     }
 
-    // Helper function to get CDN URL from hash
+    // Helper function to get proxied CDN URL from hash
     getCdnUrl(hash) {
-        let i = 31;
-        for (let t = 0; t < 32; t++) {
-            i ^= hash.charCodeAt(t);
-        }
-        return `https://t${(i % 8).toString()}.rbxcdn.com/${hash}`;
+        // Use our proxy to avoid CORS issues
+        return `/api/roblox-proxy?mode=cdn-asset&hash=${hash}`;
     }
 
     // Render 3D player model with fall animation
@@ -2315,7 +2312,8 @@ class Auth extends EventTarget {
                 // Fix texture URLs
                 const manager = new THREE.LoadingManager();
                 manager.setURLModifier((url) => {
-                    const id = url.split('com/')[1];
+                    // Extract hash from URL (could be full CDN URL or just hash)
+                    const id = url.includes('rbxcdn.com/') ? url.split('com/')[1] : url;
                     return this.getCdnUrl(id);
                 });
                 objLoader.setManager(manager);
