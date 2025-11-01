@@ -1942,6 +1942,9 @@ class Auth extends EventTarget {
             explosionSound.volume = 1.0;
             explosionSound.play();
             await new Promise(resolve => setTimeout(resolve, 100));
+
+            document.getElementById('epic-image').setAttribute('href', './imgs/zuckmini.png');
+
             const explosion = document.createElement('div');
             explosion.className = 'image-explosion';
             explosion.style.position = 'fixed';
