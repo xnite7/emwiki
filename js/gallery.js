@@ -7,6 +7,7 @@ class Gallery {
         this.hasMore = true;
         this.currentUser = null;
         this.currentSort = 'likes'; // 'likes' or 'newest'
+        
 
         this.init();
     }
@@ -27,7 +28,6 @@ class Gallery {
                 this.updateUIForAuth();
             }
         }
-
         this.setupEventListeners();
         await new Promise(resolve => setTimeout(resolve, 920));
         await this.loadGallery();
@@ -378,6 +378,7 @@ class Gallery {
 
         // Admin/mod delete button
         if (this.currentUser && this.isAdmin()) {
+            
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'admin-delete-btn';
             deleteBtn.textContent = 'Delete (Admin)';
@@ -624,7 +625,7 @@ class Gallery {
     isAdmin() {
         if (!this.currentUser || !this.currentUser.role) return false;
         try {
-            const roles = JSON.parse(this.currentUser.role);
+            const roles = this.currentUser.role;
             return roles.includes('admin') || roles.includes('moderator');
         } catch {
             return false;
