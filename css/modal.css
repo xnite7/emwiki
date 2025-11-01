@@ -31,9 +31,10 @@
     padding: 30px;
     min-height: 500px;
     border-radius: 20px;
-    display: grid;
-    align-content: space-between;
-    justify-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
 
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
