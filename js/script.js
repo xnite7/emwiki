@@ -343,11 +343,13 @@ class BaseApp {
                         </p>
                     </div>
                     <div id="auth-step-3" style="display: none;">
+                        <div id="player-model-container"></div>
                         <div class="celebration-icon">😻</div>
                         <div class="celebration-title">Account Linked!</div>
                         <p>Welcome to Epic Catalogue! Your Roblox account has been successfully linked.
                         </p>
-                        <button class="celebration-close-btn" popovertargetaction="hide" popovertarget="auth-modal">Epic!</button>
+                        <p class="loading">Hold on, Setting Stuff Up!</p>
+                        <button style="display:none" class="celebration-close-btn" popovertargetaction="hide" popovertarget="auth-modal">Epic!</button>
                     </div>
                 </div>
             
@@ -2207,16 +2209,26 @@ class Auth extends EventTarget {
 
                     await Utils.migrateToAccount();
 
-                    if (window.catalog) {
-                        window.catalog.isLoggedIn = true;
-                        await window.catalog.loadPreferences();
-                    }
+
 
                     // Update UI
                     document.getElementById('auth-step-2').style.display = 'none';
                     document.getElementById('auth-step-3').style.display = 'block';
 
+
+
                     document.getElementById('auth-step-3').querySelector('p').innerHTML = `Welcome, <strong>${this.user.displayName}!</strong> Your Roblox account has been successfully linked to Epic Catalogue.`;
+
+                    if (window.catalog) {
+                        window.catalog.isLoggedIn = true;
+                        
+                        await window.catalog.loadPreferences();
+                        document.getElementById('auth-step-3').querySelector('.loading').style.display = 'none';
+                        document.getElementById('auth-step-3').querySelector('.celebration-close-btn').style.display = ''
+                    }
+
+                    // Render 3D player model with animation
+                    this.render3DPlayerModel(this.user.userId);
 
                     // Start confetti!
                     confetti.start();
@@ -2232,6 +2244,139 @@ class Auth extends EventTarget {
                 console.error('Polling error:', error);
             }
         }, 2000);
+    }
+
+    // Helper function to get proxied CDN URL from hash
+    getCdnUrl(hash) {
+        // Use our proxy to avoid CORS issues
+        return `/api/roblox-proxy?mode=cdn-asset&hash=${hash}`;
+    }
+
+    // Render 3D player model with fall animation
+    async render3DPlayerModel(userId) {
+        try {
+            // Fetch 3D avatar data through proxy to avoid CORS
+            const response = await fetch(`https://emwiki.com/api/roblox-proxy?mode=avatar-3d&userId=${userId}`);
+
+            if (!response.ok) {
+                console.log('3D avatar not ready or failed to fetch');
+                return;
+            }
+
+            const metadata = await response.json();
+
+            // Get CDN URLs
+            const objUrl = this.getCdnUrl(metadata.obj);
+            const mtlUrl = this.getCdnUrl(metadata.mtl);
+
+            // Setup Three.js scene
+            const container = document.getElementById('player-model-container');
+            const scene = new THREE.Scene();
+
+            const camera = new THREE.PerspectiveCamera(
+                metadata.camera.fov - 10,
+                300 / 300,
+                0.1,
+                500
+            );
+            camera.position.set(
+                metadata.camera.position.x,
+                metadata.camera.position.y,
+                metadata.camera.position.z
+            );
+
+            // Calculate center point from aabb
+            const centerX = (metadata.aabb.min.x + metadata.aabb.max.x) / 2;
+            const centerY = (metadata.aabb.min.y + metadata.aabb.max.y) / 2 + 2;
+            const centerZ = (metadata.aabb.min.z + metadata.aabb.max.z) / 2;
+            camera.lookAt(new THREE.Vector3(centerX, centerY, centerZ));
+
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(300, 300);
+            renderer.setClearColor(0x000000, 0);
+            container.appendChild(renderer.domElement);
+
+            // Add lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 7.5);
+            scene.add(directionalLight);
+
+            // Setup loading manager to proxy ALL asset URLs (textures, MTL, OBJ)
+            const manager = new THREE.LoadingManager();
+            manager.setURLModifier((url) => {
+                // Extract hash from URL (could be full CDN URL or just hash)
+                const id = url.includes('rbxcdn.com/') ? url.split('com/')[1] : url;
+                return this.getCdnUrl(id);
+            });
+
+            // Load MTL with manager
+            const mtlLoader = new THREE.MTLLoader(manager);
+            mtlLoader.load(mtlUrl, (materials) => {
+                materials.preload();
+
+                // Disable alpha maps
+                for (const key in materials.materials) {
+                    materials.materials[key].transparent = false;
+                }
+
+                // Load OBJ with manager and materials
+                const objLoader = new THREE.OBJLoader(manager);
+                objLoader.setMaterials(materials);
+
+                objLoader.load(objUrl, (object) => {
+                    // Animation properties
+                    let startY = centerY + 50; // Start above
+                    let targetY = centerY;
+                    let startScale = 0.1; // Start small
+                    let targetScale = 1;
+                    let rotation = 0;
+                    let progress = 0;
+
+                    object.position.y = startY;
+                    object.scale.set(startScale, startScale, startScale);
+                    scene.add(object);
+
+                    // Animation loop
+                    const animate = () => {
+                        if (progress < 1) {
+                            progress += 0.01;
+
+                            // Easing function (ease out)
+                            const eased = 1 - Math.pow(1 - progress, 3);
+
+                            // Fall down
+                            object.position.y = startY + (targetY - startY) * eased;
+
+                            // Zoom in (scale up)
+                            const scale = startScale + (targetScale - startScale) * eased;
+                            object.scale.set(scale, scale, scale);
+
+                            // Slow rotation
+                            rotation += 0.01;
+                            object.rotation.y = rotation;
+                        } else {
+                            // Continue slow rotation after landing
+                            rotation += 0.005;
+                            object.rotation.y = rotation;
+                        }
+
+                        renderer.render(scene, camera);
+                        requestAnimationFrame(animate);
+                    };
+
+                    animate();
+                }, undefined, (error) => {
+                    console.error('Error loading OBJ:', error);
+                });
+            }, undefined, (error) => {
+                console.error('Error loading MTL:', error);
+            });
+
+        } catch (error) {
+            console.error('Error rendering 3D player model:', error);
+        }
     }
 
     updateUI() {

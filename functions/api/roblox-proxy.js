@@ -9,6 +9,87 @@ export async function onRequestGet({ request, env }) {
   const discordId = url.searchParams.get("discordId");
   const forceRefresh = url.searchParams.get("refresh") === "true";
 
+  // Helper function to get CDN URL from hash
+  function getCdnUrl(hash) {
+    let i = 31;
+    for (let t = 0; t < 32; t++) {
+      i ^= hash.charCodeAt(t);
+    }
+    return `https://t${(i % 8).toString()}.rbxcdn.com/${hash}`;
+  }
+
+  // Handle CDN asset proxy (for OBJ, MTL, textures)
+  if (mode === "cdn-asset") {
+    const hash = url.searchParams.get("hash");
+    if (!hash) {
+      return new Response(JSON.stringify({ error: 'Hash required' }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    }
+
+    try {
+      const cdnUrl = getCdnUrl(hash);
+      const assetResponse = await fetch(cdnUrl);
+
+      if (!assetResponse.ok) {
+        return new Response(JSON.stringify({ error: 'Asset not found' }), {
+          status: 404,
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+        });
+      }
+
+      // Get the content type from the original response
+      const contentType = assetResponse.headers.get('content-type') || 'application/octet-stream';
+      const assetData = await assetResponse.arrayBuffer();
+
+      return new Response(assetData, {
+        headers: {
+          "Content-Type": contentType,
+          "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "public, max-age=86400" // Cache for 24 hours
+        }
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    }
+  }
+
+
+  // Handle 3D avatar mode
+  if (mode === "avatar-3d" && userId) {
+    try {
+      // Fetch 3D avatar data
+      const avatar3dResponse = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-3d?userId=${userId}`);
+      const avatar3dData = await avatar3dResponse.json();
+
+      if (avatar3dData.state !== 'Completed' || !avatar3dData.imageUrl) {
+        return new Response(JSON.stringify({
+          error: 'Avatar not ready',
+          state: avatar3dData.state
+        }), {
+          status: 404,
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+        });
+      }
+
+      // Fetch the metadata
+      const metadataResponse = await fetch(avatar3dData.imageUrl);
+      const metadata = await metadataResponse.json();
+
+      return new Response(JSON.stringify(metadata), {
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    }
+  }
 
   if (isLiteMode) {
     // Just fetch live and return directly without writing to DB
