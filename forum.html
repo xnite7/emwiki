@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<title>Forum - EM Wiki</title>
+	<meta name="description" content="Community forum for Epic Minigames - Discuss, trade, and connect with other players!" />
+	<meta property="og:title" content="Forum - EM Wiki">
+	<meta property="og:description" content="Community forum for Epic Minigames - Discuss, trade, and connect with other players!">
+	<link rel="icon" href="./imgs/favicon.png" type="image/png">
+	<link rel="stylesheet" href="./css/style.css">
+	<link rel="stylesheet" href="./css/forum.css">
+</head>
+
+<body>
+	<!-- Header -->
+	<header>
+		<a href="https://emwiki.com">
+			<svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
+				<defs>
+					<linearGradient id="eppp1" y1="1" x2="0">
+						<stop offset=".2" style="stop-color:#ff0" />
+						<stop offset="1" style="stop-color:#24ff5a" />
+					</linearGradient>
+					<linearGradient id="eppp2" y1="1" x2="0">
+						<stop offset="0" style="stop-color:#24ff5d" />
+						<stop offset="1" style="stop-color:#ff0" />
+					</linearGradient>
+				</defs>
+				<image id="cloud" x="461" y="459" href="https://emwiki.com/imgs/TWOKPhY.png" height="60" width="60"
+					style="filter:opacity(.6)" />
+				<text x="489" y="503" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
+					stroke-linejoin="round" fill="url(#eppp1)"
+					style="animation:floatAnim 12s ease-in-out infinite;font:200 46px Slapstick">EM</text>
+				<image id="epic-image" x="464" y="463" href="https://emwiki.com/imgs/epicfaces/kitta.png" height="60"
+					width="60"
+					style="scale:.48;transform:translate(846px,103px);rotate:20deg;transform-origin:center;animation:floatAnim2 15s ease-in-out 1s infinite alternate" />
+				<image id="cloud" x="495" y="477" href="https://emwiki.com/imgs/8UUB0Gt.png" height="60" width="60"
+					style="filter:opacity(.86)" />
+				<text x="516" y="514" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
+					stroke-linejoin="round" fill="url(#eppp2)"
+					style="animation:floatAnim 12s ease-in-out infinite;animation-delay:5.5s;font:200 16px Slapstick">wiki</text>
+				<image id="cloud" x="445" y="487" href="https://emwiki.com/imgs/oYKd3nJ.png" height="28" width="42"
+					style="filter:opacity(.8)" />
+			</svg>
+		</a>
+
+		<div class="nav-links">
+			<a href="/catalog" class="nav-link">Catalog</a>
+			<a href="/trading" class="nav-link">Trading Hub</a>
+			<a href="/forum" class="nav-link active">Forum</a>
+			<a href="/gallery" class="nav-link">Gallery</a>
+			<a href="/scammers" class="nav-link">Scammers</a>
+		</div>
+	</header>
+
+	<!-- Forum Content -->
+	<main class="hero-section">
+		<div class="hero-content">
+			<h1 class="hero-title"><span class="hero-epic">Community Forum</span></h1>
+			<p class="hero-subtitle">Discuss, share, and connect with the Epic Minigames community</p>
+
+			<!-- Forum Actions -->
+			<div class="forum-actions">
+				<button id="create-post-btn" class="btn btn-primary" style="display: none;">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<line x1="12" y1="5" x2="12" y2="19"></line>
+						<line x1="5" y1="12" x2="19" y2="12"></line>
+					</svg>
+					Create Post
+				</button>
+				<button id="my-posts-btn" class="btn btn-secondary" style="display: none;">My Posts</button>
+			</div>
+
+			<!-- Category Filter -->
+			<div class="category-filter">
+				<button class="category-btn active" data-category="all">All Posts</button>
+				<button class="category-btn" data-category="general">General</button>
+				<button class="category-btn" data-category="trading">Trading</button>
+				<button class="category-btn" data-category="updates">Updates</button>
+				<button class="category-btn" data-category="guides">Guides</button>
+				<button class="category-btn" data-category="feedback">Feedback</button>
+				<button class="category-btn" data-category="off-topic">Off-Topic</button>
+			</div>
+		</div>
+
+		<!-- Forum Posts List View -->
+		<div id="forum-list-view" class="forum-container">
+			<div id="posts-loading" class="loading-spinner">
+				<div class="spinner"></div>
+				<p>Loading posts...</p>
+			</div>
+			<div id="posts-container" class="posts-list" style="display: none;"></div>
+			<div id="posts-empty" class="empty-state" style="display: none;">
+				<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+				</svg>
+				<h3>No posts yet</h3>
+				<p>Be the first to start a discussion!</p>
+			</div>
+		</div>
+
+		<!-- Thread View (Single Post with Comments) -->
+		<div id="thread-view" class="forum-container" style="display: none;">
+			<button id="back-to-list" class="btn btn-secondary">
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<line x1="19" y1="12" x2="5" y2="12"></line>
+					<polyline points="12 19 5 12 12 5"></polyline>
+				</svg>
+				Back to Forum
+			</button>
+
+			<div id="thread-content"></div>
+
+			<div id="comments-section">
+				<h3 class="comments-title">Comments</h3>
+				<div id="comment-form-container" style="display: none;">
+					<form id="comment-form" class="comment-form">
+						<textarea id="comment-content" placeholder="Write a comment..." rows="3" required></textarea>
+						<div class="form-actions">
+							<button type="submit" class="btn btn-primary">Post Comment</button>
+						</div>
+					</form>
+				</div>
+				<div id="comments-container" class="comments-list"></div>
+			</div>
+		</div>
+	</main>
+
+	<!-- Create Post Modal -->
+	<div id="create-post-modal" class="modal">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2>Create New Post</h2>
+				<button class="modal-close">&times;</button>
+			</div>
+			<div class="modal-body">
+				<form id="create-post-form">
+					<div class="form-group">
+						<label for="post-category">Category *</label>
+						<select id="post-category" required>
+							<option value="general">General Discussion</option>
+							<option value="trading">Trading</option>
+							<option value="updates">Updates & News</option>
+							<option value="guides">Guides & Tips</option>
+							<option value="feedback">Feedback & Suggestions</option>
+							<option value="off-topic">Off-Topic</option>
+						</select>
+					</div>
+
+					<div class="form-group">
+						<label for="post-title">Title *</label>
+						<input type="text" id="post-title" maxlength="200" placeholder="Give your post a descriptive title" required>
+					</div>
+
+					<div class="form-group">
+						<label for="post-content">Content *</label>
+						<textarea id="post-content" rows="8" maxlength="5000" placeholder="What would you like to discuss?" required></textarea>
+						<small class="char-count"><span id="content-count">0</span>/5000</small>
+					</div>
+
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary modal-close">Cancel</button>
+						<button type="submit" class="btn btn-primary">Create Post</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Edit Post Modal -->
+	<div id="edit-post-modal" class="modal">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2>Edit Post</h2>
+				<button class="modal-close">&times;</button>
+			</div>
+			<div class="modal-body">
+				<form id="edit-post-form">
+					<input type="hidden" id="edit-post-id">
+
+					<div class="form-group">
+						<label for="edit-post-title">Title *</label>
+						<input type="text" id="edit-post-title" maxlength="200" required>
+					</div>
+
+					<div class="form-group">
+						<label for="edit-post-content">Content *</label>
+						<textarea id="edit-post-content" rows="8" maxlength="5000" required></textarea>
+						<small class="char-count"><span id="edit-content-count">0</span>/5000</small>
+					</div>
+
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary modal-close">Cancel</button>
+						<button type="submit" class="btn btn-primary">Save Changes</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<script src="./js/forum.js"></script>
+</body>
+
+</html>
