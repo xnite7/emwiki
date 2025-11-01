@@ -86,12 +86,15 @@
 }
 
 .gallery-grid:empty::before {
-    content: "Ʌ";
+    content: "V";
     position: absolute;
-    top: 151px;
+    rotate: 178deg;
+    left: 36px;
+    top: 145px;
+    color: #bfb8af;
     justify-self: anchor-center;
     font-size: 53px;
- 
+    font-family: 'Caveat';
 }
 
 .gallery-item {
