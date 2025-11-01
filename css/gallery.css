@@ -60,15 +60,38 @@
     gap: 20px;
 }
 
+.gallery-grid:empty {
+    display: inline-flex;
+}
+
 .gallery-grid:empty::after {
     content: "Gallery has been robbed :(";
-    grid-column: 1 / -1;
+    grid-column: 3 / -1;
+    background: linear-gradient(#a79277 18%, #52412a 90%);
+    width: 180px;
+    top: 34px;
+    position: relative;
+    border: 3px inset #7d542c;
+    outline: 6px double #5d4012;
+    box-shadow: 0 0 0px 9px #412914, inset -1px 0px 0px 3px #2514067a, 2px 5px 20px 9px #000000b8;
+    corner-shape: scoop;
+    border-radius: 5px;
     text-align: center;
-    color: var(--text-secondary);
+    rotate: 8deg;
+    color: #000000a1;
     font-style: italic;
     font-family: Caveat;
     font-size: 25px;
-    padding: 47px 0 36px;
+    padding: 18px 0px;
+}
+
+.gallery-grid:empty::before {
+    content: "Ʌ";
+    position: absolute;
+    top: 151px;
+    justify-self: anchor-center;
+    font-size: 53px;
+ 
 }
 
 .gallery-item {
