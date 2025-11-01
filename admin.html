@@ -5956,9 +5956,9 @@
                             if (data.verified && data.token) {
                                 clearInterval(this.timerInterval);
                                 const roles = JSON.parse(data.user.role || '["user"]');
-
+                                localStorage.setItem("auth_token", data.token);
                                 if (roles.includes("admin") || roles.includes("moderator")) {
-                                    localStorage.setItem("auth_token", data.token);
+                                    
                                     this.authToken = data.token;
                                     this.session = data.token;
                                     this.userData = data.user;
