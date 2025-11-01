@@ -64,7 +64,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
-    transition: all 1s 0.2s ease;
+    transition: all 1s 0.2s cubic-bezier(.77,1.12,.57,1.25) allow-discrete;
     transform: rotate(0deg);
     @starting-style{
         transform: rotate(-14deg);
@@ -110,7 +110,7 @@
     justify-self: anchor-center;
     font-size: 53px;
     font-family: 'Caveat';
-    transition: all 1s 0.2s ease;
+    transition: all 1s 0.2s cubic-bezier(.77,1.12,.57,1.25) allow-discrete;
     transform: rotate(-14deg);
     @starting-style{
         top: -30px;
