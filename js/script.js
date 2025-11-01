@@ -348,7 +348,8 @@ class BaseApp {
                         <div class="celebration-title">Account Linked!</div>
                         <p>Welcome to Epic Catalogue! Your Roblox account has been successfully linked.
                         </p>
-                        <button class="celebration-close-btn" popovertargetaction="hide" popovertarget="auth-modal">Epic!</button>
+                        <p class="loading">Hold on, Setting Stuff Up!</p>
+                        <button style="display:none" class="celebration-close-btn" popovertargetaction="hide" popovertarget="auth-modal">Epic!</button>
                     </div>
                 </div>
             
@@ -2208,16 +2209,23 @@ class Auth extends EventTarget {
 
                     await Utils.migrateToAccount();
 
-                    if (window.catalog) {
-                        window.catalog.isLoggedIn = true;
-                        await window.catalog.loadPreferences();
-                    }
+
 
                     // Update UI
                     document.getElementById('auth-step-2').style.display = 'none';
                     document.getElementById('auth-step-3').style.display = 'block';
 
+
+
                     document.getElementById('auth-step-3').querySelector('p').innerHTML = `Welcome, <strong>${this.user.displayName}!</strong> Your Roblox account has been successfully linked to Epic Catalogue.`;
+
+                    if (window.catalog) {
+                        window.catalog.isLoggedIn = true;
+                        
+                        await window.catalog.loadPreferences();
+                        document.getElementById('auth-step-3').querySelector('.loading').style.display = 'none';
+                        document.getElementById('auth-step-3').querySelector('.celebration-close-btn').style.display = ''
+                    }
 
                     // Render 3D player model with animation
                     this.render3DPlayerModel(this.user.userId);
@@ -2251,7 +2259,7 @@ class Auth extends EventTarget {
     async render3DPlayerModel(userId) {
         try {
             // Fetch 3D avatar data through proxy to avoid CORS
-            const response = await fetch(`/api/roblox-proxy?mode=avatar-3d&userId=${userId}`);
+            const response = await fetch(`https://emwiki.com/api/roblox-proxy?mode=avatar-3d&userId=${userId}`);
 
             if (!response.ok) {
                 console.log('3D avatar not ready or failed to fetch');
