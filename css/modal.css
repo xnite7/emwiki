@@ -6,7 +6,7 @@
     bottom: 0;
     z-index: 9999;
     display: none;
-    perspective: 20cm;
+    perspective: 180cqw;
     opacity: 0;
     transition: opacity 0.3s ease;
 }
