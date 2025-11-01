@@ -201,7 +201,7 @@ class Gallery {
             progressText.textContent = 'Complete!';
 
             const result = await submitResponse.json();
-            this.showToast(result.message || 'Submission successful!', 'success');
+            this.showToast(result.message || 'Submission successful!',  'success');
 
             // Close modal and reset form
             setTimeout(() => {
@@ -408,11 +408,11 @@ class Gallery {
                 throw new Error('Failed to delete');
             }
 
-            this.showToast('Submission deleted', 'success');
+            this.showToast('Submission deleted','success');
             this.openSubmissionsModal(); // Refresh list
         } catch (error) {
             console.error('Delete error:', error);
-            this.showToast('Failed to delete submission', 'error');
+            this.showToast('Failed to delete submission','error');
         }
     }
 
@@ -470,7 +470,7 @@ class Gallery {
     showToast(message, type = 'info') {
         // Use existing toast system from Utils if available
         if (window.Utils && window.Utils.showToast) {
-            window.Utils.showToast(message, type);
+            window.Utils.showToast('Gallery', message, type);
         } else {
             alert(message);
         }
