@@ -713,8 +713,7 @@
         }
 
         showLoadingSkeleton(container);
-        await new Promise(resolve => setTimeout(resolve, 4500));
-        return
+        await new Promise(resolve => setTimeout(resolve, 500));
         try {
             const response = await fetch('https://emwiki.site/api/roblox-proxy?mode=discord-scammers');
 
