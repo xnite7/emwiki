@@ -180,18 +180,15 @@
                         <div style="display: flex; gap: 8px;">
                             <input type="text" id="user-search-input" placeholder="Enter Roblox username or user ID"
                                 style="flex: 1; padding: 10px; border: 1px solid #6363637d; border-radius: 6px; background: #63636347; color: white;">
-                            <button id="user-search-btn" style="
-                                padding: 10px 20px;
-                                background: linear-gradient(135deg, #4caf50, #8bc34a);
-                                color: white;
-                                border: none;
-                                border-radius: 6px;
-                                cursor: pointer;
-                                font-weight: 600;
-                            ">Search</button>
+                            <button id="user-search-btn" class="small-btn" style="padding: 10px 20px;">Search</button>
                         </div>
                     </div>
-                    <div id="user-management-results"></div>
+                    <div id="user-management-results" style="
+    display: inline-flex;
+    flex-direction: row;
+    gap: 11px;
+    flex-wrap: wrap;
+    justify-content: space-evenly;"></div>
                 </div>
             </div>
 
@@ -7448,7 +7445,7 @@
                                 ${this.escapeHtml(user.display_name || user.username)}
                             </div>
                             <div style="color: var(--text-secondary); margin-bottom: 10px;">
-                                @${this.escapeHtml(user.username)} • ID: ${user.user_id}
+                                @${this.escapeHtml(user.username)}
                             </div>
                             <div style="margin-bottom: 10px;">
                                 ${rolesHtml}
