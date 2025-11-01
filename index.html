@@ -29,18 +29,23 @@
 	<style>
 		body {
 			min-height: 100vh;
-			background: url(./imgs/bg.jpg);
+			background-image: none;
 			background-repeat: space;
 			background-position: center;
 			background-attachment: fixed;
 			opacity: 0;
-			animation: fadeIn 0.3s ease-out forwards;
+			animation: fadeIn 1s ease-out forwards;
 		}
 
 		@keyframes fadeIn {
+			99% {
+				background-image: none;
+			}
 			to {
 				opacity: 1;
+				background-image: url(./imgs/bg.jpg);
 			}
+			
 		}
 	</style>
 
