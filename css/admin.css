@@ -1321,9 +1321,7 @@ hr {
     padding: 2.5rem;
     border-radius: 16px;
     width: 64%;
-    height: 40%;
     position: absolute;
-    max-height: 240px;
     max-width: 400px;
     text-align: center;
     transform: translateY(0);

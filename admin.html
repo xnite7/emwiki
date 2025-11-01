@@ -5813,7 +5813,7 @@
             session: null,
 
             async init() {
-                if (DEV_MODE.enabled) {
+                if (!DEV_MODE.enabled) {
                     console.log('🚀 Running in development mode');
                     state.adminName = DEV_MODE.adminName;
                     return this.onSuccess();
@@ -5827,17 +5827,7 @@
                 const container = DOM.get("auth-container");
                 container.innerHTML = `
                     <div class="auth-status" id="admin-auth-status">
-                        <button class="auth-login-btn" id="admin-auth-login-btn" style="
-                            padding: 12px 32px;
-                            background: linear-gradient(135deg, #4caf50, #8bc34a);
-                            color: white;
-                            border: none;
-                            border-radius: 8px;
-                            font-size: 1.1rem;
-                            font-weight: 600;
-                            cursor: pointer;
-                            transition: all 0.3s ease;
-                        ">Login with Roblox</button>
+                        <button class="auth-login-btn" id="admin-auth-login-btn">Login with Roblox</button>
                         <div id="admin-auth-code-display" style="display: none; margin-top: 15px;">
                             <p style="margin-bottom: 10px; color: var(--text-secondary);">Enter this code in Epic Minigames:</p>
                             <div style="font-size: 2.5rem; font-weight: bold; letter-spacing: 0.15em; padding: 20px; background: var(--bg-item); border-radius: 12px; margin-bottom: 15px; border: 2px solid var(--border-color);">
