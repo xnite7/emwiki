@@ -66,10 +66,9 @@
 
 .gallery-grid:empty::after {
     content: "Gallery has been robbed :(";
-    grid-column: 3 / -1;
     background: linear-gradient(#a79277 18%, #52412a 90%);
     width: 180px;
-    top: 34px;
+    top: 32px;
     position: relative;
     border: 3px inset #7d542c;
     outline: 6px double #5d4012;
@@ -89,9 +88,9 @@
     content: "V";
     position: absolute;
     rotate: 178deg;
-    left: 36px;
-    top: 145px;
-    color: #bfb8af;
+    left: 18px;
+    top: 195px;
+    color: #b7b5b2;
     justify-self: anchor-center;
     font-size: 53px;
     font-family: 'Caveat';
@@ -519,7 +518,7 @@
 }
 
 html{
-        background: #1a1a1a;
+        background: var(--bg-secondary);
 }
 
 main{
