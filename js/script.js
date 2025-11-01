@@ -58,6 +58,45 @@ const Utils = {
         return defaultValue;
     },
 
+    async migrateToAccount() {
+        const token = localStorage.getItem('auth_token');
+        if (!token) return;
+        const localData = {
+            favorites: Utils.loadFromStorage('favorites', []),
+            wishlist: Utils.loadFromStorage('wishlist', [])
+        };
+        const onlineData = {
+            favorites: Utils.loadFromAccount('favorites', []),
+            wishlist: Utils.loadFromAccount('wishlist', [])
+        };
+        const hasData = localData.favorites.length > 0 ||
+            localData.wishlist.length > 0;
+        if (!hasData) return;
+        const hasData2 = onlineData.favorites.length > 0 ||
+            onlineData.wishlist.length > 0;
+        if (hasData2) return;
+        try {
+            const response = await fetch('https://emwiki.com/api/auth/user/preferences/migrate', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(localData)
+            });
+            if (response.ok) {
+                // Clear localStorage after successful migration
+                localStorage.removeItem('favorites');
+                localStorage.removeItem('wishlist');
+                Utils.showToast('Data Synced', 'Your preferences have been synced to your account!', 'success');
+                return true;
+            }
+        } catch (error) {
+            console.error('Failed to migrate data:', error);
+        }
+        return false;
+    },
+
     formatPrice(price) {
         function parseValue(str) {
             str = str.trim().toLowerCase();
@@ -2168,6 +2207,7 @@ class Auth extends EventTarget {
                         clearInterval(this.timerInterval);
                     }
 
+                    await Utils.migrateToAccount();
 
                     if (window.catalog) {
                         window.catalog.isLoggedIn = true;
