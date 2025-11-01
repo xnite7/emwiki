@@ -5813,7 +5813,7 @@
             session: null,
 
             async init() {
-                if (!DEV_MODE.enabled) {
+                if (DEV_MODE.enabled) {
                     console.log('🚀 Running in development mode');
                     state.adminName = DEV_MODE.adminName;
                     return this.onSuccess();
@@ -5835,7 +5835,7 @@
                             </div>
                             <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 10px;">
                                 Go to <a href="https://www.roblox.com/games/2099441364/Epic-Minigames" target="_blank" style="color: #4caf50; text-decoration: underline;">Epic Minigames</a>
-                                and type this code in chat
+                                and type this code in the prompt
                             </p>
                             <div id="admin-auth-timer" style="color: var(--text-secondary); font-weight: 600;"></div>
                         </div>
