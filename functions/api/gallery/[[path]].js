@@ -100,6 +100,61 @@ async function handleGet({ request, env, params }) {
     });
   }
 
+  // GET /api/gallery/:id - Get single gallery item and increment views
+  if (path && path.match(/^\d+$/)) {
+    const itemId = path;
+
+    try {
+      // Increment view count
+      await env.DBA.prepare(
+        'UPDATE gallery_items SET views = views + 1 WHERE id = ? AND status = ?'
+      ).bind(itemId, 'approved').run();
+
+      // Get item with likes
+      let item;
+      try {
+        item = await env.DBA.prepare(
+          `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.media_type,
+                  g.created_at, g.views + 1 as views,
+                  COUNT(gl.id) as likes_count,
+                  CASE WHEN ? IS NOT NULL AND ugl.id IS NOT NULL THEN 1 ELSE 0 END as user_liked
+           FROM gallery_items g
+           LEFT JOIN gallery_likes gl ON g.id = gl.gallery_item_id
+           LEFT JOIN gallery_likes ugl ON g.id = ugl.gallery_item_id AND ugl.user_id = ?
+           WHERE g.id = ? AND g.status = 'approved'
+           GROUP BY g.id`
+        ).bind(user?.user_id || null, user?.user_id || null, itemId).first();
+      } catch (error) {
+        // Fallback without likes
+        item = await env.DBA.prepare(
+          `SELECT id, user_id, username, title, description, media_url, media_type,
+                  created_at, views,
+                  0 as likes_count,
+                  0 as user_liked
+           FROM gallery_items
+           WHERE id = ? AND status = 'approved'`
+        ).bind(itemId).first();
+      }
+
+      if (!item) {
+        return new Response(JSON.stringify({ error: 'Item not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      return new Response(JSON.stringify({ item }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (error) {
+      console.error('Error fetching gallery item:', error);
+      return new Response(JSON.stringify({ error: 'Failed to fetch item' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+  }
+
   // GET /api/gallery - Get approved items (public)
   const limit = parseInt(url.searchParams.get('limit')) || 50;
   const offset = parseInt(url.searchParams.get('offset')) || 0;
