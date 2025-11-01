@@ -170,6 +170,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    backdrop-filter: blur(18px);
 }
 
 .modal-content {
@@ -336,6 +337,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    border: 3px solid #35353587;
 }
 
 .viewer-close {
