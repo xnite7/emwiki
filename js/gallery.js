@@ -214,7 +214,6 @@ class Gallery {
             }, 1000);
 
         } catch (error) {
-            console.error('Upload error:', error);
             this.showToast(error.message, 'error');
             progressContainer.style.display = 'none';
         }
@@ -265,7 +264,6 @@ class Gallery {
             }
 
         } catch (error) {
-            console.error('Failed to load gallery:', error);
             this.showToast('Failed to load gallery', 'error');
         } finally {
             this.isLoading = false;
@@ -355,7 +353,6 @@ class Gallery {
                 });
             }
         } catch (error) {
-            console.error('Failed to load submissions:', error);
             container.innerHTML = '<p class="loading">Failed to load submissions</p>';
         }
     }
@@ -412,7 +409,6 @@ class Gallery {
             this.showToast('Submission deleted','success');
             this.openSubmissionsModal(); // Refresh list
         } catch (error) {
-            console.error('Delete error:', error);
             this.showToast('Failed to delete submission','error');
         }
     }

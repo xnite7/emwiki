@@ -1,6 +1,25 @@
 const CACHE_KEY = "discord-scammers";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
+// Helper function to fetch Roblox user data
+async function fetchRobloxUserData(userId) {
+  const [userData, avatarData] = await Promise.all([
+    fetch(`https://users.roblox.com/v1/users/${userId}`).then(r => r.ok ? r.json() : null),
+    fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=true`)
+      .then(r => r.ok ? r.json() : null)
+  ]);
+
+  if (!userData) {
+    throw new Error("Failed to fetch Roblox user data");
+  }
+
+  return {
+    name: userData.name,
+    displayName: userData.displayName,
+    avatar: avatarData?.data?.[0]?.imageUrl || null
+  };
+}
+
 export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
   const mode = url.searchParams.get("mode");
@@ -10,45 +29,18 @@ export async function onRequestGet({ request, env }) {
   const forceRefresh = url.searchParams.get("refresh") === "true";
 
 
-  if (isLiteMode) {
-    // Just fetch live and return directly without writing to DB
-    const [userData, avatarData] = await Promise.all([
-      fetch(`https://users.roblox.com/v1/users/${userId}`).then(r => r.ok ? r.json() : null),
-      fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=true`)
-        .then(r => r.ok ? r.json() : null)
-    ]);
-
-    if (!userData) throw new Error("Failed to fetch Roblox user data");
-
-    return new Response(JSON.stringify({
-      name: userData.name,
-      displayName: userData.displayName,
-      avatar: avatarData?.data?.[0]?.imageUrl || null
-    }), { headers: { "Content-Type": "application/json","Access-Control-Allow-Origin": "*" } });
-  }
-
-
-
-
-
-  if (url.pathname.endsWith("/api/roblox-proxy") && userId) {
+  // Handle both lite mode and regular user data fetching
+  if ((isLiteMode || url.pathname.endsWith("/api/roblox-proxy")) && userId) {
     try {
-      const [userData, avatarData] = await Promise.all([
-        fetch(`https://users.roblox.com/v1/users/${userId}`).then(r => r.ok ? r.json() : null),
-        fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=true`)
-          .then(r => r.ok ? r.json() : null)
-      ]);
-
-      if (!userData) throw new Error("Failed to fetch Roblox user data");
-
-      return new Response(JSON.stringify({
-        name: userData.name,
-        displayName: userData.displayName,
-        avatar: avatarData?.data?.[0]?.imageUrl || null
-      }), { headers: { "Content-Type": "application/json","Access-Control-Allow-Origin": "*" } });
-
+      const userData = await fetchRobloxUserData(userId);
+      return new Response(JSON.stringify(userData), {
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
     } catch (err) {
-      return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      });
     }
   }
 
@@ -277,7 +269,7 @@ export async function onRequestGet({ request, env }) {
           scammers.push(entry);
 
         } catch (err) {
-          console.warn("Failed to parse message:", err);
+          // Failed to parse message - skip this entry
         }
       }
       const payload = JSON.stringify({ lastMessageId: latestMessageId, scammers, partials: partialScammers });
@@ -296,8 +288,7 @@ export async function onRequestGet({ request, env }) {
 
     } catch (err) {
       await env.DB.prepare("DELETE FROM scammer_cache_locks WHERE key = ?").bind("discord-scammers-lock").run();
-      console.error("Scammer Cache Build Failed:", err);
-      return new Response(JSON.stringify({ error: err.message, stack: err.stack }), {
+      return new Response(JSON.stringify({ error: "Failed to build scammer cache", details: err.message }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       });

@@ -112,12 +112,11 @@ function init() {
     imageDataSrc = contextSrc.getImageData(0, 0, imageSrc.width, imageSrc.height);
     dataSrc = imageDataSrc.data;
 
-    console.log("Image loaded successfully. Starting the application...");
     restart(); // Call restart only after the image is loaded
   };
 
   imageSrc.onerror = function () {
-    console.error("Failed to load the image.");
+    // Failed to load the image
   };
 
   window.addEventListener('resize', onResize, false);
@@ -755,13 +754,11 @@ function createShader( gl, shaderCode, type ) {
 
   gl.shaderSource( shader, shaderCode );
   gl.compileShader( shader );
-  
-  if ( !gl.getShaderParameter( shader, gl.COMPILE_STATUS ) ) {
 
-    console.log( 'Could not compile WebGL program. \n\n' + gl.getShaderInfoLog( shader ) );
-    
+  if ( !gl.getShaderParameter( shader, gl.COMPILE_STATUS ) ) {
+    // Could not compile WebGL shader
 	}
-  
+
 	return shader;
 
 }
@@ -777,11 +774,9 @@ function createShaderProgram( gl, vertexShader, fragmentShader ) {
 
   gl.linkProgram( shaderProgram );
   gl.useProgram( shaderProgram );
-  
-  if ( !gl.getProgramParameter( shaderProgram, gl.LINK_STATUS ) ) {
 
-    console.log( 'Could not compile WebGL program. \n\n' + gl.getProgramInfoLog( shaderProgram ) );
-    
+  if ( !gl.getProgramParameter( shaderProgram, gl.LINK_STATUS ) ) {
+    // Could not compile WebGL program
 	}
 
 	return shaderProgram;

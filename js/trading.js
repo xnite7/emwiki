@@ -14,7 +14,6 @@ class TradingHub {
         //wait 5 seconds
 
         window.Auth.addEventListener("sessionReady", () => {
-            console.log("User loaded:", window.Auth.user);
             this.currentUser = window.Auth.user;
 
             this.loadTheme();
@@ -52,10 +51,8 @@ class TradingHub {
                 }
             });
 
-            console.log('Loaded', this.allItems.length, 'items');
             return this.allItems;
         } catch (error) {
-            console.error('Failed to load items:', error);
             return null;
         }
     }
@@ -110,7 +107,6 @@ class TradingHub {
                 views: listing.views || 0,
             }));
         } catch (error) {
-            console.error('Error loading trades:', error);
             // Fallback to mock data on error
             if (window.Utils) {
                 Utils.showToast('Error', 'Failed to load trades from server', 'error');
@@ -327,7 +323,6 @@ class TradingHub {
     updateUserUI() {
         const createBtn = document.querySelector('.create-trade-btn');
         if (createBtn && !this.currentUser) {
-            console.log(this.currentUser);
             createBtn.setAttribute('popovertarget', 'auth-modal');
             createBtn.setAttribute('popovertargetaction', 'show');
             createBtn.classList.add('create-account');
@@ -378,7 +373,6 @@ class TradingHub {
             const data = await response.json();
             this.showTradeDetailsModal(data);
         } catch (error) {
-            console.error('Error viewing trade:', error);
             if (window.Utils) {
                 Utils.showToast('Error', 'Failed to load trade details', 'error');
             }

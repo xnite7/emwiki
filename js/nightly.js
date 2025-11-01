@@ -5,7 +5,9 @@ fetch('https://emwiki.com/api/gist-version')
     let color;
     showInfo(arr, color);
   })
-  .catch(error => console.error('Error fetching data:', error));
+  .catch(error => {
+    // Error fetching data
+  });
 
 
 
@@ -22,8 +24,7 @@ function createNewItem(item, color, list, date) {
 
   // Retired tag
   if (item.retired) {
-    newItem.style.border = "solid 3px red"
-    console.log(item.name + " is retired");
+    newItem.style.border = "solid 3px red";
 
 
     const retiredTag = document.createElement("span");
@@ -385,7 +386,6 @@ const navButtons = [
 ];
 function insertNavButtons() {
   const nav = document.querySelector("nav");
-  console.log(nav);
   if (!nav) return;
   // Get current page filename, default to "index" if blank
   let current = location.pathname.split('/').pop();

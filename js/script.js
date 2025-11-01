@@ -14,7 +14,7 @@ const Utils = {
         try {
             localStorage.setItem(key, JSON.stringify(value));
         } catch (e) {
-            console.error('Failed to save to localStorage:', e);
+            // Failed to save to localStorage - storage may be full or disabled
         }
     },
 
@@ -33,7 +33,7 @@ const Utils = {
             });
             return response.ok;
         } catch (error) {
-            console.error('Failed to save to account:', error);
+            // Failed to save to account
             return false;
         }
     },
@@ -52,7 +52,7 @@ const Utils = {
                 return data[key] !== undefined ? data[key] : defaultValue;
             }
         } catch (error) {
-            console.error('Failed to load from account:', error);
+            // Failed to load from account
         }
 
         return defaultValue;
@@ -92,7 +92,7 @@ const Utils = {
                 return true;
             }
         } catch (error) {
-            console.error('Failed to migrate data:', error);
+            // Failed to migrate data
         }
         return false;
     },
@@ -454,7 +454,6 @@ class BaseApp {
 
             return this.allItems;
         } catch (error) {
-            console.error('Failed to load data:', error);
             Utils.showToast('Error', 'Failed to load items', 'error');
             return null;
         }
@@ -1181,7 +1180,6 @@ const PriceGraph = {
         priceHistory = priceHistory.filter(h => h.price !== 0 && h.price !== '0');
 
         // Re-check if we still have enough data points after filtering
-        console.log(priceHistory.length);
         if (priceHistory.length < 2) return null;
 
         const canvas = document.createElement('canvas');
@@ -1851,7 +1849,7 @@ class Auth extends EventTarget {
                 this.scammersList = data.scammers || [];
             }
         } catch (error) {
-            console.error('Failed to load scammers list:', error);
+            // Failed to load scammers list - will retry on next check
         }
     }
 
@@ -2090,7 +2088,7 @@ class Auth extends EventTarget {
                 }
             }
         } catch (error) {
-            console.error('Session check failed:', error);
+            // Session check failed
             this.dispatchEvent(new Event("sessionReady"));
             const authButton = document.getElementById('auth-button');
             if (authButton) {
@@ -2230,7 +2228,7 @@ class Auth extends EventTarget {
 
                 }
             } catch (error) {
-                console.error('Polling error:', error);
+                // Polling error - will retry on next interval
             }
         }, 2000);
     }
@@ -2461,7 +2459,7 @@ class Auth extends EventTarget {
                 }
             }
         } catch (error) {
-            console.error('Failed to check donation status:', error);
+            // Failed to check donation status
         }
     }
 

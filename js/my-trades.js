@@ -49,7 +49,6 @@ class TradeDashboard {
                 this.sentOffers = (data.offers || []).filter(o => o.from_user_id === this.currentUser.id);
             }
         } catch (error) {
-            console.error('Error loading data:', error);
             if (window.Utils) {
                 Utils.showToast('Error', 'Failed to load dashboard data', 'error');
             }
@@ -260,7 +259,6 @@ class TradeDashboard {
             await this.loadData();
             this.renderMyListings();
         } catch (error) {
-            console.error('Error cancelling listing:', error);
             if (window.Utils) {
                 Utils.showToast('Error', 'Failed to cancel listing', 'error');
             }
@@ -286,7 +284,6 @@ class TradeDashboard {
             await this.loadData();
             this.renderReceivedOffers();
         } catch (error) {
-            console.error('Error accepting offer:', error);
             if (window.Utils) {
                 Utils.showToast('Error', 'Failed to accept offer', 'error');
             }
@@ -312,7 +309,6 @@ class TradeDashboard {
             await this.loadData();
             this.renderReceivedOffers();
         } catch (error) {
-            console.error('Error rejecting offer:', error);
             if (window.Utils) {
                 Utils.showToast('Error', 'Failed to reject offer', 'error');
             }
@@ -338,7 +334,6 @@ class TradeDashboard {
             await this.loadData();
             this.renderSentOffers();
         } catch (error) {
-            console.error('Error cancelling offer:', error);
             if (window.Utils) {
                 Utils.showToast('Error', 'Failed to cancel offer', 'error');
             }

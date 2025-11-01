@@ -61,7 +61,7 @@ export async function onRequest(context) {
             avatar: profile.avatar || null,
           };
         } catch (err) {
-          console.error('Failed to parse:', err);
+          // Failed to parse profile data - return null
           return null;
         }
       })

@@ -35,7 +35,6 @@
 						indicatorDiv.innerHTML = `🔴`;
 					});
                     socket.addEventListener("error", (e) => {
-  console.error("WebSocket error:", e);
   indicatorDiv.innerHTML = `🔴`;
 });
 				

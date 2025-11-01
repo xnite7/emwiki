@@ -371,7 +371,6 @@ export async function onRequest(context) {
             headers
         });
     } catch (error) {
-        console.error('Trade offers error:', error);
         return new Response(JSON.stringify({ error: 'Internal server error' }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }

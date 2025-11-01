@@ -328,7 +328,7 @@ async function handleDelete({ request, env, params }) {
       await env.MY_BUCKET.delete(key);
     }
   } catch (err) {
-    console.error('Failed to delete R2 object:', err);
+    // Failed to delete R2 object - continue anyway since DB record is being deleted
   }
 
   return new Response(JSON.stringify({

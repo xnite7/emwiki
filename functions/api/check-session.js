@@ -23,7 +23,6 @@ export const onRequestGet = async ({ request, env }) => {
           "Access-Control-Allow-Origin": "*" }
     });
   } catch (err) {
-    console.error("check-session error:", err);
-    return new Response(JSON.stringify({ ok: false, error: err.message }), { status: 500 });
+    return new Response(JSON.stringify({ ok: false, error: "Session validation failed" }), { status: 500 });
   }
 };

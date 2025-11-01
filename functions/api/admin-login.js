@@ -35,7 +35,6 @@ export const onRequestPost = async ({ request, env }) => {
       }
     });
   } catch (err) {
-    console.error("admin-login error:", err);
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: "Authentication failed" }), { status: 500 });
   }
 };

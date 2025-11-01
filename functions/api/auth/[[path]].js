@@ -98,7 +98,6 @@ async function handleVerifyCode(request, env) {
             const json = await response.json();
             avatarUrl = json.data?.[0]?.imageUrl || null;
         } catch (e) {
-            console.error('Failed to fetch avatar:', e);
             // Fallback to old cached avatar if fetch fails
             avatarUrl = existingUser?.avatar_url || null;
         }
@@ -167,7 +166,7 @@ async function handleGetSession(request, env) {
     try {
         userRoles = session.role ? JSON.parse(session.role) : null;
     } catch (e) {
-        console.error('Failed to parse user role:', e);
+        // Failed to parse user role - default to null
         userRoles = null;
     }
 
