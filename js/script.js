@@ -343,6 +343,7 @@ class BaseApp {
                         </p>
                     </div>
                     <div id="auth-step-3" style="display: none;">
+                        <div id="player-model-container"></div>
                         <div class="celebration-icon">😻</div>
                         <div class="celebration-title">Account Linked!</div>
                         <p>Welcome to Epic Catalogue! Your Roblox account has been successfully linked.
@@ -2218,6 +2219,9 @@ class Auth extends EventTarget {
 
                     document.getElementById('auth-step-3').querySelector('p').innerHTML = `Welcome, <strong>${this.user.displayName}!</strong> Your Roblox account has been successfully linked to Epic Catalogue.`;
 
+                    // Render 3D player model with animation
+                    this.render3DPlayerModel(this.user.userId);
+
                     // Start confetti!
                     confetti.start();
 
@@ -2232,6 +2236,141 @@ class Auth extends EventTarget {
                 console.error('Polling error:', error);
             }
         }, 2000);
+    }
+
+    // Helper function to get CDN URL from hash
+    getCdnUrl(hash) {
+        let i = 31;
+        for (let t = 0; t < 32; t++) {
+            i ^= hash.charCodeAt(t);
+        }
+        return `https://t${(i % 8).toString()}.rbxcdn.com/${hash}`;
+    }
+
+    // Render 3D player model with fall animation
+    async render3DPlayerModel(userId) {
+        try {
+            // Fetch 3D avatar data through proxy to avoid CORS
+            const response = await fetch(`/api/roblox-proxy?mode=avatar-3d&userId=${userId}`);
+
+            if (!response.ok) {
+                console.log('3D avatar not ready or failed to fetch');
+                return;
+            }
+
+            const metadata = await response.json();
+
+            // Get CDN URLs
+            const objUrl = this.getCdnUrl(metadata.obj);
+            const mtlUrl = this.getCdnUrl(metadata.mtl);
+
+            // Setup Three.js scene
+            const container = document.getElementById('player-model-container');
+            const scene = new THREE.Scene();
+
+            const camera = new THREE.PerspectiveCamera(
+                metadata.camera.fov - 10,
+                300 / 300,
+                0.1,
+                500
+            );
+            camera.position.set(
+                metadata.camera.position.x,
+                metadata.camera.position.y,
+                metadata.camera.position.z
+            );
+
+            // Calculate center point from aabb
+            const centerX = (metadata.aabb.min.x + metadata.aabb.max.x) / 2;
+            const centerY = (metadata.aabb.min.y + metadata.aabb.max.y) / 2 + 2;
+            const centerZ = (metadata.aabb.min.z + metadata.aabb.max.z) / 2;
+            camera.lookAt(new THREE.Vector3(centerX, centerY, centerZ));
+
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(300, 300);
+            renderer.setClearColor(0x000000, 0);
+            container.appendChild(renderer.domElement);
+
+            // Add lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 7.5);
+            scene.add(directionalLight);
+
+            // Load model
+            const mtlLoader = new THREE.MTLLoader();
+            mtlLoader.load(mtlUrl, (materials) => {
+                materials.preload();
+
+                // Disable alpha maps
+                for (const key in materials.materials) {
+                    materials.materials[key].transparent = false;
+                }
+
+                const objLoader = new THREE.OBJLoader();
+                objLoader.setMaterials(materials);
+
+                // Fix texture URLs
+                const manager = new THREE.LoadingManager();
+                manager.setURLModifier((url) => {
+                    const id = url.split('com/')[1];
+                    return this.getCdnUrl(id);
+                });
+                objLoader.setManager(manager);
+
+                objLoader.load(objUrl, (object) => {
+                    // Animation properties
+                    let startY = centerY + 50; // Start above
+                    let targetY = centerY;
+                    let startScale = 0.1; // Start small
+                    let targetScale = 1;
+                    let rotation = 0;
+                    let progress = 0;
+
+                    object.position.y = startY;
+                    object.scale.set(startScale, startScale, startScale);
+                    scene.add(object);
+
+                    // Animation loop
+                    const animate = () => {
+                        if (progress < 1) {
+                            progress += 0.01;
+
+                            // Easing function (ease out)
+                            const eased = 1 - Math.pow(1 - progress, 3);
+
+                            // Fall down
+                            object.position.y = startY + (targetY - startY) * eased;
+
+                            // Zoom in (scale up)
+                            const scale = startScale + (targetScale - startScale) * eased;
+                            object.scale.set(scale, scale, scale);
+
+                            // Slow rotation
+                            rotation += 0.01;
+                            object.rotation.y = rotation;
+                        } else {
+                            // Continue slow rotation after landing
+                            rotation += 0.005;
+                            object.rotation.y = rotation;
+                        }
+
+                        renderer.render(scene, camera);
+                        requestAnimationFrame(animate);
+                    };
+
+                    animate();
+                }, undefined, (error) => {
+                    console.error('Error loading OBJ:', error);
+                });
+            }, undefined, (error) => {
+                console.error('Error loading MTL:', error);
+            });
+
+        } catch (error) {
+            console.error('Error rendering 3D player model:', error);
+        }
     }
 
     updateUI() {
