@@ -64,6 +64,11 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
+    transition: all 1s 0.2s ease;
+    transform: rotate(0deg);
+    @starting-style{
+        transform: rotate(-14deg);
+    }
 }
 
 .gallery-grid:empty {
@@ -89,6 +94,7 @@
     font-family: Caveat;
     font-size: 25px;
     padding: 18px 0px;
+
     @supports (corner-shape: scoop) {
         corner-shape: scoop;
     }
@@ -98,12 +104,19 @@
     content: "V";
     position: absolute;
     rotate: 178deg;
-    left: 21px;
-    top: 169px;
+    left: 12px;
+    top: -34px;
     color: #b7b5b2;
     justify-self: anchor-center;
     font-size: 53px;
     font-family: 'Caveat';
+    transition: all 1s 0.2s ease;
+    transform: rotate(-14deg);
+    @starting-style{
+        top: -30px;
+        left: 32px;
+        transform: rotate(0deg);
+    }
 }
 
 .gallery-item {

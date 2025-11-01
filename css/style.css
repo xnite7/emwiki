@@ -2378,12 +2378,12 @@ textarea {
 
 /* User (default) styles */
 .role-badge:not(.admin):not(.moderator):not(.vip):not(.donator):not(.scammer) {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgb(from CanvasText r g b / 0.2);
     color: var(--text-secondary);
 }
 
 .role-icon:not(.admin):not(.moderator):not(.vip):not(.donator):not(.scammer) {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgb(from CanvasText r g b / 0.2);
     color: var(--text-secondary);
 }
 
