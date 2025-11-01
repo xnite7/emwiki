@@ -407,6 +407,8 @@ class BaseApp {
 
 
         setTimeout(() => this.updateStatsIfOpen(), 1500);
+
+
     }
 
     async loadPreferences() {
@@ -447,6 +449,8 @@ class BaseApp {
                     });
                 }
             });
+
+            
 
             return this.allItems;
         } catch (error) {
@@ -1385,6 +1389,7 @@ class ItemModal {
     }
 
     setupEventListeners() {
+
         // Close events
         this.elements.overlay.addEventListener('click', () => this.close());
 
@@ -1473,6 +1478,18 @@ class ItemModal {
 
         // Update navigation buttons
         this.updateNavButtons();
+
+        this.elements.svg.addEventListener("click", () => {
+            if (this.elements.svg.id === "wonkySvg") {
+                const wonkySound = new Audio('./imgs/boing.wav');
+                wonkySound.volume = 1.0;
+                wonkySound.play();
+            } else if (this.elements.svg.id === "alinz") {
+
+                auth.triggerJumpScare(1);
+
+            }
+        });
 
         // Add to recently viewed
         this.catalog.addToRecentlyViewed(item.name);
@@ -1586,6 +1603,8 @@ class ItemModal {
             this.elements.image.style.display = 'none';
             this.elements.title.style.opacity = '0';
 
+ 
+
         } else {
             this.elements.image.style.display = 'none';
             this.elements.svg.style.display = 'none';
@@ -1603,6 +1622,7 @@ class ItemModal {
         } else {
             this.elements.details.innerHTML = '';
         }
+
 
         // Badges
         this.elements.badges.premium.style.display = item.premium ? 'inline-block' : 'none';
@@ -1782,10 +1802,6 @@ class Auth extends EventTarget {
     }
 
     async init() {
-
-
-
-
 
         document.querySelector('header').insertAdjacentHTML('beforeend', `
             <button style="display:none" class="btn" id="installBtn">
@@ -2555,7 +2571,7 @@ class Auth extends EventTarget {
     }
 }
 
-const auth = new Auth();
+
 
 // ==================== COUNTDOWN SYSTEM ====================
 class CountdownManager {
@@ -2774,11 +2790,15 @@ class PopoverManager {
     }
 }
 
+
+
+
 // Initialize
 const popoverManager = new PopoverManager();
 
 // Initialize confetti system
 const confetti = new Confetti();
+const auth = new Auth();
 
 // Export for use in both pages
 if (typeof window !== 'undefined') {
@@ -2786,5 +2806,5 @@ if (typeof window !== 'undefined') {
     window.BaseApp = BaseApp;
     window.PriceGraph = PriceGraph;
     window.CountdownManager = CountdownManager;
-    window.Auth = new Auth();
+    window.Auth = auth;
 }
