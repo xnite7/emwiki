@@ -314,10 +314,6 @@
 				// Add dev shortcut
 				document.getElementById('search-bar').addEventListener('keypress', (e) => {
 					if (e.key === 'Enter') {
-						if (e.target.value.toLowerCase().trim() === 'alien') {
-							this.Auth.triggerJumpScare(1);
-							document.getElementById('search-bar').value = '';
-						}
 						if (e.target.value.toLowerCase().trim() === 'dev') {
 							window.location.href = '/admin';
 						}

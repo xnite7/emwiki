@@ -450,7 +450,7 @@ class BaseApp {
                 }
             });
 
-            
+
 
             return this.allItems;
         } catch (error) {
@@ -1603,7 +1603,7 @@ class ItemModal {
             this.elements.image.style.display = 'none';
             this.elements.title.style.opacity = '0';
 
- 
+
 
         } else {
             this.elements.image.style.display = 'none';
@@ -1935,13 +1935,13 @@ class Auth extends EventTarget {
 
                 document.querySelector('header svg text').innerHTML = 'zlorp';
             }
-            
+
             //make new element
             const explosionSound = new Audio('./imgs/explode.mp3');
-            await new Promise(resolve => setTimeout(resolve, 100));
+
             explosionSound.volume = 1.0;
             explosionSound.play();
-
+            await new Promise(resolve => setTimeout(resolve, 100));
             const explosion = document.createElement('div');
             explosion.className = 'image-explosion';
             explosion.style.position = 'fixed';
@@ -1954,7 +1954,7 @@ class Auth extends EventTarget {
             document.body.appendChild(explosion);
 
             await new Promise(resolve => setTimeout(resolve, 900));
-            
+
             canvases.forEach((canvas) => {
                 if (Math.random() < 0.3 || canvas.id !== "particle-canvas") {
                     const alienImage = new Image();
