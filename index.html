@@ -22,6 +22,26 @@
 	<meta name="mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+	<!-- Preload critical CSS to prevent FOUC -->
+	<link rel="stylesheet" href="./css/style.css">
+
+	<!-- Critical inline styles for instant render -->
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+			font-family: system-ui, -apple-system, sans-serif;
+			color: white;
+			min-height: 100vh;
+			opacity: 0;
+			animation: fadeIn 0.3s ease-out forwards;
+		}
+		@keyframes fadeIn {
+			to { opacity: 1; }
+		}
+	</style>
+
 	<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
 	<script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.js"></script>
 	<script
@@ -266,8 +286,6 @@
 			<p>© 2025 emwiki.site • made with ❤ by xnite</p>
 		</div>
 	</footer>
-
-	<link rel="stylesheet" href="./css/style.css">
 
 	<script src="./js/script.js"></script>
 	<script>
