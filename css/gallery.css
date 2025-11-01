@@ -542,6 +542,106 @@
     margin-top: 40px;
 }
 
+/* Sort Controls */
+.sort-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 30px 0;
+    flex-wrap: wrap;
+}
+
+.sort-label {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.sort-btn {
+    padding: 8px 16px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.sort-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.sort-btn.active {
+    background: linear-gradient(135deg, #ffeb3b, #4caf50);
+    color: #000;
+    border-color: transparent;
+    font-weight: 600;
+}
+
+/* Like Button Styles */
+.likes-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.9rem;
+}
+
+.viewer-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.like-btn {
+    padding: 10px 20px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.like-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+}
+
+.like-btn.liked {
+    background: rgba(244, 67, 54, 0.2);
+    border-color: rgba(244, 67, 54, 0.5);
+    color: #ff6b6b;
+}
+
+.like-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.admin-delete-btn {
+    padding: 10px 20px;
+    border: 2px solid rgba(244, 67, 54, 0.5);
+    background: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.admin-delete-btn:hover {
+    background: rgba(244, 67, 54, 0.2);
+    border-color: rgba(244, 67, 54, 0.8);
+    transform: scale(1.05);
+}
+
 html{
         background: var(--bg-secondary);
 }

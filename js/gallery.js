@@ -6,6 +6,7 @@ class Gallery {
         this.isLoading = false;
         this.hasMore = true;
         this.currentUser = null;
+        this.currentSort = 'likes'; // 'likes' or 'newest'
 
         this.init();
     }
@@ -66,6 +67,15 @@ class Gallery {
         if (loadMoreBtn) {
             loadMoreBtn.addEventListener('click', () => this.loadMore());
         }
+
+        // Sort controls
+        const sortButtons = document.querySelectorAll('.sort-btn');
+        sortButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const sortBy = btn.dataset.sort;
+                this.changeSort(sortBy);
+            });
+        });
     }
 
     setupUploadModal() {
@@ -227,7 +237,11 @@ class Gallery {
         const container = document.getElementById('gallery-grid');
 
         try {
-            const response = await fetch(`/api/gallery?limit=${this.itemsPerPage}&offset=${this.currentOffset}`);
+            const token = localStorage.getItem('auth_token');
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const response = await fetch(`/api/gallery?limit=${this.itemsPerPage}&offset=${this.currentOffset}&sort=${this.currentSort}`, {
+                headers
+            });
             const { items } = await response.json();
 
             if (items.length === 0) {
@@ -281,6 +295,9 @@ class Gallery {
             ? `<video class="gallery-item-media" src="${item.media_url}" muted></video>`
             : `<img class="gallery-item-media" src="${item.media_url}" alt="${item.title}" loading="lazy">`;
 
+        const likesCount = item.likes_count || 0;
+        const likeIcon = item.user_liked ? '❤️' : '🤍';
+
         div.innerHTML = `
             ${mediaElement}
             <div class="gallery-item-info">
@@ -288,7 +305,7 @@ class Gallery {
                 <div class="gallery-item-author">by ${this.escapeHtml(item.username)}</div>
                 <div class="gallery-item-meta">
                     <span>${this.formatDate(item.created_at)}</span>
-                    <span>${item.views || 0} views</span>
+                    <span class="likes-display">${likeIcon} ${likesCount}</span>
                 </div>
             </div>
         `;
@@ -306,6 +323,7 @@ class Gallery {
         const description = modal.querySelector('.viewer-description');
         const date = modal.querySelector('.viewer-date');
         const views = modal.querySelector('.viewer-views');
+        const actionsContainer = modal.querySelector('.viewer-actions');
 
         // Set media
         if (item.media_type === 'video') {
@@ -320,6 +338,40 @@ class Gallery {
         description.textContent = item.description || '';
         date.textContent = this.formatDate(item.created_at);
         views.textContent = `${item.views || 0} views`;
+
+        // Set up actions (like button and admin delete)
+        actionsContainer.innerHTML = '';
+
+        // Like button (always visible)
+        const likeBtn = document.createElement('button');
+        likeBtn.className = 'like-btn' + (item.user_liked ? ' liked' : '');
+        likeBtn.innerHTML = `${item.user_liked ? '❤️' : '🤍'} ${item.likes_count || 0}`;
+        likeBtn.dataset.id = item.id;
+        likeBtn.dataset.liked = item.user_liked ? '1' : '0';
+
+        if (this.currentUser) {
+            likeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleLike(item.id, likeBtn);
+            });
+        } else {
+            likeBtn.disabled = true;
+            likeBtn.title = 'Login to like';
+        }
+
+        actionsContainer.appendChild(likeBtn);
+
+        // Admin/mod delete button
+        if (this.currentUser && this.isAdmin()) {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'admin-delete-btn';
+            deleteBtn.textContent = 'Delete (Admin)';
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.adminDeleteItem(item.id);
+            });
+            actionsContainer.appendChild(deleteBtn);
+        }
 
         modal.classList.add('active');
     }
@@ -465,6 +517,102 @@ class Gallery {
             return `${days}d ago`;
         } else {
             return date.toLocaleDateString();
+        }
+    }
+
+    changeSort(sortBy) {
+        if (this.currentSort === sortBy) return;
+
+        this.currentSort = sortBy;
+        this.currentOffset = 0;
+        this.hasMore = true;
+
+        // Update active sort button
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.sort === sortBy);
+        });
+
+        // Reload gallery
+        this.loadGallery();
+    }
+
+    async toggleLike(itemId, buttonElement) {
+        if (!this.currentUser) {
+            this.showToast('Please log in to like items', 'error');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('auth_token');
+            const response = await fetch(`/api/gallery/like/${itemId}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to toggle like');
+            }
+
+            const result = await response.json();
+
+            // Update button state
+            const currentCount = parseInt(buttonElement.innerHTML.match(/\d+/)[0]) || 0;
+            const newCount = result.liked ? currentCount + 1 : currentCount - 1;
+
+            buttonElement.dataset.liked = result.liked ? '1' : '0';
+            buttonElement.className = 'like-btn' + (result.liked ? ' liked' : '');
+            buttonElement.innerHTML = `${result.liked ? '❤️' : '🤍'} ${newCount}`;
+
+        } catch (error) {
+            console.error('Like error:', error);
+            this.showToast('Failed to update like', 'error');
+        }
+    }
+
+    async adminDeleteItem(itemId) {
+        if (!confirm('Are you sure you want to delete this gallery item? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('auth_token');
+            const response = await fetch(`/api/gallery/${itemId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete');
+            }
+
+            this.showToast('Item deleted successfully', 'success');
+
+            // Close viewer modal
+            const viewerModal = document.getElementById('viewer-modal');
+            this.closeModal(viewerModal);
+
+            // Reload gallery
+            this.currentOffset = 0;
+            this.hasMore = true;
+            this.loadGallery();
+
+        } catch (error) {
+            console.error('Delete error:', error);
+            this.showToast('Failed to delete item', 'error');
+        }
+    }
+
+    isAdmin() {
+        if (!this.currentUser || !this.currentUser.role) return false;
+        try {
+            const roles = JSON.parse(this.currentUser.role);
+            return roles.includes('admin') || roles.includes('moderator');
+        } catch {
+            return false;
         }
     }
 
