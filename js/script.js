@@ -2251,18 +2251,15 @@ class Auth extends EventTarget {
     // Render 3D player model with fall animation
     async render3DPlayerModel(userId) {
         try {
-            // Fetch 3D avatar data
-            const response = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-3d?userId=${userId}`);
-            const avatarData = await response.json();
+            // Fetch 3D avatar data through proxy to avoid CORS
+            const response = await fetch(`/api/roblox-proxy?mode=avatar-3d&userId=${userId}`);
 
-            if (avatarData.state !== 'Completed' || !avatarData.imageUrl) {
-                console.log('3D avatar not ready');
+            if (!response.ok) {
+                console.log('3D avatar not ready or failed to fetch');
                 return;
             }
 
-            // Fetch the model metadata
-            const metadataResponse = await fetch(avatarData.imageUrl);
-            const metadata = await metadataResponse.json();
+            const metadata = await response.json();
 
             // Get CDN URLs
             const objUrl = this.getCdnUrl(metadata.obj);

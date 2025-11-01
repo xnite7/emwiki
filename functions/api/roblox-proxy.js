@@ -10,6 +10,38 @@ export async function onRequestGet({ request, env }) {
   const forceRefresh = url.searchParams.get("refresh") === "true";
 
 
+  // Handle 3D avatar mode
+  if (mode === "avatar-3d" && userId) {
+    try {
+      // Fetch 3D avatar data
+      const avatar3dResponse = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-3d?userId=${userId}`);
+      const avatar3dData = await avatar3dResponse.json();
+
+      if (avatar3dData.state !== 'Completed' || !avatar3dData.imageUrl) {
+        return new Response(JSON.stringify({
+          error: 'Avatar not ready',
+          state: avatar3dData.state
+        }), {
+          status: 404,
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+        });
+      }
+
+      // Fetch the metadata
+      const metadataResponse = await fetch(avatar3dData.imageUrl);
+      const metadata = await metadataResponse.json();
+
+      return new Response(JSON.stringify(metadata), {
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    }
+  }
+
   if (isLiteMode) {
     // Just fetch live and return directly without writing to DB
     const [userData, avatarData] = await Promise.all([
