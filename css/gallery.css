@@ -44,8 +44,9 @@
 }
 
 .btn-primary {
+    border: 1px solid #00af00;
     background: linear-gradient(#8bc34a, #3c9f40, #19801e);
-    color: Canvas;
+    color: white;
 }
 
 #upload-btn svg{
@@ -574,9 +575,9 @@
 }
 
 .sort-btn.active {
-    background: linear-gradient(135deg, #ffeb3b, #4caf50);
-    color: #000;
-    border-color: transparent;
+    background: linear-gradient(#6ed3ffa8, #128ae5bf);
+    color: #ffffff;
+    border-color: #78c5ff;
     font-weight: 600;
 }
 
