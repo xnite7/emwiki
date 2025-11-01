@@ -13,6 +13,24 @@
     user-select: none;
 }
 
+/* Smooth scroll behavior */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Parallax background effect */
+html::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    z-index: -1;
+    will-change: transform;
+}
+
 :root {
     color-scheme: dark;
     --bg-secondary: light-dark(#fff, #1a1a1a);
@@ -124,8 +142,25 @@ svg:hover #cloud {
     font-size: 15px;
     padding: 8px 16px;
     border-radius: 10px;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(74, 158, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.nav-link:hover::before {
+    left: 100%;
 }
 
 .nav-link:not(:first-child,:nth-child(4),:last-child) {
@@ -135,11 +170,14 @@ svg:hover #cloud {
 
 .nav-link:hover {
     background: var(--border-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(74, 158, 255, 0.2);
 }
 
 .nav-link.active {
     background: var(--bg-item);
     color: #4a9eff;
+    box-shadow: 0 0 20px rgba(74, 158, 255, 0.3);
 }
 
 .btn {
@@ -315,19 +353,43 @@ svg:hover #cloud {
 #search-bar {
     width: 100%;
     padding: 14px 60px 14px 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 2px solid transparent;
     border-radius: 50px;
     font-size: 16px;
     background: var(--bg-item);
     box-shadow: 0 0 20px var(--shadow-color), inset 0px 3px 18px #00000033;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
 }
 
 #search-bar:focus {
     outline: none;
-    transform: translateY(-2px);
+    transform: translateY(-3px) scale(1.02);
     background: var(--border-color);
-    box-shadow: 0 25px 50px var(--shadow-color), inset 0px 3px 18px #85858536;
+    box-shadow: 0 25px 50px var(--shadow-color), inset 0px 3px 18px #85858536, 0 0 30px rgba(74, 158, 255, 0.3);
+    border-color: #4a9eff;
+}
+
+.search-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50px;
+    padding: 2px;
+    background: linear-gradient(135deg, #4a9eff, #667eea, #24ff5a);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.search-container:focus-within::after {
+    opacity: 0.5;
 }
 
 #search-bar::placeholder {
@@ -396,15 +458,53 @@ svg:hover #cloud {
     background: var(--bg-item);
     padding: 15px;
     border-radius: 12px;
-    transition: all 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 0px 0px var(--shadow-color), inset -3px -3px 8px 0px rgb(0 0 0 / 13%);
     position: relative;
     overflow: hidden;
+    animation: fadeInScale 0.6s ease-out backwards;
+}
+
+.stat-card:nth-child(1) {
+    animation-delay: 0.2s;
+}
+
+.stat-card:nth-child(2) {
+    animation-delay: 0.3s;
+}
+
+@keyframes fadeInScale {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(74, 158, 255, 0.1), transparent);
+    transform: rotate(45deg);
+    transition: all 0.6s ease;
+    opacity: 0;
+}
+
+.stat-card:hover::after {
+    left: 100%;
+    opacity: 1;
 }
 
 .stat-card:hover {
-    transform: translateY(-2px) scale(1);
-    box-shadow: 0 2px 5px var(--shadow-color), inset -3px -3px 12px 0px rgb(0 0 0 / 13%);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 20px var(--shadow-color), inset -3px -3px 12px 0px rgb(0 0 0 / 13%);
 }
 
 #installBtn {
@@ -700,7 +800,7 @@ main {
     background: var(--bg-item);
     padding: 6px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     position: relative;
     min-height: 110px;
     min-width: 110px;
@@ -713,6 +813,7 @@ main {
     align-items: center;
     justify-content: space-between;
     border-radius: 10px;
+    overflow: hidden;
 
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
@@ -720,10 +821,34 @@ main {
     }
 }
 
+.item::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+    z-index: 0;
+}
+
+.item:hover::before {
+    width: 200px;
+    height: 200px;
+}
+
 .item:hover {
-    transform: translateY(-3px) scale(1.05);
+    transform: translateY(-5px) scale(1.08) rotate(2deg);
     background: var(--border-color);
-    box-shadow: 0 8px 20px var(--shadow-color), inset -2px -2px 4px var(--edges-color);
+    box-shadow: 0 12px 30px var(--shadow-color), inset -2px -2px 6px var(--edges-color), 0 0 20px rgba(74, 158, 255, 0.2);
+    border-color: rgba(74, 158, 255, 0.3);
+}
+
+.item:active {
+    transform: translateY(-2px) scale(1.03);
 }
 
 .item#gear {
@@ -915,6 +1040,13 @@ div#random-items-grid {
     align-items: stretch;
     justify-content: space-between;
     flex-direction: column;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px var(--shadow-color), inset -2px -2px 6px light-dark(transparent, #00000066);
+    border-color: rgba(74, 158, 255, 0.3);
 }
 
 .refresh-card {
@@ -999,18 +1131,65 @@ div#random-items-grid {
     font-weight: 800;
     font-size: 0.95rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     text-transform: uppercase;
     letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+.donate-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.donate-btn:hover::before {
+    width: 300px;
+    height: 300px;
 }
 
 .donate-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 35px rgba(255, 215, 0, 0.6);
+}
+
+.donate-btn:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+.donate-btn svg {
+    position: relative;
+    z-index: 1;
+    animation: heartBeat 1.5s ease-in-out infinite;
+}
+
+.donate-btn span {
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes heartBeat {
+    0%, 100% {
+        transform: scale(1);
+    }
+    10%, 30% {
+        transform: scale(1.1);
+    }
+    20%, 40% {
+        transform: scale(1);
+    }
 }
 
 .donate-note {
@@ -1192,6 +1371,83 @@ footer {
     color: var(--text-secondary);
     font-size: 0.9rem;
 }
+
+/* ============================================
+           BACK TO TOP BUTTON
+============================================ */
+.back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #4a9eff, #667eea);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    box-shadow: 0 4px 20px rgba(74, 158, 255, 0.4);
+}
+
+.back-to-top.show {
+    opacity: 1;
+    visibility: visible;
+    animation: bounceIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.back-to-top:hover {
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 8px 30px rgba(74, 158, 255, 0.6);
+}
+
+.back-to-top:active {
+    transform: translateY(-3px) scale(1.05);
+}
+
+.back-to-top svg {
+    width: 24px;
+    height: 24px;
+    color: white;
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0) translateY(100px);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.2) translateY(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* ============================================
+           SCROLL ANIMATIONS
+============================================ */
+.fade-in-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.fade-in-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Stagger animation delays for child elements */
+.content-section:nth-child(1) { animation-delay: 0.1s; }
+.content-section:nth-child(2) { animation-delay: 0.2s; }
+.content-section:nth-child(3) { animation-delay: 0.3s; }
 
 /* ============================================
            CATALOG GRID

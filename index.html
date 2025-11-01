@@ -289,6 +289,13 @@
 		</div>
 	</footer>
 
+	<!-- Back to Top Button -->
+	<button class="back-to-top" id="backToTop" aria-label="Back to top">
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<polyline points="18 15 12 9 6 15"></polyline>
+		</svg>
+	</button>
+
 	<script src="./js/script.js"></script>
 	<script>
 		class Catalog extends BaseApp {
@@ -305,6 +312,7 @@
 				await this.loadData();
 				await this.loadPreferences();
 				this.setupEventListeners();
+				this.setupScrollEffects();
 				this.countdownManager.add('countdown-shop');
 				this.countdownManager.add('countdown-rotation');
 				//this.countdownManager.start();
@@ -319,6 +327,46 @@
 				this.loadDonators();
 				this.populateGrids();
 				this.initializeSearch();
+			}
+
+			setupScrollEffects() {
+				// Back to top button
+				const backToTop = document.getElementById('backToTop');
+
+				window.addEventListener('scroll', () => {
+					if (window.pageYOffset > 300) {
+						backToTop.classList.add('show');
+					} else {
+						backToTop.classList.remove('show');
+					}
+				});
+
+				backToTop.addEventListener('click', () => {
+					window.scrollTo({
+						top: 0,
+						behavior: 'smooth'
+					});
+				});
+
+				// Scroll-triggered animations
+				const observerOptions = {
+					threshold: 0.1,
+					rootMargin: '0px 0px -50px 0px'
+				};
+
+				const observer = new IntersectionObserver((entries) => {
+					entries.forEach(entry => {
+						if (entry.isIntersecting) {
+							entry.target.classList.add('visible');
+						}
+					});
+				}, observerOptions);
+
+				// Observe content sections
+				document.querySelectorAll('.content-section, .info-card').forEach(el => {
+					el.classList.add('fade-in-up');
+					observer.observe(el);
+				});
 			}
 
 			setupEventListeners() {
