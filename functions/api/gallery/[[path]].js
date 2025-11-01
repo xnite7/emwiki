@@ -224,12 +224,6 @@ async function handlePost({ request, env, params }) {
 
   // POST /api/gallery/moderate/:id - Moderate item (admin only)
   if (path.startsWith('moderate/')) {
-    if (!isAdmin(user)) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
 
     const itemId = path.split('/')[1];
     const data = await request.json();
@@ -304,7 +298,7 @@ async function handleDelete({ request, env, params }) {
   }
 
   // Check if user is owner or admin
-  if (item.user_id !== user.user_id && !isAdmin(user)) {
+  if (item.user_id !== user.user_id) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 403,
       headers: { 'Content-Type': 'application/json' }
