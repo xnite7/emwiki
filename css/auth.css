@@ -1729,3 +1729,47 @@
 
 
 }
+
+/* 3D Player Model Container */
+#player-model-container {
+    width: 300px;
+    height: 300px;
+    margin: -40px auto 0;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1000px;
+}
+
+#player-model-container canvas {
+    border-radius: 20px;
+    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
+}
+
+@media screen and (max-width: 768px) {
+    #player-model-container {
+        width: 250px;
+        height: 250px;
+        margin: -30px auto 0;
+    }
+
+    #player-model-container canvas {
+        width: 250px !important;
+        height: 250px !important;
+    }
+}
+
+@media screen and (max-width: 400px) {
+    #player-model-container {
+        width: 200px;
+        height: 200px;
+        margin: -25px auto 0;
+    }
+
+    #player-model-container canvas {
+        width: 200px !important;
+        height: 200px !important;
+    }
+}
