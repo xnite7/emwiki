@@ -1,3 +1,6 @@
+# Redirect all .site traffic to .com
+https://emwiki.site/* https://emwiki.com/:splat 301!
+
 # Let /api/embed/* be handled by your Worker — no redirect here
 # (Remove the invalid 404 redirect line)
 

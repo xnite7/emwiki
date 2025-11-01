@@ -36,7 +36,7 @@ class TradingHub {
 
     async loadItems() {
         try {
-            const res = await fetch('https://emwiki.site/api/gist-version');
+            const res = await fetch('https://emwiki.com/api/gist-version');
             const data = await res.json();
             const parsed = JSON.parse(data.files?.['auto.json']?.content);
 

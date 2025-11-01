@@ -78,7 +78,7 @@ export async function onRequestPost(context) {
     const gistData = await gistRes.json();
 
     // Fetch the latest recorded version from your D1 history
-    const latestRes = await fetch('https://emwiki.site/api/latest-version');
+    const latestRes = await fetch('https://emwiki.com/api/latest-version');
     if (!latestRes.ok) {
       return new Response("Failed to fetch latest version", { status: 500 });
     }

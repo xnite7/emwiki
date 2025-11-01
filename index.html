@@ -10,7 +10,7 @@
 		content="by @xnite! A fun corner of the web where you can check out all the Epic Minigames items on Roblox, always updating!" />
 	<meta name="keywords" content="Epic minigames, Epic minigames wiki, emwiki, em wiki, Epic Minigames Values">
 	<meta property="og:title" content="Epic Catalogue - The Complete EM Catalogue">
-	<meta property="og:image" content="https://emwiki.site/imgs/QgWIUWf.png" />
+	<meta property="og:image" content="https://emwiki.com/imgs/QgWIUWf.png" />
 	<meta property="og:description"
 		content="by @xnite! A fun corner of the web where you can check out all the Epic Minigames items on Roblox!">
 
@@ -53,7 +53,7 @@
 <body>
 	<!-- Header with modern catalog style -->
 	<header>
-		<a href="https://emwiki.site">
+		<a href="https://emwiki.com">
 			<svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
 				<defs>
 					<linearGradient id="eppp1" y1="1" x2="0">
@@ -65,20 +65,20 @@
 						<stop offset="1" style="stop-color:#ff0" />
 					</linearGradient>
 				</defs>
-				<image id="cloud" x="461" y="459" href="https://emwiki.site/imgs/TWOKPhY.png" height="60" width="60"
+				<image id="cloud" x="461" y="459" href="https://emwiki.com/imgs/TWOKPhY.png" height="60" width="60"
 					style="filter:opacity(.6)" />
 				<text x="489" y="503" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
 					stroke-linejoin="round" fill="url(#eppp1)"
 					style="animation:floatAnim 12s ease-in-out infinite;font:200 46px Slapstick">EM</text>
-				<image id="epic-image" x="464" y="463" href="https://emwiki.site/imgs/epicfaces/kitta.png" height="60"
+				<image id="epic-image" x="464" y="463" href="https://emwiki.com/imgs/epicfaces/kitta.png" height="60"
 					width="60"
 					style="scale:.48;transform:translate(846px,103px);rotate:20deg;transform-origin:center;animation:floatAnim2 15s ease-in-out 1s infinite alternate" />
-				<image id="cloud" x="495" y="477" href="https://emwiki.site/imgs/8UUB0Gt.png" height="60" width="60"
+				<image id="cloud" x="495" y="477" href="https://emwiki.com/imgs/8UUB0Gt.png" height="60" width="60"
 					style="filter:opacity(.86)" />
 				<text x="516" y="514" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
 					stroke-linejoin="round" fill="url(#eppp2)"
 					style="animation:floatAnim 12s ease-in-out infinite;animation-delay:5.5s;font:200 16px Slapstick">wiki</text>
-				<image id="cloud" x="445" y="487" href="https://emwiki.site/imgs/oYKd3nJ.png" height="28" width="42"
+				<image id="cloud" x="445" y="487" href="https://emwiki.com/imgs/oYKd3nJ.png" height="28" width="42"
 					style="filter:opacity(.8)" />
 			</svg>
 
@@ -285,7 +285,7 @@
 			</div>
 		</div>
 		<div class="footer-bottom">
-			<p>© 2025 emwiki.site • made with ❤ by xnite</p>
+			<p>© 2025 emwiki.com • made with ❤ by xnite</p>
 		</div>
 	</footer>
 
@@ -411,7 +411,7 @@
 
 			async loadDonators() {
 				try {
-					const res = await fetch('https://emwiki.site/api/donations');
+					const res = await fetch('https://emwiki.com/api/donations');
 					const data = await res.json();
 
 					const donatorsList = document.getElementById('donators-list');
@@ -423,7 +423,7 @@
 						const div = document.createElement('div');
 						div.className = 'donator-item';
 						div.innerHTML = `
-                    <img class="donator-avatar" src="${donator.avatar || 'https://emwiki.site/imgs/plr.jpg'}" alt="${donator.displayName}">
+                    <img class="donator-avatar" src="${donator.avatar || 'https://emwiki.com/imgs/plr.jpg'}" alt="${donator.displayName}">
                     <div class="donator-name">${donator.displayName}</div>
                     <div class="donator-amount">${Utils.formatPrice(donator.totalSpent)}</div>
                 `;

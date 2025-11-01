@@ -49,7 +49,7 @@ export async function onRequest(context) {
           const data = JSON.parse(raw);
           
           // ✅ Data is already aggregated in KV
-          const res = await fetch(`https://emwiki.site/api/roblox-proxy?userId=${data.userId}&mode=lite`);
+          const res = await fetch(`https://emwiki.com/api/roblox-proxy?userId=${data.userId}&mode=lite`);
           const profile = res.ok ? await res.json() : {};
           
           return {
