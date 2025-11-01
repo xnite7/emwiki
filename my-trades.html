@@ -8,9 +8,9 @@
     <link rel="icon" href="./imgs/favicon.png" type="image/png">
     <style>
         .dashboard-container {
-            max-width: 1400px;
+            max-width: 1800px;
             margin: 40px auto;
-            padding: 20px;
+            padding: 30px 20px;
         }
 
         .dashboard-header {
@@ -25,29 +25,32 @@
 
         .dashboard-tabs {
             display: flex;
-            gap: 10px;
-            border-bottom: 2px solid var(--border-color);
+            gap: 12px;
             margin-bottom: 30px;
+            flex-wrap: wrap;
         }
 
         .tab-btn {
-            padding: 12px 24px;
-            background: none;
+            padding: 12px 28px;
+            background: rgba(255, 255, 255, 0.05);
             border: none;
-            border-bottom: 3px solid transparent;
+            border-radius: 20px;
             color: var(--text-secondary);
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s;
         }
 
         .tab-btn:hover {
             color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
         }
 
         .tab-btn.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
+            color: white;
+            background: linear-gradient(135deg, #667eea, #4a9eff);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
         .tab-content {
@@ -65,14 +68,16 @@
 
         .listing-card {
             background: var(--bg-item);
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            transition: all 0.2s;
+            border: none;
+            border-radius: 20px;
+            padding: 25px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
 
         .listing-card:hover {
-            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
         }
 
         .listing-header {
@@ -131,10 +136,10 @@
         }
 
         .item-tag {
-            padding: 6px 12px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            border-radius: 12px;
             font-size: 13px;
             font-weight: 600;
         }
@@ -152,23 +157,34 @@
         }
 
         .action-btn {
-            padding: 8px 16px;
+            padding: 10px 20px;
             border: none;
-            border-radius: 6px;
-            font-weight: 600;
+            border-radius: 15px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s;
         }
 
         .btn-view {
             background: linear-gradient(135deg, #667eea, #4a9eff);
             color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-view:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
         }
 
         .btn-edit {
-            background: var(--bg-secondary);
+            background: rgba(255, 255, 255, 0.05);
             color: var(--text-primary);
-            border: 1px solid var(--border-color);
+            border: none;
+        }
+
+        .btn-edit:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
         }
 
         .btn-cancel {
@@ -176,12 +192,24 @@
             color: white;
         }
 
+        .btn-cancel:hover {
+            background: #ff3838;
+            transform: translateY(-2px);
+        }
+
         .offer-card {
             background: var(--bg-item);
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
+            border: none;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        .offer-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.3);
         }
 
         .offer-header {
@@ -226,10 +254,10 @@
         }
 
         .offer-message {
-            padding: 12px;
-            background: var(--bg-secondary);
-            border-radius: 8px;
-            border-left: 3px solid #667eea;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border-left: 4px solid #667eea;
             margin: 15px 0;
             font-size: 0.95rem;
             color: var(--text-primary);
@@ -244,21 +272,35 @@
         .btn-accept {
             background: #11f54a;
             color: #000;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 6px;
+            border-radius: 15px;
             font-weight: 700;
             cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(17, 245, 74, 0.3);
+        }
+
+        .btn-accept:hover {
+            background: #0ed941;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(17, 245, 74, 0.5);
         }
 
         .btn-reject {
-            background: var(--bg-secondary);
+            background: rgba(255, 255, 255, 0.05);
             color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            padding: 10px 20px;
-            border-radius: 6px;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 15px;
             font-weight: 700;
             cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-reject:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
         }
 
         .empty-state {
