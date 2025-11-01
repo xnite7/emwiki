@@ -1351,7 +1351,7 @@ hr {
     margin: 8px;
     corner-shape: squircle;
     font-size: 1.6rem;
-    background: linear-gradient(137deg, #4e99c5, #28a97b 80%);
+    background: linear-gradient(#4e99c5, #2867a9 80%);
     color: #fff;
     border: 2px solid #ffffff45;
     border-radius: 999px;
@@ -1365,8 +1365,8 @@ hr {
 }
 
 .rocket-btn:hover {
-    filter: brightness(1.2) saturate(1.5);
-    transform: translateY(-2px) scale(1.04);
+    filter: brightness(1.1) saturate(1.1);
+    transform: translateY(-1px) scale(1.02);
 }
 
 .rocket-icon {
