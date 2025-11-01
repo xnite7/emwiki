@@ -127,7 +127,7 @@ svg:hover #cloud {
     text-decoration: none;
 }
 
-.nav-link:not(:first-child, :last-child) {
+.nav-link:not(:first-child,:nth-child(4),:last-child) {
     pointer-events: none;
     opacity: 0.5;
 }
