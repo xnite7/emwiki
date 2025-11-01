@@ -52,7 +52,7 @@ html::before {
 
 
 body {
-    background: Canvas;
+    background: linear-gradient(#00000033, transparent);
     color: CanvasText;
     font-family: 'Source Sans Pro', sans-serif, Twemoji;
     overflow-x: hidden;
@@ -177,7 +177,7 @@ svg:hover #cloud {
 .nav-link.active {
     background: var(--bg-item);
     color: #4a9eff;
-    box-shadow: rgb(0 0 0 / 30%) 0px 0px 20px;
+    box-shadow: rgb(0 0 0 / 40%) 0px 0px 10px 0px;
 }
 
 .btn {
