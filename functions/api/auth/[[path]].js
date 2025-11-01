@@ -260,6 +260,56 @@ async function handleUpdateRole(request, env) {
     });
 }
 
+async function handleUserSearch(request, env) {
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    // Check if requester is admin/moderator
+    const session = await env.DBA.prepare(`
+        SELECT u.role, u.user_id FROM sessions s
+        JOIN users u ON s.user_id = u.user_id
+        WHERE s.token = ? AND s.expires_at > ?
+    `).bind(token, Date.now()).first();
+
+    const adminRoles = JSON.parse(session?.role || '["user"]');
+    if (!session || (!adminRoles.includes('admin') && !adminRoles.includes('moderator'))) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    // Get search query from URL parameter
+    const url = new URL(request.url);
+    const query = url.searchParams.get('q');
+
+    if (!query) {
+        return new Response(JSON.stringify({ error: 'Search query required' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    // Search by username or user_id
+    let users;
+
+    // Check if query is a number (user_id)
+    if (/^\d+$/.test(query)) {
+        users = await env.DBA.prepare(
+            'SELECT user_id, username, display_name, avatar_url, role FROM users WHERE user_id = ? LIMIT 10'
+        ).bind(query).all();
+    } else {
+        // Search by username (case-insensitive)
+        users = await env.DBA.prepare(
+            'SELECT user_id, username, display_name, avatar_url, role FROM users WHERE LOWER(username) LIKE LOWER(?) OR LOWER(display_name) LIKE LOWER(?) LIMIT 10'
+        ).bind(`%${query}%`, `%${query}%`).all();
+    }
+
+    return new Response(JSON.stringify({ users: users.results || [] }), {
+        headers: { 'Content-Type': 'application/json' }
+    });
+}
+
 async function handleCheckCode(request, env) {
     const { code } = await request.json();
 
@@ -611,6 +661,9 @@ export async function onRequest(context) {
                 break;
             case 'admin/update-role':
                 response = await handleUpdateRole(request, env);
+                break;
+            case 'user/search':
+                response = await handleUserSearch(request, env);
                 break;
             // NEW PREFERENCE ENDPOINTS
             case 'user/preferences':
