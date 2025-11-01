@@ -540,6 +540,13 @@
     }
 
     .modal-content {
+    padding: unset;
+    min-height: unset;
+    display: unset;
+    align-content: unset;
+    justify-items: unset;
+
+
         background: var(--bg-item);
         border: 2px solid var(--border-color);
         border-radius: 16px;
@@ -560,6 +567,7 @@
         border-bottom: 1px solid var(--border-color);
         display: flex;
         justify-content: space-between;
+        backdrop-filter: blur(32px);
         align-items: center;
         position: sticky;
         top: 0;
@@ -982,6 +990,7 @@
         position: absolute;
         top: 100%;
         left: 0;
+        backdrop-filter: blur(32px);
         right: 0;
         max-height: 400px;
         overflow-y: auto;
@@ -1239,7 +1248,6 @@
         <div class="nav-links">
             <a href="/catalog" class="nav-link">Catalog</a>
             <a href="/trading" class="nav-link active">Trading Hub</a>
-            <a href="/my-trades" class="nav-link" id="my-trades-link" style="display:none;">My Trades</a>
             <a href="/forum" class="nav-link">Forum</a>
             <a href="/gallery" class="nav-link">Gallery</a>
             <a href="/scammers" class="nav-link">Scammers</a>
@@ -1265,17 +1273,19 @@
                     <div class="stat-label">Active Trades</div>
                 </div>
 
-                <div class="stat-card">
-                    <div class="stat-value" id="total-traders">0</div>
-                    <div class="stat-label">Traders</div>
-                </div>
+
 
                 <div class="stat-card">
                     <div class="stat-value" id="trades-today">0</div>
                     <div class="stat-label">Today</div>
                 </div>
+                <div class="stat-card" style="display: none;">
+                    <div class="stat-value" id="total-traders">0</div>
+                    <div class="stat-label">Traders</div>
+                </div>
             </div>
         </div>
+        <a href="/my-trades" class="nav-link" id="my-trades-link" style="display:none;">My Trades</a>
     </section>
 
     <!-- Filters -->

@@ -108,7 +108,6 @@ class TradingHub {
                 status: listing.status,
                 createdAt: new Date(listing.created_at),
                 views: listing.views || 0,
-                category: listing.category
             }));
         } catch (error) {
             console.error('Error loading trades:', error);
@@ -470,16 +469,6 @@ class TradingHub {
                     <textarea name="description" placeholder="Describe what you're looking for..." rows="3" maxlength="500"></textarea>
                 </div>
 
-                <div class="form-group">
-                    <label>Category</label>
-                    <select name="category" required>
-                        <option value="gears">Gears</option>
-                        <option value="deaths">Deaths</option>
-                        <option value="pets">Pets</option>
-                        <option value="effects">Effects</option>
-                        <option value="titles">Titles</option>
-                    </select>
-                </div>
 
                 <div class="form-group">
                     <label>Items You're Offering</label>
@@ -654,7 +643,6 @@ class TradingHub {
         const listingData = {
             title: formData.get('title'),
             description: formData.get('description'),
-            category: formData.get('category'),
             offering_items: offeringItems,
             offering_robux: offeringRobux,
             seeking_items: seekingItems,
