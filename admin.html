@@ -34,7 +34,8 @@
             <img src="./imgs/eng.png">
             <div id="welcome-label"></div>
             <h2>Admin Panel</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 20px;">Login with your Roblox account to access admin features</p>
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">Login with your Roblox account to access admin
+                features</p>
             <div id="auth-container"></div>
             <div id="login-error"></div>
         </div>
@@ -5811,12 +5812,14 @@
             authToken: null,
             session: null,
 
+
             async init() {
                 if (DEV_MODE.enabled) {
                     console.log('🚀 Running in development mode');
                     state.adminName = DEV_MODE.adminName;
                     return this.onSuccess();
                 }
+
 
                 this.loadAuthUI();
                 this.checkExistingAuth();
@@ -5867,8 +5870,18 @@
                             state.adminName = data.displayName || data.username;
                             this.onSuccess();
                         } else {
+                            DOM.get("admin-auth-login-btn").innerText = "LOGOUT";
+                            DOM.get("admin-auth-login-btn").style.background = "linear-gradient(180deg, #ff4444, #930000)";
+                            DOM.get("admin-auth-login-btn").style.border = "1px solid #f95151";
+                            DOM.get("admin-auth-login-btn").onClick = () => {
+                                fetch("/api/logout", { method: "POST" }).finally(() => {
+                                    localStorage.removeItem("auth_token");
+                                    location.reload();
+
+                                });
+                            };
                             this.showError("Access Denied: You need admin or moderator role to access this panel.");
-                            
+
                         }
                     } else {
                         localStorage.removeItem("auth_token");
@@ -6238,7 +6251,7 @@
                     fetch("/api/logout", { method: "POST" }).finally(() => {
                         localStorage.removeItem("auth_token");
                         location.reload();
-                        
+
                     });
 
                 });
@@ -7018,90 +7031,90 @@
             },
 
             // Updated checkAndUpdateOverflow method
-checkAndUpdateOverflow() {
-    const { panel, spacer } = this.elements;
-    if (!panel || !spacer || this.state.currentMode !== 'sidebar') return;
+            checkAndUpdateOverflow() {
+                const { panel, spacer } = this.elements;
+                if (!panel || !spacer || this.state.currentMode !== 'sidebar') return;
 
-    const panelHeight = panel.offsetHeight;
-    const sidebarTop = this.config.SIDEBAR_TOP;
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    
-    // Get panel's horizontal boundaries from spacer
-    const spacerRect = spacer.getBoundingClientRect();
-    const panelLeft = spacerRect.left;
-    const panelRight = spacerRect.right;
-    
-    // Get all sections that could be below
-    const sections = [
-        this.elements.historySection,
-        this.elements.notesSection,
-        this.elements.umSection,
-        this.elements.gmSection
-    ].filter(Boolean);
-    
-    // Find the section that's actually below the panel (horizontally overlapping)
-    let targetSection = null;
-    let minDistance = Infinity;
-    
-    for (const section of sections) {
-        const sectionRect = section.getBoundingClientRect();
-        const sectionLeft = sectionRect.left;
-        const sectionRight = sectionRect.right;
-        
-        // Check if section overlaps horizontally with panel
-        const overlaps = !(sectionRight < panelLeft || sectionLeft > panelRight);
-        
-        if (overlaps) {
-            const sectionTopAbs = scrollTop + sectionRect.top;
-            
-            // Find the closest section below the spacer
-            if (sectionTopAbs < minDistance) {
-                minDistance = sectionTopAbs;
-                targetSection = section;
-            }
-        }
-    }
-    
-    if (targetSection) {
-        const targetRect = targetSection.getBoundingClientRect();
-        const sectionTopAbs = scrollTop + targetRect.top;
-        const gap = 40;
-        
-        // Define gutter boundaries (absolute positions in document)
-        const gutterTop = spacerRect.top + scrollTop; // Where spacer starts in document
-        const gutterBottom = sectionTopAbs - gap; // Where section starts minus gap
-        
-        // Where panel would be if fixed at viewport top
-        const desiredTop = scrollTop + sidebarTop;
-        const desiredBottom = desiredTop + panelHeight;
-        
-        // Check if panel fits in gutter at desired position
-        if (desiredBottom <= gutterBottom) {
-            // Panel fits - use fixed positioning (follows scroll)
-            panel.style.position = 'fixed';
-            panel.style.top = `${sidebarTop}px`;
-            spacer.style.height = '0px';
-            delete panel.dataset.scrollMode;
-        } else {
-            // Panel would overflow gutter - pin to bottom of gutter
-            panel.style.position = 'absolute';
-            panel.style.top = `${gutterBottom - panelHeight}px`;
-            spacer.style.height = `${panelHeight}px`;
-            panel.dataset.scrollMode = 'stuck';
-        }
-    } else {
-        // No section below, stay fixed
-        panel.style.position = 'fixed';
-        panel.style.top = `${sidebarTop}px`;
-        spacer.style.height = '0px';
-        delete panel.dataset.scrollMode;
-    }
-    
-    // Update horizontal position and constraints
-    panel.style.left = `${spacerRect.left}px`;
-    panel.style.maxHeight = `calc(100vh - ${sidebarTop + 20}px)`;
-    panel.style.overflowY = 'auto';
-},
+                const panelHeight = panel.offsetHeight;
+                const sidebarTop = this.config.SIDEBAR_TOP;
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+                // Get panel's horizontal boundaries from spacer
+                const spacerRect = spacer.getBoundingClientRect();
+                const panelLeft = spacerRect.left;
+                const panelRight = spacerRect.right;
+
+                // Get all sections that could be below
+                const sections = [
+                    this.elements.historySection,
+                    this.elements.notesSection,
+                    this.elements.umSection,
+                    this.elements.gmSection
+                ].filter(Boolean);
+
+                // Find the section that's actually below the panel (horizontally overlapping)
+                let targetSection = null;
+                let minDistance = Infinity;
+
+                for (const section of sections) {
+                    const sectionRect = section.getBoundingClientRect();
+                    const sectionLeft = sectionRect.left;
+                    const sectionRight = sectionRect.right;
+
+                    // Check if section overlaps horizontally with panel
+                    const overlaps = !(sectionRight < panelLeft || sectionLeft > panelRight);
+
+                    if (overlaps) {
+                        const sectionTopAbs = scrollTop + sectionRect.top;
+
+                        // Find the closest section below the spacer
+                        if (sectionTopAbs < minDistance) {
+                            minDistance = sectionTopAbs;
+                            targetSection = section;
+                        }
+                    }
+                }
+
+                if (targetSection) {
+                    const targetRect = targetSection.getBoundingClientRect();
+                    const sectionTopAbs = scrollTop + targetRect.top;
+                    const gap = 40;
+
+                    // Define gutter boundaries (absolute positions in document)
+                    const gutterTop = spacerRect.top + scrollTop; // Where spacer starts in document
+                    const gutterBottom = sectionTopAbs - gap; // Where section starts minus gap
+
+                    // Where panel would be if fixed at viewport top
+                    const desiredTop = scrollTop + sidebarTop;
+                    const desiredBottom = desiredTop + panelHeight;
+
+                    // Check if panel fits in gutter at desired position
+                    if (desiredBottom <= gutterBottom) {
+                        // Panel fits - use fixed positioning (follows scroll)
+                        panel.style.position = 'fixed';
+                        panel.style.top = `${sidebarTop}px`;
+                        spacer.style.height = '0px';
+                        delete panel.dataset.scrollMode;
+                    } else {
+                        // Panel would overflow gutter - pin to bottom of gutter
+                        panel.style.position = 'absolute';
+                        panel.style.top = `${gutterBottom - panelHeight}px`;
+                        spacer.style.height = `${panelHeight}px`;
+                        panel.dataset.scrollMode = 'stuck';
+                    }
+                } else {
+                    // No section below, stay fixed
+                    panel.style.position = 'fixed';
+                    panel.style.top = `${sidebarTop}px`;
+                    spacer.style.height = '0px';
+                    delete panel.dataset.scrollMode;
+                }
+
+                // Update horizontal position and constraints
+                panel.style.left = `${spacerRect.left}px`;
+                panel.style.maxHeight = `calc(100vh - ${sidebarTop + 20}px)`;
+                panel.style.overflowY = 'auto';
+            },
 
 
             // Observer for modal visibility changes
