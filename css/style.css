@@ -177,7 +177,7 @@ svg:hover #cloud {
 .nav-link.active {
     background: var(--bg-item);
     color: #4a9eff;
-    box-shadow: 0 0 20px rgba(74, 158, 255, 0.3);
+    box-shadow: rgb(0 0 0 / 30%) 0px 0px 20px;
 }
 
 .btn {
