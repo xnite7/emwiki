@@ -5868,14 +5868,13 @@
                             this.onSuccess();
                         } else {
                             this.showError("Access Denied: You need admin or moderator role to access this panel.");
-                            localStorage.removeItem("auth_token");
+                            
                         }
                     } else {
                         localStorage.removeItem("auth_token");
                     }
                 } catch (err) {
                     console.error("Auth check failed:", err);
-                    localStorage.removeItem("auth_token");
                 }
             },
 
