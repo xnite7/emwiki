@@ -6236,7 +6236,9 @@
 
                     // Clear session cookie via backend
                     fetch("/api/logout", { method: "POST" }).finally(() => {
+                        localStorage.removeItem("auth_token");
                         location.reload();
+                        
                     });
 
                 });
