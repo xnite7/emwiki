@@ -1348,7 +1348,7 @@ class ItemModal {
                 </div>
 
                 <!-- Flip Button (only shown when back content exists) -->
-                <button class="modal-flip-btn" style="display:none;">
+                <button class="modal-flip-btn hidden">
                     <span class="flip-icon">↩</span>
                     <span class="flip-text">More Info</span>
                 </button>
@@ -1452,7 +1452,6 @@ class ItemModal {
         const hasBackContent = hasHistory || hasMetadata;
 
         // Show/hide flip button
-        this.elements.flipBtn.style.display = hasBackContent ? 'flex' : 'none';
         this.elements.flipBtn.classList.toggle('hidden', !hasBackContent);
 
         if (this.displayed.length > 100) {

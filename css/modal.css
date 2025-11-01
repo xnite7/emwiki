@@ -342,11 +342,8 @@ body:has(.item-modal.active) {
 
 .modal-container:has(.modal-flip-btn:not(.hidden)) .modal-content-wrapper .modal-front .modal-badges {
     width: 50%;
-    justify-self: start;
+    align-self: flex-start;
 }
-
-
-
 
 
 
@@ -472,7 +469,9 @@ body:has(.item-modal.active) {
 .unflipping~.modal-flip-btn {
     opacity: 0;
 }
-
+.modal-flip-btn.hidden {
+    display: none;
+}
 
 @keyframes fadeout-in {
 
