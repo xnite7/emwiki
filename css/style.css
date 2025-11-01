@@ -2302,6 +2302,7 @@ textarea {
 }
 
 .role-icon svg {
+    fill: currentColor;
     width: 14px;
     height: 14px;
 }
@@ -2310,28 +2311,34 @@ textarea {
 .role-icon.admin {
     background: linear-gradient(135deg, #ff4757, #b91b00);
     color: white;
+    font-weight: 1000;
+    font-family: BuilderSans;
 }
 
 .role-badge.moderator,
 .role-icon.moderator {
     background: linear-gradient(135deg, #FF8FF3, #641bb5);
-    color: white;
+    color: #132559;
+    corner-shape: bevel;
+    border-radius: 5px;
 }
 
 .role-badge.vip,
 .role-icon.vip {
     background: linear-gradient(135deg, #ffd700, #ffb700);
-    color: #1a1a1a;
+    color: #a36d18;
+    corner-shape: scoop;
+    border-radius: 4px;
 }
 
 .role-badge.donator,
 .role-icon.donator {
-    background: linear-gradient(135deg, #ffd900, #b55a1b);
+    background: linear-gradient(135deg, #2ad9cb, #0c4cc3);
     color: #fff;
 
     @supports (corner-shape: superellipse(0.4)) {
         corner-shape: superellipse(0.4);
-        border-radius: 11px;
+        border-radius: 10px;
     }
 
     filter: drop-shadow(0px 0px 6px black);
