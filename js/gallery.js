@@ -315,7 +315,7 @@ class Gallery {
         return div;
     }
 
-    openViewer(item) {
+    async openViewer(item) {
         const modal = document.getElementById('viewer-modal');
         const mediaContainer = modal.querySelector('.viewer-media');
         const title = modal.querySelector('.viewer-title');
@@ -324,6 +324,21 @@ class Gallery {
         const date = modal.querySelector('.viewer-date');
         const views = modal.querySelector('.viewer-views');
         const actionsContainer = modal.querySelector('.viewer-actions');
+
+        // Fetch item from API to increment view count and get latest data
+        try {
+            const token = localStorage.getItem('auth_token');
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const response = await fetch(`/api/gallery/${item.id}`, { headers });
+
+            if (response.ok) {
+                const data = await response.json();
+                item = data.item; // Use the updated item data with incremented views
+            }
+        } catch (error) {
+            console.error('Failed to fetch item details:', error);
+            // Continue with the item data we have
+        }
 
         // Set media
         if (item.media_type === 'video') {
