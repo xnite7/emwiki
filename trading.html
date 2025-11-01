@@ -48,22 +48,22 @@
 
     /* Filters Section */
     .filters-section {
-        background: var(--bg-secondary);
-        padding: 15px 20px;
-        border-bottom: 1px solid var(--border-color);
+        background: transparent;
+        padding: 20px 20px;
         position: sticky;
         top: 0;
         z-index: 100;
+        backdrop-filter: blur(20px);
     }
 
     .filters-container {
-        max-width: 1400px;
+        max-width: 1800px;
         margin: 0 auto;
         display: flex;
         gap: 15px;
         align-items: center;
         flex-wrap: wrap;
-        justify-content: space-between;
+        justify-content: center;
     }
 
     .filter-group {
@@ -74,20 +74,22 @@
     }
 
     .filter-select {
-        padding: 8px 12px;
-        background: var(--bg-item);
-        border: 2px solid var(--border-color);
-        border-radius: 8px;
+        padding: 10px 18px;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        border-radius: 20px;
         color: var(--text-primary);
-        font-size: 13px;
-        font-weight: 600;
+        font-size: 14px;
+        font-weight: 700;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
 
     .filter-select:hover {
-        background: var(--bg-item-hover);
-        border-color: #667eea;
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
     }
 
 
@@ -174,15 +176,15 @@
 
     /* Trades Grid */
     .trades-container {
-        max-width: 1400px;
+        max-width: 1800px;
         margin: 0 auto;
-        padding: 20px;
+        padding: 30px 20px;
     }
 
     .trades-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 15px;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
     }
 
     .trades-grid:has(.empty-state) {
@@ -198,18 +200,18 @@
     /* Trade Card - Compact Grid View */
     .trade-card {
         background: var(--bg-item);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 12px;
-        transition: all 0.2s;
+        border: none;
+        border-radius: 20px;
+        padding: 18px;
+        transition: all 0.3s;
         cursor: pointer;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     }
 
     .trade-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px var(--shadow-color);
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
         background: var(--bg-item-hover);
-        border-color: #667eea;
     }
 
     /* List View Style */
@@ -359,10 +361,10 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 6px 8px;
-        background: var(--bg-secondary);
-        border-radius: 6px;
-        border: 1px solid var(--border-color);
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        border: none;
     }
 
     .trade-item-img {
@@ -463,34 +465,35 @@
 
     .trade-action-btn {
         flex: 1;
-        padding: 8px 12px;
+        padding: 10px 16px;
         border: none;
-        border-radius: 6px;
+        border-radius: 15px;
         font-weight: 700;
         font-size: 13px;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s;
     }
 
     .trade-action-btn.primary {
         background: linear-gradient(135deg, #667eea, #4a9eff);
         color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
     }
 
     .trade-action-btn.primary:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
     }
 
     .trade-action-btn.secondary {
-        background: var(--bg-secondary);
+        background: rgba(255, 255, 255, 0.05);
         color: var(--text-primary);
-        border: 1px solid var(--border-color);
+        border: none;
     }
 
     .trade-action-btn.secondary:hover {
-        background: var(--bg-item-hover);
-        border-color: #667eea;
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
     }
 
     /* Empty State */
@@ -548,13 +551,14 @@
 
 
         background: var(--bg-item);
-        border: 2px solid var(--border-color);
-        border-radius: 16px;
-        max-width: 700px;
+        border: none;
+        border-radius: 25px;
+        max-width: 800px;
         width: 100%;
         max-height: 90vh;
         overflow-y: auto;
         animation: slideUp 0.3s;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     }
 
     @keyframes slideUp {
@@ -628,22 +632,22 @@
     .form-group input[type="text"],
     .form-group textarea,
     .form-group select {
-        padding: 10px 12px;
-        background: var(--bg-secondary);
-        border: 2px solid var(--border-color);
-        border-radius: 8px;
+        padding: 12px 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border: none;
+        border-radius: 15px;
         color: var(--text-primary);
         font-size: 14px;
         font-family: inherit;
-        transition: all 0.2s;
+        transition: all 0.3s;
     }
 
     .form-group input:focus,
     .form-group textarea:focus,
     .form-group select:focus {
         outline: none;
-        border-color: #667eea;
-        background: var(--bg-item);
+        background: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
     }
 
     .form-group textarea {
@@ -655,32 +659,33 @@
     .item-selector {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 10px;
+        gap: 12px;
         max-height: 300px;
         overflow-y: auto;
-        padding: 10px;
-        background: var(--bg-secondary);
-        border-radius: 8px;
-        border: 1px solid var(--border-color);
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 20px;
+        border: none;
     }
 
     .selectable-item {
         position: relative;
-        padding: 10px;
-        background: var(--bg-item);
-        border: 2px solid var(--border-color);
-        border-radius: 8px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: none;
+        border-radius: 15px;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
     }
 
     .selectable-item:hover {
-        border-color: #667eea;
-        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
     }
 
     .selectable-item img {
@@ -719,19 +724,20 @@
     }
 
     .add-seeking-item-btn {
-        padding: 10px;
-        background: var(--bg-secondary);
-        border: 2px dashed var(--border-color);
-        border-radius: 8px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px dashed rgba(102, 126, 234, 0.3);
+        border-radius: 15px;
         color: var(--text-primary);
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s;
     }
 
     .add-seeking-item-btn:hover {
         border-color: #667eea;
-        background: var(--bg-item);
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
     }
 
     .seeking-item-input {
@@ -741,27 +747,28 @@
 
     .seeking-item-input input {
         flex: 1;
-        padding: 10px 12px;
-        background: var(--bg-secondary);
-        border: 2px solid var(--border-color);
-        border-radius: 8px;
+        padding: 12px 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border: none;
+        border-radius: 15px;
         color: var(--text-primary);
         font-size: 14px;
     }
 
     .seeking-item-input .remove-btn {
-        padding: 0 12px;
+        padding: 0 14px;
         background: #ff4757;
         border: none;
-        border-radius: 8px;
+        border-radius: 12px;
         color: white;
         font-size: 20px;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s;
     }
 
     .seeking-item-input .remove-btn:hover {
         background: #ff3838;
+        transform: scale(1.1);
     }
 
     /* Form Actions */
@@ -775,34 +782,35 @@
 
     .btn-primary,
     .btn-secondary {
-        padding: 12px 24px;
+        padding: 14px 28px;
         border: none;
-        border-radius: 8px;
+        border-radius: 20px;
         font-weight: 700;
         font-size: 14px;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s;
     }
 
     .btn-primary {
         background: linear-gradient(135deg, #667eea, #4a9eff);
         color: white;
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
     }
 
     .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
     }
 
     .btn-secondary {
-        background: var(--bg-secondary);
+        background: rgba(255, 255, 255, 0.05);
         color: var(--text-primary);
-        border: 2px solid var(--border-color);
+        border: none;
     }
 
     .btn-secondary:hover {
-        background: var(--bg-item);
-        border-color: #667eea;
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
     }
 
     /* Trade Details Modal */
@@ -864,9 +872,9 @@
     }
 
     .trade-detail-description {
-        padding: 15px;
-        background: var(--bg-secondary);
-        border-radius: 8px;
+        padding: 18px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
         border-left: 4px solid #667eea;
         font-size: 14px;
         line-height: 1.6;
@@ -899,10 +907,16 @@
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 10px;
-        background: var(--bg-secondary);
-        border-radius: 8px;
-        border: 1px solid var(--border-color);
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        border: none;
+        transition: all 0.3s;
+    }
+
+    .detail-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateX(5px);
     }
 
     .detail-item img {
@@ -935,9 +949,9 @@
 
     /* Offer Context */
     .offer-context {
-        padding: 15px;
-        background: var(--bg-secondary);
-        border-radius: 8px;
+        padding: 18px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
         border-left: 4px solid #667eea;
     }
 
@@ -969,20 +983,20 @@
 
     .item-search-input {
         width: 100%;
-        padding: 12px 14px;
-        background: var(--bg-secondary);
-        border: 2px solid var(--border-color);
-        border-radius: 8px;
+        padding: 14px 18px;
+        background: rgba(255, 255, 255, 0.05);
+        border: none;
+        border-radius: 20px;
         color: var(--text-primary);
         font-size: 14px;
         font-family: inherit;
-        transition: all 0.2s;
+        transition: all 0.3s;
     }
 
     .item-search-input:focus {
         outline: none;
-        border-color: #667eea;
-        background: var(--bg-item);
+        background: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
     }
 
     .item-search-results {
@@ -995,14 +1009,14 @@
         max-height: 400px;
         overflow-y: auto;
         background: var(--bg-item);
-        border: 2px solid #667eea;
-        border-radius: 8px;
-        margin-top: 8px;
+        border: none;
+        border-radius: 20px;
+        margin-top: 10px;
         z-index: 1000;
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 8px;
-        padding: 10px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        gap: 10px;
+        padding: 15px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     }
 
     .search-result-item {
@@ -1010,18 +1024,18 @@
         flex-direction: column;
         align-items: center;
         gap: 8px;
-        padding: 10px;
-        background: var(--bg-secondary);
-        border: 2px solid var(--border-color);
-        border-radius: 8px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: none;
+        border-radius: 15px;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s;
     }
 
     .search-result-item:hover {
-        border-color: #667eea;
-        transform: translateY(-2px);
-        background: var(--bg-item-hover);
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
     }
 
     .search-result-item img {
@@ -1052,13 +1066,13 @@
     .selected-items-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 10px;
-        margin-top: 10px;
-        min-height: 60px;
-        padding: 10px;
-        background: var(--bg-secondary);
-        border: 2px dashed var(--border-color);
-        border-radius: 8px;
+        gap: 12px;
+        margin-top: 12px;
+        min-height: 80px;
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 2px dashed rgba(102, 126, 234, 0.3);
+        border-radius: 20px;
     }
 
     .selected-items-grid:empty::before {
@@ -1077,11 +1091,12 @@
         flex-direction: column;
         align-items: center;
         gap: 8px;
-        padding: 10px;
-        background: var(--bg-item);
-        border: 2px solid #667eea;
-        border-radius: 8px;
-        animation: itemAdded 0.3s ease;
+        padding: 12px;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(74, 158, 255, 0.2));
+        border: none;
+        border-radius: 15px;
+        animation: itemAdded 0.4s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
     }
 
     @keyframes itemAdded {
@@ -1139,21 +1154,21 @@
     }
 
     .robux-input {
-        padding: 12px 14px;
-        background: var(--bg-secondary);
-        border: 2px solid var(--border-color);
-        border-radius: 8px;
+        padding: 14px 18px;
+        background: rgba(255, 255, 255, 0.05);
+        border: none;
+        border-radius: 20px;
         color: var(--text-primary);
         font-size: 14px;
         font-family: inherit;
-        transition: all 0.2s;
+        transition: all 0.3s;
         width: 100%;
     }
 
     .robux-input:focus {
         outline: none;
-        border-color: #667eea;
-        background: var(--bg-item);
+        background: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
     }
 
     /* Responsive */
