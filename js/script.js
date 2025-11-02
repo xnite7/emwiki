@@ -2343,7 +2343,7 @@ class Auth extends EventTarget {
                     cameraData.position.y,
                     cameraData.position.z * zoomOut
                 );
-                camera.fov = cameraData.fov - 5;
+                camera.fov = cameraData.fov;
                 camera.updateProjectionMatrix();
 
                 if (aabb) {
