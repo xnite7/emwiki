@@ -12,11 +12,11 @@ https://emwikirr.pages.dev/*
 
 # Cache the root page for 1 hour
 /
-  Cache-Control: public, max-age=1, must-revalidate
+  Cache-Control: no-cache, no-store, must-revalidate
 
 # Cache HTML for only 1 hour
 /*.html
-  Cache-Control: public, max-age=1, must-revalidate
+  Cache-Control: no-cache, no-store, must-revalidate
 
 # Disable caching for CSS/JS - always fetch fresh
 /*.css
