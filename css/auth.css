@@ -154,7 +154,7 @@
     box-shadow: 0 8px 30px rgb(0 0 0 / 8%), inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -2px 4px rgb(0 0 0 / 0%);
 }
 
-#auth-modal .oauth-btn{
+#auth-modal .oauth-btn {
     overflow: visible;
     background: #3964ff;
     border: 2px solid #3964ff;
@@ -167,14 +167,14 @@
     display: none;
 }
 
-#auth-modal .oauth-btn:hover{
+#auth-modal .oauth-btn:hover {
     background: #294bc9;
     border: 2px solid #294bc9;
     transform: translateY(0);
     box-shadow: 0 12px 10px rgb(0 0 0 / 12%), inset 0 1px 0 rgba(255, 255, 255, 0.0), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
 }
 
-#auth-modal .oauth-btn:active{
+#auth-modal .oauth-btn:active {
     background: #1e3aa0;
     border: 2px solid #1e3aa0;
     transform: translateY(0);
@@ -724,9 +724,9 @@
 }
 
 .profile-action-btn.donator {
-    background: linear-gradient(light-dark(#ffa810c2,#ff90182b),light-dark(#e57525b8, #ff741921));
-    border-color: light-dark(#ffca00 ,#ffe03257);
-    color: light-dark(white,#ffca00);
+    background: linear-gradient(light-dark(#ffa810c2, #ff90182b), light-dark(#e57525b8, #ff741921));
+    border-color: light-dark(#ffca00, #ffe03257);
+    color: light-dark(white, #ffca00);
 }
 
 .profile-action-btn.donator.locked {
@@ -1636,12 +1636,12 @@
 }
 
 
-.profile-tax-mode label{
+.profile-tax-mode label {
     display: grid;
     grid-template-columns: 1fr max-content 1fr;
     grid-column-gap: 10px;
     align-items: center;
-    font-size: 12px; 
+    font-size: 12px;
     color: var(--text-secondary);
     margin-bottom: 10px;
 }
@@ -1651,12 +1651,12 @@
     content: "";
     display: block;
     height: 1px;
-    background-color: light-dark(rgba(0, 0, 0, 0.2),rgba(255, 255, 255, 0.1));
+    background-color: light-dark(rgba(0, 0, 0, 0.2), rgba(255, 255, 255, 0.1));
 }
 
 .profile-dropdown-divider {
     height: 1px;
-    background: light-dark(rgba(0, 0, 0, 0.2),rgba(255, 255, 255, 0.1));
+    background: light-dark(rgba(0, 0, 0, 0.2), rgba(255, 255, 255, 0.1));
     margin: 12px 0;
 }
 
@@ -1755,14 +1755,14 @@
 /* 3D Player Model Container */
 #player-model-container {
     width: 300px;
-    height: 300px;
+    height: 230px;
     z-index: 23;
     pointer-events: none;
     display: flex;
     align-items: center;
     justify-content: center;
     perspective: 1000px;
-    margin: 20px auto;
+    margin: 0px auto;
     scale: 0;
     transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
