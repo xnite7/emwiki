@@ -1857,7 +1857,7 @@ class Auth extends EventTarget {
             // Show success modal
             await this.checkSession();
             console.log('Rendering 3D model for user:', this.user);
-            this.render3DPlayerModel(this.user.userid, document.getElementById('auth-step-3').querySelector('#player-model-container'));
+            this.render3DPlayerModel(this.user.userId, document.getElementById('auth-step-3').querySelector('#player-model-container'));
 
             this.dispatchEvent(new Event("sessionReady"));
             if (!Array.isArray(this.user.role)) {
@@ -2271,7 +2271,7 @@ class Auth extends EventTarget {
                     if (!Array.isArray(this.user.role)) {
                         this.user.role = ['user'];
                     }
-                    this.render3DPlayerModel(this.user.userid, document.getElementById('auth-step-3').querySelector('#player-model-container'));
+                    this.render3DPlayerModel(this.user.userId, document.getElementById('auth-step-3').querySelector('#player-model-container'));
                     clearInterval(this.pollInterval);
                     if (this.timerInterval) {
                         clearInterval(this.timerInterval);
@@ -2318,6 +2318,11 @@ class Auth extends EventTarget {
     async render3DPlayerModel(userId, container) {
         if (this._rendering3DModel) return;
         this._rendering3DModel = true;
+
+        if (!userId) {
+            container.style.display = 'none';
+            return;
+        }
         try {
             const response = await fetch(`https://emwiki.com/api/roblox-proxy?mode=avatar-3d&userId=${userId}`);
             if (!response.ok) return;
