@@ -2687,27 +2687,9 @@ class Auth extends EventTarget {
         }
 
         localStorage.removeItem('auth_token');
-        this.token = null;
-        this.user = null;
 
 
-
-        // Mark as logged out
-        if (window.catalog) {
-            window.catalog.isLoggedIn = false;
-            // Reload from localStorage
-            await window.catalog.loadPreferences();
-        }
-
-        const authButton = document.getElementById('auth-button');
-        if (authButton) {
-            authButton.style.display = 'flex';
-        }
-
-        document.getElementById('user-profile-btn').style.display = 'none';
-        Utils.showToast('Logged Out', 'You have been successfully logged out', 'info');
-
-        setTimeout(() => location.reload(), 1500);
+        location.reload();
     }
 
     setupPWAInstall() {
