@@ -2259,12 +2259,12 @@ class Auth extends EventTarget {
             const metadata = await response.json();
             console.log('Avatar metadata:', metadata);
 
-            // Get CDN URLs
-            const objUrl = this.getCdnUrl(metadata.obj);
-            const mtlUrl = this.getCdnUrl(metadata.mtl);
+            // Don't proxy yet - let the URL modifier handle it
+            const objUrl = metadata.obj;
+            const mtlUrl = metadata.mtl;
 
-            console.log('OBJ URL:', objUrl);
-            console.log('MTL URL:', mtlUrl);
+            console.log('OBJ hash:', objUrl);
+            console.log('MTL hash:', mtlUrl);
 
             // Setup Three.js scene
             const container = document.getElementById('player-model-container');
@@ -2303,11 +2303,22 @@ class Auth extends EventTarget {
             // Setup loading manager to proxy ALL asset URLs (textures, MTL, OBJ)
             const manager = new THREE.LoadingManager();
             manager.setURLModifier((url) => {
-                console.log('Original URL:', url);
-                // Extract hash from URL (could be full CDN URL or just hash)
-                const id = url.includes('rbxcdn.com/') ? url.split('com/')[1] : url;
-                console.log('Extracted hash:', id);
-                const proxiedUrl = this.getCdnUrl(id);
+                console.log('URL Modifier - Original:', url);
+
+                // If already proxied, return as-is
+                if (url.includes('/api/roblox-proxy')) {
+                    console.log('Already proxied, skipping');
+                    return url;
+                }
+
+                // If it's a full Roblox CDN URL, extract the hash
+                let hash = url;
+                if (url.includes('rbxcdn.com/')) {
+                    hash = url.split('rbxcdn.com/')[1];
+                }
+
+                console.log('Hash to proxy:', hash);
+                const proxiedUrl = this.getCdnUrl(hash);
                 console.log('Proxied URL:', proxiedUrl);
                 return proxiedUrl;
             });
