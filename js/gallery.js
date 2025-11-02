@@ -7,7 +7,7 @@ class Gallery {
         this.hasMore = true;
         this.currentUser = null;
         this.currentSort = 'likes'; // 'likes' or 'newest'
-        
+
 
         this.init();
     }
@@ -212,7 +212,7 @@ class Gallery {
             progressText.textContent = 'Complete!';
 
             const result = await submitResponse.json();
-            this.showToast(result.message || 'Submission successful!',  'success');
+            this.showToast(result.message || 'Submission successful!', 'success');
 
             // Close modal and reset form
             setTimeout(() => {
@@ -326,60 +326,33 @@ class Gallery {
         const actionsContainer = modal.querySelector('.viewer-actions');
 
         // Fetch item from API to increment view count and get latest data
-        try {
-            const token = localStorage.getItem('auth_token');
-            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-            const response = fetch(`https://emwiki.com/api/gallery/${item.id}`, { headers });
 
-            if (response.ok) {
-                const data = response.json();
-                likeBtn.innerHTML = `${item.user_liked ? '❤️' : '🤍'} ${data.item.likes_count || 0}`;
-                views.textContent = `${data.item.views || 0} views`;
-            }
-        } catch (error) {
-            console.error('Failed to fetch item details:', error);
-            // Continue with the item data we have
-        }
 
+        actionsContainer.innerHTML = '';
         // Set media
         if (item.media_type === 'video') {
             mediaContainer.innerHTML = `<video src="${item.media_url}" controls autoplay></video>`;
         } else {
             mediaContainer.innerHTML = `<img src="${item.media_url}" alt="${item.title}">`;
         }
-
         // Set info
         title.textContent = item.title;
         author.textContent = `by ${item.username}`;
         description.textContent = item.description || '';
         date.textContent = this.formatDate(item.created_at);
-        
 
-        // Set up actions (like button and admin delete)
-        actionsContainer.innerHTML = '';
-
-        // Like button (always visible)
         const likeBtn = document.createElement('button');
-        likeBtn.className = 'like-btn' + (item.user_liked ? ' liked' : '');
-        
-        likeBtn.dataset.id = item.id;
-        likeBtn.dataset.liked = item.user_liked ? '1' : '0';
+        likeBtn.disabled = false;
+        likeBtn.innerHTML = `${item.user_liked ? '❤️' : '🤍'} ${item.likes_count || 0}`;
+        likeBtn.className = 'like-btn'
 
-        if (this.currentUser) {
-            likeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.toggleLike(item.id, likeBtn);
-            });
-        } else {
-            likeBtn.disabled = true;
-            likeBtn.title = 'Login to like';
-        }
 
         actionsContainer.appendChild(likeBtn);
+        views.textContent = `${item.views || 0} views`;
 
         // Admin/mod delete button
         if (this.currentUser && this.isAdmin()) {
-            
+
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'admin-delete-btn';
             deleteBtn.textContent = 'Delete (Admin)';
@@ -391,6 +364,37 @@ class Gallery {
         }
 
         modal.classList.add('active');
+
+
+        try {
+            const token = localStorage.getItem('auth_token');
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const response = await fetch(`https://emwiki.com/api/gallery/${item.id}`, { headers });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                likeBtn.innerHTML = `${item.user_liked ? '❤️' : '🤍'} ${data.item.likes_count || 0}`;
+                likeBtn.className = 'like-btn' + (item.user_liked ? ' liked' : '');
+
+                likeBtn.dataset.id = item.id;
+                likeBtn.dataset.liked = item.user_liked ? '1' : '0';
+
+                likeBtn.addEventListener('click', (e) => {
+                    if (this.currentUser) {
+                        likeBtn.disabled = false;
+                        e.stopPropagation();
+                        this.toggleLike(item.id, likeBtn);
+                    } else {
+                        alert('Please Login to like');
+                        return;
+                    }
+                });
+                views.textContent = `${data.item.views || 0} views`;
+            }
+        } catch (error) {
+            console.error('Failed to fetch item details:', error);
+        }
     }
 
     async openSubmissionsModal() {
@@ -478,11 +482,11 @@ class Gallery {
                 throw new Error('Failed to delete');
             }
 
-            this.showToast('Submission deleted','success');
+            this.showToast('Submission deleted', 'success');
             this.openSubmissionsModal(); // Refresh list
         } catch (error) {
             console.error('Delete error:', error);
-            this.showToast('Failed to delete submission','error');
+            this.showToast('Failed to delete submission', 'error');
         }
     }
 
