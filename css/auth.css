@@ -1753,7 +1753,7 @@
 /* 3D Player Model Container */
 #player-model-container {
     width: 300px;
-    height: 230px;
+    height: 220px;
     z-index: 23;
     pointer-events: none;
     display: flex;
@@ -1817,8 +1817,8 @@
 @media screen and (max-width: 400px) {
     #player-model-container {
         width: 200px;
-        height: 200px;
-        margin: -25px auto 0;
+        height: 150px;
+        margin: 0px auto;
     }
 
     #player-model-container canvas {
