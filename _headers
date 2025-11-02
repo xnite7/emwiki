@@ -9,3 +9,28 @@
 
 https://emwikirr.pages.dev/*
   X-Robots-Tag: noindex
+
+# Cache the root page for 1 hour
+/
+  Cache-Control: public, max-age=1, must-revalidate
+
+# Cache HTML for only 1 hour
+/*.html
+  Cache-Control: public, max-age=1, must-revalidate
+
+# Cache CSS/JS for longer (1 week)
+/*.css
+  Cache-Control: public, max-age=1, must-revalidate
+
+/*.js
+  Cache-Control: public, max-age=1, must-revalidate
+
+# Cache images for 1 month
+/*.jpg
+  Cache-Control: public, max-age=2592000, immutable
+
+/*.png
+  Cache-Control: public, max-age=2592000, immutable
+
+/*.webp
+  Cache-Control: public, max-age=2592000, immutable
