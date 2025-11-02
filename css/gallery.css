@@ -36,7 +36,8 @@
 }
 
 /* Buttons */
-.btn-primary, .btn-secondary {
+.btn-primary,
+.btn-secondary {
     top: unset;
     right: unset;
     left: unset;
@@ -49,7 +50,7 @@
     color: white;
 }
 
-#upload-btn svg{
+#upload-btn svg {
     fill: none;
 }
 
@@ -65,16 +66,17 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
-    transition: transform 1s 0.2s cubic-bezier(.77,1.12,.57,1.25) allow-discrete;
+    transition: transform 1s 0.2s cubic-bezier(.77, 1.12, .57, 1.25) allow-discrete;
     transform: rotate(0deg);
-    @starting-style{
+
+    @starting-style {
         transform: rotate(-14deg);
     }
 }
 
 .gallery-grid:empty {
     display: inline-flex;
-        height: 150px;
+    height: 150px;
 }
 
 .gallery-grid:empty::after {
@@ -111,9 +113,10 @@
     justify-self: anchor-center;
     font-size: 53px;
     font-family: 'Caveat';
-    transition: all 1s 0.2s cubic-bezier(.77,1.12,.57,1.25) allow-discrete;
+    transition: all 1s 0.2s cubic-bezier(.77, 1.12, .57, 1.25) allow-discrete;
     transform: rotate(-14deg);
-    @starting-style{
+
+    @starting-style {
         top: -30px;
         left: 32px;
         transform: rotate(0deg);
@@ -169,22 +172,31 @@
 
 /* Modal Styles */
 .modal {
+    
+    align-items: center;
+    justify-content: center;
     display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.0);
+    opacity: 0;
+    transition: all 0.2s cubic-bezier(1,0,0,1) allow-discrete;
     z-index: 1000;
     overflow-y: auto;
 }
 
 .modal.active {
     display: flex;
-    align-items: center;
-    justify-content: center;
     backdrop-filter: blur(18px);
+    background: rgba(0, 0, 0, 0.8);
+    opacity: 1;
+    @starting-style {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
 }
 
 .modal-content {
@@ -200,6 +212,7 @@
     max-height: 90vh;
     overflow-y: auto;
     margin: 20px;
+
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
         border-radius: 60px;
@@ -391,30 +404,44 @@
 }
 
 .viewer-info {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
     padding: 20px;
-    border-top: 1px solid var(--border-color);
+    border-top: 3px solid #454545;
 }
 
 .viewer-title {
+    width: 70%;
     font-size: 1.5rem;
-    margin-bottom: 10px;
+    max-height: 62px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    margin-bottom: 5px;
 }
 
 .viewer-author {
+    width: 70%;
     color: var(--text-secondary);
     margin-bottom: 10px;
 }
 
 .viewer-description {
-    margin-bottom: 15px;
     line-height: 1.6;
+    max-height: 65px;
+    width: 70%;
+    overflow-y: scroll;
+    overflow-block: auto;
 }
 
-.viewer-meta {
-    display: flex;
-    gap: 20px;
+.viewer-views {
     color: var(--text-secondary);
     font-size: 0.9rem;
+    display: inline-flex;
+    gap: 3px;
+    flex-direction: row-reverse;
 }
 
 /* Submissions List */
@@ -592,9 +619,17 @@
 .viewer-actions {
     display: flex;
     gap: 10px;
-    margin-top: 20px;
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
     flex-wrap: wrap;
     justify-content: space-between;
+}
+
+.viewer-actions>*:last-child {
+    @supports (corner-bottom-right-shape: squircle) {
+        corner-bottom-right-shape: squircle;
+    }
 }
 
 .like-btn {
@@ -605,10 +640,18 @@
     border-radius: 25px;
     cursor: pointer;
     font-size: 1rem;
-    transition: all 0.2s ease;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    transform: scale(1);
+    transform-origin: bottom right;
+    opacity: 1;
+
+    @starting-style {
+        transform: scale(0);
+        opacity: 0;
+    }
 }
 
 .like-btn:hover:not(:disabled) {
@@ -648,12 +691,12 @@
     transform: scale(1.05);
 }
 
-html{
-        background: var(--bg-secondary);
+html {
+    background: var(--bg-secondary);
 }
 
-main{
-    box-shadow: unset ;
+main {
+    box-shadow: unset;
 }
 
 /* Responsive */
