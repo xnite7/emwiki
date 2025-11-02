@@ -18,12 +18,12 @@ https://emwikirr.pages.dev/*
 /*.html
   Cache-Control: public, max-age=1, must-revalidate
 
-# Cache CSS/JS for longer (1 week)
+# Disable caching for CSS/JS - always fetch fresh
 /*.css
-  Cache-Control: public, max-age=1, must-revalidate
+  Cache-Control: no-cache, no-store, must-revalidate
 
 /*.js
-  Cache-Control: public, max-age=1, must-revalidate
+  Cache-Control: no-cache, no-store, must-revalidate
 
 # Cache images for 1 month
 /*.jpg
