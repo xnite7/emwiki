@@ -69,15 +69,16 @@ async function handleGet({ request, env, params }) {
     }
 
     const items = await env.DBA.prepare(
-      `SELECT id, user_id, username, title, description, media_url, media_type,
-              status, created_at, views
-       FROM gallery_items
-       WHERE status = 'pending'
-       ORDER BY created_at DESC`
+      `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.media_type,
+              g.status, g.created_at, g.views, u.avatar_url, u.role
+       FROM gallery_items g
+       LEFT JOIN users u ON g.user_id = u.user_id
+       WHERE g.status = 'pending'
+       ORDER BY g.created_at DESC`
     ).all();
 
     return new Response(JSON.stringify({ items: items.results || [] }), {
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
         ...CORS_HEADERS
       }
@@ -98,10 +99,11 @@ async function handleGet({ request, env, params }) {
     try {
       items = await env.DBA.prepare(
         `SELECT g.id, g.title, g.description, g.media_url, g.media_type, g.status,
-                g.created_at, g.views, g.rejection_reason,
+                g.created_at, g.views, g.rejection_reason, u.avatar_url, u.role,
                 COUNT(gl.id) as likes_count
          FROM gallery_items g
          LEFT JOIN gallery_likes gl ON g.id = gl.gallery_item_id
+         LEFT JOIN users u ON g.user_id = u.user_id
          WHERE g.user_id = ?
          GROUP BY g.id
          ORDER BY g.created_at DESC`
@@ -110,12 +112,13 @@ async function handleGet({ request, env, params }) {
       // Fallback without likes
       console.error('Error querying submissions with likes, falling back:', error);
       items = await env.DBA.prepare(
-        `SELECT id, title, description, media_url, media_type, status,
-                created_at, views, rejection_reason,
+        `SELECT g.id, g.title, g.description, g.media_url, g.media_type, g.status,
+                g.created_at, g.views, g.rejection_reason, u.avatar_url, u.role,
                 0 as likes_count
-         FROM gallery_items
-         WHERE user_id = ?
-         ORDER BY created_at DESC`
+         FROM gallery_items g
+         LEFT JOIN users u ON g.user_id = u.user_id
+         WHERE g.user_id = ?
+         ORDER BY g.created_at DESC`
       ).bind(user.user_id).all();
     }
 
@@ -140,24 +143,26 @@ async function handleGet({ request, env, params }) {
       try {
         item = await env.DBA.prepare(
           `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.media_type,
-                  g.created_at, g.views + 1 as views,
+                  g.created_at, g.views + 1 as views, u.avatar_url, u.role,
                   COUNT(gl.id) as likes_count,
                   CASE WHEN ? IS NOT NULL AND ugl.id IS NOT NULL THEN 1 ELSE 0 END as user_liked
            FROM gallery_items g
            LEFT JOIN gallery_likes gl ON g.id = gl.gallery_item_id
            LEFT JOIN gallery_likes ugl ON g.id = ugl.gallery_item_id AND ugl.user_id = ?
+           LEFT JOIN users u ON g.user_id = u.user_id
            WHERE g.id = ? AND g.status = 'approved'
            GROUP BY g.id`
         ).bind(user?.user_id || null, user?.user_id || null, itemId).first();
       } catch (error) {
         // Fallback without likes
         item = await env.DBA.prepare(
-          `SELECT id, user_id, username, title, description, media_url, media_type,
-                  created_at, views,
+          `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.media_type,
+                  g.created_at, g.views, u.avatar_url, u.role,
                   0 as likes_count,
                   0 as user_liked
-           FROM gallery_items
-           WHERE id = ? AND status = 'approved'`
+           FROM gallery_items g
+           LEFT JOIN users u ON g.user_id = u.user_id
+           WHERE g.id = ? AND g.status = 'approved'`
         ).bind(itemId).first();
       }
 
@@ -194,12 +199,13 @@ async function handleGet({ request, env, params }) {
     // Try to query with likes (requires gallery_likes table to exist)
     items = await env.DBA.prepare(
       `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.media_type,
-              g.created_at, g.views,
+              g.created_at, g.views, u.avatar_url, u.role,
               COUNT(gl.id) as likes_count,
               CASE WHEN ? IS NOT NULL AND ugl.id IS NOT NULL THEN 1 ELSE 0 END as user_liked
        FROM gallery_items g
        LEFT JOIN gallery_likes gl ON g.id = gl.gallery_item_id
        LEFT JOIN gallery_likes ugl ON g.id = ugl.gallery_item_id AND ugl.user_id = ?
+       LEFT JOIN users u ON g.user_id = u.user_id
        WHERE g.status = 'approved'
        GROUP BY g.id
        ORDER BY ${sortBy === 'newest' ? 'g.created_at DESC' : 'COUNT(gl.id) DESC, g.created_at DESC'}
@@ -210,13 +216,14 @@ async function handleGet({ request, env, params }) {
     console.error('Error querying with likes, falling back to simple query:', error);
 
     items = await env.DBA.prepare(
-      `SELECT id, user_id, username, title, description, media_url, media_type,
-              created_at, views,
+      `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.media_type,
+              g.created_at, g.views, u.avatar_url, u.role,
               0 as likes_count,
               0 as user_liked
-       FROM gallery_items
-       WHERE status = 'approved'
-       ORDER BY created_at DESC
+       FROM gallery_items g
+       LEFT JOIN users u ON g.user_id = u.user_id
+       WHERE g.status = 'approved'
+       ORDER BY g.created_at DESC
        LIMIT ? OFFSET ?`
     ).bind(limit, offset).all();
   }
