@@ -2325,6 +2325,8 @@ class Auth extends EventTarget {
             const response = await fetch(`https://emwiki.com/api/roblox-proxy?mode=avatar-3d&userId=${userId}`);
             if (!response.ok) return;
 
+            container.className = 'loading';
+
             const metadata = await response.json();
             const { obj: objUrl, mtl: mtlUrl, camera: cameraData, aabb } = metadata;
 
@@ -2430,7 +2432,7 @@ class Auth extends EventTarget {
             });
         } finally {
             setTimeout(() => {
-                container.classList.add('active');
+                container.className = 'active';
                 this._rendering3DModel = false;
             }, 2000);
         }

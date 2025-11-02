@@ -1767,7 +1767,7 @@
 }
 
 
-#player-model-container::before {
+#player-model-container.loading::before {
     content: '';
     display: inline-block;
     width: 40px;
@@ -1793,12 +1793,6 @@
     @starting-style {
         scale: 0;
     }
-}
-
-#player-model-container.active::before {
-    display: none;
-    width: 0px;
-    height: 0px;
 }
 
 #player-model-container canvas {
