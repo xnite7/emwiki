@@ -5820,6 +5820,24 @@
                     return this.onSuccess();
                 }
 
+                // Check for OAuth callback
+                const urlParams = new URLSearchParams(window.location.search);
+                const authSuccess = urlParams.get('auth_success');
+                const authToken = urlParams.get('token');
+                const authError = urlParams.get('auth_error');
+
+                if (authSuccess && authToken) {
+                    // OAuth login successful
+                    localStorage.setItem('auth_token', authToken);
+                    // Clean URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    // Will be checked by checkExistingAuth
+                } else if (authError) {
+                    // OAuth login failed
+                    this.showError(`Authentication failed: ${authError}`);
+                    // Clean URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
 
                 this.loadAuthUI();
                 this.checkExistingAuth();
@@ -5829,7 +5847,21 @@
                 const container = DOM.get("auth-container");
                 container.innerHTML = `
                     <div class="auth-status" id="admin-auth-status">
-                        <button class="auth-login-btn" id="admin-auth-login-btn">Login with Roblox</button>
+                        <button class="auth-login-btn" id="admin-auth-oauth-btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin-bottom: 10px;">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="margin-right: 8px; vertical-align: middle;">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                            </svg>
+                            Sign in with Roblox (Recommended)
+                        </button>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin: 8px 0;">Faster and more secure</p>
+
+                        <div style="margin: 15px 0; display: flex; align-items: center; gap: 10px;">
+                            <div style="flex: 1; height: 1px; background: var(--text-secondary); opacity: 0.3;"></div>
+                            <span style="color: var(--text-secondary); font-size: 12px;">OR</span>
+                            <div style="flex: 1; height: 1px; background: var(--text-secondary); opacity: 0.3;"></div>
+                        </div>
+
+                        <button class="auth-login-btn" id="admin-auth-login-btn" style="background: var(--bg-secondary);">Use In-Game Code</button>
                         <div id="admin-auth-code-display" style="display: none; margin-top: 15px;">
                             <p style="margin-bottom: 10px; color: var(--text-secondary);">Enter this code in Epic Minigames:</p>
                             <div style="font-size: 2.5rem; font-weight: bold; letter-spacing: 0.15em; padding: 20px; background: var(--bg-item); border-radius: 12px; margin-bottom: 15px; border: 2px solid var(--border-color);">
@@ -5844,10 +5876,19 @@
                     </div>
                 `;
 
+                const oauthBtn = DOM.get("admin-auth-oauth-btn");
+                if (oauthBtn) {
+                    oauthBtn.addEventListener("click", () => this.loginWithOAuth());
+                }
+
                 const loginBtn = DOM.get("admin-auth-login-btn");
                 if (loginBtn) {
                     loginBtn.addEventListener("click", () => this.startLogin());
                 }
+            },
+
+            loginWithOAuth() {
+                window.location.href = '/api/auth/oauth/authorize';
             },
 
             async checkExistingAuth() {

@@ -308,11 +308,24 @@ class BaseApp {
                 <div id="auth-modal" popover>
                     <h2>Link Your <strong>Roblox Account</strong></h2>
                     <div id="auth-step-1">
-                        <p>Click below to generate your unique code</p>
+                        <p style="margin-bottom: 20px;">Choose your preferred verification method:</p>
 
-                        <button class="auth-btn" onclick="auth.generateCode()">
-                            <span>Generate Code</span>
+                        <button class="auth-btn oauth-btn" onclick="auth.loginWithOAuth()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin-bottom: 15px;">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="margin-right: 8px;">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                            </svg>
+                            <span style="font-weight: 600;">Sign in with Roblox (Recommended)</span>
+                        </button>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin: 10px 0;">Faster, easier, and more secure</p>
 
+                        <div style="margin: 25px 0; display: flex; align-items: center; gap: 10px;">
+                            <div style="flex: 1; height: 1px; background: var(--text-secondary); opacity: 0.3;"></div>
+                            <span style="color: var(--text-secondary); font-size: 12px;">OR</span>
+                            <div style="flex: 1; height: 1px; background: var(--text-secondary); opacity: 0.3;"></div>
+                        </div>
+
+                        <button class="auth-btn" onclick="auth.generateCode()" style="background: var(--bg-secondary);">
+                            <span>Use In-Game Code</span>
                         </button>
                         <span class="auth-btn-arrow">
                             <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -1813,7 +1826,7 @@ class Auth extends EventTarget {
             </button>
 
             <div popover id="profile-dropdown" class="profile-dropdown"></div>
-            
+
             <button	style="display: none;" class="btn" popovertarget="auth-modal" popovertargetaction="show" id="auth-button">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
                     <path
@@ -1823,10 +1836,33 @@ class Auth extends EventTarget {
             </button>
 
             <button class="btn" id="user-profile-btn" style="display: none;" popovertarget="profile-dropdown" popovertargetaction="toggle"></button>
-		    
+
         `);
 
         await this.loadScammersList();
+
+        // Check for OAuth callback
+        const urlParams = new URLSearchParams(window.location.search);
+        const authSuccess = urlParams.get('auth_success');
+        const authToken = urlParams.get('token');
+        const authError = urlParams.get('auth_error');
+
+        if (authSuccess && authToken) {
+            // OAuth login successful
+            localStorage.setItem('auth_token', authToken);
+            this.token = authToken;
+            // Clean URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+            // Show success modal
+            await this.checkSession();
+            await this.checkDonationStatus(true);
+            Utils.showToast('Success!', 'Account linked successfully', 'success');
+        } else if (authError) {
+            // OAuth login failed
+            Utils.showToast('Authentication Error', `Login failed: ${authError}`, 'error');
+            // Clean URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
 
         if (this.token) {
             await this.checkSession();
@@ -1841,6 +1877,11 @@ class Auth extends EventTarget {
         // Setup PWA install functionality
         this.setupPWAInstall();
 
+    }
+
+    loginWithOAuth() {
+        // Redirect to OAuth authorization endpoint
+        window.location.href = 'https://emwiki.com/api/auth/oauth/authorize';
     }
 
 

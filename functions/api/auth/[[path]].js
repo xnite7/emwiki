@@ -621,6 +621,127 @@ async function handleMigratePreferences(request, env) {
     });
 }
 
+// ==================== OAUTH 2.0 ====================
+
+async function handleOAuthAuthorize(request, env) {
+    const clientId = env.ROBLOX_OAUTH_CLIENT_ID;
+    const redirectUri = env.ROBLOX_OAUTH_REDIRECT_URI;
+
+    if (!clientId || !redirectUri) {
+        return new Response(JSON.stringify({ error: 'OAuth not configured' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    // Generate state parameter for CSRF protection
+    const state = crypto.randomUUID();
+
+    // Store state in a temporary table or use a different method
+    // For now, we'll pass it through and verify it in the callback
+
+    const authUrl = new URL('https://apis.roblox.com/oauth/v1/authorize');
+    authUrl.searchParams.set('client_id', clientId);
+    authUrl.searchParams.set('redirect_uri', redirectUri);
+    authUrl.searchParams.set('scope', 'openid profile');
+    authUrl.searchParams.set('response_type', 'code');
+    authUrl.searchParams.set('state', state);
+
+    // Redirect to Roblox OAuth
+    return Response.redirect(authUrl.toString(), 302);
+}
+
+async function handleOAuthCallback(request, env) {
+    const url = new URL(request.url);
+    const code = url.searchParams.get('code');
+    const state = url.searchParams.get('state');
+    const error = url.searchParams.get('error');
+
+    if (error) {
+        // Redirect back to site with error
+        return Response.redirect(`/?auth_error=${encodeURIComponent(error)}`, 302);
+    }
+
+    if (!code) {
+        return Response.redirect('/?auth_error=no_code', 302);
+    }
+
+    const clientId = env.ROBLOX_OAUTH_CLIENT_ID;
+    const clientSecret = env.ROBLOX_OAUTH_CLIENT_SECRET;
+    const redirectUri = env.ROBLOX_OAUTH_REDIRECT_URI;
+
+    try {
+        // Exchange code for access token
+        const tokenResponse = await fetch('https://apis.roblox.com/oauth/v1/token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': 'Basic ' + btoa(`${clientId}:${clientSecret}`)
+            },
+            body: new URLSearchParams({
+                grant_type: 'authorization_code',
+                code: code,
+                redirect_uri: redirectUri
+            })
+        });
+
+        if (!tokenResponse.ok) {
+            const errorText = await tokenResponse.text();
+            console.error('Token exchange failed:', errorText);
+            return Response.redirect('/?auth_error=token_exchange_failed', 302);
+        }
+
+        const tokenData = await tokenResponse.json();
+        const accessToken = tokenData.access_token;
+
+        // Fetch user info
+        const userInfoResponse = await fetch('https://apis.roblox.com/oauth/v1/userinfo', {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        });
+
+        if (!userInfoResponse.ok) {
+            console.error('Failed to fetch user info');
+            return Response.redirect('/?auth_error=userinfo_failed', 302);
+        }
+
+        const userInfo = await userInfoResponse.json();
+        const userId = userInfo.sub; // Roblox user ID
+        const username = userInfo.preferred_username;
+        const displayName = userInfo.nickname || username;
+        const avatarUrl = userInfo.picture || null;
+
+        // Create or update user in database
+        const now = Date.now();
+
+        await env.DBA.prepare(`
+            INSERT INTO users (user_id, username, display_name, avatar_url, avatar_cached_at, created_at, last_online, role)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                username = excluded.username,
+                display_name = excluded.display_name,
+                avatar_url = excluded.avatar_url,
+                avatar_cached_at = excluded.avatar_cached_at,
+                last_online = excluded.last_online
+        `).bind(userId, username, displayName, avatarUrl, now, now, now, '["user"]').run();
+
+        // Create session
+        const sessionToken = crypto.randomUUID();
+        const expiresAt = now + (3000 * 24 * 60 * 60 * 1000); // 3000 days
+
+        await env.DBA.prepare(
+            'INSERT INTO sessions (token, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)'
+        ).bind(sessionToken, userId, now, expiresAt).run();
+
+        // Redirect back to site with token
+        return Response.redirect(`/?auth_success=true&token=${sessionToken}`, 302);
+    } catch (error) {
+        console.error('OAuth callback error:', error);
+        return Response.redirect('/?auth_error=unexpected_error', 302);
+    }
+}
+
 export async function onRequest(context) {
     const { request, env } = context;
     const url = new URL(request.url);
@@ -675,6 +796,13 @@ export async function onRequest(context) {
                 break;
             case 'user/preferences/migrate':
                 response = await handleMigratePreferences(request, env);
+                break;
+            // OAUTH 2.0 ENDPOINTS
+            case 'oauth/authorize':
+                response = await handleOAuthAuthorize(request, env);
+                break;
+            case 'oauth/callback':
+                response = await handleOAuthCallback(request, env);
                 break;
             default:
                 response = new Response(JSON.stringify({ error: 'Not found' }), {
