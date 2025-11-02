@@ -341,13 +341,7 @@ class Gallery {
         description.textContent = item.description || '';
         date.textContent = this.formatDate(item.created_at);
 
-        const likeBtn = document.createElement('button');
-        likeBtn.disabled = false;
-        likeBtn.innerHTML = `${item.user_liked ? '❤️' : '🤍'} ${item.likes_count || 0}`;
-        likeBtn.className = 'like-btn'
 
-
-        actionsContainer.appendChild(likeBtn);
         views.textContent = `${item.views || 0} views`;
 
         // Admin/mod delete button
@@ -374,6 +368,9 @@ class Gallery {
             if (response.ok) {
                 const data = await response.json();
 
+                const likeBtn = document.createElement('button');
+                likeBtn.disabled = false;
+
                 likeBtn.innerHTML = `${item.user_liked ? '❤️' : '🤍'} ${data.item.likes_count || 0}`;
                 likeBtn.className = 'like-btn' + (item.user_liked ? ' liked' : '');
 
@@ -390,6 +387,9 @@ class Gallery {
                         return;
                     }
                 });
+
+                actionsContainer.appendChild(likeBtn);
+
                 views.textContent = `${data.item.views || 0} views`;
             }
         } catch (error) {
