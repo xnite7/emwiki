@@ -2365,6 +2365,10 @@ class Auth extends EventTarget {
                 if (url.includes('rbxcdn.com/')) {
                     hash = url.split('rbxcdn.com/')[1];
                 }
+                 
+
+                // Strip relative path prefixes (./ and ../)
+                hash = hash.replace(/^\.\.?\//g, '');
 
                 console.log('Hash to proxy:', hash);
                 const proxiedUrl = this.getCdnUrl(hash);
