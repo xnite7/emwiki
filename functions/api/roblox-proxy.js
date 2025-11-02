@@ -12,7 +12,7 @@ export async function onRequestGet({ request, env }) {
   // Helper function to get CDN URL from hash
   function getCdnUrl(hash) {
     let i = 31;
-    for (let t = 0; t < 32; t++) {
+    for (let t = 0; t < 38; t++) {
       i ^= hash.charCodeAt(t);
     }
     return `https://t${(i % 8).toString()}.rbxcdn.com/${hash}`;
