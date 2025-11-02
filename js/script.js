@@ -415,13 +415,60 @@ class BaseApp {
                         <div id="recent-viewed-items" class="catalog-grid"></div>
                     </div>
                 </div>
-            </div>`
+            </div>
+            	<!-- Back to Top Button -->
+            <button class="back-to-top" id="backToTop" aria-label="Back to top">
+                <img src="./imgs/uparrow.png" alt="Back to top">
+            </button>
+            `
         );
 
 
         setTimeout(() => this.updateStatsIfOpen(), 1500);
+        this.setupScrollEffects();
 
 
+    }
+
+
+    setupScrollEffects() {
+        // Back to top button
+        const backToTop = document.getElementById('backToTop');
+
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                backToTop.classList.add('show');
+            } else {
+                backToTop.classList.remove('show');
+            }
+        });
+
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Scroll-triggered animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe content sections
+        document.querySelectorAll('.content-section, .info-card').forEach(el => {
+            el.classList.add('fade-in-up');
+            observer.observe(el);
+        });
     }
 
     async loadPreferences() {
@@ -2422,7 +2469,7 @@ class Auth extends EventTarget {
                         requestAnimationFrame(animateModel);
                     };
                     animateModel();
-                    
+
                 });
             });
         } finally {
