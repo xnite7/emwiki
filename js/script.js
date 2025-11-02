@@ -2366,8 +2366,15 @@ class Auth extends EventTarget {
 
             // Setup lighting
             scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-            scene.add(new THREE.DirectionalLight(0xffffff, 0.6).position.set(5, 5, 5));
-            scene.add(new THREE.DirectionalLight(0xffffff, 0.3).position.set(-5, 5, -5));
+
+            const addLight = (color, intensity, x, y, z) => {
+                const light = new THREE.DirectionalLight(color, intensity);
+                light.position.set(x, y, z);
+                scene.add(light);
+            };
+
+            addLight(0xffffff, 0.6, 5, 5, 5);
+            addLight(0xffffff, 0.3, -5, 5, -5);
 
             // Start render loop
             let animationId;
