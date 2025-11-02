@@ -342,18 +342,7 @@ class Gallery {
 
         views.innerHTML = `${item.views || 0} <svg viewBox="0 0 42 42" style="width: 18px; height: 18px; fill: currentColor;"><path d="M15.3 20.1c0 3.1 2.6 5.7 5.7 5.7s5.7-2.6 5.7-5.7-2.6-5.7-5.7-5.7-5.7 2.6-5.7 5.7m8.1 12.3C30.1 30.9 40.5 22 40.5 22s-7.7-12-18-13.3c-.6-.1-2.6-.1-3-.1-10 1-18 13.7-18 13.7s8.7 8.6 17 9.9c.9.4 3.9.4 4.9.2M11.1 20.7c0-5.2 4.4-9.4 9.9-9.4s9.9 4.2 9.9 9.4S26.5 30 21 30s-9.9-4.2-9.9-9.3"></path></svg>`;
 
-        // Admin/mod delete button
-        if (this.currentUser && this.isAdmin()) {
 
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'admin-delete-btn';
-            deleteBtn.textContent = '🗑️';
-            deleteBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.adminDeleteItem(item.id);
-            });
-            actionsContainer.appendChild(deleteBtn);
-        }
 
         modal.classList.add('active');
 
@@ -393,6 +382,18 @@ class Gallery {
             }
         } catch (error) {
             console.error('Failed to fetch item details:', error);
+        }
+
+        // Admin/mod delete button
+        if (this.currentUser && this.isAdmin()) {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'admin-delete-btn';
+            deleteBtn.textContent = '🗑️';
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.adminDeleteItem(item.id);
+            });
+            actionsContainer.appendChild(deleteBtn);
         }
     }
 
