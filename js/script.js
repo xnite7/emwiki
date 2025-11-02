@@ -1855,10 +1855,7 @@ class Auth extends EventTarget {
             window.history.replaceState({}, document.title, window.location.pathname);
             // Show success modal
             await this.checkSession();
-            console.log('Rendering 3D model for user:', this.user);
-            this.render3DPlayerModel(this.user.userId, document.getElementById('auth-step-3').querySelector('#player-model-container'));
 
-            this.dispatchEvent(new Event("sessionReady"));
             if (!Array.isArray(this.user.role)) {
                 this.user.role = ['user'];
             }
@@ -2138,6 +2135,9 @@ class Auth extends EventTarget {
 
             if (response.ok) {
                 this.user = await response.json();
+                if (authSuccess && authToken) {
+                    this.render3DPlayerModel(this.user.userId, document.getElementById('auth-step-3').querySelector('#player-model-container'));
+                }
                 this.dispatchEvent(new Event("sessionReady"));
                 if (this.isUserScammer()) {
                     if (!this.user.role) this.user.role = ['user'];
