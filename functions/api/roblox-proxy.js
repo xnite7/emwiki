@@ -30,10 +30,16 @@ export async function onRequestGet({ request, env }) {
 
     try {
       const cdnUrl = getCdnUrl(hash);
+      console.log('Fetching CDN URL:', cdnUrl);
       const assetResponse = await fetch(cdnUrl);
 
       if (!assetResponse.ok) {
-        return new Response(JSON.stringify({ error: 'Asset not found' }), {
+        console.error('CDN fetch failed:', assetResponse.status, cdnUrl);
+        return new Response(JSON.stringify({
+          error: 'Asset not found',
+          cdnUrl: cdnUrl,
+          status: assetResponse.status
+        }), {
           status: 404,
           headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
         });
