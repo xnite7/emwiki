@@ -413,6 +413,10 @@
     border-top: 3px solid #323232;
 }
 
+.viewer-content:has(.viewer-actions:has(.admin-delete-btn)) .viewer-info {
+    min-height: 155px;
+}
+
 .viewer-title {
     width: 70%;
     font-size: 1.5rem;
