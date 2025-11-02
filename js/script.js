@@ -2306,10 +2306,14 @@ class Auth extends EventTarget {
             }
 
             const metadata = await response.json();
+            console.log('Avatar metadata:', metadata);
 
             // Get CDN URLs
             const objUrl = this.getCdnUrl(metadata.obj);
             const mtlUrl = this.getCdnUrl(metadata.mtl);
+
+            console.log('OBJ URL:', objUrl);
+            console.log('MTL URL:', mtlUrl);
 
             // Setup Three.js scene
             const container = document.getElementById('player-model-container');
@@ -2348,9 +2352,13 @@ class Auth extends EventTarget {
             // Setup loading manager to proxy ALL asset URLs (textures, MTL, OBJ)
             const manager = new THREE.LoadingManager();
             manager.setURLModifier((url) => {
+                console.log('Original URL:', url);
                 // Extract hash from URL (could be full CDN URL or just hash)
                 const id = url.includes('rbxcdn.com/') ? url.split('com/')[1] : url;
-                return this.getCdnUrl(id);
+                console.log('Extracted hash:', id);
+                const proxiedUrl = this.getCdnUrl(id);
+                console.log('Proxied URL:', proxiedUrl);
+                return proxiedUrl;
             });
 
             // Load MTL with manager
