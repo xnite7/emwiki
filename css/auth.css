@@ -1797,6 +1797,8 @@
 
 #player-model-container.active::before {
     display: none;
+    width: 0px;
+    height: 0px;
 }
 
 #player-model-container canvas {
