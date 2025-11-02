@@ -7342,6 +7342,30 @@
                 }
             },
 
+            createProfilePill(username, avatarUrl, role) {
+                const roles = role ? JSON.parse(role) : ['user'];
+                const highestRole = this.getHighestRole(roles);
+                const roleLabel = highestRole !== 'user' ? `<span class="profile-pill-role role-${highestRole}">${highestRole}</span>` : '';
+                const avatar = avatarUrl || 'https://via.placeholder.com/48';
+
+                return `
+                    <div class="profile-pill">
+                        <img class="profile-pill-avatar" src="${avatar}" alt="${this.escapeHtml(username)}" onerror="this.src='https://via.placeholder.com/48'">
+                        <span class="profile-pill-name">${this.escapeHtml(username)}</span>
+                        ${roleLabel}
+                    </div>
+                `;
+            },
+
+            getHighestRole(roles) {
+                // Priority: admin > moderator/mod > vip > user
+                if (roles.includes('admin')) return 'admin';
+                if (roles.includes('moderator')) return 'moderator';
+                if (roles.includes('mod')) return 'mod';
+                if (roles.includes('vip')) return 'vip';
+                return 'user';
+            },
+
             createPendingItem(item) {
                 const div = document.createElement('div');
                 div.className = 'gallery-pending-item';
@@ -7359,11 +7383,13 @@
                     ? `<video src="${item.media_url}" controls style="width: 200px; height: 150px; object-fit: cover; border-radius: 6px; background: #000;"></video>`
                     : `<img src="${item.media_url}" alt="${item.title}" style="width: 200px; height: 150px; object-fit: cover; border-radius: 6px; background: #000;">`;
 
+                const profilePill = this.createProfilePill(item.username, item.avatar_url, item.role);
+
                 div.innerHTML = `
                     ${mediaElement}
                     <div style="flex: 1;">
                         <div style="font-weight: 600; font-size: 1.1rem; margin-bottom: 5px;">${this.escapeHtml(item.title)}</div>
-                        <div style="color: var(--text-secondary); margin-bottom: 5px;">by ${this.escapeHtml(item.username)}</div>
+                        <div style="margin-bottom: 5px;">${profilePill}</div>
                         <div style="margin-bottom: 10px;">${this.escapeHtml(item.description || 'No description')}</div>
                         <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 10px;">
                             Submitted ${this.formatDate(item.created_at)}

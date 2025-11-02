@@ -286,6 +286,30 @@ class Gallery {
         }
     }
 
+    createProfilePill(username, avatarUrl, role) {
+        const roles = role ? JSON.parse(role) : ['user'];
+        const highestRole = this.getHighestRole(roles);
+        const roleLabel = highestRole !== 'user' ? `<span class="profile-pill-role role-${highestRole}">${highestRole}</span>` : '';
+        const avatar = avatarUrl || 'https://via.placeholder.com/48';
+
+        return `
+            <div class="profile-pill">
+                <img class="profile-pill-avatar" src="${avatar}" alt="${this.escapeHtml(username)}" onerror="this.src='https://via.placeholder.com/48'">
+                <span class="profile-pill-name">${this.escapeHtml(username)}</span>
+                ${roleLabel}
+            </div>
+        `;
+    }
+
+    getHighestRole(roles) {
+        // Priority: admin > moderator/mod > vip > user
+        if (roles.includes('admin')) return 'admin';
+        if (roles.includes('moderator')) return 'moderator';
+        if (roles.includes('mod')) return 'mod';
+        if (roles.includes('vip')) return 'vip';
+        return 'user';
+    }
+
     createGalleryItem(item) {
         const div = document.createElement('div');
         div.className = 'gallery-item';
@@ -297,12 +321,13 @@ class Gallery {
 
         const likesCount = item.likes_count || 0;
         const likeIcon = item.user_liked ? '❤️' : '🤍';
+        const profilePill = this.createProfilePill(item.username, item.avatar_url, item.role);
 
         div.innerHTML = `
             ${mediaElement}
             <div class="gallery-item-info">
                 <div class="gallery-item-title">${this.escapeHtml(item.title)}</div>
-                <div class="gallery-item-author">by ${this.escapeHtml(item.username)}</div>
+                <div class="gallery-item-author">${profilePill}</div>
                 <div class="gallery-item-meta">
                     <span>${this.formatDate(item.created_at)}</span>
                     <span class="likes-display">${likeIcon} ${likesCount}</span>
@@ -336,7 +361,8 @@ class Gallery {
         }
         // Set info
         title.textContent = item.title;
-        author.textContent = `by ${item.username} 🞄 ${this.formatDate(item.created_at)}`;
+        const profilePill = this.createProfilePill(item.username, item.avatar_url, item.role);
+        author.innerHTML = `${profilePill} <span style="color: var(--text-secondary); margin-left: 8px;">▪ ${this.formatDate(item.created_at)}</span>`;
         description.textContent = item.description || '';
 
 

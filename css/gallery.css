@@ -169,6 +169,61 @@
     margin-bottom: -11px;
 }
 
+/* Profile Pill Styles */
+.profile-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px 6px 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.profile-pill-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.profile-pill-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.profile-pill-role {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profile-pill-role.role-admin {
+    background: linear-gradient(135deg, #ff4444, #cc0000);
+    color: white;
+}
+
+.profile-pill-role.role-moderator,
+.profile-pill-role.role-mod {
+    background: linear-gradient(135deg, #4169E1, #1E3A8A);
+    color: white;
+}
+
+.profile-pill-role.role-vip {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #000;
+}
+
+.profile-pill-role.role-user {
+    display: none; /* Hide default user role */
+}
+
 .gallery-item-meta {
     display: flex;
     justify-content: space-between;
