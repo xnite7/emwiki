@@ -329,12 +329,7 @@ class Gallery {
         try {
             const token = localStorage.getItem('auth_token');
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-            const response = await fetch(`/api/gallery/${item.id}`, { headers });
-
-            if (response.ok) {
-                const data = await response.json();
-                item = data.item; // Use the updated item data with incremented views
-            }
+            fetch(`/api/gallery/${item.id}`, { headers });
         } catch (error) {
             console.error('Failed to fetch item details:', error);
             // Continue with the item data we have
