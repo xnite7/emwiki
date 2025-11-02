@@ -594,6 +594,7 @@
     gap: 10px;
     margin-top: 20px;
     flex-wrap: wrap;
+    justify-content: space-between;
 }
 
 .like-btn {
@@ -619,6 +620,10 @@
     background: rgba(244, 67, 54, 0.2);
     border-color: rgba(244, 67, 54, 0.5);
     color: #ff6b6b;
+}
+
+.like-btn.liked:hover {
+    background: rgba(247, 86, 75, 0.2);
 }
 
 .like-btn:disabled {
