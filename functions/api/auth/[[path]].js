@@ -653,17 +653,18 @@ async function handleOAuthAuthorize(request, env) {
 
 async function handleOAuthCallback(request, env) {
     const url = new URL(request.url);
+    const origin = url.origin; // Get the full origin (e.g., https://emwiki.com)
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state');
     const error = url.searchParams.get('error');
 
     if (error) {
         // Redirect back to site with error
-        return Response.redirect(`/?auth_error=${encodeURIComponent(error)}`, 302);
+        return Response.redirect(`${origin}/?auth_error=${encodeURIComponent(error)}`, 302);
     }
 
     if (!code) {
-        return Response.redirect('/?auth_error=no_code', 302);
+        return Response.redirect(`${origin}/?auth_error=no_code`, 302);
     }
 
     const clientId = env.ROBLOX_OAUTH_CLIENT_ID;
@@ -688,7 +689,7 @@ async function handleOAuthCallback(request, env) {
         if (!tokenResponse.ok) {
             const errorText = await tokenResponse.text();
             console.error('Token exchange failed:', errorText);
-            return Response.redirect('/?auth_error=token_exchange_failed', 302);
+            return Response.redirect(`${origin}/?auth_error=token_exchange_failed`, 302);
         }
 
         const tokenData = await tokenResponse.json();
@@ -703,7 +704,7 @@ async function handleOAuthCallback(request, env) {
 
         if (!userInfoResponse.ok) {
             console.error('Failed to fetch user info');
-            return Response.redirect('/?auth_error=userinfo_failed', 302);
+            return Response.redirect(`${origin}/?auth_error=userinfo_failed`, 302);
         }
 
         const userInfo = await userInfoResponse.json();
@@ -735,10 +736,10 @@ async function handleOAuthCallback(request, env) {
         ).bind(sessionToken, userId, now, expiresAt).run();
 
         // Redirect back to site with token
-        return Response.redirect(`/?auth_success=true&token=${sessionToken}`, 302);
+        return Response.redirect(`${origin}/?auth_success=true&token=${sessionToken}`, 302);
     } catch (error) {
         console.error('OAuth callback error:', error);
-        return Response.redirect('/?auth_error=unexpected_error', 302);
+        return Response.redirect(`${origin}/?auth_error=unexpected_error`, 302);
     }
 }
 
