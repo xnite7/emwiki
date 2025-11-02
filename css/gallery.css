@@ -172,7 +172,7 @@
 
 /* Modal Styles */
 .modal {
-    
+
     align-items: center;
     justify-content: center;
     display: none;
@@ -183,7 +183,7 @@
     height: 100%;
     background: rgba(0, 0, 0, 0.0);
     opacity: 0;
-    transition: all 0.2s cubic-bezier(1,0,0,1) allow-discrete;
+    transition: all 0.2s cubic-bezier(1, 0, 0, 1) allow-discrete;
     z-index: 1000;
     overflow-y: auto;
 }
@@ -193,6 +193,7 @@
     backdrop-filter: blur(18px);
     background: rgba(0, 0, 0, 0.8);
     opacity: 1;
+
     @starting-style {
         opacity: 0;
         backdrop-filter: blur(0px);
@@ -409,7 +410,7 @@
     flex-wrap: wrap;
     justify-content: space-between;
     padding: 20px;
-    border-top: 3px solid #454545;
+    border-top: 3px solid #323232;
 }
 
 .viewer-title {
@@ -635,6 +636,7 @@
 
 .like-btn {
     padding: 10px 20px;
+    font-family: buildersans, Twemoji;
     border: 2px solid rgba(255, 255, 255, 0.2);
     background: rgba(255, 255, 255, 0.05);
     color: var(--text-primary);
@@ -676,7 +678,9 @@
 }
 
 .admin-delete-btn {
+    font-family: Twemoji;
     padding: 10px;
+    width: 44px;
     border: 2px solid rgba(244, 67, 54, 0.5);
     background: rgba(244, 67, 54, 0.1);
     color: #f44336;
@@ -684,6 +688,13 @@
     cursor: pointer;
     font-size: 0.95rem;
     transition: all 0.2s ease;
+    transform: scale(1);
+    opacity: 1;
+
+    @starting-style {
+        transform: scale(0);
+        opacity: 0;
+    }
 }
 
 .admin-delete-btn:hover {
@@ -722,5 +733,10 @@ main {
     .submission-thumbnail {
         width: 100%;
         height: 200px;
+    }
+
+    .viewer-actions {
+        flex-direction: column;
+        align-items: flex-end;
     }
 }
