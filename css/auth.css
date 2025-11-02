@@ -1761,11 +1761,10 @@
     justify-content: center;
     perspective: 1000px;
     margin: 0px auto;
-    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 
-#player-model-container.loading::before {
+#player-model-container.loadin::after {
     content: '';
     display: inline-block;
     width: 40px;
@@ -1786,22 +1785,27 @@
     }
 }
 
-#player-model-container.active {
+
+
+#player-model-container canvas {
+    background: transparent;
+    scale: 0;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
+}
+
+#player-model-container.active canvas {
     scale: 1;
     @starting-style {
         scale: 0;
     }
 }
 
-#player-model-container canvas {
-    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
-}
-
 @media screen and (max-width: 768px) {
     #player-model-container {
         width: 250px;
-        height: 250px;
-        margin: -30px auto 0;
+        height: 180px;
+        margin: 0px auto;
     }
 
     #player-model-container canvas {

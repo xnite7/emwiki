@@ -2316,7 +2316,7 @@ class Auth extends EventTarget {
     async render3DPlayerModel(userId, container) {
         if (this._rendering3DModel) return;
         this._rendering3DModel = true;
-
+        container.className = 'loadin';
 
         if (!userId || !container) {
             console.error('Invalid userId or container:', userId, container);
@@ -2332,10 +2332,6 @@ class Auth extends EventTarget {
                 this._rendering3DModel = false;
                 return;
             }
-
-            container.className = 'loading';
-            container.style.display = ''; // ← Add this to ensure it's visible while loading
-
             const metadata = await response.json();
             const { obj: objUrl, mtl: mtlUrl, camera: cameraData, aabb } = metadata;
 
@@ -2373,6 +2369,7 @@ class Auth extends EventTarget {
             renderer.setSize(300, 300);
             renderer.setClearColor(0x000000, 0);
             container.appendChild(renderer.domElement);
+            container.className = '';
 
             // Setup lighting
             scene.add(new THREE.AmbientLight(0xffffff, 0.8));
@@ -2385,14 +2382,6 @@ class Auth extends EventTarget {
 
             addLight(0xffffff, 0.6, 5, 5, 5);
             addLight(0xffffff, 0.3, -5, 5, -5);
-
-            // Start render loop
-            let animationId;
-            const animate = () => {
-                renderer.render(scene, camera);
-                animationId = requestAnimationFrame(animate);
-            };
-            animate();
 
             // Load materials and model
             const mtlLoader = new THREE.MTLLoader();
@@ -2428,15 +2417,13 @@ class Auth extends EventTarget {
 
                 objLoader.load(this.getCdnUrl(objUrl), (object) => {
                     scene.add(object);
-
-                    // Update animation to rotate model
-                    cancelAnimationFrame(animationId);
                     const animateModel = () => {
                         object.rotation.y += 0.01;
                         renderer.render(scene, camera);
                         requestAnimationFrame(animateModel);
                     };
                     animateModel();
+                    
                 });
             });
         } finally {
