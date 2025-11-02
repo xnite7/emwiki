@@ -2297,6 +2297,12 @@ class Auth extends EventTarget {
     // Render 3D player model with fall animation
     async render3DPlayerModel(userId) {
         try {
+            // Clear any existing canvas to prevent duplicates
+            const container = document.getElementById('player-model-container');
+            if (!container) return;
+
+            container.innerHTML = ''; // Clear previous renders
+
             // Fetch 3D avatar data through proxy to avoid CORS
             const response = await fetch(`https://emwiki.com/api/roblox-proxy?mode=avatar-3d&userId=${userId}`);
 
@@ -2316,7 +2322,6 @@ class Auth extends EventTarget {
             console.log('MTL hash:', mtlUrl);
 
             // Setup Three.js scene
-            const container = document.getElementById('player-model-container');
             const scene = new THREE.Scene();
 
             const camera = new THREE.PerspectiveCamera(
