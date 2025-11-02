@@ -1852,7 +1852,7 @@ class Auth extends EventTarget {
             localStorage.setItem('auth_token', authToken);
             this.token = authToken;
             // Clean URL
-            
+
             // Show success modal
             await this.checkSession();
 
@@ -2316,18 +2316,25 @@ class Auth extends EventTarget {
     async render3DPlayerModel(userId, container) {
         if (this._rendering3DModel) return;
         this._rendering3DModel = true;
-        console.log(userId)
 
-        if (!userId) {
-            container.style.display = 'none';
+
+        if (!userId || !container) {
+            console.error('Invalid userId or container:', userId, container);
+            if (container) container.style.display = 'none';
             return;
         }
 
         try {
             const response = await fetch(`https://emwiki.com/api/roblox-proxy?mode=avatar-3d&userId=${userId}`);
-            if (!response.ok) return;
+            if (!response.ok) {
+                console.error('Failed to load 3D model:', response.status);
+                container.style.display = '';
+                this._rendering3DModel = false;
+                return;
+            }
 
             container.className = 'loading';
+            container.style.display = ''; // ← Add this to ensure it's visible while loading
 
             const metadata = await response.json();
             const { obj: objUrl, mtl: mtlUrl, camera: cameraData, aabb } = metadata;
@@ -2435,6 +2442,7 @@ class Auth extends EventTarget {
         } finally {
             setTimeout(() => {
                 container.className = 'active';
+                container.style.display = ''; // Clear inline style, let CSS take over
                 this._rendering3DModel = false;
             }, 2000);
         }
