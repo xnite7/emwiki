@@ -336,7 +336,7 @@ class Gallery {
         }
         // Set info
         title.textContent = item.title;
-        author.textContent = `by ${item.username} ▪ ${this.formatDate(item.created_at)}`;
+        author.textContent = `by ${item.username} 🞄 ${this.formatDate(item.created_at)}`;
         description.textContent = item.description || '';
 
 
