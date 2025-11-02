@@ -1856,6 +1856,7 @@ class Auth extends EventTarget {
             window.history.replaceState({}, document.title, window.location.pathname);
             // Show success modal
             await this.checkSession();
+            console.log('Rendering 3D model for user:', this.user);
             this.render3DPlayerModel(this.user.userid, document.getElementById('auth-step-3').querySelector('#player-model-container'));
 
             this.dispatchEvent(new Event("sessionReady"));
