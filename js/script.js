@@ -1852,7 +1852,7 @@ class Auth extends EventTarget {
             localStorage.setItem('auth_token', authToken);
             this.token = authToken;
             // Clean URL
-            
+
             // Show success modal
             await this.checkSession();
 
@@ -2140,7 +2140,7 @@ class Auth extends EventTarget {
                 const authToken = urlParams.get('token');
                 if (authSuccess && authToken) {
                     window.history.replaceState({}, document.title, window.location.pathname);
-                    this.render3DPlayerModel(this.user.userId, document.getElementById('auth-step-3').querySelector('#player-model-container'));
+                    this.render3DPlayerModel(this.user.userId, document.getElementById('player-model-container'));
                 }
                 this.dispatchEvent(new Event("sessionReady"));
                 if (this.isUserScammer()) {
@@ -2274,7 +2274,7 @@ class Auth extends EventTarget {
                     if (!Array.isArray(this.user.role)) {
                         this.user.role = ['user'];
                     }
-                    this.render3DPlayerModel(this.user.userId, document.getElementById('auth-step-3').querySelector('#player-model-container'));
+                    this.render3DPlayerModel(this.user.userId, document.getElementById('player-model-container'));
                     clearInterval(this.pollInterval);
                     if (this.timerInterval) {
                         clearInterval(this.timerInterval);
@@ -2285,14 +2285,10 @@ class Auth extends EventTarget {
                     document.getElementById('auth-modal').showPopover();
                     document.getElementById('auth-step-2').style.display = 'none';
                     document.getElementById('auth-step-3').style.display = 'block';
-
-
-
                     document.getElementById('auth-step-3').querySelector('p').innerHTML = `Welcome, <strong>${this.user.displayName}!</strong> Your Roblox account has been successfully linked to Epic Catalogue.`;
 
                     if (window.catalog) {
                         window.catalog.isLoggedIn = true;
-
                         await window.catalog.loadPreferences();
                         document.getElementById('auth-step-3').querySelector('.loading').style.display = 'none';
                         document.getElementById('auth-step-3').querySelector('.celebration-close-btn').style.display = ''
@@ -2304,7 +2300,6 @@ class Auth extends EventTarget {
                     this.updateUI();
                     setTimeout(() => {
                         this.checkDonationStatus(true);
-
                     }, 3000);
 
                 }
@@ -2346,13 +2341,13 @@ class Auth extends EventTarget {
                     cameraData.position.y,
                     cameraData.position.z * zoomOut
                 );
-                camera.fov = cameraData.fov + 5;
+                camera.fov = cameraData.fov - 10;
                 camera.updateProjectionMatrix();
 
                 if (aabb) {
                     const center = {
                         x: (aabb.min.x + aabb.max.x) / 2,
-                        y: (aabb.min.y + aabb.max.y) / 2,
+                        y: aabb.max.y - (aabb.max.y - aabb.min.y) * 0.3, // ✅ Look at upper 30%
                         z: (aabb.min.z + aabb.max.z) / 2
                     };
                     camera.lookAt(center.x, center.y, center.z);
