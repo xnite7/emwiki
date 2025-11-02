@@ -88,8 +88,8 @@
     rotate: -90deg;
     display: inline-flex;
     transition: all 0.5s ease;
-    animation: bounceArrow 1.5s ease-in-out infinite;
-    opacity: 0.5;
+    animation: bounceArrow 0.7s ease-in-out infinite;
+    opacity: 0;
 }
 
 .auth-btn-arrow svg {
@@ -98,7 +98,7 @@
     filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
 }
 
-.auth-btn:hover~.auth-btn-arrow {
+.auth-btn:hover .auth-btn-arrow {
     scale: 1.1;
     opacity: 1;
 }
@@ -143,6 +143,43 @@
 }
 
 
+#auth-modal .auth-btn:hover {
+    background: linear-gradient(180deg, #28ffc9 0%, #0f81cf 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 10px rgb(0 0 0 / 12%), inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#auth-modal .auth-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 8px 30px rgb(0 0 0 / 8%), inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -2px 4px rgb(0 0 0 / 0%);
+}
+
+#auth-modal .oauth-btn{
+    overflow: visible;
+    background: #3964ff;
+    border: 2px solid #3964ff;
+    box-shadow: 0 8px 30px rgb(0 0 0 / 8%), inset 0 1px 0 rgb(255 255 255 / 0%), inset 0 -2px 4px rgb(0 0 0 / 0%);
+    margin-bottom: 15px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s, scale 0.4s 0.55s ease, transform 0.2s, background 0.2s, border 0.2s;
+}
+
+#auth-modal .oauth-btn::before {
+    display: none;
+}
+
+#auth-modal .oauth-btn:hover{
+    background: #294bc9;
+    border: 2px solid #294bc9;
+    transform: translateY(0);
+    box-shadow: 0 12px 10px rgb(0 0 0 / 12%), inset 0 1px 0 rgba(255, 255, 255, 0.0), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#auth-modal .oauth-btn:active{
+    background: #1e3aa0;
+    border: 2px solid #1e3aa0;
+    transform: translateY(0);
+    box-shadow: 0 8px 30px rgb(0 0 0 / 8%), inset 0 1px 0 rgba(255, 255, 255, 0.0), inset 0 -2px 4px rgb(0 0 0 / 0%);
+}
 
 #auth-modal:popover-open .auth-btn {
     opacity: 1;
@@ -174,16 +211,7 @@
     left: 100%;
 }
 
-#auth-modal .auth-btn:hover {
-    background: linear-gradient(180deg, #28ffc9 0%, #0f81cf 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 12px 10px rgb(0 0 0 / 12%), inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
-}
 
-#auth-modal .auth-btn:active {
-    transform: translateY(0);
-    box-shadow: 0 8px 30px rgb(0 0 0 / 8%), inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -2px 4px rgb(0 0 0 / 0%);
-}
 
 /* THE CODE DISPLAY - CRYPTIC AF */
 .auth-code-container {

@@ -310,11 +310,15 @@ class BaseApp {
                     <div id="auth-step-1">
                         <p style="margin-bottom: 20px;">Choose your preferred verification method:</p>
 
-                        <button class="auth-btn oauth-btn" onclick="auth.loginWithOAuth()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin-bottom: 15px;">
-                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="margin-right: 8px;">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-                            </svg>
-                            <span style="font-weight: 600;">Sign in with Roblox (Recommended)</span>
+                        <button class="auth-btn oauth-btn" onclick="auth.loginWithOAuth()">
+                            <svg style="rotate: 35deg;width: 20px;margin: 0px 5px -4px 0px;" viewBox="0 0 134 134"><path fill="currentcolor" stroke-linejoin="round" stroke-width="12" d="m 134 106 l -103.9 27.8 l -27.9 -104 l 104 -27.9 z m -50 -30 l -25.1 6.7 l -6.7 -25.1 l 25.1 -6.7 z" fill-rule="evenodd"></path></svg>
+                            <span>Sign in with Roblox</span>
+                            <span class="auth-btn-arrow">
+                                <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z" />
+                                </svg>
+                            </span>
                         </button>
                         <p style="font-size: 12px; color: var(--text-secondary); margin: 10px 0;">Faster, easier, and more secure</p>
 
@@ -324,15 +328,10 @@ class BaseApp {
                             <div style="flex: 1; height: 1px; background: var(--text-secondary); opacity: 0.3;"></div>
                         </div>
 
-                        <button class="auth-btn" onclick="auth.generateCode()" style="background: var(--bg-secondary);">
+                        <button class="auth-btn" onclick="auth.generateCode()">
                             <span>Use In-Game Code</span>
                         </button>
-                        <span class="auth-btn-arrow">
-                            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z" />
-                            </svg>
-                        </span>
+
                     </div>
                     <div id="auth-step-2" style="display: none;">
                         <p>Your code is:</p>
