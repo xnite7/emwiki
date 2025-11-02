@@ -356,7 +356,6 @@ class BaseApp {
                     </div>
                     <div id="auth-step-3" style="display: none;">
                         <div id="player-model-container"></div>
-                        <div class="celebration-icon">😻</div>
                         <div class="celebration-title">Account Linked!</div>
                         <p>Welcome to Epic Catalogue! Your Roblox account has been successfully linked.
                         </p>
