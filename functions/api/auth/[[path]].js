@@ -811,10 +811,13 @@ export async function onRequest(context) {
                 });
         }
 
-        // Add CORS headers to response
-        Object.entries(corsHeaders).forEach(([key, value]) => {
-            response.headers.set(key, value);
-        });
+        // Add CORS headers to response (skip for redirects as they're immutable)
+        const isRedirect = response.status >= 300 && response.status < 400;
+        if (!isRedirect) {
+            Object.entries(corsHeaders).forEach(([key, value]) => {
+                response.headers.set(key, value);
+            });
+        }
 
         return response;
     } catch (error) {
