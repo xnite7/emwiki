@@ -2298,7 +2298,7 @@ class Auth extends EventTarget {
                     }
 
                     // Render 3D player model with animations
-                    this.render3DPlayerModel(4399446295, document.getElementById('auth-step-3').querySelector('.player-model-container'));
+                    this.render3DPlayerModel(this.user.userid, document.getElementById('auth-step-3').querySelector('.player-model-container'));
 
                     // Start confetti!
                     confetti.start();
