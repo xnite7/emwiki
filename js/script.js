@@ -1852,7 +1852,7 @@ class Auth extends EventTarget {
             localStorage.setItem('auth_token', authToken);
             this.token = authToken;
             // Clean URL
-
+            
             // Show success modal
             await this.checkSession();
 
@@ -2341,13 +2341,13 @@ class Auth extends EventTarget {
                     cameraData.position.y,
                     cameraData.position.z * zoomOut
                 );
-                camera.fov = cameraData.fov - 10;
+                camera.fov = cameraData.fov - 5;
                 camera.updateProjectionMatrix();
 
                 if (aabb) {
                     const center = {
                         x: (aabb.min.x + aabb.max.x) / 2,
-                        y: aabb.max.y - (aabb.max.y - aabb.min.y) * 0.3, // ✅ Look at upper 30%
+                        y: (aabb.min.y + aabb.max.y) / 2,
                         z: (aabb.min.z + aabb.max.z) / 2
                     };
                     camera.lookAt(center.x, center.y, center.z);
