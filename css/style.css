@@ -142,26 +142,13 @@ svg:hover #cloud {
     font-size: 15px;
     padding: 8px 16px;
     border-radius: 10px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
     position: relative;
     overflow: hidden;
 }
 
-.nav-link::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(74, 158, 255, 0.2), transparent);
-    transition: left 0.5s ease;
-}
 
-.nav-link:hover::before {
-    left: 100%;
-}
 
 .nav-link:not(:first-child,:nth-child(4),:last-child) {
     pointer-events: none;
@@ -171,7 +158,7 @@ svg:hover #cloud {
 .nav-link:hover {
     background: var(--border-color);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(74, 158, 255, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .nav-link.active {
