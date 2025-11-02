@@ -2270,16 +2270,13 @@ class Auth extends EventTarget {
                     if (!Array.isArray(this.user.role)) {
                         this.user.role = ['user'];
                     }
-
+                    this.render3DPlayerModel(this.user.userid, document.getElementById('auth-step-3').querySelector('.player-model-container'));
                     clearInterval(this.pollInterval);
                     if (this.timerInterval) {
                         clearInterval(this.timerInterval);
                     }
 
                     await Utils.migrateToAccount();
-
-
-
                     // Update UI
                     document.getElementById('auth-modal').showPopover();
                     document.getElementById('auth-step-2').style.display = 'none';
@@ -2296,9 +2293,6 @@ class Auth extends EventTarget {
                         document.getElementById('auth-step-3').querySelector('.loading').style.display = 'none';
                         document.getElementById('auth-step-3').querySelector('.celebration-close-btn').style.display = ''
                     }
-
-                    // Render 3D player model with animations
-                    this.render3DPlayerModel(this.user.userid, document.getElementById('auth-step-3').querySelector('.player-model-container'));
 
                     // Start confetti!
                     confetti.start();
