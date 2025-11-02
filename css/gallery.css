@@ -130,7 +130,12 @@
     overflow: hidden;
     cursor: pointer;
     transition: all 0.3s ease;
+    opacity: 1;
+    @starting-style {
+        opacity: 0;
+    }
 }
+
 
 .gallery-item:hover {
     transform: translateY(-4px);
