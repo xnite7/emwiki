@@ -2247,6 +2247,13 @@ class Auth extends EventTarget {
 
     // Render 3D player model with fall animation
     async render3DPlayerModel(userId) {
+        // Prevent duplicate renders
+        if (this._rendering3DModel) {
+            console.log('Already rendering 3D model, skipping...');
+            return;
+        }
+        this._rendering3DModel = true;
+
         try {
             // Clear any existing canvas to prevent duplicates
             const container = document.getElementById('player-model-container');
@@ -2276,22 +2283,17 @@ class Auth extends EventTarget {
             const scene = new THREE.Scene();
 
             const camera = new THREE.PerspectiveCamera(
-                metadata.camera.fov - 10,
+                35, // Wider FOV for easier viewing
                 300 / 300,
                 0.1,
-                500
+                1000
             );
-            camera.position.set(
-                metadata.camera.position.x,
-                metadata.camera.position.y,
-                metadata.camera.position.z
-            );
+            // Position camera to look at origin from a distance
+            camera.position.set(0, 2, 10);
+            camera.lookAt(new THREE.Vector3(0, 1, 0));
 
-            // Calculate center point from aabb
-            const centerX = (metadata.aabb.min.x + metadata.aabb.max.x) / 2;
-            const centerY = (metadata.aabb.min.y + metadata.aabb.max.y) / 2 + 2;
-            const centerZ = (metadata.aabb.min.z + metadata.aabb.max.z) / 2;
-            camera.lookAt(new THREE.Vector3(centerX, centerY, centerZ));
+            console.log('Camera position:', camera.position);
+            console.log('Looking at: 0, 1, 0');
 
             const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             renderer.setSize(300, 300);
@@ -2347,13 +2349,16 @@ class Auth extends EventTarget {
 
                 objLoader.load(objUrl, (object) => {
                     console.log('OBJ loaded successfully!');
+                    console.log('Object bounding box:', object);
 
-                    // Static positioning for testing
-                    object.position.set(0, centerY, 0);
+                    // Static positioning for testing - position at world origin for visibility
+                    object.position.set(0, 0, 0);
                     object.scale.set(1, 1, 1);
 
                     scene.add(object);
-                    console.log('Object added to scene');
+                    console.log('Object position:', object.position);
+                    console.log('Object scale:', object.scale);
+                    console.log('Scene children count:', scene.children.length);
 
                     // Simple render loop with slow rotation
                     const animate = () => {
