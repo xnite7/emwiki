@@ -1852,7 +1852,7 @@ class Auth extends EventTarget {
             localStorage.setItem('auth_token', authToken);
             this.token = authToken;
             // Clean URL
-            window.history.replaceState({}, document.title, window.location.pathname);
+            
             // Show success modal
             await this.checkSession();
 
@@ -2139,6 +2139,7 @@ class Auth extends EventTarget {
                 const authSuccess = urlParams.get('auth_success');
                 const authToken = urlParams.get('token');
                 if (authSuccess && authToken) {
+                    window.history.replaceState({}, document.title, window.location.pathname);
                     this.render3DPlayerModel(this.user.userId, document.getElementById('auth-step-3').querySelector('#player-model-container'));
                 }
                 this.dispatchEvent(new Event("sessionReady"));
