@@ -142,28 +142,15 @@ svg:hover #cloud {
     font-size: 15px;
     padding: 8px 16px;
     border-radius: 10px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
     position: relative;
     overflow: hidden;
 }
 
-.nav-link::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(74, 158, 255, 0.2), transparent);
-    transition: left 0.5s ease;
-}
 
-.nav-link:hover::before {
-    left: 100%;
-}
 
-.nav-link:not(:first-child,:nth-child(4),:last-child) {
+.nav-link:not(:first-child, :nth-child(4), :last-child) {
     pointer-events: none;
     opacity: 0.5;
 }
@@ -171,7 +158,7 @@ svg:hover #cloud {
 .nav-link:hover {
     background: var(--border-color);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(74, 158, 255, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .nav-link.active {
@@ -458,6 +445,7 @@ svg:hover #cloud {
         opacity: 0;
         transform: scale(0.8);
     }
+
     100% {
         opacity: 1;
         transform: scale(1);
@@ -823,7 +811,7 @@ main {
     transform: translateY(-5px) scale(1.08) rotate(2deg);
     background: var(--border-color);
     box-shadow: 0 12px 30px var(--shadow-color), inset -2px -2px 6px var(--edges-color), 0 0 20px rgba(74, 158, 255, 0.2);
-    
+
 }
 
 
@@ -870,10 +858,12 @@ main {
     background: var(--border-color);
     box-shadow: unset;
 }
+
 .stats-content .item:hover::before {
     width: 0px;
     height: 0px;
 }
+
 .item:active {
     filter: brightness(0.85);
     transform: translateY(0) scale(0.98);
@@ -1033,7 +1023,7 @@ div#random-items-grid {
 .info-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), inset -2px -2px 6px light-dark(transparent, #00000066);
-    
+
 }
 
 .refresh-card {
@@ -1168,13 +1158,19 @@ div#random-items-grid {
 }
 
 @keyframes heartBeat {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
     }
-    10%, 30% {
+
+    10%,
+    30% {
         transform: scale(1.1);
     }
-    20%, 40% {
+
+    20%,
+    40% {
         transform: scale(1);
     }
 }
@@ -1364,22 +1360,16 @@ footer {
 ============================================ */
 .back-to-top {
     position: fixed;
-    bottom: 30px;
-    right: 30px;
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, #4a9eff, #667eea);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    bottom: 0;
+    right: 0;
+    background: transparent;
+    border: none;
     cursor: pointer;
     opacity: 0;
     visibility: hidden;
+    transform-origin: center;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1000;
-    box-shadow: 0 4px 20px rgba(74, 158, 255, 0.4);
 }
 
 .back-to-top.show {
@@ -1390,16 +1380,15 @@ footer {
 
 .back-to-top:hover {
     transform: translateY(-5px) scale(1.1);
-    box-shadow: 0 8px 30px rgba(74, 158, 255, 0.6);
 }
 
 .back-to-top:active {
     transform: translateY(-3px) scale(1.05);
 }
 
-.back-to-top svg {
-    width: 24px;
-    height: 24px;
+.back-to-top img {
+    width: 104px;
+    height: 104px;
     color: white;
 }
 
@@ -1408,10 +1397,12 @@ footer {
         transform: scale(0) translateY(100px);
         opacity: 0;
     }
+
     60% {
-        transform: scale(1.2) translateY(0);
+        transform: scale(1.1) translateY(0);
         opacity: 1;
     }
+
     100% {
         transform: scale(1) translateY(0);
     }
@@ -1432,9 +1423,17 @@ footer {
 }
 
 /* Stagger animation delays for child elements */
-.content-section:nth-child(1) { animation-delay: 0.1s; }
-.content-section:nth-child(2) { animation-delay: 0.2s; }
-.content-section:nth-child(3) { animation-delay: 0.3s; }
+.content-section:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.content-section:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.content-section:nth-child(3) {
+    animation-delay: 0.3s;
+}
 
 /* ============================================
            CATALOG GRID
@@ -2563,6 +2562,7 @@ textarea {
     background: linear-gradient(135deg, #FF8FF3, #641bb5);
     color: #132559;
     border-radius: 5px;
+
     @supports (corner-shape: bevel) {
         corner-shape: bevel;
     }
@@ -2573,6 +2573,7 @@ textarea {
     background: linear-gradient(135deg, #ffd700, #ffb700);
     color: #a36d18;
     border-radius: 4px;
+
     @supports (corner-shape: scoop) {
         corner-shape: scoop;
     }
@@ -2652,10 +2653,11 @@ textarea {
 
 }
 
-.image-explosion{
+.image-explosion {
     transform: scale(1) translate(-50%, -50%);
-        opacity: 1;
-    transition: all 0.24s cubic-bezier(.77,1.12,.57,1.25);
+    opacity: 1;
+    transition: all 0.24s cubic-bezier(.77, 1.12, .57, 1.25);
+
     @starting-style {
         opacity: 0;
         transform: scale(0) translate(-50%, -50%);
@@ -2997,7 +2999,10 @@ header svg * {
 }
 
 .btn {
-    right:unset;top: 20px;left: 12px;position: absolute;
+    right: unset;
+    top: 20px;
+    left: 12px;
+    position: absolute;
 }
 
 
@@ -3010,8 +3015,12 @@ header svg * {
 
 @media screen and (max-width: 768px) {
     .btn {
-        right:unset;top: unset;left: unset;position: unset;
+        right: unset;
+        top: unset;
+        left: unset;
+        position: unset;
     }
+
     #auth-button {
         position: unset;
         top: unset;

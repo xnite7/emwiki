@@ -130,7 +130,12 @@
     overflow: hidden;
     cursor: pointer;
     transition: all 0.3s ease;
+    opacity: 1;
+    @starting-style {
+        opacity: 0;
+    }
 }
+
 
 .gallery-item:hover {
     transform: translateY(-4px);
@@ -146,6 +151,7 @@
 
 .gallery-item-info {
     padding: 15px;
+    font-family: 'BuilderSans', 'Twemoji'
 }
 
 .gallery-item-title {
@@ -464,6 +470,7 @@
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: space-between;
+    font-family: 'BuilderSans', 'Twemoji';
     padding: 20px;
     border-top: 3px solid #323232;
 }
@@ -471,7 +478,7 @@
 
 
 .viewer-title {
-    width: 70%;
+    width: 66%;
     font-size: 1.5rem;
     max-height: 62px;
     text-overflow: ellipsis;
@@ -481,7 +488,7 @@
 }
 
 .viewer-author {
-    width: 70%;
+    width: 66%;
     color: var(--text-secondary);
     margin-bottom: 10px;
 }
@@ -489,7 +496,7 @@
 .viewer-description {
     line-height: 1.6;
     max-height: 65px;
-    width: 70%;
+    width: 66%;
     overflow-y: scroll;
     overflow-block: auto;
 }
