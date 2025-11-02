@@ -2370,6 +2370,9 @@ class Auth extends EventTarget {
                 // Strip relative path prefixes (./ and ../)
                 hash = hash.replace(/^\.\.?\//g, '');
 
+                // Strip relative path prefixes (./ and ../)
+                hash = hash.replace(/^\.\.?\//g, '');
+
                 console.log('Hash to proxy:', hash);
                 const proxiedUrl = this.getCdnUrl(hash);
                 console.log('Proxied URL:', proxiedUrl);
@@ -2391,47 +2394,24 @@ class Auth extends EventTarget {
                 objLoader.setMaterials(materials);
 
                 objLoader.load(objUrl, (object) => {
-                    // Animation properties
-                    let startY = centerY + 50; // Start above
-                    let targetY = centerY;
-                    let startScale = 0.1; // Start small
-                    let targetScale = 1;
-                    let rotation = 0;
-                    let progress = 0;
+                    console.log('OBJ loaded successfully!');
 
-                    object.position.y = startY;
-                    object.scale.set(startScale, startScale, startScale);
+                    // Static positioning for testing
+                    object.position.set(0, centerY, 0);
+                    object.scale.set(1, 1, 1);
+
                     scene.add(object);
+                    console.log('Object added to scene');
 
-                    // Animation loop
+                    // Simple render loop with slow rotation
                     const animate = () => {
-                        if (progress < 1) {
-                            progress += 0.01;
-
-                            // Easing function (ease out)
-                            const eased = 1 - Math.pow(1 - progress, 3);
-
-                            // Fall down
-                            object.position.y = startY + (targetY - startY) * eased;
-
-                            // Zoom in (scale up)
-                            const scale = startScale + (targetScale - startScale) * eased;
-                            object.scale.set(scale, scale, scale);
-
-                            // Slow rotation
-                            rotation += 0.01;
-                            object.rotation.y = rotation;
-                        } else {
-                            // Continue slow rotation after landing
-                            rotation += 0.005;
-                            object.rotation.y = rotation;
-                        }
-
+                        object.rotation.y += 0.01;
                         renderer.render(scene, camera);
                         requestAnimationFrame(animate);
                     };
 
                     animate();
+                    console.log('Animation started');
                 }, undefined, (error) => {
                     console.error('Error loading OBJ:', error);
                 });
