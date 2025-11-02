@@ -9,26 +9,6 @@ const CORS_HEADERS = {
   'Access-Control-Max-Age': '86400',
 };
 
-// Helper to add CORS headers to response
-function addCorsHeaders(response) {
-  const newHeaders = new Headers(response.headers);
-  Object.entries(CORS_HEADERS).forEach(([key, value]) => {
-    newHeaders.set(key, value);
-  });
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers: newHeaders
-  });
-}
-
-// Handle OPTIONS preflight requests
-function handleOptions() {
-  return new Response(null, {
-    status: 204,
-    headers: CORS_HEADERS
-  });
-}
 // Helper to get user from session token
 async function getUserFromToken(token, env) {
   if (!token) return null;
@@ -568,4 +548,11 @@ export async function onRequestPost(context) {
 
 export async function onRequestDelete(context) {
   return handleDelete(context);
+}
+
+export async function onRequestOptions(context) {
+  return new Response(null, {
+    status: 204,
+    headers: CORS_HEADERS
+  });
 }
