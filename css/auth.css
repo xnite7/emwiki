@@ -1765,6 +1765,7 @@
     margin: -40px auto 0;
     position: fixed;
     z-index: 1;
+    pointer-events: none;
     display: flex;
     align-items: center;
     justify-content: center;
