@@ -5814,7 +5814,7 @@
 
 
             async init() {
-                if (!DEV_MODE.enabled) {
+                if (DEV_MODE.enabled) {
                     console.log('🚀 Running in development mode');
                     state.adminName = DEV_MODE.adminName;
                     return this.onSuccess();
