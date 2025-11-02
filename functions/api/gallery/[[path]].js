@@ -37,6 +37,17 @@ function isAdmin(user) {
   }
 }
 
+// Check if user should have submissions auto-approved (VIP, admin, or moderator)
+function shouldAutoApprove(user) {
+  if (!user || !user.role) return false;
+  try {
+    const roles = JSON.parse(user.role);
+    return roles.includes('vip') || roles.includes('admin') || roles.includes('moderator') || roles.includes('mod');
+  } catch {
+    return false;
+  }
+}
+
 // GET /api/gallery - List gallery items
 async function handleGet({ request, env, params }) {
   const url = new URL(request.url);
@@ -323,10 +334,14 @@ async function handlePost({ request, env, params }) {
         });
       }
 
+      // Determine status based on user roles (VIP, admin, mod get auto-approved)
+      const status = shouldAutoApprove(user) ? 'approved' : 'pending';
+      const autoApproved = status === 'approved';
+
       // Insert into database
       const result = await env.DBA.prepare(
         `INSERT INTO gallery_items (user_id, username, title, description, media_url, media_type, status, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)`
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
       ).bind(
         user.user_id,
         user.display_name || user.username,
@@ -334,13 +349,16 @@ async function handlePost({ request, env, params }) {
         description || '',
         media_url,
         media_type,
+        status,
         Date.now()
       ).run();
 
       return new Response(JSON.stringify({
         success: true,
         id: result.meta.last_row_id,
-        message: 'Submission received! It will be reviewed by admins before appearing in the gallery.'
+        message: autoApproved
+          ? 'Submission approved! Your art is now live in the gallery.'
+          : 'Submission received! It will be reviewed by admins before appearing in the gallery.'
       }), {
         headers: { 'Content-Type': 'application/json',
         ...CORS_HEADERS }
