@@ -169,7 +169,7 @@ class Gallery {
             formData.append('file', file);
 
             const token = localStorage.getItem('auth_token');
-            const uploadResponse = await fetch('/api/gallery/upload', {
+            const uploadResponse = await fetch('https://emwiki.com/api/gallery/upload', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -189,7 +189,7 @@ class Gallery {
 
             // Submit gallery item
             const mediaType = type.startsWith('image/') ? 'image' : 'video';
-            const submitResponse = await fetch('/api/gallery/submit', {
+            const submitResponse = await fetch('https://emwiki.com/api/gallery/submit', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -239,7 +239,7 @@ class Gallery {
         try {
             const token = localStorage.getItem('auth_token');
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-            const response = await fetch(`/api/gallery?limit=${this.itemsPerPage}&offset=${this.currentOffset}&sort=${this.currentSort}`, {
+            const response = await fetch(`https://emwiki.com/api/gallery?limit=${this.itemsPerPage}&offset=${this.currentOffset}&sort=${this.currentSort}`, {
                 headers
             });
             const { items } = await response.json();
@@ -329,7 +329,13 @@ class Gallery {
         try {
             const token = localStorage.getItem('auth_token');
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-            fetch(`/api/gallery/${item.id}`, { headers });
+            const response = fetch(`https://emwiki.com/api/gallery/${item.id}`, { headers });
+
+            if (response.ok) {
+                const data = response.json();
+                likeBtn.innerHTML = `${item.user_liked ? '❤️' : '🤍'} ${data.item.likes_count || 0}`;
+                views.textContent = `${data.item.views || 0} views`;
+            }
         } catch (error) {
             console.error('Failed to fetch item details:', error);
             // Continue with the item data we have
@@ -347,7 +353,7 @@ class Gallery {
         author.textContent = `by ${item.username}`;
         description.textContent = item.description || '';
         date.textContent = this.formatDate(item.created_at);
-        views.textContent = `${item.views || 0} views`;
+        
 
         // Set up actions (like button and admin delete)
         actionsContainer.innerHTML = '';
@@ -355,7 +361,7 @@ class Gallery {
         // Like button (always visible)
         const likeBtn = document.createElement('button');
         likeBtn.className = 'like-btn' + (item.user_liked ? ' liked' : '');
-        likeBtn.innerHTML = `${item.user_liked ? '❤️' : '🤍'} ${item.likes_count || 0}`;
+        
         likeBtn.dataset.id = item.id;
         likeBtn.dataset.liked = item.user_liked ? '1' : '0';
 
@@ -396,7 +402,7 @@ class Gallery {
 
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await fetch('/api/gallery/my-submissions', {
+            const response = await fetch('https://emwiki.com/api/gallery/my-submissions', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -461,7 +467,7 @@ class Gallery {
 
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await fetch(`/api/gallery/${id}`, {
+            const response = await fetch(`https://emwiki.com/api/gallery/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -555,7 +561,7 @@ class Gallery {
 
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await fetch(`/api/gallery/like/${itemId}`, {
+            const response = await fetch(`https://emwiki.com/api/gallery/like/${itemId}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -589,7 +595,7 @@ class Gallery {
 
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await fetch(`/api/gallery/${itemId}`, {
+            const response = await fetch(`https://emwiki.com/api/gallery/${itemId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
