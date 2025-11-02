@@ -1762,14 +1762,19 @@
 #player-model-container {
     width: 300px;
     height: 300px;
-    margin: -40px auto 0;
-    position: fixed;
-    z-index: 1;
+    z-index: 23;
     pointer-events: none;
     display: flex;
     align-items: center;
     justify-content: center;
     perspective: 1000px;
+    margin: 20px auto;
+    scale: 0;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#player-model-container.active {
+    scale: 1;
 }
 
 #player-model-container canvas {

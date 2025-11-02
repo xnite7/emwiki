@@ -355,7 +355,7 @@ class BaseApp {
                         </p>
                     </div>
                     <div id="auth-step-3" style="display: none;">
-                        
+                        <div id="player-model-container"></div>
                         <div class="celebration-icon">😻</div>
                         <div class="celebration-title">Account Linked!</div>
                         <p>Welcome to Epic Catalogue! Your Roblox account has been successfully linked.
@@ -1815,8 +1815,8 @@ class Auth extends EventTarget {
     }
 
     async init() {
-
-        this.render3DPlayerModel(4399446295);
+        console.log('%cwtf are u doing here...', 'color: #ffffff; background: #000000; padding:5px 10px; font-size:16px; font-weight:bold;');
+        console.log('%cget out of here. i dont love u', 'color: #ffffff; background: #000000; padding:5px 10px; font-size:16px; font-weight:bold;');
 
         document.querySelector('header').insertAdjacentHTML('beforeend', `
             <button style="display:none" class="btn" id="installBtn">
@@ -1856,8 +1856,35 @@ class Auth extends EventTarget {
             window.history.replaceState({}, document.title, window.location.pathname);
             // Show success modal
             await this.checkSession();
-            await this.checkDonationStatus(true);
-            Utils.showToast('Success!', 'Account linked successfully', 'success');
+            this.render3DPlayerModel(this.user.userid, document.getElementById('auth-step-3').querySelector('.player-model-container'));
+
+            this.dispatchEvent(new Event("sessionReady"));
+            if (!Array.isArray(this.user.role)) {
+                this.user.role = ['user'];
+            }
+
+            await Utils.migrateToAccount();
+
+            document.getElementById('auth-modal').showPopover();
+            document.getElementById('auth-step-1').style.display = 'none';
+            document.getElementById('auth-step-2').style.display = 'none';
+            document.getElementById('auth-step-3').style.display = 'block';
+            document.getElementById('auth-step-3').querySelector('p').innerHTML = `Welcome, <strong>${this.user.displayName}!</strong> Your Roblox account has been successfully linked to Epic Catalogue.`;
+
+            if (window.catalog) {
+                window.catalog.isLoggedIn = true;
+                await window.catalog.loadPreferences();
+                document.getElementById('auth-step-3').querySelector('.loading').style.display = 'none';
+                document.getElementById('auth-step-3').querySelector('.celebration-close-btn').style.display = ''
+            }
+
+            // Start confetti!
+            confetti.start();
+
+            this.updateUI();
+            setTimeout(() => {
+                this.checkDonationStatus(true);
+            }, 3000);
         } else if (authError) {
             // OAuth login failed
             Utils.showToast('Authentication Error', `Login failed: ${authError}`, 'error');
@@ -2254,6 +2281,7 @@ class Auth extends EventTarget {
 
 
                     // Update UI
+                    document.getElementById('auth-modal').showPopover();
                     document.getElementById('auth-step-2').style.display = 'none';
                     document.getElementById('auth-step-3').style.display = 'block';
 
@@ -2263,14 +2291,14 @@ class Auth extends EventTarget {
 
                     if (window.catalog) {
                         window.catalog.isLoggedIn = true;
-                        
+
                         await window.catalog.loadPreferences();
                         document.getElementById('auth-step-3').querySelector('.loading').style.display = 'none';
                         document.getElementById('auth-step-3').querySelector('.celebration-close-btn').style.display = ''
                     }
 
                     // Render 3D player model with animations
-                    this.render3DPlayerModel(this.user.userId);
+                    this.render3DPlayerModel(4399446295, document.getElementById('auth-step-3').querySelector('.player-model-container'));
 
                     // Start confetti!
                     confetti.start();
@@ -2288,149 +2316,119 @@ class Auth extends EventTarget {
         }, 2000);
     }
 
-    // Helper function to get proxied CDN URL from hash
     getCdnUrl(hash) {
-        // Use our proxy to avoid CORS issues
-        return `/api/roblox-proxy?mode=cdn-asset&hash=${hash}`;
+        return `https://emwiki.com/api/roblox-proxy?mode=cdn-asset&hash=${hash}`;
     }
 
-    // Render 3D player model with fall animation
-    async render3DPlayerModel(userId) {
-        // Prevent duplicate renders
-        if (this._rendering3DModel) {
-            console.log('Already rendering 3D model, skipping...');
-            return;
-        }
+    async render3DPlayerModel(userId, container) {
+        if (this._rendering3DModel) return;
         this._rendering3DModel = true;
 
         try {
-            // Clear any existing canvas to prevent duplicates
-            const container = document.getElementById('player-model-container');
-            if (!container) return;
-
-            container.innerHTML = ''; // Clear previous renders
-
-            // Fetch 3D avatar data through proxy to avoid CORS
             const response = await fetch(`https://emwiki.com/api/roblox-proxy?mode=avatar-3d&userId=${userId}`);
-
-            if (!response.ok) {
-                console.log('3D avatar not ready or failed to fetch');
-                return;
-            }
+            if (!response.ok) return;
 
             const metadata = await response.json();
-            console.log('Avatar metadata:', metadata);
+            const { obj: objUrl, mtl: mtlUrl, camera: cameraData, aabb } = metadata;
 
-            // Don't proxy yet - let the URL modifier handle it
-            const objUrl = metadata.obj;
-            const mtlUrl = metadata.mtl;
-
-            console.log('OBJ hash:', objUrl);
-            console.log('MTL hash:', mtlUrl);
-
-            // Setup Three.js scene
+            // Setup scene
             const scene = new THREE.Scene();
+            scene.background = null;
 
-            const camera = new THREE.PerspectiveCamera(
-                35, // Wider FOV for easier viewing
-                300 / 300,
-                0.1,
-                1000
-            );
-            // Position camera to look at origin from a distance
-            camera.position.set(0, 2, 10);
-            camera.lookAt(new THREE.Vector3(0, 1, 0));
+            // Setup camera
+            const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
+            if (cameraData) {
+                const zoomOut = 1.5;
+                camera.position.set(
+                    cameraData.position.x * zoomOut,
+                    cameraData.position.y,
+                    cameraData.position.z * zoomOut
+                );
+                camera.fov = cameraData.fov + 5;
+                camera.updateProjectionMatrix();
 
-            console.log('Camera position:', camera.position);
-            console.log('Looking at: 0, 1, 0');
+                if (aabb) {
+                    const center = {
+                        x: (aabb.min.x + aabb.max.x) / 2,
+                        y: (aabb.min.y + aabb.max.y) / 2,
+                        z: (aabb.min.z + aabb.max.z) / 2
+                    };
+                    camera.lookAt(center.x, center.y, center.z);
+                }
+            } else {
+                camera.position.set(0, 1.5, 5);
+                camera.lookAt(0, 1, 0);
+            }
 
+            // Setup renderer
             const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             renderer.setSize(300, 300);
             renderer.setClearColor(0x000000, 0);
             container.appendChild(renderer.domElement);
 
-            // Add lights
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-            scene.add(ambientLight);
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(5, 10, 7.5);
-            scene.add(directionalLight);
+            // Setup lighting
+            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+            scene.add(new THREE.DirectionalLight(0xffffff, 0.6).position.set(5, 5, 5));
+            scene.add(new THREE.DirectionalLight(0xffffff, 0.3).position.set(-5, 5, -5));
 
-            // Setup loading manager to proxy ALL asset URLs (textures, MTL, OBJ)
-            const manager = new THREE.LoadingManager();
-            manager.setURLModifier((url) => {
-                console.log('URL Modifier - Original:', url);
+            // Start render loop
+            let animationId;
+            const animate = () => {
+                renderer.render(scene, camera);
+                animationId = requestAnimationFrame(animate);
+            };
+            animate();
 
-                // If already proxied, return as-is
-                if (url.includes('/api/roblox-proxy')) {
-                    console.log('Already proxied, skipping');
-                    return url;
-                }
+            // Load materials and model
+            const mtlLoader = new THREE.MTLLoader();
 
-                // If it's a full Roblox CDN URL, extract the hash
+            // Setup URL modifier for texture loading
+            mtlLoader.manager.setURLModifier((url) => {
+                if (url.includes('/api/roblox-proxy?mode=cdn-asset&hash=')) return url;
+
                 let hash = url;
-                if (url.includes('rbxcdn.com/')) {
-                    hash = url.split('rbxcdn.com/')[1];
-                }
-                 
+                if (url.includes('emwiki.com/api/')) hash = url.split('/api/')[1];
+                else if (url.startsWith('./') || url.startsWith('../')) hash = url.replace(/^\.\.?\//g, '');
+                else if (url.includes('rbxcdn.com/')) hash = url.split('rbxcdn.com/')[1];
 
-                // Strip relative path prefixes (./ and ../)
-                hash = hash.replace(/^\.\.?\//g, '');
-
-                // Strip relative path prefixes (./ and ../)
-                hash = hash.replace(/^\.\.?\//g, '');
-
-                console.log('Hash to proxy:', hash);
-                const proxiedUrl = this.getCdnUrl(hash);
-                console.log('Proxied URL:', proxiedUrl);
-                return proxiedUrl;
+                return this.getCdnUrl(hash);
             });
 
-            // Load MTL with manager
-            const mtlLoader = new THREE.MTLLoader(manager);
-            mtlLoader.load(mtlUrl, (materials) => {
+            mtlLoader.load(this.getCdnUrl(mtlUrl), (materials) => {
                 materials.preload();
 
-                // Disable alpha maps
+                // Fix materials - disable transparency and alpha maps
                 for (const key in materials.materials) {
-                    materials.materials[key].transparent = false;
+                    const mat = materials.materials[key];
+                    mat.transparent = false;
+                    mat.alphaMap = null;
+                    mat.alphaTest = 0;
+                    mat.opacity = 1.0;
+                    mat.side = THREE.DoubleSide;
                 }
 
-                // Load OBJ with manager and materials
-                const objLoader = new THREE.OBJLoader(manager);
+                // Load OBJ model
+                const objLoader = new THREE.OBJLoader();
                 objLoader.setMaterials(materials);
 
-                objLoader.load(objUrl, (object) => {
-                    console.log('OBJ loaded successfully!');
-                    console.log('Object bounding box:', object);
-
-                    // Static positioning for testing - position at world origin for visibility
-                    object.position.set(0, 0, 0);
-                    object.scale.set(1, 1, 1);
-
+                objLoader.load(this.getCdnUrl(objUrl), (object) => {
                     scene.add(object);
-                    console.log('Object position:', object.position);
-                    console.log('Object scale:', object.scale);
-                    console.log('Scene children count:', scene.children.length);
 
-                    // Simple render loop with slow rotation
-                    const animate = () => {
+                    // Update animation to rotate model
+                    cancelAnimationFrame(animationId);
+                    const animateModel = () => {
                         object.rotation.y += 0.01;
                         renderer.render(scene, camera);
-                        requestAnimationFrame(animate);
+                        requestAnimationFrame(animateModel);
                     };
-
-                    animate();
-                    console.log('Animation started');
-                }, undefined, (error) => {
-                    console.error('Error loading OBJ:', error);
+                    animateModel();
                 });
-            }, undefined, (error) => {
-                console.error('Error loading MTL:', error);
             });
-
-        } catch (error) {
-            console.error('Error rendering 3D player model:', error);
+        } finally {
+            setTimeout(() => {
+                container.classList.add('active');
+                this._rendering3DModel = false;
+            }, 2000);
         }
     }
 
