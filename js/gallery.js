@@ -6,7 +6,7 @@ class Gallery {
         this.isLoading = false;
         this.hasMore = true;
         this.currentUser = null;
-        this.currentSort = 'likes'; // 'likes' or 'newest'
+        this.currentSort = 'newest'; // 'likes' or 'newest'
 
 
         this.init();
