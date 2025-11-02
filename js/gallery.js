@@ -347,7 +347,7 @@ class Gallery {
 
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'admin-delete-btn';
-            deleteBtn.textContent = 'Delete (Admin)';
+            deleteBtn.textContent = '🗑️';
             deleteBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.adminDeleteItem(item.id);
@@ -385,6 +385,7 @@ class Gallery {
                         return;
                     }
                 });
+                actionsContainer.innerHTML = '';
 
                 actionsContainer.appendChild(likeBtn);
 
