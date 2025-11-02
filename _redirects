@@ -1,5 +1,7 @@
 # Redirect all .site traffic to .com
-https://emwiki.site/* https://emwiki.com/:splat 301!
+# Note: Absolute URL redirects are not supported in Cloudflare Pages _redirects
+# Domain-level redirects should be configured in Cloudflare DNS/Page Rules instead
+# https://emwiki.site/* https://emwiki.com/:splat 301!
 
 # Let /api/embed/* be handled by your Worker — no redirect here
 # (Remove the invalid 404 redirect line)
@@ -10,5 +12,5 @@ https://emwiki.site/* https://emwiki.com/:splat 301!
 # Adjust or remove as needed depending on your setup
 /api/*          /api/:splat          200
 
-# Catch-all SPA fallback for frontend — use rewrite (!) to avoid loops
-/*              /index.html          200!
+# Catch-all SPA fallback for frontend — rewrite to serve index.html
+/*              /index.html          200
