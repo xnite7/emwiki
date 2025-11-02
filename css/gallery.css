@@ -413,9 +413,7 @@
     border-top: 3px solid #323232;
 }
 
-.viewer-content:has(.viewer-actions:has(.admin-delete-btn)) .viewer-info {
-    min-height: 155px;
-}
+
 
 .viewer-title {
     width: 70%;
@@ -742,5 +740,9 @@ main {
     .viewer-actions {
         flex-direction: column;
         align-items: flex-end;
+    }
+
+    .viewer-content:has( .admin-delete-btn)>.viewer-info {
+        min-height: 155px;
     }
 }
