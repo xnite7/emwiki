@@ -2135,6 +2135,9 @@ class Auth extends EventTarget {
 
             if (response.ok) {
                 this.user = await response.json();
+                const urlParams = new URLSearchParams(window.location.search);
+                const authSuccess = urlParams.get('auth_success');
+                const authToken = urlParams.get('token');
                 if (authSuccess && authToken) {
                     this.render3DPlayerModel(this.user.userId, document.getElementById('auth-step-3').querySelector('#player-model-container'));
                 }
