@@ -2316,11 +2316,13 @@ class Auth extends EventTarget {
     async render3DPlayerModel(userId, container) {
         if (this._rendering3DModel) return;
         this._rendering3DModel = true;
+        console.log(userId)
 
         if (!userId) {
             container.style.display = 'none';
             return;
         }
+
         try {
             const response = await fetch(`https://emwiki.com/api/roblox-proxy?mode=avatar-3d&userId=${userId}`);
             if (!response.ok) return;
