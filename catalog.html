@@ -469,10 +469,25 @@
                 this.populateEventFilter();
                 this.populateChests();
                 this.setupEventListeners();
+                this.checkURLParameters();
                 this.applyFilters();
                 this.loadBatch();
                 document.querySelector('.bn').style.display = 'none';
                 this.updateTagCounts();
+            }
+
+            checkURLParameters() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const filterParam = urlParams.get('filter');
+
+                if (filterParam === 'wishlist' || filterParam === 'favorites') {
+                    this.filters.tags.add(filterParam);
+                    // Update the filter checkbox if it exists
+                    const checkbox = document.querySelector(`input[data-filter="${filterParam}"]`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                    }
+                }
             }
 
             toggleChestMenu() {
