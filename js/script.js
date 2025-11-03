@@ -756,7 +756,111 @@ class BaseApp {
 
         div.onclick = () => this.modal.open(item);
 
+        // Long-press menu for mobile
+        this.addLongPressMenu(div, item, wishlistBtn, heart);
+
         return div;
+    }
+
+    addLongPressMenu(div, item, wishlistBtn, heart) {
+        let pressTimer = null;
+        let startX = 0;
+        let startY = 0;
+        let hasMoved = false;
+
+        const handleTouchStart = (e) => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            hasMoved = false;
+
+            pressTimer = setTimeout(() => {
+                if (!hasMoved) {
+                    e.preventDefault();
+                    this.showContextMenu(e.touches[0].clientX, e.touches[0].clientY, item, wishlistBtn, heart);
+                }
+            }, 500); // 500ms long press
+        };
+
+        const handleTouchMove = (e) => {
+            const moveX = Math.abs(e.touches[0].clientX - startX);
+            const moveY = Math.abs(e.touches[0].clientY - startY);
+            if (moveX > 10 || moveY > 10) {
+                hasMoved = true;
+                clearTimeout(pressTimer);
+            }
+        };
+
+        const handleTouchEnd = () => {
+            clearTimeout(pressTimer);
+        };
+
+        div.addEventListener('touchstart', handleTouchStart);
+        div.addEventListener('touchmove', handleTouchMove);
+        div.addEventListener('touchend', handleTouchEnd);
+        div.addEventListener('touchcancel', handleTouchEnd);
+    }
+
+    showContextMenu(x, y, item, wishlistBtn, heart) {
+        // Remove existing menu if any
+        const existingMenu = document.querySelector('.item-context-menu');
+        if (existingMenu) existingMenu.remove();
+
+        // Create menu
+        const menu = document.createElement('div');
+        menu.className = 'item-context-menu';
+        menu.style.left = `${x}px`;
+        menu.style.top = `${y}px`;
+
+        const isFavorite = this.favorites.includes(item.name);
+        const isWishlisted = this.wishlist.includes(item.name);
+
+        menu.innerHTML = `
+            <div class="context-menu-item" data-action="favorite">
+                <span class="context-menu-icon">${isFavorite ? '❤️' : '🤍'}</span>
+                <span>${isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}</span>
+            </div>
+            <div class="context-menu-item" data-action="wishlist">
+                <span class="context-menu-icon">⭐</span>
+                <span>${isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}</span>
+            </div>
+        `;
+
+        document.body.appendChild(menu);
+
+        // Adjust position if menu goes off-screen
+        const rect = menu.getBoundingClientRect();
+        if (rect.right > window.innerWidth) {
+            menu.style.left = `${x - rect.width}px`;
+        }
+        if (rect.bottom > window.innerHeight) {
+            menu.style.top = `${y - rect.height}px`;
+        }
+
+        // Add event listeners
+        menu.querySelectorAll('.context-menu-item').forEach(menuItem => {
+            menuItem.addEventListener('click', (e) => {
+                const action = menuItem.dataset.action;
+                if (action === 'favorite') {
+                    heart.click();
+                } else if (action === 'wishlist') {
+                    wishlistBtn.click();
+                }
+                menu.remove();
+            });
+        });
+
+        // Close menu on outside click
+        setTimeout(() => {
+            const closeMenu = (e) => {
+                if (!menu.contains(e.target)) {
+                    menu.remove();
+                    document.removeEventListener('click', closeMenu);
+                    document.removeEventListener('touchstart', closeMenu);
+                }
+            };
+            document.addEventListener('click', closeMenu);
+            document.addEventListener('touchstart', closeMenu);
+        }, 100);
     }
 
     addBadges(element, item) {
@@ -1357,6 +1461,14 @@ class ItemModal {
             <div class="modal-overlay"></div>
             <button class="modal-nav modal-prev">‹</button>
             <button class="modal-nav modal-next">›</button>
+            <div class="modal-actions">
+                <button class="modal-action-btn modal-wishlist-btn" title="Add to Wishlist">
+                    <span class="action-icon">⭐</span>
+                </button>
+                <button class="modal-action-btn modal-favorite-btn" title="Add to Favorites">
+                    <span class="action-icon">🤍</span>
+                </button>
+            </div>
             <div class="modal-container">
                 <div class="modal-content-wrapper">
                     <!-- Front Side -->
@@ -1435,6 +1547,8 @@ class ItemModal {
             flipBtn: document.querySelector('.modal-flip-btn'),
             prevBtn: document.querySelector('.modal-prev'),
             nextBtn: document.querySelector('.modal-next'),
+            wishlistBtn: document.querySelector('.modal-wishlist-btn'),
+            favoriteBtn: document.querySelector('.modal-favorite-btn'),
             graphSection: document.querySelector('.modal-graph-section'),
             graphContainer: document.querySelector('.modal-graph-container'),
             lastAdmin: document.querySelector('.modal-last-admin'),
@@ -1467,6 +1581,26 @@ class ItemModal {
                 }, 400);
             }
             this.updateFlipButton(isFlipped);
+        });
+
+        // Wishlist and Favorite buttons
+        this.elements.wishlistBtn.addEventListener('click', () => {
+            if (this.currentItem) {
+                this.catalog.toggleWishlist(this.currentItem.name);
+                this.updateActionButtons();
+            }
+        });
+
+        this.elements.favoriteBtn.addEventListener('click', () => {
+            if (this.currentItem) {
+                const rect = this.elements.favoriteBtn.getBoundingClientRect();
+                const wasFavorite = this.catalog.favorites.includes(this.currentItem.name);
+                this.catalog.toggleFavorite(this.currentItem.name);
+                this.updateActionButtons();
+                if (!wasFavorite && this.catalog.particleSystem) {
+                    this.catalog.particleSystem.createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                }
+            }
         });
 
         // Keyboard
@@ -1537,6 +1671,9 @@ class ItemModal {
 
         // Update navigation buttons
         this.updateNavButtons();
+
+        // Update action buttons (wishlist/favorite)
+        this.updateActionButtons();
 
         this.elements.svg.addEventListener("click", () => {
             if (this.elements.svg.id === "wonkySvg") {
@@ -1796,6 +1933,23 @@ class ItemModal {
     updateNavButtons() {
         this.elements.prevBtn.disabled = this.currentIndex <= 0;
         this.elements.nextBtn.disabled = this.currentIndex >= this.displayed.length - 1;
+    }
+
+    updateActionButtons() {
+        if (!this.currentItem) return;
+
+        const isFavorite = this.catalog.favorites.includes(this.currentItem.name);
+        const isWishlisted = this.catalog.wishlist.includes(this.currentItem.name);
+
+        // Update favorite button
+        const favoriteIcon = this.elements.favoriteBtn.querySelector('.action-icon');
+        favoriteIcon.textContent = isFavorite ? '❤️' : '🤍';
+        this.elements.favoriteBtn.classList.toggle('active', isFavorite);
+        this.elements.favoriteBtn.title = isFavorite ? 'Remove from Favorites' : 'Add to Favorites';
+
+        // Update wishlist button
+        this.elements.wishlistBtn.classList.toggle('active', isWishlisted);
+        this.elements.wishlistBtn.title = isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist';
     }
 
     updateURL(itemName) {

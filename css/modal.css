@@ -539,6 +539,67 @@ body:has(.item-modal.active) {
 
 
 
+/* Modal Action Buttons (Wishlist & Favorite) */
+.modal-actions {
+    position: absolute;
+    top: 50%;
+    right: calc(5% + max(368px, 90%) / 2 + 20px);
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 10000;
+}
+
+.modal-action-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: rgba(42, 42, 42, 0.95);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.modal-action-btn:hover {
+    transform: scale(1.1);
+    background: rgba(42, 42, 42, 1);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.modal-action-btn:active {
+    transform: scale(0.95);
+}
+
+.modal-action-btn .action-icon {
+    font-size: 28px;
+    line-height: 1;
+    transition: transform 0.2s;
+}
+
+.modal-action-btn:hover .action-icon {
+    transform: scale(1.1);
+}
+
+.modal-action-btn.active {
+    border-color: rgba(255, 215, 0, 0.6);
+    background: rgba(74, 158, 255, 0.2);
+}
+
+.modal-wishlist-btn.active {
+    border-color: rgba(255, 215, 0, 0.8);
+}
+
+.modal-favorite-btn.active {
+    border-color: rgba(255, 82, 82, 0.8);
+}
+
 @media (max-width: 768px) {
     .modal-nav {
         display: none;
@@ -564,4 +625,23 @@ body:has(.item-modal.active) {
         height: 150px;
     }
 
+    /* Position modal actions at the bottom for mobile */
+    .modal-actions {
+        position: fixed;
+        top: auto;
+        bottom: 30px;
+        right: 50%;
+        transform: translateX(50%);
+        flex-direction: row;
+        gap: 20px;
+    }
+
+    .modal-action-btn {
+        width: 64px;
+        height: 64px;
+    }
+
+    .modal-action-btn .action-icon {
+        font-size: 32px;
+    }
 }
