@@ -972,6 +972,43 @@ class BaseApp {
         searchResults.style.display = 'block';
     }
 
+    updateCatalogItemButtons(itemName) {
+        // Update all catalog items with this name
+        const items = document.querySelectorAll('.item');
+        items.forEach(itemEl => {
+            const nameEl = itemEl.querySelector('.item-name');
+            if (nameEl && nameEl.textContent === itemName) {
+                // Update heart button
+                const heart = itemEl.querySelector('.heart-button');
+                if (heart) {
+                    const isFavorite = this.favorites.includes(itemName);
+                    heart.textContent = isFavorite ? '❤️' : '🤍';
+                    if (isFavorite) {
+                        heart.classList.add('red');
+                    } else {
+                        heart.classList.remove('red');
+                    }
+                }
+
+                // Update wishlist button
+                const wishlistBtn = itemEl.querySelector('.wishlist-button');
+                if (wishlistBtn) {
+                    const isWishlisted = this.wishlist.includes(itemName);
+                    if (isWishlisted) {
+                        wishlistBtn.classList.add('active');
+                    } else {
+                        wishlistBtn.classList.remove('active');
+                    }
+                }
+            }
+        });
+
+        // Update modal buttons if modal is open and showing this item
+        if (this.modal && this.modal.isOpen && this.modal.currentItem && this.modal.currentItem.name === itemName) {
+            this.modal.updateActionButtons();
+        }
+    }
+
     async toggleFavorite(name) {
         const index = this.favorites.indexOf(name);
         if (index > -1) {
@@ -986,7 +1023,8 @@ class BaseApp {
             Utils.saveToStorage('favorites', this.favorites);
         }
 
-        this.updateStatsIfOpen(); // Add this line
+        this.updateStatsIfOpen();
+        this.updateCatalogItemButtons(name);
     }
 
     async toggleWishlist(name) {
@@ -1004,6 +1042,7 @@ class BaseApp {
         }
 
         this.updateStatsIfOpen();
+        this.updateCatalogItemButtons(name);
     }
 
     showRecentItems() {
