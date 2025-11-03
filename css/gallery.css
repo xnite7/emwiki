@@ -164,7 +164,7 @@
     white-space: nowrap;
 }
 
-.gallery-item-author>span{
+.gallery-item-author>span {
     width: 10px;
     white-space: nowrap;
     margin-bottom: 6px;
@@ -521,6 +521,9 @@
     display: flex;
     flex-direction: column;
     gap: 15px;
+    max-height: 60vh;
+    overflow-y: scroll;
+    overflow-block: auto;
 }
 
 .submission-item {
@@ -721,7 +724,7 @@
     opacity: 1;
 
     @starting-style {
-        
+
         transform: scale(0);
         opacity: 0;
     }
@@ -741,16 +744,15 @@
     padding-right: 3px;
 }
 
-.light-theme .like-btn::before,.light-theme .likes-display::after {
+.light-theme .like-btn::before,
+.light-theme .likes-display::after {
     content: '🖤';
 }
 
-.like-btn.liked::before, .likes-display.liked::after {
+.like-btn.liked::before,
+.likes-display.liked::after {
     content: '❤';
 }
-
-
-
 
 .like-btn:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.1);
