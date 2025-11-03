@@ -1349,6 +1349,7 @@ class ParticleSystem {
                 life: 1.0
             });
         }
+        this.animate();
     }
 
     animate() {
@@ -1362,7 +1363,7 @@ class ParticleSystem {
 
             p.x += p.vx;
             p.y += p.vy;
-            p.vy -= 0.3;
+            p.vy += 0.2;
             p.life -= 0.03;
 
             if (p.life <= 0) {
@@ -1563,11 +1564,11 @@ class ItemModal {
                     <span class="flip-text">More Info</span>
                 </button>
                 <div class="modal-actions">
-                    <button class="modal-action-btn modal-wishlist-btn" title="Add to Wishlist">
-                        <span class="action-icon">⭐</span>
-                    </button>
                     <button class="modal-action-btn modal-favorite-btn" title="Add to Favorites">
-                        <span class="action-icon">🤍</span>
+                        🤍
+                    </button>
+                    <button class="modal-action-btn modal-wishlist-btn" title="Add to Wishlist">
+                        ⭐
                     </button>
                 </div>
             </div>
@@ -1969,6 +1970,7 @@ class ItemModal {
 
 
                 this.updateNavButtons();
+                this.updateActionButtons();
                 this.updateURL(this.currentItem.name);
                 this.catalog.addToRecentlyViewed(this.currentItem.name);
                 this.elements.container.classList.remove('transitioning');
@@ -1987,9 +1989,7 @@ class ItemModal {
         const isFavorite = this.catalog.favorites.includes(this.currentItem.name);
         const isWishlisted = this.catalog.wishlist.includes(this.currentItem.name);
 
-        // Update favorite button
-        const favoriteIcon = this.elements.favoriteBtn.querySelector('.action-icon');
-        favoriteIcon.textContent = isFavorite ? '❤️' : '🤍';
+        this.elements.favoriteBtn.textContent = isFavorite ? '❤️' : '🤍';
         this.elements.favoriteBtn.classList.toggle('active', isFavorite);
         this.elements.favoriteBtn.title = isFavorite ? 'Remove from Favorites' : 'Add to Favorites';
 

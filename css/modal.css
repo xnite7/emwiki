@@ -544,7 +544,7 @@ body:has(.item-modal.active) {
 .modal-actions {
     position: absolute;
     top: 50%;
-    transform: translate(400px, -50%);
+    transform: translate(390px, -50%);
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -552,11 +552,13 @@ body:has(.item-modal.active) {
 }
 
 .modal-action-btn {
+    font-family: Twemoji;
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(42, 42, 42, 0.95);
     background: rgba(42, 42, 42, 0.95);
+    filter: grayscale(1);
     backdrop-filter: blur(10px);
     display: flex;
     align-items: center;
@@ -564,40 +566,34 @@ body:has(.item-modal.active) {
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
+    font-size: 26px;
 
-.modal-action-btn:hover {
-    transform: scale(1.1);
-    background: rgba(42, 42, 42, 1);
-    border-color: rgba(255, 255, 255, 0.5);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    @supports (corner-shape: squircle) {
+        corner-bottom-left-shape: squircle;
+        corner-top-left-shape: squircle;
+    }
 }
 
 .modal-action-btn:active {
     transform: scale(0.95);
+    filter: grayscale(0);
 }
 
-.modal-action-btn .action-icon {
-    font-size: 28px;
-    line-height: 1;
-    transition: transform 0.2s;
-}
 
-.modal-action-btn:hover .action-icon {
-    transform: scale(1.1);
+.modal-action-btn:hover {
+    transform: scale(1.15);
+    background: rgba(42, 42, 42, 1);
+    border-color: rgba(42, 42, 42, 1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
 .modal-action-btn.active {
-    border-color: rgba(255, 215, 0, 0.6);
-    background: rgba(74, 158, 255, 0.2);
-}
+    filter: grayscale(0);
+    transform: scale(1.15) translateX(5px);
 
-.modal-wishlist-btn.active {
-    border-color: rgba(255, 215, 0, 0.8);
-}
-
-.modal-favorite-btn.active {
-    border-color: rgba(255, 82, 82, 0.8);
+    @supports (corner-shape: round) {
+        corner-shape: round;
+    }
 }
 
 @media (max-width: 768px) {
@@ -639,9 +635,25 @@ body:has(.item-modal.active) {
     .modal-action-btn {
         width: 64px;
         height: 64px;
+
+        @supports (corner-shape: round) {
+            corner-shape: round;
+        }
     }
 
-    .modal-action-btn .action-icon {
-        font-size: 32px;
+    .modal-action-btn:active {
+        transform: scale(1);
+    }
+
+
+    .modal-action-btn:hover {
+        transform: scale(1);
+        background: rgba(42, 42, 42, 0.95);
+        border-color: rgba(42, 42, 42, 0.95);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-action-btn.active {
+        transform: scale(1.15) translateX(0px);
     }
 }
