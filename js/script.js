@@ -392,8 +392,14 @@ class BaseApp {
                             </h3>
                         </div>
                     <div class="wishlist-section">
-                        
+
                         <div id="wishlist-items" class="catalog-grid"></div>
+                        <button id="view-all-btn" class="view-all-button" onclick="catalog.viewAllInCatalog()">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width: 18px; height: 18px; margin-right: 5px; fill: currentColor;">
+                                <path d="M4 4h7v7H4zm0 9h7v7H4zm9-9h7v7h-7zm0 9h7v7h-7z"/>
+                            </svg>
+                            View All in Catalog
+                        </button>
                         <div class="wishlist-total">
                             <span id="list-mode-label">Wishlist</span> Total Value:
                             <svg style="margin-right: 3px;margin-left: 3px;width: 18px;transform: translateY(4px);"
@@ -972,6 +978,11 @@ class BaseApp {
         }
 
         this.updateStatsIfOpen();
+    }
+
+    viewAllInCatalog() {
+        // Navigate to catalog page with the current list mode as filter parameter
+        window.location.href = `/catalog?filter=${this.currentListMode}`;
     }
 
     updateStatsIfOpen() {

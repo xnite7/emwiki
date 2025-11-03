@@ -10,10 +10,11 @@
     <link rel="manifest" href="/dev.webmanifest">
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/MTLLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/MTLLoader.js"></script>
 </head>
 <div class="bn">
     🛠️ Site updated Nov 11 — <a style="color: #33c5ff;" href="#patchnotes">See
@@ -469,7 +470,9 @@
                 this.populateEventFilter();
                 this.populateChests();
                 this.setupEventListeners();
+
                 this.handleURLParams();
+
                 this.applyFilters();
                 this.loadBatch();
                 document.querySelector('.bn').style.display = 'none';
@@ -481,6 +484,8 @@
                 const filterParam = url.searchParams.get('filter');
                 const itemParam = url.searchParams.get('item');
 
+
+
                 // Handle ?filter=new
                 if (filterParam === 'new') {
                     this.filters.tags.add('new');
@@ -489,6 +494,13 @@
                         newFilterElement.classList.add('selected');
                     }
                     this.updateTagsLabel();
+                } else if (filterParam === 'wishlist' || filterParam === 'favorites') {
+                    this.filters.tags.add(filterParam);
+                    // Update the filter checkbox if it exists
+                    const checkbox = document.querySelector(`input[data-filter="${filterParam}"]`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                    }
                 }
 
                 // Handle ?item=slug - will open after data loads
@@ -505,6 +517,7 @@
                     }, 500);
                 }
             }
+
 
             toggleChestMenu() {
                 const menu = document.getElementById('chest-menu');
