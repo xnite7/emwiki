@@ -369,15 +369,14 @@
     </div>
 
 
-
-
-
     <!-- Stats -->
     <div class="stats">
         Showing <span id="showing">0</span><span id="total">0</span> items
     </div>
 
     <!-- Season Label -->
+    <h1 id="favs-label">
+    </h1>
     <h1 id="season-label">
     </h1>
 
@@ -496,6 +495,17 @@
                     this.updateTagsLabel();
                 } else if (filterParam === 'wishlist' || filterParam === 'favorites') {
                     this.filters.tags.add(filterParam);
+                    const favFilterElement = document.querySelector(`.dropdown-item[data-filter="${filterParam}"]`);
+                    if (favFilterElement) {
+                        favFilterElement.classList.add('selected');
+                        favFilterElement.style.display = '';
+                        if (filterParam === 'wishlist') {
+                            document.getElementById('favs-label').textContent = "★ Wishlist";
+                        } else {
+                            document.getElementById('favs-label').textContent = "♥ Favorites";
+                        }
+                    }
+
                     // Update the filter checkbox if it exists
                     const checkbox = document.querySelector(`input[data-filter="${filterParam}"]`);
                     if (checkbox) {
