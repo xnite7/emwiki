@@ -2401,7 +2401,8 @@ textarea {
     border-radius: 10px;
 }
 
-#season-label, #favs-label {
+#season-label,
+#favs-label {
     text-align: center;
 }
 
@@ -2794,10 +2795,12 @@ textarea {
     align-items: center;
     justify-content: center;
     background: transparent;
-    color: #ffffffa4;
+    color: #22779b;
     border: none;
-    font-size: 17px;
+    font-size: 18px;
     font-weight: 600;
+    font-variant: all-petite-caps;
+    /* font-family: 'BuilderSans'; */
     cursor: pointer;
     transition: all 0.3s ease;
     margin-right: 7px;
@@ -2811,7 +2814,7 @@ textarea {
 
 .view-all-button:hover {
     margin-right: 4px;
-    color: #fff;
+    color: #33afe4;
 }
 
 .view-all-button:active {
