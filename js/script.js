@@ -733,7 +733,6 @@ class BaseApp {
         wishlistBtn.onclick = (e) => {
             e.stopPropagation();
             this.toggleWishlist(item.name);
-            wishlistBtn.classList.toggle('active');
         };
         wishlistBtn.title = 'Add to Wishlist';
         div.appendChild(wishlistBtn);
@@ -749,8 +748,6 @@ class BaseApp {
             const rect = heart.getBoundingClientRect();
             const wasFavorite = heart.classList.contains('red');
             this.toggleFavorite(item.name);
-            heart.textContent = !wasFavorite ? '❤️' : '🤍';
-            heart.classList.toggle('red');
             if (!wasFavorite && this.particleSystem) {
                 this.particleSystem.createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2);
             }

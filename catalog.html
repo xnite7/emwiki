@@ -1256,7 +1256,6 @@
             updateTagCounts() {
                 // Reset counts
                 Object.keys(this.tagCounts).forEach(key => this.tagCounts[key] = 0);
-
                 // Count items for each tag
                 this.allItems.forEach(item => {
                     if (item.new) this.tagCounts.new++;
