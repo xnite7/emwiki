@@ -51,7 +51,7 @@ export async function onRequest(context) {
 <meta name="viewport" content="width=600, initial-scale=1" />
 <title>${title} - EMWiki Preview</title>
 
-<meta property="og:title" content="${title} - Epic Catalogue" />
+<meta property="og:title" content="${title} - EMwiki" />
 <meta property="og:image" content="${imageUrl}" />
 <meta property="og:url" content="${base}/?item=${encodeURIComponent(item)}" />
 <meta name="twitter:card" content="summary_large_image" />

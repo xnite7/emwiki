@@ -2768,7 +2768,6 @@ textarea {
 }
 
 .wishlist-section {
-    margin-bottom: 30px;
     border: 3px solid var(--border-color);
     border-radius: 8px;
     padding: 10px 0px 0px;
@@ -2791,32 +2790,34 @@ textarea {
 }
 
 .view-all-button {
+    margin-top: 7px;
+    float: inline-end;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: calc(100% - 20px);
-    margin: 10px 10px;
-    padding: 10px 15px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: transparent;
+    color: #ffffffa4;
     border: none;
-    border-radius: 8px;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    margin-right: 7px;
+    white-space: break-spaces;
+}
+
+.view-all-button svg {
+    fill: currentColor;
+    transition: all 0.3s ease;
 }
 
 .view-all-button:hover {
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+    margin-right: 4px;
+    color: #fff;
 }
 
 .view-all-button:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+    margin-right: 4px;
 }
 
 .light-theme .discord img {
@@ -2824,7 +2825,9 @@ textarea {
 }
 
 
-
+.recent-section{
+    margin-top: 25px;
+}
 
 
 .wishlist-total {

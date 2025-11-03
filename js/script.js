@@ -394,12 +394,7 @@ class BaseApp {
                     <div class="wishlist-section">
 
                         <div id="wishlist-items" class="catalog-grid"></div>
-                        <button id="view-all-btn" class="view-all-button" onclick="catalog.viewAllInCatalog()">
-                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width: 18px; height: 18px; margin-right: 5px; fill: currentColor;">
-                                <path d="M4 4h7v7H4zm0 9h7v7H4zm9-9h7v7h-7zm0 9h7v7h-7z"/>
-                            </svg>
-                            View All in Catalog
-                        </button>
+
                         <div class="wishlist-total">
                             <span id="list-mode-label">Wishlist</span> Total Value:
                             <svg style="margin-right: 3px;margin-left: 3px;width: 18px;transform: translateY(4px);"
@@ -409,7 +404,10 @@ class BaseApp {
                                     fill-rule="evenodd"></path>
                             </svg><span id="wishlist-value"> 0</span>
                         </div>
+
                     </div>
+                        <button id="view-all-btn" class="view-all-button" onclick="catalog.viewAllInCatalog()">
+                            <svg fill="currentColor" width="17px" height="17px"  viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg"><path d="M8.293 2.293a1 1 0 0 1 1.414 0l4.5 4.5a1 1 0 0 1 0 1.414l-4.5 4.5a1 1 0 0 1-1.414-1.414L11 8.5H1.5a1 1 0 0 1 0-2H11L8.293 3.707a1 1 0 0 1 0-1.414"/></svg> View All</button>
 
                     <div class="recent-section">
                         <h3 style="margin-bottom: 15px;font-size: 23px;font-variant: all-petite-caps;"><svg stroke="#fff"
