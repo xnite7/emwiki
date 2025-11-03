@@ -320,7 +320,6 @@ class Gallery {
             : `<img class="gallery-item-media" src="${item.media_url}" alt="${item.title}" loading="lazy">`;
 
         const likesCount = item.likes_count || 0;
-        const likeIcon = item.user_liked ? '❤️' : '🤍';
         const profilePill = this.createProfilePill(item.username, item.avatar_url, item.role);
 
         div.innerHTML = `
@@ -330,7 +329,7 @@ class Gallery {
                 <div class="gallery-item-author">
                     <span>${this.formatDate(item.created_at)}</span>
                     ${profilePill}
-                    <span class="likes-display">${likesCount} ${likeIcon}</span>
+                    <span class="likes-display ${item.user_liked ? 'liked' : ''}">${likesCount}</span>
                 </div>
             </div>
         `;
@@ -381,7 +380,7 @@ class Gallery {
                 const likeBtn = document.createElement('button');
                 likeBtn.disabled = false;
 
-                likeBtn.innerHTML = `${data.item.user_liked ? '❤️' : '🤍'} ${data.item.likes_count || 0}`;
+                likeBtn.innerHTML = data.item.likes_count || 0;
                 likeBtn.className = 'like-btn' + (data.item.user_liked ? ' liked' : '');
 
                 likeBtn.dataset.id = item.id;
@@ -607,12 +606,12 @@ class Gallery {
 
             buttonElement.dataset.liked = result.liked ? '1' : '0';
             buttonElement.className = 'like-btn' + (result.liked ? ' liked' : '');
-            buttonElement.innerHTML = `${result.liked ? '❤️' : '🤍'} ${newCount}`;
+            buttonElement.innerHTML = newCount;
 
             const likesCount = newCount || 0;
-            const likeIcon = result.liked ? '❤️' : '🤍';
 
-            document.querySelector(`.gallery-item[data-id="${itemId}"]`).querySelector('.likes-display').innerHTML = `${likesCount} ${likeIcon}`;
+            document.querySelector(`.gallery-item[data-id="${itemId}"]`).querySelector('.likes-display').innerHTML = likesCount;
+            document.querySelector(`.gallery-item[data-id="${itemId}"]`).querySelector('.likes-display').classList.toggle('liked', result.liked);
 
         } catch (error) {
             console.error('Like error:', error);
