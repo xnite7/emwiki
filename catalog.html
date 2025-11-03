@@ -1223,19 +1223,34 @@
                     }, 300);
                 });
 
-                // Load more button
                 document.getElementById('loadMore').addEventListener('click', () => {
                     this.loadBatch();
                 });
 
-                // Infinite scroll
                 window.addEventListener('scroll', () => {
                     if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
                         this.loadBatch();
                     }
                 });
-
-
+                window.addEventListener('popstate', () => {
+                    const url = new URL(window.location);
+                    const itemParam = url.searchParams.get('item');
+                    if (itemParam) {
+                        const itemName = itemParam.replace(/-/g, ' ');
+                        const item = this.allItems.find(i =>
+                            i.name.toLowerCase() === itemName.toLowerCase()
+                        );
+                        if (item && !this.modal.isOpen) {
+                            this.modal.open(item);
+                        }
+                    } else {
+                        if (this.modal.isOpen) {
+                            this.modal.elements.modal.classList.remove('active');
+                            this.modal.isOpen = false;
+                            document.body.style.overflow = '';
+                        }
+                    }
+                });
             }
 
             updateTagCounts() {
