@@ -1222,6 +1222,30 @@
                     }
                 });
 
+                // Handle browser back/forward navigation
+                window.addEventListener('popstate', () => {
+                    const url = new URL(window.location);
+                    const itemParam = url.searchParams.get('item');
+
+                    if (itemParam) {
+                        // User navigated back to a URL with an item - reopen the modal
+                        const itemName = itemParam.replace(/-/g, ' ');
+                        const item = this.allItems.find(i =>
+                            i.name.toLowerCase() === itemName.toLowerCase()
+                        );
+                        if (item && !this.modal.isOpen) {
+                            this.modal.open(item);
+                        }
+                    } else {
+                        // User navigated back to a URL without an item - close the modal
+                        if (this.modal.isOpen) {
+                            // Close without updating URL (it's already updated by popstate)
+                            this.modal.elements.modal.classList.remove('active');
+                            this.modal.isOpen = false;
+                            document.body.style.overflow = '';
+                        }
+                    }
+                });
 
             }
 
