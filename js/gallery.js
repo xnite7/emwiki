@@ -327,10 +327,10 @@ class Gallery {
             ${mediaElement}
             <div class="gallery-item-info">
                 <div class="gallery-item-title">${this.escapeHtml(item.title)}</div>
-                <div class="gallery-item-author">${profilePill}</div>
-                <div class="gallery-item-meta">
+                <div class="gallery-item-author">
                     <span>${this.formatDate(item.created_at)}</span>
-                    <span class="likes-display">${likeIcon} ${likesCount}</span>
+                    ${profilePill}
+                    <span class="likes-display">${likesCount} ${likeIcon}</span>
                 </div>
             </div>
         `;
@@ -362,13 +362,10 @@ class Gallery {
         // Set info
         title.textContent = item.title;
         const profilePill = this.createProfilePill(item.username, item.avatar_url, item.role);
-        author.innerHTML = `${profilePill} <span style="color: var(--text-secondary); margin-left: 8px;">▪ ${this.formatDate(item.created_at)}</span>`;
+        author.innerHTML = `${profilePill} <span style="color: var(--text-secondary); margin-left: 8px;"> ${this.formatDate(item.created_at)}</span>`;
         description.textContent = item.description || '';
 
-
-        views.innerHTML = `${item.views || 0} <svg viewBox="0 0 42 42" style="width: 18px; height: 18px; fill: currentColor;"><path d="M15.3 20.1c0 3.1 2.6 5.7 5.7 5.7s5.7-2.6 5.7-5.7-2.6-5.7-5.7-5.7-5.7 2.6-5.7 5.7m8.1 12.3C30.1 30.9 40.5 22 40.5 22s-7.7-12-18-13.3c-.6-.1-2.6-.1-3-.1-10 1-18 13.7-18 13.7s8.7 8.6 17 9.9c.9.4 3.9.4 4.9.2M11.1 20.7c0-5.2 4.4-9.4 9.9-9.4s9.9 4.2 9.9 9.4S26.5 30 21 30s-9.9-4.2-9.9-9.3"></path></svg>`;
-
-
+        views.innerHTML = `${item.views || 0} <svg viewBox="0 -3 42 42" style="width: 19px; height: 19px; fill: currentColor;"><path d="M15.3 20.1c0 3.1 2.6 5.7 5.7 5.7s5.7-2.6 5.7-5.7-2.6-5.7-5.7-5.7-5.7 2.6-5.7 5.7m8.1 12.3C30.1 30.9 40.5 22 40.5 22s-7.7-12-18-13.3c-.6-.1-2.6-.1-3-.1-10 1-18 13.7-18 13.7s8.7 8.6 17 9.9c.9.4 3.9.4 4.9.2M11.1 20.7c0-5.2 4.4-9.4 9.9-9.4s9.9 4.2 9.9 9.4S26.5 30 21 30s-9.9-4.2-9.9-9.3"></path></svg>`;
 
         modal.classList.add('active');
 
@@ -384,11 +381,11 @@ class Gallery {
                 const likeBtn = document.createElement('button');
                 likeBtn.disabled = false;
 
-                likeBtn.innerHTML = `${item.user_liked ? '❤️' : '🤍'} ${data.item.likes_count || 0}`;
-                likeBtn.className = 'like-btn' + (item.user_liked ? ' liked' : '');
+                likeBtn.innerHTML = `${data.item.user_liked ? '❤️' : '🤍'} ${data.item.likes_count || 0}`;
+                likeBtn.className = 'like-btn' + (data.item.user_liked ? ' liked' : '');
 
                 likeBtn.dataset.id = item.id;
-                likeBtn.dataset.liked = item.user_liked ? '1' : '0';
+                likeBtn.dataset.liked = data.item.user_liked ? '1' : '0';
 
                 likeBtn.addEventListener('click', (e) => {
                     if (this.currentUser) {
@@ -404,7 +401,7 @@ class Gallery {
 
                 actionsContainer.appendChild(likeBtn);
 
-                views.innerHTML = `${data.item.views || 0} <svg viewBox="0 0 42 42" style="width: 18px; height: 18px; fill: currentColor;"><path d="M15.3 20.1c0 3.1 2.6 5.7 5.7 5.7s5.7-2.6 5.7-5.7-2.6-5.7-5.7-5.7-5.7 2.6-5.7 5.7m8.1 12.3C30.1 30.9 40.5 22 40.5 22s-7.7-12-18-13.3c-.6-.1-2.6-.1-3-.1-10 1-18 13.7-18 13.7s8.7 8.6 17 9.9c.9.4 3.9.4 4.9.2M11.1 20.7c0-5.2 4.4-9.4 9.9-9.4s9.9 4.2 9.9 9.4S26.5 30 21 30s-9.9-4.2-9.9-9.3"></path></svg>`;
+                views.innerHTML = `${data.item.views || 0} <svg viewBox="0 -3 42 42" style="width: 19px; height: 19px; fill: currentColor;"><path d="M15.3 20.1c0 3.1 2.6 5.7 5.7 5.7s5.7-2.6 5.7-5.7-2.6-5.7-5.7-5.7-5.7 2.6-5.7 5.7m8.1 12.3C30.1 30.9 40.5 22 40.5 22s-7.7-12-18-13.3c-.6-.1-2.6-.1-3-.1-10 1-18 13.7-18 13.7s8.7 8.6 17 9.9c.9.4 3.9.4 4.9.2M11.1 20.7c0-5.2 4.4-9.4 9.9-9.4s9.9 4.2 9.9 9.4S26.5 30 21 30s-9.9-4.2-9.9-9.3"></path></svg>`;
             }
         } catch (error) {
             console.error('Failed to fetch item details:', error);
@@ -611,6 +608,11 @@ class Gallery {
             buttonElement.dataset.liked = result.liked ? '1' : '0';
             buttonElement.className = 'like-btn' + (result.liked ? ' liked' : '');
             buttonElement.innerHTML = `${result.liked ? '❤️' : '🤍'} ${newCount}`;
+
+            const likesCount = newCount || 0;
+            const likeIcon = result.liked ? '❤️' : '🤍';
+
+            document.querySelector(`.gallery-item[data-id="${itemId}"]`).querySelector('.likes-display').innerHTML = `${likesCount} ${likeIcon}`;
 
         } catch (error) {
             console.error('Like error:', error);

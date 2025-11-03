@@ -131,6 +131,7 @@
     cursor: pointer;
     transition: all 0.3s ease;
     opacity: 1;
+
     @starting-style {
         opacity: 0;
     }
@@ -150,23 +151,32 @@
 }
 
 .gallery-item-info {
-    padding: 15px;
-    font-family: 'BuilderSans', 'Twemoji'
+    padding: 11px 15px;
+    font-family: 'BuilderSans', 'Twemoji';
 }
 
 .gallery-item-title {
     font-size: 18px;
     font-weight: 600;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
+.gallery-item-author>span{
+    width: 10px;
+    white-space: nowrap;
+    margin-bottom: 6px;
+}
+
+
 .gallery-item-author {
     font-size: 14px;
     color: var(--text-secondary);
-    margin-bottom: -11px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
 }
 
 /* Profile Pill Styles */
@@ -179,7 +189,6 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
     font-size: 14px;
-    margin-bottom: 8px;
 }
 
 .profile-pill-avatar {
@@ -221,14 +230,8 @@
 }
 
 .profile-pill-role.role-user {
-    display: none; /* Hide default user role */
-}
-
-.gallery-item-meta {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
+    display: none;
+    /* Hide default user role */
 }
 
 /* Modal Styles */
@@ -479,23 +482,28 @@
 
 .viewer-title {
     width: 66%;
-    font-size: 1.5rem;
+    font-size: 26px;
     max-height: 62px;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
 }
 
 .viewer-author {
     width: 66%;
     color: var(--text-secondary);
-    margin-bottom: 10px;
+    margin-left: -4px;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
 }
 
 .viewer-description {
     line-height: 1.6;
     max-height: 65px;
+        margin-top: 10px;
+            color: lightgray;
     width: 66%;
     overflow-y: scroll;
     overflow-block: auto;
@@ -503,7 +511,6 @@
 
 .viewer-views {
     color: var(--text-secondary);
-    font-size: 0.9rem;
     display: inline-flex;
     gap: 3px;
     flex-direction: row-reverse;
@@ -675,10 +682,8 @@
 
 /* Like Button Styles */
 .likes-display {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
     font-size: 0.9rem;
+    direction: rtl;
 }
 
 .viewer-actions {
@@ -716,6 +721,7 @@
     opacity: 1;
 
     @starting-style {
+        
         transform: scale(0);
         opacity: 0;
     }
@@ -724,6 +730,7 @@
 .like-btn:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.1);
     transform: scale(1.05);
+    transition: all 0.2s ease;
 }
 
 .like-btn.liked {
@@ -804,7 +811,7 @@ main {
         align-items: flex-end;
     }
 
-    .viewer-content:has( .admin-delete-btn)>.viewer-info {
+    .viewer-content:has(.admin-delete-btn)>.viewer-info {
         min-height: 155px;
     }
 }
