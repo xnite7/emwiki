@@ -35,8 +35,7 @@ class Gallery {
 
     updateUIForAuth() {
         if (this.currentUser) {
-            document.getElementById('upload-btn').style.display = 'inline-flex';
-            document.getElementById('my-submissions-btn').style.display = 'inline-flex';
+            document.getElementById('gallery-actions').style.display = 'flex';
         }
     }
 
