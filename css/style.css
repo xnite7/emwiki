@@ -2401,7 +2401,7 @@ textarea {
     border-radius: 10px;
 }
 
-#season-label {
+#season-label, #favs-label {
     text-align: center;
 }
 

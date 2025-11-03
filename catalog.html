@@ -495,16 +495,13 @@
                     this.updateTagsLabel();
                 } else if (filterParam === 'wishlist' || filterParam === 'favorites') {
                     this.filters.tags.add(filterParam);
-                    const favFilterElement = document.querySelector(`.dropdown-item[data-filter="${filterParam}"]`);
-                    if (favFilterElement) {
-                        favFilterElement.classList.add('selected');
-                        favFilterElement.style.display = '';
-                        if (filterParam === 'wishlist') {
-                            document.getElementById('favs-label').textContent = "★ Wishlist";
-                        } else {
-                            document.getElementById('favs-label').textContent = "♥ Favorites";
-                        }
+
+                    if (filterParam === 'wishlist') {
+                        document.getElementById('favs-label').textContent = "★ Wishlist";
+                    } else {
+                        document.getElementById('favs-label').textContent = "♥ Favorites";
                     }
+
 
                     // Update the filter checkbox if it exists
                     const checkbox = document.querySelector(`input[data-filter="${filterParam}"]`);
