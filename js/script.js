@@ -1470,14 +1470,7 @@ class ItemModal {
             <div class="modal-overlay"></div>
             <button class="modal-nav modal-prev">‹</button>
             <button class="modal-nav modal-next">›</button>
-            <div class="modal-actions">
-                <button class="modal-action-btn modal-wishlist-btn" title="Add to Wishlist">
-                    <span class="action-icon">⭐</span>
-                </button>
-                <button class="modal-action-btn modal-favorite-btn" title="Add to Favorites">
-                    <span class="action-icon">🤍</span>
-                </button>
-            </div>
+
             <div class="modal-container">
                 <div class="modal-content-wrapper">
                     <!-- Front Side -->
@@ -1533,6 +1526,14 @@ class ItemModal {
                     <span class="flip-icon">↩</span>
                     <span class="flip-text">More Info</span>
                 </button>
+                <div class="modal-actions">
+                    <button class="modal-action-btn modal-wishlist-btn" title="Add to Wishlist">
+                        <span class="action-icon">⭐</span>
+                    </button>
+                    <button class="modal-action-btn modal-favorite-btn" title="Add to Favorites">
+                        <span class="action-icon">🤍</span>
+                    </button>
+                </div>
             </div>
         </div>
     `;

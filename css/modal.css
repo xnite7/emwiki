@@ -469,6 +469,7 @@ body:has(.item-modal.active) {
 .unflipping~.modal-flip-btn {
     opacity: 0;
 }
+
 .modal-flip-btn.hidden {
     display: none;
 }
@@ -543,8 +544,7 @@ body:has(.item-modal.active) {
 .modal-actions {
     position: absolute;
     top: 50%;
-    right: calc(5% + max(368px, 90%) / 2 + 20px);
-    transform: translateY(-50%);
+    transform: translate(400px, -50%);
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -631,7 +631,7 @@ body:has(.item-modal.active) {
         top: auto;
         bottom: 30px;
         right: 50%;
-        transform: translateX(50%);
+        transform: translate(50%, 127px);
         flex-direction: row;
         gap: 20px;
     }
