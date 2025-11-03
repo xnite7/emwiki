@@ -469,10 +469,41 @@
                 this.populateEventFilter();
                 this.populateChests();
                 this.setupEventListeners();
+                this.handleURLParams();
                 this.applyFilters();
                 this.loadBatch();
                 document.querySelector('.bn').style.display = 'none';
                 this.updateTagCounts();
+            }
+
+            handleURLParams() {
+                const url = new URL(window.location);
+                const filterParam = url.searchParams.get('filter');
+                const itemParam = url.searchParams.get('item');
+
+                // Handle ?filter=new
+                if (filterParam === 'new') {
+                    this.filters.tags.add('new');
+                    const newFilterElement = document.querySelector('.dropdown-item[data-filter="new"]');
+                    if (newFilterElement) {
+                        newFilterElement.classList.add('selected');
+                    }
+                    this.updateTagsLabel();
+                }
+
+                // Handle ?item=slug - will open after data loads
+                if (itemParam) {
+                    const itemName = itemParam.replace(/-/g, ' ');
+                    // We need to wait for the items to be displayed before opening the modal
+                    setTimeout(() => {
+                        const item = this.allItems.find(i =>
+                            i.name.toLowerCase() === itemName.toLowerCase()
+                        );
+                        if (item) {
+                            this.modal.open(item);
+                        }
+                    }, 500);
+                }
             }
 
             toggleChestMenu() {

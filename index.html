@@ -313,6 +313,14 @@
 			}
 
 			async init() {
+				// Check for ?item parameter and redirect to catalog
+				const url = new URL(window.location);
+				const itemParam = url.searchParams.get('item');
+				if (itemParam) {
+					window.location.href = `/catalog?item=${itemParam}`;
+					return;
+				}
+
 				await this.loadData();
 				await this.loadPreferences();
 				this.setupEventListeners();
