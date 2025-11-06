@@ -286,7 +286,15 @@ class Gallery {
     }
 
     createProfilePill(username, avatarUrl, role) {
-        const roles = role ? JSON.parse(role) : ['user'];
+        let roles = ['user'];
+        if (role) {
+            try {
+                roles = JSON.parse(role);
+            } catch (e) {
+                // If role is already an array or invalid JSON, handle gracefully
+                roles = Array.isArray(role) ? role : [role];
+            }
+        }
         const highestRole = this.getHighestRole(roles);
         const roleLabel = highestRole !== 'user' ? `<span class="profile-pill-role role-${highestRole}">${highestRole}</span>` : '';
         const avatar = avatarUrl || 'https://via.placeholder.com/48';
