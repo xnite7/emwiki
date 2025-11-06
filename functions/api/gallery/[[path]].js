@@ -143,7 +143,7 @@ async function handleGet({ request, env, params }) {
       try {
         item = await env.DBA.prepare(
           `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.media_type,
-                  g.created_at, g.views + 1 as views, u.avatar_url, u.role,
+                  g.created_at, g.views, u.avatar_url, u.role,
                   COUNT(gl.id) as likes_count,
                   CASE WHEN ? IS NOT NULL AND ugl.id IS NOT NULL THEN 1 ELSE 0 END as user_liked
            FROM gallery_items g
@@ -194,8 +194,15 @@ async function handleGet({ request, env, params }) {
   const sortBy = url.searchParams.get('sort') || 'likes'; // 'likes' or 'newest'
 
   let items;
+  let total = 0;
 
   try {
+    // Get total count of approved items
+    const countResult = await env.DBA.prepare(
+      'SELECT COUNT(*) as total FROM gallery_items WHERE status = ?'
+    ).bind('approved').first();
+    total = countResult?.total || 0;
+
     // Try to query with likes (requires gallery_likes table to exist)
     items = await env.DBA.prepare(
       `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.media_type,
@@ -228,7 +235,7 @@ async function handleGet({ request, env, params }) {
     ).bind(limit, offset).all();
   }
 
-  return new Response(JSON.stringify({ items: items.results || [] }), {
+  return new Response(JSON.stringify({ items: items.results || [], total }), {
     headers: { 'Content-Type': 'application/json',
         ...CORS_HEADERS }
   });

@@ -1,13 +1,15 @@
 // Gallery Page JavaScript
 class Gallery {
     constructor() {
-        this.currentOffset = 0;
-        this.itemsPerPage = 24;
+        this.currentPage = 1;
+        this.itemsPerPage = 8;
         this.isLoading = false;
-        this.hasMore = true;
+        this.totalItems = 0;
+        this.totalPages = 0;
         this.currentUser = null;
         this.currentSort = 'newest'; // 'likes' or 'newest'
-
+        this.intersectionObserver = null;
+        this.loadedVideos = new Set(); // Track which videos have loaded
 
         this.init();
     }
@@ -29,6 +31,7 @@ class Gallery {
             }
         }
         this.setupEventListeners();
+        this.setupLazyLoading();
         await new Promise(resolve => setTimeout(resolve, 920));
         await this.loadGallery();
     }
@@ -37,6 +40,49 @@ class Gallery {
         if (this.currentUser) {
             document.getElementById('gallery-actions').style.display = 'flex';
         }
+    }
+
+    setupLazyLoading() {
+        // Intersection Observer for lazy loading videos and images
+        const options = {
+            root: null,
+            rootMargin: '100px', // Start loading 100px before entering viewport
+            threshold: 0.01
+        };
+
+        this.intersectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const media = entry.target;
+
+                    if (media.tagName === 'VIDEO') {
+                        // Load video source
+                        if (media.dataset.src && !this.loadedVideos.has(media.dataset.src)) {
+                            media.src = media.dataset.src;
+
+                            // If no poster, load first frame as thumbnail
+                            if (!media.poster || media.poster === '') {
+                                media.preload = 'metadata';
+                                media.addEventListener('loadeddata', function() {
+                                    media.dataset.loaded = 'true';
+                                }, { once: true });
+                            }
+
+                            media.load();
+                            this.loadedVideos.add(media.dataset.src);
+                        }
+                    } else if (media.tagName === 'IMG') {
+                        // Load image source
+                        if (media.dataset.src) {
+                            media.src = media.dataset.src;
+                        }
+                    }
+
+                    // Stop observing once loaded
+                    this.intersectionObserver.unobserve(media);
+                }
+            });
+        }, options);
     }
 
     setupEventListeners() {
@@ -61,11 +107,16 @@ class Gallery {
         // Viewer modal
         this.setupViewerModal();
 
-        // Load more
-        const loadMoreBtn = document.getElementById('load-more-btn');
-        if (loadMoreBtn) {
-            loadMoreBtn.addEventListener('click', () => this.loadMore());
-        }
+        // Pagination controls
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.pagination-btn')) {
+                const btn = e.target.closest('.pagination-btn');
+                const page = parseInt(btn.dataset.page);
+                if (!isNaN(page)) {
+                    this.goToPage(page);
+                }
+            }
+        });
 
         // Sort controls
         const sortButtons = document.querySelectorAll('.sort-btn');
@@ -230,51 +281,45 @@ class Gallery {
     }
 
     async loadGallery() {
-        if (this.isLoading || !this.hasMore) return;
+        if (this.isLoading) return;
 
         this.isLoading = true;
         const container = document.getElementById('gallery-grid');
+        const offset = (this.currentPage - 1) * this.itemsPerPage;
 
         try {
             const token = localStorage.getItem('auth_token');
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-            const response = await fetch(`https://emwiki.com/api/gallery?limit=${this.itemsPerPage}&offset=${this.currentOffset}&sort=${this.currentSort}`, {
+            const response = await fetch(`https://emwiki.com/api/gallery?limit=${this.itemsPerPage}&offset=${offset}&sort=${this.currentSort}`, {
                 headers
             });
-            const { items } = await response.json();
+            const { items, total } = await response.json();
 
-            if (items.length === 0) {
-                this.hasMore = false;
-                if (this.currentOffset === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state" style="grid-column: 1/-1;">
-                            <h3>No gallery items yet</h3>
-                            <p>Be the first to share your Epic Minigames moments!</p>
-                        </div>
-                    `;
-                }
+            this.totalItems = total || items.length;
+            this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
+
+            if (items.length === 0 && this.currentPage === 1) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <h3>No gallery items yet</h3>
+                        <p>Be the first to share your Epic Minigames moments!</p>
+                    </div>
+                `;
             } else {
-                if (this.currentOffset === 0) {
-                    container.innerHTML = '';
-                }
+                container.innerHTML = '';
 
                 items.forEach(item => {
                     container.appendChild(this.createGalleryItem(item));
                 });
-
-                this.currentOffset += items.length;
-
-                if (items.length < this.itemsPerPage) {
-                    this.hasMore = false;
-                }
             }
 
-            // Show/hide load more button
-            const loadMoreContainer = document.querySelector('.load-more-container');
-            if (this.hasMore) {
-                loadMoreContainer.style.display = 'block';
-            } else {
-                loadMoreContainer.style.display = 'none';
+            // Update pagination
+            this.updatePagination();
+
+            // Scroll to top of gallery
+            const hero = document.querySelector('.hero-section');
+            if (hero && this.currentPage > 1) {
+                hero.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
 
         } catch (error) {
@@ -285,7 +330,7 @@ class Gallery {
         }
     }
 
-    createProfilePill(username, avatarUrl, role) {
+    createProfilePill(username, avatarUrl, role, userId) {
         let roles = ['user'];
         if (role) {
             try {
@@ -300,11 +345,11 @@ class Gallery {
         const avatar = avatarUrl || 'https://via.placeholder.com/48';
 
         return `
-            <div class="profile-pill">
+            <a href="/profile?user=${userId}" class="profile-pill profile-pill-link" onclick="event.stopPropagation();">
                 <img class="profile-pill-avatar" src="${avatar}" alt="${this.escapeHtml(username)}" onerror="this.src='https://via.placeholder.com/48'">
                 <span class="profile-pill-name">${this.escapeHtml(username)}</span>
                 ${roleLabel}
-            </div>
+            </a>
         `;
     }
 
@@ -324,17 +369,17 @@ class Gallery {
 
         const mediaElement = item.media_type === 'video'
             ? `<div class="video-wrapper">
-                   <video class="gallery-item-media" src="${item.media_url}" muted preload="metadata"></video>
+                   <video class="gallery-item-media" data-src="${item.media_url}" poster="${item.thumbnail_url || ''}" muted preload="none" playsinline disablePictureInPicture controlsList="nodownload noplaybackrate" oncontextmenu="return false;"></video>
                    <div class="video-play-icon">
                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                            <path d="M8 5v14l11-7z"/>
                        </svg>
                    </div>
                </div>`
-            : `<img class="gallery-item-media" src="${item.media_url}" alt="${item.title}" loading="lazy">`;
+            : `<img class="gallery-item-media" data-src="${item.media_url}" alt="${item.title}" loading="lazy" oncontextmenu="return false;">`;
 
         const likesCount = item.likes_count || 0;
-        const profilePill = this.createProfilePill(item.username, item.avatar_url, item.role);
+        const profilePill = this.createProfilePill(item.username, item.avatar_url, item.role, item.user_id);
 
         div.innerHTML = `
             ${mediaElement}
@@ -349,6 +394,12 @@ class Gallery {
         `;
 
         div.addEventListener('click', () => this.openViewer(item));
+
+        // Setup lazy loading for this item's media
+        const media = div.querySelector('.gallery-item-media');
+        if (media) {
+            this.intersectionObserver.observe(media);
+        }
 
         return div;
     }
@@ -368,13 +419,36 @@ class Gallery {
         actionsContainer.innerHTML = '';
         // Set media
         if (item.media_type === 'video') {
-            mediaContainer.innerHTML = `<video src="${item.media_url}" controls autoplay></video>`;
+            mediaContainer.innerHTML = `
+                <div class="custom-video-player">
+                    <video src="${item.media_url}" playsinline disablePictureInPicture controlsList="nodownload noplaybackrate" oncontextmenu="return false;"></video>
+                    <div class="custom-controls">
+                        <button class="play-pause-btn" aria-label="Play/Pause">
+                            <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            <svg class="pause-icon" viewBox="0 0 24 24" style="display:none;"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>
+                        </button>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar">
+                                <div class="progress-filled"></div>
+                            </div>
+                        </div>
+                        <span class="time-display">0:00 / 0:00</span>
+                        <button class="volume-btn" aria-label="Volume">
+                            <svg class="volume-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+                        </button>
+                        <button class="fullscreen-btn" aria-label="Fullscreen">
+                            <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                        </button>
+                    </div>
+                </div>
+            `;
+            this.setupCustomVideoPlayer(mediaContainer);
         } else {
-            mediaContainer.innerHTML = `<img src="${item.media_url}" alt="${item.title}">`;
+            mediaContainer.innerHTML = `<img src="${item.media_url}" alt="${item.title}" oncontextmenu="return false;">`;
         }
         // Set info
         title.textContent = item.title;
-        const profilePill = this.createProfilePill(item.username, item.avatar_url, item.role);
+        const profilePill = this.createProfilePill(item.username, item.avatar_url, item.role, item.user_id);
         author.innerHTML = `${profilePill} <span style="color: var(--text-secondary); margin-left: 8px;"> ${this.formatDate(item.created_at)}</span>`;
         description.textContent = item.description || '';
 
@@ -588,8 +662,7 @@ class Gallery {
         if (this.currentSort === sortBy) return;
 
         this.currentSort = sortBy;
-        this.currentOffset = 0;
-        this.hasMore = true;
+        this.currentPage = 1;
 
         // Update active sort button
         document.querySelectorAll('.sort-btn').forEach(btn => {
@@ -598,6 +671,78 @@ class Gallery {
 
         // Reload gallery
         this.loadGallery();
+    }
+
+    goToPage(page) {
+        if (page < 1 || page > this.totalPages || page === this.currentPage) return;
+        this.currentPage = page;
+        this.loadGallery();
+    }
+
+    updatePagination() {
+        const paginationContainer = document.querySelector('.pagination-container');
+        if (!paginationContainer) return;
+
+        if (this.totalPages <= 1) {
+            paginationContainer.style.display = 'none';
+            return;
+        }
+
+        paginationContainer.style.display = 'flex';
+
+        let html = '';
+
+        // Previous button
+        html += `<button class="pagination-btn pagination-prev" data-page="${this.currentPage - 1}" ${this.currentPage === 1 ? 'disabled' : ''}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            <span>Previous</span>
+        </button>`;
+
+        // Page numbers
+        html += '<div class="pagination-numbers">';
+
+        const maxVisible = 7;
+        let startPage = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
+        let endPage = Math.min(this.totalPages, startPage + maxVisible - 1);
+
+        if (endPage - startPage < maxVisible - 1) {
+            startPage = Math.max(1, endPage - maxVisible + 1);
+        }
+
+        // First page + ellipsis
+        if (startPage > 1) {
+            html += `<button class="pagination-btn pagination-num" data-page="1">1</button>`;
+            if (startPage > 2) {
+                html += `<span class="pagination-ellipsis">...</span>`;
+            }
+        }
+
+        // Page numbers
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<button class="pagination-btn pagination-num ${i === this.currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+        }
+
+        // Ellipsis + last page
+        if (endPage < this.totalPages) {
+            if (endPage < this.totalPages - 1) {
+                html += `<span class="pagination-ellipsis">...</span>`;
+            }
+            html += `<button class="pagination-btn pagination-num" data-page="${this.totalPages}">${this.totalPages}</button>`;
+        }
+
+        html += '</div>';
+
+        // Next button
+        html += `<button class="pagination-btn pagination-next" data-page="${this.currentPage + 1}" ${this.currentPage === this.totalPages ? 'disabled' : ''}>
+            <span>Next</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        </button>`;
+
+        paginationContainer.innerHTML = html;
     }
 
     async toggleLike(itemId, buttonElement) {
@@ -631,8 +776,15 @@ class Gallery {
 
             const likesCount = newCount || 0;
 
-            document.querySelector(`.gallery-item[data-id="${itemId}"]`).querySelector('.likes-display').innerHTML = likesCount;
-            document.querySelector(`.gallery-item[data-id="${itemId}"]`).querySelector('.likes-display').classList.toggle('liked', result.liked);
+            // Update likes display in gallery grid (only if item is currently rendered)
+            const galleryItem = document.querySelector(`.gallery-item[data-id="${itemId}"]`);
+            if (galleryItem) {
+                const likesDisplay = galleryItem.querySelector('.likes-display');
+                if (likesDisplay) {
+                    likesDisplay.innerHTML = likesCount;
+                    likesDisplay.classList.toggle('liked', result.liked);
+                }
+            }
 
         } catch (error) {
             console.error('Like error:', error);
@@ -665,8 +817,7 @@ class Gallery {
             this.closeModal(viewerModal);
 
             // Reload gallery
-            this.currentOffset = 0;
-            this.hasMore = true;
+            this.currentPage = 1;
             this.loadGallery();
 
         } catch (error) {
@@ -683,6 +834,78 @@ class Gallery {
         } catch {
             return false;
         }
+    }
+
+    setupCustomVideoPlayer(container) {
+        const player = container.querySelector('.custom-video-player');
+        const video = player.querySelector('video');
+        const playPauseBtn = player.querySelector('.play-pause-btn');
+        const playIcon = player.querySelector('.play-icon');
+        const pauseIcon = player.querySelector('.pause-icon');
+        const progressBar = player.querySelector('.progress-bar');
+        const progressFilled = player.querySelector('.progress-filled');
+        const timeDisplay = player.querySelector('.time-display');
+        const volumeBtn = player.querySelector('.volume-btn');
+        const fullscreenBtn = player.querySelector('.fullscreen-btn');
+
+        // Play/Pause
+        playPauseBtn.addEventListener('click', () => {
+            if (video.paused) {
+                video.play();
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = 'block';
+            } else {
+                video.pause();
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+            }
+        });
+
+        // Click video to play/pause
+        video.addEventListener('click', () => playPauseBtn.click());
+
+        // Update progress bar
+        video.addEventListener('timeupdate', () => {
+            const percent = (video.currentTime / video.duration) * 100;
+            progressFilled.style.width = percent + '%';
+            timeDisplay.textContent = `${this.formatTime(video.currentTime)} / ${this.formatTime(video.duration)}`;
+        });
+
+        // Seek
+        progressBar.addEventListener('click', (e) => {
+            const rect = progressBar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            video.currentTime = percent * video.duration;
+        });
+
+        // Volume
+        volumeBtn.addEventListener('click', () => {
+            video.muted = !video.muted;
+            volumeBtn.style.opacity = video.muted ? '0.5' : '1';
+        });
+
+        // Fullscreen
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                player.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        // Auto-play
+        video.play().catch(() => {
+            // Auto-play failed, show play button
+            playIcon.style.display = 'block';
+            pauseIcon.style.display = 'none';
+        });
+    }
+
+    formatTime(seconds) {
+        if (isNaN(seconds)) return '0:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 
     showToast(message, type = 'info') {

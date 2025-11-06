@@ -1,0 +1,25 @@
+{
+  "name": "emwiki",
+  "version": "1.0.0",
+  "main": "sw.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xnite7/emwiki.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xnite7/emwiki/issues"
+  },
+  "homepage": "https://github.com/xnite7/emwiki#readme",
+  "description": "",
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^24.10.0"
+  }
+}
