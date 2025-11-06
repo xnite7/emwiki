@@ -473,14 +473,9 @@ class Gallery {
                 likeBtn.dataset.liked = data.item.user_liked ? '1' : '0';
 
                 likeBtn.addEventListener('click', (e) => {
-                    if (this.currentUser) {
                         likeBtn.disabled = false;
                         e.stopPropagation();
                         this.toggleLike(item.id, likeBtn);
-                    } else {
-                        alert('Please Login to like');
-                        return;
-                    }
                 });
                 actionsContainer.innerHTML = '';
 
@@ -537,7 +532,7 @@ class Gallery {
             }
         } catch (error) {
             console.error('Failed to load submissions:', error);
-            container.innerHTML = '<p class="loading">Failed to load submissions</p>';
+            container.innerHTML = '<p class="loading">No submissions</p>';
         }
     }
 
