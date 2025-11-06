@@ -2811,6 +2811,10 @@ class Auth extends EventTarget {
             </div>
             
             <div class="profile-dropdown-actions">
+                <button class="profile-action-btn" onclick="window.location.href = './profile.html?user=${this.user.userId}'">
+                    <svg style="width:18px;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> View My Profile
+                </button>
+
                 <button class="profile-action-btn" onclick="window.open('https://www.roblox.com/users/${this.user.userId}/profile', '_blank')">
                     <svg style="width:18px;" viewBox="0 0 134 134"><path fill="currentcolor" stroke-linejoin="round" stroke-width="12" d="m 134 106 l -103.9 27.8 l -27.9 -104 l 104 -27.9 z m -50 -30 l -25.1 6.7 l -6.7 -25.1 l 25.1 -6.7 z" fill-rule="evenodd"/></svg> View Roblox Profile
                 </button>
