@@ -122,6 +122,55 @@ async function handleGetProfile(request, env) {
         console.error('Failed to fetch donation data:', e);
     }
 
+    // Get user's approved gallery posts
+    let galleryPosts = [];
+    try {
+        const postsResult = await env.DBA.prepare(`
+            SELECT
+                g.id,
+                g.title,
+                g.description,
+                g.media_url,
+                g.media_type,
+                g.thumbnail_url,
+                g.created_at,
+                g.views,
+                COUNT(gl.id) as likes_count
+            FROM gallery_items g
+            LEFT JOIN gallery_likes gl ON g.id = gl.gallery_item_id
+            WHERE g.user_id = ? AND g.status = 'approved'
+            GROUP BY g.id
+            ORDER BY g.created_at DESC
+            LIMIT 12
+        `).bind(userId).all();
+        galleryPosts = postsResult.results || [];
+    } catch (e) {
+        console.error('Failed to fetch gallery posts:', e);
+        // Try fallback without likes if gallery_likes table doesn't exist
+        try {
+            const postsResult = await env.DBA.prepare(`
+                SELECT
+                    g.id,
+                    g.title,
+                    g.description,
+                    g.media_url,
+                    g.media_type,
+                    g.thumbnail_url,
+                    g.created_at,
+                    g.views,
+                    0 as likes_count
+                FROM gallery_items g
+                WHERE g.user_id = ? AND g.status = 'approved'
+                ORDER BY g.created_at DESC
+                LIMIT 12
+            `).bind(userId).all();
+            galleryPosts = postsResult.results || [];
+        } catch (e2) {
+            console.error('Failed to fetch gallery posts (fallback):', e2);
+            galleryPosts = [];
+        }
+    }
+
     return new Response(JSON.stringify({
         user: {
             userId: user.user_id,
@@ -141,7 +190,8 @@ async function handleGetProfile(request, env) {
         },
         reviews: reviews,
         recentTrades: recentTrades,
-        donationData: donationData
+        donationData: donationData,
+        galleryPosts: galleryPosts
     }), {
         headers: { 'Content-Type': 'application/json' }
     });

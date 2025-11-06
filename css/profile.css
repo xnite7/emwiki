@@ -76,11 +76,11 @@
 
 .profile-avatar {
     width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    border: 4px solid rgba(102, 126, 234, 0.5);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-    object-fit: cover;
+        height: 120px;
+        background: linear-gradient(128deg, #7cce76, #e0db6c);
+        border-radius: 50%;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        object-fit: cover;
 }
 
 .profile-info {
@@ -328,6 +328,98 @@
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Gallery Posts */
+.gallery-posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.gallery-post-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.gallery-post-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.gallery-post-media-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    background: rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.gallery-post-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.gallery-post-play-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 50px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.gallery-post-play-icon svg {
+    width: 24px;
+    height: 24px;
+    fill: white;
+    margin-left: 3px;
+}
+
+.gallery-post-info {
+    padding: 15px;
+}
+
+.gallery-post-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gallery-post-stats {
+    display: flex;
+    gap: 15px;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.gallery-post-stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.gallery-post-stat svg {
+    flex-shrink: 0;
+}
+
 /* No Data Message */
 .no-data-message {
     text-align: center;
@@ -380,6 +472,10 @@
     .recent-trades-container {
         grid-template-columns: 1fr;
     }
+
+    .gallery-posts-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
 }
 
 /* Light Theme Support */
@@ -387,6 +483,7 @@
 .light-theme .stat-card,
 .light-theme .trade-card,
 .light-theme .review-card,
+.light-theme .gallery-post-card,
 .light-theme .error-message {
     background: rgba(255, 255, 255, 0.8);
     border-color: rgba(0, 0, 0, 0.1);
@@ -395,7 +492,8 @@
 .light-theme .profile-display-name,
 .light-theme .section-title,
 .light-theme .reviewer-name,
-.light-theme .trade-item-name {
+.light-theme .trade-item-name,
+.light-theme .gallery-post-title {
     color: #000;
 }
 
@@ -403,7 +501,8 @@
 .light-theme .profile-meta,
 .light-theme .trade-meta,
 .light-theme .review-date,
-.light-theme .review-comment {
+.light-theme .review-comment,
+.light-theme .gallery-post-stats {
     color: rgba(0, 0, 0, 0.7);
 }
 

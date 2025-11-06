@@ -95,7 +95,7 @@
             <a href="/trading" class="nav-link">Trading Hub</a>
             <a href="/forum" class="nav-link">Forum</a>
             <a href="/gallery" class="nav-link">Gallery</a>
-            <a href="/scammers" class="nav-link active">Scammers</a>
+            <a href="/scammers" class="nav-link">Scammers</a>
         </div>
     
     
@@ -138,7 +138,7 @@
             </section>
 
             <!-- Trading Stats -->
-            <section class="profile-stats">
+            <section style="display: none;" class="profile-stats">
                 <h2 class="section-title">Trading Statistics</h2>
                 <div class="stats-grid">
                     <div class="stat-card">
@@ -169,6 +169,14 @@
                 <h2 class="section-title">Recent Trades</h2>
                 <div id="recent-trades-container" class="recent-trades-container">
                     <p class="no-data-message">No recent trades</p>
+                </div>
+            </section>
+
+            <!-- Gallery Posts -->
+            <section class="profile-section">
+                <h2 class="section-title">Gallery Posts</h2>
+                <div id="gallery-posts-container" class="gallery-posts-grid">
+                    <p class="no-data-message">No gallery posts yet</p>
                 </div>
             </section>
 
@@ -267,7 +275,7 @@
             document.getElementById('error-state').style.display = 'none';
             document.getElementById('profile-content').style.display = 'block';
 
-            const { user, stats, reviews, recentTrades, donationData } = this.profileData;
+            const { user, stats, reviews, recentTrades, donationData, galleryPosts } = this.profileData;
 
             // Update page title
             document.title = `${user.displayName} - Epic Catalogue`;
@@ -280,6 +288,9 @@
 
             // Render recent trades
             this.renderRecentTrades(recentTrades);
+
+            // Render gallery posts
+            this.renderGalleryPosts(galleryPosts);
 
             // Render reviews
             this.renderReviews(reviews);
@@ -365,6 +376,65 @@
             `;
 
                 container.appendChild(tradeCard);
+            });
+        }
+
+        renderGalleryPosts(posts) {
+            const container = document.getElementById('gallery-posts-container');
+
+            if (!posts || posts.length === 0) {
+                container.innerHTML = '<p class="no-data-message">No gallery posts yet</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+
+            posts.forEach(post => {
+                const postCard = document.createElement('div');
+                postCard.className = 'gallery-post-card';
+                postCard.dataset.id = post.id;
+
+                const mediaElement = post.media_type === 'video'
+                    ? `<div class="gallery-post-media-wrapper">
+                           <video class="gallery-post-media" src="${post.media_url}" muted preload="metadata"></video>
+                           <div class="gallery-post-play-icon">
+                               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                   <path d="M8 5v14l11-7z"/>
+                               </svg>
+                           </div>
+                       </div>`
+                    : `<img class="gallery-post-media" src="${post.media_url}" alt="${this.escapeHtml(post.title)}" loading="lazy">`;
+
+                const likesCount = post.likes_count || 0;
+                const views = post.views || 0;
+
+                postCard.innerHTML = `
+                    ${mediaElement}
+                    <div class="gallery-post-info">
+                        <div class="gallery-post-title">${this.escapeHtml(post.title)}</div>
+                        <div class="gallery-post-stats">
+                            <span class="gallery-post-stat">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                </svg>
+                                ${likesCount}
+                            </span>
+                            <span class="gallery-post-stat">
+                                <svg viewBox="0 -3 42 42" width="16" height="16" fill="currentColor">
+                                    <path d="M15.3 20.1c0 3.1 2.6 5.7 5.7 5.7s5.7-2.6 5.7-5.7-2.6-5.7-5.7-5.7-5.7 2.6-5.7 5.7m8.1 12.3C30.1 30.9 40.5 22 40.5 22s-7.7-12-18-13.3c-.6-.1-2.6-.1-3-.1-10 1-18 13.7-18 13.7s8.7 8.6 17 9.9c.9.4 3.9.4 4.9.2M11.1 20.7c0-5.2 4.4-9.4 9.9-9.4s9.9 4.2 9.9 9.4S26.5 30 21 30s-9.9-4.2-9.9-9.3"></path>
+                                </svg>
+                                ${views}
+                            </span>
+                        </div>
+                    </div>
+                `;
+
+                // Make clickable to open in gallery
+                postCard.addEventListener('click', () => {
+                    window.location.href = `/gallery#post-${post.id}`;
+                });
+
+                container.appendChild(postCard);
             });
         }
 
