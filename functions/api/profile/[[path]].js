@@ -34,46 +34,66 @@ async function handleGetProfile(request, env) {
     }
 
     // Get user trade stats
-    const stats = await env.DBA.prepare(`
-        SELECT
-            total_trades,
-            successful_trades,
-            average_rating,
-            total_reviews,
-            last_trade_at
-        FROM user_trade_stats
-        WHERE user_id = ?
-    `).bind(userId).first();
+    let stats = null;
+    try {
+        stats = await env.DBA.prepare(`
+            SELECT
+                total_trades,
+                successful_trades,
+                average_rating,
+                total_reviews,
+                last_trade_at
+            FROM user_trade_stats
+            WHERE user_id = ?
+        `).bind(userId).first();
+    } catch (e) {
+        console.error('Failed to fetch user_trade_stats (table might not exist):', e);
+        stats = null;
+    }
 
     // Get user reviews
-    const { results: reviews } = await env.DBA.prepare(`
-        SELECT
-            r.*,
-            u.username as reviewer_username,
-            u.display_name as reviewer_display_name,
-            u.avatar_url as reviewer_avatar
-        FROM trade_reviews r
-        JOIN users u ON r.reviewer_id = u.user_id
-        WHERE r.reviewed_user_id = ?
-        ORDER BY r.created_at DESC
-        LIMIT 10
-    `).bind(userId).all();
+    let reviews = [];
+    try {
+        const reviewsResult = await env.DBA.prepare(`
+            SELECT
+                r.*,
+                u.username as reviewer_username,
+                u.display_name as reviewer_display_name,
+                u.avatar_url as reviewer_avatar
+            FROM trade_reviews r
+            JOIN users u ON r.reviewer_id = u.user_id
+            WHERE r.reviewed_user_id = ?
+            ORDER BY r.created_at DESC
+            LIMIT 10
+        `).bind(userId).all();
+        reviews = reviewsResult.results || [];
+    } catch (e) {
+        console.error('Failed to fetch trade_reviews (table might not exist):', e);
+        reviews = [];
+    }
 
     // Get recent completed trades (limited info for privacy)
-    const { results: recentTrades } = await env.DBA.prepare(`
-        SELECT
-            ct.id,
-            ct.item_name,
-            ct.completed_at,
-            CASE
-                WHEN ct.seller_id = ? THEN 'seller'
-                ELSE 'buyer'
-            END as role
-        FROM completed_trades ct
-        WHERE ct.seller_id = ? OR ct.buyer_id = ?
-        ORDER BY ct.completed_at DESC
-        LIMIT 5
-    `).bind(userId, userId, userId).all();
+    let recentTrades = [];
+    try {
+        const tradesResult = await env.DBA.prepare(`
+            SELECT
+                ct.id,
+                ct.item_name,
+                ct.completed_at,
+                CASE
+                    WHEN ct.seller_id = ? THEN 'seller'
+                    ELSE 'buyer'
+                END as role
+            FROM completed_trades ct
+            WHERE ct.seller_id = ? OR ct.buyer_id = ?
+            ORDER BY ct.completed_at DESC
+            LIMIT 5
+        `).bind(userId, userId, userId).all();
+        recentTrades = tradesResult.results || [];
+    } catch (e) {
+        console.error('Failed to fetch completed_trades (table might not exist):', e);
+        recentTrades = [];
+    }
 
     // Parse roles
     let roles;
@@ -86,14 +106,17 @@ async function handleGetProfile(request, env) {
     // Get donation status if available (check KV)
     let donationData = null;
     try {
-        const donationKey = `purchase:${userId}`;
-        const donationKV = await env.DONATIONS_KV.get(donationKey);
-        if (donationKV) {
-            const data = JSON.parse(donationKV);
-            donationData = {
-                totalSpent: data.totalSpent || 0,
-                purchases: data.purchases || 0
-            };
+        // Check if DONATIONS_KV binding exists
+        if (env.DONATIONS_KV) {
+            const donationKey = `purchase:${userId}`;
+            const donationKV = await env.DONATIONS_KV.get(donationKey);
+            if (donationKV) {
+                const data = JSON.parse(donationKV);
+                donationData = {
+                    totalSpent: data.totalSpent || 0,
+                    purchases: data.purchases || 0
+                };
+            }
         }
     } catch (e) {
         console.error('Failed to fetch donation data:', e);
@@ -116,8 +139,8 @@ async function handleGetProfile(request, env) {
             total_reviews: 0,
             last_trade_at: null
         },
-        reviews: reviews || [],
-        recentTrades: recentTrades || [],
+        reviews: reviews,
+        recentTrades: recentTrades,
         donationData: donationData
     }), {
         headers: { 'Content-Type': 'application/json' }
@@ -158,7 +181,12 @@ export async function onRequest(context) {
         return response;
     } catch (error) {
         console.error('Profile API error:', error);
-        return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        console.error('Error stack:', error.stack);
+        console.error('Request URL:', request.url);
+        return new Response(JSON.stringify({
+            error: 'Internal server error',
+            details: error.message
+        }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
