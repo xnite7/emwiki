@@ -1444,7 +1444,7 @@ footer {
     padding: 20px;
 }
 
-.catalog-grid:empty::after {
+#wishlist-items:empty::after {
     content: "Nothing to see here :3";
     color: var(--text-secondary);
     font-size: 18px;
@@ -2835,7 +2835,9 @@ textarea {
 .recent-section {
     margin-top: 25px;
 }
-
+.recent-section:has(#recent-viewed-items:empty) {
+    display: none;
+}
 
 .wishlist-total {
     font-variant: all-petite-caps;

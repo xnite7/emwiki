@@ -59,18 +59,18 @@
 }
 
 .stats {
-    visibility: collapse;
+    font-size: 0px;
 }
 
 .stats #showing,
 .stats #total {
-    visibility: visible;
+    font-size: 14px;
     color: var(--text-primary);
     font-weight: 600;
 }
 
 .stats:hover {
-    visibility: visible;
+    font-size: 14px;
 }
 
 .stats #total::before {
