@@ -544,7 +544,8 @@ body:has(.item-modal.active) {
 .modal-actions {
     position: absolute;
     top: 50%;
-    transform: translate(390px, -50%);
+    right: -70px;
+    transform: translateY(-50%);
     display: flex;
     flex-direction: column;
     gap: 15px;
