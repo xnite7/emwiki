@@ -7380,7 +7380,14 @@
                 `;
 
                 const mediaElement = item.media_type === 'video'
-                    ? `<video src="${item.media_url}" controls style="width: 200px; height: 150px; object-fit: cover; border-radius: 6px; background: #000;"></video>`
+                    ? `<div style="position: relative; width: 200px; height: 150px; background: #000; border-radius: 6px; overflow: hidden;">
+                           <video src="${item.media_url}" controls preload="metadata" style="width: 100%; height: 100%; object-fit: cover;"></video>
+                           <div style="position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; background: rgba(0,0,0,0.75); border-radius: 6px; display: flex; align-items: center; justify-content: center; pointer-events: none; backdrop-filter: blur(4px);">
+                               <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: white;" xmlns="http://www.w3.org/2000/svg">
+                                   <path d="M8 5v14l11-7z"/>
+                               </svg>
+                           </div>
+                       </div>`
                     : `<img src="${item.media_url}" alt="${item.title}" style="width: 200px; height: 150px; object-fit: cover; border-radius: 6px; background: #000;">`;
 
                 const profilePill = this.createProfilePill(item.username, item.avatar_url, item.role);

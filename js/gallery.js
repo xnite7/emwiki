@@ -315,7 +315,14 @@ class Gallery {
         div.dataset.id = item.id;
 
         const mediaElement = item.media_type === 'video'
-            ? `<video class="gallery-item-media" src="${item.media_url}" muted></video>`
+            ? `<div class="video-wrapper">
+                   <video class="gallery-item-media" src="${item.media_url}" muted preload="metadata"></video>
+                   <div class="video-play-icon">
+                       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                           <path d="M8 5v14l11-7z"/>
+                       </svg>
+                   </div>
+               </div>`
             : `<img class="gallery-item-media" src="${item.media_url}" alt="${item.title}" loading="lazy">`;
 
         const likesCount = item.likes_count || 0;
@@ -459,7 +466,14 @@ class Gallery {
         div.className = 'submission-item';
 
         const mediaElement = item.media_type === 'video'
-            ? `<video class="submission-thumbnail" src="${item.media_url}" muted></video>`
+            ? `<div class="submission-video-wrapper">
+                   <video class="submission-thumbnail" src="${item.media_url}" muted preload="metadata"></video>
+                   <div class="video-play-icon">
+                       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                           <path d="M8 5v14l11-7z"/>
+                       </svg>
+                   </div>
+               </div>`
             : `<img class="submission-thumbnail" src="${item.media_url}" alt="${item.title}">`;
 
         const statusClass = item.status;
