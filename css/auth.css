@@ -1258,12 +1258,12 @@
     opacity: 1;
 }
 
-.progress-bar-container {
+#donation-progress-card .progress-bar-container {
     position: relative;
     margin-bottom: 30px;
 }
 
-.progress-bar {
+#donation-progress-card .progress-bar {
     width: 100%;
     height: 40px;
     background: linear-gradient(145deg, #2a2a2a 0%, #1f1f1f 100%);
@@ -1276,7 +1276,7 @@
         inset 2px 2px 4px rgba(255, 255, 255, 0.02);
 }
 
-.progress-bar-fill {
+#donation-progress-card .progress-bar-fill {
     height: 100%;
     background: linear-gradient(90deg, #ffe84a 0%, #ffbf00 100%);
     border-radius: 0px;
@@ -1286,7 +1286,7 @@
     box-shadow: 0 0 20px rgb(255 238 74 / 50%);
 }
 
-.progress-bar.gold .progress-bar-fill {
+#donation-progress-card .progress-bar.gold .progress-bar-fill {
     background: linear-gradient(90deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
     box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
     animation: goldPulse 1.5s ease-in-out 100ms infinite;
@@ -1304,7 +1304,7 @@
     }
 }
 
-.progress-bar-shine {
+#donation-progress-card .progress-bar-shine {
     position: absolute;
     top: 0;
     left: -100%;

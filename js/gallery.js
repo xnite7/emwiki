@@ -2,7 +2,7 @@
 class Gallery {
     constructor() {
         this.currentPage = 1;
-        this.itemsPerPage = 8;
+        this.itemsPerPage = 10;
         this.isLoading = false;
         this.totalItems = 0;
         this.totalPages = 0;
@@ -370,11 +370,9 @@ class Gallery {
         const mediaElement = item.media_type === 'video'
             ? `<div class="video-wrapper">
                    <video class="gallery-item-media" data-src="${item.media_url}" poster="${item.thumbnail_url || ''}" muted preload="none" playsinline disablePictureInPicture controlsList="nodownload noplaybackrate" oncontextmenu="return false;"></video>
-                   <div class="video-play-icon">
                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                            <path d="M8 5v14l11-7z"/>
                        </svg>
-                   </div>
                </div>`
             : `<img class="gallery-item-media" data-src="${item.media_url}" alt="${item.title}" loading="lazy" oncontextmenu="return false;">`;
 
