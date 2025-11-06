@@ -20,37 +20,88 @@
 </head>
 
 <body>
-    <div id="mobile-warning" class="mobile-warning">
-        <p>For the best experience, please view this site on a desktop or laptop computer!</p>
-    </div>
 
     <header>
-        <div class="header-content">
-            <div class="logo">
-                <a href="./">
-                    <img src="./imgs/logo.png" alt="Epic Catalogue Logo">
-                </a>
-            </div>
-            <nav>
-                <a href="./catalog.html">CATALOG</a>
-                <a href="./trading.html">TRADING HUB</a>
-                <a href="./my-trades.html">MY TRADES</a>
-                <a href="./forum.html">FORUM</a>
-                <a href="./gallery.html">GALLERY</a>
-                <div class="auth-wrapper">
-                    <button id="auth-btn" class="btn btn-primary">
-                        <span id="auth-text">LINK ACCOUNT</span>
-                    </button>
-                    <button id="profile-btn" class="btn btn-secondary" style="display: none;">
-                        <img id="user-avatar" class="user-avatar-small" style="display: none;" alt="Avatar">
-                        <span id="username-display"></span>
-                    </button>
-                </div>
-            </nav>
+        <a href="https://emwiki.com">
+            <svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
+                <style>
+                    @keyframes floatAnim {
+    
+                        0%,
+                        to {
+                            transform: translateY(0)
+                        }
+    
+                        50% {
+                            transform: translateY(-4px)
+                        }
+                    }
+    
+                    @keyframes glowPulse {
+    
+                        0%,
+                        to {
+                            filter: drop-shadow(0 0 0#fff)
+                        }
+    
+                        50% {
+                            filter: drop-shadow(0 0 8px #ff0) drop-shadow(0 0 15px #24ff5a)
+                        }
+                    }
+    
+                    @keyframes gradientShift {
+    
+                        0%,
+                        to {
+                            stop-color: #ff0
+                        }
+    
+                        50% {
+                            stop-color: #24ff5a
+                        }
+                    }
+                </style>
+                <defs>
+                    <linearGradient id="eppp1" y1="1" x2="0">
+                        <stop offset=".2" style="stop-color:#ff0" />
+                        <stop offset="1" style="stop-color:#24ff5a" />
+                    </linearGradient>
+                    <linearGradient id="eppp2" y1="1" x2="0">
+                        <stop offset="0" style="stop-color:#24ff5d" />
+                        <stop offset="1" style="stop-color:#ff0" />
+                    </linearGradient>
+                </defs>
+                <image id="cloud" x="461" y="459" href="https://emwiki.com/imgs/TWOKPhY.png" height="60" width="60"
+                    style="filter:opacity(.6)" />
+                <text x="489" y="503" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
+                    stroke-linejoin="round" fill="url(#eppp1)"
+                    style="animation:floatAnim 12s ease-in-out infinite;font:200 46px Slapstick">EM</text>
+                <image id="epic-image" x="464" y="463" href="https://emwiki.com/imgs/epicfaces/kitta.png" height="60"
+                    width="60"
+                    style="scale:.48;transform:translate(846px,103px);rotate:20deg;transform-origin:center;animation:floatAnim2 15s ease-in-out 1s infinite alternate" />
+                <image id="cloud" x="495" y="477" href="https://emwiki.com/imgs/8UUB0Gt.png" height="60" width="60"
+                    style="filter:opacity(.86)" />
+                <text x="516" y="514" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
+                    stroke-linejoin="round" fill="url(#eppp2)"
+                    style="animation:floatAnim 12s ease-in-out infinite;animation-delay:5.5s;font:200 16px Slapstick">wiki</text>
+                <image id="cloud" x="445" y="487" href="https://emwiki.com/imgs/oYKd3nJ.png" height="28" width="42"
+                    style="filter:opacity(.8)" />
+            </svg>
+    
+        </a>
+    
+        <div class="nav-links">
+            <a href="/catalog" class="nav-link">Catalog</a>
+            <a href="/trading" class="nav-link">Trading Hub</a>
+            <a href="/forum" class="nav-link">Forum</a>
+            <a href="/gallery" class="nav-link">Gallery</a>
+            <a href="/scammers" class="nav-link active">Scammers</a>
         </div>
+    
+    
     </header>
 
-    <main>
+    <main style="background:Canvas">
         <!-- Loading State -->
         <div id="loading-state" class="loading-container">
             <div class="loading-spinner"></div>
@@ -131,29 +182,288 @@
         </div>
     </main>
 
-    <footer>
-        <div class="footer-content">
-            <div class="footer-links">
-                <a href="./privacy-policy.html">Privacy Policy</a>
-                <span class="footer-separator">•</span>
-                <a href="./terms-of-service.html">Terms of Service</a>
-                <span class="footer-separator">•</span>
-                <a href="https://github.com/xnite7/emwiki" target="_blank">GitHub</a>
-            </div>
-            <p class="footer-text">Epic Catalogue is not affiliated with Epic Minigames or Roblox Corporation</p>
+<footer>
+    <div class="footer-content">
+        <div class="footer-section">
+            <h4>Browse</h4>
+            <a href="/catalog">Catalog</a>
+            <a href="/scammers">Scammers List</a>
+            <a href="/admin">Admin Portal</a>
         </div>
-    </footer>
-
-    <!-- Auth Modal (Include from base.js/auth.js) -->
-    <div id="auth-modal" popover>
-        <div class="modal-content">
-            <button id="close-auth-modal" class="close-modal-btn" popovertarget="auth-modal" popovertargetaction="hide">×</button>
-            <div id="auth-content"></div>
+        <div class="footer-section">
+            <h4>Community</h4>
+            <a href="/forum">Forum</a>
+            <a href="/trading">Trading</a>
+            <a href="/gallery">Gallery</a>
+            <a href="https://discord.com/invite/tg">Typical Games Discord</a>
+        </div>
+        <div class="footer-section">
+            <h4>Contact</h4>
+            <p>Found a bug? Reach out to <b>@xnite</b> on Discord!</p>
+            <a href="https://discord.gg/YsKW6UDWZ6">Report a Scammer</a>
         </div>
     </div>
+    <div class="footer-bottom">
+        <p>© 2025 emwiki.com • made with ❤ by xnite</p>
+    </div>
+</footer>
 
     <script src="./js/script.js"></script>
-    <script src="./js/profile.js"></script>
+    <script>
+    // Profile Page Handler
+    class ProfilePage extends BaseApp {
+        constructor() {
+            super();
+            this.loadTheme();
+            this.userId = null;
+            this.profileData = null;
+            this.apiBase = 'https://emwiki.com/api';
+
+            this.init();
+        }
+
+        async init() {
+            // Get user ID from URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            this.userId = urlParams.get('user') || urlParams.get('id');
+
+            if (!this.userId) {
+                this.showError('No user ID provided');
+                return;
+            }
+
+            await this.loadProfile();
+        }
+
+        async loadProfile() {
+            try {
+                const response = await fetch(`${this.apiBase}/profile/${this.userId}`);
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        this.showError('User not found');
+                    } else {
+                        this.showError('Failed to load profile');
+                    }
+                    return;
+                }
+
+                this.profileData = await response.json();
+                this.renderProfile();
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                this.showError('Failed to load profile');
+            }
+        }
+
+        showError(message) {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('error-state').style.display = 'flex';
+            document.getElementById('profile-content').style.display = 'none';
+        }
+
+        renderProfile() {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('error-state').style.display = 'none';
+            document.getElementById('profile-content').style.display = 'block';
+
+            const { user, stats, reviews, recentTrades, donationData } = this.profileData;
+
+            // Update page title
+            document.title = `${user.displayName} - Epic Catalogue`;
+
+            // Render profile header
+            this.renderProfileHeader(user, donationData);
+
+            // Render stats
+            this.renderStats(stats);
+
+            // Render recent trades
+            this.renderRecentTrades(recentTrades);
+
+            // Render reviews
+            this.renderReviews(reviews);
+        }
+
+        renderProfileHeader(user, donationData) {
+            // Avatar
+            const avatarImg = document.getElementById('profile-avatar');
+            avatarImg.src = user.avatarUrl || './imgs/placeholder.png';
+            avatarImg.alt = `${user.displayName}'s Avatar`;
+
+            // Display name
+            document.getElementById('profile-display-name').textContent = user.displayName;
+
+            // Username
+            document.getElementById('profile-username').textContent = `@${user.username}`;
+
+            // Roles
+            const rolesContainer = document.getElementById('profile-roles');
+            rolesContainer.innerHTML = '';
+
+            if (user.roles && Array.isArray(user.roles)) {
+                // Filter out 'user' role and show special roles
+                const specialRoles = user.roles.filter(role => role !== 'user');
+
+                specialRoles.forEach(role => {
+                    const badge = document.createElement('span');
+                    badge.className = `role-badge role-${role}`;
+                    badge.textContent = role.toUpperCase();
+                    rolesContainer.appendChild(badge);
+                });
+            }
+
+            // Joined date
+            const joinedDate = new Date(user.createdAt);
+            document.getElementById('profile-joined').innerHTML = `
+            <strong>Joined:</strong> ${this.formatDate(joinedDate)}
+        `;
+
+            // Last online
+            const lastOnline = new Date(user.lastOnline);
+            const isOnline = Date.now() - user.lastOnline < 5 * 60 * 1000; // 5 minutes
+            const onlineStatus = isOnline ? '🟢 Online' : `Last seen: ${this.formatRelativeTime(lastOnline)}`;
+
+            document.getElementById('profile-last-online').innerHTML = `
+            <strong>${onlineStatus}</strong>
+        `;
+        }
+
+        renderStats(stats) {
+            document.getElementById('stat-total-trades').textContent = stats.total_trades || 0;
+            document.getElementById('stat-successful-trades').textContent = stats.successful_trades || 0;
+
+            const rating = stats.average_rating || 0;
+            document.getElementById('stat-rating').textContent = rating.toFixed(1);
+
+            document.getElementById('stat-reviews').textContent = stats.total_reviews || 0;
+        }
+
+        renderRecentTrades(trades) {
+            const container = document.getElementById('recent-trades-container');
+
+            if (!trades || trades.length === 0) {
+                container.innerHTML = '<p class="no-data-message">No recent trades</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+
+            trades.forEach(trade => {
+                const tradeCard = document.createElement('div');
+                tradeCard.className = 'trade-card';
+
+                const roleIcon = trade.role === 'seller' ? '📤' : '📥';
+                const roleText = trade.role === 'seller' ? 'Sold' : 'Bought';
+
+                tradeCard.innerHTML = `
+                <div class="trade-icon">${roleIcon}</div>
+                <div class="trade-info">
+                    <div class="trade-item-name">${this.escapeHtml(trade.item_name)}</div>
+                    <div class="trade-meta">${roleText} • ${this.formatRelativeTime(new Date(trade.completed_at))}</div>
+                </div>
+            `;
+
+                container.appendChild(tradeCard);
+            });
+        }
+
+        renderReviews(reviews) {
+            const container = document.getElementById('reviews-container');
+
+            if (!reviews || reviews.length === 0) {
+                container.innerHTML = '<p class="no-data-message">No reviews yet</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+
+            reviews.forEach(review => {
+                const reviewCard = document.createElement('div');
+                reviewCard.className = 'review-card';
+
+                const stars = this.renderStars(review.rating);
+
+                reviewCard.innerHTML = `
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <img src="${review.reviewer_avatar || './imgs/placeholder.png'}"
+                             alt="${this.escapeHtml(review.reviewer_display_name)}"
+                             class="reviewer-avatar">
+                        <div>
+                            <div class="reviewer-name">${this.escapeHtml(review.reviewer_display_name)}</div>
+                            <div class="review-date">${this.formatRelativeTime(new Date(review.created_at))}</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">${stars}</div>
+                </div>
+                ${review.comment ? `<div class="review-comment">${this.escapeHtml(review.comment)}</div>` : ''}
+            `;
+
+                container.appendChild(reviewCard);
+            });
+        }
+
+        renderStars(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+            let stars = '';
+            for (let i = 0; i < fullStars; i++) {
+                stars += '⭐';
+            }
+            if (hasHalfStar) {
+                stars += '⭐';
+            }
+            for (let i = 0; i < emptyStars; i++) {
+                stars += '☆';
+            }
+
+            return `${stars} (${rating}/5)`;
+        }
+
+        formatDate(date) {
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        formatRelativeTime(date) {
+            const now = Date.now();
+            const diff = now - date.getTime();
+
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            const months = Math.floor(days / 30);
+            const years = Math.floor(days / 365);
+
+            if (seconds < 60) return 'just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            if (days < 30) return `${days}d ago`;
+            if (months < 12) return `${months}mo ago`;
+            return `${years}y ago`;
+        }
+
+        escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    }
+
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+        window.profilePage = new ProfilePage();
+    });
+
+
+    </script>
 </body>
 
 </html>
