@@ -5,15 +5,7 @@ class ProfilePage {
         this.profileData = null;
         this.apiBase = 'https://emwiki.com/api';
 
-        // Wait for Auth to be ready
-        if (window.Auth) {
-            window.Auth.addEventListener("sessionReady", () => {
-                console.log("User session ready");
-                this.init();
-            });
-        } else {
-            this.init();
-        }
+        this.init();
     }
 
     async init() {
