@@ -74,6 +74,16 @@
     position: relative;
 }
 
+.online-status::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: #35df3c;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+}
+
 .profile-avatar {
     width: 120px;
         height: 120px;

@@ -333,11 +333,11 @@
             // Last online
             const lastOnline = new Date(user.lastOnline);
             const isOnline = Date.now() - user.lastOnline < 5 * 60 * 1000; // 5 minutes
-            const onlineStatus = isOnline ? '🟢 Online' : `Last seen: ${this.formatRelativeTime(lastOnline)}`;
+            const onlineStatus = isOnline ? `<strong class="online-status">Online</strong>` : `<strong class="offline-status">Last seen: ${this.formatRelativeTime(lastOnline)}</strong>`;
+            const profilepicborder = isOnline ? `4px solid #35df3c` : ``;
 
-            document.getElementById('profile-last-online').innerHTML = `
-            <strong>${onlineStatus}</strong>
-        `;
+            document.getElementById('profile-last-online').innerHTML = onlineStatus;
+            document.getElementById('profile-avatar').style.border = profilepicborder;
         }
 
         renderStats(stats) {
