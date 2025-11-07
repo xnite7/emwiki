@@ -396,7 +396,7 @@
 
                 const mediaElement = post.media_type === 'video'
                     ? `<div class="gallery-post-media-wrapper">
-                           <video class="gallery-post-media" src="${post.media_url}" muted preload="metadata"></video>
+                           <video class="gallery-post-media" src="${post.media_url}" poster="${post.thumbnail_url || ''}" muted preload="metadata"></video>
                            <div class="gallery-post-play-icon">
                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                    <path d="M8 5v14l11-7z"/>
@@ -431,7 +431,7 @@
 
                 // Make clickable to open in gallery
                 postCard.addEventListener('click', () => {
-                    window.location.href = `/gallery#post-${post.id}`;
+                    window.location.href = `/gallery`;
                 });
 
                 container.appendChild(postCard);
