@@ -387,6 +387,89 @@ async function handlePost({ request, env, params }) {
     }
   }
 
+  // POST /api/gallery/backfill-thumbnails - Get videos without thumbnails (admin only)
+  if (path === 'backfill-thumbnails') {
+    if (!isAdmin(user)) {
+      return new Response(JSON.stringify({ error: 'Unauthorized - Admin only' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+      });
+    }
+
+    try {
+      // Get all approved videos without thumbnails
+      const videos = await env.DBA.prepare(`
+        SELECT id, title, media_url
+        FROM gallery_items
+        WHERE media_type = 'video'
+          AND status = 'approved'
+          AND (thumbnail_url IS NULL OR thumbnail_url = '')
+        ORDER BY created_at DESC
+        LIMIT 50
+      `).all();
+
+      return new Response(JSON.stringify({
+        success: true,
+        count: videos.results?.length || 0,
+        videos: videos.results || []
+      }), {
+        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+      });
+    } catch (error) {
+      return new Response(JSON.stringify({
+        error: 'Failed to fetch videos',
+        details: error.message
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+      });
+    }
+  }
+
+  // POST /api/gallery/update-thumbnail/:id - Update thumbnail for existing video (admin only)
+  if (path.startsWith('update-thumbnail/')) {
+    const videoId = path.split('/')[1];
+
+    if (!isAdmin(user)) {
+      return new Response(JSON.stringify({ error: 'Unauthorized - Admin only' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+      });
+    }
+
+    try {
+      const data = await request.json();
+      const { thumbnail_url } = data;
+
+      if (!thumbnail_url) {
+        return new Response(JSON.stringify({ error: 'thumbnail_url required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+        });
+      }
+
+      // Update thumbnail
+      await env.DBA.prepare(
+        'UPDATE gallery_items SET thumbnail_url = ? WHERE id = ? AND media_type = ?'
+      ).bind(thumbnail_url, videoId, 'video').run();
+
+      return new Response(JSON.stringify({
+        success: true,
+        message: 'Thumbnail updated successfully'
+      }), {
+        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+      });
+    } catch (error) {
+      return new Response(JSON.stringify({
+        error: 'Failed to update thumbnail',
+        details: error.message
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+      });
+    }
+  }
+
   // POST /api/gallery/moderate/:id - Moderate item (admin only)
   if (path.startsWith('moderate/')) {
     if (!isAdmin(user)) {

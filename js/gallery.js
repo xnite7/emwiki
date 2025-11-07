@@ -474,7 +474,7 @@ class Gallery {
         if (item.media_type === 'video') {
             mediaContainer.innerHTML = `
                 <div class="custom-video-player">
-                    <video src="${item.media_url}" playsinline disablePictureInPicture controlsList="nodownload noplaybackrate" oncontextmenu="return false;"></video>
+                    <video src="${item.media_url}" loop playsinline disablePictureInPicture controlsList="nodownload noplaybackrate" oncontextmenu="return false;"></video>
                     <div class="custom-controls">
                         <button class="play-pause-btn" aria-label="Play/Pause">
                             <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -1023,6 +1023,100 @@ class Gallery {
         });
     }
 
+    async backfillThumbnails() {
+        if (!this.isAdmin()) {
+            this.showToast('Admin access required', 'error');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('auth_token');
+
+            this.showToast('Fetching videos without thumbnails...', 'info');
+
+            // Get list of videos without thumbnails
+            const response = await fetch('https://emwiki.com/api/gallery/backfill-thumbnails', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch videos');
+            }
+
+            const { videos, count } = await response.json();
+
+            if (count === 0) {
+                this.showToast('All videos already have thumbnails!', 'success');
+                return;
+            }
+
+            this.showToast(`Processing ${count} videos...`, 'info');
+
+            // Process each video
+            let processed = 0;
+            let failed = 0;
+
+            for (const video of videos) {
+                try {
+                    // Generate thumbnail from video URL
+                    const videoBlob = await this.fetchVideoAsBlob(video.media_url);
+                    const thumbnailBlob = await this.generateVideoThumbnail(videoBlob);
+
+                    // Upload thumbnail
+                    const thumbFormData = new FormData();
+                    thumbFormData.append('file', thumbnailBlob, `thumb-${video.id}.jpg`);
+
+                    const uploadResponse = await fetch('https://emwiki.com/api/gallery/upload', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: thumbFormData
+                    });
+
+                    if (uploadResponse.ok) {
+                        const { url } = await uploadResponse.json();
+
+                        // Update video with thumbnail
+                        await fetch(`https://emwiki.com/api/gallery/update-thumbnail/${video.id}`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ thumbnail_url: url })
+                        });
+
+                        processed++;
+                        this.showToast(`Processed ${processed}/${count} videos`, 'info');
+                    } else {
+                        failed++;
+                    }
+                } catch (error) {
+                    console.error(`Failed to process video ${video.id}:`, error);
+                    failed++;
+                }
+            }
+
+            this.showToast(`Backfill complete! ${processed} processed, ${failed} failed`, 'success');
+        } catch (error) {
+            console.error('Backfill error:', error);
+            this.showToast(`Backfill failed: ${error.message}`, 'error');
+        }
+    }
+
+    async fetchVideoAsBlob(videoUrl) {
+        const response = await fetch(videoUrl);
+        if (!response.ok) {
+            throw new Error('Failed to fetch video');
+        }
+        return await response.blob();
+    }
+
     async sharePost(postId) {
         // Use the embed URL for better Discord previews
         const shareUrl = `https://emwiki.com/gallery/${postId}`;
@@ -1065,8 +1159,17 @@ class Gallery {
 // Initialize gallery when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        new Gallery();
+        window.gallery = new Gallery();
     });
 } else {
-    new Gallery();
+    window.gallery = new Gallery();
 }
+
+// Expose backfill function for admin console access
+window.backfillGalleryThumbnails = function() {
+    if (window.gallery) {
+        window.gallery.backfillThumbnails();
+    } else {
+        console.error('Gallery not initialized');
+    }
+};
