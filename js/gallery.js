@@ -555,6 +555,9 @@ class Gallery {
 
         // Admin/mod delete button
         if (this.currentUser && this.isAdmin()) {
+            if (modal.querySelector('.admin-delete-btn')) {
+                modal.querySelector('.admin-delete-btn').remove();
+            }
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'admin-delete-btn';
             deleteBtn.textContent = '🗑️';
