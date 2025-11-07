@@ -89,7 +89,7 @@ export async function onRequest(context) {
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>${title} - Epic Catalogue Gallery</title>
+<title>${title} - Epic Wiki Gallery</title>
 
 <!-- OpenGraph tags for Discord/Facebook -->
 <meta property="og:type" content="article" />
@@ -97,7 +97,7 @@ export async function onRequest(context) {
 <meta property="og:description" content="${metaDescription}" />
 <meta property="og:image" content="${imageUrl}" />
 <meta property="og:url" content="${base}/gallery/${postId}" />
-<meta property="og:site_name" content="Epic Catalogue Gallery" />
+<meta property="og:site_name" content="Epic Wiki Gallery" />
 
 <!-- Twitter Card tags -->
 <meta name="twitter:card" content="summary_large_image" />
