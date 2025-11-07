@@ -174,9 +174,25 @@
 
             <!-- Gallery Posts -->
             <section class="profile-section">
-                <h2 class="section-title">Gallery Posts</h2>
-                <div id="gallery-posts-container" class="gallery-posts-grid">
-                    <p class="no-data-message">No gallery posts yet</p>
+                <div class="gallery-section-header">
+                    <h2 class="section-title">Gallery Posts</h2>
+                    <div class="gallery-nav-arrows">
+                        <button class="gallery-arrow gallery-arrow-left" aria-label="Scroll left">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                        </button>
+                        <button class="gallery-arrow gallery-arrow-right" aria-label="Scroll right">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="gallery-posts-carousel-wrapper">
+                    <div id="gallery-posts-container" class="gallery-posts-carousel">
+                        <p class="no-data-message">No gallery posts yet</p>
+                    </div>
                 </div>
             </section>
 
@@ -436,6 +452,62 @@
 
                 container.appendChild(postCard);
             });
+
+            // Setup carousel navigation after posts are rendered
+            this.setupGalleryCarousel();
+        }
+
+        setupGalleryCarousel() {
+            const carousel = document.getElementById('gallery-posts-container');
+            const leftArrow = document.querySelector('.gallery-arrow-left');
+            const rightArrow = document.querySelector('.gallery-arrow-right');
+
+            if (!carousel || !leftArrow || !rightArrow) return;
+
+            // Only setup if there are actual posts
+            if (carousel.children.length === 0 || carousel.querySelector('.no-data-message')) {
+                leftArrow.disabled = true;
+                rightArrow.disabled = true;
+                return;
+            }
+
+            // Calculate scroll amount based on viewport width
+            const getScrollAmount = () => {
+                const vw = window.innerWidth;
+                if (vw <= 768) {
+                    return 200; // 180px card + 20px gap (mobile)
+                }
+                return  vw / 3; // 220px card + 20px gap (desktop)
+            };
+
+            // Update arrow states based on scroll position
+            const updateArrowStates = () => {
+                const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+                leftArrow.disabled = carousel.scrollLeft <= 0;
+                rightArrow.disabled = carousel.scrollLeft >= maxScroll - 1; // -1 for rounding
+            };
+
+            // Initial state
+            updateArrowStates();
+
+            // Scroll left
+            leftArrow.addEventListener('click', () => {
+                carousel.scrollBy({
+                    left: -getScrollAmount(),
+                    behavior: 'smooth'
+                });
+            });
+
+            // Scroll right
+            rightArrow.addEventListener('click', () => {
+                carousel.scrollBy({
+                    left: getScrollAmount(),
+                    behavior: 'smooth'
+                });
+            });
+
+            // Update arrow states on scroll
+            carousel.addEventListener('scroll', updateArrowStates);
         }
 
         renderReviews(reviews) {

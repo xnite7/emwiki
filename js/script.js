@@ -2063,6 +2063,11 @@ class Auth extends EventTarget {
         console.log('%cwtf are u doing here...', 'color: #ffffff; background: #000000; padding:5px 10px; font-size:16px; font-weight:bold;');
         console.log('%cget out of here. i dont love u', 'color: #ffffff; background: #000000; padding:5px 10px; font-size:16px; font-weight:bold;');
 
+        // Development mode - auto-login with fake user on localhost
+        if (this.isDevelopmentMode() && !this.token) {
+            this.setupDevUser();
+        }
+
         document.querySelector('header').insertAdjacentHTML('beforeend', `
             <button style="display:none" class="btn" id="installBtn">
 				<svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -2372,6 +2377,14 @@ class Auth extends EventTarget {
     }
 
     async checkSession() {
+        // In dev mode, use the fake user
+        if (this.isDevelopmentMode() && this.token === 'dev_mode_token') {
+            this.user = this.getDevUser();
+            this.dispatchEvent(new Event("sessionReady"));
+            this.updateUI();
+            return;
+        }
+
         try {
             const response = await fetch('https://emwiki.com/api/auth/session', {
                 headers: {
@@ -2923,7 +2936,7 @@ class Auth extends EventTarget {
     }
 
     async logout() {
-        if (this.token) {
+        if (this.token && this.token !== 'dev_mode_token') {
             await fetch('https://emwiki.com/api/auth/logout', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${this.token}` }
@@ -2934,6 +2947,55 @@ class Auth extends EventTarget {
 
 
         location.reload();
+    }
+
+    isDevelopmentMode() {
+        // Check if running on localhost or 127.0.0.1
+        return window.location.hostname === 'localhost' ||
+               window.location.hostname === '127.0.0.1' ||
+               window.location.hostname === '';
+    }
+
+    getDevUser() {
+        return {
+            userId: 123456789,
+            displayName: 'DevUser',
+            username: 'devuser_testing',
+            profilePicture: '/imgs/placeholder.png',
+            role: ['admin', 'moderator', 'user'],
+            createdAt: new Date().toISOString(),
+            isDev: true
+        };
+    }
+
+    setupDevUser() {
+        console.log('%c[DEV MODE] Auto-logging in with fake user', 'color: #00ff00; background: #000000; padding:5px 10px; font-size:14px; font-weight:bold;');
+        this.token = 'dev_mode_token';
+        localStorage.setItem('auth_token', 'dev_mode_token');
+        this.user = this.getDevUser();
+
+        // Add visual indicator for dev mode
+        const devBanner = document.createElement('div');
+        devBanner.id = 'dev-mode-banner';
+        devBanner.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(90deg, #00ff00, #00cc00);
+            color: black;
+            text-align: center;
+            padding: 5px;
+            font-weight: bold;
+            font-size: 12px;
+            z-index: 10000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        `;
+        devBanner.textContent = '🔧 DEVELOPMENT MODE - Logged in as DevUser (Admin)';
+        document.body.insertBefore(devBanner, document.body.firstChild);
+
+        // Adjust page content to account for banner
+        document.body.style.paddingTop = '25px';
     }
 
     setupPWAInstall() {
