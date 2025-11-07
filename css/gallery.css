@@ -573,6 +573,8 @@
 .viewer-description {
     line-height: 1.6;
     max-height: 65px;
+    min-height: 30px;
+    scrollbar-width: thin;
     margin-top: 10px;
     color: var(--text-secondary);
     width: 66%;
