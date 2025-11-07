@@ -20,8 +20,6 @@ class Gallery {
             window.Auth.addEventListener('sessionReady', () => {
                 this.currentUser = window.Auth.user;
                 this.updateUIForAuth();
-
-
             });
 
             // Check if already authenticated
@@ -56,7 +54,7 @@ class Gallery {
 
     updateUIForAuth() {
         if (this.currentUser) {
-            document.getElementById('gallery-actions').style.display = 'flex';
+            document.querySelector('.gallery-actions').style.display = 'flex';
         }
     }
 

@@ -28,7 +28,7 @@
 }
 
 .gallery-actions {
-    display: flex;
+    display: none;
     margin-bottom: 36px;
     gap: 15px;
     justify-content: center;
