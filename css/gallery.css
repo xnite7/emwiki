@@ -284,17 +284,20 @@
 .profile-pill-role.role-admin {
     background: linear-gradient(135deg, #ff4444, #cc0000);
     color: white;
+        border: 1px solid #630000;
 }
 
 .profile-pill-role.role-moderator,
 .profile-pill-role.role-mod {
     background: linear-gradient(135deg, #4169E1, #1E3A8A);
     color: white;
+        border: 1px solid #4709bb;
 }
 
 .profile-pill-role.role-vip {
     background: linear-gradient(135deg, #FFD700, #FFA500);
     color: #000;
+    border: 1px solid #bb6209;
 }
 
 .profile-pill-role.role-user {
@@ -813,8 +816,8 @@
 
 .sort-btn {
     padding: 8px 16px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid var(--border-color);
+    background: var(--bg-item);
     color: var(--text-primary);
     border-radius: 20px;
     cursor: pointer;
@@ -823,8 +826,8 @@
 }
 
 .sort-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: var(--shadow-color);
+    border-color: var(--border-color);
 }
 
 .sort-btn.active {

@@ -409,6 +409,7 @@ class Gallery {
         if (roles.includes('moderator')) return 'moderator';
         if (roles.includes('mod')) return 'mod';
         if (roles.includes('vip')) return 'vip';
+        if (roles.includes('donator')) return 'donator';
         return 'user';
     }
 
@@ -416,15 +417,8 @@ class Gallery {
         const div = document.createElement('div');
         div.className = 'gallery-item';
         div.dataset.id = item.id;
-
-        const mediaElement = item.media_type === 'video'
-            ? `<div class="video-wrapper">
-                   <video class="gallery-item-media" data-src="${item.media_url}" poster="${item.thumbnail_url || ''}" muted preload="none" playsinline disablePictureInPicture controlsList="nodownload noplaybackrate" oncontextmenu="return false;"></video>
-                       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                           <path d="M8 5v14l11-7z"/>
-                       </svg>
-               </div>`
-            : `<img class="gallery-item-media" data-src="${item.media_url}" alt="${item.title}" loading="lazy" oncontextmenu="return false;">`;
+        console.log(item.thumbnail_url)
+        const mediaElement = `<img class="gallery-item-media" data-src="${item.media_type == 'video' ? item.thumbnail_url : item.media_url}" alt="${item.title}" loading="lazy" oncontextmenu="return false;">`;
 
         const likesCount = item.likes_count || 0;
         const profilePill = this.createProfilePill(item.username, item.avatar_url, item.role, item.user_id);

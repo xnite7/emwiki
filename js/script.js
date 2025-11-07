@@ -2961,8 +2961,8 @@ class Auth extends EventTarget {
             userId: 123456789,
             displayName: 'DevUser',
             username: 'devuser_testing',
-            profilePicture: '/imgs/placeholder.png',
-            role: ['admin', 'moderator', 'user'],
+            avatarUrl: './imgs/devadmin.png',
+            role: ['admin', 'moderator'],
             createdAt: new Date().toISOString(),
             isDev: true
         };

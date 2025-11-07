@@ -69,7 +69,7 @@ async function handleGet({ request, env, params }) {
     }
 
     const items = await env.DBA.prepare(
-      `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.media_type,
+      `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.thumbnail_url, g.media_type,
               g.status, g.created_at, g.views, u.avatar_url, u.role
        FROM gallery_items g
        LEFT JOIN users u ON g.user_id = u.user_id
@@ -98,7 +98,7 @@ async function handleGet({ request, env, params }) {
     let items;
     try {
       items = await env.DBA.prepare(
-        `SELECT g.id, g.title, g.description, g.media_url, g.media_type, g.status,
+        `SELECT g.id, g.title, g.description, g.media_url, g.thumbnail_url, g.media_type, g.status,
                 g.created_at, g.views, g.rejection_reason, u.avatar_url, u.role,
                 COUNT(gl.id) as likes_count
          FROM gallery_items g
@@ -112,7 +112,7 @@ async function handleGet({ request, env, params }) {
       // Fallback without likes
       console.error('Error querying submissions with likes, falling back:', error);
       items = await env.DBA.prepare(
-        `SELECT g.id, g.title, g.description, g.media_url, g.media_type, g.status,
+        `SELECT g.id, g.title, g.description, g.media_url, g.thumbnail_url, g.media_type, g.status,
                 g.created_at, g.views, g.rejection_reason, u.avatar_url, u.role,
                 0 as likes_count
          FROM gallery_items g
@@ -142,7 +142,7 @@ async function handleGet({ request, env, params }) {
       let item;
       try {
         item = await env.DBA.prepare(
-          `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.media_type,
+          `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.thumbnail_url, g.media_type,
                   g.created_at, g.views, u.avatar_url, u.role,
                   COUNT(gl.id) as likes_count,
                   CASE WHEN ? IS NOT NULL AND ugl.id IS NOT NULL THEN 1 ELSE 0 END as user_liked
@@ -156,7 +156,7 @@ async function handleGet({ request, env, params }) {
       } catch (error) {
         // Fallback without likes
         item = await env.DBA.prepare(
-          `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.media_type,
+          `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.thumbnail_url, g.media_type,
                   g.created_at, g.views, u.avatar_url, u.role,
                   0 as likes_count,
                   0 as user_liked
@@ -205,7 +205,7 @@ async function handleGet({ request, env, params }) {
 
     // Try to query with likes (requires gallery_likes table to exist)
     items = await env.DBA.prepare(
-      `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.media_type,
+      `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.thumbnail_url, g.media_type,
               g.created_at, g.views, u.avatar_url, u.role,
               COUNT(gl.id) as likes_count,
               CASE WHEN ? IS NOT NULL AND ugl.id IS NOT NULL THEN 1 ELSE 0 END as user_liked
@@ -223,7 +223,7 @@ async function handleGet({ request, env, params }) {
     console.error('Error querying with likes, falling back to simple query:', error);
 
     items = await env.DBA.prepare(
-      `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.media_type,
+      `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.thumbnail_url, g.media_type,
               g.created_at, g.views, u.avatar_url, u.role,
               0 as likes_count,
               0 as user_liked

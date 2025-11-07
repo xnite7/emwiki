@@ -547,6 +547,7 @@
 
 /* Profile Dropdown Card */
 .profile-dropdown {
+        max-width: min-content;
     inset: auto;
     top: calc(anchor(bottom) + 10px);
     justify-self: anchor-center;
