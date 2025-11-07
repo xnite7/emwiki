@@ -358,12 +358,13 @@
 
 .gallery-post-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
 .gallery-post-media-wrapper {
     position: relative;
     width: 100%;
+    max-height: 180px;
     aspect-ratio: 1;
     background: rgba(0, 0, 0, 0.3);
     overflow: hidden;
@@ -371,6 +372,7 @@
 
 .gallery-post-media {
     width: 100%;
+    max-height: 180px;
     height: 100%;
     object-fit: cover;
     display: block;
@@ -390,6 +392,10 @@
     align-items: center;
     justify-content: center;
     pointer-events: none;
+}
+
+.gallery-post-play-icon:hover {
+    background: rgba(0, 0, 0, 0.3);
 }
 
 .gallery-post-play-icon svg {
