@@ -163,10 +163,12 @@
     content: '';
     position: absolute;
     top: 50%;
+    backdrop-filter: blur(6px);
     left: 50%;
     transform: translate(-50%, -50%);
     width: 60px;
     height: 60px;
+    z-index: 222;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 50%;
     opacity: 0.5;
@@ -185,7 +187,6 @@
 
 
 .video-wrapper::before {
-    /* Hide placeholder when video has poster */
     opacity: 0;
 }
 
@@ -883,6 +884,32 @@
     content: '🤍';
     font-size: 18px;
     padding-right: 1px;
+}
+
+/* Share Button */
+.share-btn {
+    padding: 10px 20px;
+    font-family: buildersans, Twemoji;
+    border: 2px solid var(--border-color);
+    background: var(--bg-item);
+    color: var(--text-primary);
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.share-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    border-color: #667eea;
+}
+
+.share-btn:active {
+    transform: translateY(0);
 }
 
 .likes-display::after {

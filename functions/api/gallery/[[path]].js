@@ -326,7 +326,7 @@ async function handlePost({ request, env, params }) {
   if (path === 'submit') {
     try {
       const data = await request.json();
-      const { title, description, media_url, media_type } = data;
+      const { title, description, media_url, media_type, thumbnail_url } = data;
 
       if (!title || !media_url || !media_type) {
         return new Response(JSON.stringify({
@@ -352,10 +352,10 @@ async function handlePost({ request, env, params }) {
       const status = shouldAutoApprove(user) ? 'approved' : 'pending';
       const autoApproved = status === 'approved';
 
-      // Insert into database
+      // Insert into database with thumbnail_url
       const result = await env.DBA.prepare(
-        `INSERT INTO gallery_items (user_id, username, title, description, media_url, media_type, status, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO gallery_items (user_id, username, title, description, media_url, media_type, thumbnail_url, status, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).bind(
         user.user_id,
         user.display_name || user.username,
@@ -363,6 +363,7 @@ async function handlePost({ request, env, params }) {
         description || '',
         media_url,
         media_type,
+        thumbnail_url || null,
         status,
         Date.now()
       ).run();

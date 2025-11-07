@@ -429,9 +429,9 @@
                     </div>
                 `;
 
-                // Make clickable to open in gallery
+                // Make clickable to open in gallery with direct link to post
                 postCard.addEventListener('click', () => {
-                    window.location.href = `/gallery`;
+                    window.location.href = `/gallery#post-${post.id}`;
                 });
 
                 container.appendChild(postCard);

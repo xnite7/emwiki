@@ -34,6 +34,24 @@ class Gallery {
         this.setupLazyLoading();
         await new Promise(resolve => setTimeout(resolve, 920));
         await this.loadGallery();
+        // Check for direct post link
+        const hash = window.location.hash;
+        if (hash.startsWith('#post-')) {
+            const postId = hash.replace('#post-', '');
+            await this.openPostById(postId);
+        }
+    }
+
+    async openPostById(postId) {
+        try {
+            const response = await fetch(`https://emwiki.com/api/gallery/${postId}`);
+            if (response.ok) {
+                const { item } = await response.json();
+                this.openViewer(item);
+            }
+        } catch (error) {
+            console.error('Failed to open post:', error);
+        }
     }
 
     updateUIForAuth() {
@@ -211,14 +229,47 @@ class Gallery {
         try {
             // Show progress
             progressContainer.style.display = 'block';
-            progressFill.style.width = '30%';
+            progressFill.style.width = '20%';
+            progressText.textContent = 'Preparing upload...';
+
+            const token = localStorage.getItem('auth_token');
+            let thumbnailUrl = null;
+
+            // Generate thumbnail for videos
+            if (file.type.startsWith('video/')) {
+                progressText.textContent = 'Generating thumbnail...';
+                try {
+                    const thumbnailBlob = await this.generateVideoThumbnail(file);
+
+                    // Upload thumbnail
+                    const thumbFormData = new FormData();
+                    thumbFormData.append('file', thumbnailBlob, 'thumbnail.jpg');
+
+                    const thumbResponse = await fetch('https://emwiki.com/api/gallery/upload', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: thumbFormData
+                    });
+
+                    if (thumbResponse.ok) {
+                        const thumbData = await thumbResponse.json();
+                        thumbnailUrl = thumbData.url;
+                    }
+                } catch (thumbError) {
+                    console.warn('Thumbnail generation failed:', thumbError);
+                    // Continue without thumbnail
+                }
+            }
+
+            progressFill.style.width = '40%';
             progressText.textContent = 'Uploading file...';
 
-            // Upload file to R2
+            // Upload main file to R2
             const formData = new FormData();
             formData.append('file', file);
 
-            const token = localStorage.getItem('auth_token');
             const uploadResponse = await fetch('https://emwiki.com/api/gallery/upload', {
                 method: 'POST',
                 headers: {
@@ -234,7 +285,7 @@ class Gallery {
 
             const { url, type } = await uploadResponse.json();
 
-            progressFill.style.width = '60%';
+            progressFill.style.width = '70%';
             progressText.textContent = 'Submitting for review...';
 
             // Submit gallery item
@@ -249,7 +300,8 @@ class Gallery {
                     title,
                     description,
                     media_url: url,
-                    media_type: mediaType
+                    media_type: mediaType,
+                    thumbnail_url: thumbnailUrl
                 })
             });
 
@@ -411,6 +463,9 @@ class Gallery {
         const views = modal.querySelector('.viewer-views');
         const actionsContainer = modal.querySelector('.viewer-actions');
 
+        // Update URL to reflect current post
+        window.history.pushState(null, '', `#post-${item.id}`);
+
         // Fetch item from API to increment view count and get latest data
 
 
@@ -480,6 +535,17 @@ class Gallery {
                 actionsContainer.innerHTML = '';
 
                 actionsContainer.appendChild(likeBtn);
+
+                // Add share button
+                const shareBtn = document.createElement('button');
+                shareBtn.className = 'share-btn';
+                shareBtn.innerHTML = '🔗 Share';
+                shareBtn.title = 'Copy shareable link';
+                shareBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.sharePost(item.id);
+                });
+                actionsContainer.appendChild(shareBtn);
 
                 views.innerHTML = `${data.item.views || 0} <svg viewBox="0 -3 42 42" style="width: 19px; height: 19px; fill: currentColor;"><path d="M15.3 20.1c0 3.1 2.6 5.7 5.7 5.7s5.7-2.6 5.7-5.7-2.6-5.7-5.7-5.7-5.7 2.6-5.7 5.7m8.1 12.3C30.1 30.9 40.5 22 40.5 22s-7.7-12-18-13.3c-.6-.1-2.6-.1-3-.1-10 1-18 13.7-18 13.7s8.7 8.6 17 9.9c.9.4 3.9.4 4.9.2M11.1 20.7c0-5.2 4.4-9.4 9.9-9.4s9.9 4.2 9.9 9.4S26.5 30 21 30s-9.9-4.2-9.9-9.3"></path></svg>`;
             }
@@ -612,6 +678,11 @@ class Gallery {
 
     closeModal(modal) {
         modal.classList.remove('active');
+
+        // Clear URL hash when closing viewer
+        if (modal.id === 'viewer-modal' && window.location.hash) {
+            window.history.pushState(null, '', window.location.pathname);
+        }
 
         // Stop videos
         const videos = modal.querySelectorAll('video');
@@ -899,6 +970,83 @@ class Gallery {
         const mins = Math.floor(seconds / 60);
         const secs = Math.floor(seconds % 60);
         return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    async generateVideoThumbnail(videoFile) {
+        return new Promise((resolve, reject) => {
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+            video.muted = true;
+            video.playsInline = true;
+
+            video.onloadedmetadata = () => {
+                // Seek to 1 second or 10% of video duration, whichever is shorter
+                const seekTime = Math.min(1, video.duration * 0.1);
+                video.currentTime = seekTime;
+            };
+
+            video.onseeked = () => {
+                try {
+                    // Create canvas to capture frame
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                    // Convert to blob (JPEG with 85% quality)
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            resolve(blob);
+                        } else {
+                            reject(new Error('Failed to generate thumbnail blob'));
+                        }
+                        // Cleanup
+                        video.src = '';
+                        URL.revokeObjectURL(video.src);
+                    }, 'image/jpeg', 0.85);
+                } catch (error) {
+                    reject(error);
+                }
+            };
+
+            video.onerror = () => {
+                reject(new Error('Failed to load video for thumbnail generation'));
+            };
+
+            // Load video from file
+            video.src = URL.createObjectURL(videoFile);
+        });
+    }
+
+    async sharePost(postId) {
+        // Use the embed URL for better Discord previews
+        const shareUrl = `https://emwiki.com/gallery/${postId}`;
+
+        try {
+            // Try native Web Share API first (mobile friendly)
+            if (navigator.share) {
+                await navigator.share({
+                    title: 'Gallery Post',
+                    url: shareUrl
+                });
+                this.showToast('Shared successfully!', 'success');
+            } else {
+                // Fallback to clipboard
+                await navigator.clipboard.writeText(shareUrl);
+                this.showToast('Link copied to clipboard!', 'success');
+            }
+        } catch (error) {
+            // If clipboard fails, show a prompt with the URL
+            if (error.name === 'NotAllowedError' || error.name === 'AbortError') {
+                // User cancelled share dialog
+                return;
+            }
+
+            // Last resort: show prompt
+            prompt('Copy this link:', shareUrl);
+        }
     }
 
     showToast(message, type = 'info') {
