@@ -562,7 +562,7 @@ class Gallery {
                 e.stopPropagation();
                 this.adminDeleteItem(item.id);
             });
-            actionsContainer.appendChild(deleteBtn);
+            modal.querySelector('.viewer-content').appendChild(deleteBtn);
         }
     }
 

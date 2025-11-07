@@ -955,17 +955,25 @@
 
 .admin-delete-btn {
     font-family: Twemoji;
-    padding: 10px;
-    width: 44px;
-    border: 2px solid rgba(244, 67, 54, 0.5);
-    background: rgba(244, 67, 54, 0.1);
-    color: #f44336;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 0.95rem;
-    transition: all 0.2s ease;
-    transform: scale(1);
-    opacity: 1;
+        padding: 10px;
+        position: absolute;
+        top: 9px;
+        left: 9px;
+        width: 44px;
+        border: 2px solid rgba(244, 67, 54, 0.5);
+        background: rgba(244, 67, 54, 0.1);
+        color: #f44336;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        
+        transition: all 0.2s ease;
+        transform: scale(1);
+        opacity: 1;
+
+        @supports (corner-top-left-shape: squircle) {
+            corner-top-left-shape: squircle;
+        }
 
     @starting-style {
         transform: scale(0);
@@ -1112,10 +1120,6 @@ main {
     .viewer-actions {
         flex-direction: column;
         align-items: flex-end;
-    }
-
-    .viewer-content:has(.admin-delete-btn)>.viewer-info {
-        min-height: 155px;
     }
 
     /* Mobile video player optimizations */
