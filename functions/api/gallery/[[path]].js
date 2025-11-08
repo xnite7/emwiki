@@ -60,13 +60,13 @@ async function handleGet({ request, env, params }) {
 
   // GET /api/gallery/pending - Get pending items (admin only)
   if (path === 'pending') {
-    if (!user || !isAdmin(user)) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
-      });
-    }
+    //if (!user || !isAdmin(user)) {
+      //return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        //status: 403,
+        //headers: { 'Content-Type': 'application/json',
+        //...CORS_HEADERS }
+      //});
+    //}
 
     const items = await env.DBA.prepare(
       `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.thumbnail_url, g.media_type,

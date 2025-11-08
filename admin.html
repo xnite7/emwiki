@@ -7315,7 +7315,7 @@
                 if (!container) return;
 
                 try {
-                    const response = await fetch('/api/gallery/pending', {
+                    const response = await fetch('https:/emwiki.com/api/gallery/pending', {
                         headers: {
                             'Authorization': `Bearer ${Auth.session}`
                         }
@@ -7337,7 +7337,7 @@
                         container.appendChild(this.createPendingItem(item));
                     });
                 } catch (error) {
-                    console.error('Failed to load pending items:', warnerror);
+                    console.error('Failed to load pending items:', error);
                     container.innerHTML = '<p class="error">Failed to load pending submissions</p>';
                 }
             },
