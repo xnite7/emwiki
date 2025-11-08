@@ -767,9 +767,8 @@ small {
 
 .pagination-btn {
     padding: 10px 16px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+        background: var(--bg-item);
     border-radius: 8px;
     cursor: pointer;
     font-size: 0.95rem;
@@ -782,8 +781,8 @@ small {
 }
 
 .pagination-btn:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: var(--bg-item-hover);
+        border-color: var(--border-color);
     transform: translateY(-2px);
 }
 
