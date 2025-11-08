@@ -360,7 +360,7 @@ class BaseApp {
                         <p>Welcome to Epic Catalogue! Your Roblox account has been successfully linked.
                         </p>
                         <p class="loading">Hold on, Setting Stuff Up!</p>
-                        <button style="display:none" class="celebration-close-btn" popovertargetaction="hide" popovertarget="auth-modal">Epic!</button>
+                        <button style="display:none" class="celebration-close-btn">Epic!</button>
                     </div>
                 </div>
             
@@ -2741,102 +2741,56 @@ class Auth extends EventTarget {
         }
     }
 
-    // Epic button animation: spin faster, zoom in, zoom out, then close
-    async playEpicAnimation() {
-        if (!this._model3D) {
+    // Epic button animation: spin faster with CSS zoom animation
+    playEpicAnimation() {
+        const container = document.getElementById('player-model-container');
+
+        if (!this._model3D || !container) {
             // No 3D model loaded, just close the modal
             document.getElementById('auth-modal').hidePopover();
             return;
         }
 
-        return new Promise((resolve) => {
-            const model = this._model3D;
-            const startTime = performance.now();
-            const duration = 2500; // Total animation duration in ms
+        // Trigger CSS zoom animation
+        container.classList.add('epic-animation');
 
-            // Save original values
-            const originalSpeed = model.rotationSpeed;
-            const originalPos = { ...model.initialCameraPosition };
+        // Gradually increase rotation speed
+        const originalSpeed = this._model3D.rotationSpeed;
+        const startTime = performance.now();
+        const duration = 2500; // Match CSS animation duration
 
-            // Calculate zoom distances
-            const zoomInPos = {
-                x: originalPos.x * 0.6,
-                y: originalPos.y * 0.6,
-                z: originalPos.z * 0.6
-            };
+        const speedUpRotation = () => {
+            const elapsed = performance.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
 
-            const zoomOutPos = {
-                x: originalPos.x * 2.5,
-                y: originalPos.y * 2.5,
-                z: originalPos.z * 2.5
-            };
-
-            // Cancel existing animation
-            if (model.animationId) {
-                cancelAnimationFrame(model.animationId);
-                model.animationId = null;
+            // Gradually speed up rotation throughout the animation
+            if (progress < 0.5) {
+                // First half: speed up to 15x
+                this._model3D.rotationSpeed = originalSpeed + (0.15 * (progress / 0.5));
+            } else {
+                // Second half: speed up even more to 35x
+                const phase2Progress = (progress - 0.5) / 0.5;
+                this._model3D.rotationSpeed = originalSpeed + 0.15 + (0.2 * phase2Progress);
             }
 
-            const animate = () => {
-                const elapsed = performance.now() - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-
-                // Phase 1: Speed up rotation and zoom in (0-40%)
-                if (progress < 0.4) {
-                    const phase1Progress = progress / 0.4;
-                    model.rotationSpeed = originalSpeed + (0.15 * phase1Progress);
-
-                    // Ease in zoom
-                    const easeProgress = 1 - Math.pow(1 - phase1Progress, 3);
-                    model.camera.position.x = originalPos.x + (zoomInPos.x - originalPos.x) * easeProgress;
-                    model.camera.position.y = originalPos.y + (zoomInPos.y - originalPos.y) * easeProgress;
-                    model.camera.position.z = originalPos.z + (zoomInPos.z - originalPos.z) * easeProgress;
-                }
-                // Phase 2: Hold zoom in, keep spinning fast (40-50%)
-                else if (progress < 0.5) {
-                    model.rotationSpeed = originalSpeed + 0.15;
-                    model.camera.position.x = zoomInPos.x;
-                    model.camera.position.y = zoomInPos.y;
-                    model.camera.position.z = zoomInPos.z;
-                }
-                // Phase 3: Zoom out dramatically (50-100%)
-                else {
-                    const phase3Progress = (progress - 0.5) / 0.5;
-
-                    // Ease out zoom
-                    const easeProgress = 1 - Math.pow(1 - phase3Progress, 2);
-                    model.camera.position.x = zoomInPos.x + (zoomOutPos.x - zoomInPos.x) * easeProgress;
-                    model.camera.position.y = zoomInPos.y + (zoomOutPos.y - zoomInPos.y) * easeProgress;
-                    model.camera.position.z = zoomInPos.z + (zoomOutPos.z - zoomInPos.z) * easeProgress;
-
-                    // Gradually speed up rotation even more
-                    model.rotationSpeed = originalSpeed + 0.15 + (0.2 * phase3Progress);
-                }
-
-                // Rotate and render
-                model.object.rotation.y += model.rotationSpeed;
-                model.renderer.render(model.scene, model.camera);
-
-                if (progress < 1) {
-                    requestAnimationFrame(animate);
-                } else {
-                    // Animation complete, close modal
+            if (progress < 1) {
+                requestAnimationFrame(speedUpRotation);
+            } else {
+                // Animation complete, close modal
+                setTimeout(() => {
                     document.getElementById('auth-modal').hidePopover();
 
-                    // Reset for next time (after a delay)
+                    // Reset after modal closes
                     setTimeout(() => {
-                        model.rotationSpeed = originalSpeed;
-                        model.camera.position.x = originalPos.x;
-                        model.camera.position.y = originalPos.y;
-                        model.camera.position.z = originalPos.z;
+                        container.classList.remove('epic-animation');
+                        container.style.opacity = '1';
+                        this._model3D.rotationSpeed = originalSpeed;
                     }, 500);
+                }, 200);
+            }
+        };
 
-                    resolve();
-                }
-            };
-
-            animate();
-        });
+        speedUpRotation();
     }
 
     updateUI() {
