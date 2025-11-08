@@ -412,6 +412,7 @@
                 this.seasons = new Set();
                 this.events = new Set();
                 this.eventFilter = 'all';
+                this.filterRequestId = 0;
 
                 this.categories = [
                     { id: 'all', name: 'All', img: './imgs/XwkWVJJ.png', color: '#667eea' },
@@ -1312,6 +1313,10 @@
             }
 
             applyFilters() {
+                // Increment request ID to cancel any pending batch loads
+                this.filterRequestId++;
+                const currentRequestId = this.filterRequestId;
+
                 this.filtered = this.allItems.filter(item => {
                     // Chest filter
                     if (this.chestFilter !== 'all') {
@@ -1394,7 +1399,7 @@
                 document.getElementById('catalog').innerHTML = '';
 
                 // Load first batch
-                this.loadBatch();
+                this.loadBatch(currentRequestId);
 
                 // Update chest label with item count
                 if (this.chestFilter !== 'all') {
@@ -1524,8 +1529,14 @@
                 }
             }
 
-            loadBatch() {
+            loadBatch(requestId) {
                 if (this.loading) return;
+
+                // If no requestId provided, use current one (for manual "Load More" clicks)
+                if (requestId === undefined) {
+                    requestId = this.filterRequestId;
+                }
+
                 const start = this.currentBatch * this.batchSize;
                 const end = start + this.batchSize;
                 const batch = this.filtered.slice(start, end);
@@ -1541,6 +1552,12 @@
                 document.getElementById('loadMore').innerHTML = '<div class="loading-spinner"></div>';
 
                 setTimeout(() => {
+                    // Check if this request is still current
+                    if (requestId !== this.filterRequestId) {
+                        this.loading = false;
+                        return; // Ignore this batch, a newer filter was applied
+                    }
+
                     batch.forEach(item => {
                         document.getElementById('catalog').appendChild(this.createItemElement(item));
                     });
