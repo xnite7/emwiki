@@ -755,12 +755,12 @@ class BaseApp {
         div.onclick = () => this.modal.open(item);
 
         // Long-press menu for mobile
-        this.addLongPressMenu(div, item, wishlistBtn, heart);
+        this.addLongPressMenu(div, item);
 
         return div;
     }
 
-    addLongPressMenu(div, item, wishlistBtn, heart) {
+    addLongPressMenu(div, item) {
         let pressTimer = null;
         let startX = 0;
         let startY = 0;
@@ -774,7 +774,7 @@ class BaseApp {
             pressTimer = setTimeout(() => {
                 if (!hasMoved) {
                     e.preventDefault();
-                    this.showContextMenu(e.touches[0].clientX, e.touches[0].clientY, item, wishlistBtn, heart);
+                    this.showContextMenu(e.touches[0].clientX, e.touches[0].clientY, item);
                 }
             }, 500); // 500ms long press
         };
@@ -798,7 +798,7 @@ class BaseApp {
         div.addEventListener('touchcancel', handleTouchEnd);
     }
 
-    showContextMenu(x, y, item, wishlistBtn, heart) {
+    showContextMenu(x, y, item) {
         // Remove existing menu if any
         const existingMenu = document.querySelector('.item-context-menu');
         if (existingMenu) existingMenu.remove();
@@ -837,9 +837,9 @@ class BaseApp {
             menuItem.addEventListener('click', (e) => {
                 const action = menuItem.dataset.action;
                 if (action === 'favorite') {
-                    heart.click();
+                    this.toggleFavorite(item.name);
                 } else if (action === 'wishlist') {
-                    wishlistBtn.click();
+                    this.toggleWishlist(item.name);
                 }
                 menu.remove();
             });

@@ -586,6 +586,10 @@ body:has(.item-modal.active) {
     background-repeat: no-repeat;
     filter: saturate(1) brightness(1) drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black);
 }
+.modal-action-btn:hover {
+    transform: scale(1.15);
+    background: rgb(from CanvasText r g b / 0.75);
+}
 
 .modal-action-btn.modal-wishlist-btn {
     mask-image: url("data: image/svg+xml, %3Csvg%20viewBox%3D%22-1.5%20-2.5%2037%2037%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M18.05.242c.466.226.843.596%201.073%201.054L23.1%209.194l8.874%201.276c1.294.186%202.19%201.368%202%202.64a2.3%202.3%200%200%201-.688%201.327l-6.416%206.157%201.507%208.687c.22%201.267-.647%202.47-1.936%202.685a2.4%202.4%200%200%201-1.499-.233L17%2027.64l-7.942%204.093c-1.159.597-2.59.159-3.198-.98a2.3%202.3%200%200%201-.238-1.472l1.508-8.687-6.416-6.157a2.3%202.3%200%200%201-.04-3.29%202.4%202.4%200%200%201%201.352-.677L10.9%209.194l3.977-7.898c.58-1.152%202-1.624%203.173-1.054M12.472%2011.32%202.369%2012.772l7.305%207.01-1.717%209.89L17%2025.012l9.042%204.66-1.716-9.89%207.305-7.01-10.103-1.452L17%202.328z%22%2F%3E%3C%2Fsvg%3E");
@@ -605,13 +609,15 @@ body:has(.item-modal.active) {
     background: linear-gradient(red, darkred);
 }
 
-.modal-action-btn:hover {
-    transform: scale(1.15);
-    background: rgb(from CanvasText r g b / 0.75);
-}
+
 
 .modal-action-btn.active {
     transform: scale(1.15);
+}
+
+.modal-action-btn.active:hover {
+    transform: scale(1.25);
+    filter: brightness(0.9);
 }
 
 .modal-action-btn:active {
