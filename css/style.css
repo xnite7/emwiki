@@ -1609,8 +1609,8 @@ footer {
 }
 
 .wishlist-button {
-    top: 16px;
-    right: -11px;
+    top: 14px;
+    right: -12px;
 }
 
 .heart-button.red {
@@ -3060,6 +3060,11 @@ header svg * {
 }
 
 @media (hover: none) {
+
+    .heart-button,
+    .wishlist-button {
+        pointer-events: none;
+    }
 
     .item:hover {
         transform: translateY(-5px) scale(1.08) rotate(2deg);
