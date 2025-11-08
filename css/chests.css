@@ -85,12 +85,12 @@
 #chest-menu svg {
     fill: #fff;
 }
-/* Chest Dropdown - THE STAR OF THE SHOW */
-.chest-dropdown {
+
+.filters {
     display: flex;
     gap: 12px;
-    margin-top: 23px;
-    margin-bottom: 13px;
+    margin-top: 7px;
+    margin-bottom: 7px;
     position: relative;
     width: -webkit-fill-available;
     justify-content: center;
@@ -98,26 +98,11 @@
     transition: all 0.3s ease;
 }
 
-.chest-dropdown-btn {
-    scale: 1;
-    background: linear-gradient(#a1522d, #65310c);
-    border: 2px solid #ab621b;
-    color: #fff;
-    padding: 8px 12px 8px 17px;
-    border-radius: 27px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s;
+.filters.collapsed {
+    display: none;
+    width: auto;
 }
 
-.chest-dropdown-btn:hover {
-    box-shadow: 0 0 4px rgba(139, 69, 19, 0.5);
-    filter: brightness(1.1) saturate(1.2);
-}
 
 .chest-icon {
     width: 24px;

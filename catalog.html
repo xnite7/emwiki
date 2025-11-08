@@ -81,7 +81,7 @@
                 <div id="recent-items" class="recent-items"></div>
             </div>
         </div>
-        <div class="chest-dropdown">
+
 
 
             <div class="filters">
@@ -91,13 +91,13 @@
                         <span>Sort:</span> <span id="sort-label">Categorical</span> ▼
                     </button>
                     <div id="sort-menu" class="dropdown-content">
-                        <div class="dropdown-item" data-sort="default">Categorical</div>
-                        <div class="dropdown-item" data-sort="name-asc">Name: A ➔ Z</div>
-                        <div class="dropdown-item" data-sort="name-desc">Name: Z ➔ A</div>
-                        <div class="dropdown-item" data-sort="price-asc">Price: Low to High</div>
-                        <div class="dropdown-item" data-sort="price-desc">Price: High to Low</div>
-                        <div class="dropdown-item disabled" data-sort="date-desc">Newer First</div>
-                        <div class="dropdown-item disabled" data-sort="date-asc">Older First</div>
+                        <small class="dropdown-item" data-sort="default">Categorical</small>
+                        <small class="dropdown-item" data-sort="name-asc">Name: A ➔ Z</small>
+                        <small class="dropdown-item" data-sort="name-desc">Name: Z ➔ A</small>
+                        <small class="dropdown-item" data-sort="price-asc">Price: Low to High</small>
+                        <small class="dropdown-item" data-sort="price-desc">Price: High to Low</small>
+                        <small class="dropdown-item disabled" data-sort="date-desc">Newer First</small>
+                        <small class="dropdown-item disabled" data-sort="date-asc">Older First</small>
                     </div>
                 </div>
 
@@ -122,80 +122,80 @@
                         <div class="dropdown-item" data-filter="new">
                             <div class="tag-checkbox"></div>
                             <span class="icon newest-icon"></span>
-                            <div class="tag-label">New</div>
-                            <div class="tag-count" id="count-new">0</div>
+                            <small class="tag-label">New</small>
+                            <small class="tag-count" id="count-new">0</small>
                         </div>
 
                         <div class="dropdown-item" data-filter="untradable">
                             <div class="tag-checkbox"></div>
                             <span class="icon untradable-icon"></span>
-                            <div class="tag-label">Untradable</div>
-                            <div class="tag-count" id="count-untradable">0</div>
+                            <small class="tag-label">Untradable</small>
+                            <small class="tag-count" id="count-untradable">0</small>
                         </div>
 
                         <div style="display: none;" class="dropdown-item" data-filter="favorites">
                             <div class="tag-checkbox"></div>
                             <span class="icon favorites-icon"></span>
-                            <div class="tag-label">Favorites</div>
-                            <div class="tag-count" id="count-favorites">0</div>
+                            <small class="tag-label">Favorites</small>
+                            <small class="tag-count" id="count-favorites">0</small>
                         </div>
 
                         <div class="dropdown-item" data-filter="weekly">
                             <span class="icon weekly-icon"></span>
-                            <div class="tag-label">Weekly Rotation</div>
-                            <div class="tag-count" id="count-weekly">0</div>
+                            <small class="tag-label">Weekly Rotation</small>
+                            <small class="tag-count" id="count-weekly">0</small>
                         </div>
 
                         <div class="dropdown-item" data-filter="weeklystar">
                             <span class="icon star-icon"></span>
-                            <div class="tag-label">Star Shop</div>
-                            <div class="tag-count" id="count-weeklystar">0</div>
+                            <small class="tag-label">Star Shop</small>
+                            <small class="tag-count" id="count-weeklystar">0</small>
                         </div>
 
                         <div class="dropdown-item" data-filter="gamenight">
                             <span class="icon gamenight-icon"></span>
-                            <div class="tag-label">Gamenight</div>
-                            <div class="tag-count" id="count-gamenight">0</div>
+                            <small class="tag-label">Gamenight</small>
+                            <small class="tag-count" id="count-gamenight">0</small>
                         </div>
 
                         <div class="dropdown-item" data-filter="retired">
                             <div class="tag-checkbox"></div>
                             <span class="icon retired-icon"></span>
-                            <div class="tag-label">Retired</div>
-                            <div class="tag-count" id="count-retired">0</div>
+                            <small class="tag-label">Retired</small>
+                            <small class="tag-count" id="count-retired">0</small>
                         </div>
 
                         <div class="dropdown-item" data-filter="code">
                             <span class="icon code-icon"></span>
-                            <div class="tag-label">Code</div>
-                            <div class="tag-count" id="count-code">0</div>
+                            <small class="tag-label">Code</small>
+                            <small class="tag-count" id="count-code">0</small>
                         </div>
 
                         <div class="dropdown-item" data-filter="unreleased">
                             <span class="icon unreleased-icon"></span>
-                            <div class="tag-label">Unreleased</div>
-                            <div class="tag-count" id="count-unreleased">0</div>
+                            <small class="tag-label">Unreleased</small>
+                            <small class="tag-count" id="count-unreleased">0</small>
                         </div>
 
 
                         <div class="dropdown-item" data-filter="removed">
                             <span class="icon removed-icon"></span>
-                            <div class="tag-label">Removed</div>
-                            <div class="tag-count" id="count-removed">0</div>
+                            <small class="tag-label">Removed</small>
+                            <small class="tag-count" id="count-removed">0</small>
                         </div>
 
 
                         <!-- Events Submenu -->
                         <div class="submenu" onclick="catalog.toggleEvent()">
-                            <span class="tag-label">Events ▸</span>
+                            <small class="tag-label">Events ▸</small>
                         </div>
                         <!-- Seasons Submenu -->
                         <div class="submenu" onclick="catalog.toggleSeason()">
-                            <span class="tag-label">Seasons ▸</span>
+                            <small class="tag-label">Seasons ▸</small>
                         </div>
-                        <!-- Bundles Submenu -->
+                        <!-- Chests Submenu -->
                         <div class="submenu" onclick="catalog.toggleChestMenu()">
-                            <span class="tag-label">Bundles ▸</span>
+                            <small class="tag-label">Chests ▸</small>
                         </div>
 
                     </div>
@@ -367,7 +367,7 @@
             </div>
 
 
-        </div>
+
         <a class="chest-expand-toggle" onclick="catalog.toggleChestExpand()"><span class="icon-down"></span></a>
     </div>
 
@@ -557,7 +557,7 @@
                             item.appendChild(img);
                         }
 
-                        const label = document.createElement('span');
+                        const label = document.createElement('small');
                         label.textContent = cat.name;
                         item.appendChild(label);
 
@@ -735,7 +735,7 @@
                 const seasonMenu = document.getElementById('season-menu');
                 const seasons = Array.from(this.seasons).sort((a, b) => b - a);
                 seasons.forEach(season => {
-                    const item = document.createElement('div');
+                    const item = document.createElement('small');
                     item.className = 'dropdown-item';
                     item.dataset.data = season;
                     item.textContent = `Season ${season}`;
@@ -767,7 +767,7 @@
                     return a.localeCompare(b);
                 });
                 events.forEach(event => {
-                    const item = document.createElement('div');
+                    const item = document.createElement('small');
                     item.className = 'dropdown-item';
                     item.dataset.data = event;
                     item.textContent = event;
@@ -777,7 +777,7 @@
             }
 
             toggleChestExpand() {
-                const sortDropdown = document.querySelector('.chest-dropdown');
+                const sortDropdown = document.querySelector('.filters');
                 const expandToggle = document.querySelector('.chest-expand-toggle .icon-down');
 
                 sortDropdown.classList.toggle('collapsed');
@@ -1183,9 +1183,6 @@
                 // Close menus when clicking outside
                 document.addEventListener('click', (e) => {
 
-                    if (!e.target.closest('.chest-dropdown')) {
-                        document.getElementById('chest-menu').classList.remove('show');
-                    }
                     if (!e.target.closest('.sort-dropdown')) {
                         document.getElementById('sort-menu').classList.remove('show');
                     }

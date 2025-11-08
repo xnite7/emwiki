@@ -435,12 +435,12 @@ class Gallery {
         div.innerHTML = `
             ${mediaElement}
             <div class="gallery-item-info">
-                <div class="gallery-item-title">${this.escapeHtml(item.title)}</div>
-                <div class="gallery-item-author">
+                <h3 class="gallery-item-title">${this.escapeHtml(item.title)}</h3>
+                <p class="gallery-item-author">
                     <span>${this.formatDate(item.created_at)}</span>
                     ${profilePill}
                     <span class="likes-display ${item.user_liked ? 'liked' : ''}">${likesCount}</span>
-                </div>
+                </p>
             </div>
         `;
 

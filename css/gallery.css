@@ -1,5 +1,36 @@
 /* Gallery Page Styles */
 
+/* Progressive Letter Spacing - Larger text = tighter spacing */
+h1 {
+    letter-spacing: -0.02em;
+    font-size: 3rem;
+}
+
+h2 {
+    letter-spacing: -0.01em;
+    font-size: 2rem;
+}
+
+h3 {
+    letter-spacing: 0;
+    font-size: 1.25rem;
+}
+
+h4 {
+    letter-spacing: 0.01em;
+    font-size: 1.1rem;
+}
+
+p, span {
+    letter-spacing: 0.02em;
+    font-size: 1rem;
+}
+
+small {
+    letter-spacing: 0.03em;
+    font-size: 0.875rem;
+}
+
 .gallery-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -1063,7 +1094,6 @@ main {
 
 .time-display {
     color: white;
-    font-size: 14px;
     font-family: 'BuilderSans', monospace;
     white-space: nowrap;
     flex-shrink: 0;
@@ -1079,9 +1109,6 @@ main {
 
 /* Responsive */
 @media (max-width: 768px) {
-    .gallery-title {
-        font-size: 2rem;
-    }
 
     .gallery-grid {
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -1119,10 +1146,6 @@ main {
         height: 20px;
     }
 
-    .custom-controls .time-display {
-        font-size: 12px;
-    }
-
     .custom-controls .progress-bar-container {
         padding: 0 4px;
     }
@@ -1136,7 +1159,6 @@ main {
     /* Mobile pagination */
     .pagination-btn {
         padding: 8px 12px;
-        font-size: 0.85rem;
     }
 
     .pagination-prev span,

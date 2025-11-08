@@ -368,8 +368,8 @@ class BaseApp {
             <div id="stats-dashboard" class="stats-dashboard">
                 <div class="stats-content">
                     <div class="stats-header">
-                        <h2>My Lists</h2>
-                        <span class="close-stats" onclick="catalog.closeStats()">×</span>
+                        <h1>My Lists</h1>
+                        <h2 class="close-stats" onclick="catalog.closeStats()">×</h2>
                     </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 0px 10px 7px;">
                             <h3 style="margin: 0; font-size: 23px; font-variant: all-petite-caps; cursor: pointer;"
@@ -683,7 +683,7 @@ class BaseApp {
         }
 
         // Name
-        const name = document.createElement('div');
+        const name = document.createElement('small');
         name.className = 'item-name';
         name.textContent = item.name;
         div.appendChild(name);
@@ -720,13 +720,11 @@ class BaseApp {
         }
 
         // Badges
-        // Badges
         this.addBadges(div, item);
 
+        div.insertAdjacentHTML('beforeend', '<svg class="wishlist-button" stroke="#000" stroke-width="3" viewBox="-1 0 39 37" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="wishlistact" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="yellow"/><stop offset="50%" stop-color="gold"/><stop offset="100%" stop-color="orange"/></linearGradient></defs><path d="M19.5 2.5c.466.226.843.596 1.073 1.054l3.977 7.898 8.874 1.276c1.294.186 2.19 1.368 2 2.64a2.3 2.3 0 0 1-.688 1.327l-6.416 6.157 1.507 8.687c.22 1.267-.647 2.47-1.936 2.685a2.4 2.4 0 0 1-1.499-.233l-7.942-4.093-7.942 4.093c-1.159.597-2.59.159-3.198-.98a2.3 2.3 0 0 1-.238-1.472l1.508-8.687-6.416-6.157a2.3 2.3 0 0 1-.04-3.29 2.4 2.4 0 0 1 1.352-.677l8.874-1.276 3.977-7.898c.58-1.152 2-1.624 3.173-1.054"/></svg>');
+        const wishlistBtn = div.querySelector('.wishlist-button');
 
-        const wishlistBtn = document.createElement('div');
-        wishlistBtn.className = 'wishlist-button';
-        wishlistBtn.textContent = '⭐';
         if (this.wishlist.includes(item.name)) {
             wishlistBtn.classList.add('active');
         }
@@ -738,10 +736,9 @@ class BaseApp {
         div.appendChild(wishlistBtn);
 
 
-        const heart = document.createElement('div');
-        heart.className = 'heart-button';
+        div.insertAdjacentHTML('beforeend', '<svg class="heart-button" stroke="#000" paint-order="stroke" stroke-width="3" viewBox="-1 0.5 18 16" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="favred" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="red"/><stop offset="100%" stop-color="maroon"/></linearGradient></defs><path d="M12 2S9 2 8 5C7 2 4 2 4 2 1.8 2 0 3.8 0 6c0 4.1 8 9 8 9s8-5 8-9c0-2.2-1.8-4-4-4"/></svg>');
+        const heart = div.querySelector('.heart-button');
         const isFavorite = this.favorites.includes(item.name);
-        heart.textContent = isFavorite ? '❤️' : '🤍';
         if (isFavorite) heart.classList.add('red');
         heart.onclick = (e) => {
             e.stopPropagation();
@@ -816,13 +813,11 @@ class BaseApp {
         const isWishlisted = this.wishlist.includes(item.name);
 
         menu.innerHTML = `
-            <div class="context-menu-item" data-action="favorite">
-                <span class="context-menu-icon">${isFavorite ? '❤️' : '🤍'}</span>
-                <span>${isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}</span>
+            <div class="context-menu-item ${isFavorite ? 'active' : ''}" data-action="favorite">
+                ${isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
             </div>
-            <div class="context-menu-item" data-action="wishlist">
-                <span class="context-menu-icon">⭐</span>
-                <span>${isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}</span>
+            <div class="context-menu-item ${isWishlisted ? 'active' : ''}" data-action="wishlist">
+                ${isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
             </div>
         `;
 
@@ -906,7 +901,7 @@ class BaseApp {
         }
 
         if (item.retired) {
-            const badge = document.createElement('span');
+            const badge = document.createElement('small');
             badge.className = 'badge retired';
             badge.textContent = 'RETIRED';
             element.appendChild(badge);
@@ -979,7 +974,6 @@ class BaseApp {
                 const heart = itemEl.querySelector('.heart-button');
                 if (heart) {
                     const isFavorite = this.favorites.includes(itemName);
-                    heart.textContent = isFavorite ? '❤️' : '🤍';
                     if (isFavorite) {
                         heart.classList.add('red');
                     } else {
@@ -1138,7 +1132,7 @@ class BaseApp {
                 const div = document.createElement('div');
                 div.className = 'item';
                 div.innerHTML = `
-                    <div class="item-name">${item.name}</div>
+                    <small class="item-name">${item.name}</small>
                     <div class="remove-wishlist">×</div>
                 `;
 
@@ -1190,7 +1184,7 @@ class BaseApp {
             if (item) {
                 const div = document.createElement('div');
                 div.className = 'item';
-                div.innerHTML = `<div class="item-name" style="z-index:2;font-size:10px;margin-top:5px;">${item.name}</div>`;
+                div.innerHTML = `<small class="item-name" style="z-index:2;font-size:10px;margin-top:5px;">${item.name}</small>`;
                 if (item.img) {
                     const canvas = document.createElement('canvas');
 
@@ -1505,15 +1499,15 @@ class ItemModal {
         const modalHTML = `
         <div id="item-modal" class="item-modal">
             <div class="modal-overlay"></div>
-            <button class="modal-nav modal-prev">‹</button>
-            <button class="modal-nav modal-next">›</button>
+            <button class="modal-nav modal-prev"></button>
+            <button class="modal-nav modal-next"></button>
 
             <div class="modal-container">
                 <div class="modal-content-wrapper">
                     <!-- Front Side -->
                     <div class="modal-content modal-front">
                         <div class="modal-header">
-                            <h2 class="modal-title"></h2>
+                            <h1 class="modal-title"></h1>
                             <div class="modal-price"></div>
                         </div>
 
@@ -1565,10 +1559,8 @@ class ItemModal {
                 </button>
                 <div class="modal-actions">
                     <button class="modal-action-btn modal-favorite-btn" title="Add to Favorites">
-                        🤍
                     </button>
                     <button class="modal-action-btn modal-wishlist-btn" title="Add to Wishlist">
-                        ⭐
                     </button>
                 </div>
             </div>
@@ -1989,7 +1981,6 @@ class ItemModal {
         const isFavorite = this.catalog.favorites.includes(this.currentItem.name);
         const isWishlisted = this.catalog.wishlist.includes(this.currentItem.name);
 
-        this.elements.favoriteBtn.textContent = isFavorite ? '❤️' : '🤍';
         this.elements.favoriteBtn.classList.toggle('active', isFavorite);
         this.elements.favoriteBtn.title = isFavorite ? 'Remove from Favorites' : 'Add to Favorites';
 
@@ -2030,7 +2021,7 @@ class ItemModal {
         const currentTax = taxLabels[this.catalog.taxMode];
 
         this.elements.price.innerHTML = `
-        <p>${convertedPrice}</p>
+        <h2>${convertedPrice}</h2>
         
         ${this.catalog.taxMode !== 'nt' ? `
             <span class="modal-tax-indicator" onclick="event.stopPropagation(); this.classList.toggle('show-tooltip')">

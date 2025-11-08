@@ -89,7 +89,6 @@ body:has(.item-modal.active) {
     background: none;
     border: none;
     color: white;
-    font-size: 30px;
     cursor: pointer;
     opacity: 0.7;
     transition: opacity 0.2s;
@@ -99,22 +98,36 @@ body:has(.item-modal.active) {
     opacity: 1;
 }
 
+
+
+
+
+
 .modal-nav {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: white;
-    font-size: 40px;
-    padding: 10px 15px;
+    width: 50px;
+    height: 50px;
+    background: var(--bg-item);
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    border-radius: 10px;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.modal-nav:hover {
+    background: var(--border-color);
+    transform: translateY(-50%) scale(1.1);
 }
 
 .modal-nav:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.2);
+    color: white;
 }
 
 .modal-nav:disabled {
@@ -130,6 +143,25 @@ body:has(.item-modal.active) {
     right: 7vw;
 }
 
+
+.modal-nav::after {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-right: 3px solid CanvasText;
+    border-bottom: 3px solid CanvasText;
+}
+
+.modal-prev::after {
+    transform: rotate(135deg);
+    margin-left: 7px;
+}
+
+.modal-next::after {
+    transform: rotate(-45deg);
+    margin-right: 4px;
+}
+
 .modal-header {
     width: -webkit-fill-available;
     display: inline-flex;
@@ -138,7 +170,6 @@ body:has(.item-modal.active) {
 }
 
 .modal-title {
-    font-size: 32px;
     font-weight: bold;
     overflow-wrap: anywhere;
     color: white;
@@ -151,9 +182,7 @@ body:has(.item-modal.active) {
 .modal-price {
     display: flex;
     align-items: center;
-    font: 1000 28px 'BuilderSans';
     white-space: nowrap;
-    font-size: 28px;
     font-weight: bold;
     flex-basis: min-content;
     flex-wrap: wrap;
@@ -161,26 +190,30 @@ body:has(.item-modal.active) {
     flex-direction: row-reverse;
     line-height: 1;
     background: #00000038;
-
     padding: 6px 9px 6px 12px;
     margin-left: 7px;
     border-radius: 17px;
 }
 
-.modal-price p::before {
+.modal-price h2 {
+    font-family: 'BuilderSans';
+    font-weight: 1000;
+    translate: 0px -2px;
+}
+
+.modal-price h2::before {
     content: '';
     background: url(data:image/svg+xml,%3Csvg%20style%3D%22width%3A%2013px%3B%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016.6%2018%22%3E%3Cpath%20d%3D%22M6.251%206.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213%202.507-1.154%204.484.034l3.37%202.027c.648.43%201.255.949%201.157%202.077v4.444c.009%201.578-.127%202.032-1.065%202.656l-3.492%202.052c-2.118%201.195-2.219%201.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874%201.242-2.405Zm.395%201.298c1.287-.804%201.855-1.088%203.612.034l2.777%201.641c.568.423.954.838.96%201.652v3.952c-.007.705-.271%201.405-.9%201.77l-2.813%201.684c-1.786.942-1.799%201.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331%208.871-.345%2011.011.985l4.062%202.444c.646.363%201.512%201.515%201.528%202.588v5.847c.003%201.055-.645%202.014-1.424%202.63l-4.178%202.501c-1.843%201.087-3.052%201.56-5.486.002l-3.928-2.348C.71%2014.043-.006%2013.267%200%2011.695V6.272c.033-1.551.668-2.233%201.498-2.899Z%22%20fill%3D%22%23fff%22%20fill-rule%3D%22evenodd%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E) no-repeat center center;
     display: inline-block;
     width: 25px;
     height: 25px;
-    translate: -3px 2px;
+    translate: -3px 4px;
     background-size: contain;
 }
 
 /* Modal Tax Indicator */
 .modal-tax-indicator {
     border-radius: 6px;
-    font-size: 11px;
     color: #ffd700;
     font-weight: 600;
     padding: 2px 6px;
@@ -204,7 +237,6 @@ body:has(.item-modal.active) {
     color: white;
     padding: 8px 12px;
     border-radius: 6px;
-    font-size: 11px;
     white-space: nowrap;
     pointer-events: none;
     opacity: 0;
@@ -235,7 +267,6 @@ body:has(.item-modal.active) {
 }
 
 .modal-description {
-    font-size: 16px;
     text-align: center;
     margin: 12px 0;
     white-space: pre-wrap;
@@ -280,7 +311,6 @@ body:has(.item-modal.active) {
     border: 2px solid #4a9eff;
     border-radius: 10px;
     color: white;
-    font-size: 13px;
     font-weight: 700;
     text-decoration: none;
     transition: all 0.2s;
@@ -352,7 +382,6 @@ body:has(.item-modal.active) {
     flex: 1 1 10%;
     border-radius: 20px;
     border: 1px solid black;
-    font-size: 14px;
     font-weight: bold;
 }
 
@@ -431,7 +460,6 @@ body:has(.item-modal.active) {
     gap: 8px;
     cursor: pointer;
     font-weight: 600;
-    font-size: 14px;
     transition: all 0.3s;
     z-index: 10;
     opacity: 1;
@@ -454,7 +482,6 @@ body:has(.item-modal.active) {
 }
 
 .modal-flip-btn .flip-icon {
-    font-size: 18px;
     transition: transform 0.3s;
 }
 
@@ -489,7 +516,6 @@ body:has(.item-modal.active) {
 /* Back Content Styling */
 .modal-back-header h3 {
     margin: 0 0 20px 0;
-    font-size: 24px;
     color: white;
 }
 
@@ -501,7 +527,6 @@ body:has(.item-modal.active) {
 
 .modal-graph-section h4 {
     margin: 0 0 15px 0;
-    font-size: 18px;
     color: white;
 }
 
@@ -514,7 +539,6 @@ body:has(.item-modal.active) {
 }
 
 .modal-last-admin {
-    font-size: 13px;
     color: rgba(255, 255, 255, 0.75);
     text-align: right;
     font-style: italic;
@@ -529,7 +553,6 @@ body:has(.item-modal.active) {
 
 .metadata-item {
     margin: 10px 0;
-    font-size: 14px;
     color: white;
 }
 
@@ -553,48 +576,46 @@ body:has(.item-modal.active) {
 }
 
 .modal-action-btn {
-    font-family: Twemoji;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    border: 2px solid rgba(42, 42, 42, 0.95);
-    background: rgba(42, 42, 42, 0.95);
-    filter: grayscale(1);
-    backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-block;
+    width: 48px;
+    height: 48px;
+    mask-repeat: no-repeat;
+    transition: all 0.2s, transform 0.4s cubic-bezier(.47, 1.64, .41, .8);
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    font-size: 26px;
+    background: CanvasText;
+    background-repeat: no-repeat;
+    filter: saturate(1) brightness(1) drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black);
+}
 
-    @supports (corner-shape: squircle) {
-        corner-bottom-left-shape: squircle;
-        corner-top-left-shape: squircle;
-    }
+.modal-action-btn.modal-wishlist-btn {
+    mask-image: url("data: image/svg+xml, %3Csvg%20viewBox%3D%22-1.5%20-2.5%2037%2037%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M18.05.242c.466.226.843.596%201.073%201.054L23.1%209.194l8.874%201.276c1.294.186%202.19%201.368%202%202.64a2.3%202.3%200%200%201-.688%201.327l-6.416%206.157%201.507%208.687c.22%201.267-.647%202.47-1.936%202.685a2.4%202.4%200%200%201-1.499-.233L17%2027.64l-7.942%204.093c-1.159.597-2.59.159-3.198-.98a2.3%202.3%200%200%201-.238-1.472l1.508-8.687-6.416-6.157a2.3%202.3%200%200%201-.04-3.29%202.4%202.4%200%200%201%201.352-.677L10.9%209.194l3.977-7.898c.58-1.152%202-1.624%203.173-1.054M12.472%2011.32%202.369%2012.772l7.305%207.01-1.717%209.89L17%2025.012l9.042%204.66-1.716-9.89%207.305-7.01-10.103-1.452L17%202.328z%22%2F%3E%3C%2Fsvg%3E");
+}
+
+.modal-action-btn.modal-wishlist-btn.active {
+    mask-image: url("data: image/svg+xml, %3Csvg%20viewBox%3D%22-1.5%20-2.5%2037%2037%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M18.05.242c.466.226.843.596%201.073%201.054L23.1%209.194l8.874%201.276c1.294.186%202.19%201.368%202%202.64a2.3%202.3%200%200%201-.688%201.327l-6.416%206.157%201.507%208.687c.22%201.267-.647%202.47-1.936%202.685a2.4%202.4%200%200%201-1.499-.233L17%2027.64l-7.942%204.093c-1.159.597-2.59.159-3.198-.98a2.3%202.3%200%200%201-.238-1.472l1.508-8.687-6.416-6.157a2.3%202.3%200%200%201-.04-3.29%202.4%202.4%200%200%201%201.352-.677L10.9%209.194l3.977-7.898c.58-1.152%202-1.624%203.173-1.054%22%2F%3E%3C%2Fsvg%3E");
+    background: linear-gradient(yellow, gold);
+}
+
+.modal-action-btn.modal-favorite-btn {
+    mask-image: url("data:image/svg+xml, %3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12%204.528a6%206%200%200%200-8.243%208.715l6.829%206.828a2%202%200%200%200%202.828%200l6.829-6.828A6%206%200%200%200%2012%204.528m-1.172%201.644.465.464a1%201%200%200%200%201.414%200l.465-.464a4%204%200%201%201%205.656%205.656L12%2018.657l-6.828-6.829a4%204%200%200%201%205.656-5.656%22%2F%3E%3C%2Fsvg%3E");
+}
+
+.modal-action-btn.modal-favorite-btn.active {
+    mask-image: url("data:image/svg+xml, %3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M%2012%204.528%20a%206%206%200%200%200%20-8.243%208.715%20l%206.829%206.828%20a%202%202%200%200%200%202.828%200%20l%206.829%20-6.828%20A%206%206%200%200%200%2012%204.528%22%2F%3E%3C%2Fsvg%3E");
+    background: linear-gradient(red, darkred);
+}
+
+.modal-action-btn:hover {
+    transform: scale(1.15);
+    background: rgb(from CanvasText r g b / 0.75);
+}
+
+.modal-action-btn.active {
+    transform: scale(1.15);
 }
 
 .modal-action-btn:active {
     transform: scale(0.95);
-    filter: grayscale(0);
-}
-
-
-.modal-action-btn:hover {
-    transform: scale(1.15);
-    background: rgba(42, 42, 42, 1);
-    border-color: rgba(42, 42, 42, 1);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-}
-
-.modal-action-btn.active {
-    filter: grayscale(0);
-    transform: scale(1.15) translateX(5px);
-
-    @supports (corner-shape: round) {
-        corner-shape: round;
-    }
 }
 
 @media (max-width: 768px) {
@@ -611,7 +632,6 @@ body:has(.item-modal.active) {
         bottom: 10px;
         right: 10px;
         padding: 8px 16px;
-        font-size: 13px;
     }
 
     .modal-back {
@@ -642,19 +662,8 @@ body:has(.item-modal.active) {
         }
     }
 
-    .modal-action-btn:active {
+    .modal-action-btn:hover,.modal-action-btn:active,.modal-action-btn.active {
         transform: scale(1);
-    }
-
-
-    .modal-action-btn:hover {
-        transform: scale(1);
-        background: rgba(42, 42, 42, 0.95);
-        border-color: rgba(42, 42, 42, 0.95);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    }
-
-    .modal-action-btn.active {
-        transform: scale(1.15) translateX(0px);
+        background: CanvasText;
     }
 }
