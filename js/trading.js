@@ -220,9 +220,9 @@ class TradingHub {
 
         card.innerHTML = `
             <div class="trade-header">
-                <img class="trader-avatar" src="${trade.trader.avatar}" alt="${trade.trader.name}" style="cursor: pointer;" onclick="window.location.href = './profile.html?user=${trade.trader.id}'">
+                <img class="trader-avatar" src="${trade.trader.avatar}" alt="${trade.trader.name}" style="cursor: pointer;" onclick="window.location.href = './profile/${trade.trader.id}'">
                 <div class="trader-info">
-                    <div class="trader-name" style="cursor: pointer; text-decoration: underline;" onclick="window.location.href = './profile.html?user=${trade.trader.id}'">${trade.trader.name}</div>
+                    <div class="trader-name" style="cursor: pointer; text-decoration: underline;" onclick="window.location.href = './profile/${trade.trader.id}'">${trade.trader.name}</div>
                     <div class="trader-stats" style="font-size: 0.75rem; color: var(--text-secondary);">
                         ${stars} (${trade.trader.totalTrades} trades)
                     </div>

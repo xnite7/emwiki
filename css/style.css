@@ -1679,8 +1679,8 @@ footer {
 }
 
 .remove-wishlist:hover {
-    background: linear-gradient(180deg, #ff4444, #ff4444);
-    border: 1px solid rgb(255, 255, 255);
+    background: linear-gradient(180deg, #ff4444, #e72626);
+    border: 1px solid rgb(0, 0, 0);
 }
 
 .icon {

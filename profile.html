@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Profile - Epic Catalogue</title>
+    <title>User Profile - EMwiki</title>
 
-    <meta name="description" content="View user profiles, trading stats, and reviews on Epic Catalogue">
-    <meta property="og:title" content="User Profile - Epic Catalogue">
+    <meta name="description" content="View user profiles, trading stats, and reviews on EMwiki">
+    <meta property="og:title" content="User Profile - EMwiki">
     <meta property="og:image" content="https://emwiki.com/imgs/QgWIUWf.png">
 
     <link rel="stylesheet" href="./css/style.css">
@@ -247,14 +247,25 @@
         }
 
         async init() {
-            // Get user ID from URL parameter
-            const urlParams = new URLSearchParams(window.location.search);
-            this.userId = urlParams.get('user') || urlParams.get('id');
+            // Get user ID from URL path (e.g., /profile/1527377658)
+            const pathParts = window.location.pathname.split('/').filter(Boolean);
+
+            // Support both /profile/userId and /profile?user=userId (for backward compatibility)
+            if (pathParts.length >= 2 && pathParts[0] === 'profile') {
+                this.userId = pathParts[1];
+            } else {
+                // Fallback to query parameter for backward compatibility
+                const urlParams = new URLSearchParams(window.location.search);
+                this.userId = urlParams.get('user') || urlParams.get('id');
+            }
 
             if (!this.userId) {
                 this.showError('No user ID provided');
                 return;
             }
+
+            // Clean up userId - remove .0 suffix if present
+            this.userId = this.userId.replace(/\.0$/, '');
 
             await this.loadProfile();
         }
@@ -294,7 +305,7 @@
             const { user, stats, reviews, recentTrades, donationData, galleryPosts } = this.profileData;
 
             // Update page title
-            document.title = `${user.displayName} - Epic Catalogue`;
+            document.title = `${user.displayName} - EMwiki`;
 
             // Render profile header
             this.renderProfileHeader(user, donationData);

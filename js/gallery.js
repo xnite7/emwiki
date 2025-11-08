@@ -395,7 +395,7 @@ class Gallery {
         const avatar = avatarUrl || 'https://via.placeholder.com/48';
 
         return `
-            <a href="/profile?user=${userId}" class="profile-pill profile-pill-link" onclick="event.stopPropagation();">
+            <a href="/profile/${userId}" class="profile-pill profile-pill-link" onclick="event.stopPropagation();">
                 <img class="profile-pill-avatar" src="${avatar}" alt="${this.escapeHtml(username)}" onerror="this.src='https://via.placeholder.com/48'">
                 <span class="profile-pill-name">${this.escapeHtml(username)}</span>
                 ${roleLabel}
