@@ -2757,7 +2757,7 @@ class Auth extends EventTarget {
         // Gradually increase rotation speed
         const originalSpeed = this._model3D.rotationSpeed;
         const startTime = performance.now();
-        const duration = 2500; // Match CSS animation duration
+        const duration = 800; // Match CSS animation duration
 
         const speedUpRotation = () => {
             const elapsed = performance.now() - startTime;
