@@ -104,7 +104,6 @@
         background: var(--bg-item);
         border: 2px solid var(--border-color);
         border-radius: 15px;
-        max-width: 400px;
         padding: 20px;
         transition: all 0.3s;
         box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.4);
@@ -139,6 +138,7 @@
     .scammer-info h2 {
         margin: 0 0 8px 0;
         font-size: 18px;
+        text-wrap-mode: nowrap;
         color: var(--text-primary);
         display: flex;
         align-items: center;
@@ -299,6 +299,10 @@
             width: 90px;
             height: 90px;
         }
+
+        .scammer-info h2 {
+            justify-content: center;
+        }
     }
 </style>
 
@@ -404,7 +408,8 @@
             <p style="margin-top: 20px; font-size: 14px; color: var(--text-secondary);">
                 Report users in the server to <a href="http://discordapp.com/users/366063543260282890"
                     style="color: #4a9eff; text-decoration: none;">@.bby</a>
-                <br><a class="btn" href="https://discord.gg/YsKW6UDWZ6" style="position: unset;margin-top: 10px; display: inline-flex;">
+                <br><a class="btn" href="https://discord.gg/YsKW6UDWZ6"
+                    style="position: unset;margin-top: 10px; display: inline-flex;">
                     <img src="./imgs/discord.png" style="width: 20px;">
                     Join Discord
                 </a>
@@ -662,7 +667,7 @@
         <a href="${robloxProfile}" target="_blank" rel="noopener noreferrer">
           <h2>
             ${robloxUser}
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" style="fill:transparent" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 5l7 7-7 7"></path>
               <path d="M5 12h14"></path>
             </svg>
