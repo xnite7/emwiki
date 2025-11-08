@@ -101,12 +101,19 @@ header {
 
 header h1 {
     margin: 0;
+    line-height:0.8;
+    width: min-content;
     gap: 11px;
     display: flex;
     align-items: center;
     color: var(--muted);
     font-weight: 700;
     font-size: 24px;
+}
+
+header h1 a {
+    color: var(--muted);
+    text-decoration: none;
 }
 
 #top-controls {
@@ -151,8 +158,8 @@ select::-webkit-scrollbar {
     white-space: nowrap;
 }
 
-.upload-icon { 
-    mask-image: url('data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12%2022a1%201%200%200%201-1-1V10.414L8.707%2012.707a1%201%200%200%201-1.414-1.414l4-4a1%201%200%200%201%201.414%200l4%204a1%201%200%201%201-1.414%201.414L13%2010.414V21a1%201%200%200%201-1%201zM5%207a1%201%200%200%201-1-1V4a2%202%200%200%201%202-2h12a2%202%200%200%201%202%202v2a1%201%200%201%201-2%200V4H6v2a1%201%200%200%201-1%201z%22%2F%3E%3C%2Fsvg%3E'); 
+.upload-icon {
+    mask-image: url('data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12%2022a1%201%200%200%201-1-1V10.414L8.707%2012.707a1%201%200%200%201-1.414-1.414l4-4a1%201%200%200%201%201.414%200l4%204a1%201%200%201%201-1.414%201.414L13%2010.414V21a1%201%200%200%201-1%201zM5%207a1%201%200%200%201-1-1V4a2%202%200%200%201%202-2h12a2%202%200%200%201%202%202v2a1%201%200%201%201-2%200V4H6v2a1%201%200%200%201-1%201z%22%2F%3E%3C%2Fsvg%3E');
 }
 
 /* Optional: Add animation to the import button */
@@ -161,8 +168,15 @@ select::-webkit-scrollbar {
 }
 
 @keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-3px);
+    }
 }
 
 #settings-btn,
@@ -414,7 +428,7 @@ main {
     transition: all 0.15s ease-in-out;
 }
 
-#title-text{
+#title-text {
     max-width: 300px;
     white-space: nowrap;
     display: inline-block;
@@ -1329,8 +1343,7 @@ hr {
 
 .rocket-btn {
     position: relative;
-    display: flex
-;
+    display: flex;
     align-items: center;
     gap: 6px;
     padding: 12px 23px 14px 17px;
@@ -1347,7 +1360,8 @@ hr {
     letter-spacing: 1px;
     font-family: caveat;
     overflow: visible;
-        @supports (corner-shape: squircle) {
+
+    @supports (corner-shape: squircle) {
         corner-shape: squircle;
     }
 }
@@ -2296,10 +2310,7 @@ hr {
         display: none !important;
     }
 
-    header h1 {
-        font-size: 0px;
-        gap: 4px;
-    }
+
 
     header h1 strong {
         font-size: 18px;
@@ -2488,26 +2499,31 @@ body.dragging-panel {
 
 
 /* Smooth scrolling for the panel when constrained */
-#quick-editor-content, .delete-modal * {
+#quick-editor-content,
+.delete-modal * {
     scroll-behavior: smooth;
 }
 
 /* Custom scrollbar styling for the constrained panel */
-#quick-editor-content::-webkit-scrollbarm, .delete-modal *::-webkit-scrollbar {
+#quick-editor-content::-webkit-scrollbarm,
+.delete-modal *::-webkit-scrollbar {
     width: 8px;
 }
 
-#quick-editor-content::-webkit-scrollbar-track, .delete-modal *::-webkit-scrollbar-track {
+#quick-editor-content::-webkit-scrollbar-track,
+.delete-modal *::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
 }
 
-#quick-editor-content::-webkit-scrollbar-thumb, .delete-modal *::-webkit-scrollbar-thumb {
+#quick-editor-content::-webkit-scrollbar-thumb,
+.delete-modal *::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.3);
     border-radius: 4px;
 }
 
-#quick-editor-content::-webkit-scrollbar-thumb:hover, .delete-modal *::-webkit-scrollbar-thumb:hover {
+#quick-editor-content::-webkit-scrollbar-thumb:hover,
+.delete-modal *::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
 }
 
@@ -3824,7 +3840,7 @@ body.dragging-panel {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
     transition: left 0.5s;
 }
 
