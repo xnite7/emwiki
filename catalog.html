@@ -589,11 +589,11 @@
                     if (index === this.currentCategoryIndex) {
                         item.classList.add('active');
                         item.style.borderColor = this.categories[index].color;
-                        item.style.backgroundColor = this.categories[index].color + '33';
+                        item.style.background = `radial-gradient(${this.categories[index].color + '66'}, transparent)`;
                     } else {
                         item.classList.remove('active');
                         item.style.borderColor = '';
-                        item.style.backgroundColor = '';
+                        item.style.background = '';
                     }
                 });
 

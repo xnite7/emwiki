@@ -1443,7 +1443,7 @@ footer {
            CATALOG GRID
 ============================================ */
 .catalog-container {
-    min-height: 26vh;
+    min-height: 40vh;
     padding: 20px;
 }
 
@@ -1991,7 +1991,7 @@ textarea {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
-    transition: font-size 0.3s ease, color 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 
@@ -2009,8 +2009,9 @@ textarea {
     box-shadow: 0 20px 40px var(--shadow-color);
 }
 
-.category-item[data-pos="0"] span {
-    font-size: 11px;
+.category-item[data-pos="0"] small {
+    font-size: 14px;
+    margin-top: -10px;
 }
 
 .category-item[data-pos="-2"] {
@@ -2090,12 +2091,14 @@ textarea {
 }
 
 @keyframes squishy {
-    from {
-        filter: brightness(1) grayscale(0.5) opacity(0.7);
+
+    from,
+    to {
+        scale: 1;
     }
 
-    to {
-        filter: brightness(2) grayscale(0.5) opacity(0.7);
+    50% {
+        scale: 0.9;
     }
 }
 
