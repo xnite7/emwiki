@@ -15,20 +15,6 @@
 }
 
 
-
-[data-theme="light"] {
-    --bg: #f6f7fb;
-    --bg2: #dddddd;
-    --font: #000;
-    --ghost: rgba(0, 0, 0, 0.2);
-    --shade: rgba(0, 0, 0, 0.04);
-    --panel: #dbdbdb;
-    --muted: #4b5563;
-    --accent: #0b5cff;
-    --card: #fbfbfb;
-    --glass: rgba(0, 0, 0, 0.04);
-}
-
 #welcome {
 
     width: -webkit-fill-available;
@@ -2559,6 +2545,66 @@ body.dragging-panel {
     display: flex;
     flex-direction: row;
     height: 100%;
+}
+
+/* Profile Pill Styles */
+.profile-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px 6px 6px;
+    background: var(--card);
+    border: 1px solid var(--ghost);
+    box-shadow: 0 0 2px var(--shade);
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+
+.profile-pill-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--panel);
+}
+
+.profile-pill-name {
+    font-weight: 500;
+    color: var(--font);
+}
+
+.profile-pill-role {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profile-pill-role.role-admin {
+    background: linear-gradient(135deg, #ff4444, #cc0000);
+    color: white;
+    border: 1px solid #630000;
+}
+
+.profile-pill-role.role-moderator,
+.profile-pill-role.role-mod {
+    background: linear-gradient(135deg, #4169E1, #1E3A8A);
+    color: white;
+    border: 1px solid #4709bb;
+}
+
+.profile-pill-role.role-vip {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #000;
+    border: 1px solid #bb6209;
+}
+
+.profile-pill-role.role-user {
+    display: none;
+    /* Hide default user role */
 }
 
 #history-list {
