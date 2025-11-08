@@ -2614,8 +2614,12 @@ class Auth extends EventTarget {
                 camera.lookAt(0, 1, 0);
             }
 
-            // Setup renderer
-            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            // Setup renderer (antialias disabled for better performance)
+            const renderer = new THREE.WebGLRenderer({
+                alpha: true,
+                antialias: false,
+                powerPreference: 'high-performance'
+            });
             renderer.setSize(300, 300);
             renderer.setClearColor(0x000000, 0);
             container.appendChild(renderer.domElement);
@@ -2667,21 +2671,48 @@ class Auth extends EventTarget {
 
                 objLoader.load(this.getCdnUrl(objUrl), (object) => {
                     scene.add(object);
+
+                    // Track animation state
+                    let animationId = null;
+                    let isVisible = true;
+
+                    // Animation loop with visibility control
                     const animateModel = () => {
+                        if (!isVisible) return;
                         object.rotation.y += 0.01;
                         renderer.render(scene, camera);
-                        requestAnimationFrame(animateModel);
+                        animationId = requestAnimationFrame(animateModel);
                     };
+
+                    // Use Intersection Observer to pause animation when not visible
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            isVisible = entry.isIntersecting;
+                            if (isVisible && !animationId) {
+                                animateModel();
+                            } else if (!isVisible && animationId) {
+                                cancelAnimationFrame(animationId);
+                                animationId = null;
+                            }
+                        });
+                    }, { threshold: 0.1 });
+
+                    observer.observe(container);
+
+                    // Start animation
                     animateModel();
 
+                    // Show model immediately when loaded
+                    container.className = 'active';
+                    container.style.display = '';
+                    this._rendering3DModel = false;
                 });
             });
-        } finally {
-            setTimeout(() => {
-                container.className = 'active';
-                container.style.display = ''; // Clear inline style, let CSS take over
-                this._rendering3DModel = false;
-            }, 2000);
+        } catch (error) {
+            console.error('Error rendering 3D model:', error);
+            container.className = 'active';
+            container.style.display = '';
+            this._rendering3DModel = false;
         }
     }
 
