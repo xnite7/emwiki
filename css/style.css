@@ -900,6 +900,18 @@ main {
     box-shadow: inset 0 0 20px 25px var(--shadow-color);
 }
 
+#recent-viewed-items .item:has(svg) .item-name {
+    opacity: 0;
+    white-space: nowrap;
+}
+
+#recent-viewed-items .item>svg:first-of-type {
+    overflow: visible;
+    width: 90%;
+    height: auto;
+    pointer-events: none;
+}
+
 .item canvas {
     max-width: 70%;
     max-height: 70%;
