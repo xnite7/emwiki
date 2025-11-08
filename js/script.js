@@ -2114,7 +2114,15 @@ class Auth extends EventTarget {
                 window.catalog.isLoggedIn = true;
                 await window.catalog.loadPreferences();
                 document.getElementById('auth-step-3').querySelector('.loading').style.display = 'none';
-                document.getElementById('auth-step-3').querySelector('.celebration-close-btn').style.display = ''
+
+                const epicBtn = document.getElementById('auth-step-3').querySelector('.celebration-close-btn');
+                epicBtn.style.display = '';
+
+                // Add Epic animation on click
+                epicBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.playEpicAnimation();
+                }, { once: true });
             }
 
             // Start confetti!
@@ -2541,7 +2549,15 @@ class Auth extends EventTarget {
                         window.catalog.isLoggedIn = true;
                         await window.catalog.loadPreferences();
                         document.getElementById('auth-step-3').querySelector('.loading').style.display = 'none';
-                        document.getElementById('auth-step-3').querySelector('.celebration-close-btn').style.display = ''
+
+                        const epicBtn = document.getElementById('auth-step-3').querySelector('.celebration-close-btn');
+                        epicBtn.style.display = '';
+
+                        // Add Epic animation on click
+                        epicBtn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            this.playEpicAnimation();
+                        }, { once: true });
                     }
 
                     // Start confetti!
@@ -2672,27 +2688,36 @@ class Auth extends EventTarget {
                 objLoader.load(this.getCdnUrl(objUrl), (object) => {
                     scene.add(object);
 
-                    // Track animation state
-                    let animationId = null;
-                    let isVisible = true;
+                    // Store references for later animations
+                    this._model3D = {
+                        scene,
+                        camera,
+                        renderer,
+                        object,
+                        animationId: null,
+                        isVisible: true,
+                        rotationSpeed: 0.01,
+                        initialCameraPosition: { ...camera.position },
+                        aabb: aabb
+                    };
 
                     // Animation loop with visibility control
                     const animateModel = () => {
-                        if (!isVisible) return;
-                        object.rotation.y += 0.01;
-                        renderer.render(scene, camera);
-                        animationId = requestAnimationFrame(animateModel);
+                        if (!this._model3D.isVisible) return;
+                        this._model3D.object.rotation.y += this._model3D.rotationSpeed;
+                        this._model3D.renderer.render(this._model3D.scene, this._model3D.camera);
+                        this._model3D.animationId = requestAnimationFrame(animateModel);
                     };
 
                     // Use Intersection Observer to pause animation when not visible
                     const observer = new IntersectionObserver((entries) => {
                         entries.forEach(entry => {
-                            isVisible = entry.isIntersecting;
-                            if (isVisible && !animationId) {
+                            this._model3D.isVisible = entry.isIntersecting;
+                            if (this._model3D.isVisible && !this._model3D.animationId) {
                                 animateModel();
-                            } else if (!isVisible && animationId) {
-                                cancelAnimationFrame(animationId);
-                                animationId = null;
+                            } else if (!this._model3D.isVisible && this._model3D.animationId) {
+                                cancelAnimationFrame(this._model3D.animationId);
+                                this._model3D.animationId = null;
                             }
                         });
                     }, { threshold: 0.1 });
@@ -2714,6 +2739,104 @@ class Auth extends EventTarget {
             container.style.display = '';
             this._rendering3DModel = false;
         }
+    }
+
+    // Epic button animation: spin faster, zoom in, zoom out, then close
+    async playEpicAnimation() {
+        if (!this._model3D) {
+            // No 3D model loaded, just close the modal
+            document.getElementById('auth-modal').hidePopover();
+            return;
+        }
+
+        return new Promise((resolve) => {
+            const model = this._model3D;
+            const startTime = performance.now();
+            const duration = 2500; // Total animation duration in ms
+
+            // Save original values
+            const originalSpeed = model.rotationSpeed;
+            const originalPos = { ...model.initialCameraPosition };
+
+            // Calculate zoom distances
+            const zoomInPos = {
+                x: originalPos.x * 0.6,
+                y: originalPos.y * 0.6,
+                z: originalPos.z * 0.6
+            };
+
+            const zoomOutPos = {
+                x: originalPos.x * 2.5,
+                y: originalPos.y * 2.5,
+                z: originalPos.z * 2.5
+            };
+
+            // Cancel existing animation
+            if (model.animationId) {
+                cancelAnimationFrame(model.animationId);
+                model.animationId = null;
+            }
+
+            const animate = () => {
+                const elapsed = performance.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // Phase 1: Speed up rotation and zoom in (0-40%)
+                if (progress < 0.4) {
+                    const phase1Progress = progress / 0.4;
+                    model.rotationSpeed = originalSpeed + (0.15 * phase1Progress);
+
+                    // Ease in zoom
+                    const easeProgress = 1 - Math.pow(1 - phase1Progress, 3);
+                    model.camera.position.x = originalPos.x + (zoomInPos.x - originalPos.x) * easeProgress;
+                    model.camera.position.y = originalPos.y + (zoomInPos.y - originalPos.y) * easeProgress;
+                    model.camera.position.z = originalPos.z + (zoomInPos.z - originalPos.z) * easeProgress;
+                }
+                // Phase 2: Hold zoom in, keep spinning fast (40-50%)
+                else if (progress < 0.5) {
+                    model.rotationSpeed = originalSpeed + 0.15;
+                    model.camera.position.x = zoomInPos.x;
+                    model.camera.position.y = zoomInPos.y;
+                    model.camera.position.z = zoomInPos.z;
+                }
+                // Phase 3: Zoom out dramatically (50-100%)
+                else {
+                    const phase3Progress = (progress - 0.5) / 0.5;
+
+                    // Ease out zoom
+                    const easeProgress = 1 - Math.pow(1 - phase3Progress, 2);
+                    model.camera.position.x = zoomInPos.x + (zoomOutPos.x - zoomInPos.x) * easeProgress;
+                    model.camera.position.y = zoomInPos.y + (zoomOutPos.y - zoomInPos.y) * easeProgress;
+                    model.camera.position.z = zoomInPos.z + (zoomOutPos.z - zoomInPos.z) * easeProgress;
+
+                    // Gradually speed up rotation even more
+                    model.rotationSpeed = originalSpeed + 0.15 + (0.2 * phase3Progress);
+                }
+
+                // Rotate and render
+                model.object.rotation.y += model.rotationSpeed;
+                model.renderer.render(model.scene, model.camera);
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Animation complete, close modal
+                    document.getElementById('auth-modal').hidePopover();
+
+                    // Reset for next time (after a delay)
+                    setTimeout(() => {
+                        model.rotationSpeed = originalSpeed;
+                        model.camera.position.x = originalPos.x;
+                        model.camera.position.y = originalPos.y;
+                        model.camera.position.z = originalPos.z;
+                    }, 500);
+
+                    resolve();
+                }
+            };
+
+            animate();
+        });
     }
 
     updateUI() {
