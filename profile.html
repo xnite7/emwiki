@@ -678,16 +678,16 @@
 
             // Get current user ID to prevent self-review
             let currentUserId = null;
-            
-            if (authToken) {
-                // Try to get current user ID from local storage or session
-                const userInfo = localStorage.getItem('user_info');
-                if (userInfo) {
-                    try {
-                        currentUserId = JSON.parse(userInfo).userId;
-                    } catch (e) {
-                        console.error('Error parsing user info:', e);
-                    }
+
+
+            if (window.Auth) {
+                window.Auth.addEventListener('sessionReady', () => {
+                    currentUserId = window.Auth.user.userId;
+                });
+
+                // Check if already authenticated
+                if (window.Auth.user) {
+                    currentUserId = window.Auth.user.userId;
                 }
             }
             console.log(currentUserId, this.userId)
