@@ -785,32 +785,9 @@
 }
 
 .btn {
-    padding: 12px 24px;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 0.95rem;
-    cursor: pointer;
-    border: none;
-    transition: all 0.3s;
-    font-family: inherit;
+    position: unset;
 }
 
-.btn-primary {
-    background: linear-gradient(135deg, #667eea, #4a9eff);
-    color: white;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-}
-
-.btn-primary:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
 
 .btn-secondary {
     background: rgba(255, 255, 255, 0.1);
