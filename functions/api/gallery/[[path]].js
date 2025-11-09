@@ -190,8 +190,7 @@ async function handleGet({ request, env, params }) {
 
       // Check if current user liked this item (handle both string and number user_ids in array)
       const userIdNum = user ? parseInt(user.user_id) : null;
-      const userIdStr = user ? user.user_id.toString() : null;
-      const userLiked = userIdNum ? (likes.includes(userIdNum) || likes.includes(userIdStr)) : false;
+      const userLiked = userIdNum ? likes.includes(userIdNum) : false;
       const mediaType = getMediaType(item.media_url);
 
       const processedItem = {
@@ -252,8 +251,7 @@ async function handleGet({ request, env, params }) {
       const likes = JSON.parse(item.likes || '[]');
       const mediaType = getMediaType(item.media_url);
       const userIdNum = user ? parseInt(user.user_id) : null;
-      const userIdStr = user ? user.user_id.toString() : null;
-      const userLiked = userIdNum ? (likes.includes(userIdNum) || likes.includes(userIdStr)) : false;
+      const userLiked = userIdNum ? likes.includes(userIdNum) : false;
 
       return {
         ...item,
@@ -292,8 +290,7 @@ async function handleGet({ request, env, params }) {
       const likes = JSON.parse(item.likes || '[]');
       const mediaType = getMediaType(item.media_url);
       const userIdNum = user ? parseInt(user.user_id) : null;
-      const userIdStr = user ? user.user_id.toString() : null;
-      const userLiked = userIdNum ? (likes.includes(userIdNum) || likes.includes(userIdStr)) : false;
+      const userLiked = userIdNum ? likes.includes(userIdNum) : false;
 
       return {
         ...item,
@@ -540,13 +537,9 @@ async function handlePost({ request, env, params }) {
       // Parse likes array (handle both numbers and strings)
       const likes = JSON.parse(item.likes || '[]');
       const userIdNum = parseInt(user.user_id);
-      const userIdStr = user.user_id.toString();
 
       // Find index (check for both number and string)
       let likeIndex = likes.indexOf(userIdNum);
-      if (likeIndex === -1) {
-        likeIndex = likes.indexOf(userIdStr);
-      }
 
       if (likeIndex > -1) {
         // Unlike - remove user_id from array
