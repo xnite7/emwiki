@@ -180,7 +180,7 @@ async function handleGet({ request, env, params }) {
       item.views += 1;
 
 
-      // Parse likes array (handle both strings and numbers)
+      // Parse likes array
       let likes = [];
       try {
         likes = JSON.parse(item.likes || '[]');
@@ -188,9 +188,8 @@ async function handleGet({ request, env, params }) {
         likes = [];
       }
 
-      // Check if current user liked this item (handle both string and number user_ids in array)
-      const userIdNum = user ? parseInt(user.user_id) : null;
-      const userLiked = userIdNum ? likes.includes(userIdNum) : false;
+      // Check if current user liked this item
+      const userLiked = user ? likes.includes(user.user_id) : false;
       const mediaType = getMediaType(item.media_url);
 
       const processedItem = {
@@ -250,8 +249,7 @@ async function handleGet({ request, env, params }) {
     const allProcessed = allItems.results.map(item => {
       const likes = JSON.parse(item.likes || '[]');
       const mediaType = getMediaType(item.media_url);
-      const userIdNum = user ? parseInt(user.user_id) : null;
-      const userLiked = userIdNum ? likes.includes(userIdNum) : false;
+      const userLiked = user ? likes.includes(user.user_id) : false;
 
       return {
         ...item,
@@ -289,8 +287,7 @@ async function handleGet({ request, env, params }) {
     processedItems = items.results.map(item => {
       const likes = JSON.parse(item.likes || '[]');
       const mediaType = getMediaType(item.media_url);
-      const userIdNum = user ? parseInt(user.user_id) : null;
-      const userLiked = userIdNum ? likes.includes(userIdNum) : false;
+      const userLiked = user ? likes.includes(user.user_id) : false;
 
       return {
         ...item,
@@ -534,12 +531,9 @@ async function handlePost({ request, env, params }) {
         });
       }
 
-      // Parse likes array (handle both numbers and strings)
+      // Parse likes array
       const likes = JSON.parse(item.likes || '[]');
-      const userIdNum = parseInt(user.user_id);
-
-      // Find index (check for both number and string)
-      let likeIndex = likes.indexOf(userIdNum);
+      const likeIndex = likes.indexOf(user.user_id);
 
       if (likeIndex > -1) {
         // Unlike - remove user_id from array
@@ -561,8 +555,8 @@ async function handlePost({ request, env, params }) {
           }
         });
       } else {
-        // Like - add user_id as number to array (prefer numbers for new likes)
-        likes.push(userIdNum);
+        // Like - add user_id to array
+        likes.push(user.user_id);
 
         await env.DBA.prepare(
           'UPDATE gallery_items SET likes = ? WHERE id = ?'

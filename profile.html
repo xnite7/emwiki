@@ -198,13 +198,65 @@
 
             <!-- Reviews -->
             <section class="profile-section">
-                <h2 class="section-title">Reviews</h2>
+                <div class="reviews-section-header">
+                    <h2 class="section-title">Reviews</h2>
+                    <button id="write-review-btn" class="btn btn-primary" style="display: none;">
+                        Write a Review
+                    </button>
+                </div>
                 <div id="reviews-container" class="reviews-container">
                     <p class="no-data-message">No reviews yet</p>
                 </div>
             </section>
         </div>
     </main>
+
+    <!-- Review Modal -->
+    <div id="review-modal" class="modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content review-modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Write a Review</h3>
+                <button class="modal-close" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="review-form">
+                    <div class="form-group">
+                        <label for="review-rating" class="form-label">Rating</label>
+                        <div class="star-rating-input">
+                            <input type="radio" id="star5" name="rating" value="5" required>
+                            <label for="star5" title="5 stars">★</label>
+                            <input type="radio" id="star4" name="rating" value="4">
+                            <label for="star4" title="4 stars">★</label>
+                            <input type="radio" id="star3" name="rating" value="3">
+                            <label for="star3" title="3 stars">★</label>
+                            <input type="radio" id="star2" name="rating" value="2">
+                            <label for="star2" title="2 stars">★</label>
+                            <input type="radio" id="star1" name="rating" value="1">
+                            <label for="star1" title="1 star">★</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="review-comment" class="form-label">Comment (optional)</label>
+                        <textarea
+                            id="review-comment"
+                            name="comment"
+                            class="form-textarea"
+                            rows="4"
+                            maxlength="500"
+                            placeholder="Share your experience with this user..."></textarea>
+                        <div class="char-counter">
+                            <span id="comment-char-count">0</span>/500
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancel-review-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="submit-review-btn">Submit Review</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
 <footer>
     <div class="footer-content">
@@ -321,6 +373,9 @@
 
             // Render reviews
             this.renderReviews(reviews);
+
+            // Setup review functionality
+            this.setupReviewModal();
         }
 
         renderProfileHeader(user, donationData) {
@@ -607,6 +662,121 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        setupReviewModal() {
+            const writeReviewBtn = document.getElementById('write-review-btn');
+            const reviewModal = document.getElementById('review-modal');
+            const reviewForm = document.getElementById('review-form');
+            const cancelBtn = document.getElementById('cancel-review-btn');
+            const modalClose = document.querySelector('.modal-close');
+            const commentTextarea = document.getElementById('review-comment');
+            const charCount = document.getElementById('comment-char-count');
+
+            // Check if user is logged in
+            const authToken = localStorage.getItem('auth_token');
+
+            // Get current user ID to prevent self-review
+            let currentUserId = null;
+            if (authToken) {
+                // Try to get current user ID from local storage or session
+                const userInfo = localStorage.getItem('user_info');
+                if (userInfo) {
+                    try {
+                        currentUserId = JSON.parse(userInfo).userId;
+                    } catch (e) {
+                        console.error('Error parsing user info:', e);
+                    }
+                }
+            }
+
+            // Show write review button if user is logged in and not viewing their own profile
+            if (authToken && currentUserId && currentUserId !== this.userId) {
+                writeReviewBtn.style.display = 'inline-block';
+            }
+
+            // Character counter
+            commentTextarea.addEventListener('input', () => {
+                charCount.textContent = commentTextarea.value.length;
+            });
+
+            // Open modal
+            writeReviewBtn.addEventListener('click', () => {
+                reviewModal.style.display = 'flex';
+                reviewForm.reset();
+                charCount.textContent = '0';
+            });
+
+            // Close modal
+            const closeModal = () => {
+                reviewModal.style.display = 'none';
+            };
+
+            cancelBtn.addEventListener('click', closeModal);
+            modalClose.addEventListener('click', closeModal);
+
+            // Close on overlay click
+            reviewModal.querySelector('.modal-overlay').addEventListener('click', closeModal);
+
+            // Handle form submission
+            reviewForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.submitReview();
+            });
+        }
+
+        async submitReview() {
+            const authToken = localStorage.getItem('auth_token');
+            if (!authToken) {
+                alert('You must be logged in to write a review');
+                return;
+            }
+
+            const rating = document.querySelector('input[name="rating"]:checked');
+            if (!rating) {
+                alert('Please select a rating');
+                return;
+            }
+
+            const comment = document.getElementById('review-comment').value.trim();
+            const submitBtn = document.getElementById('submit-review-btn');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            try {
+                const response = await fetch(`${this.apiBase}/profile/${this.userId}/review`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        rating: parseInt(rating.value),
+                        comment: comment || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to submit review');
+                }
+
+                // Success - close modal and reload profile to show new review
+                document.getElementById('review-modal').style.display = 'none';
+                alert('Review submitted successfully!');
+
+                // Reload the profile to show the new review
+                await this.loadProfile();
+
+            } catch (error) {
+                console.error('Error submitting review:', error);
+                alert(error.message || 'Failed to submit review. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Review';
+            }
         }
     }
 
