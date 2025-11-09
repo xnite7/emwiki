@@ -220,36 +220,74 @@ async function handleGet({ request, env, params }) {
   ).first();
   const total = countResult?.total || 0;
 
-  // Query approved items
-  const items = await env.DBA.prepare(
-    `SELECT g.id, g.user_id, u.username, g.title, g.description, g.media_url, g.thumbnail_url,
-            g.created_at, g.views, g.likes, u.avatar_url, u.role
-     FROM gallery_items g
-     LEFT JOIN users u ON g.user_id = u.user_id
-     WHERE g.status = 1
-     ORDER BY ${sortBy === 'newest' ? 'g.created_at DESC' : 'g.created_at DESC'}
-     LIMIT ? OFFSET ?`
-  ).bind(limit, offset).all();
+  // For likes sorting, we need to fetch all items, sort them, then paginate
+  // For newest sorting, we can sort in SQL and paginate efficiently
+  let processedItems;
 
-  // Process items to parse JSON and compute fields
-  const processedItems = items.results.map(item => {
-    const views = JSON.parse(item.views || '[]');
-    const likes = JSON.parse(item.likes || '[]');
-    const mediaType = getMediaType(item.media_url);
-    const userLiked = user ? likes.includes(user.user_id) : false;
-    return {
-      ...item,
-      username: item.username || 'Unknown',
-      media_type: mediaType,
-      views: views.length,
-      likes_count: likes.length,
-      user_liked: userLiked
-    };
-  });
-
-  // Sort by likes if requested (after processing)
   if (sortBy === 'likes') {
-    processedItems.sort((a, b) => b.likes_count - a.likes_count || b.created_at - a.created_at);
+    // Fetch ALL approved items (needed to sort by likes count)
+    const allItems = await env.DBA.prepare(
+      `SELECT g.id, g.user_id, u.username, g.title, g.description, g.media_url, g.thumbnail_url,
+              g.created_at, g.views, g.likes, u.avatar_url, u.role
+       FROM gallery_items g
+       LEFT JOIN users u ON g.user_id = u.user_id
+       WHERE g.status = 1
+       ORDER BY g.created_at DESC`
+    ).all();
+
+    // Process and sort all items by likes count
+    const allProcessed = allItems.results.map(item => {
+      const views = JSON.parse(item.views || '[]');
+      const likes = JSON.parse(item.likes || '[]');
+      const mediaType = getMediaType(item.media_url);
+      const userLiked = user ? likes.includes(user.user_id) : false;
+      return {
+        ...item,
+        username: item.username || 'Unknown',
+        media_type: mediaType,
+        views: views.length,
+        likes_count: likes.length,
+        user_liked: userLiked
+      };
+    });
+
+    // Sort by likes (descending), then by created_at (descending) as tiebreaker
+    allProcessed.sort((a, b) => {
+      if (b.likes_count !== a.likes_count) {
+        return b.likes_count - a.likes_count;
+      }
+      return b.created_at - a.created_at;
+    });
+
+    // Apply pagination after sorting
+    processedItems = allProcessed.slice(offset, offset + limit);
+  } else {
+    // For newest, we can paginate in SQL efficiently
+    const items = await env.DBA.prepare(
+      `SELECT g.id, g.user_id, u.username, g.title, g.description, g.media_url, g.thumbnail_url,
+              g.created_at, g.views, g.likes, u.avatar_url, u.role
+       FROM gallery_items g
+       LEFT JOIN users u ON g.user_id = u.user_id
+       WHERE g.status = 1
+       ORDER BY g.created_at DESC
+       LIMIT ? OFFSET ?`
+    ).bind(limit, offset).all();
+
+    // Process items
+    processedItems = items.results.map(item => {
+      const views = JSON.parse(item.views || '[]');
+      const likes = JSON.parse(item.likes || '[]');
+      const mediaType = getMediaType(item.media_url);
+      const userLiked = user ? likes.includes(user.user_id) : false;
+      return {
+        ...item,
+        username: item.username || 'Unknown',
+        media_type: mediaType,
+        views: views.length,
+        likes_count: likes.length,
+        user_liked: userLiked
+      };
+    });
   }
 
   return new Response(JSON.stringify({ items: processedItems, total }), {
