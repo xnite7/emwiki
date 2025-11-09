@@ -69,11 +69,11 @@ async function handleGet({ request, env, params }) {
   // GET /api/gallery/pending - Get pending items (admin only)
   if (path === 'pending') {
     //if (!user || !isAdmin(user)) {
-      //return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        //status: 403,
-        //headers: { 'Content-Type': 'application/json',
-        //...CORS_HEADERS }
-      //});
+    //return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+    //status: 403,
+    //headers: { 'Content-Type': 'application/json',
+    //...CORS_HEADERS }
+    //});
     //}
 
     const items = await env.DBA.prepare(
@@ -89,23 +89,11 @@ async function handleGet({ request, env, params }) {
     const processedItems = items.results.map(item => {
       const likes = JSON.parse(item.likes || '[]');
       const mediaType = getMediaType(item.media_url);
-      // Handle views - old schema (TEXT/JSON) or new schema (INTEGER)
-      let viewCount = 0;
-      if (typeof item.views === 'string') {
-        try {
-          const viewsArray = JSON.parse(item.views || '[]');
-          viewCount = viewsArray.length;
-        } catch {
-          viewCount = 0;
-        }
-      } else {
-        viewCount = item.views || 0;
-      }
       return {
         ...item,
         username: item.username || 'Unknown',
         media_type: mediaType,
-        views: viewCount,
+        views: item.views || 0,
         likes_count: likes.length,
         status: 'pending' // For backwards compatibility
       };
@@ -124,8 +112,10 @@ async function handleGet({ request, env, params }) {
     if (!user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
-        headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+        headers: {
+          'Content-Type': 'application/json',
+          ...CORS_HEADERS
+        }
       });
     }
 
@@ -143,30 +133,20 @@ async function handleGet({ request, env, params }) {
       const likes = JSON.parse(item.likes || '[]');
       const mediaType = getMediaType(item.media_url);
       const statusText = item.status === 1 ? 'approved' : item.status === 0 ? 'rejected' : 'pending';
-      // Handle views - old schema (TEXT/JSON) or new schema (INTEGER)
-      let viewCount = 0;
-      if (typeof item.views === 'string') {
-        try {
-          const viewsArray = JSON.parse(item.views || '[]');
-          viewCount = viewsArray.length;
-        } catch {
-          viewCount = 0;
-        }
-      } else {
-        viewCount = item.views || 0;
-      }
       return {
         ...item,
         media_type: mediaType,
-        views: viewCount,
+        views: item.views || 0,
         likes_count: likes.length,
         status: statusText // For backwards compatibility
       };
     });
 
     return new Response(JSON.stringify({ items: processedItems }), {
-      headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+      headers: {
+        'Content-Type': 'application/json',
+        ...CORS_HEADERS
+      }
     });
   }
 
@@ -187,30 +167,18 @@ async function handleGet({ request, env, params }) {
       if (!item) {
         return new Response(JSON.stringify({ error: 'Item not found' }), {
           status: 404,
-          headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+          headers: {
+            'Content-Type': 'application/json',
+            ...CORS_HEADERS
+          }
         });
       }
 
-      // Handle views - check if it's old schema (TEXT/JSON) or new schema (INTEGER)
-      let viewCount = 0;
-      if (typeof item.views === 'string') {
-        // Old schema: JSON array
-        try {
-          const viewsArray = JSON.parse(item.views || '[]');
-          viewCount = viewsArray.length;
-        } catch {
-          viewCount = 0;
-        }
-      } else {
-        // New schema: INTEGER
-        viewCount = item.views || 0;
-        // Increment view count
-        await env.DBA.prepare(
-          'UPDATE gallery_items SET views = views + 1 WHERE id = ?'
-        ).bind(itemId).run();
-        viewCount += 1;
-      }
+      await env.DBA.prepare(
+        'UPDATE gallery_items SET views = views + 1 WHERE id = ?'
+      ).bind(itemId).run();
+      item.views += 1;
+
 
       // Parse likes array (handle both strings and numbers)
       let likes = [];
@@ -230,21 +198,25 @@ async function handleGet({ request, env, params }) {
         ...item,
         username: item.username || 'Unknown',
         media_type: mediaType,
-        views: viewCount,
+        views: item.views,
         likes_count: likes.length,
         user_liked: userLiked
       };
 
       return new Response(JSON.stringify({ item: processedItem }), {
-        headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+        headers: {
+          'Content-Type': 'application/json',
+          ...CORS_HEADERS
+        }
       });
     } catch (error) {
       console.error('Error fetching gallery item:', error);
       return new Response(JSON.stringify({ error: 'Failed to fetch item' }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+        headers: {
+          'Content-Type': 'application/json',
+          ...CORS_HEADERS
+        }
       });
     }
   }
@@ -282,23 +254,12 @@ async function handleGet({ request, env, params }) {
       const userIdNum = user ? parseInt(user.user_id) : null;
       const userIdStr = user ? user.user_id.toString() : null;
       const userLiked = userIdNum ? (likes.includes(userIdNum) || likes.includes(userIdStr)) : false;
-      // Handle views - old schema (TEXT/JSON) or new schema (INTEGER)
-      let viewCount = 0;
-      if (typeof item.views === 'string') {
-        try {
-          const viewsArray = JSON.parse(item.views || '[]');
-          viewCount = viewsArray.length;
-        } catch {
-          viewCount = 0;
-        }
-      } else {
-        viewCount = item.views || 0;
-      }
+
       return {
         ...item,
         username: item.username || 'Unknown',
         media_type: mediaType,
-        views: viewCount,
+        views: item.views || 0,
         likes_count: likes.length,
         user_liked: userLiked
       };
@@ -333,23 +294,12 @@ async function handleGet({ request, env, params }) {
       const userIdNum = user ? parseInt(user.user_id) : null;
       const userIdStr = user ? user.user_id.toString() : null;
       const userLiked = userIdNum ? (likes.includes(userIdNum) || likes.includes(userIdStr)) : false;
-      // Handle views - old schema (TEXT/JSON) or new schema (INTEGER)
-      let viewCount = 0;
-      if (typeof item.views === 'string') {
-        try {
-          const viewsArray = JSON.parse(item.views || '[]');
-          viewCount = viewsArray.length;
-        } catch {
-          viewCount = 0;
-        }
-      } else {
-        viewCount = item.views || 0;
-      }
+
       return {
         ...item,
         username: item.username || 'Unknown',
         media_type: mediaType,
-        views: viewCount,
+        views: item.views || 0,
         likes_count: likes.length,
         user_liked: userLiked
       };
@@ -357,8 +307,10 @@ async function handleGet({ request, env, params }) {
   }
 
   return new Response(JSON.stringify({ items: processedItems, total }), {
-    headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+    headers: {
+      'Content-Type': 'application/json',
+      ...CORS_HEADERS
+    }
   });
 }
 
@@ -374,8 +326,10 @@ async function handlePost({ request, env, params }) {
   if (!user) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
-      headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+      headers: {
+        'Content-Type': 'application/json',
+        ...CORS_HEADERS
+      }
     });
   }
 
@@ -388,8 +342,10 @@ async function handlePost({ request, env, params }) {
       if (!file) {
         return new Response(JSON.stringify({ error: 'No file uploaded' }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+          headers: {
+            'Content-Type': 'application/json',
+            ...CORS_HEADERS
+          }
         });
       }
 
@@ -403,8 +359,10 @@ async function handlePost({ request, env, params }) {
           error: 'Invalid file type. Only images (JPEG, PNG, GIF, WebP) and videos (MP4, WebM, MOV) are allowed.'
         }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+          headers: {
+            'Content-Type': 'application/json',
+            ...CORS_HEADERS
+          }
         });
       }
 
@@ -414,8 +372,10 @@ async function handlePost({ request, env, params }) {
           error: 'File too large. Maximum size is 100MB.'
         }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+          headers: {
+            'Content-Type': 'application/json',
+            ...CORS_HEADERS
+          }
         });
       }
 
@@ -431,14 +391,18 @@ async function handlePost({ request, env, params }) {
       const url = `https://cdn.emwiki.com/${key}`;
 
       return new Response(JSON.stringify({ url, type: file.type }), {
-        headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+        headers: {
+          'Content-Type': 'application/json',
+          ...CORS_HEADERS
+        }
       });
     } catch (err) {
       return new Response(JSON.stringify({ error: 'Upload failed: ' + err.message }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+        headers: {
+          'Content-Type': 'application/json',
+          ...CORS_HEADERS
+        }
       });
     }
   }
@@ -454,8 +418,10 @@ async function handlePost({ request, env, params }) {
           error: 'Missing required fields: title, media_url'
         }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+          headers: {
+            'Content-Type': 'application/json',
+            ...CORS_HEADERS
+          }
         });
       }
 
@@ -485,110 +451,33 @@ async function handlePost({ request, env, params }) {
           ? 'Submission approved! Your art is now live in the gallery.'
           : 'Submission received! It will be reviewed by admins before appearing in the gallery.'
       }), {
-        headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+        headers: {
+          'Content-Type': 'application/json',
+          ...CORS_HEADERS
+        }
       });
     } catch (err) {
       return new Response(JSON.stringify({ error: 'Submission failed: ' + err.message }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+        headers: {
+          'Content-Type': 'application/json',
+          ...CORS_HEADERS
+        }
       });
     }
   }
 
-  // POST /api/gallery/backfill-thumbnails - Get videos without thumbnails (admin only)
-  if (path === 'backfill-thumbnails') {
-    if (!isAdmin(user)) {
-      return new Response(JSON.stringify({ error: 'Unauthorized - Admin only' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
-      });
-    }
-
-    try {
-      // Get all approved videos without thumbnails (check file extension for video type)
-      const items = await env.DBA.prepare(`
-        SELECT id, title, media_url
-        FROM gallery_items
-        WHERE status = 1
-          AND (thumbnail_url IS NULL OR thumbnail_url = '')
-        ORDER BY created_at DESC
-        LIMIT 50
-      `).all();
-
-      // Filter to only videos based on file extension
-      const videos = items.results.filter(item => getMediaType(item.media_url) === 'video');
-
-      return new Response(JSON.stringify({
-        success: true,
-        count: videos.length,
-        videos: videos
-      }), {
-        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
-      });
-    } catch (error) {
-      return new Response(JSON.stringify({
-        error: 'Failed to fetch videos',
-        details: error.message
-      }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
-      });
-    }
-  }
-
-  // POST /api/gallery/update-thumbnail/:id - Update thumbnail for existing video (admin only)
-  if (path.startsWith('update-thumbnail/')) {
-    const videoId = path.split('/')[1];
-
-    if (!isAdmin(user)) {
-      return new Response(JSON.stringify({ error: 'Unauthorized - Admin only' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
-      });
-    }
-
-    try {
-      const data = await request.json();
-      const { thumbnail_url } = data;
-
-      if (!thumbnail_url) {
-        return new Response(JSON.stringify({ error: 'thumbnail_url required' }), {
-          status: 400,
-          headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
-        });
-      }
-
-      // Update thumbnail (no media_type check since we removed that column)
-      await env.DBA.prepare(
-        'UPDATE gallery_items SET thumbnail_url = ? WHERE id = ?'
-      ).bind(thumbnail_url, videoId).run();
-
-      return new Response(JSON.stringify({
-        success: true,
-        message: 'Thumbnail updated successfully'
-      }), {
-        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
-      });
-    } catch (error) {
-      return new Response(JSON.stringify({
-        error: 'Failed to update thumbnail',
-        details: error.message
-      }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
-      });
-    }
-  }
+ 
 
   // POST /api/gallery/moderate/:id - Moderate item (admin only)
   if (path.startsWith('moderate/')) {
     if (!isAdmin(user)) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 403,
-        headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+        headers: {
+          'Content-Type': 'application/json',
+          ...CORS_HEADERS
+        }
       });
     }
 
@@ -601,8 +490,10 @@ async function handlePost({ request, env, params }) {
         error: 'Invalid action. Must be "approve" or "reject"'
       }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+        headers: {
+          'Content-Type': 'application/json',
+          ...CORS_HEADERS
+        }
       });
     }
 
@@ -619,8 +510,10 @@ async function handlePost({ request, env, params }) {
       success: true,
       message: `Item ${action}d successfully`
     }), {
-      headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+      headers: {
+        'Content-Type': 'application/json',
+        ...CORS_HEADERS
+      }
     });
   }
 
@@ -637,8 +530,10 @@ async function handlePost({ request, env, params }) {
       if (!item) {
         return new Response(JSON.stringify({ error: 'Item not found or not approved' }), {
           status: 404,
-          headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+          headers: {
+            'Content-Type': 'application/json',
+            ...CORS_HEADERS
+          }
         });
       }
 
@@ -667,8 +562,10 @@ async function handlePost({ request, env, params }) {
           message: 'Like removed',
           likes_count: likes.length
         }), {
-          headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+          headers: {
+            'Content-Type': 'application/json',
+            ...CORS_HEADERS
+          }
         });
       } else {
         // Like - add user_id as number to array (prefer numbers for new likes)
@@ -684,8 +581,10 @@ async function handlePost({ request, env, params }) {
           message: 'Like added',
           likes_count: likes.length
         }), {
-          headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+          headers: {
+            'Content-Type': 'application/json',
+            ...CORS_HEADERS
+          }
         });
       }
     } catch (error) {
@@ -695,16 +594,20 @@ async function handlePost({ request, env, params }) {
         details: error.message
       }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+        headers: {
+          'Content-Type': 'application/json',
+          ...CORS_HEADERS
+        }
       });
     }
   }
 
   return new Response(JSON.stringify({ error: 'Invalid endpoint' }), {
     status: 404,
-    headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+    headers: {
+      'Content-Type': 'application/json',
+      ...CORS_HEADERS
+    }
   });
 }
 
@@ -715,8 +618,10 @@ async function handleDelete({ request, env, params }) {
   if (!path) {
     return new Response(JSON.stringify({ error: 'Item ID required' }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+      headers: {
+        'Content-Type': 'application/json',
+        ...CORS_HEADERS
+      }
     });
   }
 
@@ -728,8 +633,10 @@ async function handleDelete({ request, env, params }) {
   if (!user) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
-      headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+      headers: {
+        'Content-Type': 'application/json',
+        ...CORS_HEADERS
+      }
     });
   }
 
@@ -743,8 +650,10 @@ async function handleDelete({ request, env, params }) {
   if (!item) {
     return new Response(JSON.stringify({ error: 'Item not found' }), {
       status: 404,
-      headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+      headers: {
+        'Content-Type': 'application/json',
+        ...CORS_HEADERS
+      }
     });
   }
 
@@ -752,8 +661,10 @@ async function handleDelete({ request, env, params }) {
   if (item.user_id !== user.user_id && !isAdmin(user)) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 403,
-      headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+      headers: {
+        'Content-Type': 'application/json',
+        ...CORS_HEADERS
+      }
     });
   }
 
@@ -774,8 +685,10 @@ async function handleDelete({ request, env, params }) {
     success: true,
     message: 'Item deleted successfully'
   }), {
-    headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
+    headers: {
+      'Content-Type': 'application/json',
+      ...CORS_HEADERS
+    }
   });
 }
 

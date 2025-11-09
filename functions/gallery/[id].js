@@ -50,19 +50,7 @@ export async function onRequest(context) {
     // Parse JSON fields
     const likes = JSON.parse(galleryItem.likes || '[]');
     const mediaType = getMediaType(galleryItem.media_url);
-
-    // Handle views - old schema (TEXT/JSON) or new schema (INTEGER)
-    let viewsCount = 0;
-    if (typeof galleryItem.views === 'string') {
-        try {
-            const viewsArray = JSON.parse(galleryItem.views || '[]');
-            viewsCount = viewsArray.length;
-        } catch {
-            viewsCount = 0;
-        }
-    } else {
-        viewsCount = galleryItem.views || 0;
-    }
+    let viewsCount = galleryItem.views || 0;
 
     // Sanitize data for HTML
     const title = escapeHtml(galleryItem.title || 'Gallery Post');

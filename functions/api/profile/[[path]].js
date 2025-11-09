@@ -158,18 +158,7 @@ async function handleGetProfile(request, env) {
         // Parse JSON fields and add computed fields
         galleryPosts = (postsResult.results || []).map(item => {
             const likes = JSON.parse(item.likes || '[]');
-            // Handle views - old schema (TEXT/JSON) or new schema (INTEGER)
-            let viewCount = 0;
-            if (typeof item.views === 'string') {
-                try {
-                    const viewsArray = JSON.parse(item.views || '[]');
-                    viewCount = viewsArray.length;
-                } catch {
-                    viewCount = 0;
-                }
-            } else {
-                viewCount = item.views || 0;
-            }
+            let viewCount = item.views || 0;
             return {
                 ...item,
                 media_type: getMediaType(item.media_url),
