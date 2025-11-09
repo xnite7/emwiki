@@ -3,7 +3,7 @@
 async function handleGetProfile(request, env) {
     const url = new URL(request.url);
     const pathParts = url.pathname.split('/api/profile/').filter(Boolean);
-    const userId = pathParts[0];
+    let userId = pathParts[0];
 
     if (!userId) {
         return new Response(JSON.stringify({ error: 'User ID required' }), {
@@ -11,6 +11,9 @@ async function handleGetProfile(request, env) {
             headers: { 'Content-Type': 'application/json' }
         });
     }
+
+    // Try with both userId and userId.0 to handle database inconsistencies
+    const userIdWithSuffix = userId.includes('.') ? userId : `${userId}.0`;
 
     // Get user basic info
     const user = await env.DBA.prepare(`
@@ -23,8 +26,8 @@ async function handleGetProfile(request, env) {
             created_at,
             last_online
         FROM users
-        WHERE user_id = ?
-    `).bind(userId).first();
+        WHERE user_id = ? OR user_id = ?
+    `).bind(userId, userIdWithSuffix).first();
 
     if (!user) {
         return new Response(JSON.stringify({ error: 'User not found' }), {
@@ -32,6 +35,9 @@ async function handleGetProfile(request, env) {
             headers: { 'Content-Type': 'application/json' }
         });
     }
+
+    // Use the actual user_id from the database for subsequent queries
+    const actualUserId = user.user_id;
 
     // Get user trade stats
     let stats = null;
@@ -45,7 +51,7 @@ async function handleGetProfile(request, env) {
                 last_trade_at
             FROM user_trade_stats
             WHERE user_id = ?
-        `).bind(userId).first();
+        `).bind(actualUserId).first();
     } catch (e) {
         console.error('Failed to fetch user_trade_stats (table might not exist):', e);
         stats = null;
@@ -65,7 +71,7 @@ async function handleGetProfile(request, env) {
             WHERE r.reviewed_user_id = ?
             ORDER BY r.created_at DESC
             LIMIT 10
-        `).bind(userId).all();
+        `).bind(actualUserId).all();
         reviews = reviewsResult.results || [];
     } catch (e) {
         console.error('Failed to fetch trade_reviews (table might not exist):', e);
@@ -88,7 +94,7 @@ async function handleGetProfile(request, env) {
             WHERE ct.seller_id = ? OR ct.buyer_id = ?
             ORDER BY ct.completed_at DESC
             LIMIT 5
-        `).bind(userId, userId, userId).all();
+        `).bind(actualUserId, actualUserId, actualUserId).all();
         recentTrades = tradesResult.results || [];
     } catch (e) {
         console.error('Failed to fetch completed_trades (table might not exist):', e);
@@ -142,7 +148,7 @@ async function handleGetProfile(request, env) {
             GROUP BY g.id
             ORDER BY g.created_at DESC
             LIMIT 12
-        `).bind(userId).all();
+        `).bind(actualUserId).all();
         galleryPosts = postsResult.results || [];
     } catch (e) {
         console.error('Failed to fetch gallery posts:', e);
@@ -163,7 +169,7 @@ async function handleGetProfile(request, env) {
                 WHERE g.user_id = ? AND g.status = 'approved'
                 ORDER BY g.created_at DESC
                 LIMIT 12
-            `).bind(userId).all();
+            `).bind(actualUserId).all();
             galleryPosts = postsResult.results || [];
         } catch (e2) {
             console.error('Failed to fetch gallery posts (fallback):', e2);
