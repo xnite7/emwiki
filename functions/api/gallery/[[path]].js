@@ -87,14 +87,13 @@ async function handleGet({ request, env, params }) {
 
     // Parse JSON fields and add computed fields
     const processedItems = items.results.map(item => {
-      const views = JSON.parse(item.views || '[]');
       const likes = JSON.parse(item.likes || '[]');
       const mediaType = getMediaType(item.media_url);
       return {
         ...item,
         username: item.username || 'Unknown',
         media_type: mediaType,
-        views: views.length,
+        views: item.views || 0,
         likes_count: likes.length,
         status: 'pending' // For backwards compatibility
       };
@@ -129,14 +128,13 @@ async function handleGet({ request, env, params }) {
 
     // Parse JSON fields and add computed fields
     const processedItems = items.results.map(item => {
-      const views = JSON.parse(item.views || '[]');
       const likes = JSON.parse(item.likes || '[]');
       const mediaType = getMediaType(item.media_url);
       const statusText = item.status === 1 ? 'approved' : item.status === 0 ? 'rejected' : 'pending';
       return {
         ...item,
         media_type: mediaType,
-        views: views.length,
+        views: item.views || 0,
         likes_count: likes.length,
         status: statusText // For backwards compatibility
       };
@@ -170,27 +168,24 @@ async function handleGet({ request, env, params }) {
         });
       }
 
-      // Parse views and likes arrays
-      const views = JSON.parse(item.views || '[]');
+      // Increment view count (simple counter now)
+      await env.DBA.prepare(
+        'UPDATE gallery_items SET views = views + 1 WHERE id = ?'
+      ).bind(itemId).run();
+
+      // Parse likes array (now contains numbers, not strings)
       const likes = JSON.parse(item.likes || '[]');
 
-      // Add current user to views if logged in and not already viewed
-      if (user && !views.includes(user.user_id)) {
-        views.push(user.user_id);
-        await env.DBA.prepare(
-          'UPDATE gallery_items SET views = ? WHERE id = ?'
-        ).bind(JSON.stringify(views), itemId).run();
-      }
-
       // Check if current user liked this item
-      const userLiked = user ? likes.includes(user.user_id) : false;
+      const userIdNum = user ? parseInt(user.user_id) : null;
+      const userLiked = userIdNum ? likes.includes(userIdNum) : false;
       const mediaType = getMediaType(item.media_url);
 
       const processedItem = {
         ...item,
         username: item.username || 'Unknown',
         media_type: mediaType,
-        views: views.length,
+        views: (item.views || 0) + 1, // Return incremented count
         likes_count: likes.length,
         user_liked: userLiked
       };
@@ -237,15 +232,15 @@ async function handleGet({ request, env, params }) {
 
     // Process and sort all items by likes count
     const allProcessed = allItems.results.map(item => {
-      const views = JSON.parse(item.views || '[]');
       const likes = JSON.parse(item.likes || '[]');
       const mediaType = getMediaType(item.media_url);
-      const userLiked = user ? likes.includes(user.user_id) : false;
+      const userIdNum = user ? parseInt(user.user_id) : null;
+      const userLiked = userIdNum ? likes.includes(userIdNum) : false;
       return {
         ...item,
         username: item.username || 'Unknown',
         media_type: mediaType,
-        views: views.length,
+        views: item.views || 0,
         likes_count: likes.length,
         user_liked: userLiked
       };
@@ -275,15 +270,15 @@ async function handleGet({ request, env, params }) {
 
     // Process items
     processedItems = items.results.map(item => {
-      const views = JSON.parse(item.views || '[]');
       const likes = JSON.parse(item.likes || '[]');
       const mediaType = getMediaType(item.media_url);
-      const userLiked = user ? likes.includes(user.user_id) : false;
+      const userIdNum = user ? parseInt(user.user_id) : null;
+      const userLiked = userIdNum ? likes.includes(userIdNum) : false;
       return {
         ...item,
         username: item.username || 'Unknown',
         media_type: mediaType,
-        views: views.length,
+        views: item.views || 0,
         likes_count: likes.length,
         user_liked: userLiked
       };
@@ -576,10 +571,10 @@ async function handlePost({ request, env, params }) {
         });
       }
 
-      // Parse likes array
+      // Parse likes array (now contains numbers)
       const likes = JSON.parse(item.likes || '[]');
-      const userIdStr = user.user_id.toString();
-      const likeIndex = likes.indexOf(userIdStr);
+      const userIdNum = parseInt(user.user_id);
+      const likeIndex = likes.indexOf(userIdNum);
 
       if (likeIndex > -1) {
         // Unlike - remove user_id from array
@@ -599,8 +594,8 @@ async function handlePost({ request, env, params }) {
         ...CORS_HEADERS }
         });
       } else {
-        // Like - add user_id to array
-        likes.push(userIdStr);
+        // Like - add user_id as number to array
+        likes.push(userIdNum);
 
         await env.DBA.prepare(
           'UPDATE gallery_items SET likes = ? WHERE id = ?'

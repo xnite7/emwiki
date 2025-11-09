@@ -48,7 +48,6 @@ export async function onRequest(context) {
     };
 
     // Parse JSON fields
-    const views = JSON.parse(galleryItem.views || '[]');
     const likes = JSON.parse(galleryItem.likes || '[]');
     const mediaType = getMediaType(galleryItem.media_url);
 
@@ -57,7 +56,7 @@ export async function onRequest(context) {
     const description = escapeHtml(galleryItem.description || '');
     const author = escapeHtml(galleryItem.display_name || galleryItem.username || 'Unknown');
     const likesCount = likes.length;
-    const viewsCount = views.length;
+    const viewsCount = galleryItem.views || 0;
 
     // Use thumbnail for videos, direct URL for images
     const imageUrl = mediaType === 'video' && galleryItem.thumbnail_url

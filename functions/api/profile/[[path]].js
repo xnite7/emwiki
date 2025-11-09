@@ -157,12 +157,11 @@ async function handleGetProfile(request, env) {
 
         // Parse JSON fields and add computed fields
         galleryPosts = (postsResult.results || []).map(item => {
-            const views = JSON.parse(item.views || '[]');
             const likes = JSON.parse(item.likes || '[]');
             return {
                 ...item,
                 media_type: getMediaType(item.media_url),
-                views: views.length,
+                views: item.views || 0,
                 likes_count: likes.length
             };
         });
