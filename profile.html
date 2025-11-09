@@ -302,13 +302,8 @@
             // Get user ID from URL path (e.g., /profile/1527377658)
             const pathParts = window.location.pathname.split('/').filter(Boolean);
 
-            // Support both /profile/userId and /profile?user=userId (for backward compatibility)
             if (pathParts.length >= 2 && pathParts[0] === 'profile') {
                 this.userId = pathParts[1];
-            } else {
-                // Fallback to query parameter for backward compatibility
-                const urlParams = new URLSearchParams(window.location.search);
-                this.userId = urlParams.get('user') || urlParams.get('id');
             }
 
             if (!this.userId) {
@@ -690,10 +685,10 @@
                     currentUserId = window.Auth.user.userId;
                 }
             }
-            console.log(currentUserId, this.userId)
+            console.log(currentUserId, Number(this.userId))
 
             // Show write review button if user is logged in and not viewing their own profile
-            if (authToken && currentUserId && currentUserId !== this.userId) {
+            if (authToken && currentUserId && currentUserId !== Number(this.userId)) {
                 writeReviewBtn.style.display = 'inline-block';
             }
 
