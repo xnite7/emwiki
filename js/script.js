@@ -192,6 +192,7 @@ class BaseApp {
             searchResults: null,
             catalog: null
         };
+        console.log('running script #1')
 
         this.currentListMode = 'wishlist';
         this.categories = ['gears', 'deaths', 'pets', 'effects', 'titles'];

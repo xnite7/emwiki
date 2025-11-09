@@ -659,7 +659,31 @@
             return div.innerHTML;
         }
 
-        setupReviewModal() {
+        async getCurrentUserId() {
+            // If Auth is already ready with user data, return it immediately
+            if (window.Auth && window.Auth.user && window.Auth.user.userId) {
+                return window.Auth.user.userId;
+            }
+
+            // Otherwise, wait for sessionReady event
+            return new Promise((resolve) => {
+                if (!window.Auth) {
+                    resolve(null);
+                    return;
+                }
+
+                const timeout = setTimeout(() => {
+                    resolve(null);
+                }, 5000); // 5 second timeout
+
+                window.Auth.addEventListener('sessionReady', () => {
+                    clearTimeout(timeout);
+                    resolve(window.Auth.user ? window.Auth.user.userId : null);
+                }, { once: true });
+            });
+        }
+
+        async setupReviewModal() {
             const writeReviewBtn = document.getElementById('write-review-btn');
             const reviewModal = document.getElementById('review-modal');
             const reviewForm = document.getElementById('review-form');
@@ -674,18 +698,10 @@
             // Get current user ID to prevent self-review
             let currentUserId = null;
 
-
-            if (window.Auth) {
-                window.Auth.addEventListener('sessionReady', () => {
-                    currentUserId = window.Auth.user.userId;
-                });
-
-                // Check if already authenticated
-                if (window.Auth.user) {
-                    currentUserId = window.Auth.user.userId;
-                }
+            if (authToken && window.Auth) {
+                // Wait for Auth to be ready
+                currentUserId = await this.getCurrentUserId();
             }
-            console.log(currentUserId, Number(this.userId))
 
             // Show write review button if user is logged in and not viewing their own profile
             if (authToken && currentUserId && currentUserId !== Number(this.userId)) {
