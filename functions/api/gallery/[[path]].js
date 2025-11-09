@@ -89,11 +89,23 @@ async function handleGet({ request, env, params }) {
     const processedItems = items.results.map(item => {
       const likes = JSON.parse(item.likes || '[]');
       const mediaType = getMediaType(item.media_url);
+      // Handle views - old schema (TEXT/JSON) or new schema (INTEGER)
+      let viewCount = 0;
+      if (typeof item.views === 'string') {
+        try {
+          const viewsArray = JSON.parse(item.views || '[]');
+          viewCount = viewsArray.length;
+        } catch {
+          viewCount = 0;
+        }
+      } else {
+        viewCount = item.views || 0;
+      }
       return {
         ...item,
         username: item.username || 'Unknown',
         media_type: mediaType,
-        views: item.views || 0,
+        views: viewCount,
         likes_count: likes.length,
         status: 'pending' // For backwards compatibility
       };
@@ -131,10 +143,22 @@ async function handleGet({ request, env, params }) {
       const likes = JSON.parse(item.likes || '[]');
       const mediaType = getMediaType(item.media_url);
       const statusText = item.status === 1 ? 'approved' : item.status === 0 ? 'rejected' : 'pending';
+      // Handle views - old schema (TEXT/JSON) or new schema (INTEGER)
+      let viewCount = 0;
+      if (typeof item.views === 'string') {
+        try {
+          const viewsArray = JSON.parse(item.views || '[]');
+          viewCount = viewsArray.length;
+        } catch {
+          viewCount = 0;
+        }
+      } else {
+        viewCount = item.views || 0;
+      }
       return {
         ...item,
         media_type: mediaType,
-        views: item.views || 0,
+        views: viewCount,
         likes_count: likes.length,
         status: statusText // For backwards compatibility
       };
@@ -168,24 +192,45 @@ async function handleGet({ request, env, params }) {
         });
       }
 
-      // Increment view count (simple counter now)
-      await env.DBA.prepare(
-        'UPDATE gallery_items SET views = views + 1 WHERE id = ?'
-      ).bind(itemId).run();
+      // Handle views - check if it's old schema (TEXT/JSON) or new schema (INTEGER)
+      let viewCount = 0;
+      if (typeof item.views === 'string') {
+        // Old schema: JSON array
+        try {
+          const viewsArray = JSON.parse(item.views || '[]');
+          viewCount = viewsArray.length;
+        } catch {
+          viewCount = 0;
+        }
+      } else {
+        // New schema: INTEGER
+        viewCount = item.views || 0;
+        // Increment view count
+        await env.DBA.prepare(
+          'UPDATE gallery_items SET views = views + 1 WHERE id = ?'
+        ).bind(itemId).run();
+        viewCount += 1;
+      }
 
-      // Parse likes array (now contains numbers, not strings)
-      const likes = JSON.parse(item.likes || '[]');
+      // Parse likes array (handle both strings and numbers)
+      let likes = [];
+      try {
+        likes = JSON.parse(item.likes || '[]');
+      } catch {
+        likes = [];
+      }
 
-      // Check if current user liked this item
+      // Check if current user liked this item (handle both string and number user_ids in array)
       const userIdNum = user ? parseInt(user.user_id) : null;
-      const userLiked = userIdNum ? likes.includes(userIdNum) : false;
+      const userIdStr = user ? user.user_id.toString() : null;
+      const userLiked = userIdNum ? (likes.includes(userIdNum) || likes.includes(userIdStr)) : false;
       const mediaType = getMediaType(item.media_url);
 
       const processedItem = {
         ...item,
         username: item.username || 'Unknown',
         media_type: mediaType,
-        views: (item.views || 0) + 1, // Return incremented count
+        views: viewCount,
         likes_count: likes.length,
         user_liked: userLiked
       };
@@ -235,12 +280,25 @@ async function handleGet({ request, env, params }) {
       const likes = JSON.parse(item.likes || '[]');
       const mediaType = getMediaType(item.media_url);
       const userIdNum = user ? parseInt(user.user_id) : null;
-      const userLiked = userIdNum ? likes.includes(userIdNum) : false;
+      const userIdStr = user ? user.user_id.toString() : null;
+      const userLiked = userIdNum ? (likes.includes(userIdNum) || likes.includes(userIdStr)) : false;
+      // Handle views - old schema (TEXT/JSON) or new schema (INTEGER)
+      let viewCount = 0;
+      if (typeof item.views === 'string') {
+        try {
+          const viewsArray = JSON.parse(item.views || '[]');
+          viewCount = viewsArray.length;
+        } catch {
+          viewCount = 0;
+        }
+      } else {
+        viewCount = item.views || 0;
+      }
       return {
         ...item,
         username: item.username || 'Unknown',
         media_type: mediaType,
-        views: item.views || 0,
+        views: viewCount,
         likes_count: likes.length,
         user_liked: userLiked
       };
@@ -273,12 +331,25 @@ async function handleGet({ request, env, params }) {
       const likes = JSON.parse(item.likes || '[]');
       const mediaType = getMediaType(item.media_url);
       const userIdNum = user ? parseInt(user.user_id) : null;
-      const userLiked = userIdNum ? likes.includes(userIdNum) : false;
+      const userIdStr = user ? user.user_id.toString() : null;
+      const userLiked = userIdNum ? (likes.includes(userIdNum) || likes.includes(userIdStr)) : false;
+      // Handle views - old schema (TEXT/JSON) or new schema (INTEGER)
+      let viewCount = 0;
+      if (typeof item.views === 'string') {
+        try {
+          const viewsArray = JSON.parse(item.views || '[]');
+          viewCount = viewsArray.length;
+        } catch {
+          viewCount = 0;
+        }
+      } else {
+        viewCount = item.views || 0;
+      }
       return {
         ...item,
         username: item.username || 'Unknown',
         media_type: mediaType,
-        views: item.views || 0,
+        views: viewCount,
         likes_count: likes.length,
         user_liked: userLiked
       };
@@ -571,10 +642,16 @@ async function handlePost({ request, env, params }) {
         });
       }
 
-      // Parse likes array (now contains numbers)
+      // Parse likes array (handle both numbers and strings)
       const likes = JSON.parse(item.likes || '[]');
       const userIdNum = parseInt(user.user_id);
-      const likeIndex = likes.indexOf(userIdNum);
+      const userIdStr = user.user_id.toString();
+
+      // Find index (check for both number and string)
+      let likeIndex = likes.indexOf(userIdNum);
+      if (likeIndex === -1) {
+        likeIndex = likes.indexOf(userIdStr);
+      }
 
       if (likeIndex > -1) {
         // Unlike - remove user_id from array
@@ -594,7 +671,7 @@ async function handlePost({ request, env, params }) {
         ...CORS_HEADERS }
         });
       } else {
-        // Like - add user_id as number to array
+        // Like - add user_id as number to array (prefer numbers for new likes)
         likes.push(userIdNum);
 
         await env.DBA.prepare(

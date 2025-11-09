@@ -51,12 +51,24 @@ export async function onRequest(context) {
     const likes = JSON.parse(galleryItem.likes || '[]');
     const mediaType = getMediaType(galleryItem.media_url);
 
+    // Handle views - old schema (TEXT/JSON) or new schema (INTEGER)
+    let viewsCount = 0;
+    if (typeof galleryItem.views === 'string') {
+        try {
+            const viewsArray = JSON.parse(galleryItem.views || '[]');
+            viewsCount = viewsArray.length;
+        } catch {
+            viewsCount = 0;
+        }
+    } else {
+        viewsCount = galleryItem.views || 0;
+    }
+
     // Sanitize data for HTML
     const title = escapeHtml(galleryItem.title || 'Gallery Post');
     const description = escapeHtml(galleryItem.description || '');
     const author = escapeHtml(galleryItem.display_name || galleryItem.username || 'Unknown');
     const likesCount = likes.length;
-    const viewsCount = galleryItem.views || 0;
 
     // Use thumbnail for videos, direct URL for images
     const imageUrl = mediaType === 'video' && galleryItem.thumbnail_url
