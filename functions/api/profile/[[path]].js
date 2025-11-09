@@ -137,44 +137,38 @@ async function handleGetProfile(request, env) {
                 g.title,
                 g.description,
                 g.media_url,
-                g.media_type,
                 g.thumbnail_url,
                 g.created_at,
                 g.views,
-                COUNT(gl.id) as likes_count
+                g.likes
             FROM gallery_items g
-            LEFT JOIN gallery_likes gl ON g.id = gl.gallery_item_id
-            WHERE g.user_id = ? AND g.status = 'approved'
-            GROUP BY g.id
+            WHERE g.user_id = ? AND g.status = 1
             ORDER BY g.created_at DESC
             LIMIT 12
         `).bind(actualUserId).all();
-        galleryPosts = postsResult.results || [];
+
+        // Helper to determine media type from URL
+        const getMediaType = (url) => {
+            if (!url) return 'image';
+            const ext = url.split('.').pop().toLowerCase();
+            const videoExts = ['mp4', 'webm', 'mov'];
+            return videoExts.includes(ext) ? 'video' : 'image';
+        };
+
+        // Parse JSON fields and add computed fields
+        galleryPosts = (postsResult.results || []).map(item => {
+            const views = JSON.parse(item.views || '[]');
+            const likes = JSON.parse(item.likes || '[]');
+            return {
+                ...item,
+                media_type: getMediaType(item.media_url),
+                views: views.length,
+                likes_count: likes.length
+            };
+        });
     } catch (e) {
         console.error('Failed to fetch gallery posts:', e);
-        // Try fallback without likes if gallery_likes table doesn't exist
-        try {
-            const postsResult = await env.DBA.prepare(`
-                SELECT
-                    g.id,
-                    g.title,
-                    g.description,
-                    g.media_url,
-                    g.media_type,
-                    g.thumbnail_url,
-                    g.created_at,
-                    g.views,
-                    0 as likes_count
-                FROM gallery_items g
-                WHERE g.user_id = ? AND g.status = 'approved'
-                ORDER BY g.created_at DESC
-                LIMIT 12
-            `).bind(actualUserId).all();
-            galleryPosts = postsResult.results || [];
-        } catch (e2) {
-            console.error('Failed to fetch gallery posts (fallback):', e2);
-            galleryPosts = [];
-        }
+        galleryPosts = [];
     }
 
     return new Response(JSON.stringify({

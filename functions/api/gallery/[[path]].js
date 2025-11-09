@@ -9,6 +9,14 @@ const CORS_HEADERS = {
   'Access-Control-Max-Age': '86400',
 };
 
+// Helper to determine media type from URL
+function getMediaType(url) {
+  if (!url) return 'image';
+  const ext = url.split('.').pop().toLowerCase();
+  const videoExts = ['mp4', 'webm', 'mov'];
+  return videoExts.includes(ext) ? 'video' : 'image';
+}
+
 // Helper to get user from session token
 async function getUserFromToken(token, env) {
   if (!token) return null;
@@ -69,15 +77,30 @@ async function handleGet({ request, env, params }) {
     //}
 
     const items = await env.DBA.prepare(
-      `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.thumbnail_url, g.media_type,
-              g.status, g.created_at, g.views, u.avatar_url, u.role
+      `SELECT g.id, g.user_id, u.username, g.title, g.description, g.media_url, g.thumbnail_url,
+              g.status, g.created_at, g.views, g.likes, u.avatar_url, u.role
        FROM gallery_items g
        LEFT JOIN users u ON g.user_id = u.user_id
-       WHERE g.status = 'pending'
+       WHERE g.status = 2
        ORDER BY g.created_at DESC`
     ).all();
 
-    return new Response(JSON.stringify({ items: items.results || [] }), {
+    // Parse JSON fields and add computed fields
+    const processedItems = items.results.map(item => {
+      const views = JSON.parse(item.views || '[]');
+      const likes = JSON.parse(item.likes || '[]');
+      const mediaType = getMediaType(item.media_url);
+      return {
+        ...item,
+        username: item.username || 'Unknown',
+        media_type: mediaType,
+        views: views.length,
+        likes_count: likes.length,
+        status: 'pending' // For backwards compatibility
+      };
+    });
+
+    return new Response(JSON.stringify({ items: processedItems }), {
       headers: {
         'Content-Type': 'application/json',
         ...CORS_HEADERS
@@ -95,34 +118,31 @@ async function handleGet({ request, env, params }) {
       });
     }
 
-    let items;
-    try {
-      items = await env.DBA.prepare(
-        `SELECT g.id, g.title, g.description, g.media_url, g.thumbnail_url, g.media_type, g.status,
-                g.created_at, g.views, g.rejection_reason, u.avatar_url, u.role,
-                COUNT(gl.id) as likes_count
-         FROM gallery_items g
-         LEFT JOIN gallery_likes gl ON g.id = gl.gallery_item_id
-         LEFT JOIN users u ON g.user_id = u.user_id
-         WHERE g.user_id = ?
-         GROUP BY g.id
-         ORDER BY g.created_at DESC`
-      ).bind(user.user_id).all();
-    } catch (error) {
-      // Fallback without likes
-      console.error('Error querying submissions with likes, falling back:', error);
-      items = await env.DBA.prepare(
-        `SELECT g.id, g.title, g.description, g.media_url, g.thumbnail_url, g.media_type, g.status,
-                g.created_at, g.views, g.rejection_reason, u.avatar_url, u.role,
-                0 as likes_count
-         FROM gallery_items g
-         LEFT JOIN users u ON g.user_id = u.user_id
-         WHERE g.user_id = ?
-         ORDER BY g.created_at DESC`
-      ).bind(user.user_id).all();
-    }
+    const items = await env.DBA.prepare(
+      `SELECT g.id, g.title, g.description, g.media_url, g.thumbnail_url, g.status,
+              g.created_at, g.views, g.likes, g.rejection_reason, u.avatar_url, u.role
+       FROM gallery_items g
+       LEFT JOIN users u ON g.user_id = u.user_id
+       WHERE g.user_id = ?
+       ORDER BY g.created_at DESC`
+    ).bind(user.user_id).all();
 
-    return new Response(JSON.stringify({ items: items.results || [] }), {
+    // Parse JSON fields and add computed fields
+    const processedItems = items.results.map(item => {
+      const views = JSON.parse(item.views || '[]');
+      const likes = JSON.parse(item.likes || '[]');
+      const mediaType = getMediaType(item.media_url);
+      const statusText = item.status === 1 ? 'approved' : item.status === 0 ? 'rejected' : 'pending';
+      return {
+        ...item,
+        media_type: mediaType,
+        views: views.length,
+        likes_count: likes.length,
+        status: statusText // For backwards compatibility
+      };
+    });
+
+    return new Response(JSON.stringify({ items: processedItems }), {
       headers: { 'Content-Type': 'application/json',
         ...CORS_HEADERS }
     });
@@ -133,38 +153,14 @@ async function handleGet({ request, env, params }) {
     const itemId = path;
 
     try {
-      // Increment view count
-      await env.DBA.prepare(
-        'UPDATE gallery_items SET views = views + 1 WHERE id = ? AND status = ?'
-      ).bind(itemId, 'approved').run();
-
-      // Get item with likes
-      let item;
-      try {
-        item = await env.DBA.prepare(
-          `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.thumbnail_url, g.media_type,
-                  g.created_at, g.views, u.avatar_url, u.role,
-                  COUNT(gl.id) as likes_count,
-                  CASE WHEN ? IS NOT NULL AND ugl.id IS NOT NULL THEN 1 ELSE 0 END as user_liked
-           FROM gallery_items g
-           LEFT JOIN gallery_likes gl ON g.id = gl.gallery_item_id
-           LEFT JOIN gallery_likes ugl ON g.id = ugl.gallery_item_id AND ugl.user_id = ?
-           LEFT JOIN users u ON g.user_id = u.user_id
-           WHERE g.id = ? AND g.status = 'approved'
-           GROUP BY g.id`
-        ).bind(user?.user_id || null, user?.user_id || null, itemId).first();
-      } catch (error) {
-        // Fallback without likes
-        item = await env.DBA.prepare(
-          `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.thumbnail_url, g.media_type,
-                  g.created_at, g.views, u.avatar_url, u.role,
-                  0 as likes_count,
-                  0 as user_liked
-           FROM gallery_items g
-           LEFT JOIN users u ON g.user_id = u.user_id
-           WHERE g.id = ? AND g.status = 'approved'`
-        ).bind(itemId).first();
-      }
+      // Get item first
+      const item = await env.DBA.prepare(
+        `SELECT g.id, g.user_id, u.username, g.title, g.description, g.media_url, g.thumbnail_url,
+                g.created_at, g.views, g.likes, u.avatar_url, u.role
+         FROM gallery_items g
+         LEFT JOIN users u ON g.user_id = u.user_id
+         WHERE g.id = ? AND g.status = 1`
+      ).bind(itemId).first();
 
       if (!item) {
         return new Response(JSON.stringify({ error: 'Item not found' }), {
@@ -174,7 +170,32 @@ async function handleGet({ request, env, params }) {
         });
       }
 
-      return new Response(JSON.stringify({ item }), {
+      // Parse views and likes arrays
+      const views = JSON.parse(item.views || '[]');
+      const likes = JSON.parse(item.likes || '[]');
+
+      // Add current user to views if logged in and not already viewed
+      if (user && !views.includes(user.user_id)) {
+        views.push(user.user_id);
+        await env.DBA.prepare(
+          'UPDATE gallery_items SET views = ? WHERE id = ?'
+        ).bind(JSON.stringify(views), itemId).run();
+      }
+
+      // Check if current user liked this item
+      const userLiked = user ? likes.includes(user.user_id) : false;
+      const mediaType = getMediaType(item.media_url);
+
+      const processedItem = {
+        ...item,
+        username: item.username || 'Unknown',
+        media_type: mediaType,
+        views: views.length,
+        likes_count: likes.length,
+        user_liked: userLiked
+      };
+
+      return new Response(JSON.stringify({ item: processedItem }), {
         headers: { 'Content-Type': 'application/json',
         ...CORS_HEADERS }
       });
@@ -193,49 +214,45 @@ async function handleGet({ request, env, params }) {
   const offset = parseInt(url.searchParams.get('offset')) || 0;
   const sortBy = url.searchParams.get('sort') || 'likes'; // 'likes' or 'newest'
 
-  let items;
-  let total = 0;
+  // Get total count of approved items
+  const countResult = await env.DBA.prepare(
+    'SELECT COUNT(*) as total FROM gallery_items WHERE status = 1'
+  ).first();
+  const total = countResult?.total || 0;
 
-  try {
-    // Get total count of approved items
-    const countResult = await env.DBA.prepare(
-      'SELECT COUNT(*) as total FROM gallery_items WHERE status = ?'
-    ).bind('approved').first();
-    total = countResult?.total || 0;
+  // Query approved items
+  const items = await env.DBA.prepare(
+    `SELECT g.id, g.user_id, u.username, g.title, g.description, g.media_url, g.thumbnail_url,
+            g.created_at, g.views, g.likes, u.avatar_url, u.role
+     FROM gallery_items g
+     LEFT JOIN users u ON g.user_id = u.user_id
+     WHERE g.status = 1
+     ORDER BY ${sortBy === 'newest' ? 'g.created_at DESC' : 'g.created_at DESC'}
+     LIMIT ? OFFSET ?`
+  ).bind(limit, offset).all();
 
-    // Try to query with likes (requires gallery_likes table to exist)
-    items = await env.DBA.prepare(
-      `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.thumbnail_url, g.media_type,
-              g.created_at, g.views, u.avatar_url, u.role,
-              COUNT(gl.id) as likes_count,
-              CASE WHEN ? IS NOT NULL AND ugl.id IS NOT NULL THEN 1 ELSE 0 END as user_liked
-       FROM gallery_items g
-       LEFT JOIN gallery_likes gl ON g.id = gl.gallery_item_id
-       LEFT JOIN gallery_likes ugl ON g.id = ugl.gallery_item_id AND ugl.user_id = ?
-       LEFT JOIN users u ON g.user_id = u.user_id
-       WHERE g.status = 'approved'
-       GROUP BY g.id
-       ORDER BY ${sortBy === 'newest' ? 'g.created_at DESC' : 'COUNT(gl.id) DESC, g.created_at DESC'}
-       LIMIT ? OFFSET ?`
-    ).bind(user?.user_id || null, user?.user_id || null, limit, offset).all();
-  } catch (error) {
-    // Fallback query without likes (for when gallery_likes table doesn't exist yet)
-    console.error('Error querying with likes, falling back to simple query:', error);
+  // Process items to parse JSON and compute fields
+  const processedItems = items.results.map(item => {
+    const views = JSON.parse(item.views || '[]');
+    const likes = JSON.parse(item.likes || '[]');
+    const mediaType = getMediaType(item.media_url);
+    const userLiked = user ? likes.includes(user.user_id) : false;
+    return {
+      ...item,
+      username: item.username || 'Unknown',
+      media_type: mediaType,
+      views: views.length,
+      likes_count: likes.length,
+      user_liked: userLiked
+    };
+  });
 
-    items = await env.DBA.prepare(
-      `SELECT g.id, g.user_id, g.username, g.title, g.description, g.media_url, g.thumbnail_url, g.media_type,
-              g.created_at, g.views, u.avatar_url, u.role,
-              0 as likes_count,
-              0 as user_liked
-       FROM gallery_items g
-       LEFT JOIN users u ON g.user_id = u.user_id
-       WHERE g.status = 'approved'
-       ORDER BY g.created_at DESC
-       LIMIT ? OFFSET ?`
-    ).bind(limit, offset).all();
+  // Sort by likes if requested (after processing)
+  if (sortBy === 'likes') {
+    processedItems.sort((a, b) => b.likes_count - a.likes_count || b.created_at - a.created_at);
   }
 
-  return new Response(JSON.stringify({ items: items.results || [], total }), {
+  return new Response(JSON.stringify({ items: processedItems, total }), {
     headers: { 'Content-Type': 'application/json',
         ...CORS_HEADERS }
   });
@@ -326,21 +343,11 @@ async function handlePost({ request, env, params }) {
   if (path === 'submit') {
     try {
       const data = await request.json();
-      const { title, description, media_url, media_type, thumbnail_url } = data;
+      const { title, description, media_url, thumbnail_url } = data;
 
-      if (!title || !media_url || !media_type) {
+      if (!title || !media_url) {
         return new Response(JSON.stringify({
-          error: 'Missing required fields: title, media_url, media_type'
-        }), {
-          status: 400,
-          headers: { 'Content-Type': 'application/json',
-        ...CORS_HEADERS }
-        });
-      }
-
-      if (!['image', 'video'].includes(media_type)) {
-        return new Response(JSON.stringify({
-          error: 'Invalid media_type. Must be "image" or "video"'
+          error: 'Missing required fields: title, media_url'
         }), {
           status: 400,
           headers: { 'Content-Type': 'application/json',
@@ -349,20 +356,19 @@ async function handlePost({ request, env, params }) {
       }
 
       // Determine status based on user roles (VIP, admin, mod get auto-approved)
-      const status = shouldAutoApprove(user) ? 'approved' : 'pending';
-      const autoApproved = status === 'approved';
+      // 0=rejected, 1=approved, 2=pending
+      const status = shouldAutoApprove(user) ? 1 : 2;
+      const autoApproved = status === 1;
 
       // Insert into database with thumbnail_url
       const result = await env.DBA.prepare(
-        `INSERT INTO gallery_items (user_id, username, title, description, media_url, media_type, thumbnail_url, status, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO gallery_items (user_id, title, description, media_url, thumbnail_url, status, created_at, views, likes)
+         VALUES (?, ?, ?, ?, ?, ?, ?, '[]', '[]')`
       ).bind(
         user.user_id,
-        user.display_name || user.username,
         title,
         description || '',
         media_url,
-        media_type,
         thumbnail_url || null,
         status,
         Date.now()
@@ -397,21 +403,23 @@ async function handlePost({ request, env, params }) {
     }
 
     try {
-      // Get all approved videos without thumbnails
-      const videos = await env.DBA.prepare(`
+      // Get all approved videos without thumbnails (check file extension for video type)
+      const items = await env.DBA.prepare(`
         SELECT id, title, media_url
         FROM gallery_items
-        WHERE media_type = 'video'
-          AND status = 'approved'
+        WHERE status = 1
           AND (thumbnail_url IS NULL OR thumbnail_url = '')
         ORDER BY created_at DESC
         LIMIT 50
       `).all();
 
+      // Filter to only videos based on file extension
+      const videos = items.results.filter(item => getMediaType(item.media_url) === 'video');
+
       return new Response(JSON.stringify({
         success: true,
-        count: videos.results?.length || 0,
-        videos: videos.results || []
+        count: videos.length,
+        videos: videos
       }), {
         headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
       });
@@ -448,10 +456,10 @@ async function handlePost({ request, env, params }) {
         });
       }
 
-      // Update thumbnail
+      // Update thumbnail (no media_type check since we removed that column)
       await env.DBA.prepare(
-        'UPDATE gallery_items SET thumbnail_url = ? WHERE id = ? AND media_type = ?'
-      ).bind(thumbnail_url, videoId, 'video').run();
+        'UPDATE gallery_items SET thumbnail_url = ? WHERE id = ?'
+      ).bind(thumbnail_url, videoId).run();
 
       return new Response(JSON.stringify({
         success: true,
@@ -494,7 +502,8 @@ async function handlePost({ request, env, params }) {
       });
     }
 
-    const status = action === 'approve' ? 'approved' : 'rejected';
+    // 0=rejected, 1=approved, 2=pending
+    const status = action === 'approve' ? 1 : 0;
 
     await env.DBA.prepare(
       `UPDATE gallery_items
@@ -518,8 +527,8 @@ async function handlePost({ request, env, params }) {
     try {
       // Check if item exists and is approved
       const item = await env.DBA.prepare(
-        'SELECT id FROM gallery_items WHERE id = ? AND status = ?'
-      ).bind(itemId, 'approved').first();
+        'SELECT id, likes FROM gallery_items WHERE id = ? AND status = 1'
+      ).bind(itemId).first();
 
       if (!item) {
         return new Response(JSON.stringify({ error: 'Item not found or not approved' }), {
@@ -529,35 +538,41 @@ async function handlePost({ request, env, params }) {
         });
       }
 
-      // Check if user already liked this item
-      const existingLike = await env.DBA.prepare(
-        'SELECT id FROM gallery_likes WHERE user_id = ? AND gallery_item_id = ?'
-      ).bind(user.user_id, itemId).first();
+      // Parse likes array
+      const likes = JSON.parse(item.likes || '[]');
+      const userIdStr = user.user_id.toString();
+      const likeIndex = likes.indexOf(userIdStr);
 
-      if (existingLike) {
-        // Unlike - remove the like
+      if (likeIndex > -1) {
+        // Unlike - remove user_id from array
+        likes.splice(likeIndex, 1);
+
         await env.DBA.prepare(
-          'DELETE FROM gallery_likes WHERE user_id = ? AND gallery_item_id = ?'
-        ).bind(user.user_id, itemId).run();
+          'UPDATE gallery_items SET likes = ? WHERE id = ?'
+        ).bind(JSON.stringify(likes), itemId).run();
 
         return new Response(JSON.stringify({
           success: true,
           liked: false,
-          message: 'Like removed'
+          message: 'Like removed',
+          likes_count: likes.length
         }), {
           headers: { 'Content-Type': 'application/json',
         ...CORS_HEADERS }
         });
       } else {
-        // Like - add the like
+        // Like - add user_id to array
+        likes.push(userIdStr);
+
         await env.DBA.prepare(
-          'INSERT INTO gallery_likes (user_id, gallery_item_id, created_at) VALUES (?, ?, ?)'
-        ).bind(user.user_id, itemId, Date.now()).run();
+          'UPDATE gallery_items SET likes = ? WHERE id = ?'
+        ).bind(JSON.stringify(likes), itemId).run();
 
         return new Response(JSON.stringify({
           success: true,
           liked: true,
-          message: 'Like added'
+          message: 'Like added',
+          likes_count: likes.length
         }), {
           headers: { 'Content-Type': 'application/json',
         ...CORS_HEADERS }
@@ -566,10 +581,10 @@ async function handlePost({ request, env, params }) {
     } catch (error) {
       console.error('Error toggling like:', error);
       return new Response(JSON.stringify({
-        error: 'Likes feature not yet available. Please run the database migration first.',
+        error: 'Failed to toggle like',
         details: error.message
       }), {
-        status: 503,
+        status: 500,
         headers: { 'Content-Type': 'application/json',
         ...CORS_HEADERS }
       });

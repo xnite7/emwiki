@@ -24,64 +24,50 @@ export async function onRequest(context) {
         g.title,
         g.description,
         g.media_url,
-        g.media_type,
         g.thumbnail_url,
         g.views,
+        g.likes,
         g.created_at,
         u.username,
-        u.display_name,
-        COUNT(gl.id) as likes_count
+        u.display_name
       FROM gallery_items g
       LEFT JOIN users u ON g.user_id = u.user_id
-      LEFT JOIN gallery_likes gl ON g.id = gl.gallery_item_id
-      WHERE g.id = ? AND g.status = 'approved'
-      GROUP BY g.id
+      WHERE g.id = ? AND g.status = 1
     `).bind(postId).first();
 
     if (!galleryItem) {
-      // Fallback query without likes
-      const fallbackItem = await env.DBA.prepare(`
-        SELECT
-          g.id,
-          g.title,
-          g.description,
-          g.media_url,
-          g.media_type,
-          g.thumbnail_url,
-          g.views,
-          g.created_at,
-          u.username,
-          u.display_name,
-          0 as likes_count
-        FROM gallery_items g
-        LEFT JOIN users u ON g.user_id = u.user_id
-        WHERE g.id = ? AND g.status = 'approved'
-      `).bind(postId).first();
-
-      if (!fallbackItem) {
-        return new Response('Gallery post not found', { status: 404 });
-      }
-
-      // Use fallback item
-      Object.assign(galleryItem || {}, fallbackItem);
+      return new Response('Gallery post not found', { status: 404 });
     }
+
+    // Helper to determine media type from URL
+    const getMediaType = (url) => {
+      if (!url) return 'image';
+      const ext = url.split('.').pop().toLowerCase();
+      const videoExts = ['mp4', 'webm', 'mov'];
+      return videoExts.includes(ext) ? 'video' : 'image';
+    };
+
+    // Parse JSON fields
+    const views = JSON.parse(galleryItem.views || '[]');
+    const likes = JSON.parse(galleryItem.likes || '[]');
+    const mediaType = getMediaType(galleryItem.media_url);
 
     // Sanitize data for HTML
     const title = escapeHtml(galleryItem.title || 'Gallery Post');
     const description = escapeHtml(galleryItem.description || '');
     const author = escapeHtml(galleryItem.display_name || galleryItem.username || 'Unknown');
-    const likes = galleryItem.likes_count || 0;
-    const views = galleryItem.views || 0;
+    const likesCount = likes.length;
+    const viewsCount = views.length;
 
     // Use thumbnail for videos, direct URL for images
-    const imageUrl = galleryItem.media_type === 'video' && galleryItem.thumbnail_url
+    const imageUrl = mediaType === 'video' && galleryItem.thumbnail_url
       ? galleryItem.thumbnail_url
       : galleryItem.media_url;
 
     // Format metadata description with stats
     const metaDescription = description
-      ? `${description} • ${likes} likes • ${views} views`
-      : `${likes} likes • ${views} views • Posted by ${author}`;
+      ? `${description} • ${likesCount} likes • ${viewsCount} views`
+      : `${likesCount} likes • ${viewsCount} views • Posted by ${author}`;
 
     // Generate HTML with OpenGraph tags
     return new Response(`<!DOCTYPE html>
