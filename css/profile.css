@@ -85,6 +85,7 @@
 }
 
 .profile-avatar {
+        border: 4px solid rgb(0 0 0);
     width: 120px;
         height: 120px;
         background: linear-gradient(128deg, #7cce76, #e0db6c);
