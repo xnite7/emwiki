@@ -678,6 +678,7 @@
 
             // Get current user ID to prevent self-review
             let currentUserId = null;
+            console.log(currentUserId,this.userId)
             if (authToken) {
                 // Try to get current user ID from local storage or session
                 const userInfo = localStorage.getItem('user_info');
