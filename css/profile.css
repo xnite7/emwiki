@@ -784,8 +784,21 @@
     margin-top: 25px;
 }
 
-.btn {
+#write-review-btn,#submit-review-btn,#cancel-review-btn {
     position: unset;
+}
+
+.btn-primary {
+    border: 1px solid #007daf;
+    background: linear-gradient(#4a7ec3, #3c539f, #193180);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(#4a7ec3,
+        #3c539f,
+        #193180);
+    box-shadow: 0 4px 12px rgba(78, 76, 175, 0.4);
 }
 
 
