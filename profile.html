@@ -10,13 +10,13 @@
     <meta property="og:title" content="User Profile - EMwiki">
     <meta property="og:image" content="https://emwiki.com/imgs/QgWIUWf.png">
 
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/profile.css">
-    <link rel="icon" href="/imgs/favicon.png" type="image/png">
+    <link rel="stylesheet" href="https://emwiki.com/css/style.css">
+    <link rel="stylesheet" href="https://emwiki.com/css/profile.css">
+    <link rel="icon" href="https://emwiki.com/imgs/favicon.png" type="image/png">
     <meta name="theme-color" content="#000000">
 
     <!-- Popover compatibility for older browsers -->
-    <script src="/js/popover-loader.js"></script>
+    <script src="https://emwiki.com/js/popover-loader.js"></script>
 </head>
 
 <body>
@@ -91,17 +91,45 @@
         </a>
     
         <div class="nav-links">
-            <a href="/catalog" class="nav-link">Catalog</a>
-            <a href="/trading" class="nav-link">Trading Hub</a>
-            <a href="/forum" class="nav-link">Forum</a>
-            <a href="/gallery" class="nav-link">Gallery</a>
-            <a href="/scammers" class="nav-link">Scammers</a>
+            <a href="https://emwiki.com/catalog" class="nav-link">Catalog</a>
+            <a href="https://emwiki.com/trading" class="nav-link">Trading Hub</a>
+            <a href="https://emwiki.com/forum" class="nav-link">Forum</a>
+            <a href="https://emwiki.com/gallery" class="nav-link">Gallery</a>
+            <a href="https://emwiki.com/scammers" class="nav-link">Scammers</a>
         </div>
     
     
     </header>
 
     <main style="background:Canvas">
+        <!-- User Directory View -->
+        <div id="directory-view" class="directory-container" style="display: none;">
+            <div class="directory-header">
+                <h1 class="directory-title">Player Directory</h1>
+                <p class="directory-subtitle">Search and discover EMwiki users</p>
+            </div>
+
+            <div class="search-section">
+                <div class="search-bar-container">
+                    <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input
+                        type="text"
+                        id="user-search-input"
+                        class="user-search-input"
+                        placeholder="Search for users..."
+                        autocomplete="off">
+                </div>
+            </div>
+
+            <div id="users-grid-container" class="users-grid-container">
+                <div class="loading-spinner"></div>
+                <p>Loading users...</p>
+            </div>
+        </div>
+
         <!-- Loading State -->
         <div id="loading-state" class="loading-container">
             <div class="loading-spinner"></div>
@@ -113,12 +141,19 @@
             <div class="error-message">
                 <h2>User Not Found</h2>
                 <p>The user profile you're looking for doesn't exist or has been removed.</p>
-                <a href="/" class="btn btn-primary">Return Home</a>
+                <a href="https://emwiki.com/profile" class="btn btn-primary">Browse All Users</a>
             </div>
         </div>
 
         <!-- Profile Content -->
         <div id="profile-content" class="profile-container" style="display: none;">
+            <!-- Back to Directory Button -->
+            <a href="https://emwiki.com/profile" class="back-to-directory">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to All Users
+            </a>
             <!-- Profile Header -->
             <section class="profile-header">
                 <div class="profile-header-content">
@@ -262,15 +297,15 @@
     <div class="footer-content">
         <div class="footer-section">
             <h4>Browse</h4>
-            <a href="/catalog">Catalog</a>
-            <a href="/scammers">Scammers List</a>
-            <a href="/admin">Admin Portal</a>
+            <a href="https://emwiki.com/catalog">Catalog</a>
+            <a href="https://emwiki.com/scammers">Scammers List</a>
+            <a href="https://emwiki.com/admin">Admin Portal</a>
         </div>
         <div class="footer-section">
             <h4>Community</h4>
-            <a href="/forum">Forum</a>
-            <a href="/trading">Trading</a>
-            <a href="/gallery">Gallery</a>
+            <a href="https://emwiki.com/forum">Forum</a>
+            <a href="https://emwiki.com/trading">Trading</a>
+            <a href="https://emwiki.com/gallery">Gallery</a>
             <a href="https://discord.com/invite/tg">Typical Games Discord</a>
         </div>
         <div class="footer-section">
@@ -284,7 +319,7 @@
     </div>
 </footer>
 
-    <script src="/js/script.js"></script>
+    <script src="https://emwiki.com/js/script.js"></script>
     <script>
     // Profile Page Handler
     class Catalog extends BaseApp {
@@ -306,8 +341,9 @@
                 this.userId = pathParts[1];
             }
 
+            // If no user ID, show directory view
             if (!this.userId) {
-                this.showError('No user ID provided');
+                this.showDirectoryView();
                 return;
             }
 
@@ -315,6 +351,145 @@
             this.userId = this.userId.replace(/\.0$/, '');
 
             await this.loadProfile();
+        }
+
+        async showDirectoryView() {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('directory-view').style.display = 'block';
+            document.title = 'Player Directory - EMwiki';
+
+            // Setup search
+            this.setupUserSearch();
+
+            // Load initial users
+            await this.loadUsers();
+        }
+
+        setupUserSearch() {
+            const searchInput = document.getElementById('user-search-input');
+            let searchTimeout;
+
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                const query = e.target.value.trim();
+
+                searchTimeout = setTimeout(async () => {
+                    if (query.length >= 2) {
+                        await this.searchUsers(query);
+                    } else if (query.length === 0) {
+                        await this.loadUsers();
+                    }
+                }, 300); // Debounce
+            });
+        }
+
+        async loadUsers(limit = 50) {
+            const container = document.getElementById('users-grid-container');
+            container.innerHTML = '<div class="loading-spinner"></div><p style="text-align: center; color: rgba(255, 255, 255, 0.7);">Loading users...</p>';
+
+            try {
+                // Use the search API with empty query to get all users
+                const response = await fetch(`${this.apiBase}/auth/user/search?q=&limit=${limit}`);
+
+                if (!response.ok) {
+                    throw new Error('Failed to load users');
+                }
+
+                const data = await response.json();
+                this.renderUsersGrid(data.users || []);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                container.innerHTML = '<p class="no-users-message">Failed to load users. Please try again.</p>';
+            }
+        }
+
+        async searchUsers(query) {
+            const container = document.getElementById('users-grid-container');
+            container.innerHTML = '<div class="loading-spinner"></div><p style="text-align: center; color: rgba(255, 255, 255, 0.7);">Searching...</p>';
+
+            try {
+                const response = await fetch(`${this.apiBase}/auth/user/search?q=${encodeURIComponent(query)}`);
+
+                if (!response.ok) {
+                    throw new Error('Search failed');
+                }
+
+                const data = await response.json();
+                this.renderUsersGrid(data.users || []);
+            } catch (error) {
+                console.error('Error searching users:', error);
+                container.innerHTML = '<p class="no-users-message">Search failed. Please try again.</p>';
+            }
+        }
+
+        renderUsersGrid(users) {
+            const container = document.getElementById('users-grid-container');
+
+            if (!users || users.length === 0) {
+                container.innerHTML = '<p class="no-users-message">No users found</p>';
+                return;
+            }
+
+            const grid = document.createElement('div');
+            grid.className = 'users-grid';
+
+            users.forEach(user => {
+                const userCard = this.createUserCard(user);
+                grid.appendChild(userCard);
+            });
+
+            container.innerHTML = '';
+            container.appendChild(grid);
+        }
+
+        createUserCard(user) {
+            const card = document.createElement('a');
+            card.className = 'user-card';
+            card.href = `/profile/${user.user_id}`;
+
+            // Parse roles
+            let roles = [];
+            try {
+                roles = user.role ? JSON.parse(user.role) : [];
+            } catch (e) {
+                roles = [];
+            }
+
+            // Filter out 'user' role and get special roles
+            const specialRoles = roles.filter(r => r !== 'user');
+
+            // Get stats (if available)
+            const totalTrades = user.total_trades || 0;
+            const avgRating = user.average_rating || 0;
+
+            card.innerHTML = `
+                <img src="${user.avatar_url || 'https://emwiki.com/imgs/placeholder.png'}"
+                     alt="${this.escapeHtml(user.display_name)}"
+                     class="user-card-avatar">
+                <h3 class="user-card-name">${this.escapeHtml(user.display_name)}</h3>
+                <p class="user-card-username">@${this.escapeHtml(user.username)}</p>
+
+                ${specialRoles.length > 0 ? `
+                    <div class="user-card-roles">
+                        ${specialRoles.map(role => `
+                            <span class="user-card-role-badge role-${role}">${role.toUpperCase()}</span>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
+                <div class="user-card-stats">
+                    <div class="user-card-stat">
+                        <span class="user-card-stat-value">${totalTrades}</span>
+                        <span class="user-card-stat-label">Trades</span>
+                    </div>
+                    <div class="user-card-stat">
+                        <span class="user-card-stat-value">${avgRating.toFixed(1)}</span>
+                        <span class="user-card-stat-label">Rating</span>
+                    </div>
+                </div>
+            `;
+
+            return card;
         }
 
         async loadProfile() {
@@ -376,7 +551,7 @@
         renderProfileHeader(user, donationData) {
             // Avatar
             const avatarImg = document.getElementById('profile-avatar');
-            avatarImg.src = user.avatarUrl || '/imgs/placeholder.png';
+            avatarImg.src = user.avatarUrl || 'https://emwiki.com/imgs/placeholder.png';
             avatarImg.alt = `${user.displayName}'s Avatar`;
 
             // Display name
