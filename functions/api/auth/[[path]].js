@@ -281,28 +281,63 @@ async function handleUserSearch(request, env) {
 
     // Get search query from URL parameter
     const url = new URL(request.url);
-    const query = url.searchParams.get('q');
+    const query = url.searchParams.get('q') || '';
+    const limit = parseInt(url.searchParams.get('limit')) || 10;
 
-    if (!query) {
-        return new Response(JSON.stringify({ error: 'Search query required' }), {
-            status: 400,
-            headers: { 'Content-Type': 'application/json' }
-        });
-    }
+    // Ensure limit doesn't exceed 100
+    const safeLimit = Math.min(limit, 100);
 
     // Search by username or user_id
     let users;
 
-    // Check if query is a number (user_id)
-    if (/^\d+$/.test(query)) {
-        users = await env.DBA.prepare(
-            'SELECT user_id, username, display_name, avatar_url, role FROM users WHERE user_id = ? LIMIT 10'
-        ).bind(query).all();
+    if (!query || query.trim() === '') {
+        // If no query, return recent users with trade stats
+        users = await env.DBA.prepare(`
+            SELECT
+                u.user_id,
+                u.username,
+                u.display_name,
+                u.avatar_url,
+                u.role,
+                COALESCE(uts.total_trades, 0) as total_trades,
+                COALESCE(uts.average_rating, 0) as average_rating
+            FROM users u
+            LEFT JOIN user_trade_stats uts ON u.user_id = uts.user_id
+            ORDER BY u.created_at DESC
+            LIMIT ?
+        `).bind(safeLimit).all();
+    } else if (/^\d+$/.test(query)) {
+        // Check if query is a number (user_id)
+        users = await env.DBA.prepare(`
+            SELECT
+                u.user_id,
+                u.username,
+                u.display_name,
+                u.avatar_url,
+                u.role,
+                COALESCE(uts.total_trades, 0) as total_trades,
+                COALESCE(uts.average_rating, 0) as average_rating
+            FROM users u
+            LEFT JOIN user_trade_stats uts ON u.user_id = uts.user_id
+            WHERE u.user_id = ?
+            LIMIT ?
+        `).bind(query, safeLimit).all();
     } else {
-        // Search by username (case-insensitive)
-        users = await env.DBA.prepare(
-            'SELECT user_id, username, display_name, avatar_url, role FROM users WHERE LOWER(username) LIKE LOWER(?) OR LOWER(display_name) LIKE LOWER(?) LIMIT 10'
-        ).bind(`%${query}%`, `%${query}%`).all();
+        // Search by username or display name (case-insensitive)
+        users = await env.DBA.prepare(`
+            SELECT
+                u.user_id,
+                u.username,
+                u.display_name,
+                u.avatar_url,
+                u.role,
+                COALESCE(uts.total_trades, 0) as total_trades,
+                COALESCE(uts.average_rating, 0) as average_rating
+            FROM users u
+            LEFT JOIN user_trade_stats uts ON u.user_id = uts.user_id
+            WHERE LOWER(u.username) LIKE LOWER(?) OR LOWER(u.display_name) LIKE LOWER(?)
+            LIMIT ?
+        `).bind(`%${query}%`, `%${query}%`, safeLimit).all();
     }
 
     return new Response(JSON.stringify({ users: users.results || [] }), {
