@@ -290,54 +290,104 @@ async function handleUserSearch(request, env) {
     // Search by username or user_id
     let users;
 
-    if (!query || query.trim() === '') {
-        // If no query, return recent users with trade stats
-        users = await env.DBA.prepare(`
-            SELECT
-                u.user_id,
-                u.username,
-                u.display_name,
-                u.avatar_url,
-                u.role,
-                COALESCE(uts.total_trades, 0) as total_trades,
-                COALESCE(uts.average_rating, 0) as average_rating
-            FROM users u
-            LEFT JOIN user_trade_stats uts ON u.user_id = uts.user_id
-            ORDER BY u.created_at DESC
-            LIMIT ?
-        `).bind(safeLimit).all();
-    } else if (/^\d+$/.test(query)) {
-        // Check if query is a number (user_id)
-        users = await env.DBA.prepare(`
-            SELECT
-                u.user_id,
-                u.username,
-                u.display_name,
-                u.avatar_url,
-                u.role,
-                COALESCE(uts.total_trades, 0) as total_trades,
-                COALESCE(uts.average_rating, 0) as average_rating
-            FROM users u
-            LEFT JOIN user_trade_stats uts ON u.user_id = uts.user_id
-            WHERE u.user_id = ?
-            LIMIT ?
-        `).bind(query, safeLimit).all();
-    } else {
-        // Search by username or display name (case-insensitive)
-        users = await env.DBA.prepare(`
-            SELECT
-                u.user_id,
-                u.username,
-                u.display_name,
-                u.avatar_url,
-                u.role,
-                COALESCE(uts.total_trades, 0) as total_trades,
-                COALESCE(uts.average_rating, 0) as average_rating
-            FROM users u
-            LEFT JOIN user_trade_stats uts ON u.user_id = uts.user_id
-            WHERE LOWER(u.username) LIKE LOWER(?) OR LOWER(u.display_name) LIKE LOWER(?)
-            LIMIT ?
-        `).bind(`%${query}%`, `%${query}%`, safeLimit).all();
+    try {
+        // Try to query with trade stats (if user_trade_stats table exists)
+        if (!query || query.trim() === '') {
+            // If no query, return recent users with trade stats
+            users = await env.DBA.prepare(`
+                SELECT
+                    u.user_id,
+                    u.username,
+                    u.display_name,
+                    u.avatar_url,
+                    u.role,
+                    COALESCE(uts.total_trades, 0) as total_trades,
+                    COALESCE(uts.average_rating, 0) as average_rating
+                FROM users u
+                LEFT JOIN user_trade_stats uts ON u.user_id = uts.user_id
+                ORDER BY u.created_at DESC
+                LIMIT ?
+            `).bind(safeLimit).all();
+        } else if (/^\d+$/.test(query)) {
+            // Check if query is a number (user_id)
+            users = await env.DBA.prepare(`
+                SELECT
+                    u.user_id,
+                    u.username,
+                    u.display_name,
+                    u.avatar_url,
+                    u.role,
+                    COALESCE(uts.total_trades, 0) as total_trades,
+                    COALESCE(uts.average_rating, 0) as average_rating
+                FROM users u
+                LEFT JOIN user_trade_stats uts ON u.user_id = uts.user_id
+                WHERE u.user_id = ?
+                LIMIT ?
+            `).bind(query, safeLimit).all();
+        } else {
+            // Search by username or display name (case-insensitive)
+            users = await env.DBA.prepare(`
+                SELECT
+                    u.user_id,
+                    u.username,
+                    u.display_name,
+                    u.avatar_url,
+                    u.role,
+                    COALESCE(uts.total_trades, 0) as total_trades,
+                    COALESCE(uts.average_rating, 0) as average_rating
+                FROM users u
+                LEFT JOIN user_trade_stats uts ON u.user_id = uts.user_id
+                WHERE LOWER(u.username) LIKE LOWER(?) OR LOWER(u.display_name) LIKE LOWER(?)
+                LIMIT ?
+            `).bind(`%${query}%`, `%${query}%`, safeLimit).all();
+        }
+    } catch (error) {
+        // If user_trade_stats table doesn't exist, fall back to basic query without stats
+        console.error('Failed to query with trade stats, falling back to basic query:', error);
+
+        if (!query || query.trim() === '') {
+            users = await env.DBA.prepare(`
+                SELECT
+                    u.user_id,
+                    u.username,
+                    u.display_name,
+                    u.avatar_url,
+                    u.role,
+                    0 as total_trades,
+                    0 as average_rating
+                FROM users u
+                ORDER BY u.created_at DESC
+                LIMIT ?
+            `).bind(safeLimit).all();
+        } else if (/^\d+$/.test(query)) {
+            users = await env.DBA.prepare(`
+                SELECT
+                    u.user_id,
+                    u.username,
+                    u.display_name,
+                    u.avatar_url,
+                    u.role,
+                    0 as total_trades,
+                    0 as average_rating
+                FROM users u
+                WHERE u.user_id = ?
+                LIMIT ?
+            `).bind(query, safeLimit).all();
+        } else {
+            users = await env.DBA.prepare(`
+                SELECT
+                    u.user_id,
+                    u.username,
+                    u.display_name,
+                    u.avatar_url,
+                    u.role,
+                    0 as total_trades,
+                    0 as average_rating
+                FROM users u
+                WHERE LOWER(u.username) LIKE LOWER(?) OR LOWER(u.display_name) LIKE LOWER(?)
+                LIMIT ?
+            `).bind(`%${query}%`, `%${query}%`, safeLimit).all();
+        }
     }
 
     return new Response(JSON.stringify({ users: users.results || [] }), {
