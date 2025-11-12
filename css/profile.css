@@ -70,7 +70,7 @@
 .search-icon {
     position: absolute;
     left: 15px;
-    width: 32px;
+    width: 30px;
     top: 49%;
     transform: translateY(-50%);
     fill: var(--text-secondary);
@@ -83,7 +83,7 @@
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
-    color: white;
+    color: CanvasText;
     font-size: 1.1rem;
     transition: all 0.3s;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -97,7 +97,7 @@
 }
 
 .user-search-input::placeholder {
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(from CanvasText r g b / 0.4);
 }
 
 .users-grid-container {

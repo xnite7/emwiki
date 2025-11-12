@@ -265,11 +265,11 @@ async function handleUserSearch(request, env) {
     const token = authHeader?.replace('Bearer ', '');
 
     // Check if requester is admin/moderator
-    const session = await env.DBA.prepare(`
-        SELECT u.role, u.user_id FROM sessions s
-        JOIN users u ON s.user_id = u.user_id
-        WHERE s.token = ? AND s.expires_at > ?
-    `).bind(token, Date.now()).first();
+   // const session = await env.DBA.prepare(`
+       // SELECT u.role, u.user_id FROM sessions s
+        //JOIN users u ON s.user_id = u.user_id
+       //WHERE s.token = ? AND s.expires_at > ?
+    //`).bind(token, Date.now()).first();
 
     //const adminRoles = JSON.parse(session?.role || '["user"]');
     //if (!session || (!adminRoles.includes('admin') && !adminRoles.includes('moderator'))) {
