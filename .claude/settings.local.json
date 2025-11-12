@@ -6,7 +6,8 @@
       "Bash(tree:*)",
       "Bash(gh pr list:*)",
       "Bash(git add:*)",
-      "Bash(wrangler d1 execute:*)"
+      "Bash(wrangler d1 execute:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
