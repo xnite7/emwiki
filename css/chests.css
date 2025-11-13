@@ -1,5 +1,3 @@
-
-
 /* ============================================
            FILTER BAR - SIMPLE & STICKY
 ============================================ */
@@ -82,6 +80,7 @@
 .stats:hover #total::before {
     content: " of ";
 }
+
 #chest-menu svg {
     fill: #fff;
 }
@@ -157,6 +156,37 @@
     transition: all 0.2s;
     border-bottom: 1px solid rgb(205 133 63 / 35%);
     position: relative;
+}
+
+.chest-item[data-data=halloweenchest]>img:first-child,
+.chest-item[data-data=premiumchest]>img:first-child {
+    animation: 2s rainbow-chest infinite linear;
+}
+
+@keyframes rainbow-chest {
+    from {
+        filter: hue-rotate(0deg);
+    }
+
+    to {
+        filter: hue-rotate(360deg);
+    }
+}
+
+#kypsus strong {
+    animation: 4s rainbow infinite ease;
+    color: rgb(202, 202, 0);
+}
+
+@keyframes rainbow {
+    0%, 100% {
+        filter: hue-rotate(260deg);
+    }
+
+    50% {
+        filter: hue-rotate(150deg);
+    }
+
 }
 
 .chest-item:hover {

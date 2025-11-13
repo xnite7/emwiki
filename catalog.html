@@ -84,287 +84,305 @@
 
 
 
-            <div class="filters">
-                <!-- Sort Dropdown -->
-                <div class="sort-dropdown">
-                    <button class="dropdown-btn" onclick="catalog.toggleSort()">
-                        <span>Sort:</span> <span id="sort-label">Categorical</span> ▼
-                    </button>
-                    <div id="sort-menu" class="dropdown-content">
-                        <small class="dropdown-item" data-sort="default">Categorical</small>
-                        <small class="dropdown-item" data-sort="name-asc">Name: A ➔ Z</small>
-                        <small class="dropdown-item" data-sort="name-desc">Name: Z ➔ A</small>
-                        <small class="dropdown-item" data-sort="price-asc">Price: Low to High</small>
-                        <small class="dropdown-item" data-sort="price-desc">Price: High to Low</small>
-                        <small class="dropdown-item disabled" data-sort="date-desc">Newer First</small>
-                        <small class="dropdown-item disabled" data-sort="date-asc">Older First</small>
-                    </div>
+        <div class="filters">
+            <!-- Sort Dropdown -->
+            <div class="sort-dropdown">
+                <button class="dropdown-btn" onclick="catalog.toggleSort()">
+                    <span>Sort:</span> <span id="sort-label">Categorical</span> ▼
+                </button>
+                <div id="sort-menu" class="dropdown-content">
+                    <small class="dropdown-item" data-sort="default">Categorical</small>
+                    <small class="dropdown-item" data-sort="name-asc">Name: A ➔ Z</small>
+                    <small class="dropdown-item" data-sort="name-desc">Name: Z ➔ A</small>
+                    <small class="dropdown-item" data-sort="price-asc">Price: Low to High</small>
+                    <small class="dropdown-item" data-sort="price-desc">Price: High to Low</small>
+                    <small class="dropdown-item disabled" data-sort="date-desc">Newer First</small>
+                    <small class="dropdown-item disabled" data-sort="date-asc">Older First</small>
                 </div>
+            </div>
 
-                <!-- Stats Dashboard -->
-                <button class="stats-btn" onclick="catalog.openStats()">My Lists</button>
+            <!-- Stats Dashboard -->
+            <button class="stats-btn" onclick="catalog.openStats()">My Lists</button>
 
-                <!-- Filters Dropdown -->
-                <div class="filters-dropdown">
-                    <button class="dropdown-btn" onclick="catalog.toggleFilters()">
-                        <span>Filters:</span>
-                        <span id="filters-label">None</span>
-                        <span class="filter-count" id="filter-count" style="display: none;">0</span>
-                        <span>▼</span>
-                    </button>
+            <!-- Filters Dropdown -->
+            <div class="filters-dropdown">
+                <button class="dropdown-btn" onclick="catalog.toggleFilters()">
+                    <span>Filters:</span>
+                    <span id="filters-label">None</span>
+                    <span class="filter-count" id="filter-count" style="display: none;">0</span>
+                    <span>▼</span>
+                </button>
 
-                    <div id="filters-menu" class="dropdown-content">
-
+                <div id="filters-menu" class="dropdown-content">
+                    <div class="filter-page active" id="main-filters-page">
                         <div class="clear-filters-btn" onclick="catalog.clearAllFilters()">
                             <span style="color: #ff6b6b;">✕</span> Clear All Filters
                         </div>
 
-                        <div class="dropdown-item" data-filter="new">
-                            <div class="tag-checkbox"></div>
-                            <span class="icon newest-icon"></span>
-                            <small class="tag-label">New</small>
-                            <small class="tag-count" id="count-new">0</small>
-                        </div>
+                    <!-- State Filters -->
+                    <div class="filter-group-label">Status</div>
+                    <div class="dropdown-item" data-filter="new">
+                        <div class="tag-checkbox"></div>
+                        <span class="icon newest-icon"></span>
+                        <small class="tag-label">New</small>
+                        <small class="tag-count" id="count-new">0</small>
+                    </div>
 
-                        <div class="dropdown-item" data-filter="untradable">
-                            <div class="tag-checkbox"></div>
-                            <span class="icon untradable-icon"></span>
-                            <small class="tag-label">Untradable</small>
-                            <small class="tag-count" id="count-untradable">0</small>
-                        </div>
+                    <div class="dropdown-item" data-filter="untradable">
+                        <div class="tag-checkbox"></div>
+                        <span class="icon untradable-icon"></span>
+                        <small class="tag-label">Untradable</small>
+                        <small class="tag-count" id="count-untradable">0</small>
+                    </div>
 
-                        <div style="display: none;" class="dropdown-item" data-filter="favorites">
-                            <div class="tag-checkbox"></div>
-                            <span class="icon favorites-icon"></span>
-                            <small class="tag-label">Favorites</small>
-                            <small class="tag-count" id="count-favorites">0</small>
-                        </div>
+                    <div style="display: none;" class="dropdown-item" data-filter="favorites">
+                        <div class="tag-checkbox"></div>
+                        <span class="icon favorites-icon"></span>
+                        <small class="tag-label">Favorites</small>
+                        <small class="tag-count" id="count-favorites">0</small>
+                    </div>
 
-                        <div class="dropdown-item" data-filter="weekly">
-                            <span class="icon weekly-icon"></span>
-                            <small class="tag-label">Weekly Rotation</small>
-                            <small class="tag-count" id="count-weekly">0</small>
-                        </div>
+                    <div class="dropdown-item" data-filter="unreleased">
+                        <span class="icon unreleased-icon"></span>
+                        <small class="tag-label">Unreleased</small>
+                        <small class="tag-count" id="count-unreleased">0</small>
+                    </div>
 
-                        <div class="dropdown-item" data-filter="weeklystar">
-                            <span class="icon star-icon"></span>
-                            <small class="tag-label">Star Shop</small>
-                            <small class="tag-count" id="count-weeklystar">0</small>
-                        </div>
+                    <div class="dropdown-item" data-filter="removed">
+                        <span class="icon removed-icon"></span>
+                        <small class="tag-label">Removed</small>
+                        <small class="tag-count" id="count-removed">0</small>
+                    </div>
 
-                        <div class="dropdown-item" data-filter="gamenight">
-                            <span class="icon gamenight-icon"></span>
-                            <small class="tag-label">Gamenight</small>
-                            <small class="tag-count" id="count-gamenight">0</small>
-                        </div>
+                    <!-- Shop Filters -->
+                    <div class="filter-group-label">Shops</div>
+                    <div class="dropdown-item" data-filter="weeklystar">
+                        <span class="icon star-icon"></span>
+                        <small class="tag-label">Star Shop</small>
+                        <small class="tag-count" id="count-weeklystar">0</small>
+                    </div>
 
-                        <div class="dropdown-item" data-filter="retired">
-                            <div class="tag-checkbox"></div>
-                            <span class="icon retired-icon"></span>
-                            <small class="tag-label">Retired</small>
-                            <small class="tag-count" id="count-retired">0</small>
-                        </div>
+                    <div class="dropdown-item" data-filter="tokenshop">
+                        <span class="icon token-icon"></span>
+                        <small class="tag-label">Token Shop</small>
+                        <small class="tag-count" id="count-tokenshop">0</small>
+                    </div>
 
-                        <div class="dropdown-item" data-filter="code">
-                            <span class="icon code-icon"></span>
-                            <small class="tag-label">Code</small>
-                            <small class="tag-count" id="count-code">0</small>
-                        </div>
+                    <div class="dropdown-item" data-filter="coinshop">
+                        <span class="icon coinshop-icon"></span>
+                        <small class="tag-label">Coin Shop</small>
+                        <small class="tag-count" id="count-coinshop">0</small>
+                    </div>
 
-                        <div class="dropdown-item" data-filter="unreleased">
-                            <span class="icon unreleased-icon"></span>
-                            <small class="tag-label">Unreleased</small>
-                            <small class="tag-count" id="count-unreleased">0</small>
-                        </div>
-
-
-                        <div class="dropdown-item" data-filter="removed">
-                            <span class="icon removed-icon"></span>
-                            <small class="tag-label">Removed</small>
-                            <small class="tag-count" id="count-removed">0</small>
-                        </div>
+                    <div class="dropdown-item sub-filter" data-filter="weekly">
+                        <span class="icon weekly-icon"></span>
+                        <small class="tag-label">Weekly Rotation</small>
+                        <small class="tag-count" id="count-weekly">0</small>
+                    </div>
 
 
-                        <!-- Events Submenu -->
-                        <div class="submenu" onclick="catalog.toggleEvent()">
-                            <small class="tag-label">Events ▸</small>
-                        </div>
-                        <!-- Seasons Submenu -->
-                        <div class="submenu" onclick="catalog.toggleSeason()">
-                            <small class="tag-label">Seasons ▸</small>
-                        </div>
-                        <!-- Chests Submenu -->
-                        <div class="submenu" onclick="catalog.toggleChestMenu()">
-                            <small class="tag-label">Chests ▸</small>
-                        </div>
+                    <!-- Collection Submenu -->
+                    <div class="filter-group-label">Collections</div>
+                    <div class="dropdown-item" data-filter="gamenight">
+                        <span class="icon gamenight-icon"></span>
+                        <small class="tag-label">Gamenight</small>
+                        <small class="tag-count" id="count-gamenight">0</small>
+                    </div>
 
+                    <div class="dropdown-item sub-filter" data-filter="retired">
+                        <div class="tag-checkbox"></div>
+                        <span class="icon retired-icon"></span>
+                        <small class="tag-label">Retired</small>
+                        <small class="tag-count" id="count-retired">0</small>
+                    </div>
+
+                    <div class="dropdown-item" data-filter="code">
+                        <span class="icon code-icon"></span>
+                        <small class="tag-label">Code</small>
+                        <small class="tag-count" id="count-code">0</small>
+                    </div>
+
+                    <div class="submenu" onclick="catalog.toggleEvent()">
+                        <small class="tag-label">Events</small><small>▸</small>
+                    </div>
+                    <div class="submenu" onclick="catalog.toggleSeason()">
+                        <small class="tag-label">Seasons</small><small>▸</small>
+                    </div>
+                    <div class="submenu" onclick="catalog.toggleChestMenu()">
+                        <small class="tag-label">Chests</small><small>▸</small>
+                    </div>
+                    </div>
+
+                   
+                </div>
+            </div>
+            <div class="dropdown-content submenu" id="season-menu">
+            </div>
+            <div class="dropdown-content submenu" id="event-menu">
+            </div>
+
+            <div class="dropdown-content submenu" id="chest-menu">
+                <div class="chest-item" data-data="itemcrate" onclick="catalog.selectChest('itemcrate')">
+                    <img src="https://emwiki.com/imgs/lZXN7AA.png" alt="Item Crate">
+                    <div class="chest-item-info">
+                        <div class="chest-name">Item Crate</div>
+                        <div class="chest-meta">
+                            <span class="chest-timer">
+                                <svg fill="#87ceeb"
+                                    style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
+                                    viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
+                                </svg> 15:00
+                            </span>
+                        </div>
                     </div>
                 </div>
-                <div class="dropdown-content submenu" id="season-menu">
+                <div class="chest-item" data-data="luckychest" onclick="catalog.selectChest('luckychest')">
+                    <img src="https://emwiki.com/imgs/WFdzb0V.png" alt="Lucky Chest">
+                    <div class="chest-item-info">
+                        <div class="chest-name">Lucky Chest</div>
+                        <div class="chest-meta">
+                            <span class="chest-timer"><svg fill="#87ceeb"
+                                    style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
+                                    viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
+                                </svg> 30:00</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="dropdown-content submenu" id="event-menu">
+                <div class="chest-item" data-data="1hrplaytime" onclick="catalog.selectChest('1hrplaytime')">
+                    <img src="https://emwiki.com/imgs/IBCeaLF.png" alt="1 Hour Playtime">
+                    <div class="chest-item-info">
+                        <div class="chest-name">1 Hour Playtime</div>
+                        <div class="chest-meta">
+                            <span class="chest-timer"><svg fill="#87ceeb"
+                                    style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
+                                    viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
+                                </svg> 1:00:00</span>
+                        </div>
+                    </div>
                 </div>
-
-                <div class="dropdown-content submenu" id="chest-menu">
-                    <div class="chest-item" data-data="itemcrate" onclick="catalog.selectChest('itemcrate')">
-                        <img src="https://emwiki.com/imgs/lZXN7AA.png" alt="Item Crate">
-                        <div class="chest-item-info">
-                            <div class="chest-name">Item Crate</div>
-                            <div class="chest-meta">
-                                <span class="chest-timer"><svg fill="#87ceeb"
-                                        style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
-                                        viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
-                                    </svg> 15:00</span>
-                            </div>
+                <div class="chest-item" data-data="mysterybag" onclick="catalog.selectChest('mysterybag')">
+                    <img src="https://emwiki.com/imgs/mLNEYGn.png" alt="Mystery Bag">
+                    <div class="chest-item-info">
+                        <div class="chest-name">Mystery Bag</div>
+                        <div class="chest-meta">Random rewards</div>
+                    </div>
+                </div>
+                <div class="chest-item" data-data="typicalchest" onclick="catalog.selectChest('typicalchest')">
+                    <img src="https://emwiki.com/imgs/bpigTac.png" alt="Typical Chest">
+                    <div class="chest-item-info">
+                        <div class="chest-name">Typical Chest</div>
+                        <div class="chest-meta">
+                            <span class="chest-price"><img src="./imgs/Coin.webp"
+                                    style="transform: translateY(2px);margin-right: 2px;margin-left: 3px;width: 12px;height: 12px;">
+                                250</span>
                         </div>
                     </div>
-                    <div class="chest-item" data-data="luckychest" onclick="catalog.selectChest('luckychest')">
-                        <img src="https://emwiki.com/imgs/WFdzb0V.png" alt="Lucky Chest">
-                        <div class="chest-item-info">
-                            <div class="chest-name">Lucky Chest</div>
-                            <div class="chest-meta">
-                                <span class="chest-timer"><svg fill="#87ceeb"
-                                        style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
-                                        viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
-                                    </svg> 30:00</span>
-                            </div>
+                </div>
+                <div class="chest-item" data-data="dailyrewards" onclick="catalog.selectChest('dailyrewards')">
+                    <img src="https://emwiki.com/imgs/IBCeaLF.png" alt="Daily Rewards Secret Item">
+                    <div class="chest-item-info">
+                        <div class="chest-name">Daily Rewards Secret Item</div>
+                        <div class="chest-meta">
+                            <span class="chest-timer"><svg fill="#87ceeb"
+                                    style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
+                                    viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
+                                </svg> 24H</span>
                         </div>
                     </div>
-                    <div class="chest-item" data-data="1hrplaytime" onclick="catalog.selectChest('1hrplaytime')">
-                        <img src="https://emwiki.com/imgs/IBCeaLF.png" alt="1 Hour Playtime">
-                        <div class="chest-item-info">
-                            <div class="chest-name">1 Hour Playtime</div>
-                            <div class="chest-meta">
-                                <span class="chest-timer"><svg fill="#87ceeb"
-                                        style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
-                                        viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
-                                    </svg> 1:00:00</span>
-                            </div>
+                </div>
+                <div class="chest-item" data-data="premiumchest" onclick="catalog.selectChest('premiumchest')">
+                    <img src="https://emwiki.com/imgs/vwb0OJv.png" alt="Premium Chest">
+                    <div class="chest-item-info">
+                        <div class="chest-name">Premium Chest</div>
+                        <div class="chest-meta">
+                            <span class="chest-price"><svg
+                                    style="margin-right: 3px;margin-left: 3px;width: 12px;transform: translateY(4px);"
+                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
+                                    <path
+                                        d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
+                                        fill="#FFD700" fill-rule="evenodd"></path>
+                                </svg> 99</span>
                         </div>
                     </div>
-                    <div class="chest-item" data-data="mysterybag" onclick="catalog.selectChest('mysterybag')">
-                        <img src="https://emwiki.com/imgs/mLNEYGn.png" alt="Mystery Bag">
-                        <div class="chest-item-info">
-                            <div class="chest-name">Mystery Bag</div>
-                            <div class="chest-meta">Random rewards</div>
-                        </div>
+                </div>
+                <div class="chest-item" data-data="steelchest" onclick="catalog.selectChest('steelchest')">
+                    <img src="https://emwiki.com/imgs/joSfryH.png" alt="Steel Chest">
+                    <div class="chest-item-info">
+                        <div class="chest-name">Steel Chest</div>
+                        <div class="chest-meta">Rare items</div>
                     </div>
-                    <div class="chest-item" data-data="typicalchest" onclick="catalog.selectChest('typicalchest')">
-                        <img src="https://emwiki.com/imgs/bpigTac.png" alt="Typical Chest">
-                        <div class="chest-item-info">
-                            <div class="chest-name">Typical Chest</div>
-                            <div class="chest-meta">
-                                <span class="chest-price"><img src="./imgs/Coin.webp"
-                                        style="transform: translateY(2px);margin-right: 2px;margin-left: 3px;width: 12px;height: 12px;">
-                                    250</span>
-                            </div>
-                        </div>
+                </div>
+                <div class="chest-item" data-data="elusivebag" onclick="catalog.selectChest('elusivebag')">
+                    <img src="https://emwiki.com/imgs/MmrUfl7.png" alt="Elusive Bag">
+                    <div class="chest-item-info">
+                        <div class="chest-name">Elusive Bag</div>
+                        <div class="chest-meta">Ultra rare</div>
                     </div>
-                    <div class="chest-item" data-data="dailyrewards" onclick="catalog.selectChest('dailyrewards')">
-                        <img src="https://emwiki.com/imgs/IBCeaLF.png" alt="Daily Rewards Secret Item">
-                        <div class="chest-item-info">
-                            <div class="chest-name">Daily Rewards Secret Item</div>
-                            <div class="chest-meta">
-                                <span class="chest-timer"><svg fill="#87ceeb"
-                                        style="margin-right: 1px;margin-left: 3px;width: 12px;transform: translateY(2px);"
-                                        viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z" />
-                                    </svg> 24H</span>
-                            </div>
-                        </div>
+                </div>
+                <div class="chest-item" data-data="legendarychest" onclick="catalog.selectChest('legendarychest')">
+                    <img src="https://emwiki.com/imgs/9Fph277.png" alt="Legendary Chest">
+                    <div class="chest-item-info">
+                        <div class="chest-name">Legendary Chest</div>
+                        <div class="chest-meta">Legendary items</div>
                     </div>
-                    <div class="chest-item" data-data="premiumchest" onclick="catalog.selectChest('premiumchest')">
-                        <img src="https://emwiki.com/imgs/vwb0OJv.png" alt="Premium Chest">
-                        <div class="chest-item-info">
-                            <div class="chest-name">Premium Chest</div>
-                            <div class="chest-meta">
-                                <span class="chest-price"><svg
-                                        style="margin-right: 3px;margin-left: 3px;width: 12px;transform: translateY(4px);"
-                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
-                                        <path
-                                            d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
-                                            fill="#FFD700" fill-rule="evenodd"></path>
-                                    </svg> 99</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="chest-item" data-data="steelchest" onclick="catalog.selectChest('steelchest')">
-                        <img src="https://emwiki.com/imgs/joSfryH.png" alt="Steel Chest">
-                        <div class="chest-item-info">
-                            <div class="chest-name">Steel Chest</div>
-                            <div class="chest-meta">Rare items</div>
-                        </div>
-                    </div>
-                    <div class="chest-item" data-data="elusivebag" onclick="catalog.selectChest('elusivebag')">
-                        <img src="https://emwiki.com/imgs/MmrUfl7.png" alt="Elusive Bag">
-                        <div class="chest-item-info">
-                            <div class="chest-name">Elusive Bag</div>
-                            <div class="chest-meta">Ultra rare</div>
-                        </div>
-                    </div>
-                    <div class="chest-item" data-data="legendarychest" onclick="catalog.selectChest('legendarychest')">
-                        <img src="https://emwiki.com/imgs/9Fph277.png" alt="Legendary Chest">
-                        <div class="chest-item-info">
-                            <div class="chest-name">Legendary Chest</div>
-                            <div class="chest-meta">Legendary items</div>
-                        </div>
-                    </div>
-                    <div class="chest-item" data-data="epicchest" onclick="catalog.selectChest('epicchest')">
-                        <img src="https://emwiki.com/imgs/Efwzbme.png" alt="Epic Chest">
-                        <div class="chest-item-info">
-                            <div class="chest-name">Epic Chest</div>
-                            <div class="chest-meta">
-                                <span class="chest-price" style="
+                </div>
+                <div class="chest-item" data-data="epicchest" onclick="catalog.selectChest('epicchest')">
+                    <img src="https://emwiki.com/imgs/Efwzbme.png" alt="Epic Chest">
+                    <div class="chest-item-info">
+                        <div class="chest-name">Epic Chest</div>
+                        <div class="chest-meta">
+                            <span class="chest-price" style="
     					font-family: arimo;
     					font-weight: 500;
     					color: #fff;
     					/* -webkit-text-stroke: 1px rgb(255, 83, 219); */
     					text-shadow: -1.3px -1.3px 0 #ff53db, 0 -1.3px 0 #ff53db, 1.3px -1.3px 0 #ff53db, 1.3px 0 0 #ff53db, 1.3px 1.3px 0 #ff53db, 0 1.3px 0 #ff53db, -1.3px 1.3px 0 #ff53db, -1.3px 0 0 #ff53db;
     					"><img src="https://emwiki.com/imgs/Cy9r140.png"
-                                        style="transform: translateY(2px);margin-right: 3px;margin-left: 3px;width: 12px;height: 12px;">500</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="chest-item" data-data="birthdaychest" onclick="catalog.selectChest('birthdaychest')">
-                        <img src="https://emwiki.com/imgs/61c1df478cf7c4297798fbafe4784899.png" alt="Birthday Chest">
-                        <div class="chest-item-info">
-                            <div class="chest-name">Birthday Chest</div>
-                            <div class="chest-meta">
-                                <span class="chest-price"><svg
-                                        style="margin-right: 3px;margin-left: 3px;width: 12px;transform: translateY(4px);"
-                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
-                                        <path
-                                            d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
-                                            fill="#FFD700" fill-rule="evenodd"></path>
-                                    </svg> 99</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="chest-item" data-data="halloweenchest" onclick="catalog.selectChest('halloweenchest')">
-                        <img src="https://emwiki.com/imgs/40dcd6502c70ebe110dfcf8a6652cdc3.png" alt="Halloween Chest">
-                        <div class="chest-item-info">
-                            <div class="chest-name">Halloween Chest</div>
-                            <div class="chest-meta">
-                                <span class="chest-price"><svg
-                                        style="margin-right: 3px;margin-left: 3px;width: 12px;transform: translateY(4px);"
-                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
-                                        <path
-                                            d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
-                                            fill="#FFD700" fill-rule="evenodd"></path>
-                                    </svg> 99</span>
-                            </div>
+                                    style="transform: translateY(2px);margin-right: 3px;margin-left: 3px;width: 12px;height: 12px;">500</span>
                         </div>
                     </div>
                 </div>
-
+                <div class="chest-item" data-data="birthdaychest" onclick="catalog.selectChest('birthdaychest')">
+                    <img src="https://emwiki.com/imgs/61c1df478cf7c4297798fbafe4784899.png" alt="Birthday Chest">
+                    <div class="chest-item-info">
+                        <div class="chest-name">Birthday Chest</div>
+                        <div class="chest-meta">
+                            <span class="chest-price"><svg
+                                    style="margin-right: 3px;margin-left: 3px;width: 12px;transform: translateY(4px);"
+                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
+                                    <path
+                                        d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
+                                        fill="#FFD700" fill-rule="evenodd"></path>
+                                </svg> 99</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chest-item" data-data="halloweenchest" onclick="catalog.selectChest('halloweenchest')">
+                    <img src="https://emwiki.com/imgs/40dcd6502c70ebe110dfcf8a6652cdc3.png" alt="Halloween Chest">
+                    <div class="chest-item-info">
+                        <div class="chest-name">Halloween Chest</div>
+                        <div class="chest-meta">
+                            <span class="chest-price"><svg
+                                    style="margin-right: 3px;margin-left: 3px;width: 12px;transform: translateY(4px);"
+                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18">
+                                    <path
+                                        d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z"
+                                        fill="#FFD700" fill-rule="evenodd"></path>
+                                </svg> 99</span>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+        </div>
 
 
 
@@ -387,7 +405,9 @@
     <div class="catalog-container">
         <div id="catalog" class="catalog-grid"></div>
         <div class="load-more">
-            <button id="loadMore" class="load-button"><div class="loading-spinner"></div></button>
+            <button id="loadMore" class="load-button">
+                <div class="loading-spinner"></div>
+            </button>
         </div>
     </div>
 
@@ -460,8 +480,10 @@
                     removed: 0,
                     weekly: 0,
                     weeklystar: 0,
+                    tokenshop: 0,
                     favorites: 0,
                     gamenight: 0,
+                    coinshop: 0,
                     unreleased: 0,
                     code: 0
                 };
@@ -1017,6 +1039,16 @@
                             this.filters.tags.add(tagName);
                         }
                     }
+                } else if (tagName === 'weekly') {
+                    // Weekly Rotation can only be toggled if coinshop is active
+                    if (this.filters.tags.has('coinshop')) {
+                        tagElement.classList.toggle('selected');
+                        if (this.filters.tags.has(tagName)) {
+                            this.filters.tags.delete(tagName);
+                        } else {
+                            this.filters.tags.add(tagName);
+                        }
+                    }
                 } else {
                     // For all other tags - single select only
                     const wasSelected = this.filters.tags.has(tagName);
@@ -1051,6 +1083,7 @@
                         this.filters.tags.add(tagName);
                     }
 
+                    // Show/hide retired when gamenight is selected
                     const retiredItem = document.querySelector('.dropdown-item[data-filter="retired"]');
                     if (tagName === 'gamenight' && this.filters.tags.has('gamenight')) {
                         retiredItem.classList.add('show-retired');
@@ -1058,6 +1091,16 @@
                         retiredItem.classList.remove('show-retired');
                         this.filters.tags.delete('retired');
                         retiredItem.classList.remove('selected');
+                    }
+
+                    // Show/hide weekly rotation when coinshop is selected
+                    const weeklyItem = document.querySelector('.dropdown-item[data-filter="weekly"]');
+                    if (tagName === 'coinshop' && this.filters.tags.has('coinshop')) {
+                        weeklyItem.classList.add('show-weekly');
+                    } else if (!this.filters.tags.has('coinshop')) {
+                        weeklyItem.classList.remove('show-weekly');
+                        this.filters.tags.delete('weekly');
+                        weeklyItem.classList.remove('selected');
                     }
                 }
 
@@ -1121,6 +1164,13 @@
                 if (retiredItem) {
                     retiredItem.classList.remove('show-retired');
                     retiredItem.classList.remove('selected');
+                }
+
+                // Hide weekly rotation filter
+                const weeklyItem = document.querySelector('.dropdown-item[data-filter="weekly"]');
+                if (weeklyItem) {
+                    weeklyItem.classList.remove('show-weekly');
+                    weeklyItem.classList.remove('selected');
                 }
 
                 // Reset date sorting options to disabled
@@ -1187,10 +1237,13 @@
                 this.applyFilters();
             }
 
+
+
             setupEventListeners() {
 
+
                 // Tag menu items
-                document.querySelectorAll('#filters-menu>.dropdown-item').forEach(item => {
+                document.querySelectorAll('#filters-menu .dropdown-item').forEach(item => {
                     item.addEventListener('click', (e) => {
                         e.stopPropagation();
                         this.selectTag(item, item.dataset.filter);
@@ -1297,13 +1350,15 @@
 
                     const from = (item.from || '').toLowerCase();
                     if (from.includes('gamenight') || from.includes('rodis')) this.tagCounts.gamenight++;
+                    if (from.includes('coin shop')) this.tagCounts.coinshop++;
+                    if (from.includes('token shop')) this.tagCounts.tokenshop++;
                     if (from.includes('unreleased') || from.includes('@zarabelle') || from.includes('@typicaltype')) {
                         this.tagCounts.unreleased++;
                     }
 
                     if (from.includes('code')) this.tagCounts.code++;
                     if (from.includes('weekly rotation')) this.tagCounts.weekly++;
-                    if (from.includes('weekly star shop')) this.tagCounts.weeklystar++;
+                    if (from.includes('star shop')) this.tagCounts.weeklystar++;
                 });
 
                 // Update UI counts
@@ -1383,11 +1438,17 @@
                             case 'gamenight':
                                 if (!item.from.toLowerCase().includes('gamenight') && !item.from.toLowerCase().includes('rodis')) return false;
                                 break;
+                            case 'coinshop':
+                                if (!item.from.toLowerCase().includes('coin shop')) return false;
+                                break;
+                            case 'tokenshop':
+                                if (!item.from.toLowerCase().includes('token shop')) return false;
+                                break;
                             case 'weekly':
                                 if (!item.from.toLowerCase().includes('weekly rotation')) return false;
                                 break;
                             case 'weeklystar':
-                                if (!item.from.toLowerCase().includes('weekly star shop')) return false;
+                                if (!item.from.toLowerCase().includes('star shop')) return false;
                                 break;
                             case 'code':
                                 if (!item.from.toLowerCase().includes('code')) return false;
