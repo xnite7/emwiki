@@ -4,7 +4,7 @@ import { verifySession } from '../_utils/auth.js';
 export async function onRequest(context) {
     const { request, env } = context;
     const url = new URL(request.url);
-    const path = url.pathname.split('/').slice(3).join('/'); // After /api/
+    const path = url.pathname.split('/').slice(4).join('/'); // After /api/demand/
 
     // CORS headers
     const corsHeaders = {
@@ -19,20 +19,20 @@ export async function onRequest(context) {
 
     try {
         // Route handling
-        if (path === 'demand/all' && request.method === 'GET') {
+        if (path === 'all' && request.method === 'GET') {
             return await getAllDemand(env, corsHeaders);
         }
 
-        if (path.startsWith('demand/category/') && request.method === 'GET') {
-            const category = path.split('/')[2];
+        if (path.startsWith('category/') && request.method === 'GET') {
+            const category = path.split('/')[1];
             return await getCategoryDemand(env, category, corsHeaders);
         }
 
-        if (path === 'demand/set' && request.method === 'POST') {
+        if (path === 'set' && request.method === 'POST') {
             return await setDemand(request, env, corsHeaders);
         }
 
-        if (path === 'demand/bulk' && request.method === 'POST') {
+        if (path === 'bulk' && request.method === 'POST') {
             return await bulkSetDemand(request, env, corsHeaders);
         }
 
