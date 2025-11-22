@@ -1,11 +1,46 @@
-fetch('https://emwiki.com/api/gist-version')
-  .then(results => results.json())
-  .then(data => {
-    let arr = JSON.parse(data?.files["auto.json"]?.content);
+// Load items from D1 database
+async function loadItems() {
+  try {
+    const categories = ['gears', 'deaths', 'pets', 'effects', 'titles'];
+    const arr = {};
+    
+    // Load all categories in parallel
+    const categoryPromises = categories.map(async (category) => {
+      let offset = 0;
+      const limit = 500;
+      let hasMore = true;
+      const categoryItems = [];
+      
+      while (hasMore) {
+        const url = new URL('https://emwiki.com/api/items');
+        url.searchParams.set('category', category);
+        url.searchParams.set('limit', limit.toString());
+        url.searchParams.set('offset', offset.toString());
+        
+        const res = await fetch(url.toString());
+        if (!res.ok) throw new Error(`Failed to fetch ${category} items`);
+        
+        const data = await res.json();
+        const items = data.items || [];
+        categoryItems.push(...items);
+        
+        hasMore = items.length === limit;
+        offset += limit;
+      }
+      
+      arr[category] = categoryItems;
+    });
+    
+    await Promise.all(categoryPromises);
+    
     let color;
     showInfo(arr, color);
-  })
-  .catch(error => console.error('Error fetching data:', error));
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+}
+
+loadItems();
 
 
 

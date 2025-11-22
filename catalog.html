@@ -668,15 +668,28 @@
 
             async loadData() {
                 try {
-                    const response = await fetch('https://emwiki.com/api/gist-version');
-                    const data = await response.json();
-                    const parsed = JSON.parse(data.files?.['auto.json']?.content);
-
+                    this.allItems = [];
                     const categories = ['gears', 'deaths', 'titles', 'pets', 'effects'];
 
-                    categories.forEach(cat => {
-                        if (parsed[cat]) {
-                            parsed[cat].forEach(item => {
+                    // Load all categories in parallel
+                    const categoryPromises = categories.map(async (cat) => {
+                        let offset = 0;
+                        const limit = 500;
+                        let hasMore = true;
+                        
+                        while (hasMore) {
+                            const url = new URL('https://emwiki.com/api/items');
+                            url.searchParams.set('category', cat);
+                            url.searchParams.set('limit', limit.toString());
+                            url.searchParams.set('offset', offset.toString());
+                            
+                            const response = await fetch(url.toString());
+                            if (!response.ok) throw new Error(`Failed to fetch ${cat} items`);
+                            
+                            const data = await response.json();
+                            const items = data.items || [];
+                            
+                            items.forEach(item => {
                                 // Extract ALL seasons from description
                                 const seasons = [];
                                 const eventNames = [];
@@ -756,21 +769,24 @@
                                             });
                                         });
                                     }
-
-                                    this.allItems.push({
-                                        ...item,
-                                        category: cat,
-                                        seasons: seasons,
-                                        events: eventNames
-                                    });
                                 }
 
-                            })
+                                this.allItems.push({
+                                    ...item,
+                                    category: cat,
+                                    seasons: seasons,
+                                    events: eventNames
+                                });
+                            });
+                            
+                            hasMore = items.length === limit;
+                            offset += limit;
                         }
                     });
+                    
+                    await Promise.all(categoryPromises);
 
                     document.getElementById('total').textContent = this.allItems.length;
-
 
                 } catch (error) {
                     console.error('Failed to load data:', error);

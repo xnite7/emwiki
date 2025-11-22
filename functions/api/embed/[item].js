@@ -1,5 +1,5 @@
 export async function onRequest(context) {
-  const { params, request } = context;
+  const { params, request, env } = context;
   const item = params.item;
   const base = 'https://emwiki.com'; // your site URL
 
@@ -14,26 +14,50 @@ export async function onRequest(context) {
   }
 
   try {
-    // Fetch your gist data with item info
-    const res = await fetch(`${base}/api/gist-version`);
-    if (!res.ok) throw new Error("Failed to fetch gist data");
-
-    const gist = await res.json();
-    const data = JSON.parse(gist.files?.["auto.json"]?.content);
-
-    // Find the matching item and category
+    // Fetch item from D1 database directly
+    const categories = ['gears', 'deaths', 'titles', 'pets', 'effects'];
     let match = null;
-    let category = null;
-    for (const [cat, items] of Object.entries(data)) {
-      const found = items.find(i =>
-        (i?.name || '').toLowerCase().replace(/\s+/g, '-') === item.toLowerCase()
-      );
-      if (found) {
-        category = cat;
-        match = found;
+    
+    // Normalize item name for lookup (convert hyphens to spaces for database lookup)
+    const normalizedItemName = item.toLowerCase().replace(/-/g, ' ').trim();
+    
+    // Try to find the item in each category
+    for (const category of categories) {
+      const result = await env.DBA.prepare(`
+        SELECT name, "from"
+        FROM items
+        WHERE category = ? AND LOWER(REPLACE(name, '-', ' ')) = ? AND removed = 0
+        LIMIT 1
+      `).bind(category, normalizedItemName).first();
+      
+      if (result) {
+        match = result;
         break;
       }
     }
+    
+    // If not found, try fuzzy search
+    if (!match) {
+      for (const category of categories) {
+        const results = await env.DBA.prepare(`
+          SELECT name, "from"
+          FROM items
+          WHERE category = ? AND name LIKE ? AND removed = 0
+          LIMIT 5
+        `).bind(category, `%${normalizedItemName}%`).all();
+        
+        if (results.results && results.results.length > 0) {
+          const found = results.results.find(i =>
+            (i?.name || '').toLowerCase().replace(/\s+/g, '-') === item.toLowerCase()
+          );
+          if (found) {
+            match = found;
+            break;
+          }
+        }
+      }
+    }
+    
     if (!match) throw new Error("Item not found");
 
     // Sanitize and prepare strings for HTML meta tags

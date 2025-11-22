@@ -52,9 +52,10 @@ export async function onRequest(context) {
 // Get all demand ratings
 async function getAllDemand(env, corsHeaders) {
     const { results } = await env.DBA.prepare(`
-        SELECT item_name, category, demand, updated_at
-        FROM item_demand
-        ORDER BY category, item_name
+        SELECT name as item_name, category, demand, demand_updated_at as updated_at
+        FROM items
+        WHERE removed = 0
+        ORDER BY category, name
     `).all();
 
     return new Response(JSON.stringify({ demand: results || [] }), {
@@ -65,10 +66,10 @@ async function getAllDemand(env, corsHeaders) {
 // Get demand ratings for a specific category
 async function getCategoryDemand(env, category, corsHeaders) {
     const { results } = await env.DBA.prepare(`
-        SELECT item_name, demand, updated_at
-        FROM item_demand
-        WHERE category = ?
-        ORDER BY item_name
+        SELECT name as item_name, demand, demand_updated_at as updated_at
+        FROM items
+        WHERE category = ? AND removed = 0
+        ORDER BY name
     `).bind(category).all();
 
     return new Response(JSON.stringify({ demand: results || [] }), {
@@ -129,13 +130,19 @@ async function setDemand(request, env, corsHeaders) {
         });
     }
 
-    // Upsert demand rating
-    await env.DBA.prepare(`
-        INSERT INTO item_demand (item_name, category, demand)
-        VALUES (?, ?, ?)
-        ON CONFLICT(item_name, category)
-        DO UPDATE SET demand = excluded.demand, updated_at = CURRENT_TIMESTAMP
-    `).bind(item_name, category, demand).run();
+    // Update demand rating in items table
+    const result = await env.DBA.prepare(`
+        UPDATE items
+        SET demand = ?, demand_updated_at = strftime('%s', 'now')
+        WHERE name = ? AND category = ? AND removed = 0
+    `).bind(demand, item_name, category).run();
+
+    if (result.meta.changes === 0) {
+        return new Response(JSON.stringify({ error: 'Item not found' }), {
+            status: 404,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+    }
 
     return new Response(JSON.stringify({
         success: true,
@@ -208,16 +215,15 @@ async function bulkSetDemand(request, env, corsHeaders) {
         }
     }
 
-    // Process all items in a batch
+    // Process all items in a batch - update demand in items table
     const batch = [];
     for (const item of items) {
         batch.push(
             env.DBA.prepare(`
-                INSERT INTO item_demand (item_name, category, demand)
-                VALUES (?, ?, ?)
-                ON CONFLICT(item_name, category)
-                DO UPDATE SET demand = excluded.demand, updated_at = CURRENT_TIMESTAMP
-            `).bind(item.item_name, item.category, item.demand)
+                UPDATE items
+                SET demand = ?, demand_updated_at = strftime('%s', 'now')
+                WHERE name = ? AND category = ? AND removed = 0
+            `).bind(item.demand, item.item_name, item.category)
         );
     }
 

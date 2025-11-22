@@ -36,23 +36,41 @@ class TradingHub {
 
     async loadItems() {
         try {
-            const res = await fetch('https://emwiki.com/api/gist-version');
-            const data = await res.json();
-            const parsed = JSON.parse(data.files?.['auto.json']?.content);
-
-            // Flatten all items with category info
-            this.categories.forEach(cat => {
-                if (parsed[cat]) {
-                    parsed[cat].forEach(item => {
+            this.allItems = [];
+            
+            // Load all categories in parallel
+            const categoryPromises = this.categories.map(async (category) => {
+                let offset = 0;
+                const limit = 500;
+                let hasMore = true;
+                
+                while (hasMore) {
+                    const url = new URL('https://emwiki.com/api/items');
+                    url.searchParams.set('category', category);
+                    url.searchParams.set('limit', limit.toString());
+                    url.searchParams.set('offset', offset.toString());
+                    
+                    const res = await fetch(url.toString());
+                    if (!res.ok) throw new Error(`Failed to fetch ${category} items`);
+                    
+                    const data = await res.json();
+                    const items = data.items || [];
+                    
+                    items.forEach(item => {
                         this.allItems.push({
                             ...item,
-                            category: cat
+                            category: category
                         });
                     });
+                    
+                    hasMore = items.length === limit;
+                    offset += limit;
                 }
             });
-
-            console.log('Loaded', this.allItems.length, 'items');
+            
+            await Promise.all(categoryPromises);
+            
+            console.log('Loaded', this.allItems.length, 'items from database');
             return this.allItems;
         } catch (error) {
             console.error('Failed to load items:', error);

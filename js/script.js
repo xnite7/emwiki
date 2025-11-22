@@ -498,25 +498,44 @@ class BaseApp {
 
     async loadData() {
         try {
-            const res = await fetch('https://emwiki.com/api/gist-version');
-            const data = await res.json();
-            const parsed = JSON.parse(data.files?.['auto.json']?.content);
-
-
-            // Flatten all items with category info
-            this.categories.forEach(cat => {
-                if (parsed[cat]) {
-                    parsed[cat].forEach(item => {
+            // Load items from D1 database in batches by category
+            this.allItems = [];
+            
+            // Load all categories in parallel
+            const categoryPromises = this.categories.map(async (category) => {
+                let offset = 0;
+                const limit = 500; // Large batch size for initial load
+                let hasMore = true;
+                
+                while (hasMore) {
+                    const url = new URL('https://emwiki.com/api/items');
+                    url.searchParams.set('category', category);
+                    url.searchParams.set('limit', limit.toString());
+                    url.searchParams.set('offset', offset.toString());
+                    
+                    const res = await fetch(url.toString());
+                    if (!res.ok) throw new Error(`Failed to fetch ${category} items`);
+                    
+                    const data = await res.json();
+                    const items = data.items || [];
+                    
+                    // Add category to each item and push to allItems
+                    items.forEach(item => {
                         this.allItems.push({
                             ...item,
-                            category: cat
+                            category: category
                         });
                     });
+                    
+                    // Check if there are more items
+                    hasMore = items.length === limit;
+                    offset += limit;
                 }
             });
-
-
-
+            
+            await Promise.all(categoryPromises);
+            
+            console.log(`Loaded ${this.allItems.length} items from database`);
             return this.allItems;
         } catch (error) {
             console.error('Failed to load data:', error);
@@ -914,21 +933,55 @@ class BaseApp {
         this.domCache.searchResults = document.getElementById('search-results');
         if (!this.domCache.searchBar || !this.domCache.searchResults) return;
 
-        // Initialize Fuse.js
-        this.searchFuse = new Fuse(this.allItems, {
-            keys: ['name'],
-            threshold: 0.3
-        });
+        // Initialize Fuse.js with allItems (will be populated after loadData)
+        // Use API search for better performance when items are loaded
+        this.searchFuse = null;
+        this.searchTimeout = null;
 
-        this.domCache.searchBar.addEventListener('input', (e) => {
+        this.domCache.searchBar.addEventListener('input', async (e) => {
             const query = e.target.value.trim();
             if (!query) {
                 this.domCache.searchResults.style.display = 'none';
                 return;
             }
 
-            const results = this.searchFuse.search(query).slice(0, 6);
-            this.displaySearchResults(results);
+            // Clear previous timeout
+            if (this.searchTimeout) {
+                clearTimeout(this.searchTimeout);
+            }
+
+            // Debounce search
+            this.searchTimeout = setTimeout(async () => {
+                // Use API search endpoint for better performance
+                try {
+                    const url = new URL('https://emwiki.com/api/items/search');
+                    url.searchParams.set('q', query);
+                    url.searchParams.set('limit', '6');
+                    
+                    const res = await fetch(url.toString());
+                    if (!res.ok) throw new Error('Search failed');
+                    
+                    const data = await res.json();
+                    const items = data.items || [];
+                    
+                    // Format results for displaySearchResults
+                    const results = items.map(item => ({ item }));
+                    this.displaySearchResults(results);
+                } catch (error) {
+                    console.error('Search error:', error);
+                    // Fallback to Fuse.js if API fails
+                    if (this.allItems.length > 0 && !this.searchFuse) {
+                        this.searchFuse = new Fuse(this.allItems, {
+                            keys: ['name'],
+                            threshold: 0.3
+                        });
+                    }
+                    if (this.searchFuse) {
+                        const results = this.searchFuse.search(query).slice(0, 6);
+                        this.displaySearchResults(results);
+                    }
+                }
+            }, 200);
         });
 
         document.addEventListener('click', (e) => {
