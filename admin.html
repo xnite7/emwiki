@@ -4294,7 +4294,9 @@
                     style: { position: 'absolute', width: '97%', top: '0', transition: 'transform 0.3s ease-in-out' }
                 });
 
-                this.historyData.forEach(entry => this.renderEntry(entry, newInner));
+                this.historyData
+                    .slice(this.currentPage * this.MAX_ENTRIES_PER_PAGE, (this.currentPage + 1) * this.MAX_ENTRIES_PER_PAGE)
+                    .forEach(entry => this.renderEntry(entry, newInner));
 
                 wrapper.appendChild(newInner);
             },
