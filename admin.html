@@ -2281,13 +2281,8 @@
                     }
                 }
 
-                // Also save demand ratings to database
-                try {
-                    await this.saveDemandRatings();
-                } catch (error) {
-                    console.error('Error saving demand ratings:', error);
-                    // Don't fail the entire save if demand ratings fail
-                }
+                // Note: Demand ratings are now saved as part of item updates above
+                // No separate bulk save needed since demand is part of the items table
 
                 // Check if there were any conflicts
                 const conflicts = errors.filter(e => e.conflict);
@@ -2295,6 +2290,7 @@
                 
                 console.log(`Save completed: ${successCount} saved, ${errorCount} errors`);
                 
+                // If there were errors, return error response
                 if (errorCount > 0) {
                     console.error('Save errors:', errors);
                     return {
@@ -2307,9 +2303,27 @@
                             errors: errors,
                             conflicts: hasConflicts ? conflicts : undefined,
                             stats: {
-                                total: allItemsToSave.length,
+                                total: allItemsToSave.length + itemsToDelete.length,
                                 saved: successCount,
                                 errors: errorCount
+                            }
+                        })
+                    };
+                }
+
+                // Only return success if we actually saved something or had items to process
+                const totalItemsProcessed = allItemsToSave.length + itemsToDelete.length;
+                if (totalItemsProcessed === 0) {
+                    console.warn('No items to save');
+                    return {
+                        ok: false,
+                        status: 400,
+                        text: async () => JSON.stringify({ 
+                            error: 'No changes to save',
+                            stats: {
+                                total: 0,
+                                saved: 0,
+                                errors: 0
                             }
                         })
                     };
@@ -2323,7 +2337,7 @@
                         success: true,
                         message: `Successfully saved ${successCount} item(s)`,
                         stats: {
-                            total: allItemsToSave.length,
+                            total: totalItemsProcessed,
                             saved: successCount,
                             errors: errorCount
                         }
@@ -2331,44 +2345,9 @@
                 };
             },
 
-            async saveDemandRatings() {
-                try {
-                    // Collect all items with demand ratings
-                    const demandItems = [];
-
-                    Object.entries(state.jsData).forEach(([category, items]) => {
-                        if (Array.isArray(items)) {
-                            items.forEach(item => {
-                                if (item.demand !== undefined) {
-                                    demandItems.push({
-                                        item_name: item.name,
-                                        category: category,
-                                        demand: item.demand
-                                    });
-                                }
-                            });
-                        }
-                    });
-
-                    if (demandItems.length === 0) return;
-
-                    // Bulk save to API
-                    const response = await fetch('https://emwiki.com/api/demand/bulk', {
-                        method: 'POST',
-                        credentials: 'include',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ items: demandItems })
-                    });
-
-                    if (!response.ok) {
-                        console.error('Failed to save demand ratings:', await response.text());
-                    } else {
-                        console.log(`Saved ${demandItems.length} demand ratings`);
-                    }
-                } catch (error) {
-                    console.error('Error saving demand ratings:', error);
-                }
-            },
+            // Note: saveDemandRatings() removed - demand is now saved as part of item updates
+            // Demand changes are tracked in ChangeTracker and saved when items are updated
+            // This ensures demand is always in sync with item data
 
             // Add this new method to API object:
             // Add this new method to API object:
