@@ -1858,7 +1858,8 @@ class ItemModal {
             this.elements.title.style.opacity = 'unset';
         } else if (item.svg) {
             this.elements.svg.outerHTML = item.svg;
-            this.elements.svg = this.elements.container.querySelector('svg');
+            this.elements.svg = this.elements.container.querySelector('.modal-content>svg');
+            
             this.elements.svg.classList.add('modal-svg');
             this.elements.svg.style.display = 'unset';
             this.elements.image.style.display = 'none';
