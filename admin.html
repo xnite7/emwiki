@@ -2089,11 +2089,27 @@
                     }
                 });
 
+                console.log(`Saving ${allItemsToSave.length} items to D1 database...`);
+
                 // Save items in batches to avoid overwhelming the API
                 const batchSize = 50;
                 let successCount = 0;
                 let errorCount = 0;
                 const errors = [];
+                
+                // If no items to save, return early
+                if (allItemsToSave.length === 0) {
+                    console.warn('No items to save');
+                    return {
+                        ok: true,
+                        status: 200,
+                        text: async () => JSON.stringify({ 
+                            success: true,
+                            message: 'No items to save',
+                            stats: { total: 0, saved: 0, errors: 0 }
+                        })
+                    };
+                }
 
                 for (let i = 0; i < allItemsToSave.length; i += batchSize) {
                     const batch = allItemsToSave.slice(i, i + batchSize);
@@ -2111,48 +2127,50 @@
                                 const itemId = itemData.item?.id;
                                 const serverUpdatedAt = itemData.item?.updated_at;
                                 
-                                if (itemId) {
-                                    const updateRes = await fetch(`https://emwiki.com/api/items/${itemId}`, {
-                                        method: 'PUT',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({
-                                            name: item.name,
-                                            category: item.category,
-                                            img: item.img || null,
-                                            svg: item.svg || null,
-                                            price: item.price || null,
-                                            from: item.from || null,
-                                            price_code_rarity: item.price_code_rarity,
-                                            tradable: item.tradable !== false,
-                                            new: item.new === true,
-                                            weekly: item.weekly === true,
-                                            weeklystar: item.weeklystar === true,
-                                            retired: item.retired === true,
-                                            premium: item.premium === true,
-                                            removed: item.removed === true,
-                                            price_history: item.price_history ? JSON.parse(item.price_history) : null,
-                                            demand: item.demand || 0,
-                                            updated_at: item.updated_at || serverUpdatedAt // Include timestamp for optimistic locking
-                                        })
-                                    });
-                                    
-                                    if (updateRes.status === 409) {
-                                        // Conflict detected - item was modified by another admin
-                                        const conflictData = await updateRes.json();
-                                        errors.push({
-                                            item: item.name,
-                                            error: `Conflict: Modified by another admin. Server version has different data.`,
-                                            conflict: true,
-                                            currentItem: conflictData.currentItem
-                                        });
-                                        errorCount++;
-                                        return; // Skip this item
-                                    } else if (!updateRes.ok) {
-                                        const errorText = await updateRes.text();
-                                        throw new Error(`Failed to update ${item.name}: ${errorText}`);
-                                    }
+                                if (!itemId) {
+                                    throw new Error(`Item found but missing ID: ${item.name}`);
                                 }
-                            } else {
+                                
+                                const updateRes = await fetch(`https://emwiki.com/api/items/${itemId}`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        name: item.name,
+                                        category: item.category,
+                                        img: item.img || null,
+                                        svg: item.svg || null,
+                                        price: item.price || null,
+                                        from: item.from || null,
+                                        price_code_rarity: item.price_code_rarity,
+                                        tradable: item.tradable !== false,
+                                        new: item.new === true,
+                                        weekly: item.weekly === true,
+                                        weeklystar: item.weeklystar === true,
+                                        retired: item.retired === true,
+                                        premium: item.premium === true,
+                                        removed: item.removed === true,
+                                        price_history: item.price_history ? JSON.parse(item.price_history) : null,
+                                        demand: item.demand || 0,
+                                        updated_at: item.updated_at || serverUpdatedAt // Include timestamp for optimistic locking
+                                    })
+                                });
+                                
+                                if (updateRes.status === 409) {
+                                    // Conflict detected - item was modified by another admin
+                                    const conflictData = await updateRes.json();
+                                    errors.push({
+                                        item: item.name,
+                                        error: `Conflict: Modified by another admin. Server version has different data.`,
+                                        conflict: true,
+                                        currentItem: conflictData.currentItem
+                                    });
+                                    errorCount++;
+                                    return; // Skip this item
+                                } else if (!updateRes.ok) {
+                                    const errorText = await updateRes.text();
+                                    throw new Error(`Failed to update ${item.name}: ${errorText}`);
+                                }
+                            } else if (checkRes.status === 404) {
                                 // Item doesn't exist, create it
                                 const createRes = await fetch('https://emwiki.com/api/items', {
                                     method: 'POST',
@@ -2178,14 +2196,19 @@
                                 });
                                 
                                 if (!createRes.ok) {
-                                    throw new Error(`Failed to create ${item.name}`);
+                                    const errorText = await createRes.text();
+                                    throw new Error(`Failed to create ${item.name}: ${errorText}`);
                                 }
+                            } else {
+                                // Unexpected response status
+                                throw new Error(`Unexpected response when checking item ${item.name}: ${checkRes.status}`);
                             }
                             
                             successCount++;
                         } catch (error) {
                             errorCount++;
                             errors.push({ item: item.name, error: error.message });
+                            console.error(`Error saving item ${item.name}:`, error);
                         }
                     });
                     
@@ -2193,13 +2216,21 @@
                 }
 
                 // Also save demand ratings to database
-                await this.saveDemandRatings();
+                try {
+                    await this.saveDemandRatings();
+                } catch (error) {
+                    console.error('Error saving demand ratings:', error);
+                    // Don't fail the entire save if demand ratings fail
+                }
 
                 // Check if there were any conflicts
                 const conflicts = errors.filter(e => e.conflict);
                 const hasConflicts = conflicts.length > 0;
                 
+                console.log(`Save completed: ${successCount} saved, ${errorCount} errors`);
+                
                 if (errorCount > 0) {
+                    console.error('Save errors:', errors);
                     return {
                         ok: false,
                         status: hasConflicts ? 409 : 500,
@@ -2208,17 +2239,28 @@
                                 ? `Conflict: ${conflicts.length} item(s) were modified by another admin. Please reload and try again.`
                                 : `Failed to save ${errorCount} item(s)`,
                             errors: errors,
-                            conflicts: hasConflicts ? conflicts : undefined
+                            conflicts: hasConflicts ? conflicts : undefined,
+                            stats: {
+                                total: allItemsToSave.length,
+                                saved: successCount,
+                                errors: errorCount
+                            }
                         })
                     };
                 }
 
+                console.log(`Successfully saved ${successCount} items`);
                 return {
                     ok: true,
                     status: 200,
                     text: async () => JSON.stringify({ 
                         success: true,
-                        message: `Successfully saved ${successCount} item(s)`
+                        message: `Successfully saved ${successCount} item(s)`,
+                        stats: {
+                            total: allItemsToSave.length,
+                            saved: successCount,
+                            errors: errorCount
+                        }
                     })
                 };
             },
@@ -6073,7 +6115,11 @@
                         publishBtn.disabled = false;
 
                         if (forceCheckbox && forceCheckbox.checked) {
-                            // Force overwrite - just retry saveData
+                            // Force overwrite - reload items first to get latest updated_at, then retry
+                            ErrorHandler.showToast('Reloading latest data...', 'info');
+                            await API.loadData();
+                            ChangeTracker.initializeOriginals();
+                            
                             const forceResponse = await API.saveData();
 
                             if (forceResponse.ok) {
@@ -6092,8 +6138,23 @@
                         setTimeout(() => location.reload(), 3500);
                     } else {
                         // Handle non-OK responses
-                        const errorData = await response.text();
-                        throw new Error(errorData || `Server error: ${response.status}`);
+                        let errorMessage = `Server error: ${response.status}`;
+                        try {
+                            const errorData = await response.text();
+                            const errorJson = JSON.parse(errorData);
+                            errorMessage = errorJson.error || errorJson.message || errorMessage;
+                            
+                            // Show detailed error if there are specific item errors
+                            if (errorJson.errors && errorJson.errors.length > 0) {
+                                const errorList = errorJson.errors.slice(0, 5).map(e => 
+                                    `• ${e.item}: ${e.error}`
+                                ).join('\n');
+                                errorMessage = `${errorMessage}\n\n${errorList}${errorJson.errors.length > 5 ? `\n... and ${errorJson.errors.length - 5} more` : ''}`;
+                            }
+                        } catch (e) {
+                            // If parsing fails, use default message
+                        }
+                        throw new Error(errorMessage);
                     }
                 } catch (error) {
                     // Show proper error modal instead of just a toast
@@ -8232,64 +8293,10 @@
             showOldRating: true,
 
             async init() {
-                await this.loadDemandData();
                 this.setupEventListeners();
                 this.renderItems();
             },
-
-            async loadDemandData() {
-                try {
-                    // Get demand ratings from database
-                    const response = await fetch('https://emwiki.com/api/demand/all');
-                    const data = await response.json();
-
-                    const demandMap = new Map();
-                    const now = Date.now();
-                    const thirtyDaysAgo = now - (30 * 24 * 60 * 60 * 1000);
-
-                    if (data.demand && Array.isArray(data.demand)) {
-                        data.demand.forEach(d => {
-                            const key = `${d.category}-${d.item_name}`;
-                            const updatedAt = d.updated_at ? new Date(d.updated_at).getTime() : 0;
-                            demandMap.set(key, {
-                                demand: d.demand,
-                                updatedAt: updatedAt,
-                                isOld: updatedAt < thirtyDaysAgo
-                            });
-                        });
-                    }
-
-                    // Check all items in state and find ones needing review
-                    this.reviewItems = [];
-
-                    Object.entries(state.jsData).forEach(([category, items]) => {
-                        if (Array.isArray(items)) {
-                            items.forEach(item => {
-                                const key = `${category}-${item.name}`;
-                                const demandData = demandMap.get(key);
-
-                                const needsReview = !demandData || demandData.demand === 0 || demandData.isOld;
-
-                                if (needsReview) {
-                                    this.reviewItems.push({
-                                        name: item.name,
-                                        category: category,
-                                        demand: demandData?.demand || 0,
-                                        updatedAt: demandData?.updatedAt || 0,
-                                        isOld: demandData?.isOld || false,
-                                        hasNoRating: !demandData || demandData.demand === 0
-                                    });
-                                }
-                            });
-                        }
-                    });
-
-                    console.log(`Found ${this.reviewItems.length} items needing demand review`);
-                } catch (error) {
-                    console.error('Failed to load demand data:', error);
-                }
-            },
-
+            
             setupEventListeners() {
                 const searchInput = document.getElementById('demand-search-input');
                 const categoryFilter = document.getElementById('demand-category-filter');
