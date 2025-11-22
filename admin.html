@@ -2072,24 +2072,47 @@
                 });
 
                 // Save items to D1 database individually
-                // Get all items that need to be saved
+                // Only save items that have actually changed (new, modified, or deleted)
                 const allItemsToSave = [];
+                const itemsToDelete = [];
+                
+                // Collect new and modified items
+                const changedItemNames = new Set([
+                    ...ChangeTracker.newItems,
+                    ...ChangeTracker.modifiedItems
+                ]);
+                
                 Object.entries(cleanedData).forEach(([category, items]) => {
                     if (Array.isArray(items)) {
                         items.forEach(item => {
-                            allItemsToSave.push({
-                                ...item,
-                                category: category,
-                                price_code_rarity: item['price/code/rarity'] || null,
-                                price_history: item.priceHistory ? JSON.stringify(item.priceHistory.slice(-15)) : null,
-                                // Preserve updated_at from when item was loaded for optimistic locking
-                                updated_at: item.updated_at || null
-                            });
+                            // Only save if this item has changed
+                            if (changedItemNames.has(item.name)) {
+                                allItemsToSave.push({
+                                    ...item,
+                                    category: category,
+                                    price_code_rarity: item['price/code/rarity'] || null,
+                                    price_history: item.priceHistory ? JSON.stringify(item.priceHistory.slice(-15)) : null,
+                                    // Preserve updated_at from when item was loaded for optimistic locking
+                                    // Only include updated_at for modified items (not new items)
+                                    updated_at: ChangeTracker.newItems.has(item.name) ? null : (item.updated_at || null)
+                                });
+                            }
                         });
                     }
                 });
+                
+                // Collect deleted items
+                ChangeTracker.deletedItems.forEach((originalStateJson, itemName) => {
+                    const originalItem = typeof originalStateJson === 'string'
+                        ? JSON.parse(originalStateJson)
+                        : originalStateJson;
+                    itemsToDelete.push({
+                        name: itemName,
+                        category: originalItem.category
+                    });
+                });
 
-                console.log(`Saving ${allItemsToSave.length} items to D1 database...`);
+                console.log(`Saving ${allItemsToSave.length} changed items and ${itemsToDelete.length} deletions to D1 database...`);
 
                 // Save items in batches to avoid overwhelming the API
                 const batchSize = 50;
@@ -2131,6 +2154,13 @@
                                     throw new Error(`Item found but missing ID: ${item.name}`);
                                 }
                                 
+                                // Use server's updated_at if available (most recent), otherwise use client's
+                                // For new items, don't send updated_at (it will be null)
+                                // For modified items, use the server's current updated_at to avoid conflicts
+                                const updatedAtToSend = ChangeTracker.newItems.has(item.name) 
+                                    ? null 
+                                    : (serverUpdatedAt || item.updated_at || null);
+                                
                                 const updateRes = await fetch(`https://emwiki.com/api/items/${itemId}`, {
                                     method: 'PUT',
                                     headers: { 'Content-Type': 'application/json' },
@@ -2151,7 +2181,7 @@
                                         removed: item.removed === true,
                                         price_history: item.price_history ? JSON.parse(item.price_history) : null,
                                         demand: item.demand || 0,
-                                        updated_at: item.updated_at || serverUpdatedAt // Include timestamp for optimistic locking
+                                        updated_at: updatedAtToSend // Use server's updated_at for optimistic locking
                                     })
                                 });
                                 
@@ -2213,6 +2243,42 @@
                     });
                     
                     await Promise.all(batchPromises);
+                }
+
+                // Handle deleted items
+                for (const deletedItem of itemsToDelete) {
+                    try {
+                        // Find the item ID first
+                        const checkUrl = new URL(`https://emwiki.com/api/items/${deletedItem.category}/${encodeURIComponent(deletedItem.name)}`);
+                        const checkRes = await fetch(checkUrl.toString());
+                        
+                        if (checkRes.ok) {
+                            const itemData = await checkRes.json();
+                            const itemId = itemData.item?.id;
+                            
+                            if (itemId) {
+                                // Delete the item
+                                const deleteRes = await fetch(`https://emwiki.com/api/items/${itemId}`, {
+                                    method: 'DELETE',
+                                    headers: { 'Content-Type': 'application/json' }
+                                });
+                                
+                                if (!deleteRes.ok) {
+                                    const errorText = await deleteRes.text();
+                                    throw new Error(`Failed to delete ${deletedItem.name}: ${errorText}`);
+                                }
+                                successCount++;
+                            }
+                        } else if (checkRes.status !== 404) {
+                            // Item not found is OK (might have been deleted already)
+                            const errorText = await checkRes.text();
+                            throw new Error(`Failed to check item ${deletedItem.name}: ${errorText}`);
+                        }
+                    } catch (error) {
+                        errorCount++;
+                        errors.push({ item: deletedItem.name, error: error.message });
+                        console.error(`Error deleting item ${deletedItem.name}:`, error);
+                    }
                 }
 
                 // Also save demand ratings to database
