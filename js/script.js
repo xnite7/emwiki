@@ -2069,7 +2069,7 @@ class ItemModal {
                 </span>
                 
             ` : ''}
-            ${item.demand !== undefined && item.demand > 0 ? `<div class="modal-demand"><div class="demand-stars">${stars.join('')}</div></div>` : ''}
+            ${item.demand !== undefined && item.demand > 0 ? `<div class="modal-demand" title="Demand"><div class="demand-stars">${stars.join('')}</div></div>` : ''}
         `;
 
         // Remove old note if it exists

@@ -951,6 +951,12 @@
                             if (action.previousState.price !== action.newState.price) changes.push('price');
                             if (action.previousState.from !== action.newState.from) changes.push('description');
                             if (action.previousState['price/code/rarity'] !== action.newState['price/code/rarity']) changes.push('codes');
+                            if (action.previousState.demand !== action.newState.demand) {
+                                const labels = ['Terrible', 'Bad', 'Okay', 'Good', 'Great', 'Amazing'];
+                                const oldLabel = labels[action.previousState.demand || 0];
+                                const newLabel = labels[action.newState.demand || 0];
+                                changes.push(`demand (${oldLabel}→${newLabel})`);
+                            }
 
                             const flags = ['weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable'];
                             flags.forEach(flag => {
@@ -4023,6 +4029,7 @@
                 ['Removed', 'removed'],
                 ['Premium', 'premium'],
                 ['Tradable', 'tradable'],
+                ['Demand', 'demand'],
                 ['Icon', 'img'],
                 ['Text', 'svg'],
                 ['RAP', 'price'],
@@ -4169,6 +4176,14 @@
                 };
             },
 
+            processDemandChange(item, oldRaw, newRaw) {
+                return {
+                    item,
+                    oldDemand: parseInt(oldRaw) || 0,
+                    newDemand: parseInt(newRaw) || 0
+                };
+            },
+
             processDescriptionChange(item, oldVal, newVal) {
                 return { item, oldDesc: oldVal, newDesc: newVal };
             },
@@ -4179,6 +4194,16 @@
 
             formatPriceItem(item) {
                 return `${this.ICONS.price} <strong>[${item.item}]</strong> <span class="old strike">${item.oldPrice}</span> → <span class="new">${item.newPrice}</span>`;
+            },
+
+            formatDemandItem(item) {
+                const labels = ['Terrible', 'Bad', 'Okay', 'Good', 'Great', 'Amazing'];
+                const oldDemand = item.oldDemand || 0;
+                const newDemand = item.newDemand || 0;
+                const oldLabel = labels[oldDemand];
+                const newLabel = labels[newDemand];
+                const starIcon = '<span class="typeicon" style="color: #ffd700;">★</span>';
+                return `${starIcon} <strong>[${item.item}]</strong> <span class="old strike">${oldLabel} (${oldDemand}★)</span> → <span class="new">${newLabel} (${newDemand}★)</span>`;
             },
 
             formatDescriptionItem(item) {
@@ -4240,6 +4265,7 @@
                     ['removed', []],
                     ...this.BOOLEAN_FIELDS.map(field => [field, []]),
                     ['price', []],
+                    ['demand', []],
                     ['from', []],
                     ['price/code/rarity', []],
                     ['img', []],
@@ -4274,6 +4300,8 @@
                         changes[field].push(this.processBooleanChange(item, newRaw));
                     } else if (field === 'price') {
                         changes.price.push(this.processPriceChange(item, oldRaw, newRaw));
+                    } else if (field === 'demand') {
+                        changes.demand.push(this.processDemandChange(item, oldRaw, newRaw));
                     } else if (field === 'from') {
                         changes.from.push(this.processDescriptionChange(item, oldVal, newVal));
                     } else if (field === 'price/code/rarity') {
@@ -4368,6 +4396,7 @@
                     removed: this.formatBooleanItem,
                     premium: this.formatBooleanItem,
                     tradable: this.formatBooleanItem,
+                    demand: this.formatDemandItem,
                     img: this.formatImageItem,  // Changed from 'icon' to 'img'
                     svg: this.formatImageItem,  // Added svg formatter
                     price: this.formatPriceItem,
