@@ -5603,7 +5603,7 @@
             compareItems(original, current) {
                 const changes = [];
                 const fields = ['name', 'img', 'svg', 'price', 'from', 'price/code/rarity',
-                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed'];
+                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed', 'demand'];
 
                 fields.forEach(field => {
                     const oldVal = this.normalizeValue(field, original[field]);
@@ -5653,7 +5653,13 @@
                     'removed': (old, val) => val ? '✓ Marked as Removed' : '✗ Unmarked as Removed',
                     'premium': (old, val) => val ? '✓ Marked as Premium' : '✗ Unmarked as Premium',
                     'tradable': (old, val) => !val ? '✓ Marked as Untradable' : '✗ Marked as Tradable',
-                    'name': (old, val) => `Name: "${old}" → "${val}"`
+                    'name': (old, val) => `Name: "${old}" → "${val}"`,
+                    'demand': (old, val) => {
+                        const labels = ['Terrible', 'Bad', 'Okay', 'Good', 'Great', 'Amazing'];
+                        const oldLabel = labels[old || 0];
+                        const newLabel = labels[val || 0];
+                        return `Demand: ${oldLabel} (${old || 0}★) → ${newLabel} (${val || 0}★)`;
+                    }
                 };
 
                 return formatters[field] ? formatters[field](oldValue, newValue) : `${field}: ${oldValue} → ${newValue}`;
