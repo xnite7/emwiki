@@ -1075,7 +1075,7 @@ class BaseApp {
         this.recentlyViewed = this.recentlyViewed.slice(0, 5);
 
         if (this.isLoggedIn) {
-            await Utils.saveToAccount('recentlyViewed', this.recentlyViewed);
+            await Utils.saveToStorage('recentlyViewed', this.recentlyViewed);
         } else {
             Utils.saveToStorage('recentlyViewed', this.recentlyViewed);
         }
@@ -1510,9 +1510,6 @@ class ItemModal {
                         <div class="modal-header">
                             <h1 class="modal-title"></h1>
                             <div class="modal-price"></div>
-                            <div class="modal-demand" style="display:none;">
-                                <div class="demand-stars"></div>
-                            </div>
                         </div>
 
                         <canvas class="modal-image" style="display:none;"></canvas>
@@ -1590,8 +1587,6 @@ class ItemModal {
             backContent: document.querySelector('.modal-back'),
             title: document.querySelector('.modal-title'),
             price: document.querySelector('.modal-price'),
-            demand: document.querySelector('.modal-demand'),
-            demandStars: document.querySelector('.demand-stars'),
             demandInfo: document.querySelector('.modal-demand-info'),
             demandTextLabel: document.querySelector('.demand-text-label'),
             image: document.querySelector('.modal-image'),
@@ -1818,24 +1813,6 @@ class ItemModal {
         }
     }
 
-    updateDemandDisplay(demand) {
-        // Create star icons based on demand rating (1-5)
-        const starSVG = `<svg class="demand-star" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-        </svg>`;
-
-        const stars = [];
-        for (let i = 0; i < 5; i++) {
-            if (i < demand) {
-                stars.push(starSVG);
-            } else {
-                stars.push(starSVG.replace('demand-star"', 'demand-star empty"'));
-            }
-        }
-
-        this.elements.demandStars.innerHTML = stars.join('');
-    }
-
     updateContent(item) {
         // Basic info
         this.elements.title.textContent = item.name;
@@ -1847,14 +1824,6 @@ class ItemModal {
             this.elements.price.style.display = 'flex';
         } else {
             this.elements.price.style.display = 'none';
-        }
-
-        // Demand stars (front)
-        if (item.demand !== undefined && item.demand > 0) {
-            this.updateDemandDisplay(item.demand);
-            this.elements.demand.style.display = 'flex';
-        } else {
-            this.elements.demand.style.display = 'none';
         }
 
         // Demand text (back)
@@ -2077,16 +2046,31 @@ class ItemModal {
 
         const currentTax = taxLabels[this.catalog.taxMode];
 
+        const starSVG = `<svg class="demand-star" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>`;
+
+        const stars = [];
+        for (let i = 0; i < 5; i++) {
+            if (i < item.demand) {
+                stars.push(starSVG);
+            } else {
+                stars.push(starSVG.replace('demand-star"', 'demand-star empty"'));
+            }
+        }
+
         this.elements.price.innerHTML = `
-        <h2>${convertedPrice}</h2>
-        
-        ${this.catalog.taxMode !== 'nt' ? `
-            <span class="modal-tax-indicator" onclick="event.stopPropagation(); this.classList.toggle('show-tooltip')">
-                ${currentTax.short}
-                <span class="tax-tooltip">${currentTax.full}</span>
-            </span>
-        ` : ''}
-    `;
+            <h2>${convertedPrice}</h2>
+            
+            ${this.catalog.taxMode !== 'nt' ? `
+                <span class="modal-tax-indicator" onclick="event.stopPropagation(); this.classList.toggle('show-tooltip')">
+                    ${currentTax.short}
+                    <span class="tax-tooltip">${currentTax.full}</span>
+                </span>
+                
+            ` : ''}
+            ${item.demand !== undefined && item.demand > 0 ? `<div class="modal-demand"><div class="demand-stars">${stars.join('')}</div></div>` : ''}
+        `;
 
         // Remove old note if it exists
         const existingNote = this.elements.price.parentElement.querySelector('.modal-tax-note');

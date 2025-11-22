@@ -216,8 +216,11 @@ body:has(.item-modal.active) {
     border-radius: 6px;
     color: #ffd700;
     font-weight: 600;
-    padding: 2px 6px;
+    margin-right: -3px;
+    padding: 4px 4px;
     cursor: pointer;
+    margin-top: -4px;
+    font-size: 13px;
     position: relative;
     transition: all 0.2s;
 }
@@ -266,7 +269,7 @@ body:has(.item-modal.active) {
     width: 100%;
     display: flex;
     justify-content: center;
-    margin-top: 8px;
+    margin-top: 1px;
     gap: 2px;
 }
 
@@ -442,11 +445,11 @@ body:has(.item-modal.active) {
 }
 
 .demand-star {
-    width: 18px;
-    height: 18px;
-    color: #ffd700;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-    transition: all 0.2s;
+    width: 18px !important;
+    height: 18px !important;
+    color: #ffd700 !important;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) !important;
+    transition: all 0.2s !important;
 }
 
 .demand-star.empty {
@@ -669,7 +672,24 @@ body:has(.item-modal.active) {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    opacity: 1;
     z-index: 10000;
+    transition: opacity 2s ease allow-discrete;
+
+    @starting-style {
+        opacity: 0;
+    }
+}
+
+.flipped~.modal-actions {
+    right: unset;
+    left: -70px;
+    opacity: 1;
+    transition: opacity 2s ease allow-discrete;
+
+    @starting-style {
+        opacity: 0;
+    }
 }
 
 .modal-action-btn {
@@ -683,6 +703,7 @@ body:has(.item-modal.active) {
     background-repeat: no-repeat;
     filter: saturate(1) brightness(1) drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black) drop-shadow(0px 0px 0.5px black);
 }
+
 .modal-action-btn:hover {
     transform: scale(1.15);
     background: rgb(from CanvasText r g b / 0.75);
@@ -765,7 +786,9 @@ body:has(.item-modal.active) {
         }
     }
 
-    .modal-action-btn:hover,.modal-action-btn:active,.modal-action-btn.active {
+    .modal-action-btn:hover,
+    .modal-action-btn:active,
+    .modal-action-btn.active {
         transform: scale(1);
         background: CanvasText;
     }
