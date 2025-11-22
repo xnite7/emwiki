@@ -771,38 +771,9 @@
 
                     document.getElementById('total').textContent = this.allItems.length;
 
-                    // Fetch and merge demand ratings
-                    await this.loadDemandRatings();
+
                 } catch (error) {
                     console.error('Failed to load data:', error);
-                }
-            }
-
-            async loadDemandRatings() {
-                try {
-                    const response = await fetch('https://emwiki.com/api/demand/all');
-                    const data = await response.json();
-
-                    if (data.demand && Array.isArray(data.demand)) {
-                        // Create a map for faster lookups
-                        const demandMap = new Map();
-                        data.demand.forEach(d => {
-                            const key = `${d.category}-${d.item_name}`;
-                            demandMap.set(key, d.demand);
-                        });
-
-                        // Merge demand into allItems
-                        this.allItems.forEach(item => {
-                            const key = `${item.category}-${item.name}`;
-                            item.demand = demandMap.get(key) || 0;
-                        });
-                    }
-                } catch (error) {
-                    console.error('Failed to load demand ratings:', error);
-                    // Set all items to 0 demand if loading fails
-                    this.allItems.forEach(item => {
-                        item.demand = 0;
-                    });
                 }
             }
 
