@@ -1510,6 +1510,9 @@ class ItemModal {
                         <div class="modal-header">
                             <h1 class="modal-title"></h1>
                             <div class="modal-price"></div>
+                            <div class="modal-demand" style="display:none;">
+                                <div class="demand-stars"></div>
+                            </div>
                         </div>
 
                         <canvas class="modal-image" style="display:none;"></canvas>
@@ -1532,7 +1535,14 @@ class ItemModal {
                         <div class="modal-back-header">
                             <h3>Additional Info</h3>
                         </div>
-                        
+
+                        <div class="modal-demand-info" style="display:none;">
+                            <div class="demand-label-container">
+                                <strong>Demand:</strong>
+                                <span class="demand-text-label"></span>
+                            </div>
+                        </div>
+
                         <div class="modal-graph-section">
                             <h4>Price History</h4>
                             <div class="modal-graph-container"></div>
@@ -1580,6 +1590,10 @@ class ItemModal {
             backContent: document.querySelector('.modal-back'),
             title: document.querySelector('.modal-title'),
             price: document.querySelector('.modal-price'),
+            demand: document.querySelector('.modal-demand'),
+            demandStars: document.querySelector('.demand-stars'),
+            demandInfo: document.querySelector('.modal-demand-info'),
+            demandTextLabel: document.querySelector('.demand-text-label'),
             image: document.querySelector('.modal-image'),
             svg: document.querySelector('.modal-svg'),
             description: document.querySelector('.modal-description'),
@@ -1804,6 +1818,24 @@ class ItemModal {
         }
     }
 
+    updateDemandDisplay(demand) {
+        // Create star icons based on demand rating (1-5)
+        const starSVG = `<svg class="demand-star" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>`;
+
+        const stars = [];
+        for (let i = 0; i < 5; i++) {
+            if (i < demand) {
+                stars.push(starSVG);
+            } else {
+                stars.push(starSVG.replace('demand-star"', 'demand-star empty"'));
+            }
+        }
+
+        this.elements.demandStars.innerHTML = stars.join('');
+    }
+
     updateContent(item) {
         // Basic info
         this.elements.title.textContent = item.name;
@@ -1815,6 +1847,30 @@ class ItemModal {
             this.elements.price.style.display = 'flex';
         } else {
             this.elements.price.style.display = 'none';
+        }
+
+        // Demand stars (front)
+        if (item.demand !== undefined && item.demand > 0) {
+            this.updateDemandDisplay(item.demand);
+            this.elements.demand.style.display = 'flex';
+        } else {
+            this.elements.demand.style.display = 'none';
+        }
+
+        // Demand text (back)
+        if (item.demand !== undefined && item.demand >= 0) {
+            const demandLabels = {
+                5: 'Amazing',
+                4: 'Great',
+                3: 'Good',
+                2: 'Okay',
+                1: 'Bad',
+                0: 'Terrible'
+            };
+            this.elements.demandTextLabel.textContent = demandLabels[item.demand] || 'Unknown';
+            this.elements.demandInfo.style.display = 'block';
+        } else {
+            this.elements.demandInfo.style.display = 'none';
         }
 
         // Image/SVG

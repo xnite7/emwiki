@@ -261,6 +261,102 @@ body:has(.item-modal.active) {
     transform: translateX(-50%) scale(1);
 }
 
+/* Demand Rating Styles */
+.modal-demand {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+    gap: 2px;
+}
+
+.demand-stars {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.demand-star {
+    width: 18px;
+    height: 18px;
+    color: #ffd700;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    transition: all 0.2s;
+}
+
+.demand-star.empty {
+    color: #404040;
+    opacity: 0.5;
+}
+
+/* Demand info on back side */
+.modal-demand-info {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    margin-bottom: 16px;
+}
+
+.demand-label-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    font-size: 14px;
+}
+
+.demand-label-container strong {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 600;
+}
+
+.demand-text-label {
+    font-weight: 800;
+    font-size: 16px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 140, 0, 0.2));
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+/* Color variations for demand text */
+.modal-demand-info:has(.demand-text-label:contains("Amazing")) .demand-text-label {
+    background: linear-gradient(135deg, rgba(50, 205, 50, 0.3), rgba(34, 139, 34, 0.2));
+    border-color: rgba(50, 205, 50, 0.4);
+    color: #90EE90;
+}
+
+.modal-demand-info:has(.demand-text-label:contains("Great")) .demand-text-label {
+    background: linear-gradient(135deg, rgba(135, 206, 250, 0.3), rgba(70, 130, 180, 0.2));
+    border-color: rgba(135, 206, 250, 0.4);
+    color: #ADD8E6;
+}
+
+.modal-demand-info:has(.demand-text-label:contains("Good")) .demand-text-label {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 165, 0, 0.2));
+    border-color: rgba(255, 215, 0, 0.4);
+    color: #FFD700;
+}
+
+.modal-demand-info:has(.demand-text-label:contains("Okay")) .demand-text-label {
+    background: linear-gradient(135deg, rgba(255, 165, 0, 0.3), rgba(255, 140, 0, 0.2));
+    border-color: rgba(255, 165, 0, 0.4);
+    color: #FFA500;
+}
+
+.modal-demand-info:has(.demand-text-label:contains("Bad")) .demand-text-label {
+    background: linear-gradient(135deg, rgba(255, 99, 71, 0.3), rgba(220, 20, 60, 0.2));
+    border-color: rgba(255, 99, 71, 0.4);
+    color: #FF6347;
+}
+
+.modal-demand-info:has(.demand-text-label:contains("Terrible")) .demand-text-label {
+    background: linear-gradient(135deg, rgba(178, 34, 34, 0.3), rgba(139, 0, 0, 0.2));
+    border-color: rgba(178, 34, 34, 0.4);
+    color: #CD5C5C;
+}
+
 .modal-image {
     width: 153px;
     height: 153px;

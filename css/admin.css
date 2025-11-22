@@ -101,7 +101,7 @@ header {
 
 header h1 {
     margin: 0;
-    line-height:0.8;
+    line-height: 0.8;
     width: min-content;
     gap: 11px;
     display: flex;
@@ -1132,10 +1132,28 @@ hr {
     content: "empty";
 }
 
+#svg-editor {
+    width: 46%;
+}
+
+#demand-items-grid:empty {
+    grid-template-columns: unset;
+}
+
+#demand-items-grid:empty::before {
+    content: ":3";
+    color: gray;
+    padding: 20px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 500;
+    font-family: 'BuilderSans';
+}
+
 .quick-editor-body {
     display: inline-flex;
     flex-direction: row;
-    max-width: 254px;
+    max-width: 49%;
     align-items: center;
     flex-wrap: wrap;
 }

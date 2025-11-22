@@ -196,10 +196,14 @@ svg:hover #cloud {
     box-shadow: rgb(0 0 0 / 40%) 0px 0px 10px 0px;
 }
 
+#user-profile-btn {
+        top: 20px;
+        right: 20px;
+        position: absolute;
+    }
+
 .btn {
-    top: 20px;
-    right: 20px;
-    position: absolute;
+
     display: flex;
     align-items: center;
     gap: 10px;
@@ -1668,6 +1672,7 @@ footer {
     position: absolute;
     top: -5px;
     right: -5px;
+    font-size: 23px;
     background: linear-gradient(180deg, #ff4444, #b70000);
     border: 1px solid darkred;
     color: white;
@@ -1816,7 +1821,7 @@ footer {
     font-variant: all-petite-caps;
     text-shadow: 0 0 2px black;
     padding: 0px 3px;
-    width: 53px;
+    width: 59px;
     height: 0;
     border-top: 6px solid red;
     filter: drop-shadow(0 1px 0px black) drop-shadow(0 -1px 0px rgb(255, 66, 66));
@@ -3342,12 +3347,6 @@ header svg * {
     }
 }
 
-.btn {
-    right: unset;
-    top: 20px;
-    left: 12px;
-    position: absolute;
-}
 
 
 #auth-button {
@@ -3358,7 +3357,7 @@ header svg * {
 }
 
 @media screen and (max-width: 768px) {
-    .btn {
+    #user-profile-btn {
         right: unset;
         top: unset;
         left: unset;
@@ -3467,7 +3466,7 @@ header svg * {
         left: -100px;
     }
 
-    .btn {
+    #user-profile-btn {
         font-size: 12px;
         top: unset;
         right: unset;

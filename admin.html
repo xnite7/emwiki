@@ -172,6 +172,80 @@
                 </div>
             </div>
 
+            <!-- Demand Needs Review Section -->
+            <div class="section" id="demand-review-section">
+                <h2>Demand Ratings - Needs Review</h2>
+                <div class="panel">
+                    <div style="margin-bottom: 20px;">
+
+
+                        <!-- Search/Filter -->
+                        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                            <input
+                                type="text"
+                                id="demand-search-input"
+                                placeholder="Search items by name..."
+                                style="flex: 1; padding: 10px; border: 1px solid #6363637d; border-radius: 6px; background: #63636347; color: white;">
+                            <select
+                                id="demand-category-filter"
+                                style="padding: 10px; border: 1px solid #6363637d; border-radius: 6px; background: #63636347; color: white; cursor: pointer;">
+                                <option value="all">All Categories</option>
+                                <option value="gears">Gears</option>
+                                <option value="deaths">Deaths</option>
+                                <option value="pets">Pets</option>
+                                <option value="effects">Effects</option>
+                                <option value="titles">Titles</option>
+                            </select>
+                        </div>
+
+                        <!-- Review Filters -->
+                        <div style="background: #2a2a2a; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #999;">
+                                    <input type="checkbox" id="show-no-rating" checked style="cursor: pointer;">
+                                    No Rating (0)
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #999;">
+                                    <input type="checkbox" id="show-old-rating" checked style="cursor: pointer;">
+                                    Old Ratings (30+ days)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Items Grid -->
+                    <div id="demand-items-grid" style="
+                        display: grid;
+                        gap: 12px;
+                        max-height: 600px;
+                        overflow-y: auto;
+                        padding: 8px;
+                    ">
+                        <p class="loading">Loading items...</p>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div id="demand-pagination" style="
+                        margin-top: 16px;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        gap: 12px;
+                    ">
+                        <button id="demand-prev-btn" class="small-btn ghost" disabled>Previous</button>
+                        <span id="demand-page-info" style="color: var(--text-secondary); font-size: 14px;">Page 1</span>
+                        <button id="demand-next-btn" class="small-btn ghost">Next</button>
+                    </div>
+
+                    <!-- Info -->
+                    <div style="margin-top: 20px; padding-top: 5px; border-top: 1px solid #6363637d;">
+                        <p style="color: gray; font-size: 13px; font-style: italic;">
+                            💡 Tip: Items that haven't had their demand updated recently. Review and update ratings as needed using the Quick Editor.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <!-- User Management Section -->
             <div class="section" id="user-management-section">
                 <h2>User Management</h2>
@@ -233,6 +307,20 @@
                     <input id="quick-editor-price" autocomplete="off" type="text" placeholder="RAP" />
                 </div>
                 <div class="flag-row"></div>
+
+                <!-- Demand Rating -->
+                <div class="demand-rating-section" style="margin-top: 12px;">
+                    <label style="font-size: 13px; color: #999;padding-left: 0px; margin-bottom: 6px; display: block;">Demand Rating</label>
+                    <div id="quick-editor-demand-buttons" style="display: flex; gap: 6px;">
+                        <button class="demand-rating-btn" data-demand="0" title="Terrible">0</button>
+                        <button class="demand-rating-btn" data-demand="1" title="Bad">1</button>
+                        <button class="demand-rating-btn" data-demand="2" title="Okay">2</button>
+                        <button class="demand-rating-btn" data-demand="3" title="Good">3</button>
+                        <button class="demand-rating-btn" data-demand="4" title="Great">4</button>
+                        <button class="demand-rating-btn" data-demand="5" title="Amazing">5</button>
+                    </div>
+                    <small id="demand-label" style="color: #666; font-size: 11px; margin-top: 4px; display: block;"></small>
+                </div>
             </div>
             <hr>
             <div id="quick-editor-lists">
@@ -481,7 +569,7 @@
 
                 // List of fields to check
                 const fields = ['name', 'img', 'svg', 'price', 'from', 'price/code/rarity',
-                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed'];
+                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed', 'demand'];
 
                 // Check each field for changes
                 for (const field of fields) {
@@ -1916,10 +2004,50 @@
 
                     state.gistVersion = data.history?.[0]?.version || '';
 
+                    // Load demand ratings and merge with items
+                    await this.loadDemandRatings();
+
                     return true;
                 } catch (error) {
                     console.error('Failed to load data:', error);
                     return false;
+                }
+            },
+
+            async loadDemandRatings() {
+                try {
+                    const response = await fetch('https://emwiki.com/api/demand/all');
+                    const data = await response.json();
+
+                    if (data.demand && Array.isArray(data.demand)) {
+                        const demandMap = new Map();
+                        data.demand.forEach(d => {
+                            const key = `${d.category}-${d.item_name}`;
+                            demandMap.set(key, d.demand);
+                        });
+
+                        // Merge demand into all items
+                        Object.entries(state.jsData).forEach(([category, items]) => {
+                            if (Array.isArray(items)) {
+                                items.forEach(item => {
+                                    const key = `${category}-${item.name}`;
+                                    item.demand = demandMap.get(key) || 0;
+                                });
+                            }
+                        });
+
+                        state.allItems = Object.values(state.jsData).flat();
+                        console.log('Loaded demand ratings for items');
+
+                        // Update original items with demand data so ChangeTracker can detect changes
+                        state.allItems.forEach(item => {
+                            if (ChangeTracker.originalItems.has(item.name)) {
+                                ChangeTracker.originalItems.set(item.name, JSON.stringify(item));
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error('Failed to load demand ratings:', error);
                 }
             },
 
@@ -1955,7 +2083,52 @@
                         version: state.gistVersion
                     })
                 });
+
+                // Also save demand ratings to database
+                if (response.ok) {
+                    await this.saveDemandRatings();
+                }
+
                 return response;
+            },
+
+            async saveDemandRatings() {
+                try {
+                    // Collect all items with demand ratings
+                    const demandItems = [];
+
+                    Object.entries(state.jsData).forEach(([category, items]) => {
+                        if (Array.isArray(items)) {
+                            items.forEach(item => {
+                                if (item.demand !== undefined) {
+                                    demandItems.push({
+                                        item_name: item.name,
+                                        category: category,
+                                        demand: item.demand
+                                    });
+                                }
+                            });
+                        }
+                    });
+
+                    if (demandItems.length === 0) return;
+
+                    // Bulk save to API
+                    const response = await fetch('https://emwiki.com/api/demand/bulk', {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ items: demandItems })
+                    });
+
+                    if (!response.ok) {
+                        console.error('Failed to save demand ratings:', await response.text());
+                    } else {
+                        console.log(`Saved ${demandItems.length} demand ratings`);
+                    }
+                } catch (error) {
+                    console.error('Error saving demand ratings:', error);
+                }
             },
 
             // Add this new method to API object:
@@ -2604,6 +2777,9 @@
                     ChangeTracker.updateHighlights();
                 };
 
+                // Setup demand rating
+                this.setupDemandRating(item);
+
                 // Setup buttons
                 this.setupButtons();
 
@@ -2857,7 +3033,6 @@
                 // Create SVG editor
                 const svgEditor = document.createElement('div');
                 svgEditor.id = 'svg-editor';
-                svgEditor.style.cssText = `width: -webkit-fill-available;`;
 
                 svgEditor.innerHTML = `
         
@@ -3022,6 +3197,86 @@
                     this.createDescItem(`Gamenight (${month === "May" ? "May" : month + "."} ${year})`, true, true);
                 };
                 if (prcBtn) prcBtn.onclick = () => this.createPriceItem('');
+            },
+
+            setupDemandRating(item) {
+                const demandButtons = document.querySelectorAll('.demand-rating-btn');
+                const demandLabel = document.getElementById('demand-label');
+
+                const demandLabels = {
+                    5: 'Amazing',
+                    4: 'Great',
+                    3: 'Good',
+                    2: 'Okay',
+                    1: 'Bad',
+                    0: 'Terrible'
+                };
+
+                const demandColors = {
+                    5: '#90EE90',
+                    4: '#ADD8E6',
+                    3: '#FFD700',
+                    2: '#FFA500',
+                    1: '#FF6347',
+                    0: '#CD5C5C'
+                };
+
+                // Initialize item demand if not set
+                if (item.demand === undefined) {
+                    item.demand = 0;
+                }
+
+                // Update UI based on current demand
+                const updateDemandUI = (demand) => {
+                    demandButtons.forEach(btn => {
+                        const btnDemand = parseInt(btn.dataset.demand);
+                        const color = demandColors[btnDemand];
+
+                        if (btnDemand === demand) {
+                            btn.style.background = color + '44';
+                            btn.style.borderColor = color;
+                            btn.style.color = color;
+                            btn.style.fontWeight = '700';
+                        } else {
+                            btn.style.background = '#63636347';
+                            btn.style.borderColor = '#6363637d';
+                            btn.style.color = 'white';
+                            btn.style.fontWeight = '400';
+                        }
+                    });
+
+                    demandLabel.textContent = demandLabels[demand] || 'Not Set';
+                    demandLabel.style.color = demandColors[demand] || '#666';
+                };
+
+                // Initial UI update
+                updateDemandUI(item.demand);
+
+                // Add click handlers
+                demandButtons.forEach(btn => {
+                    btn.onclick = () => {
+                        const previousState = JSON.parse(JSON.stringify(state.currentEditingItem));
+                        const newDemand = parseInt(btn.dataset.demand);
+                        state.currentEditingItem.demand = newDemand;
+
+                        updateDemandUI(newDemand);
+
+                        ChangeTracker.checkModifications(state.currentEditingItem);
+
+                        if (!UndoRedoManager.isApplyingChange && previousState.demand !== newDemand) {
+                            UndoRedoManager.recordChange({
+                                type: 'edit',
+                                itemName: state.currentEditingItem.name,
+                                previousState: previousState,
+                                newState: JSON.parse(JSON.stringify(state.currentEditingItem))
+                            });
+                        }
+
+                        UI.renderItems(true);
+                        UI.renderShops();
+                        ChangeTracker.updateHighlights();
+                    };
+                });
             },
 
             renderTags(item) {
@@ -5117,6 +5372,7 @@
             panels: [
                 { id: 'history-section', name: 'History', sectionId: 'history-section' },
                 { id: 'gallery-moderation-section', name: 'Gallery Moderation', sectionId: 'gallery-moderation-section' },
+                { id: 'demand-review-section', name: 'Demand Review', sectionId: 'demand-review-section' },
                 { id: 'user-management-section', name: 'User Management', sectionId: 'user-management-section' },
                 { id: 'notes-section', name: 'Notes', sectionId: 'notes-section' }
             ],
@@ -7711,9 +7967,31 @@
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
                 Auth.init();
+                initializeDemandReview();
             });
         } else {
             Auth.init();
+            initializeDemandReview();
+        }
+
+        // Initialize Demand Review when section becomes visible
+        function initializeDemandReview() {
+            const reviewSection = document.getElementById('demand-review-section');
+            if (reviewSection) {
+                const observer = new MutationObserver((mutations) => {
+                    if (reviewSection.style.display !== 'none' && DemandReview.reviewItems.length === 0) {
+                        DemandReview.init();
+                    }
+                });
+                observer.observe(reviewSection, { attributes: true, attributeFilter: ['style'] });
+
+                // Also try to init immediately if visible
+                setTimeout(() => {
+                    if (reviewSection.style.display !== 'none') {
+                        DemandReview.init();
+                    }
+                }, 2000);
+            }
         }
 
         // Get the accent color from root
@@ -7754,15 +8032,288 @@
             padding: 20px;
             color: #888;
         }
-        
+
         .error {
             text-align: center;
             padding: 20px;
             color: #f66;
         }
 
+        /* Demand Rating Buttons */
+        .demand-rating-btn {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #6363637d;
+            background: #63636347;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 400;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .demand-rating-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .demand-rating-section {
+            background: #00000030;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ffffff0d;
+        }
+
     `;
         document.head.appendChild(style);
+        // ============================
+        // DEMAND REVIEW SYSTEM
+        // ============================
+        const DemandReview = {
+            reviewItems: [],
+            currentItems: [],
+            currentPage: 1,
+            itemsPerPage: 20,
+            searchQuery: '',
+            categoryFilter: 'all',
+            showNoRating: true,
+            showOldRating: true,
+
+            async init() {
+                await this.loadDemandData();
+                this.setupEventListeners();
+                this.renderItems();
+            },
+
+            async loadDemandData() {
+                try {
+                    // Get demand ratings from database
+                    const response = await fetch('https://emwiki.com/api/demand/all');
+                    const data = await response.json();
+
+                    const demandMap = new Map();
+                    const now = Date.now();
+                    const thirtyDaysAgo = now - (30 * 24 * 60 * 60 * 1000);
+
+                    if (data.demand && Array.isArray(data.demand)) {
+                        data.demand.forEach(d => {
+                            const key = `${d.category}-${d.item_name}`;
+                            const updatedAt = d.updated_at ? new Date(d.updated_at).getTime() : 0;
+                            demandMap.set(key, {
+                                demand: d.demand,
+                                updatedAt: updatedAt,
+                                isOld: updatedAt < thirtyDaysAgo
+                            });
+                        });
+                    }
+
+                    // Check all items in state and find ones needing review
+                    this.reviewItems = [];
+
+                    Object.entries(state.jsData).forEach(([category, items]) => {
+                        if (Array.isArray(items)) {
+                            items.forEach(item => {
+                                const key = `${category}-${item.name}`;
+                                const demandData = demandMap.get(key);
+
+                                const needsReview = !demandData || demandData.demand === 0 || demandData.isOld;
+
+                                if (needsReview) {
+                                    this.reviewItems.push({
+                                        name: item.name,
+                                        category: category,
+                                        demand: demandData?.demand || 0,
+                                        updatedAt: demandData?.updatedAt || 0,
+                                        isOld: demandData?.isOld || false,
+                                        hasNoRating: !demandData || demandData.demand === 0
+                                    });
+                                }
+                            });
+                        }
+                    });
+
+                    console.log(`Found ${this.reviewItems.length} items needing demand review`);
+                } catch (error) {
+                    console.error('Failed to load demand data:', error);
+                }
+            },
+
+            setupEventListeners() {
+                const searchInput = document.getElementById('demand-search-input');
+                const categoryFilter = document.getElementById('demand-category-filter');
+                const prevBtn = document.getElementById('demand-prev-btn');
+                const nextBtn = document.getElementById('demand-next-btn');
+                const showNoRating = document.getElementById('show-no-rating');
+                const showOldRating = document.getElementById('show-old-rating');
+
+                searchInput?.addEventListener('input', (e) => {
+                    this.searchQuery = e.target.value.toLowerCase();
+                    this.currentPage = 1;
+                    this.renderItems();
+                });
+
+                categoryFilter?.addEventListener('change', (e) => {
+                    this.categoryFilter = e.target.value;
+                    this.currentPage = 1;
+                    this.renderItems();
+                });
+
+                showNoRating?.addEventListener('change', (e) => {
+                    this.showNoRating = e.target.checked;
+                    this.currentPage = 1;
+                    this.renderItems();
+                });
+
+                showOldRating?.addEventListener('change', (e) => {
+                    this.showOldRating = e.target.checked;
+                    this.currentPage = 1;
+                    this.renderItems();
+                });
+
+                prevBtn?.addEventListener('click', () => {
+                    if (this.currentPage > 1) {
+                        this.currentPage--;
+                        this.renderItems();
+                    }
+                });
+
+                nextBtn?.addEventListener('click', () => {
+                    const maxPage = Math.ceil(this.currentItems.length / this.itemsPerPage);
+                    if (this.currentPage < maxPage) {
+                        this.currentPage++;
+                        this.renderItems();
+                    }
+                });
+            },
+
+            renderItems() {
+                // Filter items
+                this.currentItems = this.reviewItems.filter(item => {
+                    const matchesSearch = !this.searchQuery ||
+                        item.name.toLowerCase().includes(this.searchQuery);
+                    const matchesCategory = this.categoryFilter === 'all' ||
+                        item.category === this.categoryFilter;
+                    const matchesFilter = (this.showNoRating && item.hasNoRating) ||
+                        (this.showOldRating && item.isOld);
+
+                    return matchesSearch && matchesCategory && matchesFilter;
+                });
+
+                // Paginate
+                const start = (this.currentPage - 1) * this.itemsPerPage;
+                const end = start + this.itemsPerPage;
+                const pageItems = this.currentItems.slice(start, end);
+
+                // Render grid
+                const grid = document.getElementById('demand-items-grid');
+                if (!grid) return;
+
+                    grid.innerHTML = pageItems.map(item => this.renderItemCard(item)).join('');
+
+
+                // Update pagination
+                this.updatePagination();
+
+                // Add double-click handlers to open Quick Editor
+                pageItems.forEach(item => {
+                    const card = document.getElementById(`review-card-${item.category}-${item.name}`);
+                    if (card) {
+                        card.addEventListener('dblclick', () => {
+                            const actualItem = this.findItemInState(item.name, item.category);
+                            if (actualItem) {
+                                QuickEditor.open(actualItem);
+                            }
+                        });
+                        card.style.cursor = 'pointer';
+                    }
+                });
+            },
+
+            findItemInState(name, category) {
+                const categoryItems = state.jsData[category];
+                if (!categoryItems) return null;
+                return categoryItems.find(item => item.name === name);
+            },
+
+            renderItemCard(item) {
+                const demandLabels = {
+                    5: 'Amazing',
+                    4: 'Great',
+                    3: 'Good',
+                    2: 'Okay',
+                    1: 'Bad',
+                    0: 'Not Set'
+                };
+
+                const demandColors = {
+                    5: '#90EE90',
+                    4: '#ADD8E6',
+                    3: '#FFD700',
+                    2: '#FFA500',
+                    1: '#FF6347',
+                    0: '#CD5C5C'
+                };
+
+                const statusBadge = item.hasNoRating
+                    ? '<span style="background: #ef444433; border: 1px solid #ef4444; color: #ef4444; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">NO RATING</span>'
+                    : item.isOld
+                    ? '<span style="background: #ff980033; border: 1px solid #ff9800; color: #ff9800; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">OLD (30+ days)</span>'
+                    : '';
+
+                const lastUpdated = item.updatedAt
+                    ? new Date(item.updatedAt).toLocaleDateString()
+                    : 'Never';
+
+                return `
+                    <div id="review-card-${item.category}-${item.name}" style="
+                        background: #2a2a2a;
+                        padding: 12px;
+                        border-radius: 8px;
+                        border: 1px solid #6363637d;
+                        transition: all 0.2s;
+                    "
+                    onmouseover="this.style.borderColor='#3b82f6'; this.style.transform='translateY(-2px)'"
+                    onmouseout="this.style.borderColor='#6363637d'; this.style.transform='translateY(0)'"
+                    title="Double-click to edit in Quick Editor">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: white; margin-bottom: 4px;">${item.name}</div>
+                                <div style="font-size: 11px; color: var(--text-secondary); text-transform: capitalize; margin-bottom: 4px;">${item.category}</div>
+                                ${statusBadge}
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid #6363637d;">
+                            <div>
+                                <div style="font-size: 11px; color: var(--text-secondary);">Current: <strong style="color: ${demandColors[item.demand]};">${demandLabels[item.demand]}</strong></div>
+                                <div style="font-size: 10px; color: var(--text-secondary); margin-top: 2px;">Updated: ${lastUpdated}</div>
+                            </div>
+                            <div style="font-size: 11px; color: #3b82f6; font-style: italic;">Double-click to edit</div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            updatePagination() {
+                const maxPage = Math.ceil(this.currentItems.length / this.itemsPerPage);
+                const pageInfo = document.getElementById('demand-page-info');
+                const prevBtn = document.getElementById('demand-prev-btn');
+                const nextBtn = document.getElementById('demand-next-btn');
+
+                if (pageInfo) {
+                    pageInfo.textContent = `Page ${this.currentPage} of ${maxPage || 1} (${this.currentItems.length} items need review)`;
+                }
+
+                if (prevBtn) {
+                    prevBtn.disabled = this.currentPage <= 1;
+                }
+
+                if (nextBtn) {
+                    nextBtn.disabled = this.currentPage >= maxPage;
+                }
+            }
+        };
+
     </script>
 </body>
 

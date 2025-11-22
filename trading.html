@@ -5,1232 +5,676 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trading Hub - Epic Catalogue</title>
-
     <meta name="description" content="Trade Epic Minigames items with other players safely and easily!">
     <meta property="og:title" content="Trading Hub - Epic Catalogue">
     <meta property="og:image" content="https://emwiki.com/imgs/QgWIUWf.png">
-
     <link rel="stylesheet" href="./css/style.css">
     <link rel="icon" href="./imgs/favicon.png" type="image/png">
     <meta name="theme-color" content="#000000">
 
     <!-- Popover compatibility for older browsers -->
     <script src="./js/popover-loader.js"></script>
+
+    <!-- SortableJS for drag and drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
 
 <style>
-    /* Trading Stats */
-    .trading-stats {
-        display: flex;
-        gap: 30px;
-        justify-content: center;
-        margin-top: 20px;
-        flex-wrap: wrap;
-    }
-
-    .trading-stat {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
-        padding: 15px 25px;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .trading-stat-value {
-        font-size: 2rem;
-        font-weight: 800;
-        color: white;
-        font-family: 'BuilderSans';
-    }
-
-    .trading-stat-label {
-        font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.8);
-        margin-top: 5px;
-    }
-
-    /* Filters Section */
-    .filters-section {
-        background: transparent;
-        padding: 20px 20px;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        backdrop-filter: blur(20px);
-    }
-
-    .filters-container {
-        max-width: 1800px;
+    .trading-container {
+        max-width: 1600px;
         margin: 0 auto;
-        display: flex;
-        gap: 15px;
-        align-items: center;
-        flex-wrap: wrap;
-        justify-content: center;
+        padding: 2rem;
+        display: grid;
+        grid-template-rows: 1fr auto;
+        gap: 2rem;
+        min-height: calc(100vh - 200px);
+        animation: fadeInUp 0.5s ease-out;
     }
 
-    .filter-group {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        flex-wrap: wrap;
-    }
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
 
-    .filter-select {
-        padding: 10px 18px;
-        background: rgba(255, 255, 255, 0.1);
-        border: none;
-        border-radius: 20px;
-        color: var(--text-primary);
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.3s;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    .filter-select:hover {
-        background: rgba(255, 255, 255, 0.15);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
-    }
-
-
-    ::picker(select) {
-        opacity: 0;
-        transition: all 0.4s allow-discrete;
-    }
-
-    ::picker(select):popover-open {
-        opacity: 1;
-
-
-    }
-
-    @starting-style {
-  ::picker(select):popover-open {
-    opacity: 0;
-  }
-}
-
-    .create-trade-btn {
-        margin: auto;
-        padding: 10px 20px;
-        background: linear-gradient(135deg, #667eea, #4a9eff);
-        border: none;
-        border-radius: 8px;
-        color: white;
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.3s;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        padding: 10px 15px 10px 11px;
-
-        @supports (corner-shape: squircle) {
-            corner-shape: squircle;
-            border-radius: 40px;
+        to {
+            opacity: 1;
+            transform: translateY(0);
         }
     }
 
-    .create-trade-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    }
-
-    .create-trade-btn.create-account {
-        background: linear-gradient(5deg, #61616180, #c1c1c17d);
-        box-shadow: 0 4px 15px rgb(55 55 55 / 30%);
-        border: 2px solid #5d5d5d;
-    }
-
-    /* View Toggle */
-    .view-toggle {
-        display: flex;
-        gap: 5px;
-        background: var(--bg-item);
-        padding: 4px;
-        border-radius: 8px;
+    .all-items-section {
+        background: linear-gradient(320deg, rgba(255, 255, 255, 0.03), #ffffff0d);
         border: 1px solid var(--border-color);
-    }
-
-    .view-btn {
-        padding: 8px 12px;
-        background: transparent;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        color: var(--text-secondary);
-        transition: all 0.2s;
-    }
-
-    .view-btn:hover {
-        color: var(--text-primary);
-        background: rgba(255, 255, 255, 0.05);
-    }
-
-    .view-btn.active {
-        background: #667eea;
-        color: white;
-    }
-
-    /* Trades Grid */
-    .trades-container {
-        max-width: 1800px;
-        margin: 0 auto;
-        padding: 30px 20px;
-    }
-
-    .trades-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 20px;
-    }
-
-    .trades-grid:has(.empty-state) {
-        grid-template-columns: none;
-        justify-content: center;
-    }
-
-    .trades-grid.list-view {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-
-    /* Trade Card - Compact Grid View */
-    .trade-card {
-        background: var(--bg-item);
-        border: none;
         border-radius: 20px;
-        padding: 18px;
-        transition: all 0.3s;
-        cursor: pointer;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .trade-card:hover {
-        transform: translateY(-5px) scale(1.02);
-        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
-        background: var(--bg-item-hover);
-    }
-
-    /* List View Style */
-    .trades-grid.list-view .trade-card {
-        display: grid;
-        grid-template-columns: auto 1fr auto auto auto;
-        gap: 15px;
-        align-items: center;
-        padding: 10px 15px;
-    }
-
-    .trades-grid.list-view .trade-header {
-        margin: 0;
-        padding: 0;
-        border: none;
-        min-width: 150px;
-    }
-
-    .trades-grid.list-view .trade-items {
-        margin: 0;
-        flex: 1;
-    }
-
-    .trades-grid.list-view .trade-value {
-        margin: 0;
-    }
-
-    .trades-grid.list-view .trade-actions {
-        margin: 0;
-    }
-
-    /* Trade Header */
-    .trade-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 12px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .trader-avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        border: 2px solid var(--border-color);
-    }
-
-    .trader-info {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .trader-name {
-        font-weight: 700;
-        color: var(--text-primary);
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .trust-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 16px;
-        height: 16px;
-        border-radius: 50%;
-        font-size: 10px;
-    }
-
-    .trust-badge.verified {
-        background: #11f54a;
-        color: white;
-    }
-
-    .trust-badge.trusted {
-        background: #4a9eff;
-        color: white;
-    }
-
-    .trust-badge.caution {
-        background: #ffd700;
-        color: #000;
-    }
-
-    .trust-rating {
-        font-size: 11px;
-        color: var(--text-secondary);
-        font-weight: 600;
-    }
-
-    .trade-time {
-        font-size: 11px;
-        color: var(--text-secondary);
-    }
-
-    .trade-status {
-        padding: 3px 8px;
-        border-radius: 4px;
-        font-size: 10px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .trade-status.open {
-        background: rgba(17, 245, 74, 0.2);
-        color: #11f54a;
-    }
-
-    .trade-status.pending {
-        background: rgba(255, 208, 0, 0.2);
-        color: #ffd700;
-    }
-
-    .trade-status.completed {
-        background: rgba(102, 126, 234, 0.2);
-        color: #667eea;
-    }
-
-    /* Trade Items - Compact */
-    .trade-items {
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
-        gap: 10px;
-        align-items: center;
-        margin-bottom: 10px;
-    }
-
-    .trade-side {
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+        overflow: hidden;
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        min-height: 60vh;
+        max-height: 70vh;
     }
 
-    .trade-side-label {
-        font-size: 10px;
-        font-weight: 700;
-        color: var(--text-secondary);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .trade-item-mini {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 15px;
-        border: none;
-    }
-
-    .trade-item-img {
-        width: 28px;
-        height: 28px;
-        object-fit: contain;
-        border-radius: 4px;
-    }
-
-    .trade-item-name {
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--text-primary);
-        flex: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .trade-arrow {
-        color: #4a9eff;
-        font-size: 18px;
-        font-weight: 700;
-    }
-
-    /* Trade Value Section */
-    .trade-value {
+    .section-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 8px;
-        background: var(--bg-secondary);
-        border-radius: 6px;
-        margin-bottom: 10px;
-        gap: 10px;
+        margin-bottom: 1.25rem;
+        gap: 1.5rem;
     }
 
-    .value-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 2px;
-    }
-
-    .value-label {
-        font-size: 9px;
-        font-weight: 700;
-        color: var(--text-secondary);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .value-amount {
-        font-size: 14px;
+    .section-title {
+        font-size: 1.3rem;
         font-weight: 800;
-        color: var(--text-primary);
+        opacity: 0.95;
+        background: linear-gradient(135deg, #667eea, #4a9eff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
-    .value-amount.positive {
-        color: #11f54a;
-    }
-
-    .value-amount.negative {
-        color: #ff4757;
-    }
-
-    .demand-indicator {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        padding: 3px 8px;
-        background: rgba(17, 245, 74, 0.15);
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 700;
-    }
-
-    .demand-indicator.high {
-        background: rgba(17, 245, 74, 0.15);
-        color: #11f54a;
-    }
-
-    .demand-indicator.medium {
-        background: rgba(255, 208, 0, 0.15);
-        color: #ffd700;
-    }
-
-    .demand-indicator.low {
-        background: rgba(255, 71, 87, 0.15);
-        color: #ff4757;
-    }
-
-    /* Trade Actions */
-    .trade-actions {
-        display: flex;
-        gap: 8px;
-    }
-
-    .trade-action-btn {
+    .search-box {
         flex: 1;
-        padding: 10px 16px;
-        border: none;
-        border-radius: 15px;
-        font-weight: 700;
-        font-size: 13px;
-        cursor: pointer;
+        max-width: 400px;
+        position: relative;
+    }
+
+    .search-box::before {
+        content: '🔍';
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.75rem;
+        background: var(--bg-item);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        color: CanvasText;
+        font-size: 0.95rem;
         transition: all 0.3s;
     }
 
-    .trade-action-btn.primary {
+    .search-input:focus {
+        outline: none;
+        background: var(--bg-item-hover);
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .category-filter {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+
+    .category-pill {
+        padding: 0.6rem 1.25rem;
+        background: var(--bg-item);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        color: CanvasText;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .category-pill::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(102, 126, 234, 0.15);
+        transform: translate(-50%, -50%);
+        transition: width 0.4s, height 0.4s;
+    }
+
+    .category-pill:hover::before {
+        width: 200%;
+        height: 200%;
+    }
+
+    .category-pill:hover {
+        background: var(--bg-item-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px var(--shadow-color);
+    }
+
+    .category-pill.active {
         background: linear-gradient(135deg, #667eea, #4a9eff);
+        border-color: transparent;
         color: white;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
     }
 
-    .trade-action-btn.primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    .category-pill.active::before {
+        display: none;
     }
 
-    .trade-action-btn.secondary {
-        background: rgba(255, 255, 255, 0.05);
-        color: var(--text-primary);
+    .items-grid2 {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 0.75rem;
+        overflow-y: auto;
+        padding: 0.5rem;
+        flex: 1;
+    }
+
+    .items-grid2::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .items-grid2::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 10px;
+    }
+
+
+
+    .item:active {
+        cursor: grabbing;
+        transform: scale(0.98);
+    }
+
+    .item.sortable-ghost {
+        opacity: 0.3;
+        transform: scale(0.95);
+    }
+
+    .item.sortable-drag {
+        opacity: 0.9;
+        transform: rotate(5deg) scale(1.05);
+        cursor: grabbing;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+
+
+    .trade-panels {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        min-height: 0;
+    }
+
+    .trade-panel {
+        background: var(--bg-item);
+        border: 2px dashed var(--border-color);
+        border-radius: 20px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.3s;
+    }
+
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .panel-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        opacity: 0.9;
+    }
+
+    .r-button {
+        width: 42px;
+        height: 42px;
+        background: linear-gradient(135deg, #667eea, #4a9eff);
         border: none;
+        border-radius: 50%;
+        color: white;
+        font-size: 1.3rem;
+        font-weight: 900;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    .trade-action-btn.secondary:hover {
-        background: rgba(255, 255, 255, 0.1);
-        transform: translateY(-2px);
+    .r-button:hover {
+        transform: scale(1.1) rotate(90deg);
+        box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
     }
 
-    /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 20px 20px 45px;
+    .r-button:active {
+        transform: scale(0.95) rotate(90deg);
     }
 
-    .empty-state-icon {
-        font-size: 80px;
-        margin-bottom: 20px;
-        opacity: 0.5;
+    .panel-items {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 0.75rem;
+        flex: 1;
+        overflow-y: auto;
+        padding: 0.5rem;
+        min-height: 200px;
+        align-content: start;
     }
 
-    .empty-state-title {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 10px;
+    .panel-items::-webkit-scrollbar {
+        width: 6px;
     }
 
-    .empty-state-text {
+    .panel-items::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 10px;
+    }
+
+    .panel-items.empty::before {
+        content: 'Drag items here';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 1.2rem;
+        font-weight: 600;
+        opacity: 0.2;
+        pointer-events: none;
         color: var(--text-secondary);
-        margin-bottom: 25px;
     }
 
-    /* Modal Styles */
-    .modal-overlay {
+    .panel-item {
+        background: var(--bg-item-hover);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        position: relative;
+        animation: itemDrop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        cursor: grab;
+    }
+
+    .panel-item:active {
+        cursor: grabbing;
+    }
+
+    @keyframes itemDrop {
+        from {
+            opacity: 0;
+            transform: scale(0.5) translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+
+    .custom-item {
+        background: linear-gradient(135deg, rgba(17, 245, 74, 0.15), rgba(102, 126, 234, 0.15));
+        border: 1px solid rgba(17, 245, 74, 0.3);
+    }
+
+    .custom-item-icon {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        pointer-events: none;
+    }
+
+    .custom-item-text {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-align: center;
+        line-height: 1.3;
+        pointer-events: none;
+    }
+
+    .trading-modal-overlay {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.8);
-        backdrop-filter: blur(5px);
-        display: flex;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(10px);
+        display: none;
         align-items: center;
         justify-content: center;
-        z-index: 10000;
-        padding: 20px;
+        z-index: 1000;
         animation: fadeIn 0.2s;
     }
 
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+    .trading-modal-overlay.active {
+        display: flex;
     }
 
-    .modal-content {
-    padding: unset;
-    min-height: unset;
-    display: unset;
-    align-content: unset;
-    justify-items: unset;
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
 
+        to {
+            opacity: 1;
+        }
+    }
 
-        background: var(--bg-item);
-        border: none;
-        border-radius: 25px;
-        max-width: 800px;
-        width: 100%;
-        max-height: 90vh;
-        overflow-y: auto;
-        animation: slideUp 0.3s;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    .trading-modal-content {
+        background: var(--bg-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 2rem;
+        max-width: 500px;
+        width: 90%;
+        animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     @keyframes slideUp {
-        from { transform: translateY(50px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
+        from {
+            opacity: 0;
+            transform: translateY(50px) scale(0.9);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
     }
 
-    .modal-header {
-        padding: 20px 25px;
-        border-bottom: 1px solid var(--border-color);
-        display: flex;
-        justify-content: space-between;
-        backdrop-filter: blur(32px);
-        align-items: center;
-        position: sticky;
-        top: 0;
-        background: var(--bg-item);
-        z-index: 1;
+    .trading-modal-header {
+        margin-bottom: 1.5rem;
     }
 
-    .modal-header h2 {
-        margin: 0;
+    .trading-modal-title {
         font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
         color: var(--text-primary);
     }
 
-    .modal-close {
-        background: none;
-        border: none;
-        font-size: 2rem;
+    .trading-modal-subtitle {
+        font-size: 0.9rem;
+        opacity: 0.6;
         color: var(--text-secondary);
-        cursor: pointer;
-        padding: 0;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        transition: all 0.2s;
     }
 
-    .modal-close:hover {
-        background: var(--bg-secondary);
-        color: var(--text-primary);
-    }
-
-    .modal-body {
-        padding: 25px;
-    }
-
-    /* Form Styles */
-    .trade-form {
+    .trading-modal-body {
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 1rem;
     }
 
-    .form-group {
+    .trading-form-group {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 0.5rem;
     }
 
-    .form-group label {
-        font-weight: 700;
-        font-size: 14px;
+    .trading-form-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        opacity: 0.8;
         color: var(--text-primary);
     }
 
-    .form-group input[type="text"],
-    .form-group textarea,
-    .form-group select {
-        padding: 12px 16px;
-        background: rgba(255, 255, 255, 0.05);
-        border: none;
-        border-radius: 15px;
-        color: var(--text-primary);
-        font-size: 14px;
+    .trading-form-input,
+    .trading-form-textarea {
+        padding: 0.75rem 1rem;
+        background: var(--bg-item);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        color: CanvasText;
+        font-size: 0.95rem;
         font-family: inherit;
         transition: all 0.3s;
-    }
-
-    .form-group input:focus,
-    .form-group textarea:focus,
-    .form-group select:focus {
-        outline: none;
-        background: rgba(255, 255, 255, 0.1);
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
-    }
-
-    .form-group textarea {
         resize: vertical;
-        min-height: 80px;
     }
 
-    /* Item Selector */
-    .item-selector {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 12px;
-        max-height: 300px;
-        overflow-y: auto;
-        padding: 15px;
-        background: rgba(255, 255, 255, 0.03);
-        border-radius: 20px;
-        border: none;
-    }
-
-    .selectable-item {
-        position: relative;
-        padding: 12px;
-        background: rgba(255, 255, 255, 0.05);
-        border: none;
-        border-radius: 15px;
-        cursor: pointer;
-        transition: all 0.3s;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .selectable-item:hover {
-        background: rgba(255, 255, 255, 0.1);
-        transform: translateY(-3px) scale(1.05);
-        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
-    }
-
-    .selectable-item img {
-        width: 60px;
-        height: 60px;
-        object-fit: contain;
-        border-radius: 6px;
-    }
-
-    .selectable-item span {
-        font-size: 12px;
-        font-weight: 600;
-        text-align: center;
-        color: var(--text-primary);
-    }
-
-    .selectable-item .item-checkbox {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        width: 20px;
-        height: 20px;
-        cursor: pointer;
-    }
-
-    .selectable-item:has(.item-checkbox:checked) {
-        border-color: #11f54a;
-        background: rgba(17, 245, 74, 0.1);
-    }
-
-    /* Seeking Items */
-    #seeking-items-container {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .add-seeking-item-btn {
-        padding: 12px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 2px dashed rgba(102, 126, 234, 0.3);
-        border-radius: 15px;
-        color: var(--text-primary);
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-
-    .add-seeking-item-btn:hover {
+    .trading-form-input:focus,
+    .trading-form-textarea:focus {
+        outline: none;
+        background: var(--bg-item-hover);
         border-color: #667eea;
-        background: rgba(255, 255, 255, 0.1);
-        transform: translateY(-2px);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
 
-    .seeking-item-input {
+    .trading-modal-actions {
         display: flex;
-        gap: 8px;
+        gap: 1rem;
+        margin-top: 1rem;
     }
 
-    .seeking-item-input input {
+
+    .option-group {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+    }
+
+    .option-btn {
         flex: 1;
-        padding: 12px 16px;
-        background: rgba(255, 255, 255, 0.05);
-        border: none;
-        border-radius: 15px;
-        color: var(--text-primary);
-        font-size: 14px;
+        padding: 0.75rem;
+        background: var(--bg-item);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        color: CanvasText;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-align: center;
     }
 
-    .seeking-item-input .remove-btn {
-        padding: 0 14px;
-        background: #ff4757;
+    .option-btn:hover {
+        background: var(--bg-item-hover);
+    }
+
+    .option-btn.active {
+        background: linear-gradient(135deg, #667eea, #4a9eff);
+        border-color: transparent;
+        color: white;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    .load-more-container {
+        display: flex;
+        justify-content: center;
+        padding: 1rem 0.5rem 0.5rem;
+    }
+
+    .load-more-btn {
+        padding: 0.75rem 2rem;
+        background: linear-gradient(135deg, #667eea, #4a9eff);
         border: none;
         border-radius: 12px;
         color: white;
-        font-size: 20px;
+        font-size: 0.95rem;
+        font-weight: 700;
         cursor: pointer;
         transition: all 0.3s;
-    }
-
-    .seeking-item-input .remove-btn:hover {
-        background: #ff3838;
-        transform: scale(1.1);
-    }
-
-    /* Form Actions */
-    .form-actions {
-        display: flex;
-        gap: 10px;
-        justify-content: flex-end;
-        padding-top: 10px;
-        border-top: 1px solid var(--border-color);
-    }
-
-    .btn-primary,
-    .btn-secondary {
-        padding: 14px 28px;
-        border: none;
-        border-radius: 20px;
-        font-weight: 700;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, #667eea, #4a9eff);
-        color: white;
-        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-3px) scale(1.05);
-        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
-    }
-
-    .btn-secondary {
-        background: rgba(255, 255, 255, 0.05);
-        color: var(--text-primary);
-        border: none;
-    }
-
-    .btn-secondary:hover {
-        background: rgba(255, 255, 255, 0.1);
-        transform: translateY(-2px);
-    }
-
-    /* Trade Details Modal */
-    .trade-details {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .trade-detail-header {
-        display: flex;
-        gap: 15px;
-        align-items: flex-start;
-        padding-bottom: 15px;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .trader-avatar-large {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        border: 3px solid var(--border-color);
-    }
-
-    .trader-info-large {
-        flex: 1;
-    }
-
-    .trader-info-large h3 {
-        margin: 0;
-        font-size: 1.5rem;
-        color: var(--text-primary);
-    }
-
-    .trader-rating {
-        font-size: 14px;
-        color: var(--text-secondary);
-        margin-top: 5px;
-    }
-
-    .trade-meta {
-        font-size: 13px;
-        color: var(--text-secondary);
-        margin-top: 8px;
-    }
-
-    .trade-status-large {
-        padding: 6px 12px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .trade-status-large.active {
-        background: rgba(17, 245, 74, 0.2);
-        color: #11f54a;
-    }
-
-    .trade-detail-description {
-        padding: 18px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 15px;
-        border-left: 4px solid #667eea;
-        font-size: 14px;
-        line-height: 1.6;
-        color: var(--text-primary);
-    }
-
-    .trade-detail-items {
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
-        gap: 20px;
-        align-items: start;
-    }
-
-    .trade-detail-side h4 {
-        margin: 0 0 15px 0;
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--text-secondary);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .item-list {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .detail-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 15px;
-        border: none;
-        transition: all 0.3s;
-    }
-
-    .detail-item:hover {
-        background: rgba(255, 255, 255, 0.08);
-        transform: translateX(5px);
-    }
-
-    .detail-item img {
-        width: 48px;
-        height: 48px;
-        object-fit: contain;
-        border-radius: 6px;
-    }
-
-    .detail-item span {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--text-primary);
-    }
-
-    .trade-detail-arrow {
-        font-size: 24px;
-        color: #4a9eff;
-        font-weight: 700;
-        align-self: center;
-    }
-
-    .trade-detail-actions {
-        display: flex;
-        gap: 10px;
-        justify-content: center;
-        padding-top: 15px;
-        border-top: 1px solid var(--border-color);
-    }
-
-    /* Offer Context */
-    .offer-context {
-        padding: 18px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 15px;
-        border-left: 4px solid #667eea;
-    }
-
-    .offer-context p {
-        margin: 0 0 10px 0;
-        color: var(--text-primary);
-    }
-
-    .seeking-preview {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-
-    .tag {
-        padding: 4px 10px;
-        background: var(--bg-item);
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--text-primary);
-    }
-
-    /* Item Search & Selection Styles */
-    .item-search-container {
-        position: relative;
-    }
-
-    .item-search-input {
-        width: 100%;
-        padding: 14px 18px;
-        background: rgba(255, 255, 255, 0.05);
-        border: none;
-        border-radius: 20px;
-        color: var(--text-primary);
-        font-size: 14px;
-        font-family: inherit;
-        transition: all 0.3s;
-    }
-
-    .item-search-input:focus {
-        outline: none;
-        background: rgba(255, 255, 255, 0.1);
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
-    }
-
-    .item-search-results {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        backdrop-filter: blur(32px);
-        right: 0;
-        max-height: 400px;
-        overflow-y: auto;
-        background: var(--bg-item);
-        border: none;
-        border-radius: 20px;
-        margin-top: 10px;
-        z-index: 1000;
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 10px;
-        padding: 15px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    }
-
-    .search-result-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-        padding: 12px;
-        background: rgba(255, 255, 255, 0.05);
-        border: none;
-        border-radius: 15px;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-
-    .search-result-item:hover {
-        background: rgba(255, 255, 255, 0.1);
-        transform: translateY(-3px) scale(1.05);
-        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
-    }
-
-    .search-result-item img {
-        width: 60px;
-        height: 60px;
-        object-fit: contain;
-        border-radius: 6px;
-    }
-
-    .item-name-small {
-        font-size: 12px;
-        font-weight: 600;
-        text-align: center;
-        color: var(--text-primary);
-        max-width: 100%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .no-results {
-        grid-column: 1 / -1;
-        text-align: center;
-        padding: 20px;
-        color: var(--text-secondary);
-    }
-
-    .selected-items-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 12px;
-        margin-top: 12px;
-        min-height: 80px;
-        padding: 15px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 2px dashed rgba(102, 126, 234, 0.3);
-        border-radius: 20px;
-    }
-
-    .selected-items-grid:empty::before {
-        content: 'No items selected';
-        display: block;
-        text-align: center;
-        color: var(--text-secondary);
-        font-size: 14px;
-        padding: 20px;
-        grid-column: 1 / -1;
-    }
-
-    .selected-item-card {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-        padding: 12px;
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(74, 158, 255, 0.2));
-        border: none;
-        border-radius: 15px;
-        animation: itemAdded 0.4s ease;
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
     }
 
-    @keyframes itemAdded {
-        from {
-            opacity: 0;
-            transform: scale(0.8);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
+    .load-more-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
     }
 
-    .selected-item-card img {
-        width: 70px;
-        height: 70px;
-        object-fit: contain;
-        border-radius: 6px;
+    .item img {
+    max-width: 70%;
+    max-height: 70%;
+    object-fit: contain;
+    position: absolute;
+    pointer-events: none;
+    place-self: anchor-center;
+}
+
+    .load-more-btn:active {
+        transform: scale(0.95);
     }
 
-    .selected-item-name {
-        font-size: 13px;
-        font-weight: 600;
+    .load-more-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .items-count {
         text-align: center;
-        color: var(--text-primary);
-        max-width: 100%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        padding: 0.5rem;
+        font-size: 0.85rem;
+        opacity: 0.6;
     }
 
-    .remove-selected-item {
-        position: absolute;
-        top: 4px;
-        right: 4px;
-        width: 24px;
-        height: 24px;
-        background: #ff4757;
-        border: none;
-        border-radius: 50%;
-        color: white;
-        font-size: 18px;
-        font-weight: 700;
-        cursor: pointer;
+    /* Loading skeleton */
+    .loading-skeleton {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 0.75rem;
+        padding: 0.5rem;
+    }
+
+    .skeleton-card {
+        background: var(--bg-item);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 0.85rem;
+        height: 130px;
+        animation: shimmer 2s infinite;
+        background: linear-gradient(90deg,
+                var(--bg-item) 0%,
+                var(--bg-item-hover) 50%,
+                var(--bg-item) 100%);
+        background-size: 200% 100%;
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    /* Empty state */
+    .empty-state {
+        grid-column: 1/-1;
+        text-align: center;
+        padding: 3rem 2rem;
+        opacity: 0.6;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state-text {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state-subtext {
+        font-size: 0.9rem;
+        opacity: 0.7;
+    }
+
+    /* Trade summary badge */
+    .trade-summary {
         display: flex;
         align-items: center;
-        justify-content: center;
-        transition: all 0.2s;
-        line-height: 1;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: var(--bg-item);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        font-size: 0.85rem;
+        opacity: 0.8;
     }
 
-    .remove-selected-item:hover {
-        background: #ff3838;
-        transform: scale(1.1);
+    .trade-summary-count {
+        font-weight: 700;
+        color: #667eea;
     }
 
-    .robux-input {
-        padding: 14px 18px;
-        background: rgba(255, 255, 255, 0.05);
-        border: none;
-        border-radius: 20px;
-        color: var(--text-primary);
-        font-size: 14px;
-        font-family: inherit;
-        transition: all 0.3s;
-        width: 100%;
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
     }
 
-    .robux-input:focus {
-        outline: none;
-        background: rgba(255, 255, 255, 0.1);
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+    @media (max-width: 1024px) {
+        .trade-panels {
+            grid-template-columns: 1fr;
+        }
+
+        .trading-container {
+            min-height: auto;
+        }
+
+        .items-grid2 {
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        }
     }
 
-    /* Responsive */
     @media (max-width: 768px) {
-        .hero-title {
-            font-size: 2.8rem;
+        .trading-container {
+            padding: 1rem;
+            gap: 1rem;
         }
 
-        .quick-stats {
-            grid-template-columns: 1fr;
-            max-width: 300px;
-        }
-
-        .trades-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .filters-container {
+        .section-header {
             flex-direction: column;
             align-items: stretch;
         }
 
-        .trades-grid.list-view .trade-card {
-            grid-template-columns: 1fr;
-            gap: 10px;
-        }
-
-        .view-toggle {
-            order: -1;
-        }
-
-        .modal-content {
+        .search-box {
             max-width: 100%;
-            margin: 10px;
         }
 
-        .trade-detail-items {
-            grid-template-columns: 1fr;
-        }
-
-        .trade-detail-arrow {
-            display: none;
-        }
-
-        .item-selector {
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        }
-
-        .selected-items-grid {
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        }
-
-        .item-search-results {
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        .items-grid2,
+        .panel-items {
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 0.5rem;
         }
     }
 </style>
 
 <body>
+    <!-- Header -->
     <header>
         <a href="https://emwiki.com">
             <svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
@@ -1260,7 +704,6 @@
                 <image id="cloud" x="445" y="487" href="https://emwiki.com/imgs/oYKd3nJ.png" height="28" width="42"
                     style="filter:opacity(.8)" />
             </svg>
-
         </a>
 
         <div class="nav-links">
@@ -1270,97 +713,56 @@
             <a href="/gallery" class="nav-link">Gallery</a>
             <a href="/scammers" class="nav-link">Scammers</a>
         </div>
-
-
     </header>
 
-    <!-- Trading Hero -->
-    <!-- Trading Hero - UPDATED -->
-    <section class="hero-section">
-        <div class="hero-content">
-            <h1 class="hero-title">
-                <span class="hero-epic">Trading</span>
-                <span class="hero-catalogue">Hub</span>
-            </h1>
-            <p class="hero-subtitle">Trade Epic Minigames items safely with other players</p>
+    <div class="trading-container">
 
-            <!-- Quick Stats -->
-            <div class="quick-stats">
-                <div class="stat-card">
-                    <div class="stat-value" id="total-trades">0</div>
-                    <div class="stat-label">Active Trades</div>
+
+        <div class="trade-panels">
+            <div class="trade-panel">
+                <div class="panel-header">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div class="panel-title">you give</div>
+                        <div class="trade-summary" id="youGiveSummary" style="display: none;">
+                            <span class="trade-summary-count">0</span> items
+                        </div>
+                    </div>
+                    <button class="r-button" onclick="openCustomModal('youGive')"
+                        title="Add Robux or other game items">R</button>
                 </div>
-
-
-
-                <div class="stat-card">
-                    <div class="stat-value" id="trades-today">0</div>
-                    <div class="stat-label">Today</div>
-                </div>
-                <div class="stat-card" style="display: none;">
-                    <div class="stat-value" id="total-traders">0</div>
-                    <div class="stat-label">Traders</div>
-                </div>
-            </div>
-        </div>
-        
-    </section>
-
-    <!-- Filters -->
-    <section class="filters-section">
-        <div class="filters-container">
-            <div class="filter-group">
-                <select class="filter-select" id="filter-category">
-                    <option value="all">All Categories</option>
-                    <option value="gears">Gears</option>
-                    <option value="deaths">Deaths</option>
-                    <option value="pets">Pets</option>
-                    <option value="effects">Effects</option>
-                    <option value="titles">Titles</option>
-                </select>
-
-                <select class="filter-select" id="filter-status">
-                    <option value="all">All Status</option>
-                    <option value="open">Open</option>
-                    <option value="pending">Pending</option>
-                    <option value="completed">Completed</option>
-                </select>
-
-                <select class="filter-select" id="filter-sort">
-                    <option value="recent">Most Recent</option>
-                    <option value="value-high">Highest Value</option>
-                    <option value="value-low">Lowest Value</option>
-                </select>
+                <div class="panel-items empty" id="youGiveItems"></div>
             </div>
 
-            <button class="create-trade-btn" onclick="tradingHub.openCreateTrade()">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-                </svg>
-                Create Trade
-            </button>
-            <a href="/my-trades" class="btn" id="my-trades-link" style="display:none;">My Trades</a>
-            <div class="view-toggle">
-                <button class="view-btn active" data-view="grid" onclick="tradingHub.setView('grid')">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z" />
-                    </svg>
-                </button>
-                <button class="view-btn" data-view="list" onclick="tradingHub.setView('list')">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M3 4h18v2H3zm0 7h18v2H3zm0 7h18v2H3z" />
-                    </svg>
-                </button>
+            <div class="trade-panel">
+                <div class="panel-header">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div class="panel-title">they give</div>
+                        <div class="trade-summary" id="theyGiveSummary" style="display: none;">
+                            <span class="trade-summary-count">0</span> items
+                        </div>
+                    </div>
+                    <button class="r-button" onclick="openCustomModal('theyGive')"
+                        title="Add Robux or other game items">R</button>
+                </div>
+                <div class="panel-items empty" id="theyGiveItems"></div>
             </div>
         </div>
-    </section>
 
-    <!-- Trades -->
-    <main class="trades-container">
-        <div class="trades-grid" id="trades-grid">
-            <!-- Trades will be loaded here -->
+        <div class="all-items-section">
+            <div class="section-header">
+                <div class="section-title">all items</div>
+                <div class="search-box">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search items...">
+                </div>
+            </div>
+            <div class="category-filter" id="categoryFilter"></div>
+            <div class="items-grid2" id="allItemsGrid"></div>
+            <div class="items-count" id="itemsCount"></div>
+            <div class="load-more-container">
+                <button class="load-more-btn" id="loadMoreBtn" onclick="loadMoreItems()">Load More</button>
+            </div>
         </div>
-    </main>
+    </div>
 
     <!-- Footer -->
     <footer>
@@ -1388,16 +790,469 @@
         </div>
     </footer>
 
+    <!-- Custom Item Modal -->
+    <div class="trading-modal-overlay" id="customModal">
+        <div class="trading-modal-content">
+            <div class="trading-modal-header">
+                <div class="trading-modal-title">Add Custom Item</div>
+                <div class="trading-modal-subtitle">Robux or items from other games</div>
+            </div>
+            <div class="trading-modal-body">
+                <div class="trading-form-group">
+                    <div class="trading-form-label">Type</div>
+                    <div class="option-group">
+                        <button class="option-btn active" data-type="robux" onclick="selectCustomType('robux')">
+                            💰 Robux
+                        </button>
+                        <button class="option-btn" data-type="other" onclick="selectCustomType('other')">
+                            🎮 Other Game
+                        </button>
+                    </div>
+                </div>
+
+                <div class="trading-form-group" id="robuxInput">
+                    <div class="trading-form-label">Amount</div>
+                    <input type="number" class="trading-form-input" id="robuxAmount" placeholder="Enter amount..."
+                        min="0" step="1">
+                </div>
+
+                <div class="trading-form-group hidden" id="otherGameInput">
+                    <div class="trading-form-label">Game Name</div>
+                    <input type="text" class="trading-form-input" id="gameName" placeholder="e.g., Adopt Me">
+                </div>
+
+                <div class="trading-form-group hidden" id="otherItemInput">
+                    <div class="trading-form-label">Item Name</div>
+                    <input type="text" class="trading-form-input" id="itemName" placeholder="e.g., Legendary Dragon">
+                </div>
+            </div>
+            <div class="trading-modal-actions">
+                <button class="btn btn-secondary" onclick="closeCustomModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="addCustomItem()">Add Item</button>
+            </div>
+        </div>
+    </div>
+
     <script src="./js/script.js"></script>
     <script>
-        class Catalog extends BaseApp {
-            constructor() {
-                super();
+        const state = {
+            allItems: [],
+            filteredItems: [],
+            youGiveItems: [],
+            theyGiveItems: [],
+            currentPanel: null,
+            customType: 'robux',
+            categories: ['all', 'gears', 'deaths', 'pets', 'effects', 'titles'],
+            activeCategory: 'all',
+            sortableInstances: {},
+            itemsPerPage: 50,
+            currentPage: 0
+        };
+
+        async function init() {
+            await loadItems();
+            renderCategories();
+            renderAllItems();
+            setupEventListeners();
+            initializeSortable();
+        }
+
+        async function loadItems() {
+            const grid = document.getElementById('allItemsGrid');
+
+            // Show loading skeleton
+            grid.innerHTML = Array(12).fill(0).map(() =>
+                '<div class="skeleton-card"></div>'
+            ).join('');
+
+            try {
+                const res = await fetch('https://emwiki.com/api/gist-version');
+                const data = await res.json();
+                const parsed = JSON.parse(data.files?.['auto.json']?.content);
+
+                const categories = ['gears', 'deaths', 'pets', 'effects', 'titles'];
+                state.allItems = [];
+
+                categories.forEach(cat => {
+                    if (parsed[cat]) {
+                        parsed[cat].forEach(item => {
+                            state.allItems.push({
+                                ...item,
+                                category: cat
+                            });
+                        });
+                    }
+                });
+
+                console.log('✅ Loaded', state.allItems.length, 'items');
+            } catch (error) {
+                console.error('❌ Failed to load items:', error);
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <div class="empty-state-text">Failed to load items</div>
+                        <div class="empty-state-subtext">Please refresh the page to try again</div>
+                    </div>
+                `;
             }
         }
-        window.catalog = new Catalog();
+
+        function renderCategories() {
+            const container = document.getElementById('categoryFilter');
+            container.innerHTML = state.categories.map(cat =>
+                `<div class="category-pill ${cat === state.activeCategory ? 'active' : ''}"
+                      onclick="filterByCategory('${cat}')">${cat}</div>`
+            ).join('');
+        }
+
+        function filterByCategory(category) {
+            state.activeCategory = category;
+            renderCategories();
+            renderAllItems();
+        }
+
+        function renderAllItems(append = false) {
+            const grid = document.getElementById('allItemsGrid');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            // Filter items
+            let items = state.allItems;
+
+            if (state.activeCategory !== 'all') {
+                items = items.filter(item => item.category === state.activeCategory);
+            }
+
+            if (searchTerm) {
+                items = items.filter(item =>
+                    item.name.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            state.filteredItems = items;
+
+            // Reset pagination if not appending
+            if (!append) {
+                state.currentPage = 0;
+                grid.innerHTML = '';
+            }
+
+            // Calculate items to show
+            const startIndex = state.currentPage * state.itemsPerPage;
+            const endIndex = startIndex + state.itemsPerPage;
+            const itemsToShow = items.slice(startIndex, endIndex);
+
+            // Render items
+            const itemsHTML = itemsToShow.map(item => `
+                <div class="item" data-item='${JSON.stringify(item).replace(/'/g, "&apos;")}'>
+                    <img src="${item.img || './imgs/placeholder.png'}" alt="${item.name}">
+                    <small class="item-name">${item.name}</small>
+                </div>
+            `).join('');
+
+            if (append) {
+                grid.insertAdjacentHTML('beforeend', itemsHTML);
+            } else {
+                grid.innerHTML = itemsHTML;
+            }
+
+            // Update count and button
+            updatePagination();
+
+            if (items.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <div class="empty-state-text">No items found</div>
+                        <div class="empty-state-subtext">Try adjusting your search or category filter</div>
+                    </div>
+                `;
+            }
+        }
+
+        function updatePagination() {
+            const totalItems = state.filteredItems.length;
+            const shownItems = Math.min((state.currentPage + 1) * state.itemsPerPage, totalItems);
+            const hasMore = shownItems < totalItems;
+
+            // Update count
+            const countEl = document.getElementById('itemsCount');
+            countEl.textContent = `Showing ${shownItems} of ${totalItems} items`;
+
+            // Update button
+            const btnEl = document.getElementById('loadMoreBtn');
+            if (hasMore) {
+                btnEl.disabled = false;
+                btnEl.textContent = `Load More (${Math.min(state.itemsPerPage, totalItems - shownItems)} more)`;
+                btnEl.style.display = 'block';
+            } else {
+                btnEl.disabled = true;
+                btnEl.textContent = 'All items loaded';
+                if (totalItems === 0) {
+                    btnEl.style.display = 'none';
+                }
+            }
+        }
+
+        function loadMoreItems() {
+            state.currentPage++;
+            renderAllItems(true);
+        }
+
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', renderAllItems);
+        }
+
+        function initializeSortable() {
+            const allItemsGrid = document.getElementById('allItemsGrid');
+            const youGivePanel = document.getElementById('youGiveItems');
+            const theyGivePanel = document.getElementById('theyGiveItems');
+
+            // Sortable for all items (source)
+            state.sortableInstances.allItems = new Sortable(allItemsGrid, {
+                group: {
+                    name: 'shared',
+                    pull: 'clone',
+                    put: false
+                },
+                animation: 150,
+                sort: false,
+                ghostClass: 'sortable-ghost',
+                dragClass: 'sortable-drag',
+                onEnd: function (evt) {
+                    // Remove the cloned item from source
+                    if (evt.to !== evt.from) {
+                        evt.item.remove();
+                    }
+                }
+            });
+
+            // Sortable for youGive panel
+            state.sortableInstances.youGive = new Sortable(youGivePanel, {
+                group: 'shared',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                dragClass: 'sortable-drag',
+                onAdd: function (evt) {
+                    const item = evt.item;
+                    const itemData = JSON.parse(item.dataset.item);
+                    addItemToPanel(itemData, 'youGive', evt.newIndex);
+                },
+                onEnd: function () {
+                    updatePanelState('youGive');
+                }
+            });
+
+            // Sortable for theyGive panel
+            state.sortableInstances.theyGive = new Sortable(theyGivePanel, {
+                group: 'shared',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                dragClass: 'sortable-drag',
+                onAdd: function (evt) {
+                    const item = evt.item;
+                    const itemData = JSON.parse(item.dataset.item);
+                    addItemToPanel(itemData, 'theyGive', evt.newIndex);
+                },
+                onEnd: function () {
+                    updatePanelState('theyGive');
+                }
+            });
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            const icons = {
+                success: '✅',
+                error: '❌',
+                info: 'ℹ️'
+            };
+
+            toast.innerHTML = `
+                <div class="toast-icon">${icons[type]}</div>
+                <div class="toast-message">${message}</div>
+            `;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.3s ease-out reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function addItemToPanel(item, panelType, index) {
+            const panel = panelType === 'youGive' ? state.youGiveItems : state.theyGiveItems;
+
+            // Check if item already exists
+            if (panel.some(i => i.name === item.name && i.type === 'game-item')) {
+                showToast('Item already added to this panel', 'info');
+                renderPanel(panelType);
+                return;
+            }
+
+            // Add at specific index or end
+            if (index !== undefined) {
+                panel.splice(index, 0, { ...item, type: 'game-item' });
+            } else {
+                panel.push({ ...item, type: 'game-item' });
+            }
+
+            showToast(`Added ${item.name}`, 'success');
+            renderPanel(panelType);
+        }
+
+        function updatePanelState(panelType) {
+            const container = document.getElementById(`${panelType}Items`);
+            const items = Array.from(container.querySelectorAll('.panel-item'));
+
+            // Clear and rebuild state based on current DOM order
+            if (panelType === 'youGive') {
+                state.youGiveItems = [];
+            } else {
+                state.theyGiveItems = [];
+            }
+
+            items.forEach(itemEl => {
+                const itemData = itemEl.dataset.itemData;
+                if (itemData) {
+                    const panel = panelType === 'youGive' ? state.youGiveItems : state.theyGiveItems;
+                    panel.push(JSON.parse(itemData));
+                }
+            });
+        }
+
+        function renderPanel(panelType) {
+            const container = document.getElementById(`${panelType}Items`);
+            const items = panelType === 'youGive' ? state.youGiveItems : state.theyGiveItems;
+            const summaryEl = document.getElementById(`${panelType}Summary`);
+
+            // Update counter badge
+            if (items.length > 0) {
+                summaryEl.style.display = 'flex';
+                summaryEl.querySelector('.trade-summary-count').textContent = items.length;
+            } else {
+                summaryEl.style.display = 'none';
+            }
+
+            if (items.length === 0) {
+                container.classList.add('empty');
+                container.innerHTML = '';
+                return;
+            }
+
+            container.classList.remove('empty');
+            container.innerHTML = items.map((item, index) => {
+                if (item.type === 'robux') {
+                    return `
+                        <div class="panel-item custom-item" data-item-data='${JSON.stringify(item).replace(/'/g, "&apos;")}'>
+                            <button class="remove-wishlist" onclick="removeItem('${panelType}', ${index})">×</button>
+                            <div class="custom-item-icon">💰</div>
+                            <div class="custom-item-text">${item.amount} R$</div>
+                        </div>
+                    `;
+                } else if (item.type === 'other-game') {
+                    return `
+                        <div class="panel-item custom-item" data-item-data='${JSON.stringify(item).replace(/'/g, "&apos;")}'>
+                            <button class="remove-wishlist" onclick="removeItem('${panelType}', ${index})">×</button>
+                            <div class="custom-item-icon">🎮</div>
+                            <div class="custom-item-text">${item.gameName}: ${item.itemName}</div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="panel-item" data-item='${JSON.stringify(item).replace(/'/g, "&apos;")}' data-item-data='${JSON.stringify(item).replace(/'/g, "&apos;")}'>
+                            <button class="remove-wishlist" onclick="removeItem('${panelType}', ${index})">×</button>
+                            <img  src="${item.img || './imgs/placeholder.png'}" alt="${item.name}">
+                            <small class="item-name">${item.name}</small>
+                        </div>
+                    `;
+                }
+            }).join('');
+        }
+
+        function removeItem(panelType, index) {
+            const panel = panelType === 'youGive' ? state.youGiveItems : state.theyGiveItems;
+            panel.splice(index, 1);
+            renderPanel(panelType);
+        }
+
+        function openCustomModal(panel) {
+            state.currentPanel = panel;
+            document.getElementById('customModal').classList.add('active');
+
+            document.getElementById('robuxAmount').value = '';
+            document.getElementById('gameName').value = '';
+            document.getElementById('itemName').value = '';
+            selectCustomType('robux');
+        }
+
+        function closeCustomModal() {
+            document.getElementById('customModal').classList.remove('active');
+            state.currentPanel = null;
+        }
+
+        function selectCustomType(type) {
+            state.customType = type;
+
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.type === type);
+            });
+
+            if (type === 'robux') {
+                document.getElementById('robuxInput').classList.remove('hidden');
+                document.getElementById('otherGameInput').classList.add('hidden');
+                document.getElementById('otherItemInput').classList.add('hidden');
+            } else {
+                document.getElementById('robuxInput').classList.add('hidden');
+                document.getElementById('otherGameInput').classList.remove('hidden');
+                document.getElementById('otherItemInput').classList.remove('hidden');
+            }
+        }
+
+        function addCustomItem() {
+            if (!state.currentPanel) return;
+
+            const panel = state.currentPanel === 'youGive' ? state.youGiveItems : state.theyGiveItems;
+
+            if (state.customType === 'robux') {
+                const amount = parseInt(document.getElementById('robuxAmount').value);
+                if (!amount || amount <= 0) {
+                    alert('Please enter a valid amount');
+                    return;
+                }
+                panel.push({ type: 'robux', amount });
+            } else {
+                const gameName = document.getElementById('gameName').value.trim();
+                const itemName = document.getElementById('itemName').value.trim();
+
+                if (!gameName || !itemName) {
+                    alert('Please fill in all fields');
+                    return;
+                }
+
+                panel.push({ type: 'other-game', gameName, itemName });
+            }
+
+            renderPanel(state.currentPanel);
+            closeCustomModal();
+        }
+
+        document.getElementById('customModal').addEventListener('click', (e) => {
+            if (e.target.id === 'customModal') {
+                closeCustomModal();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeCustomModal();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', init);
     </script>
-    <script src="./js/trading.js"></script>
 </body>
 
 </html>
