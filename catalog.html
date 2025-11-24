@@ -95,6 +95,7 @@
                     <small class="dropdown-item" data-sort="name-desc">Name: Z ➔ A</small>
                     <small class="dropdown-item" data-sort="price-asc">Price: Low to High</small>
                     <small class="dropdown-item" data-sort="price-desc">Price: High to Low</small>
+                    <small class="dropdown-item" data-sort="demand-desc">Demand: ⭐⭐⭐ ➔ ⭐</small>
                     <small class="dropdown-item disabled" data-sort="date-desc">Newer First</small>
                     <small class="dropdown-item disabled" data-sort="date-asc">Older First</small>
                 </div>
@@ -1241,6 +1242,7 @@
                     'price-desc': '$$$ ➔ $',
                     'name-asc': 'A ➔ Z',
                     'name-desc': 'Z ➔ A',
+                    'demand-desc': '⭐⭐⭐ ➔ ⭐',
                     'date-desc': 'Newer First',
                     'date-asc': 'Older First'
                 };
@@ -1622,6 +1624,13 @@
                         break;
                     case 'name-desc':
                         this.filtered.sort((a, b) => b.name.localeCompare(a.name));
+                        break;
+                    case 'demand-desc':
+                        this.filtered.sort((a, b) => {
+                            const demandA = a.demand || 0;
+                            const demandB = b.demand || 0;
+                            return demandB - demandA;
+                        });
                         break;
                     default:
                         // Keep original order

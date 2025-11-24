@@ -2246,6 +2246,7 @@ textarea {
 }
 
 .dropdown-btn {
+    font-variant-emoji: text;
     padding: 10px 20px;
     background: var(--bg-item);
     border: 2px solid var(--border-color);
@@ -2268,6 +2269,7 @@ textarea {
 }
 
 .dropdown-item {
+    font-variant-emoji: text;
     display: inline-flex;
     width: 183px;
     white-space: nowrap;
@@ -2275,7 +2277,6 @@ textarea {
     cursor: pointer;
     transition: background 0.2s;
     align-items: center;
-    
     gap: 7px;
     border-bottom: 1px solid var(--border-color);
     flex-direction: row;
