@@ -273,7 +273,60 @@ body:has(.item-modal.active) {
     gap: 2px;
 }
 
+.modal-demand::before {
+    content: '';
+    height: 18px;
+    background: linear-gradient(#00000029, #00000052);
+    display: none;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    position: absolute;
+    text-align: center;
+    border-radius: 14px;
+    translate: 0% 54%;
+    transition: all 0.2s allow-discrete;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    padding: 6px 11px 0px;
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    @supports (corner-shape: squircle) {
+        corner-shape: squircle;
+        border-radius: 65px;
+    }
+}
 
+.modal-demand:hover::before {
+    display: block;
+    translate: 0% 116%;
+    opacity: 1;
+    @starting-style {
+        opacity: 0;
+        translate: 0% 54%;
+    }
+}
+
+.modal-demand.bad-demand::before {
+    content: 'Bad Demand';
+}
+
+.modal-demand.okay-demand::before {
+    content: 'Okay Demand';
+}
+
+.modal-demand.good-demand::before {
+    content: 'Good Demand';
+}
+
+.modal-demand.great-demand::before {
+    content: 'Great Demand';
+}
+
+.modal-demand.amazing-demand::before {
+    content: 'Amazing Demand';
+}
 
 /* Demand info on back side */
 .modal-demand-info {
