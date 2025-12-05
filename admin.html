@@ -530,9 +530,18 @@
                 }
 
                 // Check against original for existing items
-                const originalJson = this.originalItems.get(itemName);
+                let originalJson = this.originalItems.get(itemName);
                 if (!originalJson) {
-                    console.warn(`No original found for ${itemName}`);
+                    // If original not found, capture current state as original (deep copy)
+                    // This handles cases where items weren't captured during initialization
+                    console.warn(`No original found for ${itemName}, capturing current state`);
+                    const currentCopy = JSON.parse(JSON.stringify(item));
+                    originalJson = JSON.stringify(currentCopy);
+                    this.originalItems.set(itemName, originalJson);
+                    // Since we just captured current state as original, no changes detected yet
+                    // But mark as modified anyway since we don't know the true original state
+                    // This ensures drag operations are tracked
+                    this.modifiedItems.add(item.name);
                     return;
                 }
 
@@ -2968,8 +2977,17 @@
                         let key = evt.from.id == 'weeklystar-items' ? 'weeklystar' : 'weekly';
                         for (const arr of Object.values(state.jsData)) {
                             const it = arr.find(x => x.name === name);
-                            if (it) { 
+                            if (it) {
+                                // Capture original state BEFORE modifying if not already captured
+                                if (!ChangeTracker.originalItems.has(it.name) && !ChangeTracker.isNewItem(it.name)) {
+                                    // Deep copy the current state as the original baseline
+                                    const originalCopy = JSON.parse(JSON.stringify(it));
+                                    ChangeTracker.originalItems.set(it.name, JSON.stringify(originalCopy));
+                                }
+                                // Modify the item
+                                const oldValue = it[key];
                                 it[key] = false;
+                                // Check modifications - this will compare against the stored original
                                 ChangeTracker.checkModifications(it);
                             }
                             if (it === state.currentEditingItem) { QuickEditor.open(it); }
@@ -3017,8 +3035,17 @@
                             const name = evt.item.dataset.name;
                             for (const arr of Object.values(state.jsData)) {
                                 const it = arr.find(x => x.name === name);
-                                if (it) { 
+                                if (it) {
+                                    // Capture original state BEFORE modifying if not already captured
+                                    if (!ChangeTracker.originalItems.has(it.name) && !ChangeTracker.isNewItem(it.name)) {
+                                        // Deep copy the current state as the original baseline
+                                        const originalCopy = JSON.parse(JSON.stringify(it));
+                                        ChangeTracker.originalItems.set(it.name, JSON.stringify(originalCopy));
+                                    }
+                                    // Modify the item
+                                    const oldValue = it[key];
                                     it[key] = true;
+                                    // Check modifications - this will compare against the stored original
                                     ChangeTracker.checkModifications(it);
                                 }
                                 if (it === state.currentEditingItem) { QuickEditor.open(it); }
