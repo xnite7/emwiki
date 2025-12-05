@@ -2968,11 +2968,15 @@
                         let key = evt.from.id == 'weeklystar-items' ? 'weeklystar' : 'weekly';
                         for (const arr of Object.values(state.jsData)) {
                             const it = arr.find(x => x.name === name);
-                            if (it) { it[key] = false; }
+                            if (it) { 
+                                it[key] = false;
+                                ChangeTracker.checkModifications(it);
+                            }
                             if (it === state.currentEditingItem) { QuickEditor.open(it); }
                         }
 
-                        //UI.renderItems(true);
+                        ChangeTracker.updateHighlights();
+                        UI.renderItems(true);
                     },
                     onStart: evt => {
                         evt.item.style.opacity = '0.25';
@@ -3013,10 +3017,14 @@
                             const name = evt.item.dataset.name;
                             for (const arr of Object.values(state.jsData)) {
                                 const it = arr.find(x => x.name === name);
-                                if (it) { it[key] = true; }
+                                if (it) { 
+                                    it[key] = true;
+                                    ChangeTracker.checkModifications(it);
+                                }
                                 if (it === state.currentEditingItem) { QuickEditor.open(it); }
                             }
 
+                            ChangeTracker.updateHighlights();
                             UI.renderItems(true);
                         },
                         onStart: evt => { evt.item.style.opacity = '0.25'; DOM.get('all-items').parentElement.classList.add('delete-zone'); },
