@@ -566,9 +566,20 @@
                     return String(price);
                 };
 
+                // Normalize boolean values for comparison
+                const normalizeBoolean = (val) => {
+                    if (val === true || val === 1 || val === 'true' || val === '1') {
+                        return true;
+                    }
+                    return false;
+                };
+
                 // List of fields to check
                 const fields = ['name', 'img', 'svg', 'price', 'from', 'price/code/rarity',
                     'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed', 'demand'];
+
+                // Boolean fields that need normalization
+                const booleanFields = ['weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed'];
 
                 // Check each field for changes
                 for (const field of fields) {
@@ -580,13 +591,25 @@
                         val1 = normalizePrice(val1);
                         val2 = normalizePrice(val2);
                     }
+                    // Normalize boolean fields
+                    else if (booleanFields.includes(field)) {
+                        val1 = normalizeBoolean(val1);
+                        val2 = normalizeBoolean(val2);
+                    }
+                    // Normalize demand field (it's a number)
+                    else if (field === 'demand') {
+                        val1 = parseInt(val1) || 0;
+                        val2 = parseInt(val2) || 0;
+                    }
 
-                    // Convert undefined/null to empty string for comparison
-                    if (val1 === undefined || val1 === null) val1 = '';
-                    if (val2 === undefined || val2 === null) val2 = '';
+                    // Convert undefined/null to empty string for comparison (only for non-boolean, non-number fields)
+                    if (!booleanFields.includes(field) && field !== 'demand' && field !== 'price') {
+                        if (val1 === undefined || val1 === null) val1 = '';
+                        if (val2 === undefined || val2 === null) val2 = '';
+                    }
 
                     // Compare values
-                    if (String(val1) !== String(val2)) {
+                    if (val1 !== val2) {
                         return true; // Has changes
                     }
                 }
@@ -2055,6 +2078,26 @@
                 // Track price changes before saving
                 this.updatePriceHistory();
 
+                // Store old state for diff calculation (before any changes)
+                // Need to reconstruct old state including deleted items
+                const oldItemsByCategory = JSON.parse(JSON.stringify(state.jsData));
+                
+                // Add deleted items back to old state for accurate diff
+                ChangeTracker.deletedItems.forEach((originalStateJson, itemName) => {
+                    const originalItem = typeof originalStateJson === 'string'
+                        ? JSON.parse(originalStateJson)
+                        : originalStateJson;
+                    const category = originalItem.category;
+                    if (!oldItemsByCategory[category]) {
+                        oldItemsByCategory[category] = [];
+                    }
+                    // Only add if not already present (shouldn't be, but just in case)
+                    const exists = oldItemsByCategory[category].some(item => item.name === originalItem.name);
+                    if (!exists) {
+                        oldItemsByCategory[category].push(originalItem);
+                    }
+                });
+
                 // Clean up the data before saving
                 const cleanedData = JSON.parse(JSON.stringify(state.jsData));
 
@@ -2330,6 +2373,25 @@
                 }
 
                 console.log(`Successfully saved ${successCount} items`);
+
+                // Calculate diff and save history
+                if (successCount > 0) {
+                    try {
+                        const newItemsByCategory = JSON.parse(JSON.stringify(state.jsData));
+                        const diff = this.calculateReadableDiff(oldItemsByCategory, newItemsByCategory);
+                        
+                        // Get username from state or use default
+                        const username = state.currentUser?.username || state.username || 'unknown';
+                        
+                        // Save history entry
+                        await this.saveHistory(username, diff, null);
+                        console.log('History entry saved successfully');
+                    } catch (error) {
+                        console.error('Failed to save history entry:', error);
+                        // Don't fail the save operation if history fails
+                    }
+                }
+
                 return {
                     ok: true,
                     status: 200,
@@ -2421,6 +2483,94 @@
             async loadHistory() {
                 const response = await API.fetchWithRetry(CONFIG.API_URLS.HISTORY);
                 return await response.json();
+            },
+
+            async saveHistory(username, diff, version = null) {
+                try {
+                    const response = await fetch(CONFIG.API_URLS.HISTORY, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, diff, version })
+                    });
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Failed to save history:', errorText);
+                        return false;
+                    }
+                    return true;
+                } catch (error) {
+                    console.error('Error saving history:', error);
+                    return false;
+                }
+            },
+
+            // Calculate readable diff from old and new item states
+            calculateReadableDiff(oldItemsByCategory, newItemsByCategory) {
+                const output = [];
+                // Get all categories from both old and new states
+                const allCategories = new Set([
+                    ...Object.keys(oldItemsByCategory),
+                    ...Object.keys(newItemsByCategory)
+                ]);
+
+                for (const category of allCategories) {
+                    const newItems = newItemsByCategory[category] || [];
+                    const oldItems = oldItemsByCategory[category] || [];
+
+                    // Create maps for easier lookup
+                    const oldItemsMap = new Map();
+                    oldItems.forEach(item => oldItemsMap.set(item.name, item));
+
+                    const newItemsMap = new Map();
+                    newItems.forEach(item => newItemsMap.set(item.name, item));
+
+                    // Detect additions
+                    for (const newItem of newItems) {
+                        const oldItem = oldItemsMap.get(newItem.name);
+                        if (!oldItem) {
+                            output.push(`🆕 Added: "${newItem.name}"`);
+                            continue;
+                        }
+
+                        // Check for changes in each field
+                        const fields = ['name', 'img', 'svg', 'price', 'from', 'price/code/rarity',
+                            'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed', 'demand'];
+
+                        for (const field of fields) {
+                            const newVal = newItem[field];
+                            const oldVal = oldItem[field];
+
+                            // Normalize values for comparison
+                            let normalizedOld = oldVal;
+                            let normalizedNew = newVal;
+
+                            if (field === 'price') {
+                                normalizedOld = (!oldVal || oldVal === '' || oldVal === 'N/A' || oldVal === 'undefined') ? '0' : String(oldVal);
+                                normalizedNew = (!newVal || newVal === '' || newVal === 'N/A' || newVal === 'undefined') ? '0' : String(newVal);
+                            } else if (['weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed'].includes(field)) {
+                                // Boolean fields
+                                normalizedOld = oldVal === true || oldVal === 1 || oldVal === 'true' ? 'true' : 'false';
+                                normalizedNew = newVal === true || newVal === 1 || newVal === 'true' ? 'true' : 'false';
+                            } else {
+                                normalizedOld = (oldVal === undefined || oldVal === null) ? '' : String(oldVal);
+                                normalizedNew = (newVal === undefined || newVal === null) ? '' : String(newVal);
+                            }
+
+                            if (normalizedOld !== normalizedNew) {
+                                output.push(`[${newItem.name}] ${field}: ${normalizedOld} → ${normalizedNew}`);
+                            }
+                        }
+                    }
+
+                    // Detect removals
+                    for (const oldItem of oldItems) {
+                        if (!newItemsMap.has(oldItem.name)) {
+                            output.push(`❌ Removed: "${oldItem.name}"`);
+                        }
+                    }
+                }
+
+                return output.length > 0 ? output.join('\n') : '(No changes)';
             }
         };
 
