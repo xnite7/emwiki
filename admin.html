@@ -424,7 +424,6 @@
                 this.currentEditingItem = null;
                 this.adminName = '';
                 this.currentVersion = 0;
-                this.gistVersion = 0;
                 this.notes = [];
                 this.recentAdmins = new Map();
 
@@ -2087,11 +2086,25 @@
                 // Track price changes before saving
                 this.updatePriceHistory();
 
-                // Store old state for diff calculation (before any changes)
-                // Need to reconstruct old state including deleted items
-                const oldItemsByCategory = JSON.parse(JSON.stringify(state.jsData));
+                // Reconstruct old state from originalItems for accurate diff calculation
+                // This ensures we compare against the true original state, not the current modified state
+                const oldItemsByCategory = {};
                 
-                // Add deleted items back to old state for accurate diff
+                // Reconstruct old state from originalItems (true original state from when data was loaded)
+                ChangeTracker.originalItems.forEach((originalJson, itemName) => {
+                    const originalItem = JSON.parse(originalJson);
+                    const category = originalItem.category;
+                    if (!oldItemsByCategory[category]) {
+                        oldItemsByCategory[category] = [];
+                    }
+                    // Only add if not already present (in case of duplicates)
+                    const exists = oldItemsByCategory[category].some(item => item.name === originalItem.name);
+                    if (!exists) {
+                        oldItemsByCategory[category].push(originalItem);
+                    }
+                });
+                
+                // Add deleted items to old state for accurate diff
                 ChangeTracker.deletedItems.forEach((originalStateJson, itemName) => {
                     const originalItem = typeof originalStateJson === 'string'
                         ? JSON.parse(originalStateJson)
@@ -2100,7 +2113,7 @@
                     if (!oldItemsByCategory[category]) {
                         oldItemsByCategory[category] = [];
                     }
-                    // Only add if not already present (shouldn't be, but just in case)
+                    // Only add if not already present
                     const exists = oldItemsByCategory[category].some(item => item.name === originalItem.name);
                     if (!exists) {
                         oldItemsByCategory[category].push(originalItem);
@@ -2389,11 +2402,20 @@
                         const newItemsByCategory = JSON.parse(JSON.stringify(state.jsData));
                         const diff = this.calculateReadableDiff(oldItemsByCategory, newItemsByCategory);
                         
-                        // Get username from state or use default
-                        const username = state.currentUser?.username || state.username || 'unknown';
+                        // Get username from state - use adminName which is set during login
+                        const username = state.adminName || state.currentUser?.username || state.username || 'unknown';
                         
-                        // Save history entry
-                        await this.saveHistory(username, diff, null);
+                        // Debug logging
+                        console.log('Saving history:', {
+                            username,
+                            diffLength: diff.length,
+                            diffPreview: diff.substring(0, 200),
+                            oldItemsCount: Object.values(oldItemsByCategory).flat().length,
+                            newItemsCount: Object.values(newItemsByCategory).flat().length
+                        });
+                        
+                        // Save history entry (even if diff shows no changes, we still record the save)
+                        await this.saveHistory(username, diff || '(No changes detected)', null);
                         console.log('History entry saved successfully');
                     } catch (error) {
                         console.error('Failed to save history entry:', error);
