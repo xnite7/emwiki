@@ -84,7 +84,6 @@ async function getCategories(env, corsHeaders) {
     const { results } = await env.DBA.prepare(`
         SELECT category, COUNT(*) as count
         FROM items
-        WHERE removed = 0
         GROUP BY category
         ORDER BY category
     `).all();
@@ -123,7 +122,7 @@ async function searchItems(request, env, corsHeaders) {
                tradable, "new", weekly, weeklystar, retired, premium, removed, demand,
                demand_updated_at, updated_at
         FROM items
-        WHERE removed = 0 AND name LIKE ?
+        WHERE name LIKE ?
     `;
     const params = [`%${query}%`];
 
@@ -161,7 +160,7 @@ async function getItem(category, name, env, corsHeaders) {
                tradable, "new", weekly, weeklystar, retired, premium, removed,
                price_history, demand, demand_updated_at, created_at, updated_at
         FROM items
-        WHERE category = ? AND name = ? AND removed = 0
+        WHERE category = ? AND name = ?
     `).bind(category, name).first();
 
     if (!item) {
@@ -208,7 +207,7 @@ async function listItems(request, env, corsHeaders) {
     const weeklystar = url.searchParams.get('weeklystar');
 
     // Build WHERE clause
-    const conditions = ['removed = 0'];
+    const conditions = [];
     const params = [];
 
     if (category) {

@@ -54,7 +54,6 @@ async function getAllDemand(env, corsHeaders) {
     const { results } = await env.DBA.prepare(`
         SELECT name as item_name, category, demand, demand_updated_at as updated_at
         FROM items
-        WHERE removed = 0
         ORDER BY category, name
     `).all();
 
@@ -68,7 +67,7 @@ async function getCategoryDemand(env, category, corsHeaders) {
     const { results } = await env.DBA.prepare(`
         SELECT name as item_name, demand, demand_updated_at as updated_at
         FROM items
-        WHERE category = ? AND removed = 0
+        WHERE category = ?
         ORDER BY name
     `).bind(category).all();
 
@@ -134,7 +133,7 @@ async function setDemand(request, env, corsHeaders) {
     const result = await env.DBA.prepare(`
         UPDATE items
         SET demand = ?, demand_updated_at = strftime('%s', 'now')
-        WHERE name = ? AND category = ? AND removed = 0
+        WHERE name = ? AND category = ?
     `).bind(demand, item_name, category).run();
 
     if (result.meta.changes === 0) {
@@ -222,7 +221,7 @@ async function bulkSetDemand(request, env, corsHeaders) {
             env.DBA.prepare(`
                 UPDATE items
                 SET demand = ?, demand_updated_at = strftime('%s', 'now')
-                WHERE name = ? AND category = ? AND removed = 0
+                WHERE name = ? AND category = ?
             `).bind(item.demand, item.item_name, item.category)
         );
     }

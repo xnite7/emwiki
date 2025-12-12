@@ -26,7 +26,7 @@ export async function onRequest(context) {
       const result = await env.DBA.prepare(`
         SELECT name, "from"
         FROM items
-        WHERE category = ? AND LOWER(REPLACE(name, '-', ' ')) = ? AND removed = 0
+        WHERE category = ? AND LOWER(REPLACE(name, '-', ' ')) = ?
         LIMIT 1
       `).bind(category, normalizedItemName).first();
       
@@ -42,7 +42,7 @@ export async function onRequest(context) {
         const results = await env.DBA.prepare(`
           SELECT name, "from"
           FROM items
-          WHERE category = ? AND name LIKE ? AND removed = 0
+          WHERE category = ? AND name LIKE ?
           LIMIT 5
         `).bind(category, `%${normalizedItemName}%`).all();
         
