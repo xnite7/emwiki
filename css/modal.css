@@ -714,6 +714,28 @@ body:has(.item-modal.active) {
     margin-right: 8px;
 }
 
+.modal-lore-section {
+    margin-top: 30px;
+    background: var(--bg-item);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.modal-lore-section h4 {
+    margin: 0 0 15px 0;
+    color: white;
+    font-size: 18px;
+}
+
+.modal-lore-content {
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    font-size: 14px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
 
 
 /* Modal Action Buttons (Wishlist & Favorite) */

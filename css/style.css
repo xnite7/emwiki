@@ -988,6 +988,24 @@ main {
     align-items: center;
 }
 
+.item-credits {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: center;
+    z-index: 3;
+    font-size: 9px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: -1px -1px 0 #000, 0 -1px 0 #000, 1px -1px 0 #000, 1px 0 0 #000, 1px 1px 0 #000, 0 1px 0 #000, -1px 1px 0 #000, -1px 0 0 #000;
+    white-space: nowrap;
+    pointer-events: none;
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .hide-prices .item-price,
 .hide-prices .wishlist-total {
     opacity: 0;

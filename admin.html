@@ -343,6 +343,16 @@
                     <button style="padding-bottom:8px;margin-bottom:0px;" id="new-prc-btn">Code / Rarity /
                         Price</button>
                 </div>
+
+                <div style="margin-top:9px;">
+                    <label>Credits (Author)↴</label>
+                    <input id="quick-editor-credits" autocomplete="off" type="text" placeholder="Item author/creator" style="width: 100%; padding: 8px; margin-top: 4px; background: var(--bg-item); border: 1px solid var(--border-color); border-radius: 4px; color: white;" />
+                </div>
+
+                <div style="margin-top:9px;">
+                    <label>Lore↴</label>
+                    <textarea id="quick-editor-lore" placeholder="Item lore/story (shown on back of card)" rows="4" style="width: 100%; padding: 8px; margin-top: 4px; background: var(--bg-item); border: 1px solid var(--border-color); border-radius: 4px; color: white; resize: vertical; font-family: inherit;"></textarea>
+                </div>
             </div>
         </div>
     </div>
@@ -2246,6 +2256,8 @@
                                         removed: item.removed === true,
                                         price_history: item.price_history ? JSON.parse(item.price_history) : null,
                                         demand: item.demand || 0,
+                                        credits: item.credits || null,
+                                        lore: item.lore || null,
                                         updated_at: updatedAtToSend // Use server's updated_at for optimistic locking
                                     })
                                 });
@@ -2286,7 +2298,9 @@
                                         premium: item.premium === true,
                                         removed: item.removed === true,
                                         price_history: item.price_history ? JSON.parse(item.price_history) : null,
-                                        demand: item.demand || 0
+                                        demand: item.demand || 0,
+                                        credits: item.credits || null,
+                                        lore: item.lore || null
                                     })
                                 });
                                 
@@ -3212,6 +3226,45 @@
                 this.renderTags(item);
                 this.renderDescriptions(item);
                 this.renderPrices(item);
+
+                // Setup credits field
+                const creditsInput = DOM.get('quick-editor-credits');
+                creditsInput.value = item.credits || '';
+                creditsInput.onchange = () => {
+                    const previousState = JSON.parse(JSON.stringify(state.currentEditingItem));
+                    state.currentEditingItem.credits = creditsInput.value.trim();
+                    ChangeTracker.checkModifications(state.currentEditingItem);
+                    if (!UndoRedoManager.isApplyingChange &&
+                        previousState.credits !== state.currentEditingItem.credits) {
+                        UndoRedoManager.recordChange({
+                            type: 'edit',
+                            itemName: state.currentEditingItem.name,
+                            previousState: previousState,
+                            newState: JSON.parse(JSON.stringify(state.currentEditingItem))
+                        });
+                    }
+                    UI.renderItems(true);
+                    ChangeTracker.updateHighlights();
+                };
+
+                // Setup lore field
+                const loreInput = DOM.get('quick-editor-lore');
+                loreInput.value = item.lore || '';
+                loreInput.onchange = () => {
+                    const previousState = JSON.parse(JSON.stringify(state.currentEditingItem));
+                    state.currentEditingItem.lore = loreInput.value.trim();
+                    ChangeTracker.checkModifications(state.currentEditingItem);
+                    if (!UndoRedoManager.isApplyingChange &&
+                        previousState.lore !== state.currentEditingItem.lore) {
+                        UndoRedoManager.recordChange({
+                            type: 'edit',
+                            itemName: state.currentEditingItem.name,
+                            previousState: previousState,
+                            newState: JSON.parse(JSON.stringify(state.currentEditingItem))
+                        });
+                    }
+                    ChangeTracker.updateHighlights();
+                };
 
                 // Setup modal click handler for closing tag menu
                 this.setupModalClickHandler(content);

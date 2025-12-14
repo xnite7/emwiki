@@ -708,6 +708,14 @@ class BaseApp {
         name.textContent = item.name;
         div.appendChild(name);
 
+        // Credits (displayed vertically on front side)
+        if (item.credits) {
+            const credits = document.createElement('div');
+            credits.className = 'item-credits';
+            credits.textContent = item.credits;
+            div.appendChild(credits);
+        }
+
         // Image/SVG
         if (item.img) {
             const canvas = document.createElement('canvas');
@@ -1610,6 +1618,11 @@ class ItemModal {
                                 <strong>Author:</strong> <span></span>
                             </div>
                         </div>
+                        
+                        <div class="modal-lore-section" id="modal-lore-section" style="display:none;">
+                            <h4>Lore</h4>
+                            <div class="modal-lore-content" id="modal-lore-content"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -1655,6 +1668,8 @@ class ItemModal {
             graphContainer: document.querySelector('.modal-graph-container'),
             lastAdmin: document.querySelector('.modal-last-admin'),
             metadataSection: document.querySelector('.modal-metadata-section'),
+            loreSection: document.getElementById('modal-lore-section'),
+            loreContent: document.getElementById('modal-lore-content'),
             badges: {
                 premium: document.querySelector('.badge-premium'),
                 retired: document.querySelector('.badge-retired'),
@@ -1745,7 +1760,8 @@ class ItemModal {
         // Check if item has back content
         const hasHistory = item.priceHistory && item.priceHistory.filter(h => h.price !== 0 && h.price !== '0').length >= 2;
         const hasMetadata = item.aliases || item.quantity || item.author;
-        const hasBackContent = hasHistory || hasMetadata;
+        const hasLore = item.lore && item.lore.trim() !== '';
+        const hasBackContent = hasHistory || hasMetadata || hasLore;
 
         // Show/hide flip button
         this.elements.flipBtn.classList.toggle('hidden', !hasBackContent);
@@ -1797,6 +1813,7 @@ class ItemModal {
     updateBackContent(item) {
         const hasHistory = item.priceHistory && item.priceHistory.length >= 2;
         const hasMetadata = item.aliases || item.quantity || item.author;
+        const hasLore = item.lore && item.lore.trim() !== '';
 
         // Update graph section
         if (hasHistory) {
@@ -1850,6 +1867,14 @@ class ItemModal {
             }
         } else {
             this.elements.metadataSection.style.display = 'none';
+        }
+
+        // Update lore section
+        if (hasLore) {
+            this.elements.loreSection.style.display = 'block';
+            this.elements.loreContent.textContent = item.lore;
+        } else {
+            this.elements.loreSection.style.display = 'none';
         }
     }
 

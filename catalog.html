@@ -98,6 +98,8 @@
                     <small class="dropdown-item" data-sort="demand-desc">Demand: ⭐⭐⭐ ➔ ⭐</small>
                     <small class="dropdown-item disabled" data-sort="date-desc">Newer First</small>
                     <small class="dropdown-item disabled" data-sort="date-asc">Older First</small>
+                    <small class="dropdown-item" data-sort="price-updated-desc">Price Updated: Recent First</small>
+                    <small class="dropdown-item" data-sort="price-updated-asc">Price Updated: Oldest First</small>
                 </div>
             </div>
 
@@ -1262,7 +1264,9 @@
                     'name-desc': 'Z ➔ A',
                     'demand-desc': '⭐⭐⭐ ➔ ⭐',
                     'date-desc': 'Newer First',
-                    'date-asc': 'Older First'
+                    'date-asc': 'Older First',
+                    'price-updated-desc': 'Price Updated: Recent',
+                    'price-updated-asc': 'Price Updated: Oldest'
                 };
                 document.getElementById('sort-label').textContent = labels[sortType];
 
@@ -1648,6 +1652,34 @@
                             const demandA = a.demand || 0;
                             const demandB = b.demand || 0;
                             return demandB - demandA;
+                        });
+                        break;
+                    case 'price-updated-desc':
+                        // Sort by most recent price update timestamp, most recent first
+                        this.filtered.sort((a, b) => {
+                            const getLastPriceUpdate = (item) => {
+                                if (!item.priceHistory || !Array.isArray(item.priceHistory) || item.priceHistory.length === 0) {
+                                    return 0;
+                                }
+                                // Get the most recent price update timestamp
+                                const lastEntry = item.priceHistory[item.priceHistory.length - 1];
+                                return lastEntry && lastEntry.timestamp ? lastEntry.timestamp : 0;
+                            };
+                            return getLastPriceUpdate(b) - getLastPriceUpdate(a);
+                        });
+                        break;
+                    case 'price-updated-asc':
+                        // Sort by most recent price update timestamp, oldest first
+                        this.filtered.sort((a, b) => {
+                            const getLastPriceUpdate = (item) => {
+                                if (!item.priceHistory || !Array.isArray(item.priceHistory) || item.priceHistory.length === 0) {
+                                    return 0;
+                                }
+                                // Get the most recent price update timestamp
+                                const lastEntry = item.priceHistory[item.priceHistory.length - 1];
+                                return lastEntry && lastEntry.timestamp ? lastEntry.timestamp : 0;
+                            };
+                            return getLastPriceUpdate(a) - getLastPriceUpdate(b);
                         });
                         break;
                     default:
