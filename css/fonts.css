@@ -120,7 +120,11 @@
     src: url("../fonts/BunnyFlowers-Regular.woff") format('woff');
 }
 
-
+@font-face {
+  font-family: Guru;
+  font-weight: 500;
+  src: url("../fonts/Guru.woff2") format('woff2');
+}
 @font-face {
   font-family: BuilderSans;
   font-weight: 500;
