@@ -419,6 +419,48 @@ async function updateItem(id, request, env, corsHeaders) {
         demandChanged = currentItem && currentItem.demand !== demand;
     }
 
+    // Merge price_history: get existing history and merge with incoming history
+    let mergedPriceHistory = null;
+    if (price_history !== undefined) {
+        // Get current price_history from database
+        const currentItem = await env.DBA.prepare(`
+            SELECT price_history FROM items WHERE id = ?
+        `).bind(id).first();
+        
+        let existingHistory = [];
+        if (currentItem && currentItem.price_history) {
+            try {
+                existingHistory = JSON.parse(currentItem.price_history);
+                if (!Array.isArray(existingHistory)) {
+                    existingHistory = [];
+                }
+            } catch (e) {
+                existingHistory = [];
+            }
+        }
+        
+        // Merge: combine existing history with incoming history
+        // Incoming history should be an array of new entries
+        let incomingHistory = Array.isArray(price_history) ? price_history : [];
+        
+        // Combine histories and remove duplicates (same price and timestamp)
+        const combinedHistory = [...existingHistory];
+        incomingHistory.forEach(newEntry => {
+            // Check if this entry already exists (same price and timestamp)
+            const exists = combinedHistory.some(existing => 
+                existing.price === newEntry.price && 
+                existing.timestamp === newEntry.timestamp
+            );
+            if (!exists) {
+                combinedHistory.push(newEntry);
+            }
+        });
+        
+        // Sort by timestamp and keep only last 15 entries
+        combinedHistory.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        mergedPriceHistory = combinedHistory.slice(-15);
+    }
+
     const result = await env.DBA.prepare(`
         UPDATE items SET
             name = COALESCE(?, name),
@@ -435,7 +477,7 @@ async function updateItem(id, request, env, corsHeaders) {
             retired = COALESCE(?, retired),
             premium = COALESCE(?, premium),
             removed = COALESCE(?, removed),
-            price_history = ?,
+            price_history = CASE WHEN ? IS NOT NULL THEN ? ELSE price_history END,
             demand = COALESCE(?, demand),
             credits = ?,
             lore = ?,
@@ -451,7 +493,8 @@ async function updateItem(id, request, env, corsHeaders) {
         retired !== undefined ? (retired ? 1 : 0) : null,
         premium !== undefined ? (premium ? 1 : 0) : null,
         removed !== undefined ? (removed ? 1 : 0) : null,
-        price_history ? JSON.stringify(price_history.slice(-15)) : null,
+        mergedPriceHistory ? JSON.stringify(mergedPriceHistory) : null,
+        mergedPriceHistory ? JSON.stringify(mergedPriceHistory) : null,
         demand,
         credits !== undefined ? credits : null,
         lore !== undefined ? lore : null,

@@ -2265,7 +2265,7 @@
                                         retired: item.retired === true,
                                         premium: item.premium === true,
                                         removed: item.removed === true,
-                                        price_history: item.price_history ? JSON.parse(item.price_history) : null,
+                                        price_history: item.priceHistory || null,
                                         demand: item.demand || 0,
                                         credits: item.credits || null,
                                         lore: item.lore || null,
@@ -2308,7 +2308,7 @@
                                         retired: item.retired === true,
                                         premium: item.premium === true,
                                         removed: item.removed === true,
-                                        price_history: item.price_history ? JSON.parse(item.price_history) : null,
+                                        price_history: item.priceHistory || null,
                                         demand: item.demand || 0,
                                         credits: item.credits || null,
                                         lore: item.lore || null
