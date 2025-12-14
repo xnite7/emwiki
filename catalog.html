@@ -89,17 +89,17 @@
                 <button class="dropdown-btn" onclick="catalog.toggleSort()">
                     <span>Sort:</span> <span id="sort-label">Categorical</span> ▼
                 </button>
-                <div id="sort-menu" class="dropdown-content">
+                <div style="grid-template-rows: repeat(7, auto);" id="sort-menu" class="dropdown-content">
                     <small class="dropdown-item" data-sort="default">Categorical</small>
                     <small class="dropdown-item" data-sort="name-asc">Name: A ➔ Z</small>
                     <small class="dropdown-item" data-sort="name-desc">Name: Z ➔ A</small>
                     <small class="dropdown-item" data-sort="price-asc">Price: Low to High</small>
                     <small class="dropdown-item" data-sort="price-desc">Price: High to Low</small>
                     <small class="dropdown-item" data-sort="demand-desc">Demand: ⭐⭐⭐ ➔ ⭐</small>
+                    <small class="dropdown-item" data-sort="price-updated-desc">Price Updated Recently</small>
                     <small class="dropdown-item disabled" data-sort="date-desc">Newer First</small>
                     <small class="dropdown-item disabled" data-sort="date-asc">Older First</small>
-                    <small class="dropdown-item" data-sort="price-updated-desc">Price Updated: Recent First</small>
-                    <small class="dropdown-item" data-sort="price-updated-asc">Price Updated: Oldest First</small>
+                    
                 </div>
             </div>
 
@@ -1261,12 +1261,11 @@
                     'price-asc': '$ ➔ $$$',
                     'price-desc': '$$$ ➔ $',
                     'name-asc': 'A ➔ Z',
-                    'name-desc': 'Z ➔ A',
+                    //'name-desc': 'Z ➔ A',
                     'demand-desc': '⭐⭐⭐ ➔ ⭐',
                     'date-desc': 'Newer First',
                     'date-asc': 'Older First',
-                    'price-updated-desc': 'Price Updated: Recent',
-                    'price-updated-asc': 'Price Updated: Oldest'
+                    'price-updated-desc': 'Price Updated: Recent'
                 };
                 document.getElementById('sort-label').textContent = labels[sortType];
 
@@ -1668,20 +1667,7 @@
                             return getLastPriceUpdate(b) - getLastPriceUpdate(a);
                         });
                         break;
-                    case 'price-updated-asc':
-                        // Sort by most recent price update timestamp, oldest first
-                        this.filtered.sort((a, b) => {
-                            const getLastPriceUpdate = (item) => {
-                                if (!item.priceHistory || !Array.isArray(item.priceHistory) || item.priceHistory.length === 0) {
-                                    return 0;
-                                }
-                                // Get the most recent price update timestamp
-                                const lastEntry = item.priceHistory[item.priceHistory.length - 1];
-                                return lastEntry && lastEntry.timestamp ? lastEntry.timestamp : 0;
-                            };
-                            return getLastPriceUpdate(a) - getLastPriceUpdate(b);
-                        });
-                        break;
+
                     default:
                         // Keep original order
                         break;

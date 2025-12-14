@@ -2339,6 +2339,7 @@ textarea {
     opacity: 0.5;
     pointer-events: none;
     background: var(--border-color);
+    display: none;
 }
 
 
@@ -2574,8 +2575,8 @@ textarea {
 
 /* Filter page navigation system */
 .filter-page {
-
-    grid-template-rows: repeat(9, auto);
+    grid-template-rows: repeat(8, auto);
+    padding: 10px 0px 0px 0px;
     grid-auto-flow: column;
     display: none;
     opacity: 0;
@@ -2791,7 +2792,7 @@ textarea {
 
 #season-menu {
     height: 286px;
-    grid-template-rows: repeat(7, auto);
+    padding: 10px 0px;
 }
 
 #event-menu {

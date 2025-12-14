@@ -345,13 +345,24 @@
                 </div>
 
                 <div style="margin-top:9px;">
-                    <label>Credits (Author)↴</label>
-                    <input id="quick-editor-credits" autocomplete="off" type="text" placeholder="Item author/creator" style="width: 100%; padding: 8px; margin-top: 4px; background: var(--bg-item); border: 1px solid var(--border-color); border-radius: 4px; color: white;" />
-                </div>
-
-                <div style="margin-top:9px;">
-                    <label>Lore↴</label>
-                    <textarea id="quick-editor-lore" placeholder="Item lore/story (shown on back of card)" rows="4" style="width: 100%; padding: 8px; margin-top: 4px; background: var(--bg-item); border: 1px solid var(--border-color); border-radius: 4px; color: white; resize: vertical; font-family: inherit;"></textarea>
+                    <label>Extras↴</label>
+                    <div id="credits-container" style="display: none; margin-top: 4px; margin-bottom: 4px;">
+                        <div style="display: flex; align-items: center; gap: 4px; background: var(--bg-item); border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 8px;">
+                            <span id="credits-display" style="flex: 1; color: white; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
+                            <button class="small-btn ghost" id="credits-edit-btn" style="padding: 4px 8px; font-size: 11px;">Edit</button>
+                            <button class="small-btn danger" id="credits-delete-btn" style="padding: 4px 8px; font-size: 11px;">✕</button>
+                        </div>
+                        <input id="quick-editor-credits" autocomplete="off" type="text" placeholder="Item author/creator" style="display: none; width: 100%; padding: 8px; margin-top: 4px; background: var(--bg-item); border: 1px solid var(--border-color); border-radius: 4px; color: white;" />
+                    </div>
+                    <div id="lore-container" style="display: none; margin-top: 4px; margin-bottom: 4px;">
+                        <div style="display: flex; align-items: center; gap: 4px; background: var(--bg-item); border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 8px;">
+                            <span id="lore-display" style="flex: 1; color: white; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
+                            <button class="small-btn ghost" id="lore-edit-btn" style="padding: 4px 8px; font-size: 11px;">Edit</button>
+                            <button class="small-btn danger" id="lore-delete-btn" style="padding: 4px 8px; font-size: 11px;">✕</button>
+                        </div>
+                        <textarea id="quick-editor-lore" placeholder="Item lore/story (shown on back of card)" rows="4" style="display: none; width: 100%; padding: 8px; margin-top: 4px; background: var(--bg-item); border: 1px solid var(--border-color); border-radius: 4px; color: white; resize: vertical; font-family: inherit;"></textarea>
+                    </div>
+                    <button id="add-credits-btn">Credits</button><button id="add-lore-btn">Lore</button>
                 </div>
             </div>
         </div>
@@ -3227,44 +3238,8 @@
                 this.renderDescriptions(item);
                 this.renderPrices(item);
 
-                // Setup credits field
-                const creditsInput = DOM.get('quick-editor-credits');
-                creditsInput.value = item.credits || '';
-                creditsInput.onchange = () => {
-                    const previousState = JSON.parse(JSON.stringify(state.currentEditingItem));
-                    state.currentEditingItem.credits = creditsInput.value.trim();
-                    ChangeTracker.checkModifications(state.currentEditingItem);
-                    if (!UndoRedoManager.isApplyingChange &&
-                        previousState.credits !== state.currentEditingItem.credits) {
-                        UndoRedoManager.recordChange({
-                            type: 'edit',
-                            itemName: state.currentEditingItem.name,
-                            previousState: previousState,
-                            newState: JSON.parse(JSON.stringify(state.currentEditingItem))
-                        });
-                    }
-                    UI.renderItems(true);
-                    ChangeTracker.updateHighlights();
-                };
-
-                // Setup lore field
-                const loreInput = DOM.get('quick-editor-lore');
-                loreInput.value = item.lore || '';
-                loreInput.onchange = () => {
-                    const previousState = JSON.parse(JSON.stringify(state.currentEditingItem));
-                    state.currentEditingItem.lore = loreInput.value.trim();
-                    ChangeTracker.checkModifications(state.currentEditingItem);
-                    if (!UndoRedoManager.isApplyingChange &&
-                        previousState.lore !== state.currentEditingItem.lore) {
-                        UndoRedoManager.recordChange({
-                            type: 'edit',
-                            itemName: state.currentEditingItem.name,
-                            previousState: previousState,
-                            newState: JSON.parse(JSON.stringify(state.currentEditingItem))
-                        });
-                    }
-                    ChangeTracker.updateHighlights();
-                };
+                // Setup credits and lore
+                this.setupCreditsAndLore(item);
 
                 // Setup modal click handler for closing tag menu
                 this.setupModalClickHandler(content);
@@ -3666,6 +3641,8 @@
                 const descBtn = DOM.get('new-desc-btn');
                 const gnBtn = DOM.get('new-gn-btn');
                 const prcBtn = DOM.get('new-prc-btn');
+                const creditsBtn = DOM.get('add-credits-btn');
+                const loreBtn = DOM.get('add-lore-btn');
 
                 if (descBtn) descBtn.onclick = () => this.createDescItem('');
                 if (gnBtn) gnBtn.onclick = () => {
@@ -3675,6 +3652,189 @@
                     this.createDescItem(`Gamenight (${month === "May" ? "May" : month + "."} ${year})`, true, true);
                 };
                 if (prcBtn) prcBtn.onclick = () => this.createPriceItem('');
+                if (creditsBtn) creditsBtn.onclick = () => this.startEditingCredits();
+                if (loreBtn) loreBtn.onclick = () => this.startEditingLore();
+            },
+
+            setupCreditsAndLore(item) {
+                const creditsContainer = DOM.get('credits-container');
+                const loreContainer = DOM.get('lore-container');
+                const creditsDisplay = DOM.get('credits-display');
+                const loreDisplay = DOM.get('lore-display');
+                const creditsInput = DOM.get('quick-editor-credits');
+                const loreInput = DOM.get('quick-editor-lore');
+                const creditsEditBtn = DOM.get('credits-edit-btn');
+                const loreEditBtn = DOM.get('lore-edit-btn');
+                const creditsDeleteBtn = DOM.get('credits-delete-btn');
+                const loreDeleteBtn = DOM.get('lore-delete-btn');
+
+                // Show/hide containers based on whether values exist
+                if (item.credits && item.credits.trim()) {
+                    creditsContainer.style.display = 'block';
+                    creditsDisplay.textContent = item.credits;
+                } else {
+                    creditsContainer.style.display = 'none';
+                }
+
+                if (item.lore && item.lore.trim()) {
+                    loreContainer.style.display = 'block';
+                    loreDisplay.textContent = item.lore.length > 50 ? item.lore.substring(0, 50) + '...' : item.lore;
+                } else {
+                    loreContainer.style.display = 'none';
+                }
+
+                // Credits edit button
+                creditsEditBtn.onclick = () => {
+                    creditsDisplay.parentElement.style.display = 'none';
+                    creditsInput.style.display = 'block';
+                    creditsInput.value = item.credits || '';
+                    creditsInput.focus();
+                };
+
+                // Credits delete button
+                creditsDeleteBtn.onclick = () => {
+                    const previousState = JSON.parse(JSON.stringify(state.currentEditingItem));
+                    state.currentEditingItem.credits = '';
+                    creditsContainer.style.display = 'none';
+                    ChangeTracker.checkModifications(state.currentEditingItem);
+                    if (!UndoRedoManager.isApplyingChange) {
+                        UndoRedoManager.recordChange({
+                            type: 'edit',
+                            itemName: state.currentEditingItem.name,
+                            previousState: previousState,
+                            newState: JSON.parse(JSON.stringify(state.currentEditingItem))
+                        });
+                    }
+                    UI.renderItems(true);
+                    ChangeTracker.updateHighlights();
+                };
+
+                // Credits input handlers
+                const saveCredits = () => {
+                    const previousState = JSON.parse(JSON.stringify(state.currentEditingItem));
+                    const newValue = creditsInput.value.trim();
+                    state.currentEditingItem.credits = newValue;
+                    
+                    if (newValue) {
+                        creditsContainer.style.display = 'block';
+                        creditsDisplay.textContent = newValue;
+                    } else {
+                        creditsContainer.style.display = 'none';
+                    }
+                    
+                    creditsDisplay.parentElement.style.display = 'flex';
+                    creditsInput.style.display = 'none';
+                    
+                    ChangeTracker.checkModifications(state.currentEditingItem);
+                    if (!UndoRedoManager.isApplyingChange &&
+                        previousState.credits !== newValue) {
+                        UndoRedoManager.recordChange({
+                            type: 'edit',
+                            itemName: state.currentEditingItem.name,
+                            previousState: previousState,
+                            newState: JSON.parse(JSON.stringify(state.currentEditingItem))
+                        });
+                    }
+                    UI.renderItems(true);
+                    ChangeTracker.updateHighlights();
+                };
+
+                creditsInput.onblur = saveCredits;
+                creditsInput.onkeydown = (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        saveCredits();
+                    } else if (e.key === 'Escape') {
+                        creditsDisplay.parentElement.style.display = 'flex';
+                        creditsInput.style.display = 'none';
+                    }
+                };
+
+                // Lore edit button
+                loreEditBtn.onclick = () => {
+                    loreDisplay.parentElement.style.display = 'none';
+                    loreInput.style.display = 'block';
+                    loreInput.value = item.lore || '';
+                    loreInput.focus();
+                };
+
+                // Lore delete button
+                loreDeleteBtn.onclick = () => {
+                    const previousState = JSON.parse(JSON.stringify(state.currentEditingItem));
+                    state.currentEditingItem.lore = '';
+                    loreContainer.style.display = 'none';
+                    ChangeTracker.checkModifications(state.currentEditingItem);
+                    if (!UndoRedoManager.isApplyingChange) {
+                        UndoRedoManager.recordChange({
+                            type: 'edit',
+                            itemName: state.currentEditingItem.name,
+                            previousState: previousState,
+                            newState: JSON.parse(JSON.stringify(state.currentEditingItem))
+                        });
+                    }
+                    ChangeTracker.updateHighlights();
+                };
+
+                // Lore input handlers
+                const saveLore = () => {
+                    const previousState = JSON.parse(JSON.stringify(state.currentEditingItem));
+                    const newValue = loreInput.value.trim();
+                    state.currentEditingItem.lore = newValue;
+                    
+                    if (newValue) {
+                        loreContainer.style.display = 'block';
+                        loreDisplay.textContent = newValue.length > 50 ? newValue.substring(0, 50) + '...' : newValue;
+                    } else {
+                        loreContainer.style.display = 'none';
+                    }
+                    
+                    loreDisplay.parentElement.style.display = 'flex';
+                    loreInput.style.display = 'none';
+                    
+                    ChangeTracker.checkModifications(state.currentEditingItem);
+                    if (!UndoRedoManager.isApplyingChange &&
+                        previousState.lore !== newValue) {
+                        UndoRedoManager.recordChange({
+                            type: 'edit',
+                            itemName: state.currentEditingItem.name,
+                            previousState: previousState,
+                            newState: JSON.parse(JSON.stringify(state.currentEditingItem))
+                        });
+                    }
+                    ChangeTracker.updateHighlights();
+                };
+
+                loreInput.onblur = saveLore;
+                loreInput.onkeydown = (e) => {
+                    if (e.key === 'Escape') {
+                        loreDisplay.parentElement.style.display = 'flex';
+                        loreInput.style.display = 'none';
+                    }
+                };
+            },
+
+            startEditingCredits() {
+                const creditsContainer = DOM.get('credits-container');
+                const creditsDisplay = DOM.get('credits-display');
+                const creditsInput = DOM.get('quick-editor-credits');
+                
+                creditsContainer.style.display = 'block';
+                creditsDisplay.parentElement.style.display = 'none';
+                creditsInput.style.display = 'block';
+                creditsInput.value = state.currentEditingItem.credits || '';
+                creditsInput.focus();
+            },
+
+            startEditingLore() {
+                const loreContainer = DOM.get('lore-container');
+                const loreDisplay = DOM.get('lore-display');
+                const loreInput = DOM.get('quick-editor-lore');
+                
+                loreContainer.style.display = 'block';
+                loreDisplay.parentElement.style.display = 'none';
+                loreInput.style.display = 'block';
+                loreInput.value = state.currentEditingItem.lore || '';
+                loreInput.focus();
             },
 
             setupDemandRating(item) {
