@@ -175,6 +175,19 @@ class Forum {
         } catch (error) {
             console.error('Error loading posts:', error);
             loading.style.display = 'none';
+            container.style.display = 'none';
+            // Show error state in empty container
+            empty.innerHTML = `
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <h3>Failed to load posts</h3>
+                <p>${error.message || 'Unable to connect to the server. Please try again later.'}</p>
+                <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 15px;">Retry</button>
+            `;
+            empty.style.display = 'block';
             this.showToast('Failed to load forum posts', 'error');
         }
     }
@@ -947,4 +960,6 @@ style.textContent = `
 document.head.appendChild(style);
 
 // Initialize forum when page loads
-const forum = new Forum();
+if (!window.forum) {
+    window.forum = new Forum();
+}

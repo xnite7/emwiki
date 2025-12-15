@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<title>Community Forum - EM Wiki</title>
+	<meta name="description" content="Join the Epic Minigames community forum - Discuss, share, and connect with other players!" />
+	<meta property="og:title" content="Community Forum - EM Wiki">
+	<meta property="og:description" content="Join the Epic Minigames community forum - Discuss, share, and connect with other players!">
+	<link rel="icon" href="./imgs/favicon.png" type="image/png">
+	<link rel="stylesheet" href="./css/style.css">
+	
+	<!-- Popover compatibility for older browsers -->
+	<script src="./js/popover-loader.js"></script>
+	
+	<style>
+		/* ============================================
+		   MODERN FORUM V2 - ULTRA DESIGN
+		   ============================================ */
+		
+		:root {
+			--forum-primary: #4caf50;
+			--forum-primary-hover: #45a049;
+			--forum-secondary: #2196f3;
+			--forum-accent: #ff9800;
+			--forum-danger: #f44336;
+			--forum-success: #4caf50;
+			--forum-warning: #ffc107;
+			--forum-gradient: linear-gradient(135deg, #4caf50 0%, #8bc34a 100%);
+			--forum-shadow: 0 4px 20px rgba(76, 175, 80, 0.15);
+			--forum-shadow-hover: 0 8px 30px rgba(76, 175, 80, 0.25);
+			--forum-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+
+		/* Main Container */
+		.forum-v2-wrapper {
+			min-height: 100vh;
+			background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, transparent 100%);
+		}
+
+		.forum-v2-container {
+			max-width: 1400px;
+			margin: 0 auto;
+			padding: 30px 20px 40px;
+		}
+
+		/* Header Section */
+		.forum-v2-header {
+			text-align: center;
+			margin-bottom: 50px;
+			animation: fadeInDown 0.6s ease;
+		}
+
+		.forum-v2-title {
+			font-size: 48px;
+			font-weight: 900;
+			margin-bottom: 15px;
+			background: var(--forum-gradient);
+			-webkit-background-clip: text;
+			background-clip: text;
+			-webkit-text-fill-color: transparent;
+			letter-spacing: -0.02em;
+		}
+
+		.forum-v2-subtitle {
+			font-size: 18px;
+			color: var(--text-secondary);
+			margin-bottom: 30px;
+		}
+
+		/* Toolbar */
+		.forum-v2-toolbar {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 20px;
+			margin: 30px 0;
+			flex-wrap: wrap;
+			background: var(--bg-item);
+			padding: 20px;
+			border-radius: 16px;
+			border: 1px solid var(--border-color);
+			backdrop-filter: blur(10px);
+		}
+
+		/* Search uses existing .search-container from style.css */
+		.forum-v2-toolbar .search-container {
+			flex: 1;
+			min-width: 250px;
+			margin: 0;
+		}
+
+		.forum-v2-toolbar #forum-search {
+			font-size: 15px;
+			width: 100%;
+			padding: 14px 60px 14px 20px;
+			border: 2px solid transparent;
+			border-radius: 50px;
+			background: var(--bg-item);
+			box-shadow: 0 0 20px var(--shadow-color), inset 0px 3px 18px #00000033;
+			transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+			color: var(--text-primary);
+			font-family: inherit;
+		}
+
+		.forum-v2-toolbar #forum-search:focus {
+			outline: none;
+			transform: translateY(-3px) scale(1.02);
+			background: var(--border-color);
+			box-shadow: 0 25px 50px var(--shadow-color), inset 0px 3px 18px #85858536, 0 0 30px rgba(74, 158, 255, 0.3);
+			border-color: #4a9eff;
+		}
+
+		.forum-v2-toolbar #forum-search::placeholder {
+			color: #868686a8;
+		}
+
+		.forum-v2-actions {
+			display: flex;
+			gap: 12px;
+			flex-wrap: wrap;
+		}
+
+		/* Buttons use existing .btn from style.css */
+		.forum-v2-actions .btn {
+			white-space: nowrap;
+		}
+
+		.btn-primary {
+			background: linear-gradient(135deg, #4caf50 0%, #8bc34a 100%);
+			color: white;
+			box-shadow: 0 4px 20px rgba(76, 175, 80, 0.15);
+		}
+
+		.btn-primary:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 8px 30px rgba(76, 175, 80, 0.25);
+		}
+
+
+		/* Category Filter */
+		.forum-v2-categories {
+			display: flex;
+			gap: 10px;
+			margin-bottom: 30px;
+			flex-wrap: wrap;
+			justify-content: center;
+		}
+
+		/* Categories use existing .category-btn from style.css */
+		.forum-v2-container .category-nav-container {
+			margin: 0 0 25px 0;
+			position: relative;
+			top: 0;
+		}
+
+		/* Sort & Filter */
+		.forum-v2-filters {
+			display: flex;
+			gap: 12px;
+			align-items: center;
+			margin-bottom: 25px;
+			flex-wrap: wrap;
+		}
+
+		.forum-v2-sort {
+			display: flex;
+			gap: 8px;
+			align-items: center;
+		}
+
+		.forum-v2-sort-label {
+			font-size: 14px;
+			color: var(--text-secondary);
+			font-weight: 600;
+		}
+
+		.forum-v2-sort-select {
+			padding: 8px 16px;
+			border: 2px solid var(--border-color);
+			border-radius: 10px;
+			background: var(--bg-hover);
+			color: var(--text-primary);
+			font-size: 14px;
+			cursor: pointer;
+			transition: var(--forum-transition);
+		}
+
+		.forum-v2-sort-select:focus {
+			outline: none;
+			border-color: var(--forum-primary);
+		}
+
+		/* Posts Grid */
+		.forum-v2-posts {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+			gap: 20px;
+			margin-bottom: 40px;
+		}
+
+		@media (max-width: 768px) {
+			.forum-v2-posts {
+				grid-template-columns: 1fr;
+			}
+		}
+
+		/* Post Card */
+		.forum-v2-post-card {
+			background: var(--bg-item);
+			border: 1px solid var(--border-color);
+			border-radius: 16px;
+			padding: 24px;
+			cursor: pointer;
+			transition: var(--forum-transition);
+			position: relative;
+			overflow: hidden;
+			display: flex;
+			flex-direction: column;
+			gap: 16px;
+		}
+
+		.forum-v2-post-card::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 4px;
+			height: 100%;
+			background: var(--forum-gradient);
+			transform: scaleY(0);
+			transition: transform 0.3s ease;
+		}
+
+		.forum-v2-post-card:hover {
+			transform: translateY(-4px);
+			box-shadow: var(--forum-shadow-hover);
+			border-color: var(--forum-primary);
+		}
+
+		.forum-v2-post-card:hover::before {
+			transform: scaleY(1);
+		}
+
+		.forum-v2-post-card.pinned {
+			border-color: var(--forum-warning);
+			background: linear-gradient(135deg, var(--bg-item) 0%, rgba(255, 193, 7, 0.1) 100%);
+		}
+
+		.forum-v2-post-card.pinned::before {
+			background: var(--forum-warning);
+			transform: scaleY(1);
+		}
+
+		.forum-v2-post-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-start;
+			gap: 12px;
+		}
+
+		.forum-v2-post-category {
+			padding: 6px 12px;
+			border-radius: 20px;
+			font-size: 11px;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+		}
+
+		.forum-v2-post-category.general { background: rgba(158, 158, 158, 0.2); color: #9e9e9e; }
+		.forum-v2-post-category.trading { background: rgba(33, 150, 243, 0.2); color: #2196f3; }
+		.forum-v2-post-category.updates { background: rgba(255, 152, 0, 0.2); color: #ff9800; }
+		.forum-v2-post-category.guides { background: rgba(156, 39, 176, 0.2); color: #9c27b0; }
+		.forum-v2-post-category.feedback { background: rgba(76, 175, 80, 0.2); color: #4caf50; }
+		.forum-v2-post-category.off-topic { background: rgba(244, 67, 54, 0.2); color: #f44336; }
+
+		.forum-v2-post-badges {
+			display: flex;
+			gap: 6px;
+		}
+
+		.forum-v2-post-badge {
+			padding: 4px 8px;
+			border-radius: 8px;
+			font-size: 10px;
+			font-weight: 700;
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+		}
+
+		.forum-v2-post-badge svg {
+			width: 12px;
+			height: 12px;
+			flex-shrink: 0;
+		}
+
+		.forum-v2-post-badge.pinned {
+			background: rgba(255, 193, 7, 0.2);
+			color: var(--forum-warning);
+		}
+
+		.forum-v2-post-badge.locked {
+			background: rgba(244, 67, 54, 0.2);
+			color: var(--forum-danger);
+		}
+
+		.forum-v2-post-title {
+			font-size: 20px;
+			font-weight: 700;
+			color: var(--text-primary);
+			margin: 0;
+			line-height: 1.3;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+		}
+
+		.forum-v2-post-preview {
+			font-size: 14px;
+			color: var(--text-secondary);
+			line-height: 1.6;
+			display: -webkit-box;
+			-webkit-line-clamp: 3;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+			flex-grow: 1;
+		}
+
+		.forum-v2-post-footer {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding-top: 16px;
+			border-top: 1px solid var(--border-color);
+			flex-wrap: wrap;
+			gap: 12px;
+		}
+
+		.forum-v2-post-author {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+
+		.forum-v2-post-author-avatar {
+			width: 32px;
+			height: 32px;
+			border-radius: 50%;
+			background: var(--forum-gradient);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: 700;
+			color: white;
+			font-size: 14px;
+		}
+
+		.forum-v2-post-author-info {
+			display: flex;
+			flex-direction: column;
+			gap: 2px;
+		}
+
+		.forum-v2-post-author-name {
+			font-size: 14px;
+			font-weight: 600;
+			color: var(--text-primary);
+		}
+
+		.forum-v2-post-time {
+			font-size: 12px;
+			color: var(--text-secondary);
+		}
+
+		.forum-v2-post-stats {
+			display: flex;
+			gap: 16px;
+			align-items: center;
+		}
+
+		.forum-v2-post-stat {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			font-size: 13px;
+			color: var(--text-secondary);
+		}
+
+		.forum-v2-post-stat-icon {
+			width: 16px;
+			height: 16px;
+		}
+
+		/* Loading States */
+		.forum-v2-loading {
+			text-align: center;
+			padding: 80px 20px;
+		}
+
+		.forum-v2-spinner {
+			width: 50px;
+			height: 50px;
+			margin: 0 auto 20px;
+			border: 4px solid var(--border-color);
+			border-top-color: var(--forum-primary);
+			border-radius: 50%;
+			animation: spin 1s linear infinite;
+		}
+
+		@keyframes spin {
+			to { transform: rotate(360deg); }
+		}
+
+		/* Empty State */
+		.forum-v2-empty {
+			text-align: center;
+			padding: 80px 20px;
+			color: var(--text-secondary);
+		}
+
+		.forum-v2-empty-icon {
+			width: 80px;
+			height: 80px;
+			margin: 0 auto 24px;
+			opacity: 0.3;
+		}
+
+		.forum-v2-empty-title {
+			font-size: 28px;
+			font-weight: 700;
+			margin-bottom: 12px;
+			color: var(--text-primary);
+		}
+
+		.forum-v2-empty-text {
+			font-size: 16px;
+			margin-bottom: 24px;
+		}
+
+		/* Error State */
+		.forum-v2-error {
+			text-align: center;
+			padding: 80px 20px;
+			background: var(--bg-item);
+			border: 2px solid var(--forum-danger);
+			border-radius: 16px;
+			margin-bottom: 30px;
+		}
+
+		.forum-v2-error-icon {
+			width: 64px;
+			height: 64px;
+			margin: 0 auto 20px;
+			color: var(--forum-danger);
+		}
+
+		.forum-v2-error-title {
+			font-size: 24px;
+			font-weight: 700;
+			margin-bottom: 12px;
+			color: var(--text-primary);
+		}
+
+		.forum-v2-error-text {
+			font-size: 16px;
+			color: var(--text-secondary);
+			margin-bottom: 24px;
+		}
+
+		/* Animations - Use fade/scale instead of slide */
+		@keyframes fadeIn {
+			from { 
+				opacity: 0;
+				transform: scale(0.95);
+			}
+			to { 
+				opacity: 1;
+				transform: scale(1);
+			}
+		}
+
+		.forum-v2-post-card {
+			animation: fadeIn 0.3s ease;
+		}
+
+		.btn {
+			animation: fadeIn 0.2s ease;
+		}
+
+		/* Responsive */
+		@media (max-width: 768px) {
+			.forum-v2-title {
+				font-size: 36px;
+			}
+
+			.forum-v2-toolbar {
+				flex-direction: column;
+			}
+
+			.forum-v2-search {
+				width: 100%;
+			}
+
+			.forum-v2-actions {
+				width: 100%;
+				justify-content: stretch;
+			}
+
+			.forum-v2-btn {
+				flex: 1;
+				justify-content: center;
+			}
+		}
+
+		/* Thread View Styles */
+		.forum-v2-thread-view {
+			display: none;
+		}
+
+		.forum-v2-thread-view.active {
+			display: block;
+		}
+
+		.forum-v2-thread-post {
+			background: var(--bg-item);
+			border: 1px solid var(--border-color);
+			border-radius: 16px;
+			padding: 32px;
+			margin-bottom: 30px;
+		}
+
+		.forum-v2-thread-title {
+			font-size: 32px;
+			font-weight: 800;
+			margin-bottom: 20px;
+			color: var(--text-primary);
+			line-height: 1.2;
+		}
+
+		.forum-v2-thread-content {
+			font-size: 16px;
+			line-height: 1.8;
+			color: var(--text-primary);
+			white-space: pre-wrap;
+			word-wrap: break-word;
+			margin-bottom: 24px;
+		}
+
+		/* Modal Styles */
+		.forum-v2-modal {
+			display: none;
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: rgba(0, 0, 0, 0.7);
+			backdrop-filter: blur(8px);
+			z-index: 10000;
+			align-items: center;
+			justify-content: center;
+			padding: 20px;
+			animation: fadeIn 0.3s ease;
+		}
+
+		.forum-v2-modal.active {
+			display: flex;
+		}
+
+		.forum-v2-modal-content {
+			background: var(--bg-item);
+			border-radius: 20px;
+			padding: 32px;
+			max-width: 600px;
+			width: 100%;
+			max-height: 90vh;
+			overflow-y: auto;
+			box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+			animation: fadeInDown 0.3s ease;
+		}
+
+		.forum-v2-modal-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 24px;
+		}
+
+		.forum-v2-modal-title {
+			font-size: 24px;
+			font-weight: 700;
+			color: var(--text-primary);
+		}
+
+		.forum-v2-modal-close {
+			width: 36px;
+			height: 36px;
+			border: none;
+			background: var(--bg-hover);
+			border-radius: 10px;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			transition: var(--forum-transition);
+		}
+
+		.forum-v2-modal-close:hover {
+			background: var(--forum-danger);
+			color: white;
+		}
+
+		.forum-v2-form-group {
+			margin-bottom: 20px;
+		}
+
+		.forum-v2-form-label {
+			display: block;
+			margin-bottom: 8px;
+			font-weight: 600;
+			color: var(--text-primary);
+			font-size: 14px;
+		}
+
+		.forum-v2-form-input,
+		.forum-v2-form-select,
+		.forum-v2-form-textarea {
+			width: 100%;
+			padding: 12px 16px;
+			border: 2px solid var(--border-color);
+			border-radius: 12px;
+			background: var(--bg-hover);
+			color: var(--text-primary);
+			font-size: 15px;
+			font-family: inherit;
+			transition: var(--forum-transition);
+		}
+
+		.forum-v2-form-textarea {
+			min-height: 150px;
+			resize: vertical;
+		}
+
+		.forum-v2-form-input:focus,
+		.forum-v2-form-select:focus,
+		.forum-v2-form-textarea:focus {
+			outline: none;
+			border-color: var(--forum-primary);
+			box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1);
+		}
+
+		.forum-v2-form-footer {
+			display: flex;
+			gap: 12px;
+			justify-content: flex-end;
+			margin-top: 24px;
+			padding-top: 24px;
+			border-top: 1px solid var(--border-color);
+		}
+
+		.forum-v2-char-count {
+			font-size: 12px;
+			color: var(--text-secondary);
+			text-align: right;
+			margin-top: 6px;
+		}
+	</style>
+</head>
+
+<body>
+	<!-- Header -->
+	<header>
+		<a href="https://emwiki.com">
+			<svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
+				<defs>
+					<linearGradient id="eppp1" y1="1" x2="0">
+						<stop offset=".2" style="stop-color:#ff0" />
+						<stop offset="1" style="stop-color:#24ff5a" />
+					</linearGradient>
+					<linearGradient id="eppp2" y1="1" x2="0">
+						<stop offset="0" style="stop-color:#24ff5d" />
+						<stop offset="1" style="stop-color:#ff0" />
+					</linearGradient>
+				</defs>
+				<image id="cloud" x="461" y="459" href="https://emwiki.com/imgs/TWOKPhY.png" height="60" width="60"
+					style="filter:opacity(.6)" />
+				<text x="489" y="503" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
+					stroke-linejoin="round" fill="url(#eppp1)"
+					style="animation:floatAnim 12s ease-in-out infinite;font:200 46px Slapstick">EM</text>
+				<image id="epic-image" x="464" y="463" href="https://emwiki.com/imgs/epicfaces/kitta.png" height="60"
+					width="60"
+					style="scale:.48;transform:translate(846px,103px);rotate:20deg;transform-origin:center;animation:floatAnim2 15s ease-in-out 1s infinite alternate" />
+				<image id="cloud" x="495" y="477" href="https://emwiki.com/imgs/8UUB0Gt.png" height="60" width="60"
+					style="filter:opacity(.86)" />
+				<text x="516" y="514" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke"
+					stroke-linejoin="round" fill="url(#eppp2)"
+					style="animation:floatAnim 12s ease-in-out infinite;animation-delay:5.5s;font:200 16px Slapstick">wiki</text>
+				<image id="cloud" x="445" y="487" href="https://emwiki.com/imgs/oYKd3nJ.png" height="28" width="42"
+					style="filter:opacity(.8)" />
+			</svg>
+		</a>
+
+		<div class="nav-links">
+			<a href="/catalog" class="nav-link">Catalog</a>
+			<a href="/trading" class="nav-link">Trading Hub</a>
+			<a href="/forum" class="nav-link active">Forum</a>
+			<a href="/gallery" class="nav-link">Gallery</a>
+			<a href="/scammers" class="nav-link">Scammers</a>
+		</div>
+	</header>
+
+	<!-- Forum Content -->
+	<section class="hero-section">
+		<div class="hero-content">
+			<div class="hero-title">
+				<h1 class="hero-epic">Community Forum</h1>
+			</div>
+			<p class="hero-subtitle">Share ideas, ask questions, and connect with the Epic Minigames community</p>
+		</div>
+	</section>
+
+	<div class="forum-v2-wrapper">
+		<div class="forum-v2-container">
+
+			<!-- Toolbar -->
+			<div class="forum-v2-toolbar">
+				<div class="search-container">
+					<input type="text" id="forum-search" placeholder="Search posts..." autocomplete="off">
+					<button class="search-btn" type="button">
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+							<circle cx="11" cy="11" r="8"></circle>
+							<path d="m21 21-4.35-4.35"></path>
+						</svg>
+					</button>
+				</div>
+				<div class="forum-v2-actions">
+					<button class="btn btn-primary" id="create-post-btn" style="display: none;">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<line x1="12" y1="5" x2="12" y2="19"></line>
+							<line x1="5" y1="12" x2="19" y2="12"></line>
+						</svg>
+						Create Post
+					</button>
+					<button class="btn" id="my-posts-btn" style="display: none;">
+						My Posts
+					</button>
+				</div>
+			</div>
+
+			<!-- Categories -->
+			<div class="category-nav-container" style="display: block;">
+				<div class="category-nav">
+					<button class="category-btn active" data-category="all">All Posts</button>
+					<button class="category-btn" data-category="general">General</button>
+					<button class="category-btn" data-category="trading">Trading</button>
+					<button class="category-btn" data-category="updates">Updates</button>
+					<button class="category-btn" data-category="guides">Guides</button>
+					<button class="category-btn" data-category="feedback">Feedback</button>
+					<button class="category-btn" data-category="off-topic">Off-Topic</button>
+				</div>
+			</div>
+
+			<!-- Filters -->
+			<div class="forum-v2-filters">
+				<div class="forum-v2-sort">
+					<span class="forum-v2-sort-label">Sort by:</span>
+					<select class="forum-v2-sort-select" id="sort-select">
+						<option value="newest">Newest First</option>
+						<option value="oldest">Oldest First</option>
+						<option value="most-liked">Most Liked</option>
+						<option value="most-commented">Most Comments</option>
+					</select>
+				</div>
+			</div>
+
+			<!-- Posts List View -->
+			<div id="forum-list-view">
+				<div id="posts-loading" class="forum-v2-loading">
+					<div class="forum-v2-spinner"></div>
+					<p>Loading posts...</p>
+				</div>
+				<div id="posts-container" class="forum-v2-posts" style="display: none;"></div>
+				<div id="posts-empty" class="forum-v2-empty" style="display: none;">
+					<svg class="forum-v2-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+					</svg>
+					<h3 class="forum-v2-empty-title">No posts yet</h3>
+					<p class="forum-v2-empty-text">Be the first to start a discussion!</p>
+				</div>
+				<div id="posts-error" class="forum-v2-error" style="display: none;">
+					<svg class="forum-v2-error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<circle cx="12" cy="12" r="10"></circle>
+						<line x1="12" y1="8" x2="12" y2="12"></line>
+						<line x1="12" y1="16" x2="12.01" y2="16"></line>
+					</svg>
+					<h3 class="forum-v2-error-title">Failed to load posts</h3>
+					<p class="forum-v2-error-text" id="error-message">Unable to connect to the server. Please try again later.</p>
+					<button class="btn btn-primary" onclick="location.reload()">Retry</button>
+				</div>
+			</div>
+
+			<!-- Thread View -->
+			<div id="thread-view" class="forum-v2-thread-view">
+				<button class="btn" id="back-to-list">
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<line x1="19" y1="12" x2="5" y2="12"></line>
+						<polyline points="12 19 5 12 12 5"></polyline>
+					</svg>
+					Back to Forum
+				</button>
+				<div id="thread-content"></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Create Post Modal -->
+	<div id="create-post-modal" class="forum-v2-modal">
+		<div class="forum-v2-modal-content">
+			<div class="forum-v2-modal-header">
+				<h2 class="forum-v2-modal-title">Create New Post</h2>
+				<button class="forum-v2-modal-close" id="close-create-modal">&times;</button>
+			</div>
+			<form id="create-post-form">
+				<div class="forum-v2-form-group">
+					<label class="forum-v2-form-label" for="post-category">Category *</label>
+					<select class="forum-v2-form-select" id="post-category" required>
+						<option value="general">General Discussion</option>
+						<option value="trading">Trading</option>
+						<option value="updates">Updates & News</option>
+						<option value="guides">Guides & Tips</option>
+						<option value="feedback">Feedback & Suggestions</option>
+						<option value="off-topic">Off-Topic</option>
+					</select>
+				</div>
+				<div class="forum-v2-form-group">
+					<label class="forum-v2-form-label" for="post-title">Title *</label>
+					<input type="text" class="forum-v2-form-input" id="post-title" maxlength="200" placeholder="Give your post a descriptive title" required>
+				</div>
+				<div class="forum-v2-form-group">
+					<label class="forum-v2-form-label" for="post-content">Content *</label>
+					<textarea class="forum-v2-form-textarea" id="post-content" rows="8" maxlength="5000" placeholder="What would you like to discuss?" required></textarea>
+					<div class="forum-v2-char-count"><span id="content-count">0</span>/5000</div>
+				</div>
+				<div class="forum-v2-form-footer">
+					<button type="button" class="btn" id="cancel-create">Cancel</button>
+					<button type="submit" class="btn btn-primary">Create Post</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<script src="./js/script.js"></script>
+	<script src="./js/forum-v2.js"></script>
+</body>
+
+</html>
+
