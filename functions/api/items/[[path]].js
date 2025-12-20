@@ -120,7 +120,7 @@ async function searchItems(request, env, corsHeaders) {
     let sql = `
         SELECT id, name, category, img, svg, price, "from", price_code_rarity,
                tradable, "new", weekly, weeklystar, retired, premium, removed, demand,
-               credits, lore, demand_updated_at, updated_at
+               credits, lore, alias, quantity, demand_updated_at, updated_at
         FROM items
         WHERE name LIKE ?
     `;
@@ -158,7 +158,7 @@ async function getItem(category, name, env, corsHeaders) {
     const item = await env.DBA.prepare(`
         SELECT id, name, category, img, svg, price, "from", price_code_rarity,
                tradable, "new", weekly, weeklystar, retired, premium, removed,
-               price_history, demand, credits, lore, demand_updated_at, created_at, updated_at
+               price_history, demand, credits, lore, alias, quantity, demand_updated_at, created_at, updated_at
         FROM items
         WHERE category = ? AND name = ?
     `).bind(category, name).first();
@@ -265,7 +265,7 @@ async function listItems(request, env, corsHeaders) {
     const { results } = await env.DBA.prepare(`
         SELECT id, name, category, img, svg, price, "from", price_code_rarity,
                tradable, "new", weekly, weeklystar, retired, premium, removed, demand, 
-               credits, lore, demand_updated_at, updated_at, price_history
+               credits, lore, alias, quantity, demand_updated_at, updated_at, price_history
         FROM items
         ${whereClause}
         ORDER BY category, name
@@ -307,7 +307,7 @@ async function createItem(request, env, corsHeaders) {
     const {
         name, category, img, svg, price, from, price_code_rarity,
         tradable, new: newItem, weekly, weeklystar, retired, premium, removed,
-        price_history, demand, credits, lore
+        price_history, demand, credits, lore, alias, quantity
     } = data;
 
     if (!name || !category) {
@@ -321,9 +321,9 @@ async function createItem(request, env, corsHeaders) {
         INSERT INTO items (
             name, category, img, svg, price, "from", price_code_rarity,
             tradable, "new", weekly, weeklystar, retired, premium, removed,
-            price_history, demand, credits, lore, demand_updated_at, created_at, updated_at
+            price_history, demand, credits, lore, alias, quantity, demand_updated_at, created_at, updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
                 CASE WHEN ? > 0 THEN strftime('%s', 'now') ELSE NULL END,
                 strftime('%s', 'now'), strftime('%s', 'now'))
     `).bind(
@@ -340,6 +340,8 @@ async function createItem(request, env, corsHeaders) {
         demand || 0,
         credits || null,
         lore || null,
+        alias || null,
+        quantity || null,
         demand || 0 // For demand_updated_at check
     ).run();
 
@@ -360,7 +362,7 @@ async function updateItem(id, request, env, corsHeaders) {
     const {
         name, category, img, svg, price, from, price_code_rarity,
         tradable, new: newItem, weekly, weeklystar, retired, premium, removed,
-        price_history, demand, credits, lore, updated_at: clientUpdatedAt
+        price_history, demand, credits, lore, alias, quantity, updated_at: clientUpdatedAt
     } = data;
 
     // Optimistic locking: Check if item was modified since client loaded it
@@ -481,6 +483,8 @@ async function updateItem(id, request, env, corsHeaders) {
             demand = COALESCE(?, demand),
             credits = ?,
             lore = ?,
+            alias = ?,
+            quantity = ?,
             demand_updated_at = CASE WHEN ? = 1 THEN strftime('%s', 'now') ELSE demand_updated_at END,
             updated_at = strftime('%s', 'now')
         WHERE id = ?
@@ -498,6 +502,8 @@ async function updateItem(id, request, env, corsHeaders) {
         demand,
         credits !== undefined ? credits : null,
         lore !== undefined ? lore : null,
+        alias !== undefined ? alias : null,
+        quantity !== undefined ? quantity : null,
         demandChanged ? 1 : 0, // Update demand_updated_at if demand changed
         id
     ).run();

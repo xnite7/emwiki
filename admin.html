@@ -362,7 +362,25 @@
                         </div>
                         <textarea id="quick-editor-lore" placeholder="Item lore/story (shown on back of card)" rows="4" style="display: none; width: -webkit-fill-available; padding: 8px; margin-top: 4px; background: var(--bg-item); border: 1px solid var(--border-color); border-radius: 4px; color: white; resize: vertical; font-family: inherit;"></textarea>
                     </div>
-                    <button id="add-credits-btn">Credits</button><button id="add-lore-btn">Lore</button>
+                    <div id="alias-container" style="display: none; margin-top: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <strong style="font-size: 12px; color: var(--text-secondary);">Alias:</strong>
+                            <span id="alias-display" style="flex: 1; font-size: 12px;"></span>
+                            <button class="small-btn ghost" id="alias-edit-btn" style="padding: 4px 8px; font-size: 11px;">Edit</button>
+                            <button class="small-btn danger" id="alias-delete-btn" style="padding: 4px 8px; font-size: 11px;">✕</button>
+                        </div>
+                        <input id="quick-editor-alias" autocomplete="off" type="text" placeholder="Item alias (shown on back of card above graph)" style="display: none; width: -webkit-fill-available; padding: 8px; margin-top: 4px; background: var(--bg-item); border: 1px solid var(--border-color); border-radius: 4px; color: white;" />
+                    </div>
+                    <div id="quantity-container" style="display: none; margin-top: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <strong style="font-size: 12px; color: var(--text-secondary);">Quantity:</strong>
+                            <span id="quantity-display" style="flex: 1; font-size: 12px;"></span>
+                            <button class="small-btn ghost" id="quantity-edit-btn" style="padding: 4px 8px; font-size: 11px;">Edit</button>
+                            <button class="small-btn danger" id="quantity-delete-btn" style="padding: 4px 8px; font-size: 11px;">✕</button>
+                        </div>
+                        <input id="quick-editor-quantity" autocomplete="off" type="text" placeholder="Quantity given (shown on back of card below graph)" style="display: none; width: -webkit-fill-available; padding: 8px; margin-top: 4px; background: var(--bg-item); border: 1px solid var(--border-color); border-radius: 4px; color: white;" />
+                    </div>
+                    <button id="add-credits-btn">Credits</button><button id="add-lore-btn">Lore</button><button id="add-alias-btn">Alias</button><button id="add-quantity-btn">Quantity</button>
                 </div>
             </div>
         </div>
@@ -605,7 +623,7 @@
 
                 // List of fields to check
                 const fields = ['name', 'img', 'svg', 'price', 'from', 'price/code/rarity',
-                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed', 'demand'];
+                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed', 'demand', 'credits', 'lore', 'alias', 'quantity'];
 
                 // Boolean fields that need normalization
                 const booleanFields = ['weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed'];
@@ -2269,6 +2287,8 @@
                                         demand: item.demand || 0,
                                         credits: item.credits || null,
                                         lore: item.lore || null,
+                                        alias: item.alias || null,
+                                        quantity: item.quantity || null,
                                         updated_at: updatedAtToSend // Use server's updated_at for optimistic locking
                                     })
                                 });
@@ -2311,7 +2331,9 @@
                                         price_history: item.priceHistory || null,
                                         demand: item.demand || 0,
                                         credits: item.credits || null,
-                                        lore: item.lore || null
+                                        lore: item.lore || null,
+                                        alias: item.alias || null,
+                                        quantity: item.quantity || null
                                     })
                                 });
                                 
@@ -3654,19 +3676,33 @@
                 if (prcBtn) prcBtn.onclick = () => this.createPriceItem('');
                 if (creditsBtn) creditsBtn.onclick = () => this.startEditingCredits();
                 if (loreBtn) loreBtn.onclick = () => this.startEditingLore();
+                const aliasBtn = DOM.get('add-alias-btn');
+                const quantityBtn = DOM.get('add-quantity-btn');
+                if (aliasBtn) aliasBtn.onclick = () => this.startEditingAlias();
+                if (quantityBtn) quantityBtn.onclick = () => this.startEditingQuantity();
             },
 
             setupCreditsAndLore(item) {
                 const creditsContainer = DOM.get('credits-container');
                 const loreContainer = DOM.get('lore-container');
+                const aliasContainer = DOM.get('alias-container');
+                const quantityContainer = DOM.get('quantity-container');
                 const creditsDisplay = DOM.get('credits-display');
                 const loreDisplay = DOM.get('lore-display');
+                const aliasDisplay = DOM.get('alias-display');
+                const quantityDisplay = DOM.get('quantity-display');
                 const creditsInput = DOM.get('quick-editor-credits');
                 const loreInput = DOM.get('quick-editor-lore');
+                const aliasInput = DOM.get('quick-editor-alias');
+                const quantityInput = DOM.get('quick-editor-quantity');
                 const creditsEditBtn = DOM.get('credits-edit-btn');
                 const loreEditBtn = DOM.get('lore-edit-btn');
+                const aliasEditBtn = DOM.get('alias-edit-btn');
+                const quantityEditBtn = DOM.get('quantity-edit-btn');
                 const creditsDeleteBtn = DOM.get('credits-delete-btn');
                 const loreDeleteBtn = DOM.get('lore-delete-btn');
+                const aliasDeleteBtn = DOM.get('alias-delete-btn');
+                const quantityDeleteBtn = DOM.get('quantity-delete-btn');
 
                 // Show/hide containers based on whether values exist
                 if (item.credits && item.credits.trim()) {
@@ -3681,6 +3717,20 @@
                     loreDisplay.textContent = item.lore.length > 50 ? item.lore.substring(0, 50) + '...' : item.lore;
                 } else {
                     loreContainer.style.display = 'none';
+                }
+
+                if (item.alias && item.alias.trim()) {
+                    aliasContainer.style.display = 'block';
+                    aliasDisplay.textContent = item.alias;
+                } else {
+                    aliasContainer.style.display = 'none';
+                }
+
+                if (item.quantity && item.quantity.trim()) {
+                    quantityContainer.style.display = 'block';
+                    quantityDisplay.textContent = item.quantity;
+                } else {
+                    quantityContainer.style.display = 'none';
                 }
 
                 // Credits edit button
@@ -3811,6 +3861,136 @@
                         loreInput.style.display = 'none';
                     }
                 };
+
+                // Alias edit button
+                aliasEditBtn.onclick = () => {
+                    aliasDisplay.parentElement.style.display = 'none';
+                    aliasInput.style.display = 'block';
+                    aliasInput.value = item.alias || '';
+                    aliasInput.focus();
+                };
+
+                // Alias delete button
+                aliasDeleteBtn.onclick = () => {
+                    const previousState = JSON.parse(JSON.stringify(state.currentEditingItem));
+                    state.currentEditingItem.alias = '';
+                    aliasContainer.style.display = 'none';
+                    ChangeTracker.checkModifications(state.currentEditingItem);
+                    if (!UndoRedoManager.isApplyingChange) {
+                        UndoRedoManager.recordChange({
+                            type: 'edit',
+                            itemName: state.currentEditingItem.name,
+                            previousState: previousState,
+                            newState: JSON.parse(JSON.stringify(state.currentEditingItem))
+                        });
+                    }
+                    ChangeTracker.updateHighlights();
+                };
+
+                // Alias input handlers
+                const saveAlias = () => {
+                    const previousState = JSON.parse(JSON.stringify(state.currentEditingItem));
+                    const newValue = aliasInput.value.trim();
+                    state.currentEditingItem.alias = newValue;
+                    
+                    if (newValue) {
+                        aliasContainer.style.display = 'block';
+                        aliasDisplay.textContent = newValue;
+                    } else {
+                        aliasContainer.style.display = 'none';
+                    }
+                    
+                    aliasDisplay.parentElement.style.display = 'flex';
+                    aliasInput.style.display = 'none';
+                    
+                    ChangeTracker.checkModifications(state.currentEditingItem);
+                    if (!UndoRedoManager.isApplyingChange &&
+                        previousState.alias !== newValue) {
+                        UndoRedoManager.recordChange({
+                            type: 'edit',
+                            itemName: state.currentEditingItem.name,
+                            previousState: previousState,
+                            newState: JSON.parse(JSON.stringify(state.currentEditingItem))
+                        });
+                    }
+                    ChangeTracker.updateHighlights();
+                };
+
+                aliasInput.onblur = saveAlias;
+                aliasInput.onkeydown = (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        saveAlias();
+                    } else if (e.key === 'Escape') {
+                        aliasDisplay.parentElement.style.display = 'flex';
+                        aliasInput.style.display = 'none';
+                    }
+                };
+
+                // Quantity edit button
+                quantityEditBtn.onclick = () => {
+                    quantityDisplay.parentElement.style.display = 'none';
+                    quantityInput.style.display = 'block';
+                    quantityInput.value = item.quantity || '';
+                    quantityInput.focus();
+                };
+
+                // Quantity delete button
+                quantityDeleteBtn.onclick = () => {
+                    const previousState = JSON.parse(JSON.stringify(state.currentEditingItem));
+                    state.currentEditingItem.quantity = '';
+                    quantityContainer.style.display = 'none';
+                    ChangeTracker.checkModifications(state.currentEditingItem);
+                    if (!UndoRedoManager.isApplyingChange) {
+                        UndoRedoManager.recordChange({
+                            type: 'edit',
+                            itemName: state.currentEditingItem.name,
+                            previousState: previousState,
+                            newState: JSON.parse(JSON.stringify(state.currentEditingItem))
+                        });
+                    }
+                    ChangeTracker.updateHighlights();
+                };
+
+                // Quantity input handlers
+                const saveQuantity = () => {
+                    const previousState = JSON.parse(JSON.stringify(state.currentEditingItem));
+                    const newValue = quantityInput.value.trim();
+                    state.currentEditingItem.quantity = newValue;
+                    
+                    if (newValue) {
+                        quantityContainer.style.display = 'block';
+                        quantityDisplay.textContent = newValue;
+                    } else {
+                        quantityContainer.style.display = 'none';
+                    }
+                    
+                    quantityDisplay.parentElement.style.display = 'flex';
+                    quantityInput.style.display = 'none';
+                    
+                    ChangeTracker.checkModifications(state.currentEditingItem);
+                    if (!UndoRedoManager.isApplyingChange &&
+                        previousState.quantity !== newValue) {
+                        UndoRedoManager.recordChange({
+                            type: 'edit',
+                            itemName: state.currentEditingItem.name,
+                            previousState: previousState,
+                            newState: JSON.parse(JSON.stringify(state.currentEditingItem))
+                        });
+                    }
+                    ChangeTracker.updateHighlights();
+                };
+
+                quantityInput.onblur = saveQuantity;
+                quantityInput.onkeydown = (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        saveQuantity();
+                    } else if (e.key === 'Escape') {
+                        quantityDisplay.parentElement.style.display = 'flex';
+                        quantityInput.style.display = 'none';
+                    }
+                };
             },
 
             startEditingCredits() {
@@ -3835,6 +4015,30 @@
                 loreInput.style.display = 'block';
                 loreInput.value = state.currentEditingItem.lore || '';
                 loreInput.focus();
+            },
+
+            startEditingAlias() {
+                const aliasContainer = DOM.get('alias-container');
+                const aliasDisplay = DOM.get('alias-display');
+                const aliasInput = DOM.get('quick-editor-alias');
+                
+                aliasContainer.style.display = 'block';
+                aliasDisplay.parentElement.style.display = 'none';
+                aliasInput.style.display = 'block';
+                aliasInput.value = state.currentEditingItem.alias || '';
+                aliasInput.focus();
+            },
+
+            startEditingQuantity() {
+                const quantityContainer = DOM.get('quantity-container');
+                const quantityDisplay = DOM.get('quantity-display');
+                const quantityInput = DOM.get('quick-editor-quantity');
+                
+                quantityContainer.style.display = 'block';
+                quantityDisplay.parentElement.style.display = 'none';
+                quantityInput.style.display = 'block';
+                quantityInput.value = state.currentEditingItem.quantity || '';
+                quantityInput.focus();
             },
 
             setupDemandRating(item) {
@@ -6266,7 +6470,7 @@
             compareItems(original, current) {
                 const changes = [];
                 const fields = ['name', 'img', 'svg', 'price', 'from', 'price/code/rarity',
-                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed', 'demand'];
+                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed', 'demand', 'credits', 'lore', 'alias', 'quantity'];
 
                 fields.forEach(field => {
                     const oldVal = this.normalizeValue(field, original[field]);
@@ -6322,6 +6526,26 @@
                         const oldLabel = labels[old || 0];
                         const newLabel = labels[val || 0];
                         return `Demand: ${oldLabel} (${old || 0}★) → ${newLabel} (${val || 0}★)`;
+                    },
+                    'credits': (old, val) => {
+                        const oldText = old ? (old.length > 30 ? old.substring(0, 30) + '...' : old) : '(empty)';
+                        const newText = val ? (val.length > 30 ? val.substring(0, 30) + '...' : val) : '(empty)';
+                        return `Credits: "${oldText}" → "${newText}"`;
+                    },
+                    'lore': (old, val) => {
+                        const oldText = old ? (old.length > 30 ? old.substring(0, 30) + '...' : old) : '(empty)';
+                        const newText = val ? (val.length > 30 ? val.substring(0, 30) + '...' : val) : '(empty)';
+                        return `Lore: "${oldText}" → "${newText}"`;
+                    },
+                    'alias': (old, val) => {
+                        const oldText = old ? (old.length > 30 ? old.substring(0, 30) + '...' : old) : '(empty)';
+                        const newText = val ? (val.length > 30 ? val.substring(0, 30) + '...' : val) : '(empty)';
+                        return `Alias: "${oldText}" → "${newText}"`;
+                    },
+                    'quantity': (old, val) => {
+                        const oldText = old ? (old.length > 30 ? old.substring(0, 30) + '...' : old) : '(empty)';
+                        const newText = val ? (val.length > 30 ? val.substring(0, 30) + '...' : val) : '(empty)';
+                        return `Quantity: "${oldText}" → "${newText}"`;
                     }
                 };
 

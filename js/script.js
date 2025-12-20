@@ -1601,19 +1601,27 @@ class ItemModal {
                             </div>
                         </div>
 
+                        <!-- Alias displayed above graph -->
+                        <div class="modal-alias-section" id="modal-alias-section" style="display:none;">
+                            <div class="metadata-item">
+                                <strong>Alias:</strong> <span id="modal-alias-text"></span>
+                            </div>
+                        </div>
+
                         <div class="modal-graph-section">
                             <h4>Price History</h4>
                             <div class="modal-graph-container"></div>
                             <div class="modal-last-admin"></div>
                         </div>
+
+                        <!-- Quantity displayed below graph -->
+                        <div class="modal-quantity-section" id="modal-quantity-section" style="display:none;">
+                            <div class="metadata-item">
+                                <strong>Quantity Given:</strong> <span id="modal-quantity-text"></span>
+                            </div>
+                        </div>
                         
                         <div class="modal-metadata-section" style="display:none;">
-                            <div class="metadata-item" id="modal-aliases" style="display:none;">
-                                <strong>Aliases:</strong> <span></span>
-                            </div>
-                            <div class="metadata-item" id="modal-quantity" style="display:none;">
-                                <strong>Quantity Given:</strong> <span></span>
-                            </div>
                             <div class="metadata-item" id="modal-author" style="display:none;">
                                 <strong>Author:</strong> <span></span>
                             </div>
@@ -1759,9 +1767,11 @@ class ItemModal {
 
         // Check if item has back content
         const hasHistory = item.priceHistory && item.priceHistory.filter(h => h.price !== 0 && h.price !== '0').length >= 2;
-        const hasMetadata = item.aliases || item.quantity || item.author;
+        const hasMetadata = item.author;
         const hasLore = item.lore && item.lore.trim() !== '';
-        const hasBackContent = hasHistory || hasMetadata || hasLore;
+        const hasAlias = item.alias && item.alias.trim() !== '';
+        const hasQuantity = item.quantity && item.quantity.trim() !== '';
+        const hasBackContent = hasHistory || hasMetadata || hasLore || hasAlias || hasQuantity;
 
         // Show/hide flip button
         this.elements.flipBtn.classList.toggle('hidden', !hasBackContent);
@@ -1812,8 +1822,20 @@ class ItemModal {
 
     updateBackContent(item) {
         const hasHistory = item.priceHistory && item.priceHistory.length >= 2;
-        const hasMetadata = item.aliases || item.quantity || item.author;
+        const hasMetadata = item.author;
         const hasLore = item.lore && item.lore.trim() !== '';
+        const hasAlias = item.alias && item.alias.trim() !== '';
+        const hasQuantity = item.quantity && item.quantity.trim() !== '';
+
+        // Update alias section (above graph)
+        const aliasSection = document.getElementById('modal-alias-section');
+        const aliasText = document.getElementById('modal-alias-text');
+        if (hasAlias && aliasSection && aliasText) {
+            aliasSection.style.display = 'block';
+            aliasText.textContent = item.alias;
+        } else if (aliasSection) {
+            aliasSection.style.display = 'none';
+        }
 
         // Update graph section
         if (hasHistory) {
@@ -1837,32 +1859,24 @@ class ItemModal {
             this.elements.graphSection.style.display = 'none';
         }
 
-        // Update metadata section
+        // Update quantity section (below graph)
+        const quantitySection = document.getElementById('modal-quantity-section');
+        const quantityText = document.getElementById('modal-quantity-text');
+        if (hasQuantity && quantitySection && quantityText) {
+            quantitySection.style.display = 'block';
+            quantityText.textContent = item.quantity;
+        } else if (quantitySection) {
+            quantitySection.style.display = 'none';
+        }
+
+        // Update metadata section (for author)
         if (hasMetadata) {
             this.elements.metadataSection.style.display = 'block';
-
-            const aliasesEl = document.getElementById('modal-aliases');
-            const quantityEl = document.getElementById('modal-quantity');
             const authorEl = document.getElementById('modal-author');
-
-            if (item.aliases) {
-                aliasesEl.style.display = 'block';
-                aliasesEl.querySelector('span').textContent = item.aliases;
-            } else {
-                aliasesEl.style.display = 'none';
-            }
-
-            if (item.quantity) {
-                quantityEl.style.display = 'block';
-                quantityEl.querySelector('span').textContent = item.quantity;
-            } else {
-                quantityEl.style.display = 'none';
-            }
-
-            if (item.author) {
+            if (item.author && authorEl) {
                 authorEl.style.display = 'block';
                 authorEl.querySelector('span').textContent = item.author;
-            } else {
+            } else if (authorEl) {
                 authorEl.style.display = 'none';
             }
         } else {
@@ -2051,8 +2065,11 @@ class ItemModal {
                 this.updateContent(this.currentItem);
                 // Check if item has back content
                 const hasHistory = this.currentItem.priceHistory && this.currentItem.priceHistory.filter(h => h.price !== 0 && h.price !== '0').length >= 2;
-                const hasMetadata = this.currentItem.aliases || this.currentItem.quantity || this.currentItem.author;
-                const hasBackContent = hasHistory || hasMetadata;
+                const hasMetadata = this.currentItem.author;
+                const hasLore = this.currentItem.lore && this.currentItem.lore.trim() !== '';
+                const hasAlias = this.currentItem.alias && this.currentItem.alias.trim() !== '';
+                const hasQuantity = this.currentItem.quantity && this.currentItem.quantity.trim() !== '';
+                const hasBackContent = hasHistory || hasMetadata || hasLore || hasAlias || hasQuantity;
 
                 // Show/hide flip button
                 this.elements.flipBtn.classList.toggle('hidden', !hasBackContent);
