@@ -1638,9 +1638,10 @@ class ItemModal {
                         </div>
                         
                         <div class="modal-lore-section" id="modal-lore-section" style="display:none;">
-                            <h4>Lore</h4>
+                            
                             <div class="modal-lore-content" id="modal-lore-content"></div>
                         </div>
+                        <div></div>
                     </div>
                 </div>
 
