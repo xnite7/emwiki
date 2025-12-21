@@ -989,17 +989,16 @@ main {
 }
 
 .item-credits {
-    position: absolute;
-        right: 8px;
-        bottom: 4px;
-        transform-origin: center;
-        z-index: 3;
-        font-size: 16px;
-        font-weight: 400;
-        color: rgba(255, 255, 255, 0.85);
-        text-shadow: -1px -1px 0 #000, 0 -1px 0 #000, 1px -1px 0 #000, 1px 0 0 #000, 1px 1px 0 #000, 0 1px 0 #000, -1px 1px 0 #000, -1px 0 0 #000;
-        white-space: nowrap;
-        pointer-events: none;
+position: absolute;
+    right: 8px;
+    bottom: 4px;
+    transform-origin: center;
+    z-index: 3;
+    font-size: 20px;
+    font-weight: 600;
+    color: rgb(0 0 0 / 18%);
+    white-space: nowrap;
+    pointer-events: none;
 }
 
 .hide-prices .item-price,

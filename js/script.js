@@ -713,6 +713,23 @@ class BaseApp {
             const credits = document.createElement('div');
             credits.className = 'item-credits';
             credits.textContent = item.credits;
+            
+            // Calculate font size based on text length (between 15px and 20px)
+            // Longer text = smaller font, shorter text = larger font
+            const textLength = item.credits.length;
+            const minFontSize = 15;
+            const maxFontSize = 20;
+            const maxLength = 30; // Assume 30 chars is the threshold for minimum font size
+            
+            let fontSize;
+            if (textLength >= maxLength) {
+                fontSize = minFontSize;
+            } else {
+                // Linear interpolation: fontSize decreases as length increases
+                fontSize = maxFontSize - ((textLength / maxLength) * (maxFontSize - minFontSize));
+            }
+            
+            credits.style.fontSize = `${fontSize}px`;
             div.appendChild(credits);
         }
 
@@ -1565,11 +1582,17 @@ class ItemModal {
             <button class="modal-nav modal-next"></button>
 
             <div class="modal-container">
+                <!-- Credits displayed vertically on the right -->
+                
                 <div class="modal-content-wrapper">
                     <!-- Front Side -->
                     <div class="modal-content modal-front">
+                    <div class="modal-credits" id="modal-credits"></div>
                         <div class="modal-header">
-                            <h1 class="modal-title"></h1>
+                            <div class="modal-title-wrapper">
+                                <h1 class="modal-title"></h1>
+                                <div class="modal-alias" id="modal-alias-front" style="display:none;"></div>
+                            </div>
                             <div class="modal-price"></div>
                         </div>
 
@@ -1594,19 +1617,6 @@ class ItemModal {
                             <h3>Additional Info</h3>
                         </div>
 
-                        <div class="modal-demand-info" style="display:none;">
-                            <div class="demand-label-container">
-                                <strong>Demand:</strong>
-                                <span class="demand-text-label"></span>
-                            </div>
-                        </div>
-
-                        <!-- Alias displayed above graph -->
-                        <div class="modal-alias-section" id="modal-alias-section" style="display:none;">
-                            <div class="metadata-item">
-                                <strong>Alias:</strong> <span id="modal-alias-text"></span>
-                            </div>
-                        </div>
 
                         <div class="modal-graph-section">
                             <h4>Price History</h4>
@@ -1661,8 +1671,6 @@ class ItemModal {
             backContent: document.querySelector('.modal-back'),
             title: document.querySelector('.modal-title'),
             price: document.querySelector('.modal-price'),
-            demandInfo: document.querySelector('.modal-demand-info'),
-            demandTextLabel: document.querySelector('.demand-text-label'),
             image: document.querySelector('.modal-image'),
             svg: document.querySelector('.modal-svg'),
             description: document.querySelector('.modal-description'),
@@ -1769,9 +1777,8 @@ class ItemModal {
         const hasHistory = item.priceHistory && item.priceHistory.filter(h => h.price !== 0 && h.price !== '0').length >= 2;
         const hasMetadata = item.author;
         const hasLore = item.lore && item.lore.trim() !== '';
-        const hasAlias = item.alias && item.alias.trim() !== '';
         const hasQuantity = item.quantity && item.quantity.trim() !== '';
-        const hasBackContent = hasHistory || hasMetadata || hasLore || hasAlias || hasQuantity;
+        const hasBackContent = hasHistory || hasMetadata || hasLore || hasQuantity;
 
         // Show/hide flip button
         this.elements.flipBtn.classList.toggle('hidden', !hasBackContent);
@@ -1824,18 +1831,7 @@ class ItemModal {
         const hasHistory = item.priceHistory && item.priceHistory.length >= 2;
         const hasMetadata = item.author;
         const hasLore = item.lore && item.lore.trim() !== '';
-        const hasAlias = item.alias && item.alias.trim() !== '';
         const hasQuantity = item.quantity && item.quantity.trim() !== '';
-
-        // Update alias section (above graph)
-        const aliasSection = document.getElementById('modal-alias-section');
-        const aliasText = document.getElementById('modal-alias-text');
-        if (hasAlias && aliasSection && aliasText) {
-            aliasSection.style.display = 'block';
-            aliasText.textContent = item.alias;
-        } else if (aliasSection) {
-            aliasSection.style.display = 'none';
-        }
 
         // Update graph section
         if (hasHistory) {
@@ -1908,6 +1904,16 @@ class ItemModal {
     updateContent(item) {
         // Basic info
         this.elements.title.textContent = item.name;
+        
+        // Alias (displayed under title with AKA prefix)
+        const aliasEl = document.getElementById('modal-alias-front');
+        if (item.alias && item.alias.trim() && aliasEl) {
+            aliasEl.textContent = `AKA ${item.alias}`;
+            aliasEl.style.display = 'block';
+        } else if (aliasEl) {
+            aliasEl.style.display = 'none';
+        }
+        
         this.elements.description.innerHTML = item.from || '';
 
         // Price
@@ -1918,21 +1924,7 @@ class ItemModal {
             this.elements.price.style.display = 'none';
         }
 
-        // Demand text (back)
-        if (item.demand !== undefined && item.demand >= 0) {
-            const demandLabels = {
-                5: 'Amazing',
-                4: 'Great',
-                3: 'Good',
-                2: 'Okay',
-                1: 'Bad',
-                0: 'Terrible'
-            };
-            this.elements.demandTextLabel.textContent = demandLabels[item.demand] || 'Unknown';
-            this.elements.demandInfo.style.display = 'block';
-        } else {
-            this.elements.demandInfo.style.display = 'none';
-        }
+
 
         // Image/SVG
         if (item.img) {
@@ -1994,6 +1986,15 @@ class ItemModal {
         };
 
         this.elements.container.style.backgroundColor = colors[item.category] || '#333';
+
+        // Credits (displayed vertically on right side)
+        const creditsEl = document.getElementById('modal-credits');
+        if (item.credits && item.credits.trim() && creditsEl) {
+            creditsEl.textContent = item.credits;
+            creditsEl.style.display = 'block';
+        } else if (creditsEl) {
+            creditsEl.style.display = 'none';
+        }
     }
 
     formatDetail(detail) {

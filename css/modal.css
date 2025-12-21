@@ -166,7 +166,14 @@ body:has(.item-modal.active) {
     width: -webkit-fill-available;
     display: inline-flex;
     align-items: flex-start;
-    height: 60px;
+    height: auto;
+    min-height: 60px;
+}
+
+.modal-title-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-title {
@@ -176,6 +183,16 @@ body:has(.item-modal.active) {
     margin: 0;
     z-index: 2;
     flex: 1;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.modal-alias {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+    margin-top: 4px;
+    margin-bottom: 0;
+    font-weight: 400;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
@@ -292,6 +309,7 @@ body:has(.item-modal.active) {
     white-space: nowrap;
     pointer-events: none;
     opacity: 0;
+
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
         border-radius: 65px;
@@ -302,6 +320,7 @@ body:has(.item-modal.active) {
     display: block;
     translate: 0% 116%;
     opacity: 1;
+
     @starting-style {
         opacity: 0;
         translate: 0% 54%;
@@ -736,6 +755,25 @@ body:has(.item-modal.active) {
     word-wrap: break-word;
 }
 
+/* Credits displayed vertically on the right */
+.modal-credits {
+    position: absolute;
+        writing-mode: vertical-rl;
+        top: 48%;
+        right: -40px;
+        transform: translateY(-50%) rotate(-180deg);
+        transform-origin: center;
+        color: rgb(255 255 255 / 20%);
+        font-size: 64px;
+        font-weight: 600;
+        white-space: nowrap;
+        z-index: 10001;
+        opacity: 0.5;
+        transition: opacity 0.3s ease, right 0.6s ease;
+        display: none;
+        width: 133px;
+        pointer-events: none;
+}
 
 
 /* Modal Action Buttons (Wishlist & Favorite) */
