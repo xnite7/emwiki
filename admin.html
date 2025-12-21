@@ -2612,7 +2612,7 @@
 
                         // Check for changes in each field
                         const fields = ['name', 'img', 'svg', 'price', 'from', 'price/code/rarity',
-                            'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed', 'demand'];
+                            'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed', 'demand', 'credits', 'lore', 'alias', 'quantity'];
 
                         for (const field of fields) {
                             const newVal = newItem[field];
@@ -4870,7 +4870,11 @@
                 ['Text', 'svg'],
                 ['RAP', 'price'],
                 ['Description', 'from'],
-                ['Price/Code/Rarity', 'price/code/rarity']
+                ['Price/Code/Rarity', 'price/code/rarity'],
+                ['Credits', 'credits'],
+                ['Lore', 'lore'],
+                ['Alias', 'alias'],
+                ['Quantity', 'quantity']
             ],
 
             // Pagination settings
@@ -5089,6 +5093,10 @@
                 return `<strong>[${item.item}]</strong> <span class="old">${oldFile}</span> → <span class="new">${newFile}</span>`;
             },
 
+            formatSvgItem(item) {
+                return `<strong>[${item.item}]</strong> updated SVG`;
+            },
+
             formatAddedItem(item) {
                 return `${this.ICONS.added} <strong>${item.name}</strong>`;
             },
@@ -5107,7 +5115,11 @@
                     ['from', []],
                     ['price/code/rarity', []],
                     ['img', []],
-                    ['svg', []]
+                    ['svg', []],
+                    ['credits', []],
+                    ['lore', []],
+                    ['alias', []],
+                    ['quantity', []]
                 ]);
 
                 for (const line of diffLines) {
@@ -5148,6 +5160,14 @@
                         changes.img.push({ item, oldImg: oldRaw, newImg: newRaw });
                     } else if (field === 'svg') {  // ADD THIS
                         changes.svg.push({ item, oldImg: oldRaw, newImg: newRaw });
+                    } else if (field === 'credits') {
+                        changes.credits.push({ item, oldDesc: oldRaw || '', newDesc: newRaw || '' });
+                    } else if (field === 'lore') {
+                        changes.lore.push({ item, oldDesc: oldRaw || '', newDesc: newRaw || '' });
+                    } else if (field === 'alias') {
+                        changes.alias.push({ item, oldDesc: oldRaw || '', newDesc: newRaw || '' });
+                    } else if (field === 'quantity') {
+                        changes.quantity.push({ item, oldDesc: oldRaw || '', newDesc: newRaw || '' });
                     }
                 }
 
@@ -5236,10 +5256,14 @@
                     tradable: this.formatBooleanItem,
                     demand: this.formatDemandItem,
                     img: this.formatImageItem,  // Changed from 'icon' to 'img'
-                    svg: this.formatImageItem,  // Added svg formatter
+                    svg: this.formatSvgItem,  // Simple formatter for SVG
                     price: this.formatPriceItem,
                     from: this.formatDescriptionItem,
-                    'price/code/rarity': this.formatDescriptionItem
+                    'price/code/rarity': this.formatDescriptionItem,
+                    credits: this.formatDescriptionItem,
+                    lore: this.formatDescriptionItem,
+                    alias: this.formatDescriptionItem,
+                    quantity: this.formatDescriptionItem
                 };
 
                 for (const [title, changeKey] of this.SECTION_CONFIG) {
