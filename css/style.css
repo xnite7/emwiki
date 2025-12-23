@@ -279,7 +279,7 @@ svg:hover #cloud {
     position: relative;
     border-bottom: 1px solid var(--border-color);
     inset: 0;
-background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.4'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.4'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     background-size: 150px;
     animation: moveHammers 30s linear infinite;
 }
@@ -380,7 +380,7 @@ background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox=
 /* Search - SIMPLER */
 .search-container {
     position: relative;
-        backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
     max-width: 500px;
     margin: 0 auto 20px;
     z-index: 1;
@@ -989,7 +989,7 @@ main {
 }
 
 .item-credits {
-position: absolute;
+    position: absolute;
     right: 8px;
     bottom: 4px;
     transform-origin: center;
@@ -1346,6 +1346,7 @@ div#random-items-grid {
     transition: all 0.2s;
     min-width: 110px;
     font-weight: 600;
+    overflow: clip;
 }
 
 .quick-link img {
@@ -1355,6 +1356,22 @@ div#random-items-grid {
     transition: transform 0.2s;
 }
 
+.quick-link.anuc {
+    padding: 0px;
+    scale: 1;
+}
+
+.quick-link.anuc span {
+    position: absolute;
+    bottom: 18px;
+    text-shadow: 0px 0px 5px #000, 0px 0px 8px #000;
+}
+
+.quick-link.anuc img {
+    width: 106px;
+    height: 109px;
+    object-fit: fill;
+}
 
 .quick-link:hover {
     transform: translateY(-3px);

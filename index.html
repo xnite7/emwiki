@@ -44,11 +44,12 @@
 			99% {
 				background-image: none;
 			}
+
 			to {
 				opacity: 1;
 				background-image: url(./imgs/bg.jpg);
 			}
-			
+
 		}
 	</style>
 
@@ -63,7 +64,7 @@
 </head>
 
 <body>
-	
+
 	<!-- Header with modern catalog style -->
 	<header>
 		<a href="https://emwiki.com">
@@ -105,7 +106,7 @@
 			<a href="/scammers" class="nav-link">Scammers</a>
 		</div>
 
-		
+
 	</header>
 
 	<!-- Hero Section -->
@@ -261,8 +262,14 @@
 		<div class="quick-links">
 			<a href="https://discord.com/invite/tg" class="quick-link discord">
 				<img src="./imgs/discord.png" alt="Discord">
-				<span>Discord</span>
+				<span>TG Discord</span>
 			</a>
+			<a href="https://discord.gg/WZwRgZuEyQ" class="quick-link anuc">
+				<img src="./imgs/anuc.gif" alt="Discord">
+				<span>Our Discord</span>
+			</a>
+
+
 			<a href="/burrito" class="quick-link burrito">
 				<img src="./imgs/burrito.png" alt="Burrito Game">
 				<span>Burrito</span>
@@ -293,7 +300,8 @@
 			<div class="footer-section">
 				<h4>Contact</h4>
 				<p>Found a bug? Reach out to <b>@xnite</b> on Discord!</p>
-				<a id="kypsus" href="https://docs.google.com/spreadsheets/d/11qKj8UTf2-x0Z7bNMuguEFKALCWI1v7QtkDbNlBzy9M">
+				<a id="kypsus"
+					href="https://docs.google.com/spreadsheets/d/11qKj8UTf2-x0Z7bNMuguEFKALCWI1v7QtkDbNlBzy9M">
 					<strong>@Kypsus</strong>'s Google Sheet</a>
 			</div>
 		</div>
@@ -343,7 +351,7 @@
 				this.initializeSearch();
 			}
 
-			
+
 
 			setupEventListeners() {
 				document.querySelectorAll('.category-btn').forEach(btn => {
@@ -559,7 +567,7 @@
 					this.ctx.fillStyle = '#ffffff';
 					this.ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
 					this.ctx.shadowBlur = 3;
-					
+
 					// Draw a simple circle for the snowflake
 					this.ctx.beginPath();
 					this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
