@@ -573,10 +573,8 @@
 
                     if (filterParam === 'wishlist') {
                         document.getElementById('season-label').textContent = "★ Wishlist";
-                        document.getElementById('total').textContent = this.wishlist.length;
                     } else {
                         document.getElementById('season-label').textContent = "♥ Favorites";
-                        document.getElementById('total').textContent = this.favorites.length;
                     }
 
 
@@ -1687,10 +1685,12 @@
 
             applyFilters() {
                 // Increment request ID to cancel any pending batch loads
+                
                 this.filterRequestId++;
                 const currentRequestId = this.filterRequestId;
 
                 this.filtered = this.allItems.filter(item => {
+                    
                     // Chest filter
                     if (this.chestFilter !== 'all') {
                         const chestItems = this.chestMappings[this.chestFilter] || [];
@@ -1783,6 +1783,8 @@
                     }
                     return true;
                 });
+
+                document.getElementById('total').textContent = this.filtered.length;
 
                 // Update rarity sort option visibility based on filtered items
                 const raritySortOption = document.getElementById('rarity-sort-option');
