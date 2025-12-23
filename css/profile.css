@@ -1,4 +1,11 @@
 /* Profile Page Styles */
+main {
+    padding: 30px 50px;
+}
+
+.hero-epic {
+    margin-bottom: 10px;
+}
 
 /* Back to Directory Button */
 .back-to-directory {
@@ -31,7 +38,6 @@
 .directory-container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 40px 20px;
 }
 
 .directory-header {
@@ -107,7 +113,7 @@
 .users-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    gap: 42px 28px;
 }
 
 .user-card {
@@ -115,30 +121,32 @@
     backdrop-filter: blur(10px);
     border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 25px;
+    padding: 15px 20px;
     text-align: center;
     transition: all 0.3s;
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     text-decoration: none;
     color: inherit;
-    display: block;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .user-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-    border-color: rgba(102, 126, 234, 0.5);
+    box-shadow: 0 8px 25px rgba(150, 234, 102, 0.3);
+    border-color: rgba(113, 234, 102, 0.5);
 }
 
 .user-card-avatar {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
-    margin: 0 auto 15px;
-    border: 3px solid rgba(102, 126, 234, 0.3);
+    border: 1px solid rgb(147 147 147 / 30%);
     object-fit: cover;
-    background: linear-gradient(128deg, #7cce76, #e0db6c);
+    background: linear-gradient(128deg, #21253957, #00000066);
 }
 
 .user-card-name {
@@ -147,12 +155,15 @@
     color: white;
     margin: 0 0 5px 0;
     font-family: 'BuilderSans', sans-serif;
+        text-overflow: ellipsis;
+            overflow: hidden;
 }
 
 .user-card-username {
     font-size: 0.95rem;
     color: rgba(255, 255, 255, 0.6);
-    margin: 0 0 15px 0;
+        text-overflow: ellipsis;
+            overflow: hidden;
 }
 
 .user-card-stats {
@@ -610,6 +621,117 @@
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Wishlist */
+.wishlist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.wishlist-item-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.wishlist-item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.wishlist-item-image-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.wishlist-item-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 10px;
+}
+
+.wishlist-item-image-wrapper canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 10px;
+}
+
+.wishlist-item-info {
+    padding: 15px;
+}
+
+.wishlist-item-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wishlist-item-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.wishlist-item-price {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
+}
+
+.wishlist-item-category {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.wishlist-item-category.gears {
+    background: rgba(102, 126, 234, 0.3);
+    color: #a5b4fc;
+}
+
+.wishlist-item-category.deaths {
+    background: rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+}
+
+.wishlist-item-category.pets {
+    background: rgba(34, 197, 94, 0.3);
+    color: #86efac;
+}
+
+.wishlist-item-category.effects {
+    background: rgba(168, 85, 247, 0.3);
+    color: #c4b5fd;
+}
+
+.wishlist-item-category.titles {
+    background: rgba(251, 191, 36, 0.3);
+    color: #fde047;
+}
+
 /* Gallery Posts */
 .gallery-section-header {
     display: flex;
@@ -864,6 +986,19 @@
         width: 18px;
         height: 18px;
     }
+
+    .wishlist-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+    }
+
+    .wishlist-item-info {
+        padding: 12px;
+    }
+
+    .wishlist-item-name {
+        font-size: 0.85rem;
+    }
 }
 
 /* Light Theme Support */
@@ -872,6 +1007,7 @@
 .light-theme .trade-card,
 .light-theme .review-card,
 .light-theme .gallery-post-card,
+.light-theme .wishlist-item-card,
 .light-theme .error-message {
     background: rgba(255, 255, 255, 0.8);
     border-color: rgba(0, 0, 0, 0.1);
@@ -881,7 +1017,8 @@
 .light-theme .section-title,
 .light-theme .reviewer-name,
 .light-theme .trade-item-name,
-.light-theme .gallery-post-title {
+.light-theme .gallery-post-title,
+.light-theme .wishlist-item-name {
     color: #000;
 }
 
@@ -890,7 +1027,8 @@
 .light-theme .trade-meta,
 .light-theme .review-date,
 .light-theme .review-comment,
-.light-theme .gallery-post-stats {
+.light-theme .gallery-post-stats,
+.light-theme .wishlist-item-price {
     color: rgba(0, 0, 0, 0.7);
 }
 

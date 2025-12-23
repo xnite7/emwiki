@@ -105,8 +105,8 @@
         <!-- User Directory View -->
         <div id="directory-view" class="directory-container" style="display: none;">
             <div class="directory-header">
-                <h1 class="directory-title">Player Directory</h1>
-                <p class="directory-subtitle">Search and discover EMwiki users</p>
+                <h1 class="hero-epic">Player Directory</h1>
+                <p class="hero-subtitle">Search and discover EMwiki users</p>
             </div>
 
             <div class="search-section">
@@ -228,6 +228,14 @@
                     <div id="gallery-posts-container" class="gallery-posts-carousel">
                         <p class="no-data-message">No gallery posts yet</p>
                     </div>
+                </div>
+            </section>
+
+            <!-- Wishlist -->
+            <section class="profile-section">
+                <h2 class="section-title">Wishlist</h2>
+                <div id="wishlist-container" class="wishlist-grid">
+                    <p class="no-data-message">Loading wishlist...</p>
                 </div>
             </section>
 
@@ -465,9 +473,9 @@
             card.innerHTML = `
                 <img src="${user.avatar_url || 'https://emwiki.com/imgs/placeholder.png'}"
                      alt="${this.escapeHtml(user.display_name)}"
-                     class="user-card-avatar">
+                     class="user-card-avatar"><div style="flex: 1 1;max-width: 145px;">
                 <h3 class="user-card-name">${this.escapeHtml(user.display_name)}</h3>
-                <p class="user-card-username">@${this.escapeHtml(user.username)}</p>
+                <p class="user-card-username">@${this.escapeHtml(user.username)}</p></div>
 
                 ${specialRoles.length > 0 ? `
                     <div class="user-card-roles">
@@ -477,16 +485,7 @@
                     </div>
                 ` : ''}
 
-                <div class="user-card-stats">
-                    <div class="user-card-stat">
-                        <span class="user-card-stat-value">${totalTrades}</span>
-                        <span class="user-card-stat-label">Trades</span>
-                    </div>
-                    <div class="user-card-stat">
-                        <span class="user-card-stat-value">${avgRating.toFixed(1)}</span>
-                        <span class="user-card-stat-label">Rating</span>
-                    </div>
-                </div>
+
             `;
 
             return card;
@@ -524,7 +523,7 @@
             document.getElementById('error-state').style.display = 'none';
             document.getElementById('profile-content').style.display = 'block';
 
-            const { user, stats, reviews, recentTrades, donationData, galleryPosts } = this.profileData;
+            const { user, stats, reviews, recentTrades, donationData, galleryPosts, wishlist } = this.profileData;
 
             // Update page title
             document.title = `${user.displayName} - EMwiki`;
@@ -540,6 +539,9 @@
 
             // Render gallery posts
             this.renderGalleryPosts(galleryPosts);
+
+            // Render wishlist
+            this.renderWishlist(wishlist || []);
 
             // Render reviews
             this.renderReviews(reviews);
@@ -744,6 +746,131 @@
 
             // Update arrow states on scroll
             carousel.addEventListener('scroll', updateArrowStates);
+        }
+
+        async fetchItemByName(itemName) {
+            // Try each category with the single item endpoint: /api/items/:category/:name
+            const categories = ['gears', 'deaths', 'pets', 'effects', 'titles'];
+            
+            for (const category of categories) {
+                try {
+                    const response = await fetch(`${this.apiBase}/items/${category}/${encodeURIComponent(itemName)}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.item && data.item.name === itemName) {
+                            return { ...data.item, category };
+                        }
+                    }
+                } catch (error) {
+                    // Item not found in this category, continue to next
+                }
+            }
+            
+            // If not found by exact category/name, try search endpoint
+            try {
+                const response = await fetch(`${this.apiBase}/items/search?q=${encodeURIComponent(itemName)}&limit=20`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.items && data.items.length > 0) {
+                        // Find exact match
+                        const exactMatch = data.items.find(item => item.name === itemName);
+                        if (exactMatch) {
+                            return exactMatch;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error(`Error searching for item ${itemName}:`, error);
+            }
+            
+            return null;
+        }
+
+        async renderWishlist(wishlistItemNames) {
+            const container = document.getElementById('wishlist-container');
+
+            if (!wishlistItemNames || wishlistItemNames.length === 0) {
+                container.innerHTML = '<p class="no-data-message">No items in wishlist</p>';
+                return;
+            }
+
+            // Show loading state
+            container.innerHTML = '<p class="no-data-message">Loading wishlist items...</p>';
+
+            // Fetch item details for all wishlist items
+            const itemPromises = wishlistItemNames.map(itemName => this.fetchItemByName(itemName));
+            const items = await Promise.all(itemPromises);
+
+            // Filter out null results (items not found)
+            const validItems = items.filter(item => item !== null);
+
+            if (validItems.length === 0) {
+                container.innerHTML = '<p class="no-data-message">No valid items found in wishlist</p>';
+                return;
+            }
+
+            // Clear container and render items
+            container.innerHTML = '';
+
+            validItems.forEach(item => {
+                const itemCard = document.createElement('div');
+                itemCard.className = 'wishlist-item-card';
+                itemCard.dataset.itemName = item.name;
+                itemCard.dataset.category = item.category;
+
+                // Image wrapper
+                const imageWrapper = document.createElement('div');
+                imageWrapper.className = 'wishlist-item-image-wrapper';
+
+                if (item.img) {
+                    const img = document.createElement('img');
+                    img.src = item.img.startsWith('http') ? item.img : `https://emwiki.com/${item.img}`;
+                    img.alt = this.escapeHtml(item.name);
+                    img.loading = 'lazy';
+                    img.onerror = function() {
+                        this.style.display = 'none';
+                    };
+                    imageWrapper.appendChild(img);
+                } else if (item.svg) {
+                    imageWrapper.insertAdjacentHTML('beforeend', item.svg);
+                } else {
+                    // Placeholder
+                    imageWrapper.innerHTML = '<div style="color: rgba(255,255,255,0.3); font-size: 3rem;">📦</div>';
+                }
+
+                // Item info
+                const itemInfo = document.createElement('div');
+                itemInfo.className = 'wishlist-item-info';
+
+                const itemName = document.createElement('div');
+                itemName.className = 'wishlist-item-name';
+                itemName.textContent = item.name;
+                itemInfo.appendChild(itemName);
+
+                const itemMeta = document.createElement('div');
+                itemMeta.className = 'wishlist-item-meta';
+
+                const itemPrice = document.createElement('div');
+                itemPrice.className = 'wishlist-item-price';
+                itemPrice.textContent = item.price === 'N/A' || !item.price ? 'N/A' : `${item.price} Credits`;
+                itemMeta.appendChild(itemPrice);
+
+                const categoryBadge = document.createElement('div');
+                categoryBadge.className = `wishlist-item-category ${item.category}`;
+                categoryBadge.textContent = item.category;
+                itemMeta.appendChild(categoryBadge);
+
+                itemInfo.appendChild(itemMeta);
+                itemCard.appendChild(imageWrapper);
+                itemCard.appendChild(itemInfo);
+
+                // Make clickable - navigate to catalog with item filter
+                itemCard.addEventListener('click', () => {
+                    window.location.href = `/catalog?item=${encodeURIComponent(item.name)}`;
+                });
+
+                container.appendChild(itemCard);
+            });
         }
 
         renderReviews(reviews) {

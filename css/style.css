@@ -327,7 +327,6 @@ svg:hover #cloud {
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    height: 68px;
     display: inline-block;
     animation: colorShift 3s ease-in-out infinite alternate;
 }

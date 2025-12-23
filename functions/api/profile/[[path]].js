@@ -171,6 +171,27 @@ async function handleGetProfile(request, env) {
         galleryPosts = [];
     }
 
+    // Get user's wishlist
+    let wishlist = [];
+    try {
+        const wishlistPref = await env.DBA.prepare(`
+            SELECT preference_value
+            FROM user_preferences
+            WHERE user_id = ? AND preference_key = 'wishlist'
+        `).bind(actualUserId).first();
+
+        if (wishlistPref && wishlistPref.preference_value) {
+            wishlist = JSON.parse(wishlistPref.preference_value);
+            // Ensure it's an array
+            if (!Array.isArray(wishlist)) {
+                wishlist = [];
+            }
+        }
+    } catch (e) {
+        console.error('Failed to fetch wishlist:', e);
+        wishlist = [];
+    }
+
     return new Response(JSON.stringify({
         user: {
             userId: user.user_id,
@@ -191,7 +212,8 @@ async function handleGetProfile(request, env) {
         reviews: reviews,
         recentTrades: recentTrades,
         donationData: donationData,
-        galleryPosts: galleryPosts
+        galleryPosts: galleryPosts,
+        wishlist: wishlist
     }), {
         headers: { 'Content-Type': 'application/json' }
     });
