@@ -1,6 +1,14 @@
 // ==================== UTILITIES ====================
 const Utils = {
 
+    // Prevent right-click and drag on canvas elements
+    protectCanvas(canvas) {
+        if (!canvas) return;
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+        canvas.style.userSelect = 'none';
+        canvas.style.webkitUserSelect = 'none';
+    },
+
     loadFromStorage(key, defaultValue) {
         try {
             const stored = localStorage.getItem(key);
@@ -826,6 +834,7 @@ class BaseApp {
                 ctx.drawImage(img, 0, 0);
             };
             img.src = item.img;
+            Utils.protectCanvas(canvas);
             div.appendChild(canvas);
         } else if (item.svg) {
             div.insertAdjacentHTML('beforeend', item.svg);
@@ -1308,6 +1317,7 @@ class BaseApp {
                         ctx.drawImage(img, 0, 0);
                     };
                     img.src = item.img;
+                    Utils.protectCanvas(canvas);
                     div.appendChild(canvas);
                 } else if (item.svg) {
                     div.insertAdjacentHTML('beforeend', item.svg);
@@ -1358,6 +1368,7 @@ class BaseApp {
                     };
 
                     img.src = item.img;
+                    Utils.protectCanvas(canvas);
 
                     div.appendChild(canvas);
                 } else if (item.svg) {
@@ -1754,7 +1765,11 @@ class ItemModal {
             backContent: document.querySelector('.modal-back'),
             title: document.querySelector('.modal-title'),
             price: document.querySelector('.modal-price'),
-            image: document.querySelector('.modal-image'),
+            image: (() => {
+                const canvas = document.querySelector('.modal-image');
+                if (canvas) Utils.protectCanvas(canvas);
+                return canvas;
+            })(),
             svg: document.querySelector('.modal-svg'),
             description: document.querySelector('.modal-description'),
             details: document.querySelector('.modal-details'),
@@ -2019,6 +2034,7 @@ class ItemModal {
                 ctx.drawImage(img, 0, 0);
             }.bind(this);
             img.src = item.img;
+            Utils.protectCanvas(this.elements.image);
 
             this.elements.image.style.display = 'block';
             this.elements.svg.style.display = 'none';

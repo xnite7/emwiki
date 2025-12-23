@@ -234,8 +234,10 @@
             <!-- Wishlist -->
             <section class="profile-section">
                 <h2 class="section-title">Wishlist</h2>
-                <div id="wishlist-container" class="wishlist-grid">
-                    <p class="no-data-message">Loading wishlist...</p>
+                <div class="wishlist-section">
+                    <div id="wishlist-container" class="wishlist-grid">
+                        <p class="no-data-message">Loading wishlist...</p>
+                    </div>
                 </div>
             </section>
 
@@ -790,7 +792,7 @@
             const container = document.getElementById('wishlist-container');
 
             if (!wishlistItemNames || wishlistItemNames.length === 0) {
-                container.innerHTML = '<p class="no-data-message">No items in wishlist</p>';
+                container.innerHTML = '';
                 return;
             }
 
@@ -805,72 +807,81 @@
             const validItems = items.filter(item => item !== null);
 
             if (validItems.length === 0) {
-                container.innerHTML = '<p class="no-data-message">No valid items found in wishlist</p>';
+                container.innerHTML = '';
                 return;
             }
 
-            // Clear container and render items
+            // Clear container and render items using the same structure as catalog wishlist
             container.innerHTML = '';
 
             validItems.forEach(item => {
-                const itemCard = document.createElement('div');
-                itemCard.className = 'wishlist-item-card';
-                itemCard.dataset.itemName = item.name;
-                itemCard.dataset.category = item.category;
-
-                // Image wrapper
-                const imageWrapper = document.createElement('div');
-                imageWrapper.className = 'wishlist-item-image-wrapper';
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.innerHTML = `<small class="item-name">${this.escapeHtml(item.name)}</small>`;
 
                 if (item.img) {
-                    const img = document.createElement('img');
-                    img.src = item.img.startsWith('http') ? item.img : `https://emwiki.com/${item.img}`;
-                    img.alt = this.escapeHtml(item.name);
-                    img.loading = 'lazy';
-                    img.onerror = function() {
-                        this.style.display = 'none';
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    img.onload = function () {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
                     };
-                    imageWrapper.appendChild(img);
+                    img.src = item.img.startsWith('http') ? item.img : `https://emwiki.com/${item.img}`;
+                    img.onerror = function() {
+                        // If image fails, try to show SVG or placeholder
+                        if (item.svg) {
+                            div.insertAdjacentHTML('beforeend', item.svg);
+                        }
+                    };
+                    // Prevent right-click and drag
+                    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+                    canvas.addEventListener('dragstart', (e) => e.preventDefault());
+                    canvas.addEventListener('selectstart', (e) => e.preventDefault());
+                    canvas.style.userSelect = 'none';
+                    canvas.style.webkitUserSelect = 'none';
+                    div.appendChild(canvas);
                 } else if (item.svg) {
-                    imageWrapper.insertAdjacentHTML('beforeend', item.svg);
-                } else {
-                    // Placeholder
-                    imageWrapper.innerHTML = '<div style="color: rgba(255,255,255,0.3); font-size: 3rem;">📦</div>';
+                    div.insertAdjacentHTML('beforeend', item.svg);
                 }
 
-                // Item info
-                const itemInfo = document.createElement('div');
-                itemInfo.className = 'wishlist-item-info';
-
-                const itemName = document.createElement('div');
-                itemName.className = 'wishlist-item-name';
-                itemName.textContent = item.name;
-                itemInfo.appendChild(itemName);
-
-                const itemMeta = document.createElement('div');
-                itemMeta.className = 'wishlist-item-meta';
-
-                const itemPrice = document.createElement('div');
-                itemPrice.className = 'wishlist-item-price';
-                itemPrice.textContent = item.price === 'N/A' || !item.price ? 'N/A' : `${item.price} Credits`;
-                itemMeta.appendChild(itemPrice);
-
-                const categoryBadge = document.createElement('div');
-                categoryBadge.className = `wishlist-item-category ${item.category}`;
-                categoryBadge.textContent = item.category;
-                itemMeta.appendChild(categoryBadge);
-
-                itemInfo.appendChild(itemMeta);
-                itemCard.appendChild(imageWrapper);
-                itemCard.appendChild(itemInfo);
+                // Add price if available
+                if (item.price && item.price !== 'N/A' && item.price !== '0') {
+                    const priceDiv = document.createElement('div');
+                    priceDiv.className = 'item-price';
+                    priceDiv.textContent = this.convertPrice ? this.convertPrice(this.formatPrice(item.price)) : item.price;
+                    div.appendChild(priceDiv);
+                } else if (item.price === '0') {
+                    const priceDiv = document.createElement('div');
+                    priceDiv.className = 'item-price';
+                    priceDiv.style.opacity = '0';
+                    priceDiv.style.height = '16px';
+                    div.appendChild(priceDiv);
+                }
 
                 // Make clickable - navigate to catalog with item filter
-                itemCard.addEventListener('click', () => {
+                div.addEventListener('click', () => {
                     window.location.href = `/catalog?item=${encodeURIComponent(item.name)}`;
                 });
 
-                container.appendChild(itemCard);
+                container.appendChild(div);
             });
+        }
+
+        formatPrice(price) {
+            if (!price || price === 'N/A') return 'N/A';
+            return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        convertPrice(price) {
+            if (!price || price === 'N/A') return 'N/A';
+            // Convert to abbreviated format if needed (e.g., 1000 -> 1K)
+            const num = parseFloat(price.replace(/,/g, ''));
+            if (isNaN(num)) return price;
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
         }
 
         renderReviews(reviews) {
