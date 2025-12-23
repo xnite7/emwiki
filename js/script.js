@@ -1329,12 +1329,12 @@ class BaseApp {
                 wishlistDiv.appendChild(div);
 
                 if (item.price !== '0') {
-                    totalValue += parseInt(item.price) || 0;
+                    totalValue += this.parsePriceValue(item.price);
                 }
             }
         });
 
-        document.getElementById('wishlist-value').textContent = Utils.formatPrice(totalValue);
+        document.getElementById('wishlist-value').textContent = totalValue.toLocaleString();
 
         // Update recently viewed
         const recentDiv = document.getElementById('recent-viewed-items');
