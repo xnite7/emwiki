@@ -573,8 +573,10 @@
 
                     if (filterParam === 'wishlist') {
                         document.getElementById('season-label').textContent = "★ Wishlist";
+                        document.getElementById('total').textContent = this.wishlist.length;
                     } else {
                         document.getElementById('season-label').textContent = "♥ Favorites";
+                        document.getElementById('total').textContent = this.favorites.length;
                     }
 
 
@@ -871,27 +873,47 @@
                 const creditsMenu = document.getElementById('credits-menu');
                 if (!creditsMenu) return;
 
-                // Get all unique credits from items
+                // Get all unique credits from items and count items per creator
                 const creditsSet = new Set();
+                const creditsCount = new Map();
+                let anyCreatorCount = 0;
+                
                 this.allItems.forEach(item => {
                     if (item.credits && item.credits.trim()) {
-                        creditsSet.add(item.credits.trim());
+                        const credit = item.credits.trim();
+                        creditsSet.add(credit);
+                        creditsCount.set(credit, (creditsCount.get(credit) || 0) + 1);
+                        anyCreatorCount++;
                     }
                 });
 
                 // Clear existing items
                 creditsMenu.innerHTML = '';
 
-                // Add "All Credits" option
-                const allItem = document.createElement('small');
-                allItem.className = 'dropdown-item';
-                allItem.dataset.data = 'all';
-                allItem.textContent = 'All';
-                allItem.onclick = () => this.selectCredits('all');
-                creditsMenu.appendChild(allItem);
 
-                // Sort credits alphabetically
+
+                // Add "By Any Creator" option
+                const anyCreatorItem = document.createElement('small');
+                anyCreatorItem.className = 'dropdown-item';
+                anyCreatorItem.dataset.data = 'any';
+                anyCreatorItem.style.display = 'flex';
+                anyCreatorItem.style.alignItems = 'center';
+                anyCreatorItem.style.justifyContent = 'space-between';
+                anyCreatorItem.innerHTML = `<span>By Any Creator</span><small class="tag-count">${anyCreatorCount}</small>`;
+                anyCreatorItem.onclick = () => this.selectCredits('any');
+                creditsMenu.appendChild(anyCreatorItem);
+
+                // Sort credits by count (descending), then alphabetically for ties
                 const sortedCredits = Array.from(creditsSet).sort((a, b) => {
+                    const countA = creditsCount.get(a) || 0;
+                    const countB = creditsCount.get(b) || 0;
+                    
+                    // First sort by count (descending)
+                    if (countA !== countB) {
+                        return countB - countA;
+                    }
+                    
+                    // If counts are equal, sort alphabetically
                     // Check if they're numeric IDs
                     const aIsNumeric = /^\d+$/.test(a);
                     const bIsNumeric = /^\d+$/.test(b);
@@ -909,7 +931,18 @@
                     item.dataset.data = credit;
                     item.style.display = 'flex';
                     item.style.alignItems = 'center';
+                    item.style.justifyContent = 'space-between';
                     item.style.gap = '8px';
+                    
+                    // Create container for avatar and label
+                    const contentContainer = document.createElement('div');
+                    contentContainer.style.display = 'flex';
+                    contentContainer.style.alignItems = 'center';
+                    contentContainer.style.gap = '8px';
+                    contentContainer.style.flex = '1';
+                    
+                    // Get count for this creator
+                    const count = creditsCount.get(credit) || 0;
                     
                     // Check if credit is a Roblox user ID
                     const isRobloxId = /^\d+$/.test(credit);
@@ -926,12 +959,12 @@
                         avatarImg.style.flexShrink = '0';
                         avatarImg.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiBmaWxsPSIjMzMzIi8+CjxwYXRoIGQ9Ik0xMCA2QzExLjM4IDYgMTIuNSA1LjM4IDEyLjUgNC41QzEyLjUgMy42MiAxMS4zOCAzIDEwIDNDOC42MiAzIDcuNSAzLjYyIDcuNSA0LjVDNy41IDUuMzggOC42MiA2IDEwIDZaTTEwIDguMzNDOC41MyA3LjUgNiA3LjUgNiAxMFYxMS42N0gxNFYxMEMxNCA3LjUgMTEuNDcgNy41IDEwIDguMzNaIiBmaWxsPSIjOTk5OTk5Ii8+Cjwvc3ZnPgo=';
                         avatarImg.alt = '';
-                        item.appendChild(avatarImg);
+                        contentContainer.appendChild(avatarImg);
                         
                         // Create label placeholder
                         const label = document.createElement('span');
                         label.textContent = credit;
-                        item.appendChild(label);
+                        contentContainer.appendChild(label);
                         
                         // Fetch Roblox user data asynchronously using cached function
                         Utils.getRobloxUserData(credit)
@@ -950,9 +983,19 @@
                             });
                     } else {
                         // Not a Roblox ID, just display the text
-                        item.textContent = credit;
+                        const label = document.createElement('span');
+                        label.textContent = credit;
+                        contentContainer.appendChild(label);
                     }
                     
+                    // Add count element
+                    const countElement = document.createElement('small');
+                    countElement.className = 'tag-count';
+                    countElement.textContent = count;
+                    countElement.style.marginLeft = 'auto';
+                    
+                    item.appendChild(contentContainer);
+                    item.appendChild(countElement);
                     item.onclick = () => this.selectCredits(credit);
                     creditsMenu.appendChild(item);
                 });
@@ -1231,6 +1274,8 @@
                 // Update label
                 if (credit === 'all') {
                     document.getElementById('season-label').textContent = '';
+                } else if (credit === 'any') {
+                    document.getElementById('season-label').textContent = 'By Any Creator';
                 } else {
                     // Fetch username if it's a Roblox ID
                     const isRobloxId = /^\d+$/.test(credit);
@@ -1671,11 +1716,17 @@
 
                     // Credits filter
                     if (this.creditsFilter !== 'all') {
-                        if (!item.credits) return false;
-                        // Normalize comparison - handle both IDs and usernames
-                        const itemCredits = item.credits.trim().toLowerCase();
-                        const filterCredits = this.creditsFilter.toLowerCase();
-                        if (itemCredits !== filterCredits) return false;
+                        if (this.creditsFilter === 'any') {
+                            // Show items that have any credits (non-empty credits field)
+                            if (!item.credits || !item.credits.trim()) return false;
+                        } else {
+                            // Show items matching specific creator
+                            if (!item.credits) return false;
+                            // Normalize comparison - handle both IDs and usernames
+                            const itemCredits = item.credits.trim().toLowerCase();
+                            const filterCredits = this.creditsFilter.toLowerCase();
+                            if (itemCredits !== filterCredits) return false;
+                        }
                     }
 
                     // Search filter

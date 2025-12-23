@@ -2805,7 +2805,7 @@ textarea {
 }
 
 #credits-menu {
-    grid-template-rows: repeat(9, auto);
+    grid-template-rows: repeat(38, auto);
     padding: 5px 0px;
 }
 
