@@ -66,7 +66,9 @@
 <body>
 
 	<!-- Header with modern catalog style -->
-	<header>
+	<header><div id="christmaslights"
+		style="display:none;position: absolute;left: 0;top: -45px;background: url(./imgs/titles/7a889a5ce371c6aa3a59862815826ee7.png);background-position: center;width: 100%;height: 40%;z-index: -1;">
+	</div>
 		<a href="https://emwiki.com">
 			<svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
 				<defs>
@@ -482,6 +484,8 @@
 				const now = new Date();
 				const month = now.getMonth(); // 0-11, where 11 is December
 				if (month !== 11) return; // Only show in December
+
+				document.getElementById('christmaslights').style.display = 'block';
 
 				this.canvas = document.createElement('canvas');
 				this.canvas.id = 'snow-canvas';
