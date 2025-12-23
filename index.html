@@ -397,11 +397,9 @@
 
 				items.forEach(item => {
 					const div = this.createItemElement(item)
-
+					const priceCodeRarity = item['price/code/rarity'];
 					if (item.weeklystar) {
-						const priceCodeRarity = item['price/code/rarity'];
-						if (priceCodeRarity) {
-							div.querySelector('.item-price').textContent = priceCodeRarity.split('<br>').pop().replace(' Stars', '');
+							div.querySelector('.item-price').textContent = priceCodeRarity?.split('<br>').pop().replace(' Stars', '');
 							div.querySelector('.item-price').classList.replace('item-price', 'star-price');
 							const outlineColors = {
 								'60': '#b31aff',
@@ -415,15 +413,19 @@
 									div.style.background = 'unset';
 								}
 							});
-						}
+
 					} else if (item.weekly) {
-						const priceCodeRarity = item['price/code/rarity'];
 						if (priceCodeRarity) {
-							div.querySelector('.item-price').textContent = priceCodeRarity.split('<br>').pop().replace(' Coins', '');
-							div.querySelector('.item-price').classList.add('star-price', 'coin-price');
+							const coinValue = priceCodeRarity.split('<br>').pop().replace(' Coins', '').trim();
+							if (coinValue) {
+								div.querySelector('.item-price').textContent = coinValue;
+								div.querySelector('.item-price').classList.add('coin-price');
+								div.querySelector('.item-price').classList.replace('item-price', 'star-price');
+							}
 						}
+
 					} else if (item.new) {
-						if (item['price/code/rarity']?.toLowerCase().includes('unobtainable')) {
+						if (priceCodeRarity?.toLowerCase().includes('unobtainable')) {
 							div.style.order = 1;
 						}
 					}
