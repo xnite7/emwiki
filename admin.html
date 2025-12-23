@@ -6978,7 +6978,7 @@
 
                             if (forceResponse.ok) {
                                 this.showSuccess(modal);
-                                setTimeout(() => location.reload(), 3500);
+                                setTimeout(() => location.reload(), 1000);
                             } else {
                                 const errorData = await forceResponse.text();
                                 throw new Error(errorData || 'Force save failed');
