@@ -89,7 +89,7 @@
                 <button class="dropdown-btn" onclick="catalog.toggleSort()">
                     <span>Sort:</span> <span id="sort-label">Categorical</span> ▼
                 </button>
-                <div style="grid-template-rows: repeat(7, auto);" id="sort-menu" class="dropdown-content">
+                <div style="grid-template-rows: repeat(9, auto);" id="sort-menu" class="dropdown-content">
                     <small class="dropdown-item" data-sort="default">Categorical</small>
                     <small class="dropdown-item" data-sort="name-asc">Name: A ➔ Z</small>
                     <small class="dropdown-item" data-sort="name-desc">Name: Z ➔ A</small>
@@ -99,6 +99,7 @@
                     <small class="dropdown-item" data-sort="price-updated-desc">Price Updated Recently</small>
                     <small class="dropdown-item disabled" data-sort="date-desc">Newer First</small>
                     <small class="dropdown-item disabled" data-sort="date-asc">Older First</small>
+                    <small class="dropdown-item disabled" data-sort="rarity-asc" id="rarity-sort-option" style="display: none;">Rarity: Less ➔ More Rare</small>
                     
                 </div>
             </div>
@@ -213,6 +214,9 @@
                     <div class="submenu" onclick="catalog.toggleChestMenu()">
                         <small class="tag-label">Chests</small><small>▸</small>
                     </div>
+                    <div class="submenu" onclick="catalog.toggleCredits()">
+                        <small class="tag-label">Made by</small><small>▸</small>
+                    </div>
                     </div>
 
                    
@@ -221,6 +225,9 @@
             <div class="dropdown-content submenu" id="season-menu">
             </div>
             <div class="dropdown-content submenu" id="event-menu">
+            </div>
+
+            <div class="dropdown-content submenu" id="credits-menu">
             </div>
 
             <div class="dropdown-content submenu" id="chest-menu">
@@ -468,6 +475,7 @@
                 this.sortBy = 'default';
                 this.seasonFilter = 'all';
                 this.chestFilter = 'all';
+                this.creditsFilter = 'all';
                 this.seasons = new Set();
                 this.events = new Set();
                 this.eventFilter = 'all';
@@ -534,6 +542,7 @@
                 this.populateSeasonFilter();
                 this.populateEventFilter();
                 this.populateChests();
+                this.populateCreditsFilter();
                 this.setupEventListeners();
 
                 this.handleURLParams();
@@ -597,6 +606,7 @@
                 menu.classList.toggle('show');
                 document.getElementById('season-menu').classList.remove('show');
                 document.getElementById('event-menu').classList.remove('show');
+                document.getElementById('credits-menu').classList.remove('show');
             }
 
 
@@ -857,6 +867,97 @@
                 });
             }
 
+            populateCreditsFilter() {
+                const creditsMenu = document.getElementById('credits-menu');
+                if (!creditsMenu) return;
+
+                // Get all unique credits from items
+                const creditsSet = new Set();
+                this.allItems.forEach(item => {
+                    if (item.credits && item.credits.trim()) {
+                        creditsSet.add(item.credits.trim());
+                    }
+                });
+
+                // Clear existing items
+                creditsMenu.innerHTML = '';
+
+                // Add "All Credits" option
+                const allItem = document.createElement('small');
+                allItem.className = 'dropdown-item';
+                allItem.dataset.data = 'all';
+                allItem.textContent = 'All';
+                allItem.onclick = () => this.selectCredits('all');
+                creditsMenu.appendChild(allItem);
+
+                // Sort credits alphabetically
+                const sortedCredits = Array.from(creditsSet).sort((a, b) => {
+                    // Check if they're numeric IDs
+                    const aIsNumeric = /^\d+$/.test(a);
+                    const bIsNumeric = /^\d+$/.test(b);
+                    
+                    if (aIsNumeric && !bIsNumeric) return 1;
+                    if (!aIsNumeric && bIsNumeric) return -1;
+                    
+                    return a.localeCompare(b);
+                });
+
+                // Create menu items for each credit
+                sortedCredits.forEach(credit => {
+                    const item = document.createElement('small');
+                    item.className = 'dropdown-item';
+                    item.dataset.data = credit;
+                    item.style.display = 'flex';
+                    item.style.alignItems = 'center';
+                    item.style.gap = '8px';
+                    
+                    // Check if credit is a Roblox user ID
+                    const isRobloxId = /^\d+$/.test(credit);
+                    
+                    if (isRobloxId) {
+                        // Create avatar placeholder
+                        const avatarImg = document.createElement('img');
+                        avatarImg.style.width = '20px';
+                        avatarImg.style.height = '20px';
+                        avatarImg.style.borderRadius = '50%';
+                        avatarImg.style.objectFit = 'cover';
+                        avatarImg.style.backgroundColor = 'var(--bg-secondary)';
+                        avatarImg.style.border = '1px solid var(--border-color)';
+                        avatarImg.style.flexShrink = '0';
+                        avatarImg.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiBmaWxsPSIjMzMzIi8+CjxwYXRoIGQ9Ik0xMCA2QzExLjM4IDYgMTIuNSA1LjM4IDEyLjUgNC41QzEyLjUgMy42MiAxMS4zOCAzIDEwIDNDOC42MiAzIDcuNSAzLjYyIDcuNSA0LjVDNy41IDUuMzggOC42MiA2IDEwIDZaTTEwIDguMzNDOC41MyA3LjUgNiA3LjUgNiAxMFYxMS42N0gxNFYxMEMxNCA3LjUgMTEuNDcgNy41IDEwIDguMzNaIiBmaWxsPSIjOTk5OTk5Ii8+Cjwvc3ZnPgo=';
+                        avatarImg.alt = '';
+                        item.appendChild(avatarImg);
+                        
+                        // Create label placeholder
+                        const label = document.createElement('span');
+                        label.textContent = credit;
+                        item.appendChild(label);
+                        
+                        // Fetch Roblox user data asynchronously using cached function
+                        Utils.getRobloxUserData(credit)
+                            .then(userData => {
+                                if (userData) {
+                                    if (userData.avatar) {
+                                        avatarImg.src = userData.avatar;
+                                    }
+                                    // Update label with username
+                                    label.textContent = userData.name || credit;
+                                }
+                            })
+                            .catch(error => {
+                                // Keep original credit text on error
+                                console.error('Failed to fetch Roblox user:', error);
+                            });
+                    } else {
+                        // Not a Roblox ID, just display the text
+                        item.textContent = credit;
+                    }
+                    
+                    item.onclick = () => this.selectCredits(credit);
+                    creditsMenu.appendChild(item);
+                });
+            }
+
             toggleChestExpand() {
                 const sortDropdown = document.querySelector('.filters');
                 const expandToggle = document.querySelector('.chest-expand-toggle .icon-down');
@@ -926,6 +1027,7 @@
 
                 document.getElementById('season-menu').classList.remove('show');
                 document.getElementById('chest-menu').classList.remove('show');
+                document.getElementById('credits-menu').classList.remove('show');
             }
 
             toggleSeason() {
@@ -936,7 +1038,17 @@
 
                 document.getElementById('chest-menu').classList.remove('show');
                 document.getElementById('event-menu').classList.remove('show');
+                document.getElementById('credits-menu').classList.remove('show');
 
+            }
+
+            toggleCredits() {
+                const menu = document.getElementById('credits-menu');
+                menu.classList.toggle('show');
+
+                document.getElementById('season-menu').classList.remove('show');
+                document.getElementById('event-menu').classList.remove('show');
+                document.getElementById('chest-menu').classList.remove('show');
             }
 
             selectChest(chest) {
@@ -956,9 +1068,10 @@
                 retiredItem.classList.remove('show-retired');
                 retiredItem.classList.remove('selected');
 
-                // Clear season and event filters
+                // Clear season, event, and credits filters
                 this.seasonFilter = 'all';
                 this.eventFilter = 'all';
+                this.creditsFilter = 'all';
                 this.chestFilter = chest;
 
                 // Update visual states
@@ -975,6 +1088,38 @@
                 const selectedChest = document.querySelector(`.chest-item[data-data="${chest}"] .chest-name`);
                 document.getElementById('season-label').textContent = selectedChest.textContent === 'None' ? '' : `${selectedChest.textContent}`;
                 document.getElementById('chest-menu').classList.remove('show');
+
+                // Check if chest has items with different rarities
+                const chestItems = this.allItems.filter(item => {
+                    const chestItemsList = this.chestMappings[chest] || [];
+                    return chestItemsList.includes(item.name) || item.chest === chest;
+                });
+
+                const hasDifferentRarities = this.hasDifferentRarities(chestItems);
+                const raritySortOption = document.getElementById('rarity-sort-option');
+                
+                if (hasDifferentRarities) {
+                    // Show rarity sort option
+                    raritySortOption.style.display = 'block';
+                    raritySortOption.classList.remove('disabled');
+                    
+                    // Auto-select rarity sort (less rare to most rare)
+                    this.selectSort('rarity-asc');
+                    
+                    // Auto-open sort menu
+                    setTimeout(() => {
+                        document.getElementById('sort-menu').classList.add('show');
+                    }, 100);
+                } else {
+                    // Hide rarity sort option
+                    raritySortOption.style.display = 'none';
+                    raritySortOption.classList.add('disabled');
+                    
+                    // If currently using rarity sort, switch to default
+                    if (this.sortBy === 'rarity-asc') {
+                        this.selectSort('default');
+                    }
+                }
 
                 this.updateTagsLabel();
                 this.applyFilters();
@@ -997,9 +1142,10 @@
                 retiredItem.classList.remove('show-retired');
                 retiredItem.classList.remove('selected');
 
-                // Clear event and chest filters
+                // Clear event, chest, and credits filters
                 this.chestFilter = 'all';
                 this.eventFilter = 'all';
+                this.creditsFilter = 'all';
                 this.seasonFilter = season;
 
                 document.getElementById('season-label').textContent = season === 'all' ? '' : `Season ${season}`;
@@ -1036,9 +1182,10 @@
                 retiredItem.classList.remove('show-retired');
                 retiredItem.classList.remove('selected');
 
-                // Clear season and chest filters
+                // Clear season, chest, and credits filters
                 this.seasonFilter = 'all';
                 this.chestFilter = 'all';
+                this.creditsFilter = 'all';
                 this.eventFilter = event;
 
                 document.getElementById('season-label').textContent = event === 'all' ? '' : `${event}`;
@@ -1053,6 +1200,65 @@
                 document.querySelectorAll('.dropdown-item').forEach(item => {
                     item.classList.toggle('active', item.dataset.data == event);
                 });
+
+                this.updateTagsLabel();
+                this.applyFilters();
+            }
+
+            selectCredits(credit) {
+                // Clear other filters except untradable and new
+                const untradableActive = this.filters.tags.has('untradable');
+                const newActive = this.filters.tags.has('new');
+                this.filters.tags.clear();
+                if (untradableActive) {
+                    this.filters.tags.add('untradable');
+                }
+                if (newActive) {
+                    this.filters.tags.add('new');
+                }
+
+                // Hide retired filter since gamenight is being cleared
+                const retiredItem = document.querySelector('.dropdown-item[data-filter="retired"]');
+                retiredItem.classList.remove('show-retired');
+                retiredItem.classList.remove('selected');
+
+                // Clear season, event, and chest filters
+                this.seasonFilter = 'all';
+                this.eventFilter = 'all';
+                this.chestFilter = 'all';
+                this.creditsFilter = credit;
+
+                // Update label
+                if (credit === 'all') {
+                    document.getElementById('season-label').textContent = '';
+                } else {
+                    // Fetch username if it's a Roblox ID
+                    const isRobloxId = /^\d+$/.test(credit);
+                    if (isRobloxId) {
+                        Utils.getRobloxUserData(credit).then(userData => {
+                            if (userData) {
+                                document.getElementById('season-label').textContent = `Credits: ${userData.name || credit}`;
+                            } else {
+                                document.getElementById('season-label').textContent = `Credits: ${credit}`;
+                            }
+                        });
+                    } else {
+                        document.getElementById('season-label').textContent = `Credits: ${credit}`;
+                    }
+                }
+
+                // Update visual states
+                document.querySelectorAll('#filters-menu .dropdown-item').forEach(item => {
+                    if (item.dataset.filter !== 'untradable' && item.dataset.filter !== 'new') {
+                        item.classList.remove('selected');
+                    }
+                });
+
+                document.querySelectorAll('#credits-menu .dropdown-item').forEach(item => {
+                    item.classList.toggle('active', item.dataset.data == credit);
+                });
+
+                document.getElementById('credits-menu').classList.remove('show');
 
                 this.updateTagsLabel();
                 this.applyFilters();
@@ -1102,11 +1308,12 @@
                         this.filters.tags.add('new');
                     }
 
-                    // Clear season, event, and chest filters
-                    this.seasonFilter = 'all';
-                    this.eventFilter = 'all';
-                    this.chestFilter = 'all';
-                    document.getElementById('season-label').textContent = '';
+                // Clear season, event, chest, and credits filters
+                this.seasonFilter = 'all';
+                this.eventFilter = 'all';
+                this.chestFilter = 'all';
+                this.creditsFilter = 'all';
+                document.getElementById('season-label').textContent = '';
 
                     // Remove all selected classes except for multi-selectable filters
                     document.querySelectorAll('#filters-menu .dropdown-item').forEach(item => {
@@ -1180,10 +1387,11 @@
                 // Clear all tag filters
                 this.filters.tags.clear();
 
-                // Clear season, event, and chest filters
+                // Clear season, event, chest, and credits filters
                 this.seasonFilter = 'all';
                 this.eventFilter = 'all';
                 this.chestFilter = 'all';
+                this.creditsFilter = 'all';
 
                 // Clear season label
                 document.getElementById('season-label').textContent = '';
@@ -1265,9 +1473,10 @@
                     'demand-desc': '⭐⭐⭐ ➔ ⭐',
                     'date-desc': 'Newer First',
                     'date-asc': 'Older First',
-                    'price-updated-desc': 'Price Updated: Recent'
+                    'price-updated-desc': 'Price Updated: Recent',
+                    'rarity-asc': 'Rarity: Less ➔ More Rare'
                 };
-                document.getElementById('sort-label').textContent = labels[sortType];
+                document.getElementById('sort-label').textContent = labels[sortType] || labels['default'];
 
                 document.querySelectorAll('#sort-menu .dropdown-item').forEach(item => {
                     item.classList.toggle('active', item.dataset.sort === sortType);
@@ -1307,11 +1516,13 @@
                         document.getElementById('season-menu').classList.remove('show');
                         document.getElementById('event-menu').classList.remove('show');
                         document.getElementById('chest-menu').classList.remove('show');
+                        document.getElementById('credits-menu').classList.remove('show');
                     }
                     if (!e.target.closest('.submenu')) {
                         document.getElementById('season-menu').classList.remove('show');
                         document.getElementById('chest-menu').classList.remove('show');
                         document.getElementById('event-menu').classList.remove('show');
+                        document.getElementById('credits-menu').classList.remove('show');
                     }
                 });
 
@@ -1414,7 +1625,7 @@
 
             updateTagsLabel() {
 
-                const selectedCount = this.filters.tags.size + (this.seasonFilter !== 'all' ? 1 : 0) + (this.eventFilter !== 'all' ? 1 : 0) + (this.chestFilter !== 'all' ? 1 : 0);
+                const selectedCount = this.filters.tags.size + (this.seasonFilter !== 'all' ? 1 : 0) + (this.eventFilter !== 'all' ? 1 : 0) + (this.chestFilter !== 'all' ? 1 : 0) + (this.creditsFilter !== 'all' ? 1 : 0);
                 const tagLabel = document.getElementById('filters-label');
                 const tagCount = document.getElementById('filter-count');
 
@@ -1456,6 +1667,15 @@
                     // Event filter
                     if (this.eventFilter !== 'all' && item.events && !item.events.includes(this.eventFilter)) {
                         return false;
+                    }
+
+                    // Credits filter
+                    if (this.creditsFilter !== 'all') {
+                        if (!item.credits) return false;
+                        // Normalize comparison - handle both IDs and usernames
+                        const itemCredits = item.credits.trim().toLowerCase();
+                        const filterCredits = this.creditsFilter.toLowerCase();
+                        if (itemCredits !== filterCredits) return false;
                     }
 
                     // Search filter
@@ -1513,6 +1733,30 @@
                     return true;
                 });
 
+                // Update rarity sort option visibility based on filtered items
+                const raritySortOption = document.getElementById('rarity-sort-option');
+                if (this.chestFilter !== 'all' && this.filtered.length > 0) {
+                    const hasDifferentRarities = this.hasDifferentRarities(this.filtered);
+                    if (hasDifferentRarities) {
+                        raritySortOption.style.display = 'block';
+                        raritySortOption.classList.remove('disabled');
+                    } else {
+                        raritySortOption.style.display = 'none';
+                        raritySortOption.classList.add('disabled');
+                        // If currently using rarity sort and no different rarities, switch to default
+                        if (this.sortBy === 'rarity-asc') {
+                            this.selectSort('default');
+                        }
+                    }
+                } else {
+                    raritySortOption.style.display = 'none';
+                    raritySortOption.classList.add('disabled');
+                    // If currently using rarity sort and no chest selected, switch to default
+                    if (this.sortBy === 'rarity-asc') {
+                        this.selectSort('default');
+                    }
+                }
+
                 this.sortItems();
 
                 // Reset display
@@ -1554,6 +1798,35 @@
                 if (str.endsWith('m')) return parseFloat(str) * 1_000_000;
 
                 return parseFloat(str) || 0;
+            }
+
+            parseRarity(rarityString) {
+                if (!rarityString) return null;
+                
+                // Split by <br> to handle multiple lines
+                const parts = rarityString.split('<br>').map(p => p.trim()).filter(Boolean);
+                
+                // Look for percentage pattern (e.g., "3.85%", "1.429%")
+                for (const part of parts) {
+                    const match = part.match(/(\d+\.?\d*)\s*%/);
+                    if (match) {
+                        return parseFloat(match[1]);
+                    }
+                }
+                
+                return null;
+            }
+
+            hasDifferentRarities(items) {
+                const rarities = new Set();
+                for (const item of items) {
+                    const rarity = this.parseRarity(item['price/code/rarity']);
+                    if (rarity !== null) {
+                        rarities.add(rarity);
+                    }
+                }
+                // Return true if we have at least 2 different rarity values
+                return rarities.size >= 2;
             }
 
             sortItems() {
@@ -1668,8 +1941,40 @@
                         });
                         break;
 
+                    case 'rarity-asc':
+                        // Sort by rarity percentage: less rare (higher %) to most rare (lower %)
+                        this.filtered.sort((a, b) => {
+                            const rarityA = this.parseRarity(a['price/code/rarity']);
+                            const rarityB = this.parseRarity(b['price/code/rarity']);
+                            
+                            // Items without rarity go to the end
+                            if (rarityA === null && rarityB === null) return 0;
+                            if (rarityA === null) return 1;
+                            if (rarityB === null) return -1;
+                            
+                            // Higher percentage = less rare, so we sort descending
+                            return rarityB - rarityA;
+                        });
+                        break;
+
                     default:
-                        // Keep original order
+                        // Categorical sort: gears first, deaths last
+                        const categoryOrder = {
+                            'gears': 1,
+                            'pets': 2,
+                            'effects': 3,
+                            'titles': 4,
+                            'deaths': 5
+                        };
+                        this.filtered.sort((a, b) => {
+                            const orderA = categoryOrder[a.category] || 999;
+                            const orderB = categoryOrder[b.category] || 999;
+                            if (orderA !== orderB) {
+                                return orderA - orderB;
+                            }
+                            // Within same category, sort by name
+                            return a.name.localeCompare(b.name);
+                        });
                         break;
                 }
             }

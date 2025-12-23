@@ -2570,7 +2570,7 @@ textarea {
 
 /* Filter page navigation system */
 .filter-page {
-    grid-template-rows: repeat(8, auto);
+    grid-template-rows: repeat(9, auto);
     padding: 10px 0px 0px 0px;
     grid-auto-flow: column;
     display: none;
@@ -2765,6 +2765,8 @@ textarea {
     animation: slideDown 0.3s ease;
 }
 
+
+
 .dropdown-content>* {
     border-right: 1px solid var(--border-color);
 }
@@ -2783,6 +2785,11 @@ textarea {
     display: grid;
     grid-template-rows: repeat(8, auto);
     grid-auto-flow: column;
+}
+
+#credits-menu {
+    grid-template-rows: repeat(9, auto);
+    padding: 5px 0px;
 }
 
 #season-menu {

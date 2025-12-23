@@ -389,23 +389,29 @@
 					const div = this.createItemElement(item)
 
 					if (item.weeklystar) {
-						div.querySelector('.item-price').textContent = item['price/code/rarity'].split('<br>').pop().replace(' Stars', '');
-						div.querySelector('.item-price').classList.replace('item-price', 'star-price');
-						const outlineColors = {
-							'60': '#b31aff',
-							'30': '#ff2a00',
-							'15': '#fae351',
-							'5': '#e0e6df'
-						};
-						Object.entries(outlineColors).forEach(([num, color]) => {
-							if (item['price/code/rarity']?.toLowerCase().includes(num)) {
-								div.style.outline = `4px solid ${color}`;
-								div.style.background = 'unset';
-							}
-						});
+						const priceCodeRarity = item['price/code/rarity'];
+						if (priceCodeRarity) {
+							div.querySelector('.item-price').textContent = priceCodeRarity.split('<br>').pop().replace(' Stars', '');
+							div.querySelector('.item-price').classList.replace('item-price', 'star-price');
+							const outlineColors = {
+								'60': '#b31aff',
+								'30': '#ff2a00',
+								'15': '#fae351',
+								'5': '#e0e6df'
+							};
+							Object.entries(outlineColors).forEach(([num, color]) => {
+								if (priceCodeRarity.toLowerCase().includes(num)) {
+									div.style.outline = `4px solid ${color}`;
+									div.style.background = 'unset';
+								}
+							});
+						}
 					} else if (item.weekly) {
-						div.querySelector('.item-price').textContent = item['price/code/rarity'].split('<br>').pop().replace(' Coins', '');
-						div.querySelector('.item-price').classList.add('star-price', 'coin-price');
+						const priceCodeRarity = item['price/code/rarity'];
+						if (priceCodeRarity) {
+							div.querySelector('.item-price').textContent = priceCodeRarity.split('<br>').pop().replace(' Coins', '');
+							div.querySelector('.item-price').classList.add('star-price', 'coin-price');
+						}
 					} else if (item.new) {
 						if (item['price/code/rarity']?.toLowerCase().includes('unobtainable')) {
 							div.style.order = 1;
@@ -460,6 +466,122 @@
 		}
 
 		window.catalog = new Catalog();
+
+		// ==================== SNOW PARTICLES (CHRISTMAS) ====================
+		class SnowParticleSystem {
+			constructor() {
+				// Check if it's December (Christmas season)
+				const now = new Date();
+				const month = now.getMonth(); // 0-11, where 11 is December
+				if (month !== 11) return; // Only show in December
+
+				this.canvas = document.createElement('canvas');
+				this.canvas.id = 'snow-canvas';
+				this.canvas.style.position = 'fixed';
+				this.canvas.style.top = '0';
+				this.canvas.style.left = '0';
+				this.canvas.style.width = '100%';
+				this.canvas.style.height = '100%';
+				this.canvas.style.pointerEvents = 'none';
+				this.canvas.style.zIndex = '1';
+				this.canvas.style.opacity = '0.6';
+				document.body.appendChild(this.canvas);
+
+				this.ctx = this.canvas.getContext('2d');
+				this.particles = [];
+				this.maxParticles = 50; // Subtle amount
+				this.animationFrame = null;
+
+				this.resize();
+				window.addEventListener('resize', () => this.resize());
+				this.init();
+			}
+
+			resize() {
+				this.canvas.width = window.innerWidth;
+				this.canvas.height = window.innerHeight;
+			}
+
+			createParticle() {
+				return {
+					x: Math.random() * this.canvas.width,
+					y: Math.random() * -200 - 50, // Start above screen
+					vx: (Math.random() - 0.5) * 0.5, // Gentle horizontal drift
+					vy: Math.random() * 0.5 + 0.3, // Slow fall speed
+					size: Math.random() * 3 + 1.5, // Small, subtle flakes
+					opacity: Math.random() * 0.5 + 0.3, // Semi-transparent
+					swing: Math.random() * Math.PI * 2, // For gentle swaying
+					swingSpeed: Math.random() * 0.02 + 0.01
+				};
+			}
+
+			init() {
+				// Create initial particles
+				for (let i = 0; i < this.maxParticles; i++) {
+					this.particles.push(this.createParticle());
+				}
+
+				// Spawn new particles occasionally
+				setInterval(() => {
+					if (this.particles.length < this.maxParticles) {
+						this.particles.push(this.createParticle());
+					}
+				}, 2000);
+
+				this.animate();
+			}
+
+			animate() {
+				this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+				for (let i = this.particles.length - 1; i >= 0; i--) {
+					const p = this.particles[i];
+
+					// Update swing for gentle horizontal movement
+					p.swing += p.swingSpeed;
+					p.x += Math.sin(p.swing) * 0.3 + p.vx;
+					p.y += p.vy;
+
+					// Reset if off screen
+					if (p.y > this.canvas.height + 10) {
+						p.x = Math.random() * this.canvas.width;
+						p.y = -10;
+						p.vx = (Math.random() - 0.5) * 0.5;
+					}
+
+					// Wrap horizontally
+					if (p.x < -5) p.x = this.canvas.width + 5;
+					if (p.x > this.canvas.width + 5) p.x = -5;
+
+					// Draw snowflake
+					this.ctx.save();
+					this.ctx.globalAlpha = p.opacity;
+					this.ctx.fillStyle = '#ffffff';
+					this.ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+					this.ctx.shadowBlur = 3;
+					
+					// Draw a simple circle for the snowflake
+					this.ctx.beginPath();
+					this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+					this.ctx.fill();
+					this.ctx.restore();
+				}
+
+				this.animationFrame = requestAnimationFrame(() => this.animate());
+			}
+
+			stop() {
+				if (this.animationFrame) {
+					cancelAnimationFrame(this.animationFrame);
+				}
+				if (this.canvas && this.canvas.parentNode) {
+					this.canvas.parentNode.removeChild(this.canvas);
+				}
+			}
+		}
+
+		// Initialize snow particles if it's December
+		const snowSystem = new SnowParticleSystem();
 	</script>
 
 </body>

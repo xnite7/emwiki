@@ -97,6 +97,110 @@ const Utils = {
         return false;
     },
 
+    // Cache for Roblox usernames and avatars with timestamps
+    robloxCache: new Map(),
+
+    // Initialize cache from localStorage
+    initRobloxCache() {
+        try {
+            const cached = localStorage.getItem('roblox_user_cache');
+            if (cached) {
+                const cacheData = JSON.parse(cached);
+                const now = Date.now();
+                const oneDayMs = 24 * 60 * 60 * 1000;
+                
+                // Load valid entries (less than 24 hours old)
+                for (const [userId, entry] of Object.entries(cacheData)) {
+                    if (now - entry.timestamp < oneDayMs) {
+                        this.robloxCache.set(userId, entry);
+                    }
+                }
+                
+                // Clean up expired entries from localStorage
+                const validCache = {};
+                for (const [userId, entry] of this.robloxCache.entries()) {
+                    validCache[userId] = entry;
+                }
+                localStorage.setItem('roblox_user_cache', JSON.stringify(validCache));
+            }
+        } catch (error) {
+            console.error('Failed to load Roblox cache:', error);
+        }
+    },
+
+    // Save cache to localStorage
+    saveRobloxCache() {
+        try {
+            const cacheData = {};
+            for (const [userId, entry] of this.robloxCache.entries()) {
+                cacheData[userId] = entry;
+            }
+            localStorage.setItem('roblox_user_cache', JSON.stringify(cacheData));
+        } catch (error) {
+            console.error('Failed to save Roblox cache:', error);
+        }
+    },
+
+    // Fetch Roblox username and avatar from user ID
+    async getRobloxUserData(userId) {
+        if (!userId || !/^\d+$/.test(userId)) {
+            return null;
+        }
+
+        const now = Date.now();
+        const oneDayMs = 24 * 60 * 60 * 1000;
+
+        // Check cache first
+        if (this.robloxCache.has(userId)) {
+            const cached = this.robloxCache.get(userId);
+            // If cache is less than 24 hours old, return cached data
+            if (now - cached.timestamp < oneDayMs) {
+                return cached;
+            }
+            // Cache expired, remove it
+            this.robloxCache.delete(userId);
+        }
+
+        // Fetch from API
+        try {
+            const response = await fetch(`https://emwiki.com/api/roblox-proxy?userId=${userId}`);
+            if (response.ok) {
+                const data = await response.json();
+                const cacheEntry = {
+                    name: data.name || data.displayName || userId,
+                    displayName: data.displayName || data.name || userId,
+                    avatar: data.avatar || null,
+                    timestamp: now
+                };
+                
+                // Cache the result
+                this.robloxCache.set(userId, cacheEntry);
+                this.saveRobloxCache();
+                
+                return cacheEntry;
+            }
+        } catch (error) {
+            console.error('Failed to fetch Roblox user data:', error);
+        }
+
+        return null;
+    },
+
+    // Fetch Roblox username from user ID (backward compatibility)
+    async getRobloxUsername(credits) {
+        if (!credits || !credits.trim()) return credits;
+        
+        // Check if it's a numeric ID (Roblox user IDs are numeric)
+        const userId = credits.trim();
+        if (!/^\d+$/.test(userId)) {
+            // Not a numeric ID, return as-is
+            return credits;
+        }
+
+        const userData = await this.getRobloxUserData(userId);
+        return userData ? userData.name : credits;
+    },
+
     formatPrice(price) {
         function parseValue(str) {
             str = str.trim().toLowerCase();
@@ -709,29 +813,7 @@ class BaseApp {
         div.appendChild(name);
 
         // Credits (displayed vertically on front side)
-        if (item.credits) {
-            const credits = document.createElement('div');
-            credits.className = 'item-credits';
-            credits.textContent = item.credits;
-            
-            // Calculate font size based on text length (between 15px and 20px)
-            // Longer text = smaller font, shorter text = larger font
-            const textLength = item.credits.length;
-            const minFontSize = 15;
-            const maxFontSize = 20;
-            const maxLength = 30; // Assume 30 chars is the threshold for minimum font size
-            
-            let fontSize;
-            if (textLength >= maxLength) {
-                fontSize = minFontSize;
-            } else {
-                // Linear interpolation: fontSize decreases as length increases
-                fontSize = maxFontSize - ((textLength / maxLength) * (maxFontSize - minFontSize));
-            }
-            
-            credits.style.fontSize = `${fontSize}px`;
-            div.appendChild(credits);
-        }
+
 
         // Image/SVG
         if (item.img) {
@@ -1991,7 +2073,32 @@ class ItemModal {
         // Credits (displayed vertically on right side)
         const creditsEl = document.getElementById('modal-credits');
         if (item.credits && item.credits.trim() && creditsEl) {
-            creditsEl.textContent = item.credits;
+            // Fetch username if it's a Roblox ID, otherwise use as-is
+
+
+
+
+
+            Utils.getRobloxUsername(item.credits).then(username => {
+                creditsEl.textContent = username;
+                // Calculate font size based on text length (between 15px and 20px)
+                // Longer text = smaller font, shorter text = larger font
+                const textLength = username.length;
+                const minFontSize = 32;
+                const maxFontSize = 60;
+                const maxLength = 13; // Assume 30 chars is the threshold for minimum font size
+
+                let fontSize;
+                if (textLength >= maxLength) {
+                    fontSize = minFontSize;
+                } else {
+                    // Linear interpolation: fontSize decreases as length increases
+                    fontSize = maxFontSize - ((textLength / maxLength) * (maxFontSize - minFontSize));
+                }
+
+            creditsEl.style.fontSize = `${fontSize}px`;
+
+            });
             creditsEl.style.display = 'block';
         } else if (creditsEl) {
             creditsEl.style.display = 'none';
@@ -3537,6 +3644,9 @@ const auth = new Auth();
 
 // Export for use in both pages
 if (typeof window !== 'undefined') {
+    // Initialize Roblox cache on load
+    Utils.initRobloxCache();
+    
     window.Utils = Utils;
     window.BaseApp = BaseApp;
     window.PriceGraph = PriceGraph;
