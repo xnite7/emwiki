@@ -244,9 +244,12 @@ async function handlePostReview(request, env) {
 
     const token = authHeader.substring(7);
 
-    // Import auth utilities
-    const { verifySession } = await import('../_utils/auth.js');
-    const session = await verifySession(token, env.SESSION_SECRET);
+    // Verify session by querying sessions table (same as other endpoints)
+    const session = await env.DBA.prepare(`
+        SELECT s.*, u.* FROM sessions s
+        JOIN users u ON s.user_id = u.user_id
+        WHERE s.token = ? AND s.expires_at > ?
+    `).bind(token, Date.now()).first();
 
     if (!session) {
         return new Response(JSON.stringify({ error: 'Invalid or expired session' }), {
@@ -255,10 +258,14 @@ async function handlePostReview(request, env) {
         });
     }
 
-    // Get reviewer user from database
-    const reviewer = await env.DBA.prepare(
-        'SELECT user_id, username, display_name, avatar_url, role FROM users WHERE user_id = ?'
-    ).bind(session.name).first();
+    // Get reviewer user from session (already joined above)
+    const reviewer = {
+        user_id: session.user_id,
+        username: session.username,
+        display_name: session.display_name,
+        avatar_url: session.avatar_url,
+        role: session.role
+    };
 
     if (!reviewer) {
         return new Response(JSON.stringify({ error: 'User not found' }), {
