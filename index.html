@@ -497,7 +497,7 @@
 
 				this.ctx = this.canvas.getContext('2d');
 				this.particles = [];
-				this.maxParticles = 50; // Subtle amount
+				this.maxParticles = 25; // Reduced amount
 				this.animationFrame = null;
 
 				this.resize();
@@ -534,7 +534,7 @@
 					if (this.particles.length < this.maxParticles) {
 						this.particles.push(this.createParticle());
 					}
-				}, 2000);
+				}, 4000);
 
 				this.animate();
 			}
@@ -561,16 +561,23 @@
 					if (p.x < -5) p.x = this.canvas.width + 5;
 					if (p.x > this.canvas.width + 5) p.x = -5;
 
-					// Draw snowflake
+					// Draw snowflake with Gaussian blur effect using radial gradient
 					this.ctx.save();
 					this.ctx.globalAlpha = p.opacity;
-					this.ctx.fillStyle = '#ffffff';
-					this.ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
-					this.ctx.shadowBlur = 3;
-
-					// Draw a simple circle for the snowflake
+					
+					// Create a radial gradient for Gaussian blur effect
+					const gradient = this.ctx.createRadialGradient(
+						p.x, p.y, 0,
+						p.x, p.y, p.size * 2
+					);
+					gradient.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+					gradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.5)');
+					gradient.addColorStop(0.6, 'rgba(255, 255, 255, 0.2)');
+					gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+					
+					this.ctx.fillStyle = gradient;
 					this.ctx.beginPath();
-					this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+					this.ctx.arc(p.x, p.y, p.size * 2, 0, Math.PI * 2);
 					this.ctx.fill();
 					this.ctx.restore();
 				}

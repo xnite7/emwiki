@@ -42,6 +42,8 @@ html::before {
     --border-color: light-dark(rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0.1));
     --shadow-color: light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.5));
     --edges-color: light-dark(rgba(255, 255, 255, 0.4), rgba(0, 0, 0, 0.3));
+    --accent: #4a9eff;
+    --accent-christmas: #ff4a4a;
 
     &:has(.light-theme) {
         color-scheme: light;
@@ -192,7 +194,7 @@ svg:hover #cloud {
 
 .nav-link.active {
     background: var(--bg-item);
-    color: #4a9eff;
+    color: var(--accent-christmas);
     box-shadow: rgb(0 0 0 / 40%) 0px 0px 10px 0px;
 }
 
@@ -402,7 +404,7 @@ svg:hover #cloud {
     transform: translateY(-3px) scale(1.02);
     background: var(--border-color);
     box-shadow: 0 25px 50px var(--shadow-color), inset 0px 3px 18px #85858536, 0 0 30px rgba(74, 158, 255, 0.3);
-    border-color: #4a9eff;
+    border-color: var(--accent-christmas);
 }
 
 
@@ -1107,7 +1109,7 @@ div#random-items-grid {
     left: 20%;
     right: 20%;
     height: 3px;
-    background: linear-gradient(90deg, transparent, #4a9eff, transparent);
+    background: linear-gradient(90deg, transparent, var(--accent-christmas), transparent);
     border-radius: 0 0 3px 3px;
 }
 
@@ -1305,7 +1307,7 @@ div#random-items-grid {
 }
 
 .patch-link {
-    color: #4a9eff;
+    color: var(--accent-christmas);
     text-decoration: none;
     font-weight: 600;
     display: inline-block;
@@ -1417,7 +1419,7 @@ footer {
 }
 
 .footer-section a:hover {
-    color: #4a9eff;
+    color: var(--accent-christmas);
     transform: translateX(3px);
 }
 
