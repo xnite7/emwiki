@@ -431,50 +431,6 @@ export async function onRequestGet({ request, env }) {
     return `https://t${(i % 8).toString()}.rbxcdn.com/${hash}`;
   }
 
-  // Handle R2 video proxy (serves videos from R2 with proper CORS headers)
-  if (mode === "r2-video") {
-    const videoKey = url.searchParams.get("key");
-    if (!videoKey) {
-      return new Response(JSON.stringify({ error: 'Video key required' }), {
-        status: 400,
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-      });
-    }
-
-    try {
-      // Get video from R2
-      const videoObject = await env.MY_BUCKET.get(videoKey);
-
-      if (!videoObject) {
-        return new Response(JSON.stringify({ error: 'Video not found' }), {
-          status: 404,
-          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-        });
-      }
-
-      const contentType = videoObject.httpMetadata?.contentType || 'video/mp4';
-      const contentLength = videoObject.size;
-
-      // Return video with proper headers for video playback
-      return new Response(videoObject.body, {
-        headers: {
-          "Content-Type": contentType,
-          "Content-Length": contentLength.toString(),
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
-          "Access-Control-Allow-Headers": "Range",
-          "Accept-Ranges": "bytes",
-          "Cache-Control": "public, max-age=31536000" // Cache for 1 year
-        }
-      });
-    } catch (err) {
-      return new Response(JSON.stringify({ error: err.message }), {
-        status: 500,
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-      });
-    }
-  }
-
   // Handle Discord video/media proxy (for videos and other media that require auth)
   if (mode === "discord-media") {
     const mediaUrl = url.searchParams.get("url");

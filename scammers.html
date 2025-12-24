@@ -24,6 +24,9 @@
     <link rel="stylesheet" href="./css/style.css">
     <script type="text/javascript" src="./js/sparkles.js"></script>
     <link rel="icon" href="./imgs/favicon.png" type="image/png">
+    <!-- Plyr video player for better format support -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
     <meta name="theme-color" content="#000000">
     <link rel="apple-touch-icon" href="/favicon-192.png">
     <link rel="manifest" href="/site.webmanifest">
@@ -491,15 +494,31 @@ margin-top: 10px;
         border-radius: 8px;
         overflow: hidden;
         border: 1px solid var(--border-color);
+        position: relative;
     }
-
-    .attachment-video video {
+    
+    .attachment-video video,
+    .attachment-video .plyr {
         width: 100%;
         max-width: 600px;
         height: auto;
         display: block;
         background: #000;
         border-radius: 4px;
+    }
+    
+    /* Plyr custom styling to match theme */
+    .attachment-video .plyr {
+        --plyr-color-main: #4a9eff;
+        --plyr-video-background: #000;
+    }
+    
+    .attachment-video .plyr__control--overlaid {
+        background: rgba(74, 158, 255, 0.9);
+    }
+    
+    .attachment-video .plyr__control--overlaid:hover {
+        background: rgba(74, 158, 255, 1);
     }
     
     .video-loading,
@@ -1243,33 +1262,15 @@ margin-top: 10px;
                                 </div>
                             `;
                         } else if (att.is_video) {
-                            // Use R2 proxy URL if R2 URL exists, otherwise fallback to direct URL
-                            let videoUrl = att.url; // Default to original Discord URL
-                            if (att.r2_url) {
-                                // Extract key from R2 URL (e.g., https://cdn.emwiki.com/scammer-evidence/videos/123.mp4)
-                                const r2UrlMatch = att.r2_url.match(/https?:\/\/[^\/]+\/(.+)$/);
-                                if (r2UrlMatch) {
-                                    videoUrl = `https://emwiki.com/api/roblox-proxy?mode=r2-video&key=${encodeURIComponent(r2UrlMatch[1])}`;
-                                } else {
-                                    videoUrl = att.r2_url; // Fallback to direct R2 URL
-                                }
-                            }
+                            // Use R2 URL if available, otherwise fallback to Discord URL
+                            const videoUrl = att.r2_url || att.url;
                             const videoId = `video-${att.id}-${index}`;
-                            const downloadUrl = att.r2_url || att.url; // Use R2 URL for download if available
+                            
                             html += `
                                 <div class="attachment-video">
-                                    <video 
-                                        id="${videoId}"
-                                        controls 
-                                        preload="metadata" 
-                                        playsinline
-                                        style="width: 100%; max-width: 600px; height: auto; background: #000;">
+                                    <video id="${videoId}" class="plyr-video" playsinline>
                                         <source src="${videoUrl}" type="${att.content_type || 'video/mp4'}">
-                                        Your browser does not support the video tag.
                                     </video>
-                                    <div class="video-loading" id="loading-${videoId}" style="display: none; padding: 10px; color: #fff; background: rgba(0,0,0,0.7); border-radius: 4px;">Loading video...</div>
-                                    <div class="video-error" id="error-${videoId}" style="display: none; padding: 10px; color: #ff6b6b; background: rgba(0,0,0,0.7); border-radius: 4px;">Failed to load video. <a href="${downloadUrl}" target="_blank" style="color: #4a9eff;">Try downloading instead</a>.</div>
-                                    <a href="${downloadUrl}" target="_blank" rel="noopener noreferrer" class="attachment-link">Download Video</a>
                                 </div>
                             `;
                         } else {
@@ -1310,29 +1311,26 @@ margin-top: 10px;
         html += '</div></div>';
         container.innerHTML = html;
         
-        // Add video event listeners after rendering
-        container.querySelectorAll('video').forEach(video => {
-            const loadingDiv = container.querySelector(`#loading-${video.id}`);
-            const errorDiv = container.querySelector(`#error-${video.id}`);
-            
-            video.addEventListener('loadstart', () => {
-                if (loadingDiv) loadingDiv.style.display = 'block';
-                if (errorDiv) errorDiv.style.display = 'none';
-            });
-            
-            video.addEventListener('loadedmetadata', () => {
-                if (loadingDiv) loadingDiv.style.display = 'none';
-            });
-            
-            video.addEventListener('canplay', () => {
-                if (loadingDiv) loadingDiv.style.display = 'none';
-            });
-            
-            video.addEventListener('error', (e) => {
-                console.error('Video error:', e, video.src);
-                if (loadingDiv) loadingDiv.style.display = 'none';
-                if (errorDiv) errorDiv.style.display = 'block';
-            });
+        // Initialize Plyr players for all videos
+        container.querySelectorAll('.plyr-video').forEach(video => {
+            try {
+                // Initialize Plyr player
+                const player = new Plyr(video, {
+                    controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
+                    settings: ['quality', 'speed'],
+                    keyboard: { focused: true, global: false },
+                    tooltips: { controls: true, seek: true },
+                    clickToPlay: true,
+                    hideControls: true,
+                    resetOnEnd: false,
+                    ratio: null,
+                });
+                
+                // Store player instance for cleanup if needed
+                video._plyr = player;
+            } catch (err) {
+                console.error('Failed to initialize Plyr:', err);
+            }
         });
     }
 
