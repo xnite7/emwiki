@@ -589,12 +589,29 @@ export async function onRequestGet({ request, env }) {
   // Handle video migration endpoint - Migrate existing videos to R2
   if (mode === "migrate-videos-to-r2") {
     try {
-      // Get all entries with thread evidence
+      // Check if R2 bucket is available
+      if (!env.MY_BUCKET) {
+        return new Response(JSON.stringify({ 
+          error: "R2 bucket (MY_BUCKET) not configured"
+        }), {
+          status: 500,
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          },
+        });
+      }
+
+      const limit = parseInt(url.searchParams.get("limit")) || 10; // Process 10 entries at a time by default
+      const offset = parseInt(url.searchParams.get("offset")) || 0;
+      
+      // Get entries with thread evidence (with limit/offset for batching)
       const { results } = await env.DB.prepare(`
         SELECT user_id, thread_evidence 
         FROM scammer_profile_cache 
         WHERE thread_evidence IS NOT NULL
-      `).all();
+        LIMIT ? OFFSET ?
+      `).bind(limit, offset).all();
 
       if (!results || results.length === 0) {
         return new Response(JSON.stringify({ 
@@ -614,9 +631,11 @@ export async function onRequestGet({ request, env }) {
       let videosSkipped = 0;
       let errors = [];
 
-      // Process each entry
+      // Process each entry sequentially to avoid memory/timeout issues
       for (const row of results) {
         try {
+          if (!row.thread_evidence) continue;
+          
           const threadEvidence = JSON.parse(row.thread_evidence);
           let updated = false;
 
@@ -624,31 +643,33 @@ export async function onRequestGet({ request, env }) {
           if (threadEvidence.messages && Array.isArray(threadEvidence.messages)) {
             for (const msg of threadEvidence.messages) {
               if (msg.attachments && Array.isArray(msg.attachments)) {
-                // Process attachments in parallel
-                const attachmentPromises = msg.attachments.map(async (att) => {
+                // Process attachments sequentially to avoid memory issues with large videos
+                for (const att of msg.attachments) {
                   // Only process videos that don't already have r2_url
                   if (att.is_video && att.url && !att.r2_url) {
-                    const r2Url = await downloadVideoToR2(
-                      att.url,
-                      att.id,
-                      att.filename,
-                      att.content_type,
-                      env
-                    );
-                    
-                    if (r2Url) {
-                      att.r2_url = r2Url;
-                      videosDownloaded++;
-                      updated = true;
-                    } else {
+                    try {
+                      const r2Url = await downloadVideoToR2(
+                        att.url,
+                        att.id,
+                        att.filename || 'video',
+                        att.content_type,
+                        env
+                      );
+                      
+                      if (r2Url) {
+                        att.r2_url = r2Url;
+                        videosDownloaded++;
+                        updated = true;
+                      } else {
+                        videosSkipped++;
+                        errors.push(`Failed to download video ${att.id} for user ${row.user_id}`);
+                      }
+                    } catch (videoErr) {
                       videosSkipped++;
-                      errors.push(`Failed to download video ${att.id} for user ${row.user_id}`);
+                      errors.push(`Error downloading video ${att.id} for user ${row.user_id}: ${videoErr.message}`);
                     }
                   }
-                  return att;
-                });
-
-                msg.attachments = await Promise.all(attachmentPromises);
+                }
               }
             }
           }
@@ -669,12 +690,24 @@ export async function onRequestGet({ request, env }) {
         }
       }
 
+      // Get total count for progress tracking
+      const totalCountResult = await env.DB.prepare(`
+        SELECT COUNT(*) as total 
+        FROM scammer_profile_cache 
+        WHERE thread_evidence IS NOT NULL
+      `).first();
+      const totalCount = totalCountResult?.total || 0;
+
       return new Response(JSON.stringify({ 
-        message: "Migration completed",
-        total_entries: results.length,
+        message: "Migration batch completed",
+        processed_this_batch: results.length,
+        total_entries: totalCount,
         processed,
         videos_downloaded,
         videos_skipped,
+        offset,
+        next_offset: offset + results.length,
+        has_more: offset + results.length < totalCount,
         errors: errors.length > 0 ? errors.slice(0, 10) : [] // Limit errors to first 10
       }), {
         headers: { 
@@ -686,7 +719,8 @@ export async function onRequestGet({ request, env }) {
       console.error("Migration error:", err);
       return new Response(JSON.stringify({ 
         error: err.message,
-        debug: err.stack
+        debug: err.stack,
+        type: err.constructor.name
       }), {
         status: 500,
         headers: { 
