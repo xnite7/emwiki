@@ -709,9 +709,84 @@ async function handleMigratePreferences(request, env) {
 // Get aggregated favorite/wishlist counts for items
 async function handleGetPreferenceStats(request, env) {
     const url = new URL(request.url);
+    
+    // Support bulk requests via POST with JSON body
+    if (request.method === 'POST') {
+        try {
+            const body = await request.json();
+            const itemNames = body.items || [];
+            
+            if (!Array.isArray(itemNames) || itemNames.length === 0) {
+                return new Response(JSON.stringify({ itemCounts: {} }), {
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+            
+            // Get all preferences once
+            const favoritesPrefs = await env.DBA.prepare(`
+                SELECT preference_value
+                FROM user_preferences
+                WHERE preference_key = 'favorites'
+            `).all();
+            
+            const wishlistPrefs = await env.DBA.prepare(`
+                SELECT preference_value
+                FROM user_preferences
+                WHERE preference_key = 'wishlist'
+            `).all();
+            
+            // Build a map of item counts
+            const itemCounts = {};
+            itemNames.forEach(itemName => {
+                itemCounts[itemName] = 0;
+            });
+            
+            // Count favorites
+            favoritesPrefs.results.forEach(pref => {
+                try {
+                    const favorites = JSON.parse(pref.preference_value || '[]');
+                    if (Array.isArray(favorites)) {
+                        favorites.forEach(itemName => {
+                            if (itemCounts.hasOwnProperty(itemName)) {
+                                itemCounts[itemName]++;
+                            }
+                        });
+                    }
+                } catch (e) {
+                    // Skip invalid JSON
+                }
+            });
+            
+            // Count wishlist
+            wishlistPrefs.results.forEach(pref => {
+                try {
+                    const wishlist = JSON.parse(pref.preference_value || '[]');
+                    if (Array.isArray(wishlist)) {
+                        wishlist.forEach(itemName => {
+                            if (itemCounts.hasOwnProperty(itemName)) {
+                                itemCounts[itemName]++;
+                            }
+                        });
+                    }
+                } catch (e) {
+                    // Skip invalid JSON
+                }
+            });
+            
+            return new Response(JSON.stringify({ itemCounts }), {
+                headers: { 'Content-Type': 'application/json' }
+            });
+        } catch (e) {
+            console.error('Error fetching bulk preference stats:', e);
+            return new Response(JSON.stringify({ itemCounts: {} }), {
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+    }
+    
+    // Support single item via GET query param (backward compatibility)
     const itemName = url.searchParams.get('item');
     
-    // If specific item requested, return counts for that item
     if (itemName) {
         try {
             // Get all favorites preferences and count manually (SQLite doesn't have great JSON support)

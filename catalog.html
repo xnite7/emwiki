@@ -1900,33 +1900,54 @@
             }
 
             async sortByFavorites() {
-                // Fetch favorite/wishlist counts for all filtered items
+                // Fetch favorite/wishlist counts for all filtered items using bulk endpoint
                 const uniqueItems = [...new Set(this.filtered.map(item => item.name))];
-                const countPromises = uniqueItems.map(async (itemName) => {
-                    if (this.favoriteCountsCache.has(itemName)) {
-                        return { itemName, count: this.favoriteCountsCache.get(itemName) };
-                    }
+                
+                // Filter out items already in cache
+                const itemsToFetch = uniqueItems.filter(itemName => !this.favoriteCountsCache.has(itemName));
+                
+                if (itemsToFetch.length > 0) {
                     try {
-                        const response = await fetch(`https://emwiki.com/api/auth/user/preferences/stats?item=${encodeURIComponent(itemName)}`);
+                        // Use bulk POST endpoint to fetch all counts at once
+                        const response = await fetch(`${this.apiBase}/auth/user/preferences/stats`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ items: itemsToFetch })
+                        });
+                        
                         if (response.ok) {
                             const data = await response.json();
-                            const totalCount = (data.favorites_count || 0) + (data.wishlist_count || 0);
-                            this.favoriteCountsCache.set(itemName, totalCount);
-                            return { itemName, count: totalCount };
+                            const itemCounts = data.itemCounts || {};
+                            
+                            // Cache all the counts
+                            Object.entries(itemCounts).forEach(([itemName, count]) => {
+                                this.favoriteCountsCache.set(itemName, count);
+                            });
+                            
+                            // Cache items with 0 count to avoid refetching
+                            itemsToFetch.forEach(itemName => {
+                                if (!this.favoriteCountsCache.has(itemName)) {
+                                    this.favoriteCountsCache.set(itemName, 0);
+                                }
+                            });
                         }
                     } catch (e) {
-                        console.error(`Error fetching count for ${itemName}:`, e);
+                        console.error('Error fetching bulk favorite counts:', e);
+                        // Cache 0 for failed items to avoid retrying immediately
+                        itemsToFetch.forEach(itemName => {
+                            if (!this.favoriteCountsCache.has(itemName)) {
+                                this.favoriteCountsCache.set(itemName, 0);
+                            }
+                        });
                     }
-                    return { itemName, count: 0 };
-                });
-                
-                const counts = await Promise.all(countPromises);
-                const countMap = new Map(counts.map(c => [c.itemName, c.count]));
+                }
                 
                 // Sort by count (descending)
                 this.filtered.sort((a, b) => {
-                    const countA = countMap.get(a.name) || 0;
-                    const countB = countMap.get(b.name) || 0;
+                    const countA = this.favoriteCountsCache.get(a.name) || 0;
+                    const countB = this.favoriteCountsCache.get(b.name) || 0;
                     return countB - countA;
                 });
             }
