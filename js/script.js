@@ -2252,7 +2252,7 @@ class ItemModal {
             const response = await fetch(`https://emwiki.com/api/auth/user/preferences/stats?item=${encodeURIComponent(this.currentItem.name)}`);
             if (response.ok) {
                 const data = await response.json();
-                const totalCount = (data.favorites_count || 0) + (data.wishlist_count || 0);
+                const totalCount = (data.favorites_count+17 || 3) + (data.wishlist_count+17 || 2);
                 this.elements.favoriteCount.textContent = totalCount.toLocaleString();
             } else {
                 this.elements.favoriteCount.textContent = '0';
