@@ -480,9 +480,19 @@
     }
 
     .attachment-video {
+        margin: 10px 0;
         border-radius: 8px;
         overflow: hidden;
         border: 1px solid var(--border-color);
+    }
+    
+    .attachment-video iframe {
+        width: 100%;
+        min-height: 400px;
+        max-height: 80vh;
+        background: #000;
+        border: none;
+        display: block;
     }
 
     .attachment-video video {
@@ -1229,12 +1239,16 @@
                         } else if (att.is_video) {
                             // Use proxy endpoint for Discord videos (requires auth)
                             const proxyUrl = `https://emwiki.com/api/roblox-proxy?mode=discord-media&url=${encodeURIComponent(att.url)}`;
+                            const viewerUrl = `https://emwiki.com/video-viewer.html?url=${encodeURIComponent(proxyUrl)}`;
                             html += `
                                 <div class="attachment-video">
-                                    <video controls preload="metadata">
-                                        <source src="${proxyUrl}" type="${att.content_type}">
-                                        Your browser does not support the video tag.
-                                    </video>
+                                    <iframe 
+                                        src="${viewerUrl}" 
+                                        frameborder="0" 
+                                        allow="autoplay; fullscreen; picture-in-picture" 
+                                        allowfullscreen
+                                        style="width: 100%; min-height: 400px; background: #000; border-radius: 8px;">
+                                    </iframe>
                                     <a href="${proxyUrl}" target="_blank" rel="noopener noreferrer" class="attachment-link">Download Video</a>
                                 </div>
                             `;
