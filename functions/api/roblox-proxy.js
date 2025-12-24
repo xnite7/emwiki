@@ -538,61 +538,119 @@ export async function onRequestGet({ request, env }) {
       // --- DISCORD FETCHING (INCREMENTAL) ---
       const channelId = env.DISCORD_CHANNEL_ID;
       let allMessages = [];
-      let after = lastProcessedMessageId || null; // Use 'after' for incremental fetching
+      
+      if (lastProcessedMessageId) {
+        // Incremental: Only fetch new messages after the last processed one
+        let after = lastProcessedMessageId;
 
-      while (true) {
-        const fetchUrl = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
-        fetchUrl.searchParams.set("limit", "100");
-        if (after) {
+        while (true) {
+          const fetchUrl = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
+          fetchUrl.searchParams.set("limit", "100");
           fetchUrl.searchParams.set("after", after);
-        }
 
-        let response;
-        let retryCount = 0;
-        while (retryCount < 3) {
-          try {
-            response = await fetch(fetchUrl.toString(), {
-              headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
-            });
+          let response;
+          let retryCount = 0;
+          while (retryCount < 3) {
+            try {
+              response = await fetch(fetchUrl.toString(), {
+                headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+              });
 
-            if (response.status === 429) {
-              const retryAfter = await response.json();
-              await new Promise(r => setTimeout(r, (retryAfter.retry_after || 1) * 1000));
+              if (response.status === 429) {
+                const retryAfter = await response.json();
+                await new Promise(r => setTimeout(r, (retryAfter.retry_after || 1) * 1000));
+                retryCount++;
+                continue;
+              }
+
+              if (!response.ok) {
+                throw new Error(`Discord API error: ${response.status}`);
+              }
+
+              break;
+            } catch (err) {
               retryCount++;
-              continue;
+              if (retryCount >= 3) {
+                throw err;
+              }
+              await new Promise(r => setTimeout(r, 1000 * retryCount));
             }
-
-            if (!response.ok) {
-              throw new Error(`Discord API error: ${response.status}`);
-            }
-
-            break;
-          } catch (err) {
-            retryCount++;
-            if (retryCount >= 3) {
-              throw err;
-            }
-            await new Promise(r => setTimeout(r, 1000 * retryCount));
           }
+
+          const messages = await response.json();
+          if (messages.length === 0) break;
+
+          // When using 'after', Discord returns messages in reverse chronological order (newest first)
+          // Store the newest message ID before reversing (first message in array)
+          const newestMessageId = messages[0].id;
+          
+          // Reverse to process oldest first
+          const reversedMessages = messages.reverse();
+          allMessages.push(...reversedMessages);
+          
+          // Update 'after' to the newest message ID we just fetched
+          // This allows us to continue fetching newer messages in the next iteration
+          after = newestMessageId;
+          
+          // Safety limit
+          if (allMessages.length >= 5000) break;
         }
+      } else {
+        // Initial fetch: Fetch ALL messages from the beginning using 'before' parameter
+        // Start by getting the latest message ID, then fetch backwards
+        let before = null;
 
-        const messages = await response.json();
-        if (messages.length === 0) break;
+        while (true) {
+          const fetchUrl = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
+          fetchUrl.searchParams.set("limit", "100");
+          if (before) {
+            fetchUrl.searchParams.set("before", before);
+          }
 
-        // When using 'after', Discord returns messages in reverse chronological order (newest first)
-        // Store the newest message ID before reversing (first message in array)
-        const newestMessageId = messages[0].id;
-        
-        // Reverse to process oldest first
-        const reversedMessages = messages.reverse();
-        allMessages.push(...reversedMessages);
-        
-        // Update 'after' to the newest message ID we just fetched
-        // This allows us to continue fetching newer messages in the next iteration
-        after = newestMessageId;
-        
-        // Safety limit
-        if (allMessages.length >= 5000) break;
+          let response;
+          let retryCount = 0;
+          while (retryCount < 3) {
+            try {
+              response = await fetch(fetchUrl.toString(), {
+                headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+              });
+
+              if (response.status === 429) {
+                const retryAfter = await response.json();
+                await new Promise(r => setTimeout(r, (retryAfter.retry_after || 1) * 1000));
+                retryCount++;
+                continue;
+              }
+
+              if (!response.ok) {
+                throw new Error(`Discord API error: ${response.status}`);
+              }
+
+              break;
+            } catch (err) {
+              retryCount++;
+              if (retryCount >= 3) {
+                throw err;
+              }
+              await new Promise(r => setTimeout(r, 1000 * retryCount));
+            }
+          }
+
+          const messages = await response.json();
+          if (messages.length === 0) break;
+
+          // When using 'before', Discord returns messages in reverse chronological order (newest first)
+          // We want to process oldest first, so reverse them
+          const reversedMessages = messages.reverse();
+          allMessages.push(...reversedMessages);
+          
+          // Update 'before' to the oldest message ID we just fetched (last in original array)
+          // This allows us to continue fetching older messages in the next iteration
+          before = messages[messages.length - 1].id;
+          
+          // Safety limit
+          if (allMessages.length >= 5000) break;
+        }
       }
 
       // Process messages and update unified table
