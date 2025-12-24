@@ -2247,12 +2247,12 @@ class ItemModal {
 
     async updateFavoriteCount() {
         if (!this.currentItem || !this.elements.favoriteCount) return;
-
+        this.elements.favoriteCount.textContent = '0';
         try {
             const response = await fetch(`https://emwiki.com/api/auth/user/preferences/stats?item=${encodeURIComponent(this.currentItem.name)}`);
             if (response.ok) {
                 const data = await response.json();
-                const totalCount = (data.favorites_count+17 || 3) + (data.wishlist_count+17 || 2);
+                const totalCount = (data.favorites_count || 0) + (data.wishlist_count || 0);
                 this.elements.favoriteCount.textContent = totalCount.toLocaleString();
             } else {
                 this.elements.favoriteCount.textContent = '0';
