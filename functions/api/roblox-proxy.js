@@ -221,13 +221,25 @@ async function getLastProcessedMessageId(env) {
 // Helper function to download Discord video and upload to R2
 async function downloadVideoToR2(discordUrl, attachmentId, filename, contentType, env) {
   try {
-    // Check if video already exists in R2 (by attachment ID)
-    const existingKey = `scammer-evidence/videos/${attachmentId}`;
+    // Get file extension from filename or content type
+    let ext = filename.split('.').pop();
+    if (!ext || ext === filename) {
+      // Try to determine from content type
+      if (contentType && contentType.includes('mp4')) ext = 'mp4';
+      else if (contentType && contentType.includes('webm')) ext = 'webm';
+      else if (contentType && contentType.includes('quicktime')) ext = 'mov';
+      else ext = 'mp4'; // default
+    }
+
+    // Generate R2 key with extension
+    const key = `scammer-evidence/videos/${attachmentId}.${ext}`;
+
+    // Check if video already exists in R2
     try {
-      const existing = await env.MY_BUCKET.head(existingKey);
+      const existing = await env.MY_BUCKET.head(key);
       if (existing) {
         // Video already exists, return existing URL
-        return `https://cdn.emwiki.com/${existingKey}`;
+        return `https://cdn.emwiki.com/${key}`;
       }
     } catch {
       // Doesn't exist, continue to download
@@ -242,19 +254,6 @@ async function downloadVideoToR2(discordUrl, attachmentId, filename, contentType
       console.warn(`Failed to download video ${attachmentId}: ${videoResponse.status}`);
       return null;
     }
-
-    // Get file extension from filename or content type
-    let ext = filename.split('.').pop();
-    if (!ext || ext === filename) {
-      // Try to determine from content type
-      if (contentType.includes('mp4')) ext = 'mp4';
-      else if (contentType.includes('webm')) ext = 'webm';
-      else if (contentType.includes('quicktime')) ext = 'mov';
-      else ext = 'mp4'; // default
-    }
-
-    // Generate R2 key
-    const key = `scammer-evidence/videos/${attachmentId}.${ext}`;
 
     // Upload to R2
     const videoData = await videoResponse.arrayBuffer();
@@ -586,6 +585,117 @@ export async function onRequestGet({ request, env }) {
 
 
 
+
+  // Handle video migration endpoint - Migrate existing videos to R2
+  if (mode === "migrate-videos-to-r2") {
+    try {
+      // Get all entries with thread evidence
+      const { results } = await env.DB.prepare(`
+        SELECT user_id, thread_evidence 
+        FROM scammer_profile_cache 
+        WHERE thread_evidence IS NOT NULL
+      `).all();
+
+      if (!results || results.length === 0) {
+        return new Response(JSON.stringify({ 
+          message: "No thread evidence found to migrate",
+          processed: 0,
+          videos_downloaded: 0
+        }), {
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          },
+        });
+      }
+
+      let processed = 0;
+      let videosDownloaded = 0;
+      let videosSkipped = 0;
+      let errors = [];
+
+      // Process each entry
+      for (const row of results) {
+        try {
+          const threadEvidence = JSON.parse(row.thread_evidence);
+          let updated = false;
+
+          // Process all messages in the thread
+          if (threadEvidence.messages && Array.isArray(threadEvidence.messages)) {
+            for (const msg of threadEvidence.messages) {
+              if (msg.attachments && Array.isArray(msg.attachments)) {
+                // Process attachments in parallel
+                const attachmentPromises = msg.attachments.map(async (att) => {
+                  // Only process videos that don't already have r2_url
+                  if (att.is_video && att.url && !att.r2_url) {
+                    const r2Url = await downloadVideoToR2(
+                      att.url,
+                      att.id,
+                      att.filename,
+                      att.content_type,
+                      env
+                    );
+                    
+                    if (r2Url) {
+                      att.r2_url = r2Url;
+                      videosDownloaded++;
+                      updated = true;
+                    } else {
+                      videosSkipped++;
+                      errors.push(`Failed to download video ${att.id} for user ${row.user_id}`);
+                    }
+                  }
+                  return att;
+                });
+
+                msg.attachments = await Promise.all(attachmentPromises);
+              }
+            }
+          }
+
+          // Update database if any videos were downloaded
+          if (updated) {
+            const updatedEvidenceJson = JSON.stringify(threadEvidence);
+            await env.DB.prepare(`
+              UPDATE scammer_profile_cache 
+              SET thread_evidence = ?, updated_at = ?
+              WHERE user_id = ?
+            `).bind(updatedEvidenceJson, Date.now(), row.user_id).run();
+            processed++;
+          }
+        } catch (err) {
+          console.error(`Error processing user ${row.user_id}:`, err);
+          errors.push(`Error processing user ${row.user_id}: ${err.message}`);
+        }
+      }
+
+      return new Response(JSON.stringify({ 
+        message: "Migration completed",
+        total_entries: results.length,
+        processed,
+        videos_downloaded,
+        videos_skipped,
+        errors: errors.length > 0 ? errors.slice(0, 10) : [] // Limit errors to first 10
+      }), {
+        headers: { 
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*" 
+        },
+      });
+    } catch (err) {
+      console.error("Migration error:", err);
+      return new Response(JSON.stringify({ 
+        error: err.message,
+        debug: err.stack
+      }), {
+        status: 500,
+        headers: { 
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*" 
+        },
+      });
+    }
+  }
 
   // Handle thread evidence endpoint - MUST come before general endpoint check
   if (mode === "thread-evidence" && userId) {
