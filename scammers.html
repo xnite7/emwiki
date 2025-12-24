@@ -283,6 +283,289 @@
         position: relative;
     }
 
+    /* Thread Evidence Button */
+    .thread-evidence-btn {
+        margin-top: 10px;
+        padding: 8px 16px;
+        background: linear-gradient(135deg, #5865F2, #4752C4);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .thread-evidence-btn:hover {
+        background: linear-gradient(135deg, #4752C4, #3a45a3);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(88, 101, 242, 0.4);
+    }
+
+    .thread-evidence-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    /* Thread Evidence Modal */
+    .thread-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(5px);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    .thread-modal-content {
+        background: var(--bg-primary);
+        border: 2px solid var(--border-color);
+        border-radius: 15px;
+        max-width: 900px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        position: relative;
+    }
+
+    .thread-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        border-bottom: 2px solid var(--border-color);
+        background: linear-gradient(135deg, rgba(88, 101, 242, 0.1), rgba(71, 82, 196, 0.1));
+    }
+
+    .thread-header h2 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 24px;
+    }
+
+    .thread-close {
+        background: none;
+        border: none;
+        font-size: 32px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s;
+    }
+
+    .thread-close:hover {
+        background: rgba(255, 107, 107, 0.2);
+        color: #ff6b6b;
+    }
+
+    .thread-info {
+        padding: 15px 20px;
+        background: var(--bg-item);
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .thread-info p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+
+    .thread-info strong {
+        color: var(--text-primary);
+    }
+
+    .thread-messages {
+        padding: 20px;
+    }
+
+    .thread-message {
+        background: var(--bg-item);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        transition: all 0.2s;
+    }
+
+    .thread-message:hover {
+        border-color: #5865F2;
+        box-shadow: 0 4px 12px rgba(88, 101, 242, 0.2);
+    }
+
+    .message-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .message-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid var(--border-color);
+    }
+
+    .message-author {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .message-author strong {
+        color: var(--text-primary);
+        font-size: 16px;
+    }
+
+    .message-timestamp {
+        color: var(--text-secondary);
+        font-size: 12px;
+    }
+
+    .message-content {
+        color: var(--text-primary);
+        margin: 10px 0;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    .message-attachments {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .attachment-image {
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+    }
+
+    .attachment-image img {
+        width: 100%;
+        max-width: 600px;
+        height: auto;
+        display: block;
+    }
+
+    .attachment-video {
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+    }
+
+    .attachment-video video {
+        width: 100%;
+        max-width: 600px;
+        height: auto;
+        display: block;
+    }
+
+    .attachment-link {
+        display: inline-block;
+        margin-top: 5px;
+        color: #4a9eff;
+        text-decoration: none;
+        font-size: 12px;
+        transition: color 0.2s;
+    }
+
+    .attachment-link:hover {
+        color: #6bb6ff;
+        text-decoration: underline;
+    }
+
+    .attachment-file {
+        padding: 10px;
+        background: var(--bg-item);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+    }
+
+    .attachment-file a {
+        color: var(--text-primary);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .attachment-file a:hover {
+        color: #4a9eff;
+    }
+
+    .message-embeds {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .embed {
+        background: var(--bg-item);
+        border-left: 4px solid #5865F2;
+        border-radius: 4px;
+        padding: 12px;
+        margin-top: 5px;
+    }
+
+    .embed-title {
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .embed-description {
+        color: var(--text-secondary);
+        margin-top: 5px;
+        line-height: 1.5;
+    }
+
+    .embed-image,
+    .embed-thumbnail {
+        max-width: 400px;
+        border-radius: 4px;
+        margin-top: 8px;
+    }
+
+    .thread-loading,
+    .thread-error,
+    .thread-empty {
+        padding: 40px;
+        text-align: center;
+        color: var(--text-secondary);
+        font-size: 16px;
+    }
+
+    .thread-error {
+        color: #ff6b6b;
+    }
+
     /* Responsive improvements */
     @media (max-width: 768px) {
         .scammer-block {
@@ -302,6 +585,24 @@
 
         .scammer-info h2 {
             justify-content: center;
+        }
+
+        .thread-modal-content {
+            max-width: 100%;
+            max-height: 100vh;
+            border-radius: 0;
+        }
+
+        .thread-header {
+            padding: 15px;
+        }
+
+        .thread-header h2 {
+            font-size: 20px;
+        }
+
+        .thread-messages {
+            padding: 15px;
         }
     }
 </style>
@@ -454,6 +755,12 @@
         </div>
     </footer>
 
+    <!-- Thread Evidence Modal -->
+    <div id="thread-evidence-modal" class="thread-modal" style="display: none;">
+        <div id="thread-evidence-content" class="thread-modal-content">
+            <!-- Content will be dynamically loaded -->
+        </div>
+    </div>
 
 </body>
 
@@ -633,7 +940,9 @@
             victims = null,
             itemsScammed = null,
             robloxAlts = null,
-            severity = null // Optional: for warning badges
+            severity = null, // Optional: for warning badges
+            hasThreadEvidence = false,
+            user_id = null
         } = scammer;
 
         const block = document.createElement('section');
@@ -654,6 +963,20 @@
         // Optional: High severity warning badge
         const warningBadge = severity === "high"
             ? '<span class="scammer-warning">⚠️ High Risk</span>'
+            : "";
+
+        // Thread evidence button
+        const threadButton = hasThreadEvidence && user_id
+            ? `<button class="thread-evidence-btn" onclick="viewThreadEvidence('${user_id}')" title="View investigation evidence">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                View Evidence
+              </button>`
             : "";
 
         block.innerHTML = `
@@ -681,6 +1004,7 @@
                 ? `<p><strong>Items Scammed:</strong> ${itemsScammed}</p>`
                 : ""}
         ${altsHTML}
+        ${threadButton}
       </div>
     </div>
   `;
@@ -739,7 +1063,16 @@
                 );
 
                 // Create all scammer blocks
-                sortedScammers.forEach(scammer => createScammerBlock(scammer, container));
+                sortedScammers.forEach(scammer => {
+                    // Extract user_id from robloxProfile if not present
+                    if (!scammer.user_id && scammer.robloxProfile) {
+                        const match = scammer.robloxProfile.match(/\/users\/(\d+)\//);
+                        if (match) {
+                            scammer.user_id = match[1];
+                        }
+                    }
+                    createScammerBlock(scammer, container);
+                });
 
                 console.log(`✅ Loaded ${data.scammers.length} scammers`);
             } else {
@@ -795,6 +1128,169 @@
         }
     });
 
+
+    // View thread evidence modal
+    async function viewThreadEvidence(userId) {
+        const modal = document.getElementById('thread-evidence-modal');
+        const modalContent = document.getElementById('thread-evidence-content');
+        
+        if (!modal || !modalContent) {
+            console.error('Thread evidence modal not found');
+            return;
+        }
+
+        // Show loading state
+        modal.style.display = 'flex';
+        modalContent.innerHTML = '<div class="thread-loading">Loading evidence...</div>';
+
+        try {
+            const response = await fetch(`https://emwiki.com/api/roblox-proxy?mode=thread-evidence&userId=${userId}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            if (!data.thread_evidence) {
+                modalContent.innerHTML = '<div class="thread-error">No evidence found for this scammer.</div>';
+                return;
+            }
+
+            // Render thread evidence
+            renderThreadEvidence(data.thread_evidence, modalContent);
+        } catch (error) {
+            console.error('Failed to fetch thread evidence:', error);
+            modalContent.innerHTML = `<div class="thread-error">Failed to load evidence: ${error.message}</div>`;
+        }
+    }
+
+    // Render thread evidence in investigation-style format
+    function renderThreadEvidence(threadEvidence, container) {
+        const { thread_name, message_count, messages } = threadEvidence;
+        
+        let html = `
+            <div class="thread-header">
+                <h2>🔍 Investigation Evidence</h2>
+                <button class="thread-close" onclick="closeThreadModal()">×</button>
+            </div>
+            <div class="thread-info">
+                <p><strong>Thread:</strong> ${thread_name || 'Unnamed Thread'}</p>
+                <p><strong>Messages:</strong> ${message_count || messages?.length || 0}</p>
+            </div>
+            <div class="thread-messages">
+        `;
+
+        if (messages && messages.length > 0) {
+            messages.forEach((msg, index) => {
+                const authorName = msg.author?.global_name || msg.author?.username || 'Unknown';
+                const authorAvatar = msg.author?.avatar 
+                    ? `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png?size=64`
+                    : 'https://cdn.discordapp.com/embed/avatars/0.png';
+                const timestamp = new Date(msg.timestamp).toLocaleString();
+                
+                html += `
+                    <div class="thread-message" data-index="${index}">
+                        <div class="message-header">
+                            <img src="${authorAvatar}" alt="${authorName}" class="message-avatar" />
+                            <div class="message-author">
+                                <strong>${authorName}</strong>
+                                <span class="message-timestamp">${timestamp}</span>
+                            </div>
+                        </div>
+                        ${msg.content ? `<div class="message-content">${escapeHtml(msg.content)}</div>` : ''}
+                `;
+
+                // Render attachments (images, videos, files)
+                if (msg.attachments && msg.attachments.length > 0) {
+                    html += '<div class="message-attachments">';
+                    msg.attachments.forEach(att => {
+                        if (att.is_image) {
+                            html += `
+                                <div class="attachment-image">
+                                    <img src="${att.proxy_url || att.url}" alt="${att.filename}" loading="lazy" />
+                                    <a href="${att.url}" target="_blank" rel="noopener noreferrer" class="attachment-link">View Full Size</a>
+                                </div>
+                            `;
+                        } else if (att.is_video) {
+                            html += `
+                                <div class="attachment-video">
+                                    <video controls>
+                                        <source src="${att.url}" type="${att.content_type}">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                    <a href="${att.url}" target="_blank" rel="noopener noreferrer" class="attachment-link">Download Video</a>
+                                </div>
+                            `;
+                        } else {
+                            html += `
+                                <div class="attachment-file">
+                                    <a href="${att.url}" target="_blank" rel="noopener noreferrer">
+                                        📎 ${att.filename} (${formatFileSize(att.size)})
+                                    </a>
+                                </div>
+                            `;
+                        }
+                    });
+                    html += '</div>';
+                }
+
+                // Render embeds
+                if (msg.embeds && msg.embeds.length > 0) {
+                    html += '<div class="message-embeds">';
+                    msg.embeds.forEach(embed => {
+                        html += `
+                            <div class="embed">
+                                ${embed.title ? `<div class="embed-title">${escapeHtml(embed.title)}</div>` : ''}
+                                ${embed.description ? `<div class="embed-description">${escapeHtml(embed.description)}</div>` : ''}
+                                ${embed.image ? `<img src="${embed.image.proxy_url || embed.image.url}" alt="Embed image" class="embed-image" />` : ''}
+                                ${embed.thumbnail ? `<img src="${embed.thumbnail.proxy_url || embed.thumbnail.url}" alt="Embed thumbnail" class="embed-thumbnail" />` : ''}
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                html += '</div>';
+            });
+        } else {
+            html += '<div class="thread-empty">No messages found in this thread.</div>';
+        }
+
+        html += '</div></div>';
+        container.innerHTML = html;
+    }
+
+    // Close thread modal
+    function closeThreadModal() {
+        const modal = document.getElementById('thread-evidence-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    // Utility functions
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('thread-evidence-modal');
+        if (event.target === modal) {
+            closeThreadModal();
+        }
+    }
 
     window.catalog = new Catalog();
 

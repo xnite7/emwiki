@@ -206,6 +206,126 @@ async function getLastProcessedMessageId(env) {
   return result?.last_id || null;
 }
 
+// Helper function to fetch Discord thread messages
+async function fetchDiscordThread(threadId, env) {
+  if (!threadId) return null;
+
+  try {
+    const threadMessages = [];
+    let before = null;
+
+    // Fetch all messages from the thread
+    while (true) {
+      const fetchUrl = new URL(`https://discord.com/api/v10/channels/${threadId}/messages`);
+      fetchUrl.searchParams.set("limit", "100");
+      if (before) {
+        fetchUrl.searchParams.set("before", before);
+      }
+
+      let response;
+      let retryCount = 0;
+      while (retryCount < 3) {
+        try {
+          response = await fetch(fetchUrl.toString(), {
+            headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+          });
+
+          if (response.status === 429) {
+            const retryAfter = await response.json();
+            await new Promise(r => setTimeout(r, (retryAfter.retry_after || 1) * 1000));
+            retryCount++;
+            continue;
+          }
+
+          if (response.status === 404) {
+            // Thread not found or no access
+            return null;
+          }
+
+          if (!response.ok) {
+            throw new Error(`Discord API error: ${response.status}`);
+          }
+
+          break;
+        } catch (err) {
+          retryCount++;
+          if (retryCount >= 3) {
+            throw err;
+          }
+          await new Promise(r => setTimeout(r, 1000 * retryCount));
+        }
+      }
+
+      const messages = await response.json();
+      if (messages.length === 0) break;
+
+      // Process messages and extract relevant data
+      for (const msg of messages) {
+        const messageData = {
+          id: msg.id,
+          author: {
+            id: msg.author?.id,
+            username: msg.author?.username,
+            global_name: msg.author?.global_name,
+            avatar: msg.author?.avatar,
+            discriminator: msg.author?.discriminator
+          },
+          content: msg.content,
+          timestamp: msg.timestamp,
+          edited_timestamp: msg.edited_timestamp,
+          attachments: [],
+          embeds: []
+        };
+
+        // Extract attachments (images, videos, files)
+        if (msg.attachments && msg.attachments.length > 0) {
+          messageData.attachments = msg.attachments.map(att => ({
+            id: att.id,
+            filename: att.filename,
+            url: att.url,
+            proxy_url: att.proxy_url,
+            size: att.size,
+            content_type: att.content_type,
+            width: att.width,
+            height: att.height,
+            is_image: att.content_type?.startsWith('image/') || false,
+            is_video: att.content_type?.startsWith('video/') || false
+          }));
+        }
+
+        // Extract embeds
+        if (msg.embeds && msg.embeds.length > 0) {
+          messageData.embeds = msg.embeds.map(embed => ({
+            title: embed.title,
+            description: embed.description,
+            url: embed.url,
+            image: embed.image,
+            video: embed.video,
+            thumbnail: embed.thumbnail,
+            type: embed.type
+          }));
+        }
+
+        threadMessages.push(messageData);
+      }
+
+      // Update before to fetch older messages
+      before = messages[messages.length - 1].id;
+      
+      // Safety limit
+      if (threadMessages.length >= 500) break;
+    }
+
+    // Sort by timestamp (oldest first)
+    threadMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    return threadMessages;
+  } catch (err) {
+    console.warn(`Failed to fetch thread ${threadId}:`, err);
+    return null;
+  }
+}
+
 export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
   const mode = url.searchParams.get("mode");
@@ -359,6 +479,47 @@ export async function onRequestGet({ request, env }) {
     }
   }
 
+  // Handle thread evidence endpoint
+  if (mode === "thread-evidence" && userId) {
+    try {
+      const result = await env.DB.prepare(
+        "SELECT thread_evidence FROM scammer_profile_cache WHERE user_id = ?"
+      ).bind(userId).first();
+
+      if (!result || !result.thread_evidence) {
+        return new Response(JSON.stringify({ 
+          error: "No thread evidence found for this user",
+          thread_evidence: null 
+        }), {
+          status: 404,
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          },
+        });
+      }
+
+      const threadEvidence = JSON.parse(result.thread_evidence);
+      return new Response(JSON.stringify({ 
+        user_id: userId,
+        thread_evidence: threadEvidence 
+      }), {
+        headers: { 
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*" 
+        },
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 500,
+        headers: { 
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*" 
+        },
+      });
+    }
+  }
+
   if (mode === "discord-scammers") {
     try {
       const now = Date.now();
@@ -401,6 +562,7 @@ export async function onRequestGet({ request, env }) {
               victims,
               items_scammed,
               roblox_alts,
+              thread_evidence,
               incomplete
             FROM scammer_profile_cache
             WHERE user_id IS NOT NULL
@@ -420,7 +582,8 @@ export async function onRequestGet({ request, env }) {
               victims: row.victims || null,
               itemsScammed: row.items_scammed || null,
               incomplete: row.incomplete === 1,
-              robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : []
+              robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : [],
+              hasThreadEvidence: !!row.thread_evidence
             };
 
             if (row.incomplete === 1) {
@@ -482,6 +645,7 @@ export async function onRequestGet({ request, env }) {
                 victims,
                 items_scammed,
                 roblox_alts,
+                thread_evidence,
                 incomplete
               FROM scammer_profile_cache
               WHERE user_id IS NOT NULL AND incomplete = 0
@@ -496,7 +660,8 @@ export async function onRequestGet({ request, env }) {
               victims: row.victims || null,
               itemsScammed: row.items_scammed || null,
               incomplete: false,
-              robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : []
+              robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : [],
+              hasThreadEvidence: !!row.thread_evidence
             }));
 
             return new Response(JSON.stringify({ 
@@ -732,15 +897,32 @@ export async function onRequestGet({ request, env }) {
           const robloxAlts = await fetchAltAccounts(altIds, env);
           const robloxAltsJson = JSON.stringify(robloxAlts);
 
+          // Check if message has a thread and fetch thread evidence
+          let threadEvidence = null;
+          if (msg.thread && msg.thread.id) {
+            const threadMessages = await fetchDiscordThread(msg.thread.id, env);
+            if (threadMessages && threadMessages.length > 0) {
+              threadEvidence = {
+                thread_id: msg.thread.id,
+                thread_name: msg.thread.name,
+                message_count: threadMessages.length,
+                messages: threadMessages,
+                created_at: msg.thread.id ? new Date(parseInt(msg.thread.id) / 4194304 + 1420070400000).toISOString() : null
+              };
+            }
+          }
+
+          const threadEvidenceJson = threadEvidence ? JSON.stringify(threadEvidence) : null;
+
           // Store/update in unified table
           await env.DB.prepare(`
             INSERT INTO scammer_profile_cache (
               user_id, roblox_name, roblox_display_name, roblox_avatar,
               discord_id, discord_display_name, discord_avatar,
               victims, items_scammed, roblox_alts,
-              incomplete, last_message_id, updated_at
+              thread_evidence, incomplete, last_message_id, updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(user_id) DO UPDATE SET
               roblox_name = excluded.roblox_name,
               roblox_display_name = excluded.roblox_display_name,
@@ -751,6 +933,7 @@ export async function onRequestGet({ request, env }) {
               victims = COALESCE(excluded.victims, victims),
               items_scammed = COALESCE(excluded.items_scammed, items_scammed),
               roblox_alts = COALESCE(excluded.roblox_alts, roblox_alts),
+              thread_evidence = COALESCE(excluded.thread_evidence, thread_evidence),
               incomplete = 0,
               last_message_id = excluded.last_message_id,
               updated_at = excluded.updated_at
@@ -765,6 +948,7 @@ export async function onRequestGet({ request, env }) {
             victims,
             itemsScammed,
             robloxAltsJson,
+            threadEvidenceJson,
             0,
             msg.id,
             now
@@ -804,6 +988,7 @@ export async function onRequestGet({ request, env }) {
           victims,
           items_scammed,
           roblox_alts,
+          thread_evidence,
           incomplete
         FROM scammer_profile_cache
         WHERE user_id IS NOT NULL
@@ -823,7 +1008,8 @@ export async function onRequestGet({ request, env }) {
           victims: row.victims || null,
           itemsScammed: row.items_scammed || null,
           incomplete: row.incomplete === 1,
-          robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : []
+          robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : [],
+          hasThreadEvidence: !!row.thread_evidence
         };
 
         if (row.incomplete === 1) {
