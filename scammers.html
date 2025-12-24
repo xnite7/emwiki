@@ -404,6 +404,7 @@
     }
 
     .thread-messages {
+        background-color: Canvas;
         padding: 20px;
     }
 
@@ -414,11 +415,6 @@
         padding: 15px;
         margin-bottom: 15px;
         transition: all 0.2s;
-    }
-
-    .thread-message:hover {
-        border-color: #5865F2;
-        box-shadow: 0 4px 12px rgba(88, 101, 242, 0.2);
     }
 
     .message-header {
@@ -495,8 +491,11 @@ margin-top: 10px;
     }
     
     .attachment-video video {
-        width: 100%;
-        max-width: 600px;
+    width: 100%;
+    max-width: 400px;
+    min-width: 260px;
+    max-height: 400px;
+    object-fit: contain;
         height: auto;
         display: block;
         background: #000;

@@ -2465,14 +2465,25 @@ class Auth extends EventTarget {
         if (!this.user || !this.scammersList.length) return false;
         if (this.user.role && this.user.role.includes('scammer')) return true;
 
+        const userId = String(this.user.userId);
+        
         return this.scammersList.some(scammer => {
-            if (scammer.robloxProfile?.includes(`/${this.user.userId}/`)) return true;
+            // Check main user_id directly (new system)
+            if (scammer.user_id && String(scammer.user_id) === userId) return true;
+            
+            // Fallback: check robloxProfile URL (backward compatibility)
+            if (scammer.robloxProfile?.includes(`/${userId}/`)) return true;
 
-            if (scammer.robloxAlts) {
-                return scammer.robloxAlts.some(alt =>
-                    alt.profile?.includes(`/${this.user.userId}/`)
-                );
+            // Check alt accounts
+            if (scammer.robloxAlts && Array.isArray(scammer.robloxAlts)) {
+                return scammer.robloxAlts.some(alt => {
+                    // Check user_id directly (new system)
+                    if (alt.user_id && String(alt.user_id) === userId) return true;
+                    // Fallback: check profile URL (backward compatibility)
+                    return alt.profile?.includes(`/${userId}/`);
+                });
             }
+            
             return false;
         });
     }
