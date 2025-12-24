@@ -253,14 +253,17 @@ async function uploadVideoToStream(videoData, filename, env) {
     const streamData = await uploadResponse.json();
     // Return both the video ID and playback URL for native video player
     const videoId = streamData.result?.uid;
-    if (videoId && streamData.result?.playback) {
-      // Return the HLS manifest URL for native video player
+    if (videoId) {
+      // Construct Stream playback URL using your Stream domain
+      // Format: https://customer-{accountId}.cloudflarestream.com/{videoId}/manifest/video.m3u8
+      const playbackUrl = streamData.result?.playback?.hls || 
+                         `https://customer-wosapspiey2ql225.cloudflarestream.com/${videoId}/manifest/video.m3u8`;
       return {
         id: videoId,
-        playback_url: streamData.result.playback.hls || streamData.result.playback.dash || null
+        playback_url: playbackUrl
       };
     }
-    return videoId ? { id: videoId, playback_url: null } : null;
+    return null;
   } catch (err) {
     console.error(`Error uploading video to Stream:`, err);
     return null;
