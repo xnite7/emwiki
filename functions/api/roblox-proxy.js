@@ -724,7 +724,7 @@ export async function onRequestGet({ request, env }) {
       const { results } = await env.DB.prepare(query).bind(...bindParams).all();
 
       if (!results || results.length === 0) {
-        const { results: totalResult } = await env.DB.prepare(`
+        const totalResult = await env.DB.prepare(`
           SELECT COUNT(*) as total FROM scammer_profile_cache WHERE thread_evidence IS NOT NULL
         `).first();
         return new Response(JSON.stringify({ 
@@ -848,7 +848,7 @@ export async function onRequestGet({ request, env }) {
         errors.push(`Error processing user ${row.user_id}: ${err.message}`);
       }
 
-      const { results: totalResult } = await env.DB.prepare(`
+      const totalResult = await env.DB.prepare(`
         SELECT COUNT(*) as total FROM scammer_profile_cache WHERE thread_evidence IS NOT NULL
       `).first();
       const totalCount = totalResult?.total || 0;
@@ -981,7 +981,7 @@ export async function onRequestGet({ request, env }) {
                       await new Promise(r => setTimeout(r, 500)); // 500ms delay
                     }
                     
-                    const r2Url = await downloadVideoToR2(
+                    const result = await downloadVideoToR2(
                       att.url,
                       att.id,
                       att.filename || 'video',
@@ -989,8 +989,15 @@ export async function onRequestGet({ request, env }) {
                       env
                     );
                     
-                    if (r2Url) {
-                      att.r2_url = r2Url;
+                    if (result && result.r2_url) {
+                      att.r2_url = result.r2_url;
+                      // Also store stream data if available
+                      if (result.stream_id) {
+                        att.stream_id = result.stream_id;
+                      }
+                      if (result.stream_url) {
+                        att.stream_url = result.stream_url;
+                      }
                       videosDownloaded++;
                       updated = true;
                     } else {
