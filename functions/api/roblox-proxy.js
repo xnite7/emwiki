@@ -218,7 +218,56 @@ async function getLastProcessedMessageId(env) {
   return result?.last_id || null;
 }
 
-// Helper function to download Discord video and upload to R2
+// Helper function to upload video to Cloudflare Stream
+async function uploadVideoToStream(videoData, filename, env) {
+  try {
+    if (!env.CLOUDFLARE_ACCOUNT_ID || !env.CLOUDFLARE_STREAM_TOKEN) {
+      console.warn('Cloudflare Stream credentials not configured');
+      return null;
+    }
+
+    // Upload video directly to Stream using multipart form data
+    // Note: In Workers, we need to create FormData differently
+    const formData = new FormData();
+    // Create a Blob from the ArrayBuffer
+    const blob = new Blob([videoData], { type: 'video/quicktime' });
+    formData.append('file', blob, filename);
+
+    const uploadResponse = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/stream`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${env.CLOUDFLARE_STREAM_TOKEN}`
+        },
+        body: formData
+      }
+    );
+
+    if (!uploadResponse.ok) {
+      const errorText = await uploadResponse.text();
+      console.warn(`Failed to upload to Stream: ${uploadResponse.status}`, errorText);
+      return null;
+    }
+
+    const streamData = await uploadResponse.json();
+    // Return both the video ID and playback URL for native video player
+    const videoId = streamData.result?.uid;
+    if (videoId && streamData.result?.playback) {
+      // Return the HLS manifest URL for native video player
+      return {
+        id: videoId,
+        playback_url: streamData.result.playback.hls || streamData.result.playback.dash || null
+      };
+    }
+    return videoId ? { id: videoId, playback_url: null } : null;
+  } catch (err) {
+    console.error(`Error uploading video to Stream:`, err);
+    return null;
+  }
+}
+
+// Helper function to download Discord video and upload to R2 (and Stream for QuickTime)
 async function downloadVideoToR2(discordUrl, attachmentId, filename, contentType, env) {
   try {
     // Get file extension from filename or content type
@@ -231,15 +280,18 @@ async function downloadVideoToR2(discordUrl, attachmentId, filename, contentType
       else ext = 'mp4'; // default
     }
 
+    const isQuickTime = contentType?.includes('quicktime') || ext === 'mov';
+
     // Generate R2 key with extension
     const key = `scammer-evidence/videos/${attachmentId}.${ext}`;
 
     // Check if video already exists in R2
+    let r2Url = null;
     try {
       const existing = await env.MY_BUCKET.head(key);
       if (existing) {
         // Video already exists, return existing URL
-        return `https://cdn.emwiki.com/${key}`;
+        r2Url = `https://cdn.emwiki.com/${key}`;
       }
     } catch {
       // Doesn't exist, continue to download
@@ -252,25 +304,40 @@ async function downloadVideoToR2(discordUrl, attachmentId, filename, contentType
 
     if (!videoResponse.ok) {
       console.warn(`Failed to download video ${attachmentId}: ${videoResponse.status}`);
-      return null;
+      return { r2_url: r2Url, stream_id: null };
     }
 
-    // Upload to R2 with proper headers for video playback
+    // Get video data
     const videoData = await videoResponse.arrayBuffer();
-    await env.MY_BUCKET.put(key, videoData, {
-      httpMetadata: { 
-        contentType: contentType || 'video/mp4',
-        cacheControl: 'public, max-age=31536000' // Cache for 1 year
-      },
-      customMetadata: {
-        'original-filename': filename || 'video'
-      }
-    });
 
-    return `https://cdn.emwiki.com/${key}`;
+    // Upload to R2
+    if (!r2Url) {
+      await env.MY_BUCKET.put(key, videoData, {
+        httpMetadata: { 
+          contentType: contentType || 'video/mp4',
+          cacheControl: 'public, max-age=31536000'
+        },
+        customMetadata: {
+          'original-filename': filename || 'video'
+        }
+      });
+      r2Url = `https://cdn.emwiki.com/${key}`;
+    }
+
+    // For QuickTime videos, also upload to Cloudflare Stream for transcoding
+    let streamData = null;
+    if (isQuickTime) {
+      streamData = await uploadVideoToStream(videoData, filename, env);
+    }
+
+    return { 
+      r2_url: r2Url, 
+      stream_id: streamData?.id || null,
+      stream_url: streamData?.playback_url || null
+    };
   } catch (err) {
     console.error(`Error downloading video ${attachmentId} to R2:`, err);
-    return null;
+    return { r2_url: null, stream_id: null };
   }
 }
 
@@ -351,16 +418,21 @@ async function fetchDiscordThread(threadId, env) {
           const attachmentPromises = msg.attachments.map(async (att) => {
             const isVideo = att.content_type?.startsWith('video/') || false;
             
-            // Download videos to R2
+            // Download videos to R2 (and Stream for QuickTime)
             let r2Url = null;
+            let streamId = null;
+            let streamUrl = null;
             if (isVideo && att.url) {
-              r2Url = await downloadVideoToR2(
+              const result = await downloadVideoToR2(
                 att.url,
                 att.id,
                 att.filename,
                 att.content_type,
                 env
               );
+              r2Url = result.r2_url;
+              streamId = result.stream_id;
+              streamUrl = result.stream_url;
             }
 
             return {
@@ -368,6 +440,8 @@ async function fetchDiscordThread(threadId, env) {
               filename: att.filename,
               url: att.url, // Keep original URL as fallback
               r2_url: r2Url, // R2 URL for videos
+              stream_id: streamId, // Cloudflare Stream ID for QuickTime videos
+              stream_url: streamUrl, // Cloudflare Stream playback URL (HLS/DASH)
               proxy_url: att.proxy_url,
               size: att.size,
               content_type: att.content_type,

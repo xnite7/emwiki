@@ -24,9 +24,6 @@
     <link rel="stylesheet" href="./css/style.css">
     <script type="text/javascript" src="./js/sparkles.js"></script>
     <link rel="icon" href="./imgs/favicon.png" type="image/png">
-    <!-- Plyr video player for better format support -->
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
     <meta name="theme-color" content="#000000">
     <link rel="apple-touch-icon" href="/favicon-192.png">
     <link rel="manifest" href="/site.webmanifest">
@@ -497,28 +494,13 @@ margin-top: 10px;
         position: relative;
     }
     
-    .attachment-video video,
-    .attachment-video .plyr {
+    .attachment-video video {
         width: 100%;
         max-width: 600px;
         height: auto;
         display: block;
         background: #000;
         border-radius: 4px;
-    }
-    
-    /* Plyr custom styling to match theme */
-    .attachment-video .plyr {
-        --plyr-color-main: #4a9eff;
-        --plyr-video-background: #000;
-    }
-    
-    .attachment-video .plyr__control--overlaid {
-        background: rgba(74, 158, 255, 0.9);
-    }
-    
-    .attachment-video .plyr__control--overlaid:hover {
-        background: rgba(74, 158, 255, 1);
     }
     
     .video-loading,
@@ -1262,14 +1244,16 @@ margin-top: 10px;
                                 </div>
                             `;
                         } else if (att.is_video) {
-                            // Use R2 URL if available, otherwise fallback to Discord URL
-                            const videoUrl = att.r2_url || att.url;
                             const videoId = `video-${att.id}-${index}`;
+                            // Use Stream URL if available (for QuickTime), otherwise R2 or Discord URL
+                            const videoUrl = att.stream_url || att.r2_url || att.url;
+                            const videoType = att.stream_url ? 'application/x-mpegURL' : (att.content_type || 'video/mp4');
                             
                             html += `
                                 <div class="attachment-video">
-                                    <video id="${videoId}" class="plyr-video" playsinline>
-                                        <source src="${videoUrl}" type="${att.content_type || 'video/mp4'}">
+                                    <video id="${videoId}" controls playsinline preload="metadata" style="width: 100%; max-width: 600px; height: auto; background: #000; border-radius: 4px;">
+                                        <source src="${videoUrl}" type="${videoType}">
+                                        Your browser does not support the video tag.
                                     </video>
                                 </div>
                             `;
@@ -1310,28 +1294,6 @@ margin-top: 10px;
 
         html += '</div></div>';
         container.innerHTML = html;
-        
-        // Initialize Plyr players for all videos
-        container.querySelectorAll('.plyr-video').forEach(video => {
-            try {
-                // Initialize Plyr player
-                const player = new Plyr(video, {
-                    controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
-                    settings: ['quality', 'speed'],
-                    keyboard: { focused: true, global: false },
-                    tooltips: { controls: true, seek: true },
-                    clickToPlay: true,
-                    hideControls: true,
-                    resetOnEnd: false,
-                    ratio: null,
-                });
-                
-                // Store player instance for cleanup if needed
-                video._plyr = player;
-            } catch (err) {
-                console.error('Failed to initialize Plyr:', err);
-            }
-        });
     }
 
     // Close thread modal
