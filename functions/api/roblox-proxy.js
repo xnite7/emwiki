@@ -3,24 +3,28 @@ const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const PROFILE_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days for profile data
 
 // Helper function to fetch Roblox profile with caching
-async function fetchRobloxProfile(userId, env) {
+// writeToScammerCache: if false, only reads from cache but doesn't write (for general endpoint use)
+async function fetchRobloxProfile(userId, env, writeToScammerCache = true) {
   if (!userId || !/^\d+$/.test(userId)) {
     return null;
   }
 
   const now = Date.now();
 
-  // Check cache first
-  const cached = await env.DB.prepare(
-    "SELECT roblox_name, roblox_display_name, roblox_avatar, updated_at FROM scammer_profile_cache WHERE user_id = ?"
-  ).bind(userId).first();
+  // Check cache first (only if writeToScammerCache is true, otherwise don't use scammer cache)
+  let cached = null;
+  if (writeToScammerCache) {
+    cached = await env.DB.prepare(
+      "SELECT roblox_name, roblox_display_name, roblox_avatar, updated_at FROM scammer_profile_cache WHERE user_id = ?"
+    ).bind(userId).first();
 
-  if (cached && now - cached.updated_at < PROFILE_CACHE_TTL_MS && cached.roblox_name && cached.roblox_display_name && cached.roblox_avatar) {
-    return {
-      name: cached.roblox_name,
-      displayName: cached.roblox_display_name,
-      avatar: cached.roblox_avatar
-    };
+    if (cached && now - cached.updated_at < PROFILE_CACHE_TTL_MS && cached.roblox_name && cached.roblox_display_name && cached.roblox_avatar) {
+      return {
+        name: cached.roblox_name,
+        displayName: cached.roblox_display_name,
+        avatar: cached.roblox_avatar
+      };
+    }
   }
 
   // Fetch from API with retry logic
@@ -57,47 +61,53 @@ async function fetchRobloxProfile(userId, env) {
     return null;
   }
 
-  // Update cache (partial update - only Roblox fields)
-  await env.DB.prepare(`
-    INSERT INTO scammer_profile_cache (user_id, roblox_name, roblox_display_name, roblox_avatar, updated_at)
-    VALUES (?, ?, ?, ?, ?)
-    ON CONFLICT(user_id) DO UPDATE SET
-      roblox_name = excluded.roblox_name,
-      roblox_display_name = excluded.roblox_display_name,
-      roblox_avatar = excluded.roblox_avatar,
-      updated_at = excluded.updated_at
-  `).bind(userId, data.name || null, data.displayName || null, data.avatar || null, now).run();
+  // Update cache ONLY if writeToScammerCache is true (for scammer processing)
+  if (writeToScammerCache) {
+    await env.DB.prepare(`
+      INSERT INTO scammer_profile_cache (user_id, roblox_name, roblox_display_name, roblox_avatar, updated_at)
+      VALUES (?, ?, ?, ?, ?)
+      ON CONFLICT(user_id) DO UPDATE SET
+        roblox_name = excluded.roblox_name,
+        roblox_display_name = excluded.roblox_display_name,
+        roblox_avatar = excluded.roblox_avatar,
+        updated_at = excluded.updated_at
+    `).bind(userId, data.name || null, data.displayName || null, data.avatar || null, now).run();
+  }
 
   return data;
 }
 
 // Helper function to fetch Discord profile with caching
-async function fetchDiscordProfile(discordId, env, userId = null) {
+// writeToScammerCache: if false, only reads from cache but doesn't write (for general endpoint use)
+async function fetchDiscordProfile(discordId, env, userId = null, writeToScammerCache = true) {
   if (!discordId || !/^\d+$/.test(discordId)) {
     return null;
   }
 
   const now = Date.now();
 
-  // Check cache first - prefer user_id match if provided
+  // Check cache first - only if writeToScammerCache is true
   let cached = null;
-  if (userId) {
-    cached = await env.DB.prepare(
-      "SELECT discord_display_name, discord_avatar, updated_at FROM scammer_profile_cache WHERE user_id = ?"
-    ).bind(userId).first();
-  }
-  
-  if (!cached) {
-    cached = await env.DB.prepare(
-      "SELECT discord_display_name, discord_avatar, updated_at FROM scammer_profile_cache WHERE discord_id = ? LIMIT 1"
-    ).bind(discordId).first();
-  }
+  if (writeToScammerCache) {
+    // Prefer user_id match if provided
+    if (userId) {
+      cached = await env.DB.prepare(
+        "SELECT discord_display_name, discord_avatar, updated_at FROM scammer_profile_cache WHERE user_id = ?"
+      ).bind(userId).first();
+    }
+    
+    if (!cached) {
+      cached = await env.DB.prepare(
+        "SELECT discord_display_name, discord_avatar, updated_at FROM scammer_profile_cache WHERE discord_id = ? LIMIT 1"
+      ).bind(discordId).first();
+    }
 
-  if (cached && now - cached.updated_at < PROFILE_CACHE_TTL_MS && cached.discord_display_name) {
-    return {
-      displayName: cached.discord_display_name,
-      avatar: cached.discord_avatar || null
-    };
+    if (cached && now - cached.updated_at < PROFILE_CACHE_TTL_MS && cached.discord_display_name) {
+      return {
+        displayName: cached.discord_display_name,
+        avatar: cached.discord_avatar || null
+      };
+    }
   }
 
   // Fetch from Discord API with retry logic
@@ -117,7 +127,7 @@ async function fetchDiscordProfile(discordId, env, userId = null) {
       }
 
       if (response.status === 404) {
-        // User not found - cache null to avoid repeated lookups
+        // User not found - return null (don't cache for general endpoint)
         data = { displayName: null, avatar: null };
         fetchSuccess = true;
         break;
@@ -154,19 +164,21 @@ async function fetchDiscordProfile(discordId, env, userId = null) {
     return null;
   }
 
-  // Update cache - prefer user_id if provided, otherwise update by discord_id
-  if (userId) {
-    await env.DB.prepare(`
-      UPDATE scammer_profile_cache
-      SET discord_id = ?, discord_display_name = ?, discord_avatar = ?, updated_at = ?
-      WHERE user_id = ?
-    `).bind(discordId, data.displayName, data.avatar, now, userId).run();
-  } else {
-    await env.DB.prepare(`
-      UPDATE scammer_profile_cache
-      SET discord_display_name = ?, discord_avatar = ?, updated_at = ?
-      WHERE discord_id = ?
-    `).bind(data.displayName, data.avatar, now, discordId).run();
+  // Update cache ONLY if writeToScammerCache is true (for scammer processing)
+  if (writeToScammerCache) {
+    if (userId) {
+      await env.DB.prepare(`
+        UPDATE scammer_profile_cache
+        SET discord_id = ?, discord_display_name = ?, discord_avatar = ?, updated_at = ?
+        WHERE user_id = ?
+      `).bind(discordId, data.displayName, data.avatar, now, userId).run();
+    } else {
+      await env.DB.prepare(`
+        UPDATE scammer_profile_cache
+        SET discord_display_name = ?, discord_avatar = ?, updated_at = ?
+        WHERE discord_id = ?
+      `).bind(data.displayName, data.avatar, now, discordId).run();
+    }
   }
 
   return data;
@@ -445,17 +457,17 @@ export async function onRequestGet({ request, env }) {
 
   if (url.pathname.endsWith("/api/roblox-proxy") && userId) {
     try {
-      // Fetch Roblox data
-      const robloxData = await fetchRobloxProfile(userId, env);
+      // Fetch Roblox data - DON'T write to scammer cache (writeToScammerCache = false)
+      const robloxData = await fetchRobloxProfile(userId, env, false);
       
       if (!robloxData) {
         throw new Error("Failed to fetch Roblox user data");
       }
 
-      // Fetch Discord data if discordId provided
+      // Fetch Discord data if discordId provided - DON'T write to scammer cache
       let discordData = null;
       if (discordId) {
-        discordData = await fetchDiscordProfile(discordId, env);
+        discordData = await fetchDiscordProfile(discordId, env, null, false);
       }
 
       return new Response(JSON.stringify({
@@ -549,7 +561,7 @@ export async function onRequestGet({ request, env }) {
         ).first();
 
         if (cacheCheck && cacheCheck.last_updated && now - cacheCheck.last_updated < CACHE_TTL_MS) {
-          // Return all scammers from unified table (including incomplete ones)
+          // Return all scammers from unified table (only entries with actual scammer data)
           const { results } = await env.DB.prepare(`
             SELECT 
               user_id,
@@ -565,7 +577,8 @@ export async function onRequestGet({ request, env }) {
               thread_evidence,
               incomplete
             FROM scammer_profile_cache
-            WHERE user_id IS NOT NULL
+            WHERE user_id IS NOT NULL 
+              AND (victims IS NOT NULL OR items_scammed IS NOT NULL OR discord_id IS NOT NULL)
             ORDER BY incomplete ASC, updated_at DESC
           `).all();
 
@@ -648,7 +661,9 @@ export async function onRequestGet({ request, env }) {
                 thread_evidence,
                 incomplete
               FROM scammer_profile_cache
-              WHERE user_id IS NOT NULL AND incomplete = 0
+              WHERE user_id IS NOT NULL 
+                AND incomplete = 0
+                AND (victims IS NOT NULL OR items_scammed IS NOT NULL OR discord_id IS NOT NULL)
               ORDER BY updated_at DESC
             `).all();
 
@@ -836,8 +851,8 @@ export async function onRequestGet({ request, env }) {
             continue;
           }
 
-          // Fetch Roblox profile data
-          const robloxData = await fetchRobloxProfile(userId, env);
+          // Fetch Roblox profile data - DO write to scammer cache (default true)
+          const robloxData = await fetchRobloxProfile(userId, env, true);
           if (!robloxData) {
             // Failed to fetch - mark as incomplete
             await env.DB.prepare(`
@@ -880,10 +895,10 @@ export async function onRequestGet({ request, env }) {
             continue;
           }
 
-          // Fetch Discord profile data if discord ID provided
+          // Fetch Discord profile data if discord ID provided - DO write to scammer cache
           let discordData = null;
           if (discordid) {
-            discordData = await fetchDiscordProfile(discordid, env, userId);
+            discordData = await fetchDiscordProfile(discordid, env, userId, true);
           }
 
           // Parse and fetch alt accounts
@@ -975,7 +990,7 @@ export async function onRequestGet({ request, env }) {
       await env.DB.prepare("DELETE FROM scammer_cache_locks WHERE key = ?").bind(LOCK_KEY).run();
 
       // Query database to get ALL scammers (not just ones processed in this batch)
-      // This ensures we return everything that's been stored, including from previous runs
+      // Only return entries with actual scammer data (victims, items_scammed, or discord_id)
       const { results: allResults } = await env.DB.prepare(`
         SELECT 
           user_id,
@@ -991,7 +1006,8 @@ export async function onRequestGet({ request, env }) {
           thread_evidence,
           incomplete
         FROM scammer_profile_cache
-        WHERE user_id IS NOT NULL
+        WHERE user_id IS NOT NULL 
+          AND (victims IS NOT NULL OR items_scammed IS NOT NULL OR discord_id IS NOT NULL)
         ORDER BY incomplete ASC, updated_at DESC
       `).all();
 
