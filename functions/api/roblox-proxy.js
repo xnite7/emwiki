@@ -671,6 +671,221 @@ export async function onRequestGet({ request, env }) {
 
 
 
+  // Handle Stream migration endpoint - Upload existing QuickTime videos to Stream
+  if (mode === "migrate-videos-to-stream") {
+    try {
+      if (!env.CLOUDFLARE_ACCOUNT_ID || !env.CLOUDFLARE_STREAM_TOKEN) {
+        return new Response(JSON.stringify({ 
+          error: "Cloudflare Stream credentials not configured"
+        }), {
+          status: 500,
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          },
+        });
+      }
+
+      if (!env.MY_BUCKET) {
+        return new Response(JSON.stringify({ 
+          error: "R2 bucket (MY_BUCKET) not configured"
+        }), {
+          status: 500,
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          },
+        });
+      }
+
+      // Process ONE entry at a time to avoid timeout
+      const targetUserId = url.searchParams.get("userId");
+      const limit = parseInt(url.searchParams.get("limit")) || 1;
+      const offset = parseInt(url.searchParams.get("offset")) || 0;
+      
+      let query, bindParams;
+      if (targetUserId) {
+        query = `
+          SELECT user_id, thread_evidence 
+          FROM scammer_profile_cache 
+          WHERE user_id = ? AND thread_evidence IS NOT NULL
+        `;
+        bindParams = [targetUserId];
+      } else {
+        query = `
+          SELECT user_id, thread_evidence 
+          FROM scammer_profile_cache 
+          WHERE thread_evidence IS NOT NULL
+          LIMIT ? OFFSET ?
+        `;
+        bindParams = [limit, offset];
+      }
+      
+      const { results } = await env.DB.prepare(query).bind(...bindParams).all();
+
+      if (!results || results.length === 0) {
+        const { results: totalResult } = await env.DB.prepare(`
+          SELECT COUNT(*) as total FROM scammer_profile_cache WHERE thread_evidence IS NOT NULL
+        `).first();
+        return new Response(JSON.stringify({ 
+          message: "No thread evidence found to migrate",
+          total_entries: totalResult?.total || 0,
+          processed: 0,
+          videos_uploaded: 0
+        }), {
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          },
+        });
+      }
+
+      let processed = 0;
+      let videosUploaded = 0;
+      let videosSkipped = 0;
+      let errors = [];
+
+      const row = results[0];
+      try {
+        if (!row.thread_evidence) {
+          return new Response(JSON.stringify({ 
+            message: "Entry has no thread evidence",
+            user_id: row.user_id
+          }), {
+            headers: { 
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*" 
+            },
+          });
+        }
+        
+        const threadEvidence = JSON.parse(row.thread_evidence);
+        let updated = false;
+        let videoCount = 0;
+
+        if (threadEvidence.messages && Array.isArray(threadEvidence.messages)) {
+          for (const msg of threadEvidence.messages) {
+            if (msg.attachments && Array.isArray(msg.attachments)) {
+              for (const att of msg.attachments) {
+                // Only process QuickTime videos that don't already have stream_url
+                const isQuickTime = att.content_type?.includes('quicktime') || 
+                                   att.filename?.toLowerCase().endsWith('.mov') ||
+                                   att.url?.includes('.mov');
+                
+                if (isQuickTime && att.url && !att.stream_url) {
+                  videoCount++;
+                  try {
+                    // Add delay between uploads to avoid rate limits
+                    if (videoCount > 1) {
+                      await new Promise(r => setTimeout(r, 1000)); // 1 second delay
+                    }
+                    
+                    // Try to get video from R2 first (if it exists)
+                    let videoData = null;
+                    if (att.r2_url) {
+                      try {
+                        const r2Key = att.r2_url.replace('https://cdn.emwiki.com/', '');
+                        const r2Object = await env.MY_BUCKET.get(r2Key);
+                        if (r2Object) {
+                          videoData = await r2Object.arrayBuffer();
+                        }
+                      } catch (r2Err) {
+                        console.warn(`Failed to get video from R2: ${r2Err.message}`);
+                      }
+                    }
+                    
+                    // If not in R2, download from Discord
+                    if (!videoData && att.url) {
+                      const videoResponse = await fetch(att.url, {
+                        headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
+                      });
+                      if (videoResponse.ok) {
+                        videoData = await videoResponse.arrayBuffer();
+                      }
+                    }
+                    
+                    if (videoData) {
+                      const streamData = await uploadVideoToStream(
+                        videoData,
+                        att.filename || 'video.mov',
+                        env
+                      );
+                      
+                      if (streamData && streamData.playback_url) {
+                        att.stream_url = streamData.playback_url;
+                        att.stream_id = streamData.id;
+                        videosUploaded++;
+                        updated = true;
+                      } else {
+                        videosSkipped++;
+                        errors.push(`Failed to upload video ${att.id} to Stream`);
+                      }
+                    } else {
+                      videosSkipped++;
+                      errors.push(`Could not retrieve video ${att.id} for upload`);
+                    }
+                  } catch (videoErr) {
+                    videosSkipped++;
+                    errors.push(`Error uploading video ${att.id}: ${videoErr.message}`);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        if (updated) {
+          const updatedEvidenceJson = JSON.stringify(threadEvidence);
+          await env.DB.prepare(`
+            UPDATE scammer_profile_cache 
+            SET thread_evidence = ?, updated_at = ?
+            WHERE user_id = ?
+          `).bind(updatedEvidenceJson, Date.now(), row.user_id).run();
+          processed++;
+        }
+      } catch (err) {
+        console.error(`Error processing user ${row.user_id}:`, err);
+        errors.push(`Error processing user ${row.user_id}: ${err.message}`);
+      }
+
+      const { results: totalResult } = await env.DB.prepare(`
+        SELECT COUNT(*) as total FROM scammer_profile_cache WHERE thread_evidence IS NOT NULL
+      `).first();
+      const totalCount = totalResult?.total || 0;
+
+      return new Response(JSON.stringify({ 
+        message: "Migration batch completed",
+        user_id: row.user_id,
+        processed_this_batch: 1,
+        total_entries: totalCount,
+        processed,
+        videos_uploaded,
+        videos_skipped,
+        offset,
+        next_offset: offset + 1,
+        has_more: offset + 1 < totalCount,
+        errors: errors.length > 0 ? errors.slice(0, 10) : []
+      }), {
+        headers: { 
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*" 
+        },
+      });
+    } catch (err) {
+      console.error("Stream migration error:", err);
+      return new Response(JSON.stringify({ 
+        error: err.message,
+        debug: err.stack
+      }), {
+        status: 500,
+        headers: { 
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*" 
+        },
+      });
+    }
+  }
+
   // Handle video migration endpoint - Migrate existing videos to R2
   if (mode === "migrate-videos-to-r2") {
     try {
