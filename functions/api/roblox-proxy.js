@@ -218,6 +218,57 @@ async function getLastProcessedMessageId(env) {
   return result?.last_id || null;
 }
 
+// Helper function to download Discord video and upload to R2
+async function downloadVideoToR2(discordUrl, attachmentId, filename, contentType, env) {
+  try {
+    // Check if video already exists in R2 (by attachment ID)
+    const existingKey = `scammer-evidence/videos/${attachmentId}`;
+    try {
+      const existing = await env.MY_BUCKET.head(existingKey);
+      if (existing) {
+        // Video already exists, return existing URL
+        return `https://cdn.emwiki.com/${existingKey}`;
+      }
+    } catch {
+      // Doesn't exist, continue to download
+    }
+
+    // Download video from Discord with auth
+    const videoResponse = await fetch(discordUrl, {
+      headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
+    });
+
+    if (!videoResponse.ok) {
+      console.warn(`Failed to download video ${attachmentId}: ${videoResponse.status}`);
+      return null;
+    }
+
+    // Get file extension from filename or content type
+    let ext = filename.split('.').pop();
+    if (!ext || ext === filename) {
+      // Try to determine from content type
+      if (contentType.includes('mp4')) ext = 'mp4';
+      else if (contentType.includes('webm')) ext = 'webm';
+      else if (contentType.includes('quicktime')) ext = 'mov';
+      else ext = 'mp4'; // default
+    }
+
+    // Generate R2 key
+    const key = `scammer-evidence/videos/${attachmentId}.${ext}`;
+
+    // Upload to R2
+    const videoData = await videoResponse.arrayBuffer();
+    await env.MY_BUCKET.put(key, videoData, {
+      httpMetadata: { contentType: contentType || 'video/mp4' }
+    });
+
+    return `https://cdn.emwiki.com/${key}`;
+  } catch (err) {
+    console.error(`Error downloading video ${attachmentId} to R2:`, err);
+    return null;
+  }
+}
+
 // Helper function to fetch Discord thread messages
 async function fetchDiscordThread(threadId, env) {
   if (!threadId) return null;
@@ -291,18 +342,38 @@ async function fetchDiscordThread(threadId, env) {
 
         // Extract attachments (images, videos, files)
         if (msg.attachments && msg.attachments.length > 0) {
-          messageData.attachments = msg.attachments.map(att => ({
-            id: att.id,
-            filename: att.filename,
-            url: att.url,
-            proxy_url: att.proxy_url,
-            size: att.size,
-            content_type: att.content_type,
-            width: att.width,
-            height: att.height,
-            is_image: att.content_type?.startsWith('image/') || false,
-            is_video: att.content_type?.startsWith('video/') || false
-          }));
+          // Process attachments in parallel
+          const attachmentPromises = msg.attachments.map(async (att) => {
+            const isVideo = att.content_type?.startsWith('video/') || false;
+            
+            // Download videos to R2
+            let r2Url = null;
+            if (isVideo && att.url) {
+              r2Url = await downloadVideoToR2(
+                att.url,
+                att.id,
+                att.filename,
+                att.content_type,
+                env
+              );
+            }
+
+            return {
+              id: att.id,
+              filename: att.filename,
+              url: att.url, // Keep original URL as fallback
+              r2_url: r2Url, // R2 URL for videos
+              proxy_url: att.proxy_url,
+              size: att.size,
+              content_type: att.content_type,
+              width: att.width,
+              height: att.height,
+              is_image: att.content_type?.startsWith('image/') || false,
+              is_video: isVideo
+            };
+          });
+
+          messageData.attachments = await Promise.all(attachmentPromises);
         }
 
         // Extract embeds

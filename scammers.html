@@ -460,10 +460,13 @@
     }
 
     .message-attachments {
-        margin-top: 10px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
+margin-top: 10px;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: flex-start;
     }
 
     .attachment-image {
@@ -473,10 +476,12 @@
     }
 
     .attachment-image img {
-        width: 100%;
-        max-width: 600px;
-        height: auto;
-        display: block;
+    width: 100%;
+    max-width: 400px;
+    min-width: 260px;
+    margin: auto;
+    height: auto;
+    display: block;
     }
 
     .attachment-video {
@@ -485,21 +490,13 @@
         overflow: hidden;
         border: 1px solid var(--border-color);
     }
-    
-    .attachment-video iframe {
-        width: 100%;
-        min-height: 400px;
-        max-height: 80vh;
-        background: #000;
-        border: none;
-        display: block;
-    }
 
     .attachment-video video {
         width: 100%;
         max-width: 600px;
         height: auto;
         display: block;
+        background: #000;
     }
 
     .attachment-link {
@@ -586,6 +583,9 @@
     @media (max-width: 768px) {
         .scammer-block {
             max-width: 100%;
+        }
+        .scammer-info p:has(img){
+            margin: auto;
         }
 
         .scammer-content {
@@ -1237,19 +1237,15 @@
                                 </div>
                             `;
                         } else if (att.is_video) {
-                            // Use proxy endpoint for Discord videos (requires auth)
-                            const proxyUrl = `https://emwiki.com/api/roblox-proxy?mode=discord-media&url=${encodeURIComponent(att.url)}`;
-                            const viewerUrl = `https://emwiki.com/video-viewer.html?url=${encodeURIComponent(proxyUrl)}`;
+                            // Use R2 URL if available, otherwise fallback to proxy
+                            const videoUrl = att.r2_url || att.url;
                             html += `
                                 <div class="attachment-video">
-                                    <iframe 
-                                        src="${viewerUrl}" 
-                                        frameborder="0" 
-                                        allow="autoplay; fullscreen; picture-in-picture" 
-                                        allowfullscreen
-                                        style="width: 100%; min-height: 400px; background: #000; border-radius: 8px;">
-                                    </iframe>
-                                    <a href="${proxyUrl}" target="_blank" rel="noopener noreferrer" class="attachment-link">Download Video</a>
+                                    <video controls preload="metadata" style="width: 100%; max-width: 600px; height: auto;">
+                                        <source src="${videoUrl}" type="${att.content_type}">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                    <a href="${videoUrl}" target="_blank" rel="noopener noreferrer" class="attachment-link">Download Video</a>
                                 </div>
                             `;
                         } else {
