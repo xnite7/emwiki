@@ -706,6 +706,84 @@ async function handleMigratePreferences(request, env) {
     });
 }
 
+// Get aggregated favorite/wishlist counts for items
+async function handleGetPreferenceStats(request, env) {
+    const url = new URL(request.url);
+    const itemName = url.searchParams.get('item');
+    
+    // If specific item requested, return counts for that item
+    if (itemName) {
+        try {
+            // Get all favorites preferences and count manually (SQLite doesn't have great JSON support)
+            const favoritesPrefs = await env.DBA.prepare(`
+                SELECT preference_value
+                FROM user_preferences
+                WHERE preference_key = 'favorites'
+            `).all();
+            
+            // Get all wishlist preferences
+            const wishlistPrefs = await env.DBA.prepare(`
+                SELECT preference_value
+                FROM user_preferences
+                WHERE preference_key = 'wishlist'
+            `).all();
+            
+            let favoritesCount = 0;
+            let wishlistCount = 0;
+            
+            // Count favorites
+            favoritesPrefs.results.forEach(pref => {
+                try {
+                    const favorites = JSON.parse(pref.preference_value || '[]');
+                    if (Array.isArray(favorites) && favorites.includes(itemName)) {
+                        favoritesCount++;
+                    }
+                } catch (e) {
+                    // Skip invalid JSON
+                }
+            });
+            
+            // Count wishlist
+            wishlistPrefs.results.forEach(pref => {
+                try {
+                    const wishlist = JSON.parse(pref.preference_value || '[]');
+                    if (Array.isArray(wishlist) && wishlist.includes(itemName)) {
+                        wishlistCount++;
+                    }
+                } catch (e) {
+                    // Skip invalid JSON
+                }
+            });
+            
+            return new Response(JSON.stringify({
+                favorites_count: favoritesCount,
+                wishlist_count: wishlistCount,
+                total_count: favoritesCount + wishlistCount
+            }), {
+                headers: { 'Content-Type': 'application/json' }
+            });
+        } catch (e) {
+            console.error('Error fetching preference stats:', e);
+            return new Response(JSON.stringify({
+                favorites_count: 0,
+                wishlist_count: 0,
+                total_count: 0
+            }), {
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+    }
+    
+    // If no item specified, return empty
+    return new Response(JSON.stringify({
+        favorites_count: 0,
+        wishlist_count: 0,
+        total_count: 0
+    }), {
+        headers: { 'Content-Type': 'application/json' }
+    });
+}
+
 // ==================== OAUTH 2.0 ====================
 
 async function handleOAuthAuthorize(request, env) {
@@ -882,6 +960,9 @@ export async function onRequest(context) {
                 break;
             case 'user/preferences/migrate':
                 response = await handleMigratePreferences(request, env);
+                break;
+            case 'user/preferences/stats':
+                response = await handleGetPreferenceStats(request, env);
                 break;
             // OAUTH 2.0 ENDPOINTS
             case 'oauth/authorize':

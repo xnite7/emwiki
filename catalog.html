@@ -87,19 +87,21 @@
             <!-- Sort Dropdown -->
             <div class="sort-dropdown">
                 <button class="dropdown-btn" onclick="catalog.toggleSort()">
-                    <span>Sort:</span> <span id="sort-label">Categorical</span> ▼
+                    <span>Sort by</span> <span id="sort-label">Category</span> ▼
                 </button>
                 <div style="grid-template-rows: repeat(9, auto);" id="sort-menu" class="dropdown-content">
-                    <small class="dropdown-item" data-sort="default">Categorical</small>
-                    <small class="dropdown-item" data-sort="name-asc">Name: A ➔ Z</small>
-                    <small class="dropdown-item" data-sort="name-desc">Name: Z ➔ A</small>
-                    <small class="dropdown-item" data-sort="price-asc">Price: Low to High</small>
-                    <small class="dropdown-item" data-sort="price-desc">Price: High to Low</small>
-                    <small class="dropdown-item" data-sort="demand-desc">Demand: ⭐⭐⭐ ➔ ⭐</small>
-                    <small class="dropdown-item" data-sort="price-updated-desc">Price Updated Recently</small>
-                    <small class="dropdown-item disabled" data-sort="date-desc">Newer First</small>
-                    <small class="dropdown-item disabled" data-sort="date-asc">Older First</small>
-                    <small class="dropdown-item disabled" data-sort="rarity-asc" id="rarity-sort-option" style="display: none;">Rarity: Less ➔ More Rare</small>
+                    <small class="dropdown-item" data-sort="default">Category</small>
+                    <small class="dropdown-item" data-sort="favorites-desc">Most Favorited</small>
+                    <small class="dropdown-item" data-sort="demand-desc">Most Demanded</small>
+                    <small class="dropdown-item" data-sort="updated-desc">Recently Updated</small>
+                    
+                    <label class="spacermoney">$</label>
+                    <small class="dropdown-item" data-sort="price-desc">Price (High to Low)</small>
+                    <small class="dropdown-item" data-sort="price-asc">Price (Low to High)</small>
+                    <small class="dropdown-item" data-sort="price-updated-desc">Price (Recently Updated)</small>
+                    <small class="dropdown-item disabled" data-sort="date-desc">Date (Newest First)</small>
+                    <small class="dropdown-item disabled" data-sort="date-asc">Date (Oldest First)</small>
+                    <small class="dropdown-item disabled" data-sort="rarity-desc" id="rarity-sort-option" style="display: none;">Rarity (Rarest First)</small>
                     
                 </div>
             </div>
@@ -473,6 +475,7 @@
                 this.loading = false;
                 this.currentCategoryIndex = 0;
                 this.sortBy = 'default';
+                this.favoriteCountsCache = new Map(); // Cache for favorite/wishlist counts
                 this.seasonFilter = 'all';
                 this.chestFilter = 'all';
                 this.creditsFilter = 'all';
@@ -1145,7 +1148,7 @@
                     raritySortOption.classList.remove('disabled');
                     
                     // Auto-select rarity sort (less rare to most rare)
-                    this.selectSort('rarity-asc');
+                    this.selectSort('rarity-desc');
                     
                     // Auto-open sort menu
                     setTimeout(() => {
@@ -1157,7 +1160,7 @@
                     raritySortOption.classList.add('disabled');
                     
                     // If currently using rarity sort, switch to default
-                    if (this.sortBy === 'rarity-asc') {
+                    if (this.sortBy === 'rarity-desc') {
                         this.selectSort('default');
                     }
                 }
@@ -1508,16 +1511,16 @@
             selectSort(sortType) {
                 this.sortBy = sortType;
                 const labels = {
-                    'default': 'Categorical',
-                    'price-asc': '$ ➔ $$$',
-                    'price-desc': '$$$ ➔ $',
-                    'name-asc': 'A ➔ Z',
-                    //'name-desc': 'Z ➔ A',
-                    'demand-desc': '⭐⭐⭐ ➔ ⭐',
-                    'date-desc': 'Newer First',
-                    'date-asc': 'Older First',
-                    'price-updated-desc': 'Price Updated: Recent',
-                    'rarity-asc': 'Rarity: Less ➔ More Rare'
+                    'default': 'Category',
+                    'favorites-desc': 'Most Favorited',
+                    'demand-desc': 'Most Demanded',
+                    'updated-desc': 'Recently Updated',
+                    'price-asc': 'Price (Low to High)',
+                    'price-desc': 'Price (High to Low)',
+                    'price-updated-desc': 'Price (Recently Updated)',
+                    'date-desc': 'Newest First',
+                    'date-asc': 'Oldest First',
+                    'rarity-desc': 'Rarity (Rarest First)'
                 };
                 document.getElementById('sort-label').textContent = labels[sortType] || labels['default'];
 
@@ -1797,7 +1800,7 @@
                         raritySortOption.style.display = 'none';
                         raritySortOption.classList.add('disabled');
                         // If currently using rarity sort and no different rarities, switch to default
-                        if (this.sortBy === 'rarity-asc') {
+                        if (this.sortBy === 'rarity-desc') {
                             this.selectSort('default');
                         }
                     }
@@ -1805,12 +1808,26 @@
                     raritySortOption.style.display = 'none';
                     raritySortOption.classList.add('disabled');
                     // If currently using rarity sort and no chest selected, switch to default
-                    if (this.sortBy === 'rarity-asc') {
+                    if (this.sortBy === 'rarity-desc') {
                         this.selectSort('default');
                     }
                 }
 
-                this.sortItems();
+                // Sort items (async for favorites-desc)
+                if (this.sortBy === 'favorites-desc') {
+                    this.sortItems(); // Initial sort
+                    this.sortByFavorites().then(() => {
+                        // After async sort completes, reload display
+                        this.currentBatch = 0;
+                        this.loading = false;
+                        this.modal.displayed = [];
+                        document.getElementById('catalog').innerHTML = '';
+                        this.loadBatch(currentRequestId);
+                    });
+                    return; // Early return, loadBatch will be called after sorting
+                } else {
+                    this.sortItems();
+                }
 
                 // Reset display
                 this.currentBatch = 0;
@@ -1880,6 +1897,38 @@
                 }
                 // Return true if we have at least 2 different rarity values
                 return rarities.size >= 2;
+            }
+
+            async sortByFavorites() {
+                // Fetch favorite/wishlist counts for all filtered items
+                const uniqueItems = [...new Set(this.filtered.map(item => item.name))];
+                const countPromises = uniqueItems.map(async (itemName) => {
+                    if (this.favoriteCountsCache.has(itemName)) {
+                        return { itemName, count: this.favoriteCountsCache.get(itemName) };
+                    }
+                    try {
+                        const response = await fetch(`https://emwiki.com/api/auth/user/preferences/stats?item=${encodeURIComponent(itemName)}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            const totalCount = (data.favorites_count || 0) + (data.wishlist_count || 0);
+                            this.favoriteCountsCache.set(itemName, totalCount);
+                            return { itemName, count: totalCount };
+                        }
+                    } catch (e) {
+                        console.error(`Error fetching count for ${itemName}:`, e);
+                    }
+                    return { itemName, count: 0 };
+                });
+                
+                const counts = await Promise.all(countPromises);
+                const countMap = new Map(counts.map(c => [c.itemName, c.count]));
+                
+                // Sort by count (descending)
+                this.filtered.sort((a, b) => {
+                    const countA = countMap.get(a.name) || 0;
+                    const countB = countMap.get(b.name) || 0;
+                    return countB - countA;
+                });
             }
 
             sortItems() {
@@ -1994,7 +2043,27 @@
                         });
                         break;
 
-                    case 'rarity-asc':
+                    case 'updated-desc':
+                        // Sort by updated_at from D1 database, most recent first
+                        this.filtered.sort((a, b) => {
+                            const updatedA = a.updated_at || 0;
+                            const updatedB = b.updated_at || 0;
+                            return updatedB - updatedA;
+                        });
+                        break;
+
+                    case 'favorites-desc':
+                        // Sort by most favorited/wishlisted items first
+                        // This will be handled asynchronously in applyFilters
+                        // For now, use a placeholder sort that will be replaced
+                        this.filtered.sort((a, b) => {
+                            // Temporary sort - will be replaced by async sortByFavorites
+                            return 0;
+                        });
+                        break;
+                        
+
+                    case 'rarity-desc':
                         // Sort by rarity percentage: less rare (higher %) to most rare (lower %)
                         this.filtered.sort((a, b) => {
                             const rarityA = this.parseRarity(a['price/code/rarity']);
@@ -2006,7 +2075,7 @@
                             if (rarityB === null) return -1;
                             
                             // Higher percentage = less rare, so we sort descending
-                            return rarityB - rarityA;
+                            return rarityA - rarityB;
                         });
                         break;
 
