@@ -1,5 +1,210 @@
 const CACHE_KEY = "discord-scammers";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const PROFILE_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days for profile data
+
+// Helper function to fetch Roblox profile with caching
+async function fetchRobloxProfile(userId, env) {
+  if (!userId || !/^\d+$/.test(userId)) {
+    return null;
+  }
+
+  const now = Date.now();
+
+  // Check cache first
+  const cached = await env.DB.prepare(
+    "SELECT roblox_name, roblox_display_name, roblox_avatar, updated_at FROM scammer_profile_cache WHERE user_id = ?"
+  ).bind(userId).first();
+
+  if (cached && now - cached.updated_at < PROFILE_CACHE_TTL_MS && cached.roblox_name && cached.roblox_display_name && cached.roblox_avatar) {
+    return {
+      name: cached.roblox_name,
+      displayName: cached.roblox_display_name,
+      avatar: cached.roblox_avatar
+    };
+  }
+
+  // Fetch from API with retry logic
+  let fetchSuccess = false;
+  let data = null;
+
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const [userData, avatarData] = await Promise.all([
+        fetch(`https://users.roblox.com/v1/users/${userId}`).then(r => r.ok ? r.json() : null),
+        fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=true`)
+          .then(r => r.ok ? r.json() : null)
+      ]);
+
+      if (userData) {
+        data = {
+          name: userData.name,
+          displayName: userData.displayName,
+          avatar: avatarData?.data?.[0]?.imageUrl || null
+        };
+        fetchSuccess = true;
+        break;
+      }
+    } catch (err) {
+      console.warn(`Roblox fetch attempt ${attempt + 1} failed:`, err);
+    }
+
+    if (!fetchSuccess) {
+      await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+    }
+  }
+
+  if (!fetchSuccess || !data) {
+    return null;
+  }
+
+  // Update cache (partial update - only Roblox fields)
+  await env.DB.prepare(`
+    INSERT INTO scammer_profile_cache (user_id, roblox_name, roblox_display_name, roblox_avatar, updated_at)
+    VALUES (?, ?, ?, ?, ?)
+    ON CONFLICT(user_id) DO UPDATE SET
+      roblox_name = excluded.roblox_name,
+      roblox_display_name = excluded.roblox_display_name,
+      roblox_avatar = excluded.roblox_avatar,
+      updated_at = excluded.updated_at
+  `).bind(userId, data.name || null, data.displayName || null, data.avatar || null, now).run();
+
+  return data;
+}
+
+// Helper function to fetch Discord profile with caching
+async function fetchDiscordProfile(discordId, env, userId = null) {
+  if (!discordId || !/^\d+$/.test(discordId)) {
+    return null;
+  }
+
+  const now = Date.now();
+
+  // Check cache first - prefer user_id match if provided
+  let cached = null;
+  if (userId) {
+    cached = await env.DB.prepare(
+      "SELECT discord_display_name, discord_avatar, updated_at FROM scammer_profile_cache WHERE user_id = ?"
+    ).bind(userId).first();
+  }
+  
+  if (!cached) {
+    cached = await env.DB.prepare(
+      "SELECT discord_display_name, discord_avatar, updated_at FROM scammer_profile_cache WHERE discord_id = ? LIMIT 1"
+    ).bind(discordId).first();
+  }
+
+  if (cached && now - cached.updated_at < PROFILE_CACHE_TTL_MS && cached.discord_display_name) {
+    return {
+      displayName: cached.discord_display_name,
+      avatar: cached.discord_avatar || null
+    };
+  }
+
+  // Fetch from Discord API with retry logic
+  let fetchSuccess = false;
+  let data = null;
+
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const response = await fetch(`https://discord.com/api/v10/users/${discordId}`, {
+        headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
+      });
+
+      if (response.status === 429) {
+        const retryAfter = await response.json();
+        await new Promise(r => setTimeout(r, (retryAfter.retry_after || 1) * 1000));
+        continue;
+      }
+
+      if (response.status === 404) {
+        // User not found - cache null to avoid repeated lookups
+        data = { displayName: null, avatar: null };
+        fetchSuccess = true;
+        break;
+      }
+
+      if (response.ok) {
+        const userData = await response.json();
+        const displayName = userData.global_name || userData.username || null;
+        let avatar = null;
+
+        if (userData.avatar) {
+          const extension = userData.avatar.startsWith('a_') ? 'gif' : 'png';
+          avatar = `https://cdn.discordapp.com/avatars/${discordId}/${userData.avatar}.${extension}`;
+        } else if (userData.discriminator && userData.discriminator !== '0') {
+          // Default avatar for users without custom avatar
+          const defaultAvatar = parseInt(userData.discriminator) % 5;
+          avatar = `https://cdn.discordapp.com/embed/avatars/${defaultAvatar}.png`;
+        }
+
+        data = { displayName, avatar };
+        fetchSuccess = true;
+        break;
+      }
+    } catch (err) {
+      console.warn(`Discord fetch attempt ${attempt + 1} failed:`, err);
+    }
+
+    if (!fetchSuccess) {
+      await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+    }
+  }
+
+  if (!fetchSuccess || !data) {
+    return null;
+  }
+
+  // Update cache - prefer user_id if provided, otherwise update by discord_id
+  if (userId) {
+    await env.DB.prepare(`
+      UPDATE scammer_profile_cache
+      SET discord_id = ?, discord_display_name = ?, discord_avatar = ?, updated_at = ?
+      WHERE user_id = ?
+    `).bind(discordId, data.displayName, data.avatar, now, userId).run();
+  } else {
+    await env.DB.prepare(`
+      UPDATE scammer_profile_cache
+      SET discord_display_name = ?, discord_avatar = ?, updated_at = ?
+      WHERE discord_id = ?
+    `).bind(data.displayName, data.avatar, now, discordId).run();
+  }
+
+  return data;
+}
+
+// Helper function to fetch alt accounts in batch
+async function fetchAltAccounts(altIds, env) {
+  if (!altIds || altIds.length === 0) {
+    return [];
+  }
+
+  const altPromises = altIds.map(async (altId) => {
+    try {
+      const profileData = await fetchRobloxProfile(altId, env);
+      if (profileData) {
+        return {
+          name: profileData.name,
+          profile: `https://www.roblox.com/users/${altId}/profile`,
+          user_id: altId
+        };
+      }
+    } catch (err) {
+      console.warn(`Failed to fetch alt ${altId}:`, err);
+    }
+    return null;
+  });
+
+  const results = await Promise.all(altPromises);
+  return results.filter(alt => alt !== null);
+}
+
+// Helper function to get last processed message ID from database
+async function getLastProcessedMessageId(env) {
+  const result = await env.DB.prepare(
+    "SELECT MAX(last_message_id) as last_id FROM scammer_profile_cache WHERE last_message_id IS NOT NULL"
+  ).first();
+  return result?.last_id || null;
+}
 
 export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
@@ -120,22 +325,37 @@ export async function onRequestGet({ request, env }) {
 
   if (url.pathname.endsWith("/api/roblox-proxy") && userId) {
     try {
-      const [userData, avatarData] = await Promise.all([
-        fetch(`https://users.roblox.com/v1/users/${userId}`).then(r => r.ok ? r.json() : null),
-        fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=true`)
-          .then(r => r.ok ? r.json() : null)
-      ]);
+      // Fetch Roblox data
+      const robloxData = await fetchRobloxProfile(userId, env);
+      
+      if (!robloxData) {
+        throw new Error("Failed to fetch Roblox user data");
+      }
 
-      if (!userData) throw new Error("Failed to fetch Roblox user data");
+      // Fetch Discord data if discordId provided
+      let discordData = null;
+      if (discordId) {
+        discordData = await fetchDiscordProfile(discordId, env);
+      }
 
       return new Response(JSON.stringify({
-        name: userData.name,
-        displayName: userData.displayName,
-        avatar: avatarData?.data?.[0]?.imageUrl || null
-      }), { headers: { "Content-Type": "application/json","Access-Control-Allow-Origin": "*" } });
+        name: robloxData.name,
+        displayName: robloxData.displayName,
+        avatar: robloxData.avatar || null,
+        discordDisplayName: discordData?.displayName || null,
+        discordAvatar: discordData?.avatar || null
+      }), { 
+        headers: { 
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*" 
+        } 
+      });
 
     } catch (err) {
-      return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+      return new Response(JSON.stringify({ error: err.message }), { 
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      });
     }
   }
 
@@ -155,20 +375,84 @@ export async function onRequestGet({ request, env }) {
         latestMessageId = latestMessage?.id;
       }
 
-      const existing = await env.DB.prepare(
-        "SELECT value, updated_at FROM scammer_cache WHERE key = ?"
-      ).bind(CACHE_KEY).first();
+      // Get last processed message ID from unified table
+      const lastProcessedMessageId = await getLastProcessedMessageId(env);
 
-      if (existing && !forceRefresh) {
-        const cachedData = JSON.parse(existing.value);
-        const cachedLastMessageId = cachedData.lastMessageId;
+      // Check if we can return cached data
+      if (!forceRefresh && lastProcessedMessageId && latestMessageId === lastProcessedMessageId) {
+        // Check if cache is still fresh
+        const cacheCheck = await env.DB.prepare(
+          "SELECT MAX(updated_at) as last_updated FROM scammer_profile_cache"
+        ).first();
 
-        // Retry even if message ID unchanged, if any incomplete scammers
+        if (cacheCheck && cacheCheck.last_updated && now - cacheCheck.last_updated < CACHE_TTL_MS) {
+          // Return all scammers from unified table
+          const { results } = await env.DB.prepare(`
+            SELECT 
+              user_id,
+              roblox_name,
+              roblox_display_name,
+              roblox_avatar,
+              discord_id,
+              discord_display_name,
+              discord_avatar,
+              victims,
+              items_scammed,
+              roblox_alts,
+              incomplete
+            FROM scammer_profile_cache
+            WHERE incomplete = 0
+            ORDER BY updated_at DESC
+          `).all();
 
+          const scammers = results.map(row => ({
+            robloxUser: row.roblox_display_name || row.roblox_name || null,
+            robloxProfile: `https://www.roblox.com/users/${row.user_id}/profile`,
+            avatar: row.roblox_avatar || "https://emwiki.com/imgs/plr.jpg",
+            discordDisplay: row.discord_display_name || null,
+            victims: row.victims || null,
+            itemsScammed: row.items_scammed || null,
+            incomplete: row.incomplete === 1,
+            robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : []
+          }));
 
-        if (now - existing.updated_at < CACHE_TTL_MS && latestMessageId === cachedLastMessageId) {
-          return new Response(JSON.stringify({ lastUpdated: existing.updated_at, scammers: cachedData.scammers, partials: cachedData.partials }), {
-            headers: { "Content-Type": "application/json", "X-Cache": "D1-HIT-EARLY","Access-Control-Allow-Origin": "*" },
+          const partialResults = await env.DB.prepare(`
+            SELECT 
+              user_id,
+              roblox_name,
+              roblox_display_name,
+              roblox_avatar,
+              discord_id,
+              discord_display_name,
+              victims,
+              items_scammed,
+              roblox_alts
+            FROM scammer_profile_cache
+            WHERE incomplete = 1
+            ORDER BY updated_at DESC
+          `).all();
+
+          const partials = partialResults.map(row => ({
+            robloxUser: row.roblox_display_name || row.roblox_name || null,
+            robloxProfile: row.user_id ? `https://www.roblox.com/users/${row.user_id}/profile` : null,
+            avatar: row.roblox_avatar || null,
+            discordDisplay: row.discord_display_name || null,
+            victims: row.victims || null,
+            itemsScammed: row.items_scammed || null,
+            incomplete: true,
+            robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : []
+          }));
+
+          return new Response(JSON.stringify({ 
+            lastUpdated: cacheCheck.last_updated, 
+            scammers, 
+            partials 
+          }), {
+            headers: { 
+              "Content-Type": "application/json", 
+              "X-Cache": "D1-HIT-EARLY",
+              "Access-Control-Allow-Origin": "*" 
+            },
           });
         }
       }
@@ -195,15 +479,52 @@ export async function onRequestGet({ request, env }) {
         let waited = 0;
         const waitStep = 1000;
         while (waited < 10000) {
-          const { results } = await env.DB.prepare(
-            "SELECT value, updated_at FROM scammer_cache WHERE key = ?"
-          ).bind(CACHE_KEY).all();
-          if (results.length > 0) {
-            const enriched = JSON.parse(results[0].value);
-            return new Response(JSON.stringify({ lastUpdated: results[0].updated_at, scammers: enriched.scammers, partials: enriched.partials }), {
-              headers: { "Content-Type": "application/json", "X-Cache": "D1-WAIT","Access-Control-Allow-Origin": "*" },
+          // Return cached data from unified table if available
+          const cacheCheck = await env.DB.prepare(
+            "SELECT MAX(updated_at) as last_updated FROM scammer_profile_cache"
+          ).first();
+
+          if (cacheCheck && cacheCheck.last_updated) {
+            const { results } = await env.DB.prepare(`
+              SELECT 
+                user_id,
+                roblox_name,
+                roblox_display_name,
+                roblox_avatar,
+                discord_display_name,
+                victims,
+                items_scammed,
+                roblox_alts,
+                incomplete
+              FROM scammer_profile_cache
+              WHERE incomplete = 0
+              ORDER BY updated_at DESC
+            `).all();
+
+            const scammers = results.map(row => ({
+              robloxUser: row.roblox_display_name || row.roblox_name || null,
+              robloxProfile: `https://www.roblox.com/users/${row.user_id}/profile`,
+              avatar: row.roblox_avatar || "https://emwiki.com/imgs/plr.jpg",
+              discordDisplay: row.discord_display_name || null,
+              victims: row.victims || null,
+              itemsScammed: row.items_scammed || null,
+              incomplete: false,
+              robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : []
+            }));
+
+            return new Response(JSON.stringify({ 
+              lastUpdated: cacheCheck.last_updated, 
+              scammers, 
+              partials: [] 
+            }), {
+              headers: { 
+                "Content-Type": "application/json", 
+                "X-Cache": "D1-WAIT",
+                "Access-Control-Allow-Origin": "*" 
+              },
             });
           }
+
           await new Promise(r => setTimeout(r, waitStep));
           waited += waitStep;
         }
@@ -214,41 +535,67 @@ export async function onRequestGet({ request, env }) {
         });
       }
 
-      // --- DISCORD FETCHING ---
+      // --- DISCORD FETCHING (INCREMENTAL) ---
       const channelId = env.DISCORD_CHANNEL_ID;
       let allMessages = [];
-      let before = null;
+      let after = lastProcessedMessageId || null; // Use 'after' for incremental fetching
 
       while (true) {
         const fetchUrl = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
         fetchUrl.searchParams.set("limit", "100");
-        if (before) fetchUrl.searchParams.set("before", before);
-
-        let response;
-        for (let attempt = 0; attempt < 3; attempt++) {
-          response = await fetch(fetchUrl.toString(), {
-            headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
-          });
-
-          if (response.status === 429) {
-            const retryAfter = await response.json();
-            await new Promise(r => setTimeout(r, retryAfter.retry_after * 1000));
-          } else {
-            break;
-          }
+        if (after) {
+          fetchUrl.searchParams.set("after", after);
         }
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch messages from Discord");
+        let response;
+        let retryCount = 0;
+        while (retryCount < 3) {
+          try {
+            response = await fetch(fetchUrl.toString(), {
+              headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+            });
+
+            if (response.status === 429) {
+              const retryAfter = await response.json();
+              await new Promise(r => setTimeout(r, (retryAfter.retry_after || 1) * 1000));
+              retryCount++;
+              continue;
+            }
+
+            if (!response.ok) {
+              throw new Error(`Discord API error: ${response.status}`);
+            }
+
+            break;
+          } catch (err) {
+            retryCount++;
+            if (retryCount >= 3) {
+              throw err;
+            }
+            await new Promise(r => setTimeout(r, 1000 * retryCount));
+          }
         }
 
         const messages = await response.json();
         if (messages.length === 0) break;
-        allMessages.push(...messages);
-        before = messages[messages.length - 1].id;
+
+        // When using 'after', Discord returns messages in reverse chronological order (newest first)
+        // Store the newest message ID before reversing (first message in array)
+        const newestMessageId = messages[0].id;
+        
+        // Reverse to process oldest first
+        const reversedMessages = messages.reverse();
+        allMessages.push(...reversedMessages);
+        
+        // Update 'after' to the newest message ID we just fetched
+        // This allows us to continue fetching newer messages in the next iteration
+        after = newestMessageId;
+        
+        // Safety limit
         if (allMessages.length >= 5000) break;
       }
 
+      // Process messages and update unified table
       const scammers = [];
       const partialScammers = [];
 
@@ -261,124 +608,153 @@ export async function onRequestGet({ request, env }) {
           const discordid = discordMatch ? discordMatch[1].trim().split(',')[0] : null;
           const robloxProfile = robloxProfileMatch ? `https://www.roblox.com/users/${robloxProfileMatch[1]}/profile` : null;
           const userId = robloxProfileMatch ? robloxProfileMatch[1] : null;
-          const victims = msg.content?.match(/victims:\s*\*{0,2}(.*)/i)?.[1]?.trim();
-          const itemsScammed = msg.content?.match(/items scammed:\s*\*{0,2}(.*)/i)?.[1]?.trim();
-
-          let entry = {
-            robloxUser: robloxUserMatch?.[1]?.trim() || null,
-            robloxProfile,
-            avatar: null,
-            discordDisplay: null,
-            victims: victims || null,
-            itemsScammed: itemsScammed || null,
-            incomplete: false,
-            robloxAlts: [],
-          };
+          const victims = msg.content?.match(/victims:\s*\*{0,2}(.*)/i)?.[1]?.trim() || null;
+          const itemsScammed = msg.content?.match(/items scammed:\s*\*{0,2}(.*)/i)?.[1]?.trim() || null;
 
           if (!userId) {
-            partialScammers.push(entry);
+            // Partial entry without user ID
+            partialScammers.push({
+              robloxUser: robloxUserMatch?.[1]?.trim() || null,
+              robloxProfile: null,
+              avatar: null,
+              discordDisplay: null,
+              victims: victims,
+              itemsScammed: itemsScammed,
+              incomplete: true,
+              robloxAlts: []
+            });
             continue;
           }
 
-          let data = {};
-          const now = Date.now();
+          // Fetch Roblox profile data
+          const robloxData = await fetchRobloxProfile(userId, env);
+          if (!robloxData) {
+            // Failed to fetch - mark as incomplete
+            await env.DB.prepare(`
+              INSERT INTO scammer_profile_cache (
+                user_id, roblox_name, roblox_display_name, roblox_avatar,
+                discord_id, discord_display_name, victims, items_scammed,
+                incomplete, last_message_id, updated_at
+              )
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              ON CONFLICT(user_id) DO UPDATE SET
+                victims = excluded.victims,
+                items_scammed = excluded.items_scammed,
+                incomplete = 1,
+                last_message_id = excluded.last_message_id,
+                updated_at = excluded.updated_at
+            `).bind(
+              userId,
+              robloxUserMatch?.[1]?.trim() || null,
+              null,
+              null,
+              discordid || null,
+              null,
+              victims,
+              itemsScammed,
+              1,
+              msg.id,
+              now
+            ).run();
 
-          const cached = await env.DB.prepare("SELECT * FROM scammer_profile_cache WHERE user_id = ?")
-            .bind(userId).first();
-
-          if (cached && now - cached.updated_at < 7 * 24 * 60 * 60 * 1000 && cached.roblox_name && cached.roblox_display_name && cached.avatar) {
-            data = {
-              name: cached.roblox_name,
-              displayName: cached.roblox_display_name,
-              avatar: cached.avatar,
-              discordDisplayName: cached.discord_display_name
-            };
-          } else {
-            let fetchSuccess = false;
-            for (let attempt = 0; attempt < 5; attempt++) {
-              try {
-                const res = await fetch(`https://emwiki.com/api/roblox-proxy?userId=${userId}&discordId=${discordid}`);
-                if (res.ok) {
-                  data = await res.json();
-                  await env.DB.prepare(`
-                    INSERT INTO scammer_profile_cache (user_id, roblox_name, roblox_display_name, avatar, discord_id, discord_display_name, updated_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                    ON CONFLICT(user_id) DO UPDATE SET
-                      roblox_name = excluded.roblox_name,
-                      roblox_display_name = excluded.roblox_display_name,
-                      avatar = excluded.avatar,
-                      discord_id = excluded.discord_id,
-                      discord_display_name = excluded.discord_display_name,
-                      updated_at = excluded.updated_at
-                  `).bind(
-                    userId,
-                    data.name || null,
-                    data.displayName || null,
-                    data.avatar || null,
-                    discordid || null,
-                    data.discordDisplayName || null,
-                    now
-                  ).run();
-                  fetchSuccess = true;
-                  break;
-                }
-              } catch { }
-              await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
-            }
-            if (!fetchSuccess) {
-              entry.incomplete = true;
-              partialScammers.push(entry);
-              continue; // Don't push to scammers
-            }
+            partialScammers.push({
+              robloxUser: robloxUserMatch?.[1]?.trim() || null,
+              robloxProfile: robloxProfile,
+              avatar: null,
+              discordDisplay: null,
+              victims: victims,
+              itemsScammed: itemsScammed,
+              incomplete: true,
+              robloxAlts: []
+            });
+            continue;
           }
 
-          entry.robloxUser = data.displayName || data.name || entry.robloxUser;
-          entry.avatar = data.avatar ?? "https://emwiki.com/imgs/plr.jpg";
-          entry.discordDisplay = data.discordDisplayName || entry.discordDisplay;
+          // Fetch Discord profile data if discord ID provided
+          let discordData = null;
+          if (discordid) {
+            discordData = await fetchDiscordProfile(discordid, env, userId);
+          }
 
-
-          // --- ALTS ---
+          // Parse and fetch alt accounts
           let altIds = [];
           const altMatches = msg.content?.match(/roblox alts:\s*([\s\S]+)/i);
           if (altMatches) {
             const altBlock = altMatches[1].trim();
             altIds = [...altBlock.matchAll(/roblox\.com\/users\/(\d+)\//g)].map(m => m[1]);
-
-            for (const altId of altIds) {
-              try {
-                const altRes = await fetch(`https://users.roblox.com/v1/users/${altId}`);
-                if (altRes.ok) {
-                  const altUser = await altRes.json();
-                  entry.robloxAlts.push({
-                    name: altUser.name,
-                    profile: `https://www.roblox.com/users/${altUser.id}/profile`
-                  });
-                }
-              } catch {
-                // Ignore failure silently
-              }
-            }
           }
 
-          // --- Push finalized entry to scammers ---
-          scammers.push(entry);
+          const robloxAlts = await fetchAltAccounts(altIds, env);
+          const robloxAltsJson = JSON.stringify(robloxAlts);
+
+          // Store/update in unified table
+          await env.DB.prepare(`
+            INSERT INTO scammer_profile_cache (
+              user_id, roblox_name, roblox_display_name, roblox_avatar,
+              discord_id, discord_display_name, discord_avatar,
+              victims, items_scammed, roblox_alts,
+              incomplete, last_message_id, updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+              roblox_name = excluded.roblox_name,
+              roblox_display_name = excluded.roblox_display_name,
+              roblox_avatar = excluded.roblox_avatar,
+              discord_id = COALESCE(excluded.discord_id, discord_id),
+              discord_display_name = COALESCE(excluded.discord_display_name, discord_display_name),
+              discord_avatar = COALESCE(excluded.discord_avatar, discord_avatar),
+              victims = COALESCE(excluded.victims, victims),
+              items_scammed = COALESCE(excluded.items_scammed, items_scammed),
+              roblox_alts = COALESCE(excluded.roblox_alts, roblox_alts),
+              incomplete = 0,
+              last_message_id = excluded.last_message_id,
+              updated_at = excluded.updated_at
+          `).bind(
+            userId,
+            robloxData.name || null,
+            robloxData.displayName || null,
+            robloxData.avatar || null,
+            discordid || null,
+            discordData?.displayName || null,
+            discordData?.avatar || null,
+            victims,
+            itemsScammed,
+            robloxAltsJson,
+            0,
+            msg.id,
+            now
+          ).run();
+
+          // Build response entry
+          scammers.push({
+            robloxUser: robloxData.displayName || robloxData.name || robloxUserMatch?.[1]?.trim() || null,
+            robloxProfile: robloxProfile,
+            avatar: robloxData.avatar || "https://emwiki.com/imgs/plr.jpg",
+            discordDisplay: discordData?.displayName || null,
+            victims: victims,
+            itemsScammed: itemsScammed,
+            incomplete: false,
+            robloxAlts: robloxAlts
+          });
 
         } catch (err) {
           console.warn("Failed to parse message:", err);
         }
       }
-      const payload = JSON.stringify({ lastMessageId: latestMessageId, scammers, partials: partialScammers });
 
-      await env.DB.prepare(`
-        INSERT INTO scammer_cache (key, value, updated_at)
-        VALUES (?, ?, ?)
-        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
-      `).bind(CACHE_KEY, payload, now).run();
-
+      // Release lock
       await env.DB.prepare("DELETE FROM scammer_cache_locks WHERE key = ?").bind(LOCK_KEY).run();
 
-      return new Response(JSON.stringify({ lastUpdated: now, scammers, partials: partialScammers }), {
-        headers: { "Content-Type": "application/json", "X-Cache": "D1-MISS","Access-Control-Allow-Origin": "*" },
+      return new Response(JSON.stringify({ 
+        lastUpdated: now, 
+        scammers, 
+        partials: partialScammers 
+      }), {
+        headers: { 
+          "Content-Type": "application/json", 
+          "X-Cache": "D1-MISS",
+          "Access-Control-Allow-Origin": "*" 
+        },
       });
 
     } catch (err) {
