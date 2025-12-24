@@ -379,6 +379,8 @@ export async function onRequestGet({ request, env }) {
       const lastProcessedMessageId = await getLastProcessedMessageId(env);
 
       // Check if we can return cached data
+      // Only return early if we have a lastProcessedMessageId AND it matches the latest message
+      // AND cache is fresh (updated within TTL)
       if (!forceRefresh && lastProcessedMessageId && latestMessageId === lastProcessedMessageId) {
         // Check if cache is still fresh
         const cacheCheck = await env.DB.prepare(
@@ -386,7 +388,7 @@ export async function onRequestGet({ request, env }) {
         ).first();
 
         if (cacheCheck && cacheCheck.last_updated && now - cacheCheck.last_updated < CACHE_TTL_MS) {
-          // Return all scammers from unified table
+          // Return all scammers from unified table (including incomplete ones)
           const { results } = await env.DB.prepare(`
             SELECT 
               user_id,
@@ -401,52 +403,37 @@ export async function onRequestGet({ request, env }) {
               roblox_alts,
               incomplete
             FROM scammer_profile_cache
-            WHERE incomplete = 0
-            ORDER BY updated_at DESC
+            WHERE user_id IS NOT NULL
+            ORDER BY incomplete ASC, updated_at DESC
           `).all();
 
-          const scammers = results.map(row => ({
-            robloxUser: row.roblox_display_name || row.roblox_name || null,
-            robloxProfile: `https://www.roblox.com/users/${row.user_id}/profile`,
-            avatar: row.roblox_avatar || "https://emwiki.com/imgs/plr.jpg",
-            discordDisplay: row.discord_display_name || null,
-            victims: row.victims || null,
-            itemsScammed: row.items_scammed || null,
-            incomplete: row.incomplete === 1,
-            robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : []
-          }));
+          // Separate complete and incomplete scammers
+          const completeScammers = [];
+          const partialScammers = [];
 
-          const partialResults = await env.DB.prepare(`
-            SELECT 
-              user_id,
-              roblox_name,
-              roblox_display_name,
-              roblox_avatar,
-              discord_id,
-              discord_display_name,
-              victims,
-              items_scammed,
-              roblox_alts
-            FROM scammer_profile_cache
-            WHERE incomplete = 1
-            ORDER BY updated_at DESC
-          `).all();
+          for (const row of results) {
+            const entry = {
+              robloxUser: row.roblox_display_name || row.roblox_name || null,
+              robloxProfile: row.user_id ? `https://www.roblox.com/users/${row.user_id}/profile` : null,
+              avatar: row.roblox_avatar || (row.incomplete === 0 ? "https://emwiki.com/imgs/plr.jpg" : null),
+              discordDisplay: row.discord_display_name || null,
+              victims: row.victims || null,
+              itemsScammed: row.items_scammed || null,
+              incomplete: row.incomplete === 1,
+              robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : []
+            };
 
-          const partials = partialResults.map(row => ({
-            robloxUser: row.roblox_display_name || row.roblox_name || null,
-            robloxProfile: row.user_id ? `https://www.roblox.com/users/${row.user_id}/profile` : null,
-            avatar: row.roblox_avatar || null,
-            discordDisplay: row.discord_display_name || null,
-            victims: row.victims || null,
-            itemsScammed: row.items_scammed || null,
-            incomplete: true,
-            robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : []
-          }));
+            if (row.incomplete === 1) {
+              partialScammers.push(entry);
+            } else {
+              completeScammers.push(entry);
+            }
+          }
 
           return new Response(JSON.stringify({ 
             lastUpdated: cacheCheck.last_updated, 
-            scammers, 
-            partials 
+            scammers: completeScammers, 
+            partials: partialScammers 
           }), {
             headers: { 
               "Content-Type": "application/json", 
@@ -497,13 +484,13 @@ export async function onRequestGet({ request, env }) {
                 roblox_alts,
                 incomplete
               FROM scammer_profile_cache
-              WHERE incomplete = 0
+              WHERE user_id IS NOT NULL AND incomplete = 0
               ORDER BY updated_at DESC
             `).all();
 
             const scammers = results.map(row => ({
               robloxUser: row.roblox_display_name || row.roblox_name || null,
-              robloxProfile: `https://www.roblox.com/users/${row.user_id}/profile`,
+              robloxProfile: row.user_id ? `https://www.roblox.com/users/${row.user_id}/profile` : null,
               avatar: row.roblox_avatar || "https://emwiki.com/imgs/plr.jpg",
               discordDisplay: row.discord_display_name || null,
               victims: row.victims || null,
@@ -803,10 +790,53 @@ export async function onRequestGet({ request, env }) {
       // Release lock
       await env.DB.prepare("DELETE FROM scammer_cache_locks WHERE key = ?").bind(LOCK_KEY).run();
 
+      // Query database to get ALL scammers (not just ones processed in this batch)
+      // This ensures we return everything that's been stored, including from previous runs
+      const { results: allResults } = await env.DB.prepare(`
+        SELECT 
+          user_id,
+          roblox_name,
+          roblox_display_name,
+          roblox_avatar,
+          discord_id,
+          discord_display_name,
+          discord_avatar,
+          victims,
+          items_scammed,
+          roblox_alts,
+          incomplete
+        FROM scammer_profile_cache
+        WHERE user_id IS NOT NULL
+        ORDER BY incomplete ASC, updated_at DESC
+      `).all();
+
+      // Separate complete and incomplete scammers
+      const allCompleteScammers = [];
+      const allPartialScammers = [];
+
+      for (const row of allResults) {
+        const entry = {
+          robloxUser: row.roblox_display_name || row.roblox_name || null,
+          robloxProfile: row.user_id ? `https://www.roblox.com/users/${row.user_id}/profile` : null,
+          avatar: row.roblox_avatar || (row.incomplete === 0 ? "https://emwiki.com/imgs/plr.jpg" : null),
+          discordDisplay: row.discord_display_name || null,
+          victims: row.victims || null,
+          itemsScammed: row.items_scammed || null,
+          incomplete: row.incomplete === 1,
+          robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : []
+        };
+
+        if (row.incomplete === 1) {
+          allPartialScammers.push(entry);
+        } else {
+          allCompleteScammers.push(entry);
+        }
+      }
+
       return new Response(JSON.stringify({ 
         lastUpdated: now, 
-        scammers, 
-        partials: partialScammers 
+        scammers: allCompleteScammers, 
+        partials: allPartialScammers 
       }), {
         headers: { 
           "Content-Type": "application/json", 
