@@ -157,6 +157,7 @@
 
     .scammer-info p {
         margin: 5px 0;
+        max-width: 225px;
         font-size: 14px;
         color: var(--text-secondary);
     }
@@ -287,7 +288,8 @@
     .thread-evidence-btn {
         margin-top: 10px;
         padding: 8px 16px;
-        background: linear-gradient(135deg, #5865F2, #4752C4);
+        background: linear-gradient(
+359deg, #d34741, #c44747);
         color: white;
         border: none;
         border-radius: 8px;
@@ -303,9 +305,10 @@
     }
 
     .thread-evidence-btn:hover {
-        background: linear-gradient(135deg, #4752C4, #3a45a3);
+        background: linear-gradient(
+359deg, #a33430, #9f2721);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(88, 101, 242, 0.4);
+        box-shadow: 0 4px 12px rgba(242, 88, 88, 0.4);
     }
 
     .thread-evidence-btn svg {
@@ -1139,6 +1142,8 @@
             return;
         }
 
+        console.log('Fetching thread evidence for user_id:', userId);
+
         // Show loading state
         modal.style.display = 'flex';
         modalContent.innerHTML = '<div class="thread-loading">Loading evidence...</div>';
@@ -1146,14 +1151,16 @@
         try {
             const response = await fetch(`https://emwiki.com/api/roblox-proxy?mode=thread-evidence&userId=${userId}`);
             
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
             const data = await response.json();
+            console.log('Thread evidence response:', data);
+            
+            if (!response.ok) {
+                throw new Error(data.error || `HTTP error! status: ${response.status}`);
+            }
             
             if (!data.thread_evidence) {
-                modalContent.innerHTML = '<div class="thread-error">No evidence found for this scammer.</div>';
+                const errorMsg = data.debug ? `${data.error} (${data.debug})` : data.error || 'No evidence found';
+                modalContent.innerHTML = `<div class="thread-error">${errorMsg}</div>`;
                 return;
             }
 

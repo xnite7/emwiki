@@ -498,10 +498,27 @@ export async function onRequestGet({ request, env }) {
         "SELECT thread_evidence FROM scammer_profile_cache WHERE user_id = ?"
       ).bind(userId).first();
 
-      if (!result || !result.thread_evidence) {
+      if (!result) {
         return new Response(JSON.stringify({ 
           error: "No thread evidence found for this user",
-          thread_evidence: null 
+          thread_evidence: null,
+          user_id: userId,
+          debug: "User not found in database"
+        }), {
+          status: 404,
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          },
+        });
+      }
+
+      if (!result.thread_evidence) {
+        return new Response(JSON.stringify({ 
+          error: "No thread evidence found for this user",
+          thread_evidence: null,
+          user_id: userId,
+          debug: "User found but thread_evidence is null"
         }), {
           status: 404,
           headers: { 
@@ -522,7 +539,12 @@ export async function onRequestGet({ request, env }) {
         },
       });
     } catch (err) {
-      return new Response(JSON.stringify({ error: err.message }), {
+      console.error("Thread evidence fetch error:", err);
+      return new Response(JSON.stringify({ 
+        error: err.message,
+        user_id: userId,
+        debug: err.stack
+      }), {
         status: 500,
         headers: { 
           "Content-Type": "application/json",
@@ -588,6 +610,7 @@ export async function onRequestGet({ request, env }) {
 
           for (const row of results) {
             const entry = {
+              user_id: row.user_id,
               robloxUser: row.roblox_display_name || row.roblox_name || null,
               robloxProfile: row.user_id ? `https://www.roblox.com/users/${row.user_id}/profile` : null,
               avatar: row.roblox_avatar || (row.incomplete === 0 ? "https://emwiki.com/imgs/plr.jpg" : null),
@@ -668,6 +691,7 @@ export async function onRequestGet({ request, env }) {
             `).all();
 
             const scammers = results.map(row => ({
+              user_id: row.user_id,
               robloxUser: row.roblox_display_name || row.roblox_name || null,
               robloxProfile: row.user_id ? `https://www.roblox.com/users/${row.user_id}/profile` : null,
               avatar: row.roblox_avatar || "https://emwiki.com/imgs/plr.jpg",
@@ -1017,6 +1041,7 @@ export async function onRequestGet({ request, env }) {
 
       for (const row of allResults) {
         const entry = {
+          user_id: row.user_id,
           robloxUser: row.roblox_display_name || row.roblox_name || null,
           robloxProfile: row.user_id ? `https://www.roblox.com/users/${row.user_id}/profile` : null,
           avatar: row.roblox_avatar || (row.incomplete === 0 ? "https://emwiki.com/imgs/plr.jpg" : null),
