@@ -499,6 +499,14 @@ margin-top: 10px;
         height: auto;
         display: block;
         background: #000;
+        border-radius: 4px;
+    }
+    
+    .video-loading,
+    .video-error {
+        margin-top: 5px;
+        border-radius: 4px;
+        font-size: 12px;
     }
 
     .attachment-link {
@@ -1235,15 +1243,33 @@ margin-top: 10px;
                                 </div>
                             `;
                         } else if (att.is_video) {
-                            // Use R2 URL if available, otherwise fallback to proxy
-                            const videoUrl = att.r2_url || att.url;
+                            // Use R2 proxy URL if R2 URL exists, otherwise fallback to direct URL
+                            let videoUrl = att.url; // Default to original Discord URL
+                            if (att.r2_url) {
+                                // Extract key from R2 URL (e.g., https://cdn.emwiki.com/scammer-evidence/videos/123.mp4)
+                                const r2UrlMatch = att.r2_url.match(/https?:\/\/[^\/]+\/(.+)$/);
+                                if (r2UrlMatch) {
+                                    videoUrl = `https://emwiki.com/api/roblox-proxy?mode=r2-video&key=${encodeURIComponent(r2UrlMatch[1])}`;
+                                } else {
+                                    videoUrl = att.r2_url; // Fallback to direct R2 URL
+                                }
+                            }
+                            const videoId = `video-${att.id}-${index}`;
+                            const downloadUrl = att.r2_url || att.url; // Use R2 URL for download if available
                             html += `
                                 <div class="attachment-video">
-                                    <video controls preload="metadata" style="width: 100%; max-width: 600px; height: auto;">
-                                        <source src="${videoUrl}" type="${att.content_type}">
+                                    <video 
+                                        id="${videoId}"
+                                        controls 
+                                        preload="metadata" 
+                                        playsinline
+                                        style="width: 100%; max-width: 600px; height: auto; background: #000;">
+                                        <source src="${videoUrl}" type="${att.content_type || 'video/mp4'}">
                                         Your browser does not support the video tag.
                                     </video>
-                                    <a href="${videoUrl}" target="_blank" rel="noopener noreferrer" class="attachment-link">Download Video</a>
+                                    <div class="video-loading" id="loading-${videoId}" style="display: none; padding: 10px; color: #fff; background: rgba(0,0,0,0.7); border-radius: 4px;">Loading video...</div>
+                                    <div class="video-error" id="error-${videoId}" style="display: none; padding: 10px; color: #ff6b6b; background: rgba(0,0,0,0.7); border-radius: 4px;">Failed to load video. <a href="${downloadUrl}" target="_blank" style="color: #4a9eff;">Try downloading instead</a>.</div>
+                                    <a href="${downloadUrl}" target="_blank" rel="noopener noreferrer" class="attachment-link">Download Video</a>
                                 </div>
                             `;
                         } else {
@@ -1283,6 +1309,31 @@ margin-top: 10px;
 
         html += '</div></div>';
         container.innerHTML = html;
+        
+        // Add video event listeners after rendering
+        container.querySelectorAll('video').forEach(video => {
+            const loadingDiv = container.querySelector(`#loading-${video.id}`);
+            const errorDiv = container.querySelector(`#error-${video.id}`);
+            
+            video.addEventListener('loadstart', () => {
+                if (loadingDiv) loadingDiv.style.display = 'block';
+                if (errorDiv) errorDiv.style.display = 'none';
+            });
+            
+            video.addEventListener('loadedmetadata', () => {
+                if (loadingDiv) loadingDiv.style.display = 'none';
+            });
+            
+            video.addEventListener('canplay', () => {
+                if (loadingDiv) loadingDiv.style.display = 'none';
+            });
+            
+            video.addEventListener('error', (e) => {
+                console.error('Video error:', e, video.src);
+                if (loadingDiv) loadingDiv.style.display = 'none';
+                if (errorDiv) errorDiv.style.display = 'block';
+            });
+        });
     }
 
     // Close thread modal

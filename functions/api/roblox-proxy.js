@@ -255,10 +255,16 @@ async function downloadVideoToR2(discordUrl, attachmentId, filename, contentType
       return null;
     }
 
-    // Upload to R2
+    // Upload to R2 with proper headers for video playback
     const videoData = await videoResponse.arrayBuffer();
     await env.MY_BUCKET.put(key, videoData, {
-      httpMetadata: { contentType: contentType || 'video/mp4' }
+      httpMetadata: { 
+        contentType: contentType || 'video/mp4',
+        cacheControl: 'public, max-age=31536000' // Cache for 1 year
+      },
+      customMetadata: {
+        'original-filename': filename || 'video'
+      }
     });
 
     return `https://cdn.emwiki.com/${key}`;
@@ -423,6 +429,50 @@ export async function onRequestGet({ request, env }) {
       i ^= hash.charCodeAt(t);
     }
     return `https://t${(i % 8).toString()}.rbxcdn.com/${hash}`;
+  }
+
+  // Handle R2 video proxy (serves videos from R2 with proper CORS headers)
+  if (mode === "r2-video") {
+    const videoKey = url.searchParams.get("key");
+    if (!videoKey) {
+      return new Response(JSON.stringify({ error: 'Video key required' }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    }
+
+    try {
+      // Get video from R2
+      const videoObject = await env.MY_BUCKET.get(videoKey);
+
+      if (!videoObject) {
+        return new Response(JSON.stringify({ error: 'Video not found' }), {
+          status: 404,
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+        });
+      }
+
+      const contentType = videoObject.httpMetadata?.contentType || 'video/mp4';
+      const contentLength = videoObject.size;
+
+      // Return video with proper headers for video playback
+      return new Response(videoObject.body, {
+        headers: {
+          "Content-Type": contentType,
+          "Content-Length": contentLength.toString(),
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+          "Access-Control-Allow-Headers": "Range",
+          "Accept-Ranges": "bytes",
+          "Cache-Control": "public, max-age=31536000" // Cache for 1 year
+        }
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    }
   }
 
   // Handle Discord video/media proxy (for videos and other media that require auth)
@@ -602,16 +652,32 @@ export async function onRequestGet({ request, env }) {
         });
       }
 
-      const limit = parseInt(url.searchParams.get("limit")) || 10; // Process 10 entries at a time by default
+      // Process ONE entry at a time to avoid timeout
+      const targetUserId = url.searchParams.get("userId");
+      const limit = parseInt(url.searchParams.get("limit")) || 1; // Process 1 entry at a time by default
       const offset = parseInt(url.searchParams.get("offset")) || 0;
       
-      // Get entries with thread evidence (with limit/offset for batching)
-      const { results } = await env.DB.prepare(`
-        SELECT user_id, thread_evidence 
-        FROM scammer_profile_cache 
-        WHERE thread_evidence IS NOT NULL
-        LIMIT ? OFFSET ?
-      `).bind(limit, offset).all();
+      let query, bindParams;
+      if (targetUserId) {
+        // Process specific user
+        query = `
+          SELECT user_id, thread_evidence 
+          FROM scammer_profile_cache 
+          WHERE user_id = ? AND thread_evidence IS NOT NULL
+        `;
+        bindParams = [targetUserId];
+      } else {
+        // Process next entry in queue
+        query = `
+          SELECT user_id, thread_evidence 
+          FROM scammer_profile_cache 
+          WHERE thread_evidence IS NOT NULL
+          LIMIT ? OFFSET ?
+        `;
+        bindParams = [limit, offset];
+      }
+      
+      const { results } = await env.DB.prepare(query).bind(...bindParams).all();
 
       if (!results || results.length === 0) {
         return new Response(JSON.stringify({ 
@@ -631,63 +697,79 @@ export async function onRequestGet({ request, env }) {
       let videosSkipped = 0;
       let errors = [];
 
-      // Process each entry sequentially to avoid memory/timeout issues
-      for (const row of results) {
-        try {
-          if (!row.thread_evidence) continue;
-          
-          const threadEvidence = JSON.parse(row.thread_evidence);
-          let updated = false;
+      // Process only the first entry to avoid timeout
+      const row = results[0];
+      try {
+        if (!row.thread_evidence) {
+          return new Response(JSON.stringify({ 
+            message: "Entry has no thread evidence",
+            user_id: row.user_id
+          }), {
+            headers: { 
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*" 
+            },
+          });
+        }
+        
+        const threadEvidence = JSON.parse(row.thread_evidence);
+        let updated = false;
+        let videoCount = 0;
 
-          // Process all messages in the thread
-          if (threadEvidence.messages && Array.isArray(threadEvidence.messages)) {
-            for (const msg of threadEvidence.messages) {
-              if (msg.attachments && Array.isArray(msg.attachments)) {
-                // Process attachments sequentially to avoid memory issues with large videos
-                for (const att of msg.attachments) {
-                  // Only process videos that don't already have r2_url
-                  if (att.is_video && att.url && !att.r2_url) {
-                    try {
-                      const r2Url = await downloadVideoToR2(
-                        att.url,
-                        att.id,
-                        att.filename || 'video',
-                        att.content_type,
-                        env
-                      );
-                      
-                      if (r2Url) {
-                        att.r2_url = r2Url;
-                        videosDownloaded++;
-                        updated = true;
-                      } else {
-                        videosSkipped++;
-                        errors.push(`Failed to download video ${att.id} for user ${row.user_id}`);
-                      }
-                    } catch (videoErr) {
-                      videosSkipped++;
-                      errors.push(`Error downloading video ${att.id} for user ${row.user_id}: ${videoErr.message}`);
+        // Process all messages in the thread
+        if (threadEvidence.messages && Array.isArray(threadEvidence.messages)) {
+          for (const msg of threadEvidence.messages) {
+            if (msg.attachments && Array.isArray(msg.attachments)) {
+              // Process attachments sequentially to avoid memory issues with large videos
+              for (const att of msg.attachments) {
+                // Only process videos that don't already have r2_url
+                if (att.is_video && att.url && !att.r2_url) {
+                  videoCount++;
+                  try {
+                    // Add small delay between downloads to avoid rate limiting
+                    if (videoCount > 1) {
+                      await new Promise(r => setTimeout(r, 500)); // 500ms delay
                     }
+                    
+                    const r2Url = await downloadVideoToR2(
+                      att.url,
+                      att.id,
+                      att.filename || 'video',
+                      att.content_type,
+                      env
+                    );
+                    
+                    if (r2Url) {
+                      att.r2_url = r2Url;
+                      videosDownloaded++;
+                      updated = true;
+                    } else {
+                      videosSkipped++;
+                      errors.push(`Failed to download video ${att.id} for user ${row.user_id}`);
+                    }
+                  } catch (videoErr) {
+                    videosSkipped++;
+                    errors.push(`Error downloading video ${att.id} for user ${row.user_id}: ${videoErr.message}`);
                   }
                 }
               }
             }
           }
-
-          // Update database if any videos were downloaded
-          if (updated) {
-            const updatedEvidenceJson = JSON.stringify(threadEvidence);
-            await env.DB.prepare(`
-              UPDATE scammer_profile_cache 
-              SET thread_evidence = ?, updated_at = ?
-              WHERE user_id = ?
-            `).bind(updatedEvidenceJson, Date.now(), row.user_id).run();
-            processed++;
-          }
-        } catch (err) {
-          console.error(`Error processing user ${row.user_id}:`, err);
-          errors.push(`Error processing user ${row.user_id}: ${err.message}`);
         }
+
+        // Update database if any videos were downloaded
+        if (updated) {
+          const updatedEvidenceJson = JSON.stringify(threadEvidence);
+          await env.DB.prepare(`
+            UPDATE scammer_profile_cache 
+            SET thread_evidence = ?, updated_at = ?
+            WHERE user_id = ?
+          `).bind(updatedEvidenceJson, Date.now(), row.user_id).run();
+          processed++;
+        }
+      } catch (err) {
+        console.error(`Error processing user ${row.user_id}:`, err);
+        errors.push(`Error processing user ${row.user_id}: ${err.message}`);
       }
 
       // Get total count for progress tracking
@@ -700,14 +782,15 @@ export async function onRequestGet({ request, env }) {
 
       return new Response(JSON.stringify({ 
         message: "Migration batch completed",
-        processed_this_batch: results.length,
+        user_id: row.user_id,
+        processed_this_batch: 1,
         total_entries: totalCount,
         processed,
         videos_downloaded,
         videos_skipped,
         offset,
-        next_offset: offset + results.length,
-        has_more: offset + results.length < totalCount,
+        next_offset: offset + 1,
+        has_more: offset + 1 < totalCount,
         errors: errors.length > 0 ? errors.slice(0, 10) : [] // Limit errors to first 10
       }), {
         headers: { 
