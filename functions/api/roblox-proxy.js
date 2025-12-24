@@ -455,43 +455,7 @@ export async function onRequestGet({ request, env }) {
 
 
 
-  if (url.pathname.endsWith("/api/roblox-proxy") && userId) {
-    try {
-      // Fetch Roblox data - DON'T write to scammer cache (writeToScammerCache = false)
-      const robloxData = await fetchRobloxProfile(userId, env, false);
-      
-      if (!robloxData) {
-        throw new Error("Failed to fetch Roblox user data");
-      }
-
-      // Fetch Discord data if discordId provided - DON'T write to scammer cache
-      let discordData = null;
-      if (discordId) {
-        discordData = await fetchDiscordProfile(discordId, env, null, false);
-      }
-
-      return new Response(JSON.stringify({
-        name: robloxData.name,
-        displayName: robloxData.displayName,
-        avatar: robloxData.avatar || null,
-        discordDisplayName: discordData?.displayName || null,
-        discordAvatar: discordData?.avatar || null
-      }), { 
-        headers: { 
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*" 
-        } 
-      });
-
-    } catch (err) {
-      return new Response(JSON.stringify({ error: err.message }), { 
-        status: 500,
-        headers: { "Content-Type": "application/json" }
-      });
-    }
-  }
-
-  // Handle thread evidence endpoint
+  // Handle thread evidence endpoint - MUST come before general endpoint check
   if (mode === "thread-evidence" && userId) {
     try {
       const result = await env.DB.prepare(
@@ -550,6 +514,44 @@ export async function onRequestGet({ request, env }) {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*" 
         },
+      });
+    }
+  }
+
+  // General roblox-proxy endpoint (for credits, item makers, etc.)
+  // Must come AFTER thread-evidence check to avoid conflicts
+  if (url.pathname.endsWith("/api/roblox-proxy") && userId && mode !== "thread-evidence") {
+    try {
+      // Fetch Roblox data - DON'T write to scammer cache (writeToScammerCache = false)
+      const robloxData = await fetchRobloxProfile(userId, env, false);
+      
+      if (!robloxData) {
+        throw new Error("Failed to fetch Roblox user data");
+      }
+
+      // Fetch Discord data if discordId provided - DON'T write to scammer cache
+      let discordData = null;
+      if (discordId) {
+        discordData = await fetchDiscordProfile(discordId, env, null, false);
+      }
+
+      return new Response(JSON.stringify({
+        name: robloxData.name,
+        displayName: robloxData.displayName,
+        avatar: robloxData.avatar || null,
+        discordDisplayName: discordData?.displayName || null,
+        discordAvatar: discordData?.avatar || null
+      }), { 
+        headers: { 
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*" 
+        } 
+      });
+
+    } catch (err) {
+      return new Response(JSON.stringify({ error: err.message }), { 
+        status: 500,
+        headers: { "Content-Type": "application/json" }
       });
     }
   }

@@ -1072,7 +1072,11 @@
                         const match = scammer.robloxProfile.match(/\/users\/(\d+)\//);
                         if (match) {
                             scammer.user_id = match[1];
+                        } else {
+                            console.error('No user_id found for scammer:', scammer.robloxProfile);
                         }
+                    } else {
+                        console.log('User_id found for scammer:', scammer.user_id);
                     }
                     createScammerBlock(scammer, container);
                 });
