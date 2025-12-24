@@ -857,6 +857,22 @@ body:has(.item-modal.active) {
     transform: scale(0.95);
 }
 
+.modal-action-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.modal-action-count {
+    font-size: 26px;
+        font-family: 'BuilderSans';
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 500;
+        min-width: 20px;
+        text-align: center;
+}
+
 @media (max-width: 768px) {
     .modal-nav {
         display: none;
@@ -885,9 +901,9 @@ body:has(.item-modal.active) {
     .modal-actions {
         position: fixed;
         top: auto;
-        bottom: 30px;
+        bottom: -25px;
         right: 50%;
-        transform: translate(50%, 127px);
+        transform: translate(50%, 100%);
         flex-direction: row;
         gap: 20px;
     }

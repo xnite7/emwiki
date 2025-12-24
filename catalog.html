@@ -1909,7 +1909,7 @@
                 if (itemsToFetch.length > 0) {
                     try {
                         // Use bulk POST endpoint to fetch all counts at once
-                        const response = await fetch(`${this.apiBase}/auth/user/preferences/stats`, {
+                        const response = await fetch(`https://emwiki.com/api/auth/user/preferences/stats`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'

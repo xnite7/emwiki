@@ -1744,10 +1744,15 @@ class ItemModal {
                     <span class="flip-text">More Info</span>
                 </button>
                 <div class="modal-actions">
-                    <button class="modal-action-btn modal-favorite-btn" title="Add to Favorites">
-                    </button>
-                    <button class="modal-action-btn modal-wishlist-btn" title="Add to Wishlist">
-                    </button>
+                    <div class="modal-action-wrapper">
+                        <button class="modal-action-btn modal-favorite-btn" title="Add to Favorites">
+                        </button>
+                        <span class="modal-action-count modal-favorite-count">0</span>
+                    </div>
+                    <div class="modal-action-wrapper">
+                        <button class="modal-action-btn modal-wishlist-btn" title="Add to Wishlist">
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1778,6 +1783,7 @@ class ItemModal {
             nextBtn: document.querySelector('.modal-next'),
             wishlistBtn: document.querySelector('.modal-wishlist-btn'),
             favoriteBtn: document.querySelector('.modal-favorite-btn'),
+            favoriteCount: document.querySelector('.modal-favorite-count'),
             graphSection: document.querySelector('.modal-graph-section'),
             graphContainer: document.querySelector('.modal-graph-container'),
             lastAdmin: document.querySelector('.modal-last-admin'),
@@ -2222,7 +2228,7 @@ class ItemModal {
         this.elements.nextBtn.disabled = this.currentIndex >= this.displayed.length - 1;
     }
 
-    updateActionButtons() {
+    async updateActionButtons() {
         if (!this.currentItem) return;
 
         const isFavorite = this.catalog.favorites.includes(this.currentItem.name);
@@ -2234,6 +2240,27 @@ class ItemModal {
         // Update wishlist button
         this.elements.wishlistBtn.classList.toggle('active', isWishlisted);
         this.elements.wishlistBtn.title = isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist';
+
+        // Fetch and update favorite count
+        await this.updateFavoriteCount();
+    }
+
+    async updateFavoriteCount() {
+        if (!this.currentItem || !this.elements.favoriteCount) return;
+
+        try {
+            const response = await fetch(`https://emwiki.com/api/auth/user/preferences/stats?item=${encodeURIComponent(this.currentItem.name)}`);
+            if (response.ok) {
+                const data = await response.json();
+                const totalCount = (data.favorites_count || 0) + (data.wishlist_count || 0);
+                this.elements.favoriteCount.textContent = totalCount.toLocaleString();
+            } else {
+                this.elements.favoriteCount.textContent = '0';
+            }
+        } catch (e) {
+            console.error('Error fetching favorite count:', e);
+            this.elements.favoriteCount.textContent = '0';
+        }
     }
 
     updateURL(itemName) {
