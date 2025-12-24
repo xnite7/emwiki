@@ -227,9 +227,7 @@ async function uploadVideoToStream(videoData, filename, env) {
     }
 
     // Upload video directly to Stream using multipart form data
-    // Note: In Workers, we need to create FormData differently
     const formData = new FormData();
-    // Create a Blob from the ArrayBuffer
     const blob = new Blob([videoData], { type: 'video/quicktime' });
     formData.append('file', blob, filename);
 
@@ -251,13 +249,17 @@ async function uploadVideoToStream(videoData, filename, env) {
     }
 
     const streamData = await uploadResponse.json();
-    // Return both the video ID and playback URL for native video player
     const videoId = streamData.result?.uid;
     if (videoId) {
-      // Construct Stream playback URL using your Stream domain
-      // Format: https://customer-{accountId}.cloudflarestream.com/{videoId}/manifest/video.m3u8
-      const playbackUrl = streamData.result?.playback?.hls || 
-                         `https://customer-wosapspiey2ql225.cloudflarestream.com/${videoId}/manifest/video.m3u8`;
+      // Use playback URL from API response if available, otherwise construct using customer subdomain
+      let playbackUrl = streamData.result?.playback?.hls || streamData.result?.playback?.dash;
+      
+      if (!playbackUrl) {
+        // Fallback: construct URL using customer subdomain
+        // Format: https://customer-wosapspiey2ql225.cloudflarestream.com/{videoId}/manifest/video.m3u8
+        playbackUrl = `https://customer-wosapspiey2ql225.cloudflarestream.com/${videoId}/manifest/video.m3u8`;
+      }
+      
       return {
         id: videoId,
         playback_url: playbackUrl
