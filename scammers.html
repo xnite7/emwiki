@@ -351,13 +351,16 @@
         align-items: center;
         padding: 20px;
         border-bottom: 2px solid var(--border-color);
-        background: linear-gradient(135deg, rgba(88, 101, 242, 0.1), rgba(71, 82, 196, 0.1));
+        background: linear-gradient(135deg, rgb(242 166 88 / 22%), rgba(71, 82, 196, 0.1));
     }
 
     .thread-header h2 {
         margin: 0;
         color: var(--text-primary);
-        font-size: 24px;
+
+        font-size: 27px;
+        font-weight: 700;
+        font-variant: all-petite-caps;
     }
 
     .thread-close {
@@ -592,7 +595,6 @@
 
         .thread-modal-content {
             max-width: 100%;
-            max-height: 100vh;
             border-radius: 0;
         }
 
@@ -970,7 +972,7 @@
 
         // Thread evidence button
         const threadButton = hasThreadEvidence && user_id
-            ? `<button class="thread-evidence-btn" onclick="viewThreadEvidence('${user_id}')" title="View investigation evidence">
+            ? `<button class="thread-evidence-btn" onclick="viewThreadEvidence('${user_id}', '${robloxUser}')" title="View investigation evidence">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                   <polyline points="14 2 14 8 20 8"></polyline>
@@ -1137,7 +1139,7 @@
 
 
     // View thread evidence modal
-    async function viewThreadEvidence(userId) {
+    async function viewThreadEvidence(userId, robloxUser) {
         const modal = document.getElementById('thread-evidence-modal');
         const modalContent = document.getElementById('thread-evidence-content');
         
@@ -1169,7 +1171,7 @@
             }
 
             // Render thread evidence
-            renderThreadEvidence(data.thread_evidence, modalContent);
+            renderThreadEvidence(data.thread_evidence, modalContent, userId, robloxUser);
         } catch (error) {
             console.error('Failed to fetch thread evidence:', error);
             modalContent.innerHTML = `<div class="thread-error">Failed to load evidence: ${error.message}</div>`;
@@ -1177,23 +1179,24 @@
     }
 
     // Render thread evidence in investigation-style format
-    function renderThreadEvidence(threadEvidence, container) {
+    function renderThreadEvidence(threadEvidence, container, userId, robloxUser) {
         const { thread_name, message_count, messages } = threadEvidence;
         
         let html = `
             <div class="thread-header">
-                <h2>🔍 Investigation Evidence</h2>
+                <h2>⁕⁖ Evidence of Scamming</h2>
                 <button class="thread-close" onclick="closeThreadModal()">×</button>
             </div>
             <div class="thread-info">
-                <p><strong>Thread:</strong> ${thread_name || 'Unnamed Thread'}</p>
-                <p><strong>Messages:</strong> ${message_count || messages?.length || 0}</p>
+                <p><strong>Evidence Against:</strong> <a href="/scammers?userId=${userId}" target="_blank">${robloxUser}</a></p>
+                <p><strong>Messages:</strong> ${message_count-1 || messages?.length || 0}</p>
             </div>
             <div class="thread-messages">
         `;
 
         if (messages && messages.length > 0) {
             messages.forEach((msg, index) => {
+                if (msg.content=='' || msg.content==null || msg.content==undefined) return;
                 const authorName = msg.author?.global_name || msg.author?.username || 'Unknown';
                 const authorAvatar = msg.author?.avatar 
                     ? `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png?size=64`
@@ -1224,13 +1227,15 @@
                                 </div>
                             `;
                         } else if (att.is_video) {
+                            // Use proxy endpoint for Discord videos (requires auth)
+                            const proxyUrl = `https://emwiki.com/api/roblox-proxy?mode=discord-media&url=${encodeURIComponent(att.url)}`;
                             html += `
                                 <div class="attachment-video">
-                                    <video controls>
-                                        <source src="${att.url}" type="${att.content_type}">
+                                    <video controls preload="metadata">
+                                        <source src="${proxyUrl}" type="${att.content_type}">
                                         Your browser does not support the video tag.
                                     </video>
-                                    <a href="${att.url}" target="_blank" rel="noopener noreferrer" class="attachment-link">Download Video</a>
+                                    <a href="${proxyUrl}" target="_blank" rel="noopener noreferrer" class="attachment-link">Download Video</a>
                                 </div>
                             `;
                         } else {

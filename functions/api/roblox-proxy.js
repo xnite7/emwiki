@@ -355,6 +355,67 @@ export async function onRequestGet({ request, env }) {
     return `https://t${(i % 8).toString()}.rbxcdn.com/${hash}`;
   }
 
+  // Handle Discord video/media proxy (for videos and other media that require auth)
+  if (mode === "discord-media") {
+    const mediaUrl = url.searchParams.get("url");
+    if (!mediaUrl) {
+      return new Response(JSON.stringify({ error: 'Media URL required' }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    }
+
+    // Validate that it's a Discord CDN URL
+    if (!mediaUrl.startsWith('https://cdn.discordapp.com/') && !mediaUrl.startsWith('https://media.discordapp.net/')) {
+      return new Response(JSON.stringify({ error: 'Invalid Discord media URL' }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    }
+
+    try {
+      // Fetch the media with Discord bot authentication
+      const mediaResponse = await fetch(mediaUrl, {
+        headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
+      });
+
+      if (!mediaResponse.ok) {
+        return new Response(JSON.stringify({
+          error: 'Media not found',
+          status: mediaResponse.status
+        }), {
+          status: mediaResponse.status,
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+        });
+      }
+
+      // Get the content type from the original response
+      const contentType = mediaResponse.headers.get('content-type') || 'application/octet-stream';
+      const contentLength = mediaResponse.headers.get('content-length');
+      
+      // Stream the response directly (better for large videos)
+      // Cloudflare Workers will handle streaming automatically
+      const headers = {
+        "Content-Type": contentType,
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "public, max-age=86400", // Cache for 24 hours
+        "Accept-Ranges": "bytes" // Support range requests for video seeking
+      };
+      
+      if (contentLength) {
+        headers["Content-Length"] = contentLength;
+      }
+
+      // Return the response body directly - Cloudflare Workers streams it automatically
+      return new Response(mediaResponse.body, { headers });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    }
+  }
+
   // Handle CDN asset proxy (for OBJ, MTL, textures)
   if (mode === "cdn-asset") {
     const hash = url.searchParams.get("hash");
