@@ -2815,8 +2815,14 @@ textarea {
 }
 
 #credits-menu {
-    grid-template-rows: repeat(39, auto);
     padding: 5px 0px;
+    width: 380px;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+#credits-menu.show {
+    display: flex;
 }
 
 #season-menu {
@@ -3729,14 +3735,15 @@ header svg * {
 }
 
 .spacermoney {
-        display: grid;
-            grid-template-columns: 1fr max-content 1fr;
-            grid-column-gap: 10px;
-            align-items: center;
-            font-size: 12px;
-            color: var(--text-secondary);
+    display: grid;
+    grid-template-columns: 1fr max-content 1fr;
+    grid-column-gap: 10px;
+    align-items: center;
+    font-size: 12px;
+    color: var(--text-secondary);
 }
-.dropdown-item:has(+ .spacermoney){
+
+.dropdown-item:has(+ .spacermoney) {
     border-bottom: none;
 }
 

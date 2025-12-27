@@ -986,7 +986,7 @@
                     
                     // Check if credit is a Roblox user ID
                     const isRobloxId = /^\d+$/.test(credit);
-                    
+
                     if (isRobloxId) {
                         // Create avatar placeholder
                         const avatarImg = document.createElement('img');
@@ -1015,6 +1015,9 @@
                                     }
                                     // Update label with username
                                     label.textContent = userData.name || credit;
+                                    if (credit == '792651524') {
+                                        label.textContent = 'Noob Head Studios';
+                                    }
                                 }
                             })
                             .catch(error => {
