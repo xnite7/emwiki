@@ -2318,6 +2318,15 @@ textarea {
     color: var(--border-color);
 }
 
+.color-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    flex-shrink: 0;
+    display: inline-block;
+}
+
 .dropdown-item {
     font-variant-emoji: text;
     display: inline-flex;
