@@ -13,7 +13,7 @@
  *   --from-local: Upload images from local filesystem (default)
  * 
  * This script:
- * 1. Reads items.json to get all image paths
+ * 1. Queries D1 database via /api/items endpoint to get all items with image paths
  * 2. Uploads each image to Cloudflare Images from either:
  *    - Local filesystem (emwiki/imgs/)
  *    - R2 bucket (via Wrangler CLI)
@@ -23,6 +23,7 @@
  * Requires:
  * - Cloudflare Images API token (CF_IMAGES_API_TOKEN)
  * - Cloudflare Account ID (defaults to provided account)
+ * - Access to emwiki.com/api/items endpoint (or set API_BASE env var)
  * - Images in emwiki/imgs/ directory OR R2 bucket
  * - D1 database access (if --update-db is used)
  */
@@ -32,8 +33,51 @@ const path = require('path');
 const https = require('https');
 const { execSync } = require('child_process');
 
-const ITEMS_JSON_PATH = path.join(__dirname, '../items.json');
 const IMGS_DIR = path.join(__dirname, '../imgs');
+const D1_DATABASE_NAME = 'DBA'; // D1 database binding name
+const DEV_VARS_PATH = path.join(__dirname, '../.dev.vars');
+
+/**
+ * Load environment variables from .dev.vars file
+ * Cloudflare Dashboard variables are only available to Workers/Pages, not local scripts
+ */
+function loadDevVars() {
+    const vars = {};
+    if (fs.existsSync(DEV_VARS_PATH)) {
+        const content = fs.readFileSync(DEV_VARS_PATH, 'utf8');
+        const lines = content.split('\n');
+        
+        for (const line of lines) {
+            // Skip comments and empty lines
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith('#')) continue;
+            
+            // Parse KEY = VALUE format (supports spaces around =)
+            const match = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.+)$/);
+            if (match) {
+                const key = match[1];
+                let value = match[2].trim();
+                
+                // Remove quotes if present
+                if ((value.startsWith('"') && value.endsWith('"')) || 
+                    (value.startsWith("'") && value.endsWith("'"))) {
+                    value = value.slice(1, -1);
+                }
+                
+                vars[key] = value;
+            }
+        }
+    }
+    return vars;
+}
+
+// Load .dev.vars and merge with process.env (process.env takes precedence)
+const devVars = loadDevVars();
+Object.keys(devVars).forEach(key => {
+    if (!process.env[key]) {
+        process.env[key] = devVars[key];
+    }
+});
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -50,7 +94,14 @@ const CF_IMAGES_API_TOKEN = process.env.CF_IMAGES_API_TOKEN;
 
 if (!CF_IMAGES_API_TOKEN) {
     console.error('Error: CF_IMAGES_API_TOKEN must be set');
-    console.error('Set it in .dev.vars or as environment variable');
+    console.error('\nOptions:');
+    console.error('1. Add to emwiki/.dev.vars:');
+    console.error('   CF_IMAGES_API_TOKEN=your_token_here');
+    console.error('\n2. Set as environment variable:');
+    console.error('   $env:CF_IMAGES_API_TOKEN="your_token_here"  # PowerShell');
+    console.error('   export CF_IMAGES_API_TOKEN="your_token_here"  # Bash');
+    console.error('\n3. Cloudflare Dashboard variables are for Workers/Pages only.');
+    console.error('   Local scripts need .dev.vars or environment variables.');
     process.exit(1);
 }
 
@@ -245,25 +296,108 @@ async function checkImageExists(filename) {
 }
 
 /**
+ * Query items from D1 database via API endpoint
+ * Uses the existing /api/items endpoint which is more reliable than wrangler CLI
+ */
+async function getItemsFromD1() {
+    console.log('Querying items from D1 database via API...');
+    
+    const API_BASE = process.env.API_BASE || 'https://emwiki.com';
+    const categories = ['gears', 'deaths', 'titles', 'pets', 'effects'];
+    const allItems = [];
+    
+    // Use fetch if available (Node 18+), otherwise use https module
+    const useFetch = typeof fetch !== 'undefined';
+    
+    for (const category of categories) {
+        try {
+            let offset = 0;
+            const limit = 500;
+            let hasMore = true;
+            
+            while (hasMore) {
+                const url = `${API_BASE}/api/items?category=${category}&limit=${limit}&offset=${offset}`;
+                
+                try {
+                    let response, data;
+                    
+                    if (useFetch) {
+                        response = await fetch(url);
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        data = await response.json();
+                    } else {
+                        // Fallback for Node < 18 using https module
+                        data = await new Promise((resolve, reject) => {
+                            https.get(url, (res) => {
+                                let body = '';
+                                res.on('data', (chunk) => body += chunk);
+                                res.on('end', () => {
+                                    try {
+                                        resolve(JSON.parse(body));
+                                    } catch (e) {
+                                        reject(e);
+                                    }
+                                });
+                            }).on('error', reject);
+                        });
+                    }
+                    
+                    const items = data.items || [];
+                    
+                    if (items.length > 0) {
+                        allItems.push(...items);
+                        hasMore = items.length === limit;
+                        offset += limit;
+                    } else {
+                        hasMore = false;
+                    }
+                } catch (error) {
+                    console.error(`Error fetching ${category} items (offset ${offset}):`, error.message);
+                    hasMore = false;
+                }
+            }
+        } catch (error) {
+            console.error(`Error loading ${category} items:`, error.message);
+        }
+    }
+    
+    console.log(`Found ${allItems.length} items in database\n`);
+    return allItems;
+}
+
+/**
  * Update D1 database with new image URLs
  */
 async function updateDatabase(imageUrlMap) {
     console.log('\n📝 Updating D1 database with new image URLs...');
     
-    // Read all items from database and update img column
-    // This requires wrangler CLI and D1 access
-    console.log('⚠️  Database update requires manual SQL execution:');
-    console.log('\nRun this SQL in your D1 database:');
-    console.log('\n-- Update image URLs in items table');
+    // Generate SQL update statements
+    const sqlStatements = [];
+    sqlStatements.push('-- Update image URLs to Cloudflare Images URLs');
+    sqlStatements.push('-- Generated by upload-images-to-cloudflare-images.js');
+    sqlStatements.push('');
     
     for (const [oldPath, newUrl] of imageUrlMap.entries()) {
         // Normalize old path for SQL matching
         const normalizedOldPath = oldPath.replace(/\\/g, '/').replace(/^\.?\//, '');
-        console.log(`UPDATE items SET img = '${newUrl}' WHERE img LIKE '%${normalizedOldPath}%';`);
+        // Escape single quotes in URL
+        const escapedUrl = newUrl.replace(/'/g, "''");
+        sqlStatements.push(`UPDATE items SET img = '${escapedUrl}' WHERE img LIKE '%${normalizedOldPath.replace(/'/g, "''")}%' AND (img NOT LIKE '%imagedelivery.net%' OR img IS NULL);`);
     }
     
-    console.log('\nOr use wrangler:');
-    console.log('wrangler d1 execute DBA --file=migrations/update_image_urls.sql');
+    const sqlFile = path.join(__dirname, '../migrations/012_update_image_urls.sql');
+    fs.writeFileSync(sqlFile, sqlStatements.join('\n'));
+    console.log(`✅ Generated SQL file: ${sqlFile}`);
+    console.log(`   Contains ${sqlStatements.length - 3} UPDATE statements\n`);
+    
+    if (!DRY_RUN) {
+        console.log('To execute:');
+        console.log(`wrangler d1 execute ${D1_DATABASE_NAME} --file=${sqlFile}`);
+        console.log(`Or for local database:`);
+        console.log(`wrangler d1 execute ${D1_DATABASE_NAME} --local --file=${sqlFile}`);
+    }
 }
 
 async function uploadImagesToCloudflareImages() {
@@ -275,47 +409,61 @@ async function uploadImagesToCloudflareImages() {
     console.log(`Skip Existing: ${SKIP_EXISTING ? 'YES' : 'NO'}`);
     console.log(`Update DB: ${UPDATE_DB ? 'YES' : 'NO'}\n`);
 
-    // Read items.json
-    if (!fs.existsSync(ITEMS_JSON_PATH)) {
-        console.error(`Error: ${ITEMS_JSON_PATH} not found`);
+    // Query items from D1 database
+    const items = await getItemsFromD1();
+    
+    if (items.length === 0) {
+        console.error('Error: No items found in D1 database');
+        console.error('Make sure wrangler is configured and D1 database is accessible');
         process.exit(1);
     }
-
-    const itemsData = JSON.parse(fs.readFileSync(ITEMS_JSON_PATH, 'utf8'));
     
     // Collect all unique image paths with their items
     const imageMap = new Map(); // path -> { items: [...], localPath: string, r2Key: string }
     
-    for (const category in itemsData) {
-        if (Array.isArray(itemsData[category])) {
-            itemsData[category].forEach(item => {
-                if (item.img) {
-                    // Normalize path: convert backslashes to forward slashes
-                    let imgPath = item.img.replace(/\\/g, '/');
-                    // Remove leading ./ or /
-                    imgPath = imgPath.replace(/^\.?\//, '');
-                    
-                    if (!imageMap.has(imgPath)) {
-                        const localPath = path.join(__dirname, '..', imgPath);
-                        // Convert imgs/ to items/ for R2
-                        let r2Key = imgPath;
-                        if (r2Key.startsWith('imgs/')) {
-                            r2Key = r2Key.replace('imgs/', 'items/');
-                        } else if (!r2Key.startsWith('items/')) {
-                            r2Key = `items/${r2Key}`;
-                        }
-                        
-                        imageMap.set(imgPath, {
-                            items: [],
-                            localPath: localPath,
-                            r2Key: r2Key
-                        });
-                    }
-                    imageMap.get(imgPath).items.push({ category, name: item.name });
+    items.forEach(item => {
+        if (item.img && item.img.trim()) {
+            // Skip if already a Cloudflare Images URL
+            if (item.img.includes('imagedelivery.net') || item.img.includes('cloudflare-images.com')) {
+                return;
+            }
+            
+            // Normalize path: convert backslashes to forward slashes
+            let imgPath = item.img.replace(/\\/g, '/');
+            // Remove leading ./ or / or https://emwiki.com/ or http://
+            imgPath = imgPath.replace(/^\.?\//, '')
+                            .replace(/^https?:\/\/[^\/]+\//, '')
+                            .replace(/^api\/images\//, '');
+            
+            // Skip if it's already a full URL (but not Cloudflare Images)
+            if (imgPath.startsWith('http://') || imgPath.startsWith('https://')) {
+                return;
+            }
+            
+            if (!imageMap.has(imgPath)) {
+                const localPath = path.join(__dirname, '..', imgPath);
+                // Convert imgs/ to items/ for R2
+                let r2Key = imgPath;
+                if (r2Key.startsWith('imgs/')) {
+                    r2Key = r2Key.replace('imgs/', 'items/');
+                } else if (!r2Key.startsWith('items/')) {
+                    r2Key = `items/${r2Key}`;
                 }
+                
+                imageMap.set(imgPath, {
+                    items: [],
+                    localPath: localPath,
+                    r2Key: r2Key,
+                    dbImgPath: item.img // Store original DB path for updating
+                });
+            }
+            imageMap.get(imgPath).items.push({ 
+                id: item.id,
+                category: item.category, 
+                name: item.name 
             });
         }
-    }
+    });
 
     console.log(`Found ${imageMap.size} unique images to upload\n`);
 
