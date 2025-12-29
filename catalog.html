@@ -1016,7 +1016,7 @@
                                     // Update label with username
                                     label.textContent = userData.name || credit;
                                     if (credit == '792651524') {
-                                        label.textContent = 'Noob Head Studios';
+                                        label.textContent = 'Nooby_Dev';
                                     }
                                 }
                             })
@@ -1976,10 +1976,20 @@
                         }
                     }
                     
-                    // Only set crossOrigin for http/https URLs
+                    // Only set crossOrigin for same-origin images
+                    // Cross-origin images (like cdn.emwiki.com) may not have CORS headers
                     const img = new Image();
-                    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-                        img.crossOrigin = 'anonymous';
+                    try {
+                        const imageUrlObj = new URL(imageUrl, window.location.href);
+                        const currentOrigin = window.location.origin;
+                        // Only set crossOrigin if same origin (allows reading canvas pixels)
+                        if (imageUrlObj.origin === currentOrigin) {
+                            img.crossOrigin = 'anonymous';
+                        }
+                        // For cross-origin images, don't set crossOrigin - canvas will be tainted
+                        // but we'll catch the error and fall back to SVG/default
+                    } catch (e) {
+                        // Invalid URL, skip crossOrigin
                     }
                     
                     img.onload = () => {
@@ -2025,12 +2035,13 @@
                             
                             resolve(dominantColor);
                         } catch (e) {
-                            console.error('Error extracting color from image:', e);
+                            // Canvas might be tainted (cross-origin without CORS)
+                            // Silently fail and fall back to SVG or default color
                             resolve(null);
                         }
                     };
                     img.onerror = () => {
-                        // Silently fail - color extraction is optional
+                        // Image failed to load - silently fail
                         resolve(null);
                     };
                     img.src = imageUrl;
