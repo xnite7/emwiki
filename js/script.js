@@ -209,6 +209,65 @@ const Utils = {
         return userData ? userData.name : credits;
     },
 
+    /**
+     * Generate optimized image URL with Cloudflare Images transformations
+     * 
+     * @param {string} imageUrl - Original image URL (Cloudflare Images URL or path)
+     * @param {Object} options - Transformation options
+     * @param {number} options.width - Target width in pixels
+     * @param {number} options.height - Target height in pixels
+     * @param {string} options.fit - Resize fit mode: 'scale-down', 'contain', 'cover', 'crop', 'pad' (default: 'scale-down')
+     * @param {number} options.quality - JPEG/WebP quality 1-100 (default: 85)
+     * @param {string} options.format - Output format: 'webp', 'avif', 'jpeg', 'png' (auto if not specified)
+     * @returns {string} Optimized image URL
+     * 
+     * @example
+     * Utils.getOptimizedImage(item.img, { width: 200 }) // Resize to 200px width
+     * Utils.getOptimizedImage(item.img, { width: 200, height: 200, fit: 'cover' }) // 200x200 cover
+     * Utils.getOptimizedImage(item.img, { width: 400, quality: 90, format: 'webp' }) // High quality WebP
+     */
+    getOptimizedImage(imageUrl, options = {}) {
+        if (!imageUrl) return null;
+        
+        // If it's already a Cloudflare Images URL, add query params directly
+        if (imageUrl.includes('imagedelivery.net')) {
+            const url = new URL(imageUrl);
+            
+            if (options.width) url.searchParams.set('width', options.width);
+            if (options.height) url.searchParams.set('height', options.height);
+            if (options.fit) url.searchParams.set('fit', options.fit);
+            if (options.quality) url.searchParams.set('quality', options.quality);
+            if (options.format) url.searchParams.set('format', options.format);
+            
+            return url.toString();
+        }
+        
+        // If it's a path (like items/gears/file.png), use our API endpoint
+        // Convert to API endpoint URL
+        let apiPath = imageUrl;
+        if (!apiPath.startsWith('http://') && !apiPath.startsWith('https://')) {
+            // Remove leading ./ or /
+            apiPath = apiPath.replace(/^\.?\//, '');
+            // Convert imgs/ to items/ if needed
+            if (apiPath.startsWith('imgs/')) {
+                apiPath = apiPath.replace('imgs/', 'items/');
+            } else if (!apiPath.startsWith('items/')) {
+                apiPath = `items/${apiPath}`;
+            }
+            apiPath = `https://emwiki.com/api/images/${apiPath}`;
+        }
+        
+        // Add query parameters
+        const url = new URL(apiPath);
+        if (options.width) url.searchParams.set('width', options.width);
+        if (options.height) url.searchParams.set('height', options.height);
+        if (options.fit) url.searchParams.set('fit', options.fit);
+        if (options.quality) url.searchParams.set('quality', options.quality);
+        if (options.format) url.searchParams.set('format', options.format);
+        
+        return url.toString();
+    },
+
     formatPrice(price) {
         function parseValue(str) {
             str = str.trim().toLowerCase();

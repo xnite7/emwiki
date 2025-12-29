@@ -60,9 +60,21 @@ async function updateDatabaseUrls() {
         // Normalize old path for SQL matching
         const normalizedOldPath = oldPath.replace(/\\/g, '/').replace(/^\.?\//, '');
         
-        // Create SQL update statement
-        // Use LIKE to match paths that contain the old path
-        const sql = `UPDATE items SET img = '${newUrl.replace(/'/g, "''")}' WHERE img LIKE '%${normalizedOldPath.replace(/'/g, "''")}%' AND img NOT LIKE '%imagedelivery.net%' AND img NOT LIKE '%cloudflare-images.com%';`;
+        // Extract just the filename (last part of path) for more flexible matching
+        const filename = normalizedOldPath.split('/').pop();
+        const escapedFilename = filename.replace(/'/g, "''").replace(/%/g, '\\%').replace(/_/g, '\\_');
+        const escapedUrl = newUrl.replace(/'/g, "''");
+        
+        // Use INSTR() instead of LIKE for better performance and to avoid "pattern too complex" errors
+        // INSTR() is simpler and doesn't have pattern complexity limits
+        // Create SQL update statement that matches multiple possible formats:
+        // - items/effects/filename.png
+        // - imgs/effects/filename.png
+        // - effects/filename.png
+        // - api/images/items/effects/filename.png
+        // - https://emwiki.com/api/images/items/effects/filename.png
+        // Match by filename since paths might vary
+        const sql = `UPDATE items SET img = '${escapedUrl}' WHERE INSTR(img, '${escapedFilename}') > 0 AND INSTR(img, 'imagedelivery.net') = 0 AND INSTR(img, 'cloudflare-images.com') = 0;`;
         sqlStatements.push(sql);
         updateCount++;
     }

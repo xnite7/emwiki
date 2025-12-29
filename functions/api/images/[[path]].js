@@ -1,20 +1,30 @@
 /**
- * Image serving endpoint - redirects to Cloudflare Images URLs
+ * Image serving endpoint - redirects to Cloudflare Images URLs with optimizations
  * 
  * This endpoint looks up image paths in the database and redirects to Cloudflare Images URLs.
  * Cloudflare Images provides automatic optimization, format conversion (WebP/AVIF), and resizing.
  * 
- * Usage:
- *   /api/images/items/gears/yY4PlAA.png
- *   /api/images/items/gears/yY4PlAA.png?width=200&height=200&fit=scale-down
+ * Usage Examples:
+ *   /api/images/items/gears/yY4PlAA.png                          # Original size
+ *   /api/images/items/gears/yY4PlAA.png?width=200                # Resize to 200px width
+ *   /api/images/items/gears/yY4PlAA.png?width=200&height=200     # Resize to 200x200
+ *   /api/images/items/gears/yY4PlAA.png?width=200&fit=cover      # Cover fit mode
+ *   /api/images/items/gears/yY4PlAA.png?width=200&quality=90     # Higher quality
+ *   /api/images/items/gears/yY4PlAA.png?width=200&format=webp     # Force WebP
  * 
- * Query parameters (passed to Cloudflare Images):
- *   - width: Target width in pixels
- *   - height: Target height in pixels  
- *   - fit: Resize fit mode (scale-down, contain, cover, crop, pad, default: scale-down)
+ * Query Parameters (passed to Cloudflare Images):
+ *   - width: Target width in pixels (maintains aspect ratio if height not specified)
+ *   - height: Target height in pixels (maintains aspect ratio if width not specified)
+ *   - fit: Resize fit mode:
+ *     * scale-down: Only resize if image is larger (default)
+ *     * contain: Fit entire image within dimensions
+ *     * cover: Fill dimensions, may crop
+ *     * crop: Crop to exact dimensions
+ *     * pad: Add padding to fit dimensions
  *   - quality: JPEG/WebP quality (1-100, default: 85)
+ *   - format: Output format (webp, avif, jpeg, png). If not specified, browser-optimal format is chosen automatically.
  * 
- * Note: Format conversion (WebP/AVIF) is automatic based on browser support.
+ * Note: Format conversion (WebP/AVIF) is automatic based on browser support if format is not specified.
  */
 
 export async function onRequest(context) {
@@ -57,19 +67,23 @@ export async function onRequest(context) {
     if (item && item.img) {
       // Check if it's already a Cloudflare Images URL
       if (item.img.includes('imagedelivery.net') || item.img.includes('cloudflare-images.com')) {
-        // It's already a Cloudflare Images URL, redirect to it with query params
+        // It's already a Cloudflare Images URL, add transformations via query params
         const imageUrl = new URL(item.img);
         
-        // Copy query parameters for transformations
+        // Extract transformation parameters
         const width = url.searchParams.get('width');
         const height = url.searchParams.get('height');
-        const fit = url.searchParams.get('fit');
+        const fit = url.searchParams.get('fit') || 'scale-down'; // Default fit mode
         const quality = url.searchParams.get('quality');
+        const format = url.searchParams.get('format');
         
+        // Cloudflare Images supports transformations via query parameters
+        // These are applied automatically by Cloudflare's edge
         if (width) imageUrl.searchParams.set('width', width);
         if (height) imageUrl.searchParams.set('height', height);
         if (fit) imageUrl.searchParams.set('fit', fit);
         if (quality) imageUrl.searchParams.set('quality', quality);
+        if (format) imageUrl.searchParams.set('format', format);
         
         return Response.redirect(imageUrl.toString(), 302);
       }
