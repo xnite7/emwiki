@@ -1,4 +1,34 @@
 // API endpoints for items
+
+/**
+ * Normalize image URL to use R2 storage
+ * Converts local paths (imgs/gears/file.png) to R2 URLs (/api/images/items/gears/file.png)
+ */
+function normalizeImageUrl(imgPath) {
+    if (!imgPath) return null;
+    
+    // If already a full URL (http/https), return as-is
+    if (imgPath.startsWith('http://') || imgPath.startsWith('https://')) {
+        return imgPath;
+    }
+    
+    // Convert Windows backslashes to forward slashes
+    let normalized = imgPath.replace(/\\/g, '/');
+    
+    // Remove leading ./ or / if present
+    normalized = normalized.replace(/^\.?\//, '');
+    
+    // Convert imgs/ to items/ for R2 storage
+    if (normalized.startsWith('imgs/')) {
+        normalized = normalized.replace('imgs/', 'items/');
+    } else if (!normalized.startsWith('items/')) {
+        normalized = `items/${normalized}`;
+    }
+    
+    // Return URL pointing to our image API endpoint
+    return `https://emwiki.com/api/images/${normalized}`;
+}
+
 export async function onRequest(context) {
     const { request, env } = context;
     const url = new URL(request.url);
@@ -120,7 +150,7 @@ async function searchItems(request, env, corsHeaders) {
     let sql = `
         SELECT id, name, category, img, svg, price, "from", price_code_rarity,
                tradable, "new", weekly, weeklystar, retired, premium, removed, demand,
-               credits, lore, alias, quantity, demand_updated_at, updated_at
+               credits, lore, alias, quantity, color, demand_updated_at, updated_at
         FROM items
         WHERE name LIKE ?
     `;
@@ -138,6 +168,7 @@ async function searchItems(request, env, corsHeaders) {
 
     const items = (results || []).map(item => ({
         ...item,
+        img: normalizeImageUrl(item.img), // Normalize image URL to use R2
         tradable: item.tradable === 1,
         new: item.new === 1,
         weekly: item.weekly === 1,
@@ -158,7 +189,7 @@ async function getItem(category, name, env, corsHeaders) {
     const item = await env.DBA.prepare(`
         SELECT id, name, category, img, svg, price, "from", price_code_rarity,
                tradable, "new", weekly, weeklystar, retired, premium, removed,
-               price_history, demand, credits, lore, alias, quantity, demand_updated_at, created_at, updated_at
+               price_history, demand, credits, lore, alias, quantity, color, demand_updated_at, created_at, updated_at
         FROM items
         WHERE category = ? AND name = ?
     `).bind(category, name).first();
@@ -172,6 +203,7 @@ async function getItem(category, name, env, corsHeaders) {
 
     const result = {
         ...item,
+        img: normalizeImageUrl(item.img), // Normalize image URL to use R2
         tradable: item.tradable === 1,
         new: item.new === 1,
         weekly: item.weekly === 1,
@@ -180,7 +212,8 @@ async function getItem(category, name, env, corsHeaders) {
         premium: item.premium === 1,
         removed: item.removed === 1,
         'price/code/rarity': item.price_code_rarity,
-        priceHistory: item.price_history ? JSON.parse(item.price_history) : null
+        priceHistory: item.price_history ? JSON.parse(item.price_history) : null,
+        color: item.color ? JSON.parse(item.color) : null
     };
 
     return new Response(JSON.stringify({ item: result }), {
@@ -265,7 +298,7 @@ async function listItems(request, env, corsHeaders) {
     const { results } = await env.DBA.prepare(`
         SELECT id, name, category, img, svg, price, "from", price_code_rarity,
                tradable, "new", weekly, weeklystar, retired, premium, removed, demand, 
-               credits, lore, alias, quantity, demand_updated_at, updated_at, price_history
+               credits, lore, alias, quantity, color, demand_updated_at, updated_at, price_history
         FROM items
         ${whereClause}
         ORDER BY category, name
@@ -274,6 +307,7 @@ async function listItems(request, env, corsHeaders) {
 
     const items = (results || []).map(item => ({
         ...item,
+        img: normalizeImageUrl(item.img), // Normalize image URL to use R2
         tradable: item.tradable === 1,
         new: item.new === 1,
         weekly: item.weekly === 1,
@@ -282,7 +316,8 @@ async function listItems(request, env, corsHeaders) {
         premium: item.premium === 1,
         removed: item.removed === 1,
         'price/code/rarity': item.price_code_rarity,
-        priceHistory: item.price_history ? JSON.parse(item.price_history) : null
+        priceHistory: item.price_history ? JSON.parse(item.price_history) : null,
+        color: item.color ? JSON.parse(item.color) : null
     }));
 
     return new Response(JSON.stringify({
@@ -307,7 +342,7 @@ async function createItem(request, env, corsHeaders) {
     const {
         name, category, img, svg, price, from, price_code_rarity,
         tradable, new: newItem, weekly, weeklystar, retired, premium, removed,
-        price_history, demand, credits, lore, alias, quantity
+        price_history, demand, credits, lore, alias, quantity, color
     } = data;
 
     if (!name || !category) {
@@ -321,9 +356,9 @@ async function createItem(request, env, corsHeaders) {
         INSERT INTO items (
             name, category, img, svg, price, "from", price_code_rarity,
             tradable, "new", weekly, weeklystar, retired, premium, removed,
-            price_history, demand, credits, lore, alias, quantity, demand_updated_at, created_at, updated_at
+            price_history, demand, credits, lore, alias, quantity, color, demand_updated_at, created_at, updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
                 CASE WHEN ? > 0 THEN strftime('%s', 'now') ELSE NULL END,
                 strftime('%s', 'now'), strftime('%s', 'now'))
     `).bind(
@@ -342,6 +377,7 @@ async function createItem(request, env, corsHeaders) {
         lore || null,
         alias || null,
         quantity || null,
+        color ? JSON.stringify(color) : null,
         demand || 0 // For demand_updated_at check
     ).run();
 
@@ -362,7 +398,7 @@ async function updateItem(id, request, env, corsHeaders) {
     const {
         name, category, img, svg, price, from, price_code_rarity,
         tradable, new: newItem, weekly, weeklystar, retired, premium, removed,
-        price_history, demand, credits, lore, alias, quantity, updated_at: clientUpdatedAt
+        price_history, demand, credits, lore, alias, quantity, color, updated_at: clientUpdatedAt
     } = data;
 
     // Optimistic locking: Check if item was modified since client loaded it
@@ -485,6 +521,7 @@ async function updateItem(id, request, env, corsHeaders) {
             lore = ?,
             alias = ?,
             quantity = ?,
+            color = ?,
             demand_updated_at = CASE WHEN ? = 1 THEN strftime('%s', 'now') ELSE demand_updated_at END,
             updated_at = strftime('%s', 'now')
         WHERE id = ?
@@ -504,6 +541,7 @@ async function updateItem(id, request, env, corsHeaders) {
         lore !== undefined ? lore : null,
         alias !== undefined ? alias : null,
         quantity !== undefined ? quantity : null,
+        color !== undefined ? (color ? JSON.stringify(color) : null) : null,
         demandChanged ? 1 : 0, // Update demand_updated_at if demand changed
         id
     ).run();

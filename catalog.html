@@ -2175,6 +2175,112 @@
                 return item.color;
             }
 
+            async saveColorsToDatabase() {
+                console.log('Starting color extraction and database update...');
+                
+                // First, ensure all colors are extracted
+                await this.extractAllColors();
+                
+                // Wait a bit for extraction to complete
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Get all items with their IDs from the API
+                const itemsWithIds = [];
+                const categories = ['gears', 'deaths', 'titles', 'pets', 'effects'];
+                
+                for (const cat of categories) {
+                    let offset = 0;
+                    const limit = 500;
+                    let hasMore = true;
+                    
+                    while (hasMore) {
+                        const url = new URL('https://emwiki.com/api/items');
+                        url.searchParams.set('category', cat);
+                        url.searchParams.set('limit', limit.toString());
+                        url.searchParams.set('offset', offset.toString());
+                        
+                        const response = await fetch(url.toString());
+                        if (!response.ok) {
+                            console.error(`Failed to fetch ${cat} items`);
+                            break;
+                        }
+                        
+                        const data = await response.json();
+                        const items = data.items || [];
+                        
+                        items.forEach(item => {
+                            // Find matching item in allItems by name and category
+                            const localItem = this.allItems.find(i => 
+                                i.name === item.name && i.category === item.category
+                            );
+                            
+                            if (localItem && localItem.color) {
+                                itemsWithIds.push({
+                                    id: item.id,
+                                    name: item.name,
+                                    category: item.category,
+                                    color: localItem.color,
+                                    updated_at: item.updated_at
+                                });
+                            }
+                        });
+                        
+                        hasMore = items.length === limit;
+                        offset += limit;
+                    }
+                }
+                
+                console.log(`Found ${itemsWithIds.length} items with colors to update`);
+                
+                // Update items in batches
+                const batchSize = 10;
+                let updated = 0;
+                let failed = 0;
+                
+                for (let i = 0; i < itemsWithIds.length; i += batchSize) {
+                    const batch = itemsWithIds.slice(i, i + batchSize);
+                    
+                    await Promise.all(batch.map(async (item) => {
+                        try {
+                            const response = await fetch(`https://emwiki.com/api/items/${item.id}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    color: item.color,
+                                    updated_at: item.updated_at
+                                })
+                            });
+                            
+                            if (response.ok) {
+                                updated++;
+                                if (updated % 50 === 0) {
+                                    console.log(`Updated ${updated}/${itemsWithIds.length} items...`);
+                                }
+                            } else {
+                                failed++;
+                                const error = await response.json();
+                                console.error(`Failed to update ${item.name}:`, error);
+                            }
+                        } catch (error) {
+                            failed++;
+                            console.error(`Error updating ${item.name}:`, error);
+                        }
+                    }));
+                    
+                    // Small delay between batches to avoid rate limiting
+                    if (i + batchSize < itemsWithIds.length) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                }
+                
+                console.log(`\n✅ Color update complete!`);
+                console.log(`   Updated: ${updated}`);
+                console.log(`   Failed: ${failed}`);
+                console.log(`   Total: ${itemsWithIds.length}`);
+                
+                return { updated, failed, total: itemsWithIds.length };
+            }
+
             hasDifferentRarities(items) {
                 const rarities = new Set();
                 for (const item of items) {
