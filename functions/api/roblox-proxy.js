@@ -346,6 +346,68 @@ async function downloadVideoToR2(discordUrl, attachmentId, filename, contentType
   }
 }
 
+// Helper function to download Discord image and upload to R2
+async function downloadImageToR2(discordUrl, attachmentId, filename, contentType, env) {
+  try {
+    // Get file extension from filename or content type
+    let ext = filename.split('.').pop();
+    if (!ext || ext === filename) {
+      // Try to determine from content type
+      if (contentType && contentType.includes('png')) ext = 'png';
+      else if (contentType && contentType.includes('jpeg') || contentType && contentType.includes('jpg')) ext = 'jpg';
+      else if (contentType && contentType.includes('gif')) ext = 'gif';
+      else if (contentType && contentType.includes('webp')) ext = 'webp';
+      else ext = 'png'; // default
+    }
+
+    // Generate R2 key with extension
+    const key = `scammer-evidence/images/${attachmentId}.${ext}`;
+
+    // Check if image already exists in R2
+    let r2Url = null;
+    try {
+      const existing = await env.MY_BUCKET.head(key);
+      if (existing) {
+        // Image already exists, return existing URL
+        r2Url = `https://cdn.emwiki.com/${key}`;
+        return { r2_url: r2Url };
+      }
+    } catch {
+      // Doesn't exist, continue to download
+    }
+
+    // Download image from Discord with auth
+    const imageResponse = await fetch(discordUrl, {
+      headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
+    });
+
+    if (!imageResponse.ok) {
+      console.warn(`Failed to download image ${attachmentId}: ${imageResponse.status}`);
+      return { r2_url: null };
+    }
+
+    // Get image data
+    const imageData = await imageResponse.arrayBuffer();
+
+    // Upload to R2
+    await env.MY_BUCKET.put(key, imageData, {
+      httpMetadata: { 
+        contentType: contentType || 'image/png',
+        cacheControl: 'public, max-age=31536000'
+      },
+      customMetadata: {
+        'original-filename': filename || 'image'
+      }
+    });
+    r2Url = `https://cdn.emwiki.com/${key}`;
+
+    return { r2_url: r2Url };
+  } catch (err) {
+    console.error(`Error downloading image ${attachmentId} to R2:`, err);
+    return { r2_url: null };
+  }
+}
+
 // Helper function to fetch Discord thread messages
 async function fetchDiscordThread(threadId, env) {
   if (!threadId) return null;
@@ -422,6 +484,7 @@ async function fetchDiscordThread(threadId, env) {
           // Process attachments in parallel
           const attachmentPromises = msg.attachments.map(async (att) => {
             const isVideo = att.content_type?.startsWith('video/') || false;
+            const isImage = att.content_type?.startsWith('image/') || false;
             
             // Download videos to R2 (and Stream for QuickTime)
             let r2Url = null;
@@ -439,12 +502,26 @@ async function fetchDiscordThread(threadId, env) {
               streamId = result.stream_id;
               streamUrl = result.stream_url;
             }
+            
+            // Download images to R2
+            if (isImage && att.url) {
+              const result = await downloadImageToR2(
+                att.url,
+                att.id,
+                att.filename,
+                att.content_type,
+                env
+              );
+              if (result.r2_url) {
+                r2Url = result.r2_url;
+              }
+            }
 
             return {
               id: att.id,
               filename: att.filename,
               url: att.url, // Keep original URL as fallback
-              r2_url: r2Url, // R2 URL for videos
+              r2_url: r2Url, // R2 URL for images and videos
               stream_id: streamId, // Cloudflare Stream ID for QuickTime videos
               stream_url: streamUrl, // Cloudflare Stream playback URL (HLS/DASH)
               proxy_url: att.proxy_url,
@@ -452,7 +529,7 @@ async function fetchDiscordThread(threadId, env) {
               content_type: att.content_type,
               width: att.width,
               height: att.height,
-              is_image: att.content_type?.startsWith('image/') || false,
+              is_image: isImage,
               is_video: isVideo
             };
           });
@@ -1071,6 +1148,517 @@ export async function onRequestGet({ request, env }) {
     }
   }
 
+  // Handle periodic thread evidence update endpoint
+  if (mode === "update-thread-evidence") {
+    try {
+      if (!env.MY_BUCKET) {
+        return new Response(JSON.stringify({ 
+          error: "R2 bucket (MY_BUCKET) not configured"
+        }), {
+          status: 500,
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          },
+        });
+      }
+
+      // Process entries in batches to avoid timeout
+      const limit = parseInt(url.searchParams.get("limit")) || 10;
+      const offset = parseInt(url.searchParams.get("offset")) || 0;
+      const targetUserId = url.searchParams.get("userId");
+      
+      let query, bindParams;
+      if (targetUserId) {
+        // Process specific user
+        query = `
+          SELECT user_id, thread_evidence, thread_last_message_id, thread_last_checked_at
+          FROM scammer_profile_cache 
+          WHERE user_id = ? AND thread_evidence IS NOT NULL
+        `;
+        bindParams = [targetUserId];
+      } else {
+        // Process entries that need updates or haven't been checked recently (older than 1 hour)
+        const oneHourAgo = Date.now() - (60 * 60 * 1000);
+        query = `
+          SELECT user_id, thread_evidence, thread_last_message_id, thread_last_checked_at
+          FROM scammer_profile_cache 
+          WHERE thread_evidence IS NOT NULL
+            AND (thread_needs_update = 1 OR thread_last_checked_at IS NULL OR thread_last_checked_at < ?)
+          ORDER BY thread_last_checked_at ASC NULLS FIRST
+          LIMIT ? OFFSET ?
+        `;
+        bindParams = [oneHourAgo, limit, offset];
+      }
+      
+      const { results } = await env.DB.prepare(query).bind(...bindParams).all();
+
+      if (!results || results.length === 0) {
+        return new Response(JSON.stringify({ 
+          message: "No threads need updating",
+          processed: 0,
+          updated: 0,
+          errors: []
+        }), {
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          },
+        });
+      }
+
+      let processed = 0;
+      let updated = 0;
+      let errors = [];
+
+      for (const row of results) {
+        try {
+          if (!row.thread_evidence) continue;
+
+          const threadEvidence = JSON.parse(row.thread_evidence);
+          if (!threadEvidence.thread_id) {
+            errors.push(`User ${row.user_id} has thread_evidence but no thread_id`);
+            continue;
+          }
+
+          const threadId = threadEvidence.thread_id;
+          const lastMessageId = row.thread_last_message_id || null;
+          
+          // Fetch new messages from thread (after lastMessageId)
+          let newMessages = [];
+          let after = lastMessageId; // Use 'after' to fetch messages newer than lastMessageId
+          let foundLastMessage = !lastMessageId; // If no lastMessageId, fetch all
+
+          while (true) {
+            const fetchUrl = new URL(`https://discord.com/api/v10/channels/${threadId}/messages`);
+            fetchUrl.searchParams.set("limit", "100");
+            if (after) {
+              fetchUrl.searchParams.set("after", after);
+            }
+
+            let response;
+            let retryCount = 0;
+            while (retryCount < 3) {
+              try {
+                response = await fetch(fetchUrl.toString(), {
+                  headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+                });
+
+                if (response.status === 429) {
+                  const retryAfter = await response.json();
+                  await new Promise(r => setTimeout(r, (retryAfter.retry_after || 1) * 1000));
+                  retryCount++;
+                  continue;
+                }
+
+                if (response.status === 404) {
+                  // Thread not found or no access
+                  throw new Error(`Thread ${threadId} not found or no access`);
+                }
+
+                if (!response.ok) {
+                  throw new Error(`Discord API error: ${response.status}`);
+                }
+
+                break;
+              } catch (err) {
+                retryCount++;
+                if (retryCount >= 3) {
+                  throw err;
+                }
+                await new Promise(r => setTimeout(r, 1000 * retryCount));
+              }
+            }
+
+            const messages = await response.json();
+            if (messages.length === 0) break;
+
+            // Process messages (they come in reverse chronological order when using 'after')
+            // When using 'after', messages are returned newest first
+            for (const msg of messages) {
+              // If we found the last message we processed, stop
+              if (lastMessageId && msg.id === lastMessageId) {
+                foundLastMessage = true;
+                break;
+              }
+
+              // Only add messages newer than lastMessageId
+              // Discord message IDs are numeric strings (snowflakes), can compare directly
+              if (!lastMessageId || msg.id !== lastMessageId) {
+                const messageData = {
+                  id: msg.id,
+                  author: {
+                    id: msg.author?.id,
+                    username: msg.author?.username,
+                    global_name: msg.author?.global_name,
+                    avatar: msg.author?.avatar,
+                    discriminator: msg.author?.discriminator
+                  },
+                  content: msg.content,
+                  timestamp: msg.timestamp,
+                  edited_timestamp: msg.edited_timestamp,
+                  attachments: [],
+                  embeds: []
+                };
+
+                // Process attachments (images, videos)
+                if (msg.attachments && msg.attachments.length > 0) {
+                  const attachmentPromises = msg.attachments.map(async (att) => {
+                    const isVideo = att.content_type?.startsWith('video/') || false;
+                    const isImage = att.content_type?.startsWith('image/') || false;
+                    
+                    let r2Url = null;
+                    let streamId = null;
+                    let streamUrl = null;
+                    
+                    if (isVideo && att.url) {
+                      const result = await downloadVideoToR2(
+                        att.url,
+                        att.id,
+                        att.filename,
+                        att.content_type,
+                        env
+                      );
+                      r2Url = result.r2_url;
+                      streamId = result.stream_id;
+                      streamUrl = result.stream_url;
+                    }
+                    
+                    if (isImage && att.url) {
+                      const result = await downloadImageToR2(
+                        att.url,
+                        att.id,
+                        att.filename,
+                        att.content_type,
+                        env
+                      );
+                      if (result.r2_url) {
+                        r2Url = result.r2_url;
+                      }
+                    }
+
+                    return {
+                      id: att.id,
+                      filename: att.filename,
+                      url: att.url,
+                      r2_url: r2Url,
+                      stream_id: streamId,
+                      stream_url: streamUrl,
+                      proxy_url: att.proxy_url,
+                      size: att.size,
+                      content_type: att.content_type,
+                      width: att.width,
+                      height: att.height,
+                      is_image: isImage,
+                      is_video: isVideo
+                    };
+                  });
+
+                  messageData.attachments = await Promise.all(attachmentPromises);
+                }
+
+                // Process embeds
+                if (msg.embeds && msg.embeds.length > 0) {
+                  messageData.embeds = msg.embeds.map(embed => ({
+                    title: embed.title,
+                    description: embed.description,
+                    url: embed.url,
+                    image: embed.image,
+                    video: embed.video,
+                    thumbnail: embed.thumbnail,
+                    type: embed.type
+                  }));
+                }
+
+                newMessages.push(messageData);
+              }
+            }
+
+            if (foundLastMessage) break;
+
+            // Update after to the newest message ID we just fetched (first in array)
+            // This allows us to continue fetching newer messages in the next iteration
+            after = messages[0].id;
+            
+            // Safety limit
+            if (newMessages.length >= 500) break;
+          }
+
+          // Sort new messages by timestamp (oldest first)
+          newMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+          if (newMessages.length > 0) {
+            // Merge new messages with existing messages
+            const existingMessages = threadEvidence.messages || [];
+            const allMessages = [...existingMessages, ...newMessages];
+            
+            // Update thread evidence
+            threadEvidence.messages = allMessages;
+            threadEvidence.message_count = allMessages.length;
+            
+            // Get the newest message ID
+            const newestMessageId = newMessages.length > 0 
+              ? newMessages[newMessages.length - 1].id 
+              : (existingMessages.length > 0 ? existingMessages[existingMessages.length - 1].id : null);
+
+            // Update database
+            const updatedEvidenceJson = JSON.stringify(threadEvidence);
+            await env.DB.prepare(`
+              UPDATE scammer_profile_cache 
+              SET thread_evidence = ?,
+                  thread_last_message_id = ?,
+                  thread_last_checked_at = ?,
+                  thread_needs_update = 0,
+                  updated_at = ?
+              WHERE user_id = ?
+            `).bind(
+              updatedEvidenceJson,
+              newestMessageId || row.thread_last_message_id,
+              Date.now(),
+              Date.now(),
+              row.user_id
+            ).run();
+
+            updated++;
+          } else {
+            // No new messages, just update last checked time
+            await env.DB.prepare(`
+              UPDATE scammer_profile_cache 
+              SET thread_last_checked_at = ?,
+                  thread_needs_update = 0
+              WHERE user_id = ?
+            `).bind(Date.now(), row.user_id).run();
+          }
+
+          processed++;
+        } catch (err) {
+          console.error(`Error updating thread for user ${row.user_id}:`, err);
+          errors.push(`User ${row.user_id}: ${err.message}`);
+          
+          // Mark as needing update for retry
+          await env.DB.prepare(`
+            UPDATE scammer_profile_cache 
+            SET thread_needs_update = 1
+            WHERE user_id = ?
+          `).bind(row.user_id).run();
+        }
+      }
+
+      const totalCountResult = await env.DB.prepare(`
+        SELECT COUNT(*) as total 
+        FROM scammer_profile_cache 
+        WHERE thread_evidence IS NOT NULL
+      `).first();
+      const totalCount = totalCountResult?.total || 0;
+
+      return new Response(JSON.stringify({ 
+        message: "Thread evidence update completed",
+        processed,
+        updated,
+        total_entries: totalCount,
+        offset,
+        next_offset: offset + results.length,
+        has_more: offset + results.length < totalCount,
+        errors: errors.length > 0 ? errors.slice(0, 10) : []
+      }), {
+        headers: { 
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*" 
+        },
+      });
+    } catch (err) {
+      console.error("Thread evidence update error:", err);
+      return new Response(JSON.stringify({ 
+        error: err.message,
+        debug: err.stack
+      }), {
+        status: 500,
+        headers: { 
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*" 
+        },
+      });
+    }
+  }
+
+  // Handle image migration endpoint - Migrate existing images to R2
+  if (mode === "migrate-images-to-r2") {
+    try {
+      // Check if R2 bucket is available
+      if (!env.MY_BUCKET) {
+        return new Response(JSON.stringify({ 
+          error: "R2 bucket (MY_BUCKET) not configured"
+        }), {
+          status: 500,
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          },
+        });
+      }
+
+      // Process ONE entry at a time to avoid timeout
+      const targetUserId = url.searchParams.get("userId");
+      const limit = parseInt(url.searchParams.get("limit")) || 1; // Process 1 entry at a time by default
+      const offset = parseInt(url.searchParams.get("offset")) || 0;
+      
+      let query, bindParams;
+      if (targetUserId) {
+        // Process specific user
+        query = `
+          SELECT user_id, thread_evidence 
+          FROM scammer_profile_cache 
+          WHERE user_id = ? AND thread_evidence IS NOT NULL
+        `;
+        bindParams = [targetUserId];
+      } else {
+        // Process next entry in queue
+        query = `
+          SELECT user_id, thread_evidence 
+          FROM scammer_profile_cache 
+          WHERE thread_evidence IS NOT NULL
+          LIMIT ? OFFSET ?
+        `;
+        bindParams = [limit, offset];
+      }
+      
+      const { results } = await env.DB.prepare(query).bind(...bindParams).all();
+
+      if (!results || results.length === 0) {
+        return new Response(JSON.stringify({ 
+          message: "No thread evidence found to migrate",
+          processed: 0,
+          images_downloaded: 0
+        }), {
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          },
+        });
+      }
+
+      let processed = 0;
+      let imagesDownloaded = 0;
+      let imagesSkipped = 0;
+      let errors = [];
+
+      // Process only the first entry to avoid timeout
+      const row = results[0];
+      try {
+        if (!row.thread_evidence) {
+          return new Response(JSON.stringify({ 
+            message: "Entry has no thread evidence",
+            user_id: row.user_id
+          }), {
+            headers: { 
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*" 
+            },
+          });
+        }
+        
+        const threadEvidence = JSON.parse(row.thread_evidence);
+        let updated = false;
+        let imageCount = 0;
+
+        // Process all messages in the thread
+        if (threadEvidence.messages && Array.isArray(threadEvidence.messages)) {
+          for (const msg of threadEvidence.messages) {
+            if (msg.attachments && Array.isArray(msg.attachments)) {
+              // Process attachments sequentially to avoid memory issues
+              for (const att of msg.attachments) {
+                // Only process images that don't already have r2_url
+                if (att.is_image && att.url && !att.r2_url) {
+                  imageCount++;
+                  try {
+                    // Add small delay between downloads to avoid rate limiting
+                    if (imageCount > 1) {
+                      await new Promise(r => setTimeout(r, 500)); // 500ms delay
+                    }
+                    
+                    const result = await downloadImageToR2(
+                      att.url,
+                      att.id,
+                      att.filename || 'image',
+                      att.content_type,
+                      env
+                    );
+                    
+                    if (result && result.r2_url) {
+                      att.r2_url = result.r2_url;
+                      imagesDownloaded++;
+                      updated = true;
+                    } else {
+                      imagesSkipped++;
+                      errors.push(`Failed to download image ${att.id} for user ${row.user_id}`);
+                    }
+                  } catch (imageErr) {
+                    imagesSkipped++;
+                    errors.push(`Error downloading image ${att.id} for user ${row.user_id}: ${imageErr.message}`);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // Update database if any images were downloaded
+        if (updated) {
+          const updatedEvidenceJson = JSON.stringify(threadEvidence);
+          await env.DB.prepare(`
+            UPDATE scammer_profile_cache 
+            SET thread_evidence = ?, updated_at = ?
+            WHERE user_id = ?
+          `).bind(updatedEvidenceJson, Date.now(), row.user_id).run();
+          processed++;
+        }
+      } catch (err) {
+        console.error(`Error processing user ${row.user_id}:`, err);
+        errors.push(`Error processing user ${row.user_id}: ${err.message}`);
+      }
+
+      // Get total count for progress tracking
+      const totalCountResult = await env.DB.prepare(`
+        SELECT COUNT(*) as total 
+        FROM scammer_profile_cache 
+        WHERE thread_evidence IS NOT NULL
+      `).first();
+      const totalCount = totalCountResult?.total || 0;
+
+      return new Response(JSON.stringify({ 
+        message: "Migration batch completed",
+        user_id: row.user_id,
+        processed_this_batch: 1,
+        total_entries: totalCount,
+        processed,
+        images_downloaded,
+        images_skipped,
+        offset,
+        next_offset: offset + 1,
+        has_more: offset + 1 < totalCount,
+        errors: errors.length > 0 ? errors.slice(0, 10) : [] // Limit errors to first 10
+      }), {
+        headers: { 
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*" 
+        },
+      });
+    } catch (err) {
+      console.error("Migration error:", err);
+      return new Response(JSON.stringify({ 
+        error: err.message,
+        debug: err.stack,
+        type: err.constructor.name
+      }), {
+        status: 500,
+        headers: { 
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*" 
+        },
+      });
+    }
+  }
+
   // Handle thread evidence endpoint - MUST come before general endpoint check
   if (mode === "thread-evidence" && userId) {
     try {
@@ -1556,9 +2144,12 @@ export async function onRequestGet({ request, env }) {
 
           // Check if message has a thread and fetch thread evidence
           let threadEvidence = null;
+          let threadLastMessageId = null;
           if (msg.thread && msg.thread.id) {
             const threadMessages = await fetchDiscordThread(msg.thread.id, env);
             if (threadMessages && threadMessages.length > 0) {
+              // Get the newest message ID from thread
+              threadLastMessageId = threadMessages[threadMessages.length - 1].id;
               threadEvidence = {
                 thread_id: msg.thread.id,
                 thread_name: msg.thread.name,
@@ -1571,15 +2162,20 @@ export async function onRequestGet({ request, env }) {
 
           const threadEvidenceJson = threadEvidence ? JSON.stringify(threadEvidence) : null;
 
+          // Check if this user already exists and has no thread_evidence but now we have one
+          const existingUser = await env.DB.prepare(
+            "SELECT thread_evidence FROM scammer_profile_cache WHERE user_id = ?"
+          ).bind(userId).first();
+
           // Store/update in unified table
           await env.DB.prepare(`
             INSERT INTO scammer_profile_cache (
               user_id, roblox_name, roblox_display_name, roblox_avatar,
               discord_id, discord_display_name, discord_avatar,
               victims, items_scammed, roblox_alts,
-              thread_evidence, incomplete, last_message_id, updated_at
+              thread_evidence, thread_last_message_id, thread_last_checked_at, incomplete, last_message_id, updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(user_id) DO UPDATE SET
               roblox_name = excluded.roblox_name,
               roblox_display_name = excluded.roblox_display_name,
@@ -1591,6 +2187,8 @@ export async function onRequestGet({ request, env }) {
               items_scammed = COALESCE(excluded.items_scammed, items_scammed),
               roblox_alts = COALESCE(excluded.roblox_alts, roblox_alts),
               thread_evidence = COALESCE(excluded.thread_evidence, thread_evidence),
+              thread_last_message_id = COALESCE(excluded.thread_last_message_id, thread_last_message_id),
+              thread_last_checked_at = COALESCE(excluded.thread_last_checked_at, ?),
               incomplete = 0,
               last_message_id = excluded.last_message_id,
               updated_at = excluded.updated_at
@@ -1606,6 +2204,8 @@ export async function onRequestGet({ request, env }) {
             itemsScammed,
             robloxAltsJson,
             threadEvidenceJson,
+            threadLastMessageId || null,
+            threadEvidence ? now : null,
             0,
             msg.id,
             now
@@ -1625,6 +2225,65 @@ export async function onRequestGet({ request, env }) {
 
         } catch (err) {
           console.warn("Failed to parse message:", err);
+        }
+      }
+
+      // Check for messages that now have threads but didn't before
+      // This handles cases where threads are created after the initial report
+      for (const msg of allMessages) {
+        try {
+          const robloxProfileMatch = msg.content?.match(/https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i);
+          const userId = robloxProfileMatch ? robloxProfileMatch[1] : null;
+          
+          if (!userId) continue;
+          
+          // Check if message has a thread
+          if (msg.thread && msg.thread.id) {
+            // Check if this user exists but has no thread_evidence
+            const existingEntry = await env.DB.prepare(
+              "SELECT thread_evidence FROM scammer_profile_cache WHERE user_id = ?"
+            ).bind(userId).first();
+            
+            // If user exists but has no thread evidence, fetch it now
+            if (existingEntry && !existingEntry.thread_evidence) {
+              try {
+                const threadMessages = await fetchDiscordThread(msg.thread.id, env);
+                if (threadMessages && threadMessages.length > 0) {
+                  const threadLastMessageId = threadMessages[threadMessages.length - 1].id;
+                  const threadEvidence = {
+                    thread_id: msg.thread.id,
+                    thread_name: msg.thread.name,
+                    message_count: threadMessages.length,
+                    messages: threadMessages,
+                    created_at: msg.thread.id ? new Date(parseInt(msg.thread.id) / 4194304 + 1420070400000).toISOString() : null
+                  };
+                  
+                  const threadEvidenceJson = JSON.stringify(threadEvidence);
+                  
+                  // Update with thread evidence
+                  await env.DB.prepare(`
+                    UPDATE scammer_profile_cache 
+                    SET thread_evidence = ?,
+                        thread_last_message_id = ?,
+                        thread_last_checked_at = ?,
+                        thread_needs_update = 0,
+                        updated_at = ?
+                    WHERE user_id = ?
+                  `).bind(
+                    threadEvidenceJson,
+                    threadLastMessageId,
+                    now,
+                    now,
+                    userId
+                  ).run();
+                }
+              } catch (err) {
+                console.warn(`Failed to fetch thread ${msg.thread.id} for user ${userId}:`, err);
+              }
+            }
+          }
+        } catch (err) {
+          console.warn("Failed to check for new threads:", err);
         }
       }
 

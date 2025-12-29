@@ -105,55 +105,83 @@ if (!CF_IMAGES_API_TOKEN) {
     process.exit(1);
 }
 
-// Try to use form-data, fallback to native fetch if available
-let FormData;
+// Try to use form-data package, fallback to native FormData (Node 18+)
+let FormDataModule;
+let useFormDataPackage = false;
 try {
-    FormData = require('form-data');
+    FormDataModule = require('form-data');
+    useFormDataPackage = true;
 } catch (e) {
-    // Will use fetch API if available (Node 18+)
-    FormData = null;
+    // Will use native FormData if available (Node 18+)
+    FormDataModule = null;
 }
 
 // Map to store old image paths -> Cloudflare Images URLs
 const imageUrlMap = new Map();
 
+// R2 public bucket URL - images are accessible via HTTP
+const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL || 'https://pub-49351598fde84dec89feb871921190e9.r2.dev';
+
 /**
- * Download image from R2 bucket
+ * Download image from R2 bucket via public URL
+ * Much faster and more reliable than using wrangler CLI
  */
 async function downloadFromR2(r2Key) {
     try {
-        // Use wrangler to download from R2
+        const r2Url = `${R2_PUBLIC_URL}/${r2Key}`;
         const tempPath = path.join(__dirname, '../temp_' + path.basename(r2Key));
-        const command = `wrangler r2 object get ${r2Key} --file="${tempPath}"`;
         
-        execSync(command, {
-            stdio: 'pipe',
-            cwd: path.join(__dirname, '..')
-        });
+        // Use fetch if available (Node 18+), otherwise use https module
+        if (typeof fetch !== 'undefined') {
+            const response = await fetch(r2Url);
+            if (!response.ok) {
+                return null; // File doesn't exist
+            }
+            const arrayBuffer = await response.arrayBuffer();
+            fs.writeFileSync(tempPath, Buffer.from(arrayBuffer));
+        } else {
+            // Fallback to https module for older Node.js
+            await new Promise((resolve, reject) => {
+                https.get(r2Url, (res) => {
+                    if (res.statusCode !== 200) {
+                        reject(new Error(`HTTP ${res.statusCode}`));
+                        return;
+                    }
+                    const fileStream = fs.createWriteStream(tempPath);
+                    res.pipe(fileStream);
+                    fileStream.on('finish', () => {
+                        fileStream.close();
+                        resolve();
+                    });
+                    fileStream.on('error', reject);
+                }).on('error', reject);
+            });
+        }
         
         if (fs.existsSync(tempPath)) {
             return tempPath;
         }
         return null;
     } catch (error) {
-        console.error(`Failed to download from R2: ${r2Key}`, error.message);
+        // File doesn't exist or download failed
         return null;
     }
 }
 
 /**
  * Upload image to Cloudflare Images
- * Uses form-data package if available, otherwise uses native fetch (Node 18+)
+ * Uses native fetch (Node 18+) if available, otherwise uses form-data package
  */
 async function uploadToCloudflareImages(filePath, imagePath) {
-    // Use native fetch if available (Node 18+), otherwise use form-data
-    if (typeof fetch !== 'undefined' && !FormData) {
+    // Prefer native fetch if available (Node 18+)
+    if (typeof fetch !== 'undefined' && typeof FormData !== 'undefined') {
         return uploadWithFetch(filePath, imagePath);
     }
 
+    // Fallback to form-data package
     return new Promise((resolve, reject) => {
         try {
-            if (!FormData) {
+            if (!useFormDataPackage || !FormDataModule) {
                 return reject(new Error('form-data package required. Install with: npm install form-data'));
             }
 
@@ -171,8 +199,8 @@ async function uploadToCloudflareImages(filePath, imagePath) {
             };
             const contentType = contentTypeMap[ext] || 'image/png';
 
-            // Create form data
-            const formData = new FormData();
+            // Create form data using form-data package
+            const formData = new FormDataModule();
             formData.append('file', fileStream, {
                 filename: path.basename(filePath),
                 contentType: contentType
@@ -441,12 +469,32 @@ async function uploadImagesToCloudflareImages() {
             }
             
             if (!imageMap.has(imgPath)) {
-                const localPath = path.join(__dirname, '..', imgPath);
-                // Convert imgs/ to items/ for R2
+                // For local filesystem: convert items/ back to imgs/ if needed
+                // Database might have items/effects/... but files are in imgs/effects/...
+                let localPath = imgPath;
+                if (localPath.startsWith('items/')) {
+                    localPath = localPath.replace('items/', 'imgs/');
+                } else if (!localPath.startsWith('imgs/')) {
+                    // If it doesn't start with either, assume it's in imgs/
+                    localPath = `imgs/${localPath}`;
+                }
+                localPath = path.join(__dirname, '..', localPath);
+                
+                // For R2: convert path appropriately
+                // - imgs/gears/... -> items/gears/... (catalog images)
+                // - imgs/uploads/... -> uploads/... (user uploads, stored directly in uploads/)
                 let r2Key = imgPath;
-                if (r2Key.startsWith('imgs/')) {
+                if (r2Key.startsWith('imgs/uploads/')) {
+                    // User uploads are stored directly in uploads/ prefix in R2
+                    r2Key = r2Key.replace('imgs/uploads/', 'uploads/');
+                } else if (r2Key.startsWith('imgs/')) {
+                    // Catalog images: imgs/gears/... -> items/gears/...
                     r2Key = r2Key.replace('imgs/', 'items/');
+                } else if (r2Key.startsWith('uploads/')) {
+                    // Already in uploads/ format
+                    r2Key = r2Key;
                 } else if (!r2Key.startsWith('items/')) {
+                    // Default: assume items/ prefix for catalog images
                     r2Key = `items/${r2Key}`;
                 }
                 
@@ -480,8 +528,10 @@ async function uploadImagesToCloudflareImages() {
 
         try {
             // Get image file based on source
+            // If SOURCE_R2 is true, only check R2
+            // Otherwise, try local first, then fallback to R2 if not found
             if (SOURCE_R2) {
-                // Download from R2
+                // Download from R2 only
                 console.log(`Downloading from R2: ${r2Key}`);
                 filePath = await downloadFromR2(r2Key);
                 if (filePath) {
@@ -493,13 +543,24 @@ async function uploadImagesToCloudflareImages() {
                     continue;
                 }
             } else {
-                // Use local file
-                if (!fs.existsSync(localPath)) {
-                    console.log(`⚠️  Skipping (not found): ${localPath}`);
-                    skipped++;
-                    continue;
+                // Try local file first
+                if (fs.existsSync(localPath)) {
+                    filePath = localPath;
+                } else {
+                    // Fallback to R2 if local file doesn't exist
+                    console.log(`⚠️  Not found locally: ${path.basename(localPath)}`);
+                    console.log(`   Checking R2: ${r2Key}`);
+                    filePath = await downloadFromR2(r2Key);
+                    if (filePath) {
+                        isTempFile = true;
+                        tempFiles.push(filePath);
+                        console.log(`   ✅ Found in R2`);
+                    } else {
+                        console.log(`   ❌ Not found in R2 - skipping`);
+                        skipped++;
+                        continue;
+                    }
                 }
-                filePath = localPath;
             }
 
             // Check if already exists

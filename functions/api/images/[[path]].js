@@ -78,11 +78,37 @@ export async function onRequest(context) {
       // Otherwise, we'll need to look it up or return 404
     }
 
-    // Fallback: Try to find in image URL mapping file (if migration script created it)
-    // This is a temporary fallback during migration
+    // Fallback: Try to serve from R2 if image not found in database
+    // This handles the case where database hasn't been updated yet
     try {
-      // For now, return 404 - images should be migrated to Cloudflare Images first
-      return new Response('Image not found. Please ensure images are uploaded to Cloudflare Images.', { 
+      // Try to get image from R2 as fallback
+      const r2Key = normalizedPath.startsWith('items/') ? normalizedPath : `items/${normalizedPath}`;
+      
+      // Handle uploads differently
+      let finalR2Key = r2Key;
+      if (r2Key.startsWith('items/uploads/')) {
+        finalR2Key = r2Key.replace('items/uploads/', 'uploads/');
+      }
+      
+      const object = await env.MY_BUCKET?.get(finalR2Key);
+      
+      if (object) {
+        // Serve from R2
+        const imageData = await object.arrayBuffer();
+        const contentType = object.httpMetadata?.contentType || 'image/png';
+        
+        return new Response(imageData, {
+          headers: {
+            'Content-Type': contentType,
+            'Cache-Control': 'public, max-age=31536000, immutable',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET',
+          }
+        });
+      }
+      
+      // Not found in R2 either
+      return new Response('Image not found', { 
         status: 404,
         headers: {
           'Content-Type': 'text/plain',

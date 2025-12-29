@@ -1236,10 +1236,13 @@ margin-top: 10px;
                     html += '<div class="message-attachments">';
                     msg.attachments.forEach(att => {
                         if (att.is_image) {
+                            // Use R2 URL if available (prevents Discord expiration), fallback to proxy_url or url
+                            const imageUrl = att.r2_url || att.proxy_url || att.url;
+                            const fullSizeUrl = att.r2_url || att.url; // Use R2 URL for full size if available
                             html += `
                                 <div class="attachment-image">
-                                    <img src="${att.proxy_url || att.url}" alt="${att.filename}" loading="lazy" />
-                                    <a href="${att.url}" target="_blank" rel="noopener noreferrer" class="attachment-link">View Full Size</a>
+                                    <img src="${imageUrl}" alt="${att.filename}" loading="lazy" />
+                                    <a href="${fullSizeUrl}" target="_blank" rel="noopener noreferrer" class="attachment-link">View Full Size</a>
                                 </div>
                             `;
                         } else if (att.is_video) {

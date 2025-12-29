@@ -26,6 +26,14 @@ const SQL_FILE = path.join(__dirname, '../migrations/012_update_image_urls.sql')
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes('--dry-run');
 
+// D1 database ID - can be set via environment variable or .dev.vars
+// To find your D1 database ID:
+// 1. Go to Cloudflare Dashboard → D1
+// 2. Click on your database
+// 3. Copy the Database ID from the URL or settings
+const D1_DATABASE_ID = process.env.D1_DATABASE_ID || process.env.DBA_DATABASE_ID;
+const D1_DATABASE_NAME = process.env.D1_DATABASE_NAME || 'DBA';
+
 async function updateDatabaseUrls() {
     console.log('Starting database URL update...\n');
 
@@ -68,14 +76,32 @@ async function updateDatabaseUrls() {
     if (DRY_RUN) {
         console.log('[DRY RUN] Would execute SQL file');
         console.log('\nTo execute manually:');
-        console.log(`wrangler d1 execute DBA --file=${SQL_FILE}`);
+        if (D1_DATABASE_ID) {
+            console.log(`wrangler d1 execute ${D1_DATABASE_ID} --file=${SQL_FILE}`);
+        } else {
+            console.log(`wrangler d1 execute DBA --file=${SQL_FILE}`);
+            console.log('\nOr if you have the database ID:');
+            console.log(`wrangler d1 execute <database-id> --file=${SQL_FILE}`);
+        }
         console.log('\nOr for local database:');
         console.log(`wrangler d1 execute DBA --local --file=${SQL_FILE}`);
+        console.log('\nOr via Cloudflare Dashboard:');
+        console.log('1. Go to Cloudflare Dashboard → D1 → Your Database');
+        console.log('2. Click "Query" tab');
+        console.log('3. Copy and paste the SQL from the file');
+        console.log('4. Execute');
     } else {
         console.log('Executing SQL file...');
         try {
-            // Execute SQL file using wrangler
-            const command = `wrangler d1 execute DBA --file=${SQL_FILE}`;
+            let command;
+            if (D1_DATABASE_ID) {
+                // Use database ID directly
+                command = `wrangler d1 execute ${D1_DATABASE_ID} --file=${SQL_FILE}`;
+            } else {
+                // Try with binding name
+                command = `wrangler d1 execute ${D1_DATABASE_NAME} --file=${SQL_FILE}`;
+            }
+            
             execSync(command, {
                 stdio: 'inherit',
                 cwd: path.join(__dirname, '..')
@@ -83,8 +109,17 @@ async function updateDatabaseUrls() {
             console.log('\n✅ Database updated successfully!');
         } catch (error) {
             console.error('\n❌ Failed to update database:', error.message);
-            console.error('\nYou can execute the SQL file manually:');
-            console.error(`wrangler d1 execute DBA --file=${SQL_FILE}`);
+            console.error('\n📝 Options to update database:');
+            console.error('\n1. Via Wrangler (if you have database ID):');
+            console.error(`   wrangler d1 execute <database-id> --file=${SQL_FILE}`);
+            console.error('\n2. Via Cloudflare Dashboard:');
+            console.error('   - Go to Cloudflare Dashboard → D1 → Your Database');
+            console.error('   - Click "Query" tab');
+            console.error('   - Copy SQL from:', SQL_FILE);
+            console.error('   - Paste and execute');
+            console.error('\n3. Via API (if you have API token):');
+            console.error('   Use Cloudflare API to execute the SQL');
+            console.error('\nSQL file location:', SQL_FILE);
             process.exit(1);
         }
     }
