@@ -1,13 +1,15 @@
 // API endpoints for items
 
 /**
- * Normalize image URL to use R2 storage
- * Converts local paths (imgs/gears/file.png) to R2 URLs (/api/images/items/gears/file.png)
+ * Normalize image URL to use Cloudflare Images
+ * 
+ * If image is already a Cloudflare Images URL, return as-is.
+ * Otherwise, convert local paths to our image API endpoint which will redirect to Cloudflare Images.
  */
 function normalizeImageUrl(imgPath) {
     if (!imgPath) return null;
     
-    // If already a full URL (http/https), return as-is
+    // If already a full URL (Cloudflare Images or other), return as-is
     if (imgPath.startsWith('http://') || imgPath.startsWith('https://')) {
         return imgPath;
     }
@@ -18,7 +20,7 @@ function normalizeImageUrl(imgPath) {
     // Remove leading ./ or / if present
     normalized = normalized.replace(/^\.?\//, '');
     
-    // Convert imgs/ to items/ for R2 storage
+    // Convert imgs/ to items/ for consistency
     if (normalized.startsWith('imgs/')) {
         normalized = normalized.replace('imgs/', 'items/');
     } else if (!normalized.startsWith('items/')) {
@@ -26,6 +28,7 @@ function normalizeImageUrl(imgPath) {
     }
     
     // Return URL pointing to our image API endpoint
+    // The endpoint will look up the Cloudflare Images URL from the database
     return `https://emwiki.com/api/images/${normalized}`;
 }
 
