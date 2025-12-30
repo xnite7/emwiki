@@ -284,6 +284,19 @@
         position: relative;
     }
 
+    /* Message edit indicator */
+    .message-edited {
+        color: #888;
+        font-size: 0.85em;
+        font-style: italic;
+        margin-left: 6px;
+    }
+
+    .message-timestamp {
+        color: #888;
+        font-size: 0.85em;
+    }
+
     /* Thread Evidence Button */
     .thread-evidence-btn {
         margin-top: 10px;
@@ -1212,6 +1225,9 @@ margin-top: 10px;
                     ? `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png?size=64`
                     : 'https://cdn.discordapp.com/embed/avatars/0.png';
                 const timestamp = new Date(msg.timestamp).toLocaleString();
+                const editedIndicator = msg.edited_timestamp 
+                    ? `<span class="message-edited" title="Edited ${new Date(msg.edited_timestamp).toLocaleString()}">(edited)</span>`
+                    : '';
                 
                 html += `
                     <div class="thread-message" data-index="${index}">
@@ -1219,7 +1235,7 @@ margin-top: 10px;
                             <img src="${authorAvatar}" alt="${authorName}" class="message-avatar" />
                             <div class="message-author">
                                 <strong>${authorName}</strong>
-                                <span class="message-timestamp">${timestamp}</span>
+                                <span class="message-timestamp">${timestamp} ${editedIndicator}</span>
                             </div>
                         </div>
                         ${msg.content ? `<div class="message-content">${escapeHtml(msg.content)}</div>` : ''}
