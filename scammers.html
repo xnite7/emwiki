@@ -959,6 +959,8 @@ margin-top: 10px;
     async function createScammerBlock(scammer, container) {
         const {
             robloxUser = "Unknown",
+            roblox_display_name = robloxUser,
+            roblox_name = null,
             robloxProfile = "#",
             avatar = "imgs/plr.jpg",
             discordDisplay = null,
@@ -1014,13 +1016,16 @@ margin-top: 10px;
       <div class="scammer-info">
         <a href="${robloxProfile}" target="_blank" rel="noopener noreferrer">
           <h2>
-            ${robloxUser}
+            ${roblox_display_name || robloxUser}
             <svg xmlns="http://www.w3.org/2000/svg" style="fill:transparent" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 5l7 7-7 7"></path>
               <path d="M5 12h14"></path>
             </svg>
           </h2>
         </a>
+        ${roblox_name && roblox_name !== roblox_display_name && roblox_name !== robloxUser
+            ? `<p style="margin-top: -5px; margin-bottom: 8px; font-size: 13px; color: var(--text-secondary); opacity: 0.8;">@${roblox_name}</p>`
+            : ""}
         ${discordHTML}
         ${victims && victims.trim() !== "NA"
                 ? `<p><strong>Victims:</strong> ${victims}</p>`
@@ -1033,7 +1038,7 @@ margin-top: 10px;
       </div>
     </div>
   `;
-
+console.log(roblox_name);
         container.appendChild(block);
     }
 

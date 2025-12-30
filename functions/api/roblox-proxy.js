@@ -1164,7 +1164,8 @@ export async function onRequestGet({ request, env }) {
       }
 
       // Process entries in batches to avoid timeout
-      const limit = parseInt(url.searchParams.get("limit")) || 10;
+      // Default: process 1 entry at a time, check only last 10 entries
+      const limit = parseInt(url.searchParams.get("limit")) || 1;
       const offset = parseInt(url.searchParams.get("offset")) || 0;
       const targetUserId = url.searchParams.get("userId");
       
@@ -1178,17 +1179,18 @@ export async function onRequestGet({ request, env }) {
         `;
         bindParams = [targetUserId];
       } else {
-        // Process entries that need updates or haven't been checked recently (older than 1 hour)
-        const oneHourAgo = Date.now() - (60 * 60 * 1000);
+        // Process entries that need updates or haven't been checked recently (older than 5 hours)
+        // Only check last 10 entries (most recently updated), then process 1 at a time
+        const fiveHoursAgo = Date.now() - (5 * 60 * 60 * 1000);
         query = `
           SELECT user_id, thread_evidence, thread_last_message_id, thread_last_checked_at
           FROM scammer_profile_cache 
           WHERE thread_evidence IS NOT NULL
             AND (thread_needs_update = 1 OR thread_last_checked_at IS NULL OR thread_last_checked_at < ?)
-          ORDER BY thread_last_checked_at ASC NULLS FIRST
-          LIMIT ? OFFSET ?
+          ORDER BY updated_at DESC
+          LIMIT 10
         `;
-        bindParams = [oneHourAgo, limit, offset];
+        bindParams = [fiveHoursAgo];
       }
       
       const { results } = await env.DB.prepare(query).bind(...bindParams).all();
@@ -1209,9 +1211,12 @@ export async function onRequestGet({ request, env }) {
 
       let processed = 0;
       let updated = 0;
+      let imagesDownloaded = 0;
       let errors = [];
 
-      for (const row of results) {
+      // Process only the first entry (limit=1 by default)
+      const rowsToProcess = results.slice(0, limit);
+      for (const row of rowsToProcess) {
         try {
           if (!row.thread_evidence) continue;
 
@@ -1310,6 +1315,7 @@ export async function onRequestGet({ request, env }) {
                     let r2Url = null;
                     let streamId = null;
                     let streamUrl = null;
+                    let imageDownloaded = false;
                     
                     if (isVideo && att.url) {
                       const result = await downloadVideoToR2(
@@ -1334,6 +1340,7 @@ export async function onRequestGet({ request, env }) {
                       );
                       if (result.r2_url) {
                         r2Url = result.r2_url;
+                        imageDownloaded = true;
                       }
                     }
 
@@ -1350,11 +1357,16 @@ export async function onRequestGet({ request, env }) {
                       width: att.width,
                       height: att.height,
                       is_image: isImage,
-                      is_video: isVideo
+                      is_video: isVideo,
+                      _image_downloaded: imageDownloaded
                     };
                   });
 
-                  messageData.attachments = await Promise.all(attachmentPromises);
+                  const processedAttachments = await Promise.all(attachmentPromises);
+                  // Count images that were downloaded
+                  imagesDownloaded += processedAttachments.filter(att => att._image_downloaded).length;
+                  // Remove the tracking flag before storing
+                  messageData.attachments = processedAttachments.map(({ _image_downloaded, ...att }) => att);
                 }
 
                 // Process embeds
@@ -1455,10 +1467,11 @@ export async function onRequestGet({ request, env }) {
         message: "Thread evidence update completed",
         processed,
         updated,
+        images_downloaded: imagesDownloaded,
         total_entries: totalCount,
-        offset,
-        next_offset: offset + results.length,
-        has_more: offset + results.length < totalCount,
+        entries_checked: results.length,
+        entries_processed: rowsToProcess.length,
+        has_more: rowsToProcess.length < results.length,
         errors: errors.length > 0 ? errors.slice(0, 10) : []
       }), {
         headers: { 
