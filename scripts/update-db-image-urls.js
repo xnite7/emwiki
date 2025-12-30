@@ -25,6 +25,7 @@ const SQL_FILE = path.join(__dirname, '../migrations/012_update_image_urls.sql')
 // Parse command line arguments
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes('--dry-run');
+const USE_FULL_PATH = args.includes('--full-path'); // Match by full path instead of filename only
 
 // D1 database ID - can be set via environment variable or .dev.vars
 // To find your D1 database ID:
@@ -59,22 +60,62 @@ async function updateDatabaseUrls() {
     for (const [oldPath, newUrl] of Object.entries(mapping)) {
         // Normalize old path for SQL matching
         const normalizedOldPath = oldPath.replace(/\\/g, '/').replace(/^\.?\//, '');
-        
-        // Extract just the filename (last part of path) for more flexible matching
-        const filename = normalizedOldPath.split('/').pop();
-        const escapedFilename = filename.replace(/'/g, "''").replace(/%/g, '\\%').replace(/_/g, '\\_');
         const escapedUrl = newUrl.replace(/'/g, "''");
         
-        // Use INSTR() instead of LIKE for better performance and to avoid "pattern too complex" errors
-        // INSTR() is simpler and doesn't have pattern complexity limits
-        // Create SQL update statement that matches multiple possible formats:
-        // - items/effects/filename.png
-        // - imgs/effects/filename.png
-        // - effects/filename.png
-        // - api/images/items/effects/filename.png
-        // - https://emwiki.com/api/images/items/effects/filename.png
-        // Match by filename since paths might vary
-        const sql = `UPDATE items SET img = '${escapedUrl}' WHERE INSTR(img, '${escapedFilename}') > 0 AND INSTR(img, 'imagedelivery.net') = 0 AND INSTR(img, 'cloudflare-images.com') = 0;`;
+        let sql;
+        
+        if (USE_FULL_PATH) {
+            // Match by full path - more precise, avoids duplicates
+            // Escape the path for SQL
+            const escapedPath = normalizedOldPath.replace(/'/g, "''");
+            
+            // Extract category and filename from path (e.g., "items/pets/94.png" -> category: "pets", filename: "94.png")
+            const pathParts = normalizedOldPath.split('/');
+            const filename = pathParts[pathParts.length - 1];
+            const category = pathParts.length > 1 ? pathParts[pathParts.length - 2] : '';
+            
+            // Build WHERE clause to match various path formats but avoid partial matches
+            // We need to match the full path context to avoid matching "94.png" inside "389703494.png"
+            const conditions = [];
+            
+            // Match exact path
+            conditions.push(`INSTR(img, '${escapedPath}') > 0`);
+            
+            // Match with items/ prefix if not already present
+            if (!normalizedOldPath.startsWith('items/')) {
+                conditions.push(`INSTR(img, 'items/${escapedPath}') > 0`);
+            }
+            
+            // Match with imgs/ prefix if not already present
+            if (!normalizedOldPath.startsWith('imgs/')) {
+                conditions.push(`INSTR(img, 'imgs/${escapedPath}') > 0`);
+            }
+            
+            // Match category/filename pattern (more specific than filename alone)
+            // This helps avoid false matches like "94.png" matching "389703494.png"
+            if (category && filename) {
+                // Match with category context: "pets/94.png" but not "pets/389703494.png"
+                // Use word boundaries by checking for / before and . after
+                conditions.push(`(INSTR(img, '${category}/${filename}') > 0)`);
+            }
+            
+            // Combine conditions with OR
+            const whereClause = conditions.length > 0 
+                ? `(${conditions.join(' OR ')})`
+                : `INSTR(img, '${escapedPath}') > 0`;
+            
+            sql = `UPDATE items SET img = '${escapedUrl}' WHERE ${whereClause} AND INSTR(img, 'imagedelivery.net') = 0 AND INSTR(img, 'cloudflare-images.com') = 0;`;
+        } else {
+            // Original: Match by filename only (can cause duplicates)
+            // Extract just the filename (last part of path) for flexible matching
+            const filename = normalizedOldPath.split('/').pop();
+            const escapedFilename = filename.replace(/'/g, "''");
+            
+            // Use INSTR() instead of LIKE for better performance
+            // Match by filename since paths might vary
+            sql = `UPDATE items SET img = '${escapedUrl}' WHERE INSTR(img, '${escapedFilename}') > 0 AND INSTR(img, 'imagedelivery.net') = 0 AND INSTR(img, 'cloudflare-images.com') = 0;`;
+        }
+        
         sqlStatements.push(sql);
         updateCount++;
     }
