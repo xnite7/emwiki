@@ -408,90 +408,19 @@ async function downloadImageToR2(discordUrl, attachmentId, filename, contentType
   }
 }
 
-// Helper function to update thread evidence with edits and new messages
-// Compares existing messages with fetched messages to detect edits and new messages
-function updateThreadWithEdits(existingMessages, fetchedMessages) {
-  const existingMap = new Map();
-  existingMessages.forEach(msg => existingMap.set(msg.id, msg));
-  
-  const updatedMessages = [];
-  const newMessages = [];
-  
-  for (const fetchedMsg of fetchedMessages) {
-    const existingMsg = existingMap.get(fetchedMsg.id);
-    
-    if (existingMsg) {
-      // Message exists - check if edited
-      const existingEditTime = existingMsg.edited_timestamp || null;
-      const fetchedEditTime = fetchedMsg.edited_timestamp || null;
-      
-      if (fetchedEditTime && fetchedEditTime !== existingEditTime) {
-        // Message was edited - update content but preserve R2 URLs
-        const updatedMsg = {
-          ...fetchedMsg,
-          // Preserve R2 URLs from existing message (don't re-download)
-          attachments: fetchedMsg.attachments.map(fetchedAtt => {
-            const existingAtt = existingMsg.attachments?.find(a => a.id === fetchedAtt.id);
-            return {
-              ...fetchedAtt,
-              // Keep existing R2 URL if available, otherwise use new one
-              r2_url: existingAtt?.r2_url || fetchedAtt.r2_url,
-              stream_id: existingAtt?.stream_id || fetchedAtt.stream_id,
-              stream_url: existingAtt?.stream_url || fetchedAtt.stream_url
-            };
-          })
-        };
-        updatedMessages.push(updatedMsg);
-      } else {
-        // No edit - keep existing message (preserves R2 URLs)
-        updatedMessages.push(existingMsg);
-      }
-      
-      // Remove from map to track which messages still exist
-      existingMap.delete(fetchedMsg.id);
-    } else {
-      // New message
-      newMessages.push(fetchedMsg);
-    }
-  }
-  
-  // Combine: existing unchanged messages + updated messages + new messages
-  // Sort by timestamp to maintain chronological order
-  const allMessages = [...updatedMessages, ...newMessages].sort((a, b) => 
-    new Date(a.timestamp) - new Date(b.timestamp)
-  );
-  
-  return {
-    messages: allMessages,
-    newCount: newMessages.length,
-    editedCount: updatedMessages.filter(msg => 
-      existingMessages.find(m => m.id === msg.id && 
-        (m.edited_timestamp || null) !== (msg.edited_timestamp || null)
-      )
-    ).length
-  };
-}
-
 // Helper function to fetch Discord thread messages
-async function fetchDiscordThread(threadId, env, afterMessageId = null) {
+async function fetchDiscordThread(threadId, env) {
   if (!threadId) return null;
 
   try {
     const threadMessages = [];
     let before = null;
-    let after = afterMessageId;
 
-    // Fetch messages from the thread
-    // If afterMessageId is provided, only fetch messages after it (incremental)
-    // Otherwise, fetch all messages (initial fetch)
+    // Fetch all messages from the thread
     while (true) {
       const fetchUrl = new URL(`https://discord.com/api/v10/channels/${threadId}/messages`);
       fetchUrl.searchParams.set("limit", "100");
-      if (after) {
-        // Incremental fetch: get messages after this ID
-        fetchUrl.searchParams.set("after", after);
-      } else if (before) {
-        // Initial fetch: get messages before this ID (going backwards)
+      if (before) {
         fetchUrl.searchParams.set("before", before);
       }
 
@@ -551,14 +480,13 @@ async function fetchDiscordThread(threadId, env, afterMessageId = null) {
         };
 
         // Extract attachments (images, videos, files)
-        // ALWAYS download images/videos to R2 immediately (no checking if r2_url exists)
         if (msg.attachments && msg.attachments.length > 0) {
           // Process attachments in parallel
           const attachmentPromises = msg.attachments.map(async (att) => {
             const isVideo = att.content_type?.startsWith('video/') || false;
             const isImage = att.content_type?.startsWith('image/') || false;
             
-            // Always download videos to R2 (and Stream for QuickTime)
+            // Download videos to R2 (and Stream for QuickTime)
             let r2Url = null;
             let streamId = null;
             let streamUrl = null;
@@ -575,7 +503,7 @@ async function fetchDiscordThread(threadId, env, afterMessageId = null) {
               streamUrl = result.stream_url;
             }
             
-            // Always download images to R2
+            // Download images to R2
             if (isImage && att.url) {
               const result = await downloadImageToR2(
                 att.url,
@@ -584,14 +512,16 @@ async function fetchDiscordThread(threadId, env, afterMessageId = null) {
                 att.content_type,
                 env
               );
-              r2Url = result.r2_url || null;
+              if (result.r2_url) {
+                r2Url = result.r2_url;
+              }
             }
 
             return {
               id: att.id,
               filename: att.filename,
               url: att.url, // Keep original URL as fallback
-              r2_url: r2Url, // R2 URL for images and videos (always attempted)
+              r2_url: r2Url, // R2 URL for images and videos
               stream_id: streamId, // Cloudflare Stream ID for QuickTime videos
               stream_url: streamUrl, // Cloudflare Stream playback URL (HLS/DASH)
               proxy_url: att.proxy_url,
@@ -623,25 +553,15 @@ async function fetchDiscordThread(threadId, env, afterMessageId = null) {
         threadMessages.push(messageData);
       }
 
-      if (after) {
-        // Incremental fetch: update 'after' to the newest message ID (first in original array)
-        // This allows us to continue fetching newer messages
-        after = messages[0].id;
-        // Safety limit for incremental fetch
-        if (threadMessages.length >= 500) break;
-      } else {
-        // Initial fetch: update 'before' to fetch older messages
-        before = messages[messages.length - 1].id;
-        // Safety limit for initial fetch
-        if (threadMessages.length >= 500) break;
-      }
+      // Update before to fetch older messages
+      before = messages[messages.length - 1].id;
+      
+      // Safety limit
+      if (threadMessages.length >= 500) break;
     }
 
-    // Sort by timestamp (oldest first) - needed for initial fetch
-    // For incremental fetch, messages are already in correct order
-    if (!afterMessageId) {
-      threadMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    }
+    // Sort by timestamp (oldest first)
+    threadMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
     return threadMessages;
   } catch (err) {
@@ -1043,10 +963,8 @@ export async function onRequestGet({ request, env }) {
     }
   }
 
-  // REMOVED: migrate-videos-to-r2 mode - no longer needed, videos are automatically downloaded to R2
-
-  // Handle image migration endpoint - Migrate existing images to R2
-  if (mode === "migrate-images-to-r2") {
+  // Handle video migration endpoint - Migrate existing videos to R2
+  if (mode === "migrate-videos-to-r2") {
     try {
       // Check if R2 bucket is available
       if (!env.MY_BUCKET) {
@@ -1309,72 +1227,220 @@ export async function onRequestGet({ request, env }) {
           }
 
           const threadId = threadEvidence.thread_id;
-          const existingMessages = threadEvidence.messages || [];
+          const lastMessageId = row.thread_last_message_id || null;
           
-          // Fetch ALL messages from thread to check for edits and new messages
-          // This ensures we catch both new messages and edits to existing messages
-          const allFetchedMessages = await fetchDiscordThread(threadId, env, null);
-          
-          if (!allFetchedMessages || allFetchedMessages.length === 0) {
-            // Thread has no messages, just update last checked time
+          // Fetch new messages from thread (after lastMessageId)
+          let newMessages = [];
+          let after = lastMessageId; // Use 'after' to fetch messages newer than lastMessageId
+          let foundLastMessage = !lastMessageId; // If no lastMessageId, fetch all
+
+          while (true) {
+            const fetchUrl = new URL(`https://discord.com/api/v10/channels/${threadId}/messages`);
+            fetchUrl.searchParams.set("limit", "100");
+            if (after) {
+              fetchUrl.searchParams.set("after", after);
+            }
+
+            let response;
+            let retryCount = 0;
+            while (retryCount < 3) {
+              try {
+                response = await fetch(fetchUrl.toString(), {
+                  headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+                });
+
+                if (response.status === 429) {
+                  const retryAfter = await response.json();
+                  await new Promise(r => setTimeout(r, (retryAfter.retry_after || 1) * 1000));
+                  retryCount++;
+                  continue;
+                }
+
+                if (response.status === 404) {
+                  // Thread not found or no access
+                  throw new Error(`Thread ${threadId} not found or no access`);
+                }
+
+                if (!response.ok) {
+                  throw new Error(`Discord API error: ${response.status}`);
+                }
+
+                break;
+              } catch (err) {
+                retryCount++;
+                if (retryCount >= 3) {
+                  throw err;
+                }
+                await new Promise(r => setTimeout(r, 1000 * retryCount));
+              }
+            }
+
+            const messages = await response.json();
+            if (messages.length === 0) break;
+
+            // Process messages (they come in reverse chronological order when using 'after')
+            // When using 'after', messages are returned newest first
+            for (const msg of messages) {
+              // If we found the last message we processed, stop
+              if (lastMessageId && msg.id === lastMessageId) {
+                foundLastMessage = true;
+                break;
+              }
+
+              // Only add messages newer than lastMessageId
+              // Discord message IDs are numeric strings (snowflakes), can compare directly
+              if (!lastMessageId || msg.id !== lastMessageId) {
+                const messageData = {
+                  id: msg.id,
+                  author: {
+                    id: msg.author?.id,
+                    username: msg.author?.username,
+                    global_name: msg.author?.global_name,
+                    avatar: msg.author?.avatar,
+                    discriminator: msg.author?.discriminator
+                  },
+                  content: msg.content,
+                  timestamp: msg.timestamp,
+                  edited_timestamp: msg.edited_timestamp,
+                  attachments: [],
+                  embeds: []
+                };
+
+                // Process attachments (images, videos)
+                if (msg.attachments && msg.attachments.length > 0) {
+                  const attachmentPromises = msg.attachments.map(async (att) => {
+                    const isVideo = att.content_type?.startsWith('video/') || false;
+                    const isImage = att.content_type?.startsWith('image/') || false;
+                    
+                    let r2Url = null;
+                    let streamId = null;
+                    let streamUrl = null;
+                    let imageDownloaded = false;
+                    
+                    if (isVideo && att.url) {
+                      const result = await downloadVideoToR2(
+                        att.url,
+                        att.id,
+                        att.filename,
+                        att.content_type,
+                        env
+                      );
+                      r2Url = result.r2_url;
+                      streamId = result.stream_id;
+                      streamUrl = result.stream_url;
+                    }
+                    
+                    if (isImage && att.url) {
+                      const result = await downloadImageToR2(
+                        att.url,
+                        att.id,
+                        att.filename,
+                        att.content_type,
+                        env
+                      );
+                      if (result.r2_url) {
+                        r2Url = result.r2_url;
+                        imageDownloaded = true;
+                      }
+                    }
+
+                    return {
+                      id: att.id,
+                      filename: att.filename,
+                      url: att.url,
+                      r2_url: r2Url,
+                      stream_id: streamId,
+                      stream_url: streamUrl,
+                      proxy_url: att.proxy_url,
+                      size: att.size,
+                      content_type: att.content_type,
+                      width: att.width,
+                      height: att.height,
+                      is_image: isImage,
+                      is_video: isVideo,
+                      _image_downloaded: imageDownloaded
+                    };
+                  });
+
+                  const processedAttachments = await Promise.all(attachmentPromises);
+                  // Count images that were downloaded
+                  imagesDownloaded += processedAttachments.filter(att => att._image_downloaded).length;
+                  // Remove the tracking flag before storing
+                  messageData.attachments = processedAttachments.map(({ _image_downloaded, ...att }) => att);
+                }
+
+                // Process embeds
+                if (msg.embeds && msg.embeds.length > 0) {
+                  messageData.embeds = msg.embeds.map(embed => ({
+                    title: embed.title,
+                    description: embed.description,
+                    url: embed.url,
+                    image: embed.image,
+                    video: embed.video,
+                    thumbnail: embed.thumbnail,
+                    type: embed.type
+                  }));
+                }
+
+                newMessages.push(messageData);
+              }
+            }
+
+            if (foundLastMessage) break;
+
+            // Update after to the newest message ID we just fetched (first in array)
+            // This allows us to continue fetching newer messages in the next iteration
+            after = messages[0].id;
+            
+            // Safety limit
+            if (newMessages.length >= 500) break;
+          }
+
+          // Sort new messages by timestamp (oldest first)
+          newMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+          if (newMessages.length > 0) {
+            // Merge new messages with existing messages
+            const existingMessages = threadEvidence.messages || [];
+            const allMessages = [...existingMessages, ...newMessages];
+            
+            // Update thread evidence
+            threadEvidence.messages = allMessages;
+            threadEvidence.message_count = allMessages.length;
+            
+            // Get the newest message ID
+            const newestMessageId = newMessages.length > 0 
+              ? newMessages[newMessages.length - 1].id 
+              : (existingMessages.length > 0 ? existingMessages[existingMessages.length - 1].id : null);
+
+            // Update database
+            const updatedEvidenceJson = JSON.stringify(threadEvidence);
+            await env.DB.prepare(`
+              UPDATE scammer_profile_cache 
+              SET thread_evidence = ?,
+                  thread_last_message_id = ?,
+                  thread_last_checked_at = ?,
+                  thread_needs_update = 0,
+                  updated_at = ?
+              WHERE user_id = ?
+            `).bind(
+              updatedEvidenceJson,
+              newestMessageId || row.thread_last_message_id,
+              Date.now(),
+              Date.now(),
+              row.user_id
+            ).run();
+
+            updated++;
+          } else {
+            // No new messages, just update last checked time
             await env.DB.prepare(`
               UPDATE scammer_profile_cache 
               SET thread_last_checked_at = ?,
                   thread_needs_update = 0
               WHERE user_id = ?
             `).bind(Date.now(), row.user_id).run();
-            processed++;
-            continue;
           }
-
-          // Use edit detection function to merge and detect edits
-          let updatedMessages;
-          if (existingMessages.length > 0) {
-            // Check for edits and merge new messages
-            const result = updateThreadWithEdits(existingMessages, allFetchedMessages);
-            updatedMessages = result.messages;
-            // Count images in new messages only
-            const existingMessageIds = new Set(existingMessages.map(m => m.id));
-            const newMessages = allFetchedMessages.filter(m => !existingMessageIds.has(m.id));
-            imagesDownloaded += newMessages.reduce((count, msg) => 
-              count + (msg.attachments?.filter(att => att.is_image && att.r2_url).length || 0), 0
-            );
-          } else {
-            // No existing messages, use fetched messages directly
-            updatedMessages = allFetchedMessages;
-            imagesDownloaded += allFetchedMessages.reduce((count, msg) => 
-              count + (msg.attachments?.filter(att => att.is_image && att.r2_url).length || 0), 0
-            );
-          }
-          
-          // Update thread evidence
-          threadEvidence.messages = updatedMessages;
-          threadEvidence.message_count = updatedMessages.length;
-          
-          // Get the newest message ID
-          const newestMessageId = updatedMessages.length > 0 
-            ? updatedMessages[updatedMessages.length - 1].id 
-            : (row.thread_last_message_id || null);
-
-          // Update database
-          const updatedEvidenceJson = JSON.stringify(threadEvidence);
-          await env.DB.prepare(`
-            UPDATE scammer_profile_cache 
-            SET thread_evidence = ?,
-                thread_last_message_id = ?,
-                thread_last_checked_at = ?,
-                thread_needs_update = 0,
-                updated_at = ?
-            WHERE user_id = ?
-          `).bind(
-            updatedEvidenceJson,
-            newestMessageId,
-            Date.now(),
-            Date.now(),
-            row.user_id
-          ).run();
-
-          updated++;
 
           processed++;
         } catch (err) {
@@ -1428,8 +1494,183 @@ export async function onRequestGet({ request, env }) {
     }
   }
 
-  // REMOVED: migrate-images-to-r2 mode - no longer needed
-  // Images are automatically downloaded to R2 when threads are fetched via fetchDiscordThread()
+  // Handle image migration endpoint - Migrate existing images to R2
+  if (mode === "migrate-images-to-r2") {
+    try {
+      // Check if R2 bucket is available
+      if (!env.MY_BUCKET) {
+        return new Response(JSON.stringify({ 
+          error: "R2 bucket (MY_BUCKET) not configured"
+        }), {
+          status: 500,
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          },
+        });
+      }
+
+      // Process ONE entry at a time to avoid timeout
+      const targetUserId = url.searchParams.get("userId");
+      const limit = parseInt(url.searchParams.get("limit")) || 1; // Process 1 entry at a time by default
+      const offset = parseInt(url.searchParams.get("offset")) || 0;
+      
+      let query, bindParams;
+      if (targetUserId) {
+        // Process specific user
+        query = `
+          SELECT user_id, thread_evidence 
+          FROM scammer_profile_cache 
+          WHERE user_id = ? AND thread_evidence IS NOT NULL
+        `;
+        bindParams = [targetUserId];
+      } else {
+        // Process next entry in queue
+        query = `
+          SELECT user_id, thread_evidence 
+          FROM scammer_profile_cache 
+          WHERE thread_evidence IS NOT NULL
+          LIMIT ? OFFSET ?
+        `;
+        bindParams = [limit, offset];
+      }
+      
+      const { results } = await env.DB.prepare(query).bind(...bindParams).all();
+
+      if (!results || results.length === 0) {
+        return new Response(JSON.stringify({ 
+          message: "No thread evidence found to migrate",
+          processed: 0,
+          images_downloaded: 0
+        }), {
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          },
+        });
+      }
+
+      let processed = 0;
+      let imagesDownloaded = 0;
+      let imagesSkipped = 0;
+      let errors = [];
+
+      // Process only the first entry to avoid timeout
+      const row = results[0];
+      try {
+        if (!row.thread_evidence) {
+          return new Response(JSON.stringify({ 
+            message: "Entry has no thread evidence",
+            user_id: row.user_id
+          }), {
+            headers: { 
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*" 
+            },
+          });
+        }
+        
+        const threadEvidence = JSON.parse(row.thread_evidence);
+        let updated = false;
+        let imageCount = 0;
+
+        // Process all messages in the thread
+        if (threadEvidence.messages && Array.isArray(threadEvidence.messages)) {
+          for (const msg of threadEvidence.messages) {
+            if (msg.attachments && Array.isArray(msg.attachments)) {
+              // Process attachments sequentially to avoid memory issues
+              for (const att of msg.attachments) {
+                // Only process images that don't already have r2_url
+                if (att.is_image && att.url && !att.r2_url) {
+                  imageCount++;
+                  try {
+                    // Add small delay between downloads to avoid rate limiting
+                    if (imageCount > 1) {
+                      await new Promise(r => setTimeout(r, 500)); // 500ms delay
+                    }
+                    
+                    const result = await downloadImageToR2(
+                      att.url,
+                      att.id,
+                      att.filename || 'image',
+                      att.content_type,
+                      env
+                    );
+                    
+                    if (result && result.r2_url) {
+                      att.r2_url = result.r2_url;
+                      imagesDownloaded++;
+                      updated = true;
+                    } else {
+                      imagesSkipped++;
+                      errors.push(`Failed to download image ${att.id} for user ${row.user_id}`);
+                    }
+                  } catch (imageErr) {
+                    imagesSkipped++;
+                    errors.push(`Error downloading image ${att.id} for user ${row.user_id}: ${imageErr.message}`);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // Update database if any images were downloaded
+        if (updated) {
+          const updatedEvidenceJson = JSON.stringify(threadEvidence);
+          await env.DB.prepare(`
+            UPDATE scammer_profile_cache 
+            SET thread_evidence = ?, updated_at = ?
+            WHERE user_id = ?
+          `).bind(updatedEvidenceJson, Date.now(), row.user_id).run();
+          processed++;
+        }
+      } catch (err) {
+        console.error(`Error processing user ${row.user_id}:`, err);
+        errors.push(`Error processing user ${row.user_id}: ${err.message}`);
+      }
+
+      // Get total count for progress tracking
+      const totalCountResult = await env.DB.prepare(`
+        SELECT COUNT(*) as total 
+        FROM scammer_profile_cache 
+        WHERE thread_evidence IS NOT NULL
+      `).first();
+      const totalCount = totalCountResult?.total || 0;
+
+      return new Response(JSON.stringify({ 
+        message: "Migration batch completed",
+        user_id: row.user_id,
+        processed_this_batch: 1,
+        total_entries: totalCount,
+        processed,
+        images_downloaded,
+        images_skipped,
+        offset,
+        next_offset: offset + 1,
+        has_more: offset + 1 < totalCount,
+        errors: errors.length > 0 ? errors.slice(0, 10) : [] // Limit errors to first 10
+      }), {
+        headers: { 
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*" 
+        },
+      });
+    } catch (err) {
+      console.error("Migration error:", err);
+      return new Response(JSON.stringify({ 
+        error: err.message,
+        debug: err.stack,
+        type: err.constructor.name
+      }), {
+        status: 500,
+        headers: { 
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*" 
+        },
+      });
+    }
+  }
 
   // Handle thread evidence endpoint - MUST come before general endpoint check
   if (mode === "thread-evidence" && userId) {
@@ -1535,8 +1776,6 @@ export async function onRequestGet({ request, env }) {
   if (mode === "discord-scammers") {
     try {
       const now = Date.now();
-      const urlParams = new URL(request.url).searchParams; // Declare early for use in locking
-      const forceRefresh = urlParams.get('refresh') === 'true';
 
       // --- CHECK NEWEST MESSAGE ID FOR EARLY REFRESH ---
       let latestMessageId = null;
@@ -1626,40 +1865,23 @@ export async function onRequestGet({ request, env }) {
 
       // --- LOCKING ---
       const LOCK_KEY = "discord-scammers-lock";
-      const LOCK_TTL_MS = 10 * 60 * 1000; // 10 minutes for full refresh
-      const isRecursiveCall = urlParams.has('startAfter'); // urlParams already declared above
+      const LOCK_TTL_MS = 2 * 60 * 1000;
 
       await env.DB.prepare(
         "DELETE FROM scammer_cache_locks WHERE key = ? AND expires_at < ?"
       ).bind(LOCK_KEY, now).run();
 
       let lockAcquired = false;
-      if (!isRecursiveCall) {
-        // Only check lock on initial call, recursive calls bypass lock
-        try {
-          await env.DB.prepare(
-            "INSERT INTO scammer_cache_locks (key, expires_at) VALUES (?, ?)"
-          ).bind(LOCK_KEY, now + LOCK_TTL_MS).run();
-          lockAcquired = true;
-        } catch {
-          lockAcquired = false;
-        }
-      } else {
-        // Recursive call - extend lock but don't fail if already exists
-        try {
-          await env.DB.prepare(
-            "INSERT INTO scammer_cache_locks (key, expires_at) VALUES (?, ?)"
-          ).bind(LOCK_KEY, now + LOCK_TTL_MS).run();
-        } catch {
-          // Update existing lock
-          await env.DB.prepare(
-            "UPDATE scammer_cache_locks SET expires_at = ? WHERE key = ?"
-          ).bind(now + LOCK_TTL_MS, LOCK_KEY).run();
-        }
+      try {
+        await env.DB.prepare(
+          "INSERT INTO scammer_cache_locks (key, expires_at) VALUES (?, ?)"
+        ).bind(LOCK_KEY, now + LOCK_TTL_MS).run();
         lockAcquired = true;
+      } catch {
+        lockAcquired = false;
       }
 
-      if (!lockAcquired && !isRecursiveCall) {
+      if (!lockAcquired) {
         let waited = 0;
         const waitStep = 1000;
         while (waited < 10000) {
@@ -1725,129 +1947,15 @@ export async function onRequestGet({ request, env }) {
         });
       }
 
-      // --- DISCORD FETCHING (BATCH PROCESSING) ---
+      // --- DISCORD FETCHING (INCREMENTAL) ---
       const channelId = env.DISCORD_CHANNEL_ID;
-      const BATCH_SIZE = 10; // Reduced to 10 messages per call to avoid timeouts (thread fetching + image downloads are expensive)
-      // urlParams already declared above
-      const batchSize = Math.min(parseInt(urlParams.get('batchSize') || BATCH_SIZE.toString()), 20); // Cap at 20 max
-      const startAfter = urlParams.get('startAfter'); // Optional: resume from specific message ID
-      
-      // Fetch ALL threads from the channel to match with messages
-      // Discord API: GET /channels/{channel.id}/threads/active
-      // This is the reliable way to get threads since msg.thread isn't always present
-      const threadsMap = new Map(); // Maps message ID -> thread info
-      
-      try {
-        // Fetch active threads
-        const activeThreadsUrl = `https://discord.com/api/v10/channels/${channelId}/threads/active`;
-        const activeThreadsRes = await fetch(activeThreadsUrl, {
-          headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
-        });
-        
-        if (activeThreadsRes.ok) {
-          const activeData = await activeThreadsRes.json();
-          if (activeData.threads && Array.isArray(activeData.threads)) {
-            for (const thread of activeData.threads) {
-              // Match thread to parent message ID (threads have a message_id property)
-              if (thread.id && thread.parent_id === channelId) {
-                // Store by thread ID for lookup
-                threadsMap.set(thread.id, {
-                  id: thread.id,
-                  name: thread.name || 'Untitled Thread',
-                  message_id: thread.message_id || null
-                });
-                // Also store by message_id if available (for direct lookup)
-                if (thread.message_id) {
-                  threadsMap.set(thread.message_id, {
-                    id: thread.id,
-                    name: thread.name || 'Untitled Thread',
-                    message_id: thread.message_id
-                  });
-                }
-              }
-            }
-          }
-        }
-        
-        // Also fetch archived/public threads
-        const archivedThreadsUrl = `https://discord.com/api/v10/channels/${channelId}/threads/archived/public?limit=100`;
-        const archivedRes = await fetch(archivedThreadsUrl, {
-          headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
-        });
-        
-        if (archivedRes.ok) {
-          const archivedData = await archivedRes.json();
-          if (archivedData.threads && Array.isArray(archivedData.threads)) {
-            for (const thread of archivedData.threads) {
-              if (thread.id && thread.parent_id === channelId) {
-                threadsMap.set(thread.id, {
-                  id: thread.id,
-                  name: thread.name || 'Untitled Thread',
-                  message_id: thread.message_id || null
-                });
-                if (thread.message_id) {
-                  threadsMap.set(thread.message_id, {
-                    id: thread.id,
-                    name: thread.name || 'Untitled Thread',
-                    message_id: thread.message_id
-                  });
-                }
-              }
-            }
-          }
-        }
-        
-        console.log(`[THREADS] Found ${threadsMap.size / 2} threads in channel (stored by thread ID and message ID)`);
-      } catch (err) {
-        console.warn('[THREADS] Failed to fetch threads:', err);
-      }
-      
-      // Helper function to find thread for a message
-      async function findThreadForMessage(messageId, env) {
-        // First check threads map (most reliable)
-        const threadFromMap = threadsMap.get(messageId);
-        if (threadFromMap) {
-          return {
-            id: threadFromMap.id,
-            name: threadFromMap.name
-          };
-        }
-        
-        // Fallback: Try fetching thread info using message ID
-        try {
-          const threadInfoUrl = `https://discord.com/api/v10/channels/${messageId}`;
-          const threadInfoRes = await fetch(threadInfoUrl, {
-            headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
-          });
-          
-          if (threadInfoRes.ok) {
-            const threadInfo = await threadInfoRes.json();
-            // Check if it's actually a thread (type 11 = public thread, type 12 = private thread)
-            if (threadInfo.type === 11 || threadInfo.type === 12) {
-              if (threadInfo.parent_id === channelId) {
-                return {
-                  id: threadInfo.id,
-                  name: threadInfo.name || 'Untitled Thread'
-                };
-              }
-            }
-          }
-        } catch (err) {
-          // Not a thread or no access - that's okay
-        }
-        
-        return null;
-      }
-      
       let allMessages = [];
-      let processedCount = 0;
-      const resumeFromMessageId = startAfter || lastProcessedMessageId;
       
-      if (resumeFromMessageId && !forceRefresh) {
+      if (lastProcessedMessageId) {
         // Incremental: Only fetch new messages after the last processed one
-        let after = resumeFromMessageId;
+        let after = lastProcessedMessageId;
 
-        while (allMessages.length < batchSize) {
+        while (true) {
           const fetchUrl = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
           fetchUrl.searchParams.set("limit", "100");
           fetchUrl.searchParams.set("after", after);
@@ -1900,11 +2008,11 @@ export async function onRequestGet({ request, env }) {
           if (allMessages.length >= 5000) break;
         }
       } else {
-        // Initial fetch or force refresh: Fetch messages in batches
+        // Initial fetch: Fetch ALL messages from the beginning using 'before' parameter
         // Start by getting the latest message ID, then fetch backwards
-        let before = resumeFromMessageId || null;
+        let before = null;
 
-        while (allMessages.length < batchSize) {
+        while (true) {
           const fetchUrl = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
           fetchUrl.searchParams.set("limit", "100");
           if (before) {
@@ -1956,117 +2064,22 @@ export async function onRequestGet({ request, env }) {
           if (allMessages.length >= 5000) break;
         }
       }
-      
-      // Limit to batch size to avoid timeout
-      allMessages = allMessages.slice(0, batchSize);
 
       // Process messages and update unified table
       const scammers = [];
       const partialScammers = [];
-      let currentLastMessageId = null;
 
       for (const msg of allMessages) {
-        currentLastMessageId = msg.id; // Track the last message we process
         try {
-          // Combine content from message body and embeds for parsing
-          let fullContent = msg.content || '';
-          
-          // Also check embeds for content (Discord sometimes puts formatted data in embeds)
-          if (msg.embeds && Array.isArray(msg.embeds)) {
-            for (const embed of msg.embeds) {
-              if (embed.description) fullContent += '\n' + embed.description;
-              if (embed.fields && Array.isArray(embed.fields)) {
-                for (const field of embed.fields) {
-                  if (field.name) fullContent += '\n' + field.name + ': ' + (field.value || '');
-                }
-              }
-            }
-          }
-          
-          // Debug: Log message content to see what we're working with
-          if (fullContent && (fullContent.toLowerCase().includes('victim') || fullContent.toLowerCase().includes('scam'))) {
-            console.log(`Processing message ${msg.id} with content preview:`, fullContent.substring(0, 300));
-          }
-          
-          // Handle emoji prefixes like :pinkdot: and various formats
-          // Pattern: :pinkdot: field: value or field: value
-          const discordMatch = fullContent.match(/(?::\w+:\s*)?discord\s+user:\s*\*{0,2}\s*([^\n\r]+)/i);
-          const robloxProfileMatch = fullContent.match(/https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i);
-          const robloxUserMatch = fullContent.match(/(?::\w+:\s*)?roblox\s+user:\s*\*{0,2}(.*)/i);
-          const displayMatch = fullContent.match(/(?::\w+:\s*)?display:\s*\*{0,2}\s*([^\n\r]+)/i);
+          const discordMatch = msg.content?.match(/discord user:\s*\*{0,2}\s*([^\n\r]+)/i);
+          const robloxProfileMatch = msg.content?.match(/https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i);
+          const robloxUserMatch = msg.content?.match(/roblox user:\s*\*{0,2}(.*)/i);
 
           const discordid = discordMatch ? discordMatch[1].trim().split(',')[0] : null;
-          // Handle "NA" as null
-          const discordidClean = discordid && discordid.toUpperCase() !== 'NA' ? discordid : null;
           const robloxProfile = robloxProfileMatch ? `https://www.roblox.com/users/${robloxProfileMatch[1]}/profile` : null;
           const userId = robloxProfileMatch ? robloxProfileMatch[1] : null;
-          
-          // More flexible regex patterns to handle various formats:
-          // - Handle emoji prefixes like :pinkdot:
-          // - "Victims:" or "victims:" (case insensitive)
-          // - Optional asterisks or markdown formatting
-          // - Match until end of line or next section
-          let victims = null;
-          const victimsPatterns = [
-            /:\w+:\s*victims?:\s*([^\n\r]+)/i,  // Handle :pinkdot: victims: value (emoji required)
-            /victims?:\s*([^\n\r]+)/i,  // Standard format victims: value (no emoji)
-            /victim[:\s]+([^\n\r]+)/i   // More flexible victim: value
-          ];
-          
-          for (const pattern of victimsPatterns) {
-            const match = fullContent.match(pattern);
-            if (match && match[1]) {
-              let extracted = match[1].trim();
-              // Remove markdown formatting and emoji
-              extracted = extracted.replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '').replace(/:\w+:/g, '').trim();
-              // Handle "NA" as null, but keep empty strings as empty (might be valid)
-              if (extracted && extracted.toUpperCase() !== 'NA' && extracted.length > 0) {
-                victims = extracted;
-                console.log(`[EXTRACTION] Matched victims pattern: "${victims}"`);
-                break;
-              }
-            }
-          }
-          // If no match found, victims stays null
-          if (!victims) {
-            console.log(`[EXTRACTION] No victims pattern matched for message ${msg.id}`);
-          }
-          
-          // Items scammed - try multiple patterns
-          let itemsScammed = null;
-          const itemsPatterns = [
-            /:\w+:\s*items?\s+scammed?:\s*([^\n\r]+)/i,  // Handle :pinkdot: items scammed: value (emoji required)
-            /items?\s+scammed?:\s*([^\n\r]+)/i,  // Standard format items scammed: value (no emoji)
-            /scammed?:\s*([^\n\r]+)/i   // More flexible scammed: value
-          ];
-          
-          for (const pattern of itemsPatterns) {
-            const match = fullContent.match(pattern);
-            if (match && match[1]) {
-              let extracted = match[1].trim();
-              // Remove markdown formatting and emoji
-              extracted = extracted.replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '').replace(/:\w+:/g, '').trim();
-              // Handle "NA" as null, but keep empty strings as empty (might be valid)
-              if (extracted && extracted.toUpperCase() !== 'NA' && extracted.length > 0) {
-                itemsScammed = extracted;
-                console.log(`[EXTRACTION] Matched items scammed pattern: "${itemsScammed}"`);
-                break;
-              }
-            }
-          }
-          // If no match found, itemsScammed stays null
-          if (!itemsScammed) {
-            console.log(`[EXTRACTION] No items scammed pattern matched for message ${msg.id}`);
-          }
-          
-          // Debug logging - always log extraction results
-          if (userId) {
-            console.log(`[EXTRACTION] Message ${msg.id} - userId: ${userId}`);
-            console.log(`[EXTRACTION]   victims: "${victims}" (type: ${typeof victims})`);
-            console.log(`[EXTRACTION]   itemsScammed: "${itemsScammed}" (type: ${typeof itemsScammed})`);
-            console.log(`[EXTRACTION]   altIds: [${altIds.join(', ')}]`);
-            console.log(`[EXTRACTION]   Full content preview: ${fullContent.substring(0, 500)}`);
-          }
+          const victims = msg.content?.match(/victims:\s*\*{0,2}(.*)/i)?.[1]?.trim() || null;
+          const itemsScammed = msg.content?.match(/items scammed:\s*\*{0,2}(.*)/i)?.[1]?.trim() || null;
 
           if (!userId) {
             // Partial entry without user ID
@@ -2090,22 +2103,22 @@ export async function onRequestGet({ request, env }) {
             await env.DB.prepare(`
               INSERT INTO scammer_profile_cache (
                 user_id, roblox_name, roblox_display_name, roblox_avatar,
-              discord_id, discord_display_name, victims, items_scammed,
-              incomplete, last_message_id, updated_at
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(user_id) DO UPDATE SET
-              victims = excluded.victims,
-              items_scammed = excluded.items_scammed,
-              incomplete = 1,
-              last_message_id = excluded.last_message_id,
-              updated_at = excluded.updated_at
-          `).bind(
-            userId,
-            robloxUserMatch?.[1]?.trim() || null,
-            null,
-            null,
-            discordidClean || null,
+                discord_id, discord_display_name, victims, items_scammed,
+                incomplete, last_message_id, updated_at
+              )
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              ON CONFLICT(user_id) DO UPDATE SET
+                victims = excluded.victims,
+                items_scammed = excluded.items_scammed,
+                incomplete = 1,
+                last_message_id = excluded.last_message_id,
+                updated_at = excluded.updated_at
+            `).bind(
+              userId,
+              robloxUserMatch?.[1]?.trim() || null,
+              null,
+              null,
+              discordid || null,
               null,
               victims,
               itemsScammed,
@@ -2129,122 +2142,36 @@ export async function onRequestGet({ request, env }) {
 
           // Fetch Discord profile data if discord ID provided - DO write to scammer cache
           let discordData = null;
-          if (discordidClean) {
-            discordData = await fetchDiscordProfile(discordidClean, env, userId, true);
+          if (discordid) {
+            discordData = await fetchDiscordProfile(discordid, env, userId, true);
           }
 
           // Parse and fetch alt accounts
-          // More flexible regex to handle various formats including emoji prefixes
           let altIds = [];
-          const altPatterns = [
-            /(?::\w+:\s*)?(?:roblox\s+)?alts?:\s*([^\n\r]+)/i,  // Handle :pinkdot: roblox alts: value
-            /(?:roblox\s+)?alts?:\s*([^\n\r]+)/i,  // Standard format
-            /alt[:\s]+([^\n\r]+)/i   // More flexible
-          ];
-          
-          let altBlock = null;
-          for (const pattern of altPatterns) {
-            const match = fullContent.match(pattern);
-            if (match && match[1]) {
-              altBlock = match[1].trim();
-              // Remove markdown formatting and emoji
-              altBlock = altBlock.replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '').replace(/:\w+:/g, '').trim();
-              // Handle "NA" as empty
-              if (altBlock && altBlock.toUpperCase() !== 'NA') {
-                break;
-              } else {
-                altBlock = null;
-              }
-            }
-          }
-          
-          if (altBlock) {
-            // Extract user IDs from Roblox profile URLs
+          const altMatches = msg.content?.match(/roblox alts:\s*([\s\S]+)/i);
+          if (altMatches) {
+            const altBlock = altMatches[1].trim();
             altIds = [...altBlock.matchAll(/roblox\.com\/users\/(\d+)\//g)].map(m => m[1]);
-            // Also try to extract plain user IDs if they're listed
-            const plainIds = altBlock.match(/\b(\d{7,})\b/g);
-            if (plainIds) {
-              altIds.push(...plainIds.filter(id => id.length >= 7 && id.length <= 10));
-            }
-            // Remove duplicates
-            altIds = [...new Set(altIds)];
-            if (altIds.length > 0) {
-              console.log(`Found ${altIds.length} alt accounts for message ${msg.id}:`, altIds);
-            }
           }
 
           const robloxAlts = await fetchAltAccounts(altIds, env);
           const robloxAltsJson = JSON.stringify(robloxAlts);
 
           // Check if message has a thread and fetch thread evidence
-          // fetchDiscordThread now always downloads images/videos to R2 automatically
           let threadEvidence = null;
           let threadLastMessageId = null;
-          
-          // Discord API: Check for thread using multiple methods
-          // 1. Check msg.thread property (if Discord includes it)
-          // 2. Check threads map (fetched separately - most reliable)
-          // 3. Try fetching thread info directly
-          let threadId = null;
-          let threadName = null;
-          
-          // Method 1: Check message object's thread property
           if (msg.thread && msg.thread.id) {
-            threadId = msg.thread.id;
-            threadName = msg.thread.name;
-            console.log(`✅ Found thread ${threadId} in message object for message ${msg.id}`);
-          } 
-          // Method 2: Check threads map (most reliable - fetched separately)
-          else {
-            const threadFromMap = threadsMap.get(msg.id);
-            if (threadFromMap) {
-              threadId = threadFromMap.id;
-              threadName = threadFromMap.name;
-              console.log(`✅ Found thread ${threadId} from threads map for message ${msg.id}`);
-            }
-            // Method 3: Fallback - try fetching thread info
-            else {
-              const foundThread = await findThreadForMessage(msg.id, env);
-              if (foundThread) {
-                threadId = foundThread.id;
-                threadName = foundThread.name;
-                console.log(`✅ Found thread ${threadId} via direct lookup for message ${msg.id}`);
-              } else {
-                console.log(`⚠️ No thread found for message ${msg.id} (checked all methods)`);
-              }
-            }
-          }
-          
-          // If we found a thread, fetch its messages
-          // Use a timeout to prevent hanging on large threads
-          if (threadId) {
-            console.log(`Fetching thread ${threadId} for message ${msg.id}`);
-            try {
-              // Set a timeout for thread fetching (20 seconds max per thread)
-              const threadFetchPromise = fetchDiscordThread(threadId, env, null);
-              const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Thread fetch timeout')), 20000)
-              );
-              
-              const threadMessages = await Promise.race([threadFetchPromise, timeoutPromise]);
-              
-              if (threadMessages && threadMessages.length > 0) {
-                // Get the newest message ID from thread (last in array after sorting)
-                threadLastMessageId = threadMessages[threadMessages.length - 1].id;
-                threadEvidence = {
-                  thread_id: threadId,
-                  thread_name: threadName || 'Untitled Thread',
-                  message_count: threadMessages.length,
-                  messages: threadMessages,
-                  created_at: threadId ? new Date(parseInt(threadId) / 4194304 + 1420070400000).toISOString() : null
-                };
-                console.log(`Successfully fetched ${threadMessages.length} messages from thread ${threadId}`);
-              } else {
-                console.warn(`Thread ${threadId} found but no messages retrieved (might be empty or access denied)`);
-              }
-            } catch (err) {
-              console.warn(`Failed to fetch thread ${threadId} (timeout or error):`, err.message);
-              // Continue without thread evidence - it can be fetched later via update-thread-evidence
+            const threadMessages = await fetchDiscordThread(msg.thread.id, env);
+            if (threadMessages && threadMessages.length > 0) {
+              // Get the newest message ID from thread
+              threadLastMessageId = threadMessages[threadMessages.length - 1].id;
+              threadEvidence = {
+                thread_id: msg.thread.id,
+                thread_name: msg.thread.name,
+                message_count: threadMessages.length,
+                messages: threadMessages,
+                created_at: msg.thread.id ? new Date(parseInt(msg.thread.id) / 4194304 + 1420070400000).toISOString() : null
+              };
             }
           }
 
@@ -2259,38 +2186,38 @@ export async function onRequestGet({ request, env }) {
           await env.DB.prepare(`
             INSERT INTO scammer_profile_cache (
               user_id, roblox_name, roblox_display_name, roblox_avatar,
-            discord_id, discord_display_name, discord_avatar,
-            victims, items_scammed, roblox_alts,
-            thread_evidence, thread_last_message_id, thread_last_checked_at, incomplete, last_message_id, updated_at
-          )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          ON CONFLICT(user_id) DO UPDATE SET
-            roblox_name = excluded.roblox_name,
-            roblox_display_name = excluded.roblox_display_name,
-            roblox_avatar = excluded.roblox_avatar,
-            discord_id = COALESCE(excluded.discord_id, discord_id),
-            discord_display_name = COALESCE(excluded.discord_display_name, discord_display_name),
-            discord_avatar = COALESCE(excluded.discord_avatar, discord_avatar),
-            victims = CASE WHEN excluded.victims IS NOT NULL AND excluded.victims != '' THEN excluded.victims ELSE victims END,
-            items_scammed = CASE WHEN excluded.items_scammed IS NOT NULL AND excluded.items_scammed != '' THEN excluded.items_scammed ELSE items_scammed END,
-            roblox_alts = CASE WHEN excluded.roblox_alts IS NOT NULL AND excluded.roblox_alts != '' THEN excluded.roblox_alts ELSE roblox_alts END,
-            thread_evidence = COALESCE(excluded.thread_evidence, thread_evidence),
-            thread_last_message_id = COALESCE(excluded.thread_last_message_id, thread_last_message_id),
-            thread_last_checked_at = COALESCE(excluded.thread_last_checked_at, ?),
-            incomplete = 0,
-            last_message_id = excluded.last_message_id,
-            updated_at = excluded.updated_at
-        `).bind(
-          userId,
-          robloxData.name || null,
-          robloxData.displayName || null,
-          robloxData.avatar || null,
-          discordidClean || null,
+              discord_id, discord_display_name, discord_avatar,
+              victims, items_scammed, roblox_alts,
+              thread_evidence, thread_last_message_id, thread_last_checked_at, incomplete, last_message_id, updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+              roblox_name = excluded.roblox_name,
+              roblox_display_name = excluded.roblox_display_name,
+              roblox_avatar = excluded.roblox_avatar,
+              discord_id = COALESCE(excluded.discord_id, discord_id),
+              discord_display_name = COALESCE(excluded.discord_display_name, discord_display_name),
+              discord_avatar = COALESCE(excluded.discord_avatar, discord_avatar),
+              victims = COALESCE(excluded.victims, victims),
+              items_scammed = COALESCE(excluded.items_scammed, items_scammed),
+              roblox_alts = COALESCE(excluded.roblox_alts, roblox_alts),
+              thread_evidence = COALESCE(excluded.thread_evidence, thread_evidence),
+              thread_last_message_id = COALESCE(excluded.thread_last_message_id, thread_last_message_id),
+              thread_last_checked_at = COALESCE(excluded.thread_last_checked_at, ?),
+              incomplete = 0,
+              last_message_id = excluded.last_message_id,
+              updated_at = excluded.updated_at
+          `).bind(
+            userId,
+            robloxData.name || null,
+            robloxData.displayName || null,
+            robloxData.avatar || null,
+            discordid || null,
             discordData?.displayName || null,
             discordData?.avatar || null,
-            victims || null,  // Explicit null if empty
-            itemsScammed || null,  // Explicit null if empty
-            robloxAltsJson || null,  // Explicit null if empty
+            victims,
+            itemsScammed,
+            robloxAltsJson,
             threadEvidenceJson,
             threadLastMessageId || null,
             threadEvidence ? now : null,
@@ -2375,67 +2302,7 @@ export async function onRequestGet({ request, env }) {
         }
       }
 
-      // Update last processed message ID if we processed messages
-      // This is tracked via the MAX(last_message_id) in scammer_profile_cache
-      // No need to update separately - it's already stored per entry
-
-      // Check if there are more messages to process
-      let hasMore = false;
-      if (allMessages.length === batchSize && currentLastMessageId) {
-        // Check if there are more messages by fetching one more
-        const checkUrl = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
-        checkUrl.searchParams.set("limit", "1");
-        checkUrl.searchParams.set("before", currentLastMessageId);
-        
-        try {
-          const checkRes = await fetch(checkUrl.toString(), {
-            headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
-          });
-          if (checkRes.ok) {
-            const checkMessages = await checkRes.json();
-            hasMore = checkMessages.length > 0;
-          }
-        } catch (err) {
-          // Ignore errors when checking for more messages
-        }
-      }
-
-      // If there are more messages, continue processing recursively
-      if (hasMore && currentLastMessageId) {
-        // Make recursive call to continue processing (lock stays active)
-        const baseUrl = new URL(request.url);
-        baseUrl.searchParams.set('startAfter', currentLastMessageId);
-        baseUrl.searchParams.set('batchSize', batchSize.toString());
-        // Keep refresh flag if present
-        if (urlParams.has('refresh')) {
-          baseUrl.searchParams.set('refresh', 'true');
-        }
-        
-        try {
-          // Make internal fetch to continue processing
-          const recursiveResponse = await fetch(baseUrl.toString(), {
-            method: 'GET',
-            headers: {
-              'Authorization': request.headers.get('Authorization') || '',
-            },
-          });
-          
-          if (recursiveResponse.ok) {
-            // Return the recursive response (which will have all scammers)
-            // The recursive call will release the lock at the end
-            return recursiveResponse;
-          } else {
-            // If recursive call failed, continue with current batch results
-            const errorText = await recursiveResponse.text();
-            console.warn('Recursive call failed:', recursiveResponse.status, errorText);
-          }
-        } catch (err) {
-          console.warn('Recursive call error:', err);
-          // Continue with current batch results
-        }
-      }
-
-      // Release lock only if this is the final batch (no more messages)
+      // Release lock
       await env.DB.prepare("DELETE FROM scammer_cache_locks WHERE key = ?").bind(LOCK_KEY).run();
 
       // Query database to get ALL scammers (not just ones processed in this batch)
@@ -2488,13 +2355,7 @@ export async function onRequestGet({ request, env }) {
       return new Response(JSON.stringify({ 
         lastUpdated: now, 
         scammers: allCompleteScammers, 
-        partials: allPartialScammers,
-        batchProgress: {
-          processed: allMessages.length,
-          hasMore: hasMore,
-          nextStartAfter: currentLastMessageId || null,
-          message: hasMore ? `Processed ${allMessages.length} messages. Call again with ?startAfter=${currentLastMessageId} to continue.` : null
-        }
+        partials: allPartialScammers 
       }), {
         headers: { 
           "Content-Type": "application/json", 

@@ -12,49 +12,30 @@ The thread evidence update system automatically:
 
 ## Cron Trigger Setup
 
-**Note**: Cloudflare Pages Functions don't support cron triggers directly. You need to use one of these options:
+### Option 1: Cloudflare Dashboard
 
-### Option 1: Cloudflare Workers (Recommended)
+1. Go to Cloudflare Dashboard → Workers & Pages → Your Pages Project
+2. Navigate to **Settings** → **Functions** → **Cron Triggers**
+3. Click **Add Cron Trigger**
+4. Configure:
+   - **Cron Expression**: `0 * * * *` (every hour)
+   - **Route**: `/api/roblox-proxy?mode=update-thread-evidence`
+   - **Method**: GET
 
-Create a separate scheduled Worker that calls the endpoint:
+### Option 2: Wrangler CLI (if using wrangler.toml)
 
-1. Create a new Worker in Cloudflare Dashboard
-2. Add this code:
-
-```javascript
-export default {
-  async scheduled(event, env, ctx) {
-    // Call the Pages Function endpoint
-    await fetch('https://emwiki.com/api/roblox-proxy?mode=update-thread-evidence', {
-      method: 'GET'
-    });
-  }
-}
-```
-
-3. In `wrangler.toml`:
+Add to `wrangler.toml`:
 
 ```toml
-name = "thread-evidence-updater"
-main = "src/index.js"
-compatibility_date = "2024-01-01"
-
 [[triggers.crons]]
-cron = "0 */5 * * *"  # Every 5 hours
+cron = "0 * * * *"
 ```
 
-### Option 2: External Cron Service
+Then create a scheduled worker that calls the endpoint.
 
-Use an external service like:
-- **cron-job.org** (free)
-- **EasyCron** (free tier available)
-- **GitHub Actions** (if using GitHub)
+### Option 3: Cloudflare API
 
-Configure to call: `https://emwiki.com/api/roblox-proxy?mode=update-thread-evidence` every 5 hours (`0 */5 * * *`)
-
-### Option 3: Manual Updates
-
-Call the endpoint manually or via script when needed.
+Use the Cloudflare API to create a cron trigger programmatically.
 
 ## Manual Updates
 
@@ -105,19 +86,11 @@ Or via Cloudflare Dashboard:
 
 ## How It Works
 
-1. **Periodic Updates**: Every 5 hours, the cron trigger calls `update-thread-evidence` mode
-2. **Batch Processing**: Processes 1 entry at a time, checking only the last 10 entries
-3. **Incremental Fetching**: Only fetches messages after `thread_last_message_id`
-4. **Image Download**: Automatically downloads new images to R2
-5. **New Thread Detection**: Checks for threads created after initial report
-6. **Frontend**: Uses R2 URLs with fallback to Discord URLs
-
-### Update Schedule
-
-- **Frequency**: Every 5 hours (`0 */5 * * *`)
-- **Batch Size**: 1 entry per call
-- **Check Range**: Last 10 entries only (most recently updated)
-- **Check Threshold**: Entries not checked in the last 5 hours
+1. **Periodic Updates**: Every hour, the cron trigger calls `update-thread-evidence` mode
+2. **Incremental Fetching**: Only fetches messages after `thread_last_message_id`
+3. **Image Download**: Automatically downloads new images to R2
+4. **New Thread Detection**: Checks for threads created after initial report
+5. **Frontend**: Uses R2 URLs with fallback to Discord URLs
 
 ## Monitoring
 
