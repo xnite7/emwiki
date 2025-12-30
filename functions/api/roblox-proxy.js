@@ -1624,23 +1624,40 @@ export async function onRequestGet({ request, env }) {
 
       // --- LOCKING ---
       const LOCK_KEY = "discord-scammers-lock";
-      const LOCK_TTL_MS = 2 * 60 * 1000;
+      const LOCK_TTL_MS = 10 * 60 * 1000; // 10 minutes for full refresh
+      const isRecursiveCall = urlParams.has('startAfter');
 
       await env.DB.prepare(
         "DELETE FROM scammer_cache_locks WHERE key = ? AND expires_at < ?"
       ).bind(LOCK_KEY, now).run();
 
       let lockAcquired = false;
-      try {
-        await env.DB.prepare(
-          "INSERT INTO scammer_cache_locks (key, expires_at) VALUES (?, ?)"
-        ).bind(LOCK_KEY, now + LOCK_TTL_MS).run();
+      if (!isRecursiveCall) {
+        // Only check lock on initial call, recursive calls bypass lock
+        try {
+          await env.DB.prepare(
+            "INSERT INTO scammer_cache_locks (key, expires_at) VALUES (?, ?)"
+          ).bind(LOCK_KEY, now + LOCK_TTL_MS).run();
+          lockAcquired = true;
+        } catch {
+          lockAcquired = false;
+        }
+      } else {
+        // Recursive call - extend lock but don't fail if already exists
+        try {
+          await env.DB.prepare(
+            "INSERT INTO scammer_cache_locks (key, expires_at) VALUES (?, ?)"
+          ).bind(LOCK_KEY, now + LOCK_TTL_MS).run();
+        } catch {
+          // Update existing lock
+          await env.DB.prepare(
+            "UPDATE scammer_cache_locks SET expires_at = ? WHERE key = ?"
+          ).bind(now + LOCK_TTL_MS, LOCK_KEY).run();
+        }
         lockAcquired = true;
-      } catch {
-        lockAcquired = false;
       }
 
-      if (!lockAcquired) {
+      if (!lockAcquired && !isRecursiveCall) {
         let waited = 0;
         const waitStep = 1000;
         while (waited < 10000) {
@@ -1706,15 +1723,22 @@ export async function onRequestGet({ request, env }) {
         });
       }
 
-      // --- DISCORD FETCHING (INCREMENTAL) ---
+      // --- DISCORD FETCHING (BATCH PROCESSING) ---
       const channelId = env.DISCORD_CHANNEL_ID;
-      let allMessages = [];
+      const BATCH_SIZE = 50; // Process 50 messages per call to avoid timeouts
+      const urlParams = new URL(request.url).searchParams;
+      const batchSize = parseInt(urlParams.get('batchSize') || BATCH_SIZE.toString());
+      const startAfter = urlParams.get('startAfter'); // Optional: resume from specific message ID
       
-      if (lastProcessedMessageId) {
+      let allMessages = [];
+      let processedCount = 0;
+      const resumeFromMessageId = startAfter || lastProcessedMessageId;
+      
+      if (resumeFromMessageId && !forceRefresh) {
         // Incremental: Only fetch new messages after the last processed one
-        let after = lastProcessedMessageId;
+        let after = resumeFromMessageId;
 
-        while (true) {
+        while (allMessages.length < batchSize) {
           const fetchUrl = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
           fetchUrl.searchParams.set("limit", "100");
           fetchUrl.searchParams.set("after", after);
@@ -1767,11 +1791,11 @@ export async function onRequestGet({ request, env }) {
           if (allMessages.length >= 5000) break;
         }
       } else {
-        // Initial fetch: Fetch ALL messages from the beginning using 'before' parameter
+        // Initial fetch or force refresh: Fetch messages in batches
         // Start by getting the latest message ID, then fetch backwards
-        let before = null;
+        let before = resumeFromMessageId || null;
 
-        while (true) {
+        while (allMessages.length < batchSize) {
           const fetchUrl = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
           fetchUrl.searchParams.set("limit", "100");
           if (before) {
@@ -1823,12 +1847,17 @@ export async function onRequestGet({ request, env }) {
           if (allMessages.length >= 5000) break;
         }
       }
+      
+      // Limit to batch size to avoid timeout
+      allMessages = allMessages.slice(0, batchSize);
 
       // Process messages and update unified table
       const scammers = [];
       const partialScammers = [];
+      let currentLastMessageId = null;
 
       for (const msg of allMessages) {
+        currentLastMessageId = msg.id; // Track the last message we process
         try {
           const discordMatch = msg.content?.match(/discord user:\s*\*{0,2}\s*([^\n\r]+)/i);
           const robloxProfileMatch = msg.content?.match(/https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i);
@@ -2064,7 +2093,67 @@ export async function onRequestGet({ request, env }) {
         }
       }
 
-      // Release lock
+      // Update last processed message ID if we processed messages
+      // This is tracked via the MAX(last_message_id) in scammer_profile_cache
+      // No need to update separately - it's already stored per entry
+
+      // Check if there are more messages to process
+      let hasMore = false;
+      if (allMessages.length === batchSize && currentLastMessageId) {
+        // Check if there are more messages by fetching one more
+        const checkUrl = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
+        checkUrl.searchParams.set("limit", "1");
+        checkUrl.searchParams.set("before", currentLastMessageId);
+        
+        try {
+          const checkRes = await fetch(checkUrl.toString(), {
+            headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+          });
+          if (checkRes.ok) {
+            const checkMessages = await checkRes.json();
+            hasMore = checkMessages.length > 0;
+          }
+        } catch (err) {
+          // Ignore errors when checking for more messages
+        }
+      }
+
+      // If there are more messages, continue processing recursively
+      if (hasMore && currentLastMessageId) {
+        // Make recursive call to continue processing (lock stays active)
+        const baseUrl = new URL(request.url);
+        baseUrl.searchParams.set('startAfter', currentLastMessageId);
+        baseUrl.searchParams.set('batchSize', batchSize.toString());
+        // Keep refresh flag if present
+        if (urlParams.has('refresh')) {
+          baseUrl.searchParams.set('refresh', 'true');
+        }
+        
+        try {
+          // Make internal fetch to continue processing
+          const recursiveResponse = await fetch(baseUrl.toString(), {
+            method: 'GET',
+            headers: {
+              'Authorization': request.headers.get('Authorization') || '',
+            },
+          });
+          
+          if (recursiveResponse.ok) {
+            // Return the recursive response (which will have all scammers)
+            // The recursive call will release the lock at the end
+            return recursiveResponse;
+          } else {
+            // If recursive call failed, continue with current batch results
+            const errorText = await recursiveResponse.text();
+            console.warn('Recursive call failed:', recursiveResponse.status, errorText);
+          }
+        } catch (err) {
+          console.warn('Recursive call error:', err);
+          // Continue with current batch results
+        }
+      }
+
+      // Release lock only if this is the final batch (no more messages)
       await env.DB.prepare("DELETE FROM scammer_cache_locks WHERE key = ?").bind(LOCK_KEY).run();
 
       // Query database to get ALL scammers (not just ones processed in this batch)
@@ -2117,7 +2206,13 @@ export async function onRequestGet({ request, env }) {
       return new Response(JSON.stringify({ 
         lastUpdated: now, 
         scammers: allCompleteScammers, 
-        partials: allPartialScammers 
+        partials: allPartialScammers,
+        batchProgress: {
+          processed: allMessages.length,
+          hasMore: hasMore,
+          nextStartAfter: currentLastMessageId || null,
+          message: hasMore ? `Processed ${allMessages.length} messages. Call again with ?startAfter=${currentLastMessageId} to continue.` : null
+        }
       }), {
         headers: { 
           "Content-Type": "application/json", 
