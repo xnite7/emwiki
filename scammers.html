@@ -958,9 +958,9 @@ margin-top: 10px;
     // Create scammer block - Optimized
     async function createScammerBlock(scammer, container) {
         const {
-            robloxUser = "Unknown",
-            roblox_name = null,
-            robloxProfile = "#",
+            user_id = null,
+            robloxDisplay = "Unknown",
+            robloxUser = null,
             avatar = "imgs/plr.jpg",
             discordDisplay = null,
             discordId = null,
@@ -969,7 +969,6 @@ margin-top: 10px;
             robloxAlts = null,
             severity = null, // Optional: for warning badges
             hasThreadEvidence = false,
-            user_id = null
         } = scammer;
 
         const block = document.createElement('section');
@@ -1095,14 +1094,7 @@ console.log(roblox_name);
                 // Create all scammer blocks
                 sortedScammers.forEach(scammer => {
                     // Extract user_id from robloxProfile if not present
-                    if (!scammer.user_id && scammer.robloxProfile) {
-                        const match = scammer.robloxProfile.match(/\/users\/(\d+)\//);
-                        if (match) {
-                            scammer.user_id = match[1];
-                        } else {
-                            console.error('No user_id found for scammer:', scammer.robloxProfile);
-                        }
-                    }
+                    
                     createScammerBlock(scammer, container);
                 });
 
