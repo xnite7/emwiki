@@ -194,7 +194,7 @@
     }
 
     /* Better Discord badge */
-    .scammer-info p:has(img) {
+    #scammerdiscordpill {
         color: #ffffff !important;
         align-self: flex-start;
         width: fit-content;
@@ -594,7 +594,7 @@ margin-top: 10px;
         .scammer-block {
             max-width: 100%;
         }
-        .scammer-info p:has(img){
+        #scammerdiscordpill{
             margin: auto;
         }
 
@@ -983,7 +983,7 @@ margin-top: 10px;
 
         // Build Discord display - removed inline styles, using CSS instead
         const discordHTML = discordDisplay && discordDisplay.trim() !== "NA"
-            ? `<a href="https://discord.com/users/${discordId}" target="_blank" rel="noopener noreferrer"><img src="./imgs/discord.png" alt="Discord"> ${discordDisplay}</a>`
+            ? `<a id="scammerdiscordpill" ${discordId ? `href="https://discord.com/users/${discordId}"` : ``} target="_blank" rel="noopener noreferrer"><img src="./imgs/discord.png" alt="Discord"> ${discordDisplay}</a>`
             : "";
 
         // Optional: High severity warning badge
