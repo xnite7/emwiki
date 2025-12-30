@@ -1732,14 +1732,88 @@ export async function onRequestGet({ request, env }) {
       const batchSize = Math.min(parseInt(urlParams.get('batchSize') || BATCH_SIZE.toString()), 20); // Cap at 20 max
       const startAfter = urlParams.get('startAfter'); // Optional: resume from specific message ID
       
-      // Helper function to find thread for a message
-      // Discord API: Messages with threads should have msg.thread property
-      // But we also check by trying to fetch thread info
-      async function findThreadForMessage(messageId, env) {
-        // First check if message object already has thread info (handled in processing loop)
-        // This function is for additional checks
+      // Fetch ALL threads from the channel to match with messages
+      // Discord API: GET /channels/{channel.id}/threads/active
+      // This is the reliable way to get threads since msg.thread isn't always present
+      const threadsMap = new Map(); // Maps message ID -> thread info
+      
+      try {
+        // Fetch active threads
+        const activeThreadsUrl = `https://discord.com/api/v10/channels/${channelId}/threads/active`;
+        const activeThreadsRes = await fetch(activeThreadsUrl, {
+          headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+        });
         
-        // Try fetching thread info using message ID (threads can be created from messages)
+        if (activeThreadsRes.ok) {
+          const activeData = await activeThreadsRes.json();
+          if (activeData.threads && Array.isArray(activeData.threads)) {
+            for (const thread of activeData.threads) {
+              // Match thread to parent message ID (threads have a message_id property)
+              if (thread.id && thread.parent_id === channelId) {
+                // Store by thread ID for lookup
+                threadsMap.set(thread.id, {
+                  id: thread.id,
+                  name: thread.name || 'Untitled Thread',
+                  message_id: thread.message_id || null
+                });
+                // Also store by message_id if available (for direct lookup)
+                if (thread.message_id) {
+                  threadsMap.set(thread.message_id, {
+                    id: thread.id,
+                    name: thread.name || 'Untitled Thread',
+                    message_id: thread.message_id
+                  });
+                }
+              }
+            }
+          }
+        }
+        
+        // Also fetch archived/public threads
+        const archivedThreadsUrl = `https://discord.com/api/v10/channels/${channelId}/threads/archived/public?limit=100`;
+        const archivedRes = await fetch(archivedThreadsUrl, {
+          headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+        });
+        
+        if (archivedRes.ok) {
+          const archivedData = await archivedRes.json();
+          if (archivedData.threads && Array.isArray(archivedData.threads)) {
+            for (const thread of archivedData.threads) {
+              if (thread.id && thread.parent_id === channelId) {
+                threadsMap.set(thread.id, {
+                  id: thread.id,
+                  name: thread.name || 'Untitled Thread',
+                  message_id: thread.message_id || null
+                });
+                if (thread.message_id) {
+                  threadsMap.set(thread.message_id, {
+                    id: thread.id,
+                    name: thread.name || 'Untitled Thread',
+                    message_id: thread.message_id
+                  });
+                }
+              }
+            }
+          }
+        }
+        
+        console.log(`[THREADS] Found ${threadsMap.size / 2} threads in channel (stored by thread ID and message ID)`);
+      } catch (err) {
+        console.warn('[THREADS] Failed to fetch threads:', err);
+      }
+      
+      // Helper function to find thread for a message
+      async function findThreadForMessage(messageId, env) {
+        // First check threads map (most reliable)
+        const threadFromMap = threadsMap.get(messageId);
+        if (threadFromMap) {
+          return {
+            id: threadFromMap.id,
+            name: threadFromMap.name
+          };
+        }
+        
+        // Fallback: Try fetching thread info using message ID
         try {
           const threadInfoUrl = `https://discord.com/api/v10/channels/${messageId}`;
           const threadInfoRes = await fetch(threadInfoUrl, {
@@ -1934,52 +2008,64 @@ export async function onRequestGet({ request, env }) {
           // - Match until end of line or next section
           let victims = null;
           const victimsPatterns = [
-            /(?::\w+:\s*)?victims?:\s*\*{0,2}\s*([^\n\r]+)/i,  // Handle :pinkdot: victims: value
-            /victims?:\s*([^\n\r]+)/i,  // Standard format
-            /victim[:\s]+([^\n\r]+)/i   // More flexible
+            /:\w+:\s*victims?:\s*([^\n\r]+)/i,  // Handle :pinkdot: victims: value (emoji required)
+            /victims?:\s*([^\n\r]+)/i,  // Standard format victims: value (no emoji)
+            /victim[:\s]+([^\n\r]+)/i   // More flexible victim: value
           ];
           
           for (const pattern of victimsPatterns) {
             const match = fullContent.match(pattern);
             if (match && match[1]) {
-              victims = match[1].trim();
+              let extracted = match[1].trim();
               // Remove markdown formatting and emoji
-              victims = victims.replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '').replace(/:\w+:/g, '').trim();
-              // Handle "NA" as null
-              if (victims && victims.toUpperCase() !== 'NA') {
+              extracted = extracted.replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '').replace(/:\w+:/g, '').trim();
+              // Handle "NA" as null, but keep empty strings as empty (might be valid)
+              if (extracted && extracted.toUpperCase() !== 'NA' && extracted.length > 0) {
+                victims = extracted;
+                console.log(`[EXTRACTION] Matched victims pattern: "${victims}"`);
                 break;
-              } else {
-                victims = null;
               }
             }
+          }
+          // If no match found, victims stays null
+          if (!victims) {
+            console.log(`[EXTRACTION] No victims pattern matched for message ${msg.id}`);
           }
           
           // Items scammed - try multiple patterns
           let itemsScammed = null;
           const itemsPatterns = [
-            /(?::\w+:\s*)?items?\s+scammed?:\s*\*{0,2}\s*([^\n\r]+)/i,  // Handle :pinkdot: items scammed: value
-            /items?\s+scammed?:\s*([^\n\r]+)/i,  // Standard format
-            /scammed?:\s*([^\n\r]+)/i   // More flexible
+            /:\w+:\s*items?\s+scammed?:\s*([^\n\r]+)/i,  // Handle :pinkdot: items scammed: value (emoji required)
+            /items?\s+scammed?:\s*([^\n\r]+)/i,  // Standard format items scammed: value (no emoji)
+            /scammed?:\s*([^\n\r]+)/i   // More flexible scammed: value
           ];
           
           for (const pattern of itemsPatterns) {
             const match = fullContent.match(pattern);
             if (match && match[1]) {
-              itemsScammed = match[1].trim();
+              let extracted = match[1].trim();
               // Remove markdown formatting and emoji
-              itemsScammed = itemsScammed.replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '').replace(/:\w+:/g, '').trim();
-              // Handle "NA" as null
-              if (itemsScammed && itemsScammed.toUpperCase() !== 'NA') {
+              extracted = extracted.replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '').replace(/:\w+:/g, '').trim();
+              // Handle "NA" as null, but keep empty strings as empty (might be valid)
+              if (extracted && extracted.toUpperCase() !== 'NA' && extracted.length > 0) {
+                itemsScammed = extracted;
+                console.log(`[EXTRACTION] Matched items scammed pattern: "${itemsScammed}"`);
                 break;
-              } else {
-                itemsScammed = null;
               }
             }
           }
+          // If no match found, itemsScammed stays null
+          if (!itemsScammed) {
+            console.log(`[EXTRACTION] No items scammed pattern matched for message ${msg.id}`);
+          }
           
-          // Debug logging
+          // Debug logging - always log extraction results
           if (userId) {
-            console.log(`Message ${msg.id} - userId: ${userId}, victims: ${victims || 'none'}, itemsScammed: ${itemsScammed || 'none'}`);
+            console.log(`[EXTRACTION] Message ${msg.id} - userId: ${userId}`);
+            console.log(`[EXTRACTION]   victims: "${victims}" (type: ${typeof victims})`);
+            console.log(`[EXTRACTION]   itemsScammed: "${itemsScammed}" (type: ${typeof itemsScammed})`);
+            console.log(`[EXTRACTION]   altIds: [${altIds.join(', ')}]`);
+            console.log(`[EXTRACTION]   Full content preview: ${fullContent.substring(0, 500)}`);
           }
 
           if (!userId) {
@@ -2095,31 +2181,37 @@ export async function onRequestGet({ request, env }) {
           let threadEvidence = null;
           let threadLastMessageId = null;
           
-          // Discord API: Check for thread in message object first
-          // The msg.thread property should be present if the message has a thread
+          // Discord API: Check for thread using multiple methods
+          // 1. Check msg.thread property (if Discord includes it)
+          // 2. Check threads map (fetched separately - most reliable)
+          // 3. Try fetching thread info directly
           let threadId = null;
           let threadName = null;
           
-          // Debug: Log message structure to understand what Discord returns
-          if (!msg.thread) {
-            console.log(`Message ${msg.id} has no thread property. Available keys:`, Object.keys(msg));
-          }
-          
+          // Method 1: Check message object's thread property
           if (msg.thread && msg.thread.id) {
-            // Thread info is directly in message object (most common case)
             threadId = msg.thread.id;
             threadName = msg.thread.name;
             console.log(`✅ Found thread ${threadId} in message object for message ${msg.id}`);
-          } else {
-            // Try alternative method: check if message ID itself is a thread
-            const foundThread = await findThreadForMessage(msg.id, env);
-            if (foundThread) {
-              threadId = foundThread.id;
-              threadName = foundThread.name;
-              console.log(`✅ Found thread ${threadId} via lookup for message ${msg.id}`);
-            } else {
-              // Log when no thread found for debugging
-              console.log(`⚠️ No thread found for message ${msg.id}`);
+          } 
+          // Method 2: Check threads map (most reliable - fetched separately)
+          else {
+            const threadFromMap = threadsMap.get(msg.id);
+            if (threadFromMap) {
+              threadId = threadFromMap.id;
+              threadName = threadFromMap.name;
+              console.log(`✅ Found thread ${threadId} from threads map for message ${msg.id}`);
+            }
+            // Method 3: Fallback - try fetching thread info
+            else {
+              const foundThread = await findThreadForMessage(msg.id, env);
+              if (foundThread) {
+                threadId = foundThread.id;
+                threadName = foundThread.name;
+                console.log(`✅ Found thread ${threadId} via direct lookup for message ${msg.id}`);
+              } else {
+                console.log(`⚠️ No thread found for message ${msg.id} (checked all methods)`);
+              }
             }
           }
           
@@ -2179,9 +2271,9 @@ export async function onRequestGet({ request, env }) {
             discord_id = COALESCE(excluded.discord_id, discord_id),
             discord_display_name = COALESCE(excluded.discord_display_name, discord_display_name),
             discord_avatar = COALESCE(excluded.discord_avatar, discord_avatar),
-            victims = COALESCE(excluded.victims, victims),
-            items_scammed = COALESCE(excluded.items_scammed, items_scammed),
-            roblox_alts = COALESCE(excluded.roblox_alts, roblox_alts),
+            victims = CASE WHEN excluded.victims IS NOT NULL AND excluded.victims != '' THEN excluded.victims ELSE victims END,
+            items_scammed = CASE WHEN excluded.items_scammed IS NOT NULL AND excluded.items_scammed != '' THEN excluded.items_scammed ELSE items_scammed END,
+            roblox_alts = CASE WHEN excluded.roblox_alts IS NOT NULL AND excluded.roblox_alts != '' THEN excluded.roblox_alts ELSE roblox_alts END,
             thread_evidence = COALESCE(excluded.thread_evidence, thread_evidence),
             thread_last_message_id = COALESCE(excluded.thread_last_message_id, thread_last_message_id),
             thread_last_checked_at = COALESCE(excluded.thread_last_checked_at, ?),
@@ -2196,9 +2288,9 @@ export async function onRequestGet({ request, env }) {
           discordidClean || null,
             discordData?.displayName || null,
             discordData?.avatar || null,
-            victims,
-            itemsScammed,
-            robloxAltsJson,
+            victims || null,  // Explicit null if empty
+            itemsScammed || null,  // Explicit null if empty
+            robloxAltsJson || null,  // Explicit null if empty
             threadEvidenceJson,
             threadLastMessageId || null,
             threadEvidence ? now : null,
