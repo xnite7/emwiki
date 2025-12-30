@@ -218,6 +218,428 @@ async function getLastProcessedMessageId(env) {
   return result?.last_id || null;
 }
 
+// ============================================================================
+// EXTRACTION HELPER FUNCTIONS - Clean rebuild for scammer data
+// ============================================================================
+
+function extractDisplayName(content) {
+  // Handle both :emoji: and <:emoji:id> formats, with optional ** markdown
+  const patterns = [
+    /<:\w+:\d+>\s*\*{0,2}\s*display:\s*\*{0,2}\s*([^\n\r]+)/i,
+    /:\w+:\s*\*{0,2}\s*display:\s*\*{0,2}\s*([^\n\r]+)/i
+  ];
+  
+  for (const pattern of patterns) {
+    const match = content.match(pattern);
+    if (match) {
+      let value = match[1].trim();
+      // Remove markdown bold and emoji
+      value = value.replace(/\*\*/g, '').replace(/\*/g, '').replace(/<:\w+:\d+>/g, '').replace(/:\w+:/g, '').trim();
+      if (value) return value;
+    }
+  }
+  return null;
+}
+
+function extractRobloxUsername(content) {
+  // Handle both :emoji: and <:emoji:id> formats, with optional ** markdown
+  const patterns = [
+    /<:\w+:\d+>\s*\*{0,2}\s*roblox\s+user:\s*\*{0,2}\s*([^\n\r]+)/i,
+    /:\w+:\s*\*{0,2}\s*roblox\s+user:\s*\*{0,2}\s*([^\n\r]+)/i
+  ];
+  
+  for (const pattern of patterns) {
+    const match = content.match(pattern);
+    if (match) {
+      let value = match[1].trim();
+      // Remove markdown bold and emoji
+      value = value.replace(/\*\*/g, '').replace(/\*/g, '').replace(/<:\w+:\d+>/g, '').replace(/:\w+:/g, '').trim();
+      if (value) return value;
+    }
+  }
+  return null;
+}
+
+function extractDiscordIds(content) {
+  // Handle both :emoji: and <:emoji:id> formats, with optional ** markdown
+  const patterns = [
+    /<:\w+:\d+>\s*\*{0,2}\s*discord\s+user:\s*\*{0,2}\s*([^\n\r]+)/i,
+    /:\w+:\s*\*{0,2}\s*discord\s+user:\s*\*{0,2}\s*([^\n\r]+)/i
+  ];
+  
+  let match = null;
+  for (const pattern of patterns) {
+    match = content.match(pattern);
+    if (match) break;
+  }
+  
+  if (!match) return [];
+  
+  let value = match[1].trim();
+  // Remove markdown bold and emoji
+  value = value.replace(/\*\*/g, '').replace(/\*/g, '').replace(/<:\w+:\d+>/g, '').replace(/:\w+:/g, '').trim();
+  if (!value || value.toUpperCase() === 'NA') return [];
+  
+  return value.split(',')
+    .map(id => id.trim())
+    .filter(id => id && id.toUpperCase() !== 'NA' && /^\d+$/.test(id));
+}
+
+function extractVictims(content) {
+  // Handle both :emoji: and <:emoji:id> formats, with optional ** markdown
+  const patterns = [
+    /<:\w+:\d+>\s*\*{0,2}\s*victims?:\s*\*{0,2}\s*([^\n\r]+)/i,
+    /:\w+:\s*\*{0,2}\s*victims?:\s*\*{0,2}\s*([^\n\r]+)/i
+  ];
+  
+  for (const pattern of patterns) {
+    const match = content.match(pattern);
+    if (match) {
+      let value = match[1].trim();
+      // Remove markdown bold and emoji
+      value = value.replace(/\*\*/g, '').replace(/\*/g, '').replace(/<:\w+:\d+>/g, '').replace(/:\w+:/g, '').trim();
+      if (!value || value.toUpperCase() === 'NA') return null;
+      return value;
+    }
+  }
+  return null;
+}
+
+function extractItemsScammed(content) {
+  // Handle both :emoji: and <:emoji:id> formats, with optional ** markdown
+  const patterns = [
+    /<:\w+:\d+>\s*\*{0,2}\s*items?\s+scammed?:\s*\*{0,2}\s*([^\n\r]+)/i,
+    /:\w+:\s*\*{0,2}\s*items?\s+scammed?:\s*\*{0,2}\s*([^\n\r]+)/i
+  ];
+  
+  for (const pattern of patterns) {
+    const match = content.match(pattern);
+    if (match) {
+      let value = match[1].trim();
+      // Remove markdown bold and emoji
+      value = value.replace(/\*\*/g, '').replace(/\*/g, '').replace(/<:\w+:\d+>/g, '').replace(/:\w+:/g, '').trim();
+      if (!value || value.toUpperCase() === 'NA') return null;
+      return value;
+    }
+  }
+  return null;
+}
+
+function extractAltIds(content) {
+  // Match "roblox alts:" section until next section or end
+  const match = content.match(/roblox\s+alts?:\s*([\s\S]+?)(?:\n\n|\n(?:roblox\s+profile|$)|$)/i);
+  if (!match) return [];
+  
+  const altBlock = match[1].trim();
+  if (!altBlock || altBlock.toUpperCase() === 'NA') return [];
+  
+  // Extract user IDs from profile URLs
+  const userIds = [...altBlock.matchAll(/roblox\.com\/users\/(\d+)\/profile/g)].map(m => m[1]);
+  
+  if (userIds.length === 0) return [];
+  
+  // Extract usernames - can be in parentheses OR on the next line after URL
+  const alts = [];
+  const lines = altBlock.split('\n');
+  
+  for (let i = 0; i < userIds.length; i++) {
+    const userId = userIds[i];
+    let username = null;
+    
+    // Method 1: Check for username in parentheses on same line
+    const urlPattern = new RegExp(`roblox\\.com/users/${userId}/profile[^\\n]*\\(([^)]+)\\)`, 'i');
+    const parenMatch = altBlock.match(urlPattern);
+    if (parenMatch) {
+      username = parenMatch[1].trim();
+    } else {
+      // Method 2: Check for username on next line after URL
+      // Find the line with the URL
+      for (let j = 0; j < lines.length; j++) {
+        if (lines[j].includes(`roblox.com/users/${userId}/profile`)) {
+          // Check if there's text after the URL on the same line
+          const sameLineMatch = lines[j].match(/profile\s+([^\s\n\r]+)/i);
+          if (sameLineMatch) {
+            username = sameLineMatch[1].trim();
+          } else if (j + 1 < lines.length) {
+            // Check next line for username
+            const nextLine = lines[j + 1].trim();
+            if (nextLine && !nextLine.match(/^https?:\/\//) && !nextLine.match(/^roblox\.com/)) {
+              username = nextLine;
+            }
+          }
+          break;
+        }
+      }
+    }
+    
+    alts.push({
+      userId,
+      username: username || null
+    });
+  }
+  
+  return alts;
+}
+
+function extractRobloxUserId(content) {
+  const match = content.match(/https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i);
+  return match ? match[1] : null;
+}
+
+// ============================================================================
+// THREAD DETECTION - Detect thread ID without fetching messages
+// ============================================================================
+
+async function detectThreadId(msg, env, channelId) {
+  // Check msg.thread property (if Discord includes it)
+  if (msg.thread && msg.thread.id) {
+    return msg.thread.id;
+  }
+  
+  // Note: We could also fetch all threads from the channel and match by message ID,
+  // but that's expensive. For now, we rely on Discord including msg.thread.
+  return null;
+}
+
+// ============================================================================
+// PROCESS SCAMMER MESSAGE - Extract and store scammer data
+// ============================================================================
+
+async function processScammerMessage(msg, env, channelId) {
+  const content = msg.content || '';
+  
+  // REQUIRED: Roblox User ID (skip if missing)
+  const userId = extractRobloxUserId(content);
+  if (!userId) {
+    console.log(`Skipping message ${msg.id} - no Roblox profile URL`);
+    return;
+  }
+  
+  // Extract all fields
+  const displayName = extractDisplayName(content);
+  const robloxUsername = extractRobloxUsername(content);
+  const discordIds = extractDiscordIds(content);
+  const victims = extractVictims(content);
+  const itemsScammed = extractItemsScammed(content);
+  const altIds = extractAltIds(content);
+  
+  console.log(`[PROCESSING] Message ${msg.id} - userId: ${userId}, victims: ${victims || 'none'}, itemsScammed: ${itemsScammed || 'none'}, alts: ${altIds.length}`);
+  
+  // Fetch Roblox profile
+  const robloxData = await fetchRobloxProfile(userId, env);
+  if (!robloxData) {
+    console.warn(`Failed to fetch Roblox profile for ${userId}`);
+    // Continue anyway with extracted username
+  }
+  
+  // Fetch Discord profiles (for all Discord IDs)
+  const discordProfiles = [];
+  for (const discordId of discordIds) {
+    const profile = await fetchDiscordProfile(discordId, env, userId);
+    if (profile) {
+      discordProfiles.push({ id: discordId, ...profile });
+    }
+  }
+  
+  // Fetch alt account profiles
+  const altProfiles = [];
+  for (const alt of altIds) {
+    const altData = await fetchRobloxProfile(alt.userId, env);
+    if (altData) {
+      altProfiles.push({
+        userId: alt.userId,
+        username: alt.username || altData.name,
+        displayName: altData.displayName,
+        avatar: altData.avatar
+      });
+    }
+  }
+  
+  // Detect thread ID (don't fetch messages)
+  const threadId = await detectThreadId(msg, env, channelId);
+  if (threadId) {
+    console.log(`[THREAD] Found thread ${threadId} for message ${msg.id}`);
+  }
+  
+  // Store in D1
+  await storeScammerData({
+    userId,
+    robloxUsername: robloxData?.name || robloxUsername,
+    robloxDisplayName: robloxData?.displayName || displayName,
+    robloxAvatar: robloxData?.avatar,
+    discordProfiles,
+    victims,
+    itemsScammed,
+    altProfiles,
+    threadId,
+    messageId: msg.id
+  }, env);
+}
+
+// ============================================================================
+// STORE SCAMMER DATA - Save to D1 database
+// ============================================================================
+
+async function storeScammerData(data, env) {
+  const now = Date.now();
+  
+  // Primary Discord ID (first one, or null if none)
+  const primaryDiscordId = data.discordProfiles[0]?.id || null;
+  const primaryDiscordDisplay = data.discordProfiles[0]?.displayName || null;
+  const primaryDiscordAvatar = data.discordProfiles[0]?.avatar || null;
+  
+  // Thread evidence (just thread_id, no messages)
+  const threadEvidence = data.threadId ? JSON.stringify({
+    thread_id: data.threadId,
+    _pending_fetch: true
+  }) : null;
+  
+  await env.DB.prepare(`
+    INSERT INTO scammer_profile_cache (
+      user_id, roblox_name, roblox_display_name, roblox_avatar,
+      discord_id, discord_display_name, discord_avatar,
+      victims, items_scammed, roblox_alts,
+      thread_evidence, incomplete, last_message_id, updated_at
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(user_id) DO UPDATE SET
+      roblox_name = excluded.roblox_name,
+      roblox_display_name = excluded.roblox_display_name,
+      roblox_avatar = excluded.roblox_avatar,
+      discord_id = excluded.discord_id,
+      discord_display_name = excluded.discord_display_name,
+      discord_avatar = excluded.discord_avatar,
+      victims = excluded.victims,
+      items_scammed = excluded.items_scammed,
+      roblox_alts = excluded.roblox_alts,
+      thread_evidence = COALESCE(excluded.thread_evidence, thread_evidence),
+      incomplete = 0,
+      last_message_id = excluded.last_message_id,
+      updated_at = excluded.updated_at
+  `).bind(
+    data.userId,
+    data.robloxUsername,
+    data.robloxDisplayName,
+    data.robloxAvatar,
+    primaryDiscordId,
+    primaryDiscordDisplay,
+    primaryDiscordAvatar,
+    data.victims,
+    data.itemsScammed,
+    JSON.stringify(data.altProfiles),
+    threadEvidence,
+    0,
+    data.messageId,
+    now
+  ).run();
+  
+  console.log(`[STORED] User ${data.userId} - ${data.robloxUsername || 'unknown'}`);
+}
+
+// ============================================================================
+// PROCESS SCAMMER MESSAGES - Main processing function
+// ============================================================================
+
+async function processScammerMessages(env, jobId) {
+  const channelId = env.DISCORD_CHANNEL_ID;
+  let allMessages = [];
+  let before = null;
+  
+  try {
+    // Fetch all messages
+    while (true) {
+      const url = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
+      url.searchParams.set('limit', '100');
+      if (before) url.searchParams.set('before', before);
+      
+      let response;
+      let retryCount = 0;
+      while (retryCount < 3) {
+        try {
+          response = await fetch(url.toString(), {
+            headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+          });
+          
+          if (response.status === 429) {
+            const retryAfter = await response.json();
+            await new Promise(r => setTimeout(r, (retryAfter.retry_after || 1) * 1000));
+            retryCount++;
+            continue;
+          }
+          
+          if (!response.ok) {
+            throw new Error(`Discord API error: ${response.status}`);
+          }
+          
+          break;
+        } catch (err) {
+          retryCount++;
+          if (retryCount >= 3) {
+            throw err;
+          }
+          await new Promise(r => setTimeout(r, 1000 * retryCount));
+        }
+      }
+      
+      const messages = await response.json();
+      if (messages.length === 0) break;
+      
+      allMessages.push(...messages);
+      before = messages[messages.length - 1].id;
+      
+      // Rate limiting
+      await new Promise(r => setTimeout(r, 100));
+    }
+    
+    console.log(`[JOB ${jobId}] Fetched ${allMessages.length} messages from Discord`);
+    
+    // Update total messages
+    await env.DB.prepare(`
+      UPDATE scammer_job_status 
+      SET total_messages = ? 
+      WHERE job_id = ?
+    `).bind(allMessages.length, jobId).run();
+    
+    // Process each message
+    let processed = 0;
+    for (const msg of allMessages) {
+      try {
+        await processScammerMessage(msg, env, channelId);
+        processed++;
+        
+        // Update progress every 10 messages
+        if (processed % 10 === 0) {
+          await env.DB.prepare(`
+            UPDATE scammer_job_status 
+            SET messages_processed = ? 
+            WHERE job_id = ?
+          `).bind(processed, jobId).run();
+          console.log(`[JOB ${jobId}] Processed ${processed}/${allMessages.length} messages`);
+        }
+      } catch (err) {
+        console.error(`[ERROR] Processing message ${msg.id}:`, err);
+        // Continue processing
+      }
+    }
+    
+    // Mark job as completed
+    await env.DB.prepare(`
+      UPDATE scammer_job_status 
+      SET status = 'completed', messages_processed = ?, completed_at = ?
+      WHERE job_id = ?
+    `).bind(processed, Date.now(), jobId).run();
+    
+    console.log(`[JOB ${jobId}] Completed - processed ${processed}/${allMessages.length} messages`);
+  } catch (err) {
+    console.error(`[JOB ${jobId}] Failed:`, err);
+    await env.DB.prepare(`
+      UPDATE scammer_job_status 
+      SET status = 'failed', error = ?
+      WHERE job_id = ?
+    `).bind(err.message, jobId).run();
+  }
+}
+
 // Helper function to upload video to Cloudflare Stream
 async function uploadVideoToStream(videoData, filename, env) {
   try {
@@ -570,7 +992,8 @@ async function fetchDiscordThread(threadId, env) {
   }
 }
 
-export async function onRequestGet({ request, env }) {
+export async function onRequestGet(context) {
+  const { request, env } = context;
   const url = new URL(request.url);
   const mode = url.searchParams.get("mode");
   const userId = url.searchParams.get("userId");
@@ -1775,539 +2198,73 @@ export async function onRequestGet({ request, env }) {
 
   if (mode === "discord-scammers") {
     try {
-      const now = Date.now();
-
-      // --- CHECK NEWEST MESSAGE ID FOR EARLY REFRESH ---
-      let latestMessageId = null;
-      const checkUrl = `https://discord.com/api/v10/channels/${env.DISCORD_CHANNEL_ID}/messages?limit=1`;
-      const checkRes = await fetch(checkUrl, {
-        headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
-      });
-
-      if (checkRes.ok) {
-        const [latestMessage] = await checkRes.json();
-        latestMessageId = latestMessage?.id;
-      }
-
-      // Get last processed message ID from unified table
-      const lastProcessedMessageId = await getLastProcessedMessageId(env);
-
-      // Check if we can return cached data
-      // Only return early if we have a lastProcessedMessageId AND it matches the latest message
-      // AND cache is fresh (updated within TTL)
-      if (!forceRefresh && lastProcessedMessageId && latestMessageId === lastProcessedMessageId) {
-        // Check if cache is still fresh
-        const cacheCheck = await env.DB.prepare(
-          "SELECT MAX(updated_at) as last_updated FROM scammer_profile_cache"
-        ).first();
-
-        if (cacheCheck && cacheCheck.last_updated && now - cacheCheck.last_updated < CACHE_TTL_MS) {
-          // Return all scammers from unified table (only entries with actual scammer data)
-          const { results } = await env.DB.prepare(`
-            SELECT 
-              user_id,
-              roblox_name,
-              roblox_display_name,
-              roblox_avatar,
-              discord_id,
-              discord_display_name,
-              discord_avatar,
-              victims,
-              items_scammed,
-              roblox_alts,
-              thread_evidence,
-              incomplete
-            FROM scammer_profile_cache
-            WHERE user_id IS NOT NULL 
-              AND (victims IS NOT NULL OR items_scammed IS NOT NULL OR discord_id IS NOT NULL)
-            ORDER BY incomplete ASC, updated_at DESC
-          `).all();
-
-          // Separate complete and incomplete scammers
-          const completeScammers = [];
-          const partialScammers = [];
-
-          for (const row of results) {
-            const entry = {
-              user_id: row.user_id,
-              robloxDisplay: row.roblox_display_name || null,
-              robloxUser: row.roblox_name || null,
-              avatar: row.roblox_avatar || (row.incomplete === 0 ? "https://emwiki.com/imgs/plr.jpg" : null),
-              discordDisplay: row.discord_display_name || null,
-              discordId: row.discord_id || null,
-              victims: row.victims || null,
-              itemsScammed: row.items_scammed || null,
-              incomplete: row.incomplete === 1,
-              robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : [],
-              hasThreadEvidence: !!row.thread_evidence
-            };
-
-            if (row.incomplete === 1) {
-              partialScammers.push(entry);
-            } else {
-              completeScammers.push(entry);
-            }
-          }
-
-          return new Response(JSON.stringify({ 
-            lastUpdated: cacheCheck.last_updated, 
-            scammers: completeScammers, 
-            partials: partialScammers 
-          }), {
-            headers: { 
-              "Content-Type": "application/json", 
-              "X-Cache": "D1-HIT-EARLY",
-              "Access-Control-Allow-Origin": "*" 
-            },
+      const urlParams = new URL(request.url).searchParams;
+      const action = urlParams.get('action');
+      const jobId = urlParams.get('jobId');
+      
+      // Action: start - Start a new processing job
+      if (action === 'start') {
+        const newJobId = `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const now = Date.now();
+        
+        // Create job status entry
+        await env.DB.prepare(`
+          INSERT INTO scammer_job_status (job_id, status, started_at, messages_processed, total_messages)
+          VALUES (?, 'running', ?, 0, 0)
+        `).bind(newJobId, now).run();
+        
+        // Start processing in background using waitUntil
+        if (context.waitUntil) {
+          context.waitUntil(processScammerMessages(env, newJobId));
+        } else {
+          // Fallback: process synchronously (not ideal but works)
+          processScammerMessages(env, newJobId).catch(err => {
+            console.error(`Job ${newJobId} failed:`, err);
           });
         }
-      }
-
-      // --- LOCKING ---
-      const LOCK_KEY = "discord-scammers-lock";
-      const LOCK_TTL_MS = 2 * 60 * 1000;
-
-      await env.DB.prepare(
-        "DELETE FROM scammer_cache_locks WHERE key = ? AND expires_at < ?"
-      ).bind(LOCK_KEY, now).run();
-
-      let lockAcquired = false;
-      try {
-        await env.DB.prepare(
-          "INSERT INTO scammer_cache_locks (key, expires_at) VALUES (?, ?)"
-        ).bind(LOCK_KEY, now + LOCK_TTL_MS).run();
-        lockAcquired = true;
-      } catch {
-        lockAcquired = false;
-      }
-
-      if (!lockAcquired) {
-        let waited = 0;
-        const waitStep = 1000;
-        while (waited < 10000) {
-          // Return cached data from unified table if available
-          const cacheCheck = await env.DB.prepare(
-            "SELECT MAX(updated_at) as last_updated FROM scammer_profile_cache"
-          ).first();
-
-          if (cacheCheck && cacheCheck.last_updated) {
-            const { results } = await env.DB.prepare(`
-              SELECT 
-                user_id,
-                roblox_name,
-                roblox_display_name,
-                roblox_avatar,
-                discord_display_name,
-                victims,
-                items_scammed,
-                roblox_alts,
-                thread_evidence,
-                incomplete
-              FROM scammer_profile_cache
-              WHERE user_id IS NOT NULL 
-                AND incomplete = 0
-                AND (victims IS NOT NULL OR items_scammed IS NOT NULL OR discord_id IS NOT NULL)
-              ORDER BY updated_at DESC
-            `).all();
-
-            const scammers = results.map(row => ({
-              user_id: row.user_id,
-              robloxDisplay: row.roblox_display_name || null,
-              robloxUser: row.roblox_name || null,
-              avatar: row.roblox_avatar || "https://emwiki.com/imgs/plr.jpg",
-              discordDisplay: row.discord_display_name || null,
-              discordId: row.discord_id || null,
-              victims: row.victims || null,
-              itemsScammed: row.items_scammed || null,
-              incomplete: false,
-              robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : [],
-              hasThreadEvidence: !!row.thread_evidence
-            }));
-
-            return new Response(JSON.stringify({ 
-              lastUpdated: cacheCheck.last_updated, 
-              scammers, 
-              partials: [] 
-            }), {
-              headers: { 
-                "Content-Type": "application/json", 
-                "X-Cache": "D1-WAIT",
-                "Access-Control-Allow-Origin": "*" 
-              },
-            });
-          }
-
-          await new Promise(r => setTimeout(r, waitStep));
-          waited += waitStep;
-        }
-
-        return new Response(JSON.stringify({ error: "Cache is being built, try again soon." }), {
-          status: 503,
-          headers: { "Content-Type": "application/json" },
+        
+        return new Response(JSON.stringify({ 
+          jobId: newJobId,
+          status: 'running',
+          message: 'Job started. Use ?action=status&jobId=' + newJobId + ' to check progress.'
+        }), {
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          },
         });
       }
-
-      // --- DISCORD FETCHING (INCREMENTAL) ---
-      const channelId = env.DISCORD_CHANNEL_ID;
-      let allMessages = [];
       
-      if (lastProcessedMessageId) {
-        // Incremental: Only fetch new messages after the last processed one
-        let after = lastProcessedMessageId;
-
-        while (true) {
-          const fetchUrl = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
-          fetchUrl.searchParams.set("limit", "100");
-          fetchUrl.searchParams.set("after", after);
-
-          let response;
-          let retryCount = 0;
-          while (retryCount < 3) {
-            try {
-              response = await fetch(fetchUrl.toString(), {
-                headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
-              });
-
-              if (response.status === 429) {
-                const retryAfter = await response.json();
-                await new Promise(r => setTimeout(r, (retryAfter.retry_after || 1) * 1000));
-                retryCount++;
-                continue;
-              }
-
-              if (!response.ok) {
-                throw new Error(`Discord API error: ${response.status}`);
-              }
-
-              break;
-            } catch (err) {
-              retryCount++;
-              if (retryCount >= 3) {
-                throw err;
-              }
-              await new Promise(r => setTimeout(r, 1000 * retryCount));
-            }
-          }
-
-          const messages = await response.json();
-          if (messages.length === 0) break;
-
-          // When using 'after', Discord returns messages in reverse chronological order (newest first)
-          // Store the newest message ID before reversing (first message in array)
-          const newestMessageId = messages[0].id;
-          
-          // Reverse to process oldest first
-          const reversedMessages = messages.reverse();
-          allMessages.push(...reversedMessages);
-          
-          // Update 'after' to the newest message ID we just fetched
-          // This allows us to continue fetching newer messages in the next iteration
-          after = newestMessageId;
-          
-          // Safety limit
-          if (allMessages.length >= 5000) break;
-        }
-      } else {
-        // Initial fetch: Fetch ALL messages from the beginning using 'before' parameter
-        // Start by getting the latest message ID, then fetch backwards
-        let before = null;
-
-        while (true) {
-          const fetchUrl = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
-          fetchUrl.searchParams.set("limit", "100");
-          if (before) {
-            fetchUrl.searchParams.set("before", before);
-          }
-
-          let response;
-          let retryCount = 0;
-          while (retryCount < 3) {
-            try {
-              response = await fetch(fetchUrl.toString(), {
-                headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
-              });
-
-              if (response.status === 429) {
-                const retryAfter = await response.json();
-                await new Promise(r => setTimeout(r, (retryAfter.retry_after || 1) * 1000));
-                retryCount++;
-                continue;
-              }
-
-              if (!response.ok) {
-                throw new Error(`Discord API error: ${response.status}`);
-              }
-
-              break;
-            } catch (err) {
-              retryCount++;
-              if (retryCount >= 3) {
-                throw err;
-              }
-              await new Promise(r => setTimeout(r, 1000 * retryCount));
-            }
-          }
-
-          const messages = await response.json();
-          if (messages.length === 0) break;
-
-          // When using 'before', Discord returns messages in reverse chronological order (newest first)
-          // We want to process oldest first, so reverse them
-          const reversedMessages = messages.reverse();
-          allMessages.push(...reversedMessages);
-          
-          // Update 'before' to the oldest message ID we just fetched (last in original array)
-          // This allows us to continue fetching older messages in the next iteration
-          before = messages[messages.length - 1].id;
-          
-          // Safety limit
-          if (allMessages.length >= 5000) break;
-        }
-      }
-
-      // Process messages and update unified table
-      const scammers = [];
-      const partialScammers = [];
-
-      for (const msg of allMessages) {
-        try {
-          const discordMatch = msg.content?.match(/discord user:\s*\*{0,2}\s*([^\n\r]+)/i);
-          const robloxProfileMatch = msg.content?.match(/https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i);
-          const robloxUserMatch = msg.content?.match(/roblox user:\s*\*{0,2}(.*)/i);
-
-          const discordid = discordMatch ? discordMatch[1].trim().split(',')[0] : null;
-          const robloxProfile = robloxProfileMatch ? `https://www.roblox.com/users/${robloxProfileMatch[1]}/profile` : null;
-          const userId = robloxProfileMatch ? robloxProfileMatch[1] : null;
-          const victims = msg.content?.match(/victims:\s*\*{0,2}(.*)/i)?.[1]?.trim() || null;
-          const itemsScammed = msg.content?.match(/items scammed:\s*\*{0,2}(.*)/i)?.[1]?.trim() || null;
-
-          if (!userId) {
-            // Partial entry without user ID
-            partialScammers.push({
-              robloxUser: robloxUserMatch?.[1]?.trim() || null,
-              robloxProfile: null,
-              avatar: null,
-              discordDisplay: null,
-              victims: victims,
-              itemsScammed: itemsScammed,
-              incomplete: true,
-              robloxAlts: []
-            });
-            continue;
-          }
-
-          // Fetch Roblox profile data - DO write to scammer cache (default true)
-          const robloxData = await fetchRobloxProfile(userId, env, true);
-          if (!robloxData) {
-            // Failed to fetch - mark as incomplete
-            await env.DB.prepare(`
-              INSERT INTO scammer_profile_cache (
-                user_id, roblox_name, roblox_display_name, roblox_avatar,
-                discord_id, discord_display_name, victims, items_scammed,
-                incomplete, last_message_id, updated_at
-              )
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-              ON CONFLICT(user_id) DO UPDATE SET
-                victims = excluded.victims,
-                items_scammed = excluded.items_scammed,
-                incomplete = 1,
-                last_message_id = excluded.last_message_id,
-                updated_at = excluded.updated_at
-            `).bind(
-              userId,
-              robloxUserMatch?.[1]?.trim() || null,
-              null,
-              null,
-              discordid || null,
-              null,
-              victims,
-              itemsScammed,
-              1,
-              msg.id,
-              now
-            ).run();
-
-            partialScammers.push({
-              robloxUser: robloxUserMatch?.[1]?.trim() || null,
-              robloxProfile: robloxProfile,
-              avatar: null,
-              discordDisplay: null,
-              victims: victims,
-              itemsScammed: itemsScammed,
-              incomplete: true,
-              robloxAlts: []
-            });
-            continue;
-          }
-
-          // Fetch Discord profile data if discord ID provided - DO write to scammer cache
-          let discordData = null;
-          if (discordid) {
-            discordData = await fetchDiscordProfile(discordid, env, userId, true);
-          }
-
-          // Parse and fetch alt accounts
-          let altIds = [];
-          const altMatches = msg.content?.match(/roblox alts:\s*([\s\S]+)/i);
-          if (altMatches) {
-            const altBlock = altMatches[1].trim();
-            altIds = [...altBlock.matchAll(/roblox\.com\/users\/(\d+)\//g)].map(m => m[1]);
-          }
-
-          const robloxAlts = await fetchAltAccounts(altIds, env);
-          const robloxAltsJson = JSON.stringify(robloxAlts);
-
-          // Check if message has a thread and fetch thread evidence
-          let threadEvidence = null;
-          let threadLastMessageId = null;
-          if (msg.thread && msg.thread.id) {
-            const threadMessages = await fetchDiscordThread(msg.thread.id, env);
-            if (threadMessages && threadMessages.length > 0) {
-              // Get the newest message ID from thread
-              threadLastMessageId = threadMessages[threadMessages.length - 1].id;
-              threadEvidence = {
-                thread_id: msg.thread.id,
-                thread_name: msg.thread.name,
-                message_count: threadMessages.length,
-                messages: threadMessages,
-                created_at: msg.thread.id ? new Date(parseInt(msg.thread.id) / 4194304 + 1420070400000).toISOString() : null
-              };
-            }
-          }
-
-          const threadEvidenceJson = threadEvidence ? JSON.stringify(threadEvidence) : null;
-
-          // Check if this user already exists and has no thread_evidence but now we have one
-          const existingUser = await env.DB.prepare(
-            "SELECT thread_evidence FROM scammer_profile_cache WHERE user_id = ?"
-          ).bind(userId).first();
-
-          // Store/update in unified table
-          await env.DB.prepare(`
-            INSERT INTO scammer_profile_cache (
-              user_id, roblox_name, roblox_display_name, roblox_avatar,
-              discord_id, discord_display_name, discord_avatar,
-              victims, items_scammed, roblox_alts,
-              thread_evidence, thread_last_message_id, thread_last_checked_at, incomplete, last_message_id, updated_at
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(user_id) DO UPDATE SET
-              roblox_name = excluded.roblox_name,
-              roblox_display_name = excluded.roblox_display_name,
-              roblox_avatar = excluded.roblox_avatar,
-              discord_id = COALESCE(excluded.discord_id, discord_id),
-              discord_display_name = COALESCE(excluded.discord_display_name, discord_display_name),
-              discord_avatar = COALESCE(excluded.discord_avatar, discord_avatar),
-              victims = COALESCE(excluded.victims, victims),
-              items_scammed = COALESCE(excluded.items_scammed, items_scammed),
-              roblox_alts = COALESCE(excluded.roblox_alts, roblox_alts),
-              thread_evidence = COALESCE(excluded.thread_evidence, thread_evidence),
-              thread_last_message_id = COALESCE(excluded.thread_last_message_id, thread_last_message_id),
-              thread_last_checked_at = COALESCE(excluded.thread_last_checked_at, ?),
-              incomplete = 0,
-              last_message_id = excluded.last_message_id,
-              updated_at = excluded.updated_at
-          `).bind(
-            userId,
-            robloxData.name || null,
-            robloxData.displayName || null,
-            robloxData.avatar || null,
-            discordid || null,
-            discordData?.displayName || null,
-            discordData?.avatar || null,
-            victims,
-            itemsScammed,
-            robloxAltsJson,
-            threadEvidenceJson,
-            threadLastMessageId || null,
-            threadEvidence ? now : null,
-            0,
-            msg.id,
-            now
-          ).run();
-
-          // Build response entry
-          scammers.push({
-            robloxUser: robloxData.displayName || robloxData.name || robloxUserMatch?.[1]?.trim() || null,
-            robloxProfile: robloxProfile,
-            avatar: robloxData.avatar || "https://emwiki.com/imgs/plr.jpg",
-            discordDisplay: discordData?.displayName || null,
-            victims: victims,
-            itemsScammed: itemsScammed,
-            incomplete: false,
-            robloxAlts: robloxAlts
+      // Action: status - Check job status
+      if (action === 'status' && jobId) {
+        const jobStatus = await env.DB.prepare(`
+          SELECT job_id, status, messages_processed, total_messages, started_at, completed_at, error
+          FROM scammer_job_status
+          WHERE job_id = ?
+        `).bind(jobId).first();
+        
+        if (!jobStatus) {
+          return new Response(JSON.stringify({ error: 'Job not found' }), {
+            status: 404,
+            headers: { "Content-Type": "application/json" },
           });
-
-        } catch (err) {
-          console.warn("Failed to parse message:", err);
         }
+        
+        return new Response(JSON.stringify(jobStatus), {
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          },
+        });
       }
-
-      // Check for messages that now have threads but didn't before
-      // This handles cases where threads are created after the initial report
-      for (const msg of allMessages) {
-        try {
-          const robloxProfileMatch = msg.content?.match(/https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i);
-          const userId = robloxProfileMatch ? robloxProfileMatch[1] : null;
-          
-          if (!userId) continue;
-          
-          // Check if message has a thread
-          if (msg.thread && msg.thread.id) {
-            // Check if this user exists but has no thread_evidence
-            const existingEntry = await env.DB.prepare(
-              "SELECT thread_evidence FROM scammer_profile_cache WHERE user_id = ?"
-            ).bind(userId).first();
-            
-            // If user exists but has no thread evidence, fetch it now
-            if (existingEntry && !existingEntry.thread_evidence) {
-              try {
-                const threadMessages = await fetchDiscordThread(msg.thread.id, env);
-                if (threadMessages && threadMessages.length > 0) {
-                  const threadLastMessageId = threadMessages[threadMessages.length - 1].id;
-                  const threadEvidence = {
-                    thread_id: msg.thread.id,
-                    thread_name: msg.thread.name,
-                    message_count: threadMessages.length,
-                    messages: threadMessages,
-                    created_at: msg.thread.id ? new Date(parseInt(msg.thread.id) / 4194304 + 1420070400000).toISOString() : null
-                  };
-                  
-                  const threadEvidenceJson = JSON.stringify(threadEvidence);
-                  
-                  // Update with thread evidence
-                  await env.DB.prepare(`
-                    UPDATE scammer_profile_cache 
-                    SET thread_evidence = ?,
-                        thread_last_message_id = ?,
-                        thread_last_checked_at = ?,
-                        thread_needs_update = 0,
-                        updated_at = ?
-                    WHERE user_id = ?
-                  `).bind(
-                    threadEvidenceJson,
-                    threadLastMessageId,
-                    now,
-                    now,
-                    userId
-                  ).run();
-                }
-              } catch (err) {
-                console.warn(`Failed to fetch thread ${msg.thread.id} for user ${userId}:`, err);
-              }
-            }
-          }
-        } catch (err) {
-          console.warn("Failed to check for new threads:", err);
-        }
-      }
-
-      // Release lock
-      await env.DB.prepare("DELETE FROM scammer_cache_locks WHERE key = ?").bind(LOCK_KEY).run();
-
-      // Query database to get ALL scammers (not just ones processed in this batch)
-      // Only return entries with actual scammer data (victims, items_scammed, or discord_id)
-      const { results: allResults } = await env.DB.prepare(`
+      
+      // No action or default: Return results from D1
+      const now = Date.now();
+      const cacheCheck = await env.DB.prepare(
+        "SELECT MAX(updated_at) as last_updated FROM scammer_profile_cache"
+      ).first();
+      
+      const { results } = await env.DB.prepare(`
         SELECT 
           user_id,
           roblox_name,
@@ -2326,47 +2283,46 @@ export async function onRequestGet({ request, env }) {
           AND (victims IS NOT NULL OR items_scammed IS NOT NULL OR discord_id IS NOT NULL)
         ORDER BY incomplete ASC, updated_at DESC
       `).all();
-
+      
       // Separate complete and incomplete scammers
-      const allCompleteScammers = [];
-      const allPartialScammers = [];
-
-      for (const row of allResults) {
+      const completeScammers = [];
+      const partialScammers = [];
+      
+      for (const row of results) {
         const entry = {
           user_id: row.user_id,
-          robloxUser: row.roblox_display_name || row.roblox_name || null,
-          robloxProfile: row.user_id ? `https://www.roblox.com/users/${row.user_id}/profile` : null,
+          robloxDisplay: row.roblox_display_name || null,
+          robloxUser: row.roblox_name || null,
           avatar: row.roblox_avatar || (row.incomplete === 0 ? "https://emwiki.com/imgs/plr.jpg" : null),
           discordDisplay: row.discord_display_name || null,
+          discordId: row.discord_id || null,
           victims: row.victims || null,
           itemsScammed: row.items_scammed || null,
           incomplete: row.incomplete === 1,
           robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : [],
           hasThreadEvidence: !!row.thread_evidence
         };
-
+        
         if (row.incomplete === 1) {
-          allPartialScammers.push(entry);
+          partialScammers.push(entry);
         } else {
-          allCompleteScammers.push(entry);
+          completeScammers.push(entry);
         }
       }
-
+      
       return new Response(JSON.stringify({ 
-        lastUpdated: now, 
-        scammers: allCompleteScammers, 
-        partials: allPartialScammers 
+        lastUpdated: cacheCheck?.last_updated || now, 
+        scammers: completeScammers, 
+        partials: partialScammers 
       }), {
         headers: { 
-          "Content-Type": "application/json", 
-          "X-Cache": "D1-MISS",
+          "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*" 
         },
       });
-
+      
     } catch (err) {
-      await env.DB.prepare("DELETE FROM scammer_cache_locks WHERE key = ?").bind("discord-scammers-lock").run();
-      console.error("Scammer Cache Build Failed:", err);
+      console.error("Discord Scammers Error:", err);
       return new Response(JSON.stringify({ error: err.message, stack: err.stack }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
