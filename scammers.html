@@ -1013,7 +1013,7 @@ margin-top: 10px;
            loading="lazy"
            onerror="this.src='imgs/plr.jpg'" />
       <div class="scammer-info">
-        <a href="${robloxProfile}" target="_blank" rel="noopener noreferrer">
+        <a href="https://www.roblox.com/users/${user_id}/profile" target="_blank" rel="noopener noreferrer">
           <h2>
             ${robloxUser}
             <svg xmlns="http://www.w3.org/2000/svg" style="fill:transparent" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1022,8 +1022,8 @@ margin-top: 10px;
             </svg>
           </h2>
         </a>
-        ${roblox_name && roblox_name !== robloxUser && roblox_name !== robloxUser
-            ? `<p style="margin-top: -5px; margin-bottom: 8px; font-size: 13px; color: var(--text-secondary); opacity: 0.8;">@${roblox_name}</p>`
+        ${robloxUser && robloxUser !== robloxUser && robloxUser !== robloxUser
+            ? `<p style="margin-top: -5px; margin-bottom: 8px; font-size: 13px; color: var(--text-secondary); opacity: 0.8;">@${robloxUser}</p>`
             : ""}
         ${discordHTML}
         ${victims && victims.trim() !== "NA"
@@ -1093,8 +1093,6 @@ console.log(roblox_name);
 
                 // Create all scammer blocks
                 sortedScammers.forEach(scammer => {
-                    // Extract user_id from robloxProfile if not present
-                    
                     createScammerBlock(scammer, container);
                 });
 
