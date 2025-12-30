@@ -1912,10 +1912,11 @@ export async function onRequestGet({ request, env }) {
 
             const scammers = results.map(row => ({
               user_id: row.user_id,
-              robloxUser: row.roblox_display_name || row.roblox_name || null,
-              robloxProfile: row.user_id ? `https://www.roblox.com/users/${row.user_id}/profile` : null,
+              robloxDisplay: row.roblox_display_name || null,
+              robloxUser: row.roblox_name || null,
               avatar: row.roblox_avatar || "https://emwiki.com/imgs/plr.jpg",
               discordDisplay: row.discord_display_name || null,
+              discordId: row.discord_id || null,
               victims: row.victims || null,
               itemsScammed: row.items_scammed || null,
               incomplete: false,
