@@ -3412,10 +3412,7 @@ class Auth extends EventTarget {
     }
 
     isDevelopmentMode() {
-        // Check if running on localhost or 127.0.0.1
-        return window.location.hostname === 'localhost' ||
-               window.location.hostname === '127.0.0.1' ||
-               window.location.hostname === '';
+        return window.location.href.startsWith('file:///C:/Users/ADMIN/Desktop/EpicCatalogue/emwiki/');
     }
 
     getDevUser() {

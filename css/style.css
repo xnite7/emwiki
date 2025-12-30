@@ -1386,6 +1386,7 @@ div#random-items-grid {
 
 /* Footer */
 footer {
+    position: relative;
     background: var(--bg-secondary);
     border-top: 1px solid var(--border-color);
     padding: 35px 20px 15px;

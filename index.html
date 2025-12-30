@@ -40,18 +40,95 @@
 			animation: fadeIn 1s ease-out forwards;
 		}
 
-		@keyframes fadeIn {
-			99% {
-				background-image: none;
-			}
-
-			to {
-				opacity: 1;
-				background-image: url(./imgs/bg.png);
-			}
-
+	@keyframes fadeIn {
+		99% {
+			background-image: none;
 		}
-	</style>
+
+		to {
+			opacity: 1;
+			background-image: url(./imgs/bg.png);
+		}
+
+	}
+
+	/* Pet Styles */
+	#petContainer {
+		position: absolute;
+		bottom: 20px;
+		left: 50px;
+		width: 32px;
+		height: 32px;
+		z-index: 100;
+		cursor: pointer;
+		overflow: visible;
+	}
+
+	#pet {
+		width: 32px;
+		height: 32px;
+		image-rendering: pixelated;
+		image-rendering: -moz-crisp-edges;
+		image-rendering: crisp-edges;
+		background: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/49.gif') no-repeat center;
+		background-size: contain;
+	}
+
+	#petContainer.walking {
+		animation: bounce 0.5s ease-in-out infinite;
+	}
+
+	#petContainer.idle {
+		animation: idle 2s ease-in-out infinite;
+	}
+
+	#pet.flipped {
+		transform: scaleX(-1);
+	}
+
+	@keyframes bounce {
+		0%, 100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(-3px);
+		}
+	}
+
+	@keyframes idle {
+		0%, 100% {
+			transform: translateY(0) scale(1);
+		}
+		50% {
+			transform: translateY(-1px) scale(1.05);
+		}
+	}
+
+	.heart {
+		position: absolute;
+		bottom: 35px;
+		left: 50%;
+		transform: translateX(-50%);
+		font-size: 20px;
+		animation: floatHeart 1s ease-out forwards;
+		pointer-events: none;
+		z-index: 200;
+	}
+
+	@keyframes floatHeart {
+		0% {
+			opacity: 1;
+			transform: translateX(-50%) translateY(0) scale(0.5);
+		}
+		50% {
+			transform: translateX(-50%) translateY(-20px) scale(1);
+		}
+		100% {
+			opacity: 0;
+			transform: translateX(-50%) translateY(-40px) scale(0.8);
+		}
+	}
+</style>
 
 	<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
 	<script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.js"></script>
@@ -308,7 +385,11 @@
 			</div>
 		</div>
 		<div class="footer-bottom">
-			<p>© 2025 emwiki.com • made with ❤ by xnite</p>
+			<p>© 2025 emwiki.com • made with ❤ by <span id="xnite-link" style="cursor: pointer; text-decoration: underline;">xnite</span></p>
+		</div>
+		<!-- Pet -->
+		<div id="petContainer">
+			<div id="pet"></div>
 		</div>
 	</footer>
 
@@ -603,6 +684,149 @@
 
 		// Initialize snow particles if it's December
 		const snowSystem = new SnowParticleSystem();
+
+		// ==================== PET SYSTEM ====================
+		const pet = document.getElementById('petContainer');
+		const pet2 = document.getElementById('pet');
+		const xniteLink = document.getElementById('xnite-link');
+		const footer = document.querySelector('footer');
+
+		let petState = {
+			x: 50,
+			direction: 1,
+			speed: 1.5,
+			isWalking: true,
+			isIdle: false,
+			isPlaying: false,
+			destination: null
+		};
+
+		function movePet() {
+			if (petState.isIdle || petState.isPlaying) return;
+
+			const footerRect = footer.getBoundingClientRect();
+			const maxX = footerRect.width - 32;
+
+			// Check if pet has a destination (xnite link)
+			if (petState.destination !== null) {
+				const xniteRect = xniteLink.getBoundingClientRect();
+				// Calculate position relative to footer
+				const targetX = xniteRect.left - footerRect.left + (xniteRect.width / 2) - 16;
+				const currentLeft = parseInt(pet.style.left) || 50;
+				const currentBottom = parseInt(pet.style.bottom) || 20;
+				const targetBottom = footerRect.height - (xniteRect.top - footerRect.top) + 10;
+				const distanceX = targetX - currentLeft;
+				const distanceY = targetBottom - currentBottom;
+
+				if (Math.abs(distanceX) < 15 && Math.abs(distanceY) < 15) {
+					// Reached xnite - position exactly above it
+					petState.x = targetX;
+					pet.style.left = petState.x + 'px';
+					pet.style.bottom = targetBottom + 'px';
+					petState.destination = null;
+					petState.isWalking = false;
+					petState.isPlaying = true;
+					pet.classList.remove('walking');
+					pet.classList.add('idle');
+					playWithXnite();
+					setTimeout(() => {
+						petState.isPlaying = false;
+						petState.isWalking = true;
+						pet.classList.remove('idle');
+						pet.classList.add('walking');
+						randomDirection();
+					}, 3000);
+				} else {
+					// Move towards xnite
+					petState.direction = distanceX > 0 ? 1 : -1;
+					petState.x += petState.speed * petState.direction * 2;
+					if (Math.abs(distanceY) > 5) {
+						const newBottom = currentBottom + (distanceY > 0 ? 1 : -1) * petState.speed * 1.5;
+						pet.style.bottom = Math.max(20, Math.min(footerRect.height - 20, newBottom)) + 'px';
+					}
+				}
+			} else {
+				// Random walking within footer bounds
+				petState.x += petState.speed * petState.direction;
+
+				// Bounce off edges of footer
+				if (petState.x <= 0 || petState.x >= maxX) {
+					petState.direction *= -1;
+				}
+
+				// Random direction change
+				if (Math.random() < 0.008) {
+					randomDirection();
+				}
+
+				// Random idle
+				if (Math.random() < 0.005) {
+					idle();
+				}
+			}
+
+			// Update pet position (keep within footer bounds)
+			petState.x = Math.max(0, Math.min(maxX, petState.x));
+			pet.style.left = petState.x + 'px';
+
+			// Flip sprite based on direction
+			if (petState.direction > 0) {
+				pet2.classList.add('flipped');
+			} else {
+				pet2.classList.remove('flipped');
+			}
+		}
+
+		function randomDirection() {
+			petState.direction = Math.random() > 0.5 ? 1 : -1;
+		}
+
+		function idle() {
+			petState.isWalking = false;
+			petState.isIdle = true;
+			pet.classList.remove('walking');
+			pet.classList.add('idle');
+
+			setTimeout(() => {
+				petState.isIdle = false;
+				petState.isWalking = true;
+				pet.classList.remove('idle');
+				pet.classList.add('walking');
+			}, 2000 + Math.random() * 2000);
+		}
+
+		function playWithXnite() {
+			// Pet plays with xnite
+		}
+
+		// Click interaction on pet
+		pet.addEventListener('click', () => {
+			const heart = document.createElement('div');
+			heart.className = 'heart';
+			heart.textContent = '❤️';
+			pet.appendChild(heart);
+
+			setTimeout(() => {
+				heart.remove();
+			}, 1000);
+		});
+
+		// Xnite link click - pet goes to footer
+		xniteLink.addEventListener('click', () => {
+			if (!petState.isPlaying) {
+				petState.destination = true; // Set destination flag
+			}
+		});
+
+		// Main game loop
+		setInterval(movePet, 50);
+
+		// Sometimes go to footer randomly
+		setInterval(() => {
+			if (Math.random() < 0.2 && !petState.isPlaying && petState.destination === null) {
+				petState.destination = true; // Set destination flag
+			}
+		}, 8000);
 	</script>
 
 </body>
