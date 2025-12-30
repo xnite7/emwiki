@@ -1727,9 +1727,9 @@ export async function onRequestGet({ request, env }) {
 
       // --- DISCORD FETCHING (BATCH PROCESSING) ---
       const channelId = env.DISCORD_CHANNEL_ID;
-      const BATCH_SIZE = 50; // Process 50 messages per call to avoid timeouts
+      const BATCH_SIZE = 10; // Reduced to 10 messages per call to avoid timeouts (thread fetching + image downloads are expensive)
       // urlParams already declared above
-      const batchSize = parseInt(urlParams.get('batchSize') || BATCH_SIZE.toString());
+      const batchSize = Math.min(parseInt(urlParams.get('batchSize') || BATCH_SIZE.toString()), 20); // Cap at 20 max
       const startAfter = urlParams.get('startAfter'); // Optional: resume from specific message ID
       
       // Helper function to find thread for a message
@@ -1914,51 +1914,66 @@ export async function onRequestGet({ request, env }) {
             console.log(`Processing message ${msg.id} with content preview:`, fullContent.substring(0, 300));
           }
           
-          const discordMatch = fullContent.match(/discord\s+user:\s*\*{0,2}\s*([^\n\r]+)/i);
+          // Handle emoji prefixes like :pinkdot: and various formats
+          // Pattern: :pinkdot: field: value or field: value
+          const discordMatch = fullContent.match(/(?::\w+:\s*)?discord\s+user:\s*\*{0,2}\s*([^\n\r]+)/i);
           const robloxProfileMatch = fullContent.match(/https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i);
-          const robloxUserMatch = fullContent.match(/roblox\s+user:\s*\*{0,2}(.*)/i);
+          const robloxUserMatch = fullContent.match(/(?::\w+:\s*)?roblox\s+user:\s*\*{0,2}(.*)/i);
+          const displayMatch = fullContent.match(/(?::\w+:\s*)?display:\s*\*{0,2}\s*([^\n\r]+)/i);
 
           const discordid = discordMatch ? discordMatch[1].trim().split(',')[0] : null;
+          // Handle "NA" as null
+          const discordidClean = discordid && discordid.toUpperCase() !== 'NA' ? discordid : null;
           const robloxProfile = robloxProfileMatch ? `https://www.roblox.com/users/${robloxProfileMatch[1]}/profile` : null;
           const userId = robloxProfileMatch ? robloxProfileMatch[1] : null;
           
           // More flexible regex patterns to handle various formats:
+          // - Handle emoji prefixes like :pinkdot:
           // - "Victims:" or "victims:" (case insensitive)
           // - Optional asterisks or markdown formatting
-          // - Match multiline content until next section or end
-          // Try multiple patterns
+          // - Match until end of line or next section
           let victims = null;
           const victimsPatterns = [
-            /(?:victims?|victim):\s*\*{0,2}\s*([^\n]+(?:\n(?!\s*(?:items|roblox|discord|victims?))[^\n]+)*)/i,
-            /victims?:\s*([^\n]+)/i,
-            /victim[:\s]+([^\n]+)/i
+            /(?::\w+:\s*)?victims?:\s*\*{0,2}\s*([^\n\r]+)/i,  // Handle :pinkdot: victims: value
+            /victims?:\s*([^\n\r]+)/i,  // Standard format
+            /victim[:\s]+([^\n\r]+)/i   // More flexible
           ];
           
           for (const pattern of victimsPatterns) {
             const match = fullContent.match(pattern);
             if (match && match[1]) {
               victims = match[1].trim();
-              // Remove markdown formatting
-              victims = victims.replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '').trim();
-              if (victims) break;
+              // Remove markdown formatting and emoji
+              victims = victims.replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '').replace(/:\w+:/g, '').trim();
+              // Handle "NA" as null
+              if (victims && victims.toUpperCase() !== 'NA') {
+                break;
+              } else {
+                victims = null;
+              }
             }
           }
           
           // Items scammed - try multiple patterns
           let itemsScammed = null;
           const itemsPatterns = [
-            /(?:items?\s+scammed?|scammed?):\s*\*{0,2}\s*([^\n]+(?:\n(?!\s*(?:victims|roblox|discord|items?))[^\n]+)*)/i,
-            /items?\s+scammed?:\s*([^\n]+)/i,
-            /scammed?:\s*([^\n]+)/i
+            /(?::\w+:\s*)?items?\s+scammed?:\s*\*{0,2}\s*([^\n\r]+)/i,  // Handle :pinkdot: items scammed: value
+            /items?\s+scammed?:\s*([^\n\r]+)/i,  // Standard format
+            /scammed?:\s*([^\n\r]+)/i   // More flexible
           ];
           
           for (const pattern of itemsPatterns) {
             const match = fullContent.match(pattern);
             if (match && match[1]) {
               itemsScammed = match[1].trim();
-              // Remove markdown formatting
-              itemsScammed = itemsScammed.replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '').trim();
-              if (itemsScammed) break;
+              // Remove markdown formatting and emoji
+              itemsScammed = itemsScammed.replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '').replace(/:\w+:/g, '').trim();
+              // Handle "NA" as null
+              if (itemsScammed && itemsScammed.toUpperCase() !== 'NA') {
+                break;
+              } else {
+                itemsScammed = null;
+              }
             }
           }
           
@@ -1989,22 +2004,22 @@ export async function onRequestGet({ request, env }) {
             await env.DB.prepare(`
               INSERT INTO scammer_profile_cache (
                 user_id, roblox_name, roblox_display_name, roblox_avatar,
-                discord_id, discord_display_name, victims, items_scammed,
-                incomplete, last_message_id, updated_at
-              )
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-              ON CONFLICT(user_id) DO UPDATE SET
-                victims = excluded.victims,
-                items_scammed = excluded.items_scammed,
-                incomplete = 1,
-                last_message_id = excluded.last_message_id,
-                updated_at = excluded.updated_at
-            `).bind(
-              userId,
-              robloxUserMatch?.[1]?.trim() || null,
-              null,
-              null,
-              discordid || null,
+              discord_id, discord_display_name, victims, items_scammed,
+              incomplete, last_message_id, updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+              victims = excluded.victims,
+              items_scammed = excluded.items_scammed,
+              incomplete = 1,
+              last_message_id = excluded.last_message_id,
+              updated_at = excluded.updated_at
+          `).bind(
+            userId,
+            robloxUserMatch?.[1]?.trim() || null,
+            null,
+            null,
+            discordidClean || null,
               null,
               victims,
               itemsScammed,
@@ -2028,17 +2043,17 @@ export async function onRequestGet({ request, env }) {
 
           // Fetch Discord profile data if discord ID provided - DO write to scammer cache
           let discordData = null;
-          if (discordid) {
-            discordData = await fetchDiscordProfile(discordid, env, userId, true);
+          if (discordidClean) {
+            discordData = await fetchDiscordProfile(discordidClean, env, userId, true);
           }
 
           // Parse and fetch alt accounts
-          // More flexible regex to handle various formats
+          // More flexible regex to handle various formats including emoji prefixes
           let altIds = [];
           const altPatterns = [
-            /(?:roblox\s+)?alts?:\s*([\s\S]+?)(?:\n\n|\n(?:victims|items|discord|roblox\s+user)|$)/i,
-            /alts?:\s*([^\n]+)/i,
-            /alt[:\s]+([^\n]+)/i
+            /(?::\w+:\s*)?(?:roblox\s+)?alts?:\s*([^\n\r]+)/i,  // Handle :pinkdot: roblox alts: value
+            /(?:roblox\s+)?alts?:\s*([^\n\r]+)/i,  // Standard format
+            /alt[:\s]+([^\n\r]+)/i   // More flexible
           ];
           
           let altBlock = null;
@@ -2046,9 +2061,14 @@ export async function onRequestGet({ request, env }) {
             const match = fullContent.match(pattern);
             if (match && match[1]) {
               altBlock = match[1].trim();
-              // Remove markdown formatting
-              altBlock = altBlock.replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '').trim();
-              if (altBlock) break;
+              // Remove markdown formatting and emoji
+              altBlock = altBlock.replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '').replace(/:\w+:/g, '').trim();
+              // Handle "NA" as empty
+              if (altBlock && altBlock.toUpperCase() !== 'NA') {
+                break;
+              } else {
+                altBlock = null;
+              }
             }
           }
           
@@ -2104,24 +2124,35 @@ export async function onRequestGet({ request, env }) {
           }
           
           // If we found a thread, fetch its messages
+          // Use a timeout to prevent hanging on large threads
           if (threadId) {
             console.log(`Fetching thread ${threadId} for message ${msg.id}`);
-            // Fetch all thread messages (no afterMessageId = full fetch)
-            // This will automatically download all images/videos to R2
-            const threadMessages = await fetchDiscordThread(threadId, env, null);
-            if (threadMessages && threadMessages.length > 0) {
-              // Get the newest message ID from thread (last in array after sorting)
-              threadLastMessageId = threadMessages[threadMessages.length - 1].id;
-              threadEvidence = {
-                thread_id: threadId,
-                thread_name: threadName || 'Untitled Thread',
-                message_count: threadMessages.length,
-                messages: threadMessages,
-                created_at: threadId ? new Date(parseInt(threadId) / 4194304 + 1420070400000).toISOString() : null
-              };
-              console.log(`Successfully fetched ${threadMessages.length} messages from thread ${threadId}`);
-            } else {
-              console.warn(`Thread ${threadId} found but no messages retrieved (might be empty or access denied)`);
+            try {
+              // Set a timeout for thread fetching (20 seconds max per thread)
+              const threadFetchPromise = fetchDiscordThread(threadId, env, null);
+              const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Thread fetch timeout')), 20000)
+              );
+              
+              const threadMessages = await Promise.race([threadFetchPromise, timeoutPromise]);
+              
+              if (threadMessages && threadMessages.length > 0) {
+                // Get the newest message ID from thread (last in array after sorting)
+                threadLastMessageId = threadMessages[threadMessages.length - 1].id;
+                threadEvidence = {
+                  thread_id: threadId,
+                  thread_name: threadName || 'Untitled Thread',
+                  message_count: threadMessages.length,
+                  messages: threadMessages,
+                  created_at: threadId ? new Date(parseInt(threadId) / 4194304 + 1420070400000).toISOString() : null
+                };
+                console.log(`Successfully fetched ${threadMessages.length} messages from thread ${threadId}`);
+              } else {
+                console.warn(`Thread ${threadId} found but no messages retrieved (might be empty or access denied)`);
+              }
+            } catch (err) {
+              console.warn(`Failed to fetch thread ${threadId} (timeout or error):`, err.message);
+              // Continue without thread evidence - it can be fetched later via update-thread-evidence
             }
           }
 
@@ -2136,33 +2167,33 @@ export async function onRequestGet({ request, env }) {
           await env.DB.prepare(`
             INSERT INTO scammer_profile_cache (
               user_id, roblox_name, roblox_display_name, roblox_avatar,
-              discord_id, discord_display_name, discord_avatar,
-              victims, items_scammed, roblox_alts,
-              thread_evidence, thread_last_message_id, thread_last_checked_at, incomplete, last_message_id, updated_at
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(user_id) DO UPDATE SET
-              roblox_name = excluded.roblox_name,
-              roblox_display_name = excluded.roblox_display_name,
-              roblox_avatar = excluded.roblox_avatar,
-              discord_id = COALESCE(excluded.discord_id, discord_id),
-              discord_display_name = COALESCE(excluded.discord_display_name, discord_display_name),
-              discord_avatar = COALESCE(excluded.discord_avatar, discord_avatar),
-              victims = COALESCE(excluded.victims, victims),
-              items_scammed = COALESCE(excluded.items_scammed, items_scammed),
-              roblox_alts = COALESCE(excluded.roblox_alts, roblox_alts),
-              thread_evidence = COALESCE(excluded.thread_evidence, thread_evidence),
-              thread_last_message_id = COALESCE(excluded.thread_last_message_id, thread_last_message_id),
-              thread_last_checked_at = COALESCE(excluded.thread_last_checked_at, ?),
-              incomplete = 0,
-              last_message_id = excluded.last_message_id,
-              updated_at = excluded.updated_at
-          `).bind(
-            userId,
-            robloxData.name || null,
-            robloxData.displayName || null,
-            robloxData.avatar || null,
-            discordid || null,
+            discord_id, discord_display_name, discord_avatar,
+            victims, items_scammed, roblox_alts,
+            thread_evidence, thread_last_message_id, thread_last_checked_at, incomplete, last_message_id, updated_at
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(user_id) DO UPDATE SET
+            roblox_name = excluded.roblox_name,
+            roblox_display_name = excluded.roblox_display_name,
+            roblox_avatar = excluded.roblox_avatar,
+            discord_id = COALESCE(excluded.discord_id, discord_id),
+            discord_display_name = COALESCE(excluded.discord_display_name, discord_display_name),
+            discord_avatar = COALESCE(excluded.discord_avatar, discord_avatar),
+            victims = COALESCE(excluded.victims, victims),
+            items_scammed = COALESCE(excluded.items_scammed, items_scammed),
+            roblox_alts = COALESCE(excluded.roblox_alts, roblox_alts),
+            thread_evidence = COALESCE(excluded.thread_evidence, thread_evidence),
+            thread_last_message_id = COALESCE(excluded.thread_last_message_id, thread_last_message_id),
+            thread_last_checked_at = COALESCE(excluded.thread_last_checked_at, ?),
+            incomplete = 0,
+            last_message_id = excluded.last_message_id,
+            updated_at = excluded.updated_at
+        `).bind(
+          userId,
+          robloxData.name || null,
+          robloxData.displayName || null,
+          robloxData.avatar || null,
+          discordidClean || null,
             discordData?.displayName || null,
             discordData?.avatar || null,
             victims,
