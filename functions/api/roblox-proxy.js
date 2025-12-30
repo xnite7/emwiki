@@ -1535,6 +1535,8 @@ export async function onRequestGet({ request, env }) {
   if (mode === "discord-scammers") {
     try {
       const now = Date.now();
+      const urlParams = new URL(request.url).searchParams; // Declare early for use in locking
+      const forceRefresh = urlParams.get('refresh') === 'true';
 
       // --- CHECK NEWEST MESSAGE ID FOR EARLY REFRESH ---
       let latestMessageId = null;
@@ -1625,7 +1627,7 @@ export async function onRequestGet({ request, env }) {
       // --- LOCKING ---
       const LOCK_KEY = "discord-scammers-lock";
       const LOCK_TTL_MS = 10 * 60 * 1000; // 10 minutes for full refresh
-      const isRecursiveCall = urlParams.has('startAfter');
+      const isRecursiveCall = urlParams.has('startAfter'); // urlParams already declared above
 
       await env.DB.prepare(
         "DELETE FROM scammer_cache_locks WHERE key = ? AND expires_at < ?"
@@ -1726,7 +1728,7 @@ export async function onRequestGet({ request, env }) {
       // --- DISCORD FETCHING (BATCH PROCESSING) ---
       const channelId = env.DISCORD_CHANNEL_ID;
       const BATCH_SIZE = 50; // Process 50 messages per call to avoid timeouts
-      const urlParams = new URL(request.url).searchParams;
+      // urlParams already declared above
       const batchSize = parseInt(urlParams.get('batchSize') || BATCH_SIZE.toString());
       const startAfter = urlParams.get('startAfter'); // Optional: resume from specific message ID
       
