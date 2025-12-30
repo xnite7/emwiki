@@ -1830,10 +1830,11 @@ export async function onRequestGet({ request, env }) {
           for (const row of results) {
             const entry = {
               user_id: row.user_id,
-              robloxUser: row.roblox_display_name || row.roblox_name || null,
-              robloxProfile: row.user_id ? `https://www.roblox.com/users/${row.user_id}/profile` : null,
+              robloxDisplay: row.roblox_display_name || null,
+              robloxUser: row.roblox_name || null,
               avatar: row.roblox_avatar || (row.incomplete === 0 ? "https://emwiki.com/imgs/plr.jpg" : null),
               discordDisplay: row.discord_display_name || null,
+              discordId: row.discord_id || null,
               victims: row.victims || null,
               itemsScammed: row.items_scammed || null,
               incomplete: row.incomplete === 1,

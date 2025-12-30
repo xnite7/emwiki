@@ -959,11 +959,11 @@ margin-top: 10px;
     async function createScammerBlock(scammer, container) {
         const {
             robloxUser = "Unknown",
-            roblox_display_name = robloxUser,
             roblox_name = null,
             robloxProfile = "#",
             avatar = "imgs/plr.jpg",
             discordDisplay = null,
+            discordId = null,
             victims = null,
             itemsScammed = null,
             robloxAlts = null,
@@ -984,7 +984,7 @@ margin-top: 10px;
 
         // Build Discord display - removed inline styles, using CSS instead
         const discordHTML = discordDisplay && discordDisplay.trim() !== "NA"
-            ? `<p><img src="./imgs/discord.png" alt="Discord"> ${discordDisplay}</p>`
+            ? `<a href="https://discord.com/users/${discordId}" target="_blank" rel="noopener noreferrer"><img src="./imgs/discord.png" alt="Discord"> ${discordDisplay}</a>`
             : "";
 
         // Optional: High severity warning badge
@@ -1016,14 +1016,14 @@ margin-top: 10px;
       <div class="scammer-info">
         <a href="${robloxProfile}" target="_blank" rel="noopener noreferrer">
           <h2>
-            ${roblox_display_name || robloxUser}
+            ${robloxUser}
             <svg xmlns="http://www.w3.org/2000/svg" style="fill:transparent" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 5l7 7-7 7"></path>
               <path d="M5 12h14"></path>
             </svg>
           </h2>
         </a>
-        ${roblox_name && roblox_name !== roblox_display_name && roblox_name !== robloxUser
+        ${roblox_name && roblox_name !== robloxUser && roblox_name !== robloxUser
             ? `<p style="margin-top: -5px; margin-bottom: 8px; font-size: 13px; color: var(--text-secondary); opacity: 0.8;">@${roblox_name}</p>`
             : ""}
         ${discordHTML}
