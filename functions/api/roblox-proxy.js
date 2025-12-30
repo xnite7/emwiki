@@ -1730,6 +1730,39 @@ export async function onRequestGet({ request, env }) {
       const batchSize = parseInt(urlParams.get('batchSize') || BATCH_SIZE.toString());
       const startAfter = urlParams.get('startAfter'); // Optional: resume from specific message ID
       
+      // Helper function to find thread for a message
+      // Discord API: Messages with threads should have msg.thread property
+      // But we also check by trying to fetch thread info
+      async function findThreadForMessage(messageId, env) {
+        // First check if message object already has thread info (handled in processing loop)
+        // This function is for additional checks
+        
+        // Try fetching thread info using message ID (threads can be created from messages)
+        try {
+          const threadInfoUrl = `https://discord.com/api/v10/channels/${messageId}`;
+          const threadInfoRes = await fetch(threadInfoUrl, {
+            headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+          });
+          
+          if (threadInfoRes.ok) {
+            const threadInfo = await threadInfoRes.json();
+            // Check if it's actually a thread (type 11 = public thread, type 12 = private thread)
+            if (threadInfo.type === 11 || threadInfo.type === 12) {
+              if (threadInfo.parent_id === channelId) {
+                return {
+                  id: threadInfo.id,
+                  name: threadInfo.name || 'Untitled Thread'
+                };
+              }
+            }
+          }
+        } catch (err) {
+          // Not a thread or no access - that's okay
+        }
+        
+        return null;
+      }
+      
       let allMessages = [];
       let processedCount = 0;
       const resumeFromMessageId = startAfter || lastProcessedMessageId;
@@ -1859,15 +1892,78 @@ export async function onRequestGet({ request, env }) {
       for (const msg of allMessages) {
         currentLastMessageId = msg.id; // Track the last message we process
         try {
-          const discordMatch = msg.content?.match(/discord user:\s*\*{0,2}\s*([^\n\r]+)/i);
-          const robloxProfileMatch = msg.content?.match(/https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i);
-          const robloxUserMatch = msg.content?.match(/roblox user:\s*\*{0,2}(.*)/i);
+          // Combine content from message body and embeds for parsing
+          let fullContent = msg.content || '';
+          
+          // Also check embeds for content (Discord sometimes puts formatted data in embeds)
+          if (msg.embeds && Array.isArray(msg.embeds)) {
+            for (const embed of msg.embeds) {
+              if (embed.description) fullContent += '\n' + embed.description;
+              if (embed.fields && Array.isArray(embed.fields)) {
+                for (const field of embed.fields) {
+                  if (field.name) fullContent += '\n' + field.name + ': ' + (field.value || '');
+                }
+              }
+            }
+          }
+          
+          // Debug: Log message content to see what we're working with
+          if (fullContent && (fullContent.toLowerCase().includes('victim') || fullContent.toLowerCase().includes('scam'))) {
+            console.log(`Processing message ${msg.id} with content preview:`, fullContent.substring(0, 300));
+          }
+          
+          const discordMatch = fullContent.match(/discord\s+user:\s*\*{0,2}\s*([^\n\r]+)/i);
+          const robloxProfileMatch = fullContent.match(/https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i);
+          const robloxUserMatch = fullContent.match(/roblox\s+user:\s*\*{0,2}(.*)/i);
 
           const discordid = discordMatch ? discordMatch[1].trim().split(',')[0] : null;
           const robloxProfile = robloxProfileMatch ? `https://www.roblox.com/users/${robloxProfileMatch[1]}/profile` : null;
           const userId = robloxProfileMatch ? robloxProfileMatch[1] : null;
-          const victims = msg.content?.match(/victims:\s*\*{0,2}(.*)/i)?.[1]?.trim() || null;
-          const itemsScammed = msg.content?.match(/items scammed:\s*\*{0,2}(.*)/i)?.[1]?.trim() || null;
+          
+          // More flexible regex patterns to handle various formats:
+          // - "Victims:" or "victims:" (case insensitive)
+          // - Optional asterisks or markdown formatting
+          // - Match multiline content until next section or end
+          // Try multiple patterns
+          let victims = null;
+          const victimsPatterns = [
+            /(?:victims?|victim):\s*\*{0,2}\s*([^\n]+(?:\n(?!\s*(?:items|roblox|discord|victims?))[^\n]+)*)/i,
+            /victims?:\s*([^\n]+)/i,
+            /victim[:\s]+([^\n]+)/i
+          ];
+          
+          for (const pattern of victimsPatterns) {
+            const match = fullContent.match(pattern);
+            if (match && match[1]) {
+              victims = match[1].trim();
+              // Remove markdown formatting
+              victims = victims.replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '').trim();
+              if (victims) break;
+            }
+          }
+          
+          // Items scammed - try multiple patterns
+          let itemsScammed = null;
+          const itemsPatterns = [
+            /(?:items?\s+scammed?|scammed?):\s*\*{0,2}\s*([^\n]+(?:\n(?!\s*(?:victims|roblox|discord|items?))[^\n]+)*)/i,
+            /items?\s+scammed?:\s*([^\n]+)/i,
+            /scammed?:\s*([^\n]+)/i
+          ];
+          
+          for (const pattern of itemsPatterns) {
+            const match = fullContent.match(pattern);
+            if (match && match[1]) {
+              itemsScammed = match[1].trim();
+              // Remove markdown formatting
+              itemsScammed = itemsScammed.replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '').trim();
+              if (itemsScammed) break;
+            }
+          }
+          
+          // Debug logging
+          if (userId) {
+            console.log(`Message ${msg.id} - userId: ${userId}, victims: ${victims || 'none'}, itemsScammed: ${itemsScammed || 'none'}`);
+          }
 
           if (!userId) {
             // Partial entry without user ID
@@ -1935,11 +2031,38 @@ export async function onRequestGet({ request, env }) {
           }
 
           // Parse and fetch alt accounts
+          // More flexible regex to handle various formats
           let altIds = [];
-          const altMatches = msg.content?.match(/roblox alts:\s*([\s\S]+)/i);
-          if (altMatches) {
-            const altBlock = altMatches[1].trim();
+          const altPatterns = [
+            /(?:roblox\s+)?alts?:\s*([\s\S]+?)(?:\n\n|\n(?:victims|items|discord|roblox\s+user)|$)/i,
+            /alts?:\s*([^\n]+)/i,
+            /alt[:\s]+([^\n]+)/i
+          ];
+          
+          let altBlock = null;
+          for (const pattern of altPatterns) {
+            const match = fullContent.match(pattern);
+            if (match && match[1]) {
+              altBlock = match[1].trim();
+              // Remove markdown formatting
+              altBlock = altBlock.replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '').trim();
+              if (altBlock) break;
+            }
+          }
+          
+          if (altBlock) {
+            // Extract user IDs from Roblox profile URLs
             altIds = [...altBlock.matchAll(/roblox\.com\/users\/(\d+)\//g)].map(m => m[1]);
+            // Also try to extract plain user IDs if they're listed
+            const plainIds = altBlock.match(/\b(\d{7,})\b/g);
+            if (plainIds) {
+              altIds.push(...plainIds.filter(id => id.length >= 7 && id.length <= 10));
+            }
+            // Remove duplicates
+            altIds = [...new Set(altIds)];
+            if (altIds.length > 0) {
+              console.log(`Found ${altIds.length} alt accounts for message ${msg.id}:`, altIds);
+            }
           }
 
           const robloxAlts = await fetchAltAccounts(altIds, env);
@@ -1949,20 +2072,54 @@ export async function onRequestGet({ request, env }) {
           // fetchDiscordThread now always downloads images/videos to R2 automatically
           let threadEvidence = null;
           let threadLastMessageId = null;
+          
+          // Discord API: Check for thread in message object first
+          // The msg.thread property should be present if the message has a thread
+          let threadId = null;
+          let threadName = null;
+          
+          // Debug: Log message structure to understand what Discord returns
+          if (!msg.thread) {
+            console.log(`Message ${msg.id} has no thread property. Available keys:`, Object.keys(msg));
+          }
+          
           if (msg.thread && msg.thread.id) {
+            // Thread info is directly in message object (most common case)
+            threadId = msg.thread.id;
+            threadName = msg.thread.name;
+            console.log(`✅ Found thread ${threadId} in message object for message ${msg.id}`);
+          } else {
+            // Try alternative method: check if message ID itself is a thread
+            const foundThread = await findThreadForMessage(msg.id, env);
+            if (foundThread) {
+              threadId = foundThread.id;
+              threadName = foundThread.name;
+              console.log(`✅ Found thread ${threadId} via lookup for message ${msg.id}`);
+            } else {
+              // Log when no thread found for debugging
+              console.log(`⚠️ No thread found for message ${msg.id}`);
+            }
+          }
+          
+          // If we found a thread, fetch its messages
+          if (threadId) {
+            console.log(`Fetching thread ${threadId} for message ${msg.id}`);
             // Fetch all thread messages (no afterMessageId = full fetch)
             // This will automatically download all images/videos to R2
-            const threadMessages = await fetchDiscordThread(msg.thread.id, env, null);
+            const threadMessages = await fetchDiscordThread(threadId, env, null);
             if (threadMessages && threadMessages.length > 0) {
               // Get the newest message ID from thread (last in array after sorting)
               threadLastMessageId = threadMessages[threadMessages.length - 1].id;
               threadEvidence = {
-                thread_id: msg.thread.id,
-                thread_name: msg.thread.name,
+                thread_id: threadId,
+                thread_name: threadName || 'Untitled Thread',
                 message_count: threadMessages.length,
                 messages: threadMessages,
-                created_at: msg.thread.id ? new Date(parseInt(msg.thread.id) / 4194304 + 1420070400000).toISOString() : null
+                created_at: threadId ? new Date(parseInt(threadId) / 4194304 + 1420070400000).toISOString() : null
               };
+              console.log(`Successfully fetched ${threadMessages.length} messages from thread ${threadId}`);
+            } else {
+              console.warn(`Thread ${threadId} found but no messages retrieved (might be empty or access denied)`);
             }
           }
 
