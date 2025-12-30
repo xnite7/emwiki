@@ -892,7 +892,8 @@ class BaseApp {
                 canvas.height = img.height;
                 ctx.drawImage(img, 0, 0);
             };
-            img.src = item.img;
+            // Use optimized image for catalog items (thumbnail size)
+            img.src = Utils.getOptimizedImage(item.img, { width: 128, height: 128,format: 'webp', fit: 'scale-down' }) || item.img;
             Utils.protectCanvas(canvas);
             div.appendChild(canvas);
         } else if (item.svg) {
@@ -1375,7 +1376,8 @@ class BaseApp {
                         canvas.height = img.height;
                         ctx.drawImage(img, 0, 0);
                     };
-                    img.src = item.img;
+                    // Use optimized image for wishlist items (thumbnail size)
+                    img.src = Utils.getOptimizedImage(item.img, { width: 128, height: 128, format: 'webp', fit: 'scale-down' }) || item.img;
                     Utils.protectCanvas(canvas);
                     div.appendChild(canvas);
                 } else if (item.svg) {
@@ -1426,7 +1428,8 @@ class BaseApp {
                         ctx.drawImage(img, 0, 0);
                     };
 
-                    img.src = item.img;
+                    // Use optimized image for favorites list (thumbnail size)
+                    img.src = Utils.getOptimizedImage(item.img, { width: 128, height: 128, format: 'webp', fit: 'scale-down' }) || item.img;
                     Utils.protectCanvas(canvas);
 
                     div.appendChild(canvas);
@@ -2098,7 +2101,8 @@ class ItemModal {
                 this.elements.image.height = img.height;
                 ctx.drawImage(img, 0, 0);
             }.bind(this);
-            img.src = item.img;
+            // Use optimized image for modal (higher quality, larger size)
+            img.src = Utils.getOptimizedImage(item.img, { width: 800, quality: 90, format: 'webp', fit: 'scale-down' }) || item.img;
             Utils.protectCanvas(this.elements.image);
 
             this.elements.image.style.display = 'block';

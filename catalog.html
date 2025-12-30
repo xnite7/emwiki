@@ -1962,8 +1962,10 @@
                         return;
                     }
                     
+                    // Use optimized image for color extraction (smaller size for faster processing)
+                    let imageUrl = Utils.getOptimizedImage(item.img, { width: 100, quality: 85 }) || item.img;
+                    
                     // Convert relative URLs to absolute URLs if needed
-                    let imageUrl = item.img;
                     if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://') && !imageUrl.startsWith('data:')) {
                         // If relative URL and we're on http/https, convert to absolute
                         if (window.location.protocol !== 'file:') {

@@ -1392,8 +1392,8 @@
                 try {
 
 
-                    // Upload to your Cloudflare Pages function
-                    const response = await fetch('/api/upload', {
+                    // Upload to Cloudflare Images
+                    const response = await fetch('/api/images/upload', {
                         method: 'POST',
                         body: formData
                     });
@@ -1407,6 +1407,12 @@
 
                     const data = await response.json();
 
+                    if (!data.success && !data.url) {
+                        ErrorHandler.showToast(data.error || 'Upload failed', 'error');
+                        return;
+                    }
+
+                    // Cloudflare Images returns { success: true, url: "...", id: "..." }
                     // Update preview with uploaded URL
                     this.uploadedImageUrl = data.url;
                     this.updateImagePreview(data.url);
@@ -3703,8 +3709,8 @@
                 formData.append('file', file);
 
                 try {
-                    // Upload to your Cloudflare Pages function
-                    const response = await fetch('/api/upload', {
+                    // Upload to Cloudflare Images
+                    const response = await fetch('/api/images/upload', {
                         method: 'POST',
                         body: formData
                     });
@@ -3714,6 +3720,12 @@
                     }
                     const data = await response.json();
 
+                    if (!data.success && !data.url) {
+                        ErrorHandler.showToast(data.error || 'Upload failed', 'error');
+                        return;
+                    }
+
+                    // Cloudflare Images returns { success: true, url: "...", id: "..." }
                     if (data.url !== item.img) {
                         const previousState = JSON.parse(JSON.stringify(item));
                         item.img = data.url;
