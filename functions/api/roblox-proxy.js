@@ -1,6 +1,19 @@
-const CACHE_KEY = "discord-scammers";
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-const PROFILE_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days for profile data
+/**
+ * ============================================================================
+ * ROBLOX PROXY API - Main API endpoint for Roblox/Discord data
+ * ============================================================================
+ * 
+ * This file handles:
+ * - Roblox profile fetching (with caching)
+ * - Discord profile fetching (with caching)
+ * - Scammer data processing (queue-based)
+ * - Thread evidence management
+ * - Media proxying (Discord images/videos)
+ * - CDN asset proxying
+ * 
+ * Queue Consumer: See emwiki/workers/scammer-queue-consumer.js
+ * ============================================================================
+ */
 
 // Helper function to fetch Roblox profile with caching
 // writeToScammerCache: if false, only reads from cache but doesn't write (for general endpoint use)
@@ -76,8 +89,13 @@ async function fetchRobloxProfile(userId, env, writeToScammerCache = true) {
   return data;
 }
 
-// Helper function to fetch Discord profile with caching
-// writeToScammerCache: if false, only reads from cache but doesn't write (for general endpoint use)
+/**
+ * Fetch Discord profile with caching
+ * @param {string} discordId - Discord user ID
+ * @param {object} env - Environment variables
+ * @param {string|null} userId - Optional Roblox user ID for cache lookup
+ * @param {boolean} writeToScammerCache - If false, only reads from cache (for general endpoint use)
+ */
 async function fetchDiscordProfile(discordId, env, userId = null, writeToScammerCache = true) {
   if (!discordId || !/^\d+$/.test(discordId)) {
     return null;
@@ -172,42 +190,9 @@ async function fetchDiscordProfile(discordId, env, userId = null, writeToScammer
   return data;
 }
 
-// Helper function to fetch alt accounts in batch
-async function fetchAltAccounts(altIds, env) {
-  if (!altIds || altIds.length === 0) {
-    return [];
-  }
-
-  const altPromises = altIds.map(async (altId) => {
-    try {
-      const profileData = await fetchRobloxProfile(altId, env);
-      if (profileData) {
-        return {
-          name: profileData.name,
-          profile: `https://www.roblox.com/users/${altId}/profile`,
-          user_id: altId
-        };
-      }
-    } catch (err) {
-      console.warn(`Failed to fetch alt ${altId}:`, err);
-    }
-    return null;
-  });
-
-  const results = await Promise.all(altPromises);
-  return results.filter(alt => alt !== null);
-}
-
-// Helper function to get last processed message ID from database
-async function getLastProcessedMessageId(env) {
-  const result = await env.DB.prepare(
-    "SELECT MAX(last_message_id) as last_id FROM scammer_profile_cache WHERE last_message_id IS NOT NULL"
-  ).first();
-  return result?.last_id || null;
-}
 
 // ============================================================================
-// EXTRACTION HELPER FUNCTIONS - Clean rebuild for scammer data
+// SECTION 2: DATA EXTRACTION HELPERS
 // ============================================================================
 
 function extractDisplayName(content) {
@@ -391,91 +376,19 @@ function extractRobloxUserId(content) {
   return null;
 }
 
+
 // ============================================================================
-// THREAD DETECTION - Detect thread ID without fetching messages
+// SECTION 3: UTILITY FUNCTIONS
 // ============================================================================
 
-async function detectThreadId(msg, env, channelId) {
-  // Method 1: Check msg.thread property (if Discord includes it) - FASTEST
-  if (msg.thread && msg.thread.id) {
-    console.log(`[THREAD] Found thread ${msg.thread.id} via msg.thread property for message ${msg.id}`);
-    return msg.thread.id;
-  }
-  
-  // Method 2: Try direct channel lookup first (fast, single API call)
-  // Some threads use message ID as thread ID
-  try {
-    const threadInfoUrl = `https://discord.com/api/v10/channels/${msg.id}`;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-    
-    const threadInfoRes = await fetch(threadInfoUrl, {
-      headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeoutId);
-    
-    if (threadInfoRes.ok) {
-      const threadInfo = await threadInfoRes.json();
-      // Check if it's actually a thread (type 11 = public thread, type 12 = private thread)
-      if ((threadInfo.type === 11 || threadInfo.type === 12) && threadInfo.parent_id === channelId) {
-        console.log(`[THREAD] Found thread ${threadInfo.id} via direct channel lookup for message ${msg.id}`);
-        return threadInfo.id;
-      }
-    }
-  } catch (err) {
-    if (err.name === 'AbortError') {
-      console.warn(`[THREAD] Direct lookup timeout for message ${msg.id}`);
-    }
-    // Not a thread or no access - continue to other methods
-  }
-  
-  // Method 3: Fetch active threads (slower, but necessary if direct lookup fails)
-  // Skip archived threads - they're slow and less common, can be fetched separately later
-  try {
-    const activeThreadsUrl = `https://discord.com/api/v10/channels/${channelId}/threads/active`;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-    
-    const activeThreadsRes = await fetch(activeThreadsUrl, {
-      headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeoutId);
-    
-    if (activeThreadsRes.ok) {
-      const threadsData = await activeThreadsRes.json();
-      const threads = threadsData.threads || [];
-      
-      // Check if any thread's parent message ID matches this message
-      for (const thread of threads) {
-        if (thread.parent_id === channelId && thread.id) {
-          // Check message_id field (threads created from messages have this)
-          if (thread.message_id === msg.id) {
-            console.log(`[THREAD] Found thread ${thread.id} via active threads API for message ${msg.id}`);
-            return thread.id;
-          }
-        }
-      }
-    }
-  } catch (err) {
-    if (err.name === 'AbortError') {
-      console.warn(`[THREAD] Active threads fetch timeout for message ${msg.id}`);
-    } else {
-      console.warn(`[THREAD] Error fetching active threads for message ${msg.id}:`, err.message);
-    }
-  }
-  
-  // No thread found - return null
-  return null;
-}
-
-// Helper function for delays
+/**
+ * Delay helper for rate limiting
+ */
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-// Helper function to log job activity
+/**
+ * Log job activity to database
+ */
 async function logJobActivity(env, jobId, step, messageId = null, details = null) {
   const now = Date.now();
   try {
@@ -508,8 +421,13 @@ async function logJobActivity(env, jobId, step, messageId = null, details = null
 }
 
 // ============================================================================
-// PROCESS SCAMMER MESSAGE - Extract and store scammer data
+// SECTION 4: SCAMMER MESSAGE PROCESSING
 // ============================================================================
+
+/**
+ * Process a single Discord message and extract scammer data
+ * Called by queue consumer (scammer-queue-consumer.js)
+ */
 
 async function processScammerMessage(msg, env, channelId, jobId = null) {
   // Get content from message content AND embeds (Discord sometimes puts content in embeds)
@@ -727,9 +645,9 @@ async function processScammerMessage(msg, env, channelId, jobId = null) {
   }
 }
 
-// ============================================================================
-// STORE SCAMMER DATA - Save to D1 database
-// ============================================================================
+/**
+ * Store scammer data in D1 database
+ */
 
 async function storeScammerData(data, env) {
   // Primary Discord ID (first one, or null if none)
@@ -782,12 +700,13 @@ async function storeScammerData(data, env) {
 }
 
 // ============================================================================
-// PROCESS SCAMMER MESSAGES - Main processing function
+// SECTION 5: QUEUE MANAGEMENT
 // ============================================================================
 
-// ============================================================================
-// QUEUE-BASED MESSAGE PROCESSING - Add messages to queue
-// ============================================================================
+/**
+ * Enqueue all Discord messages for processing
+ * Messages are processed by the queue consumer Worker
+ */
 
 async function enqueueScammerMessages(env, jobId) {
   const channelId = env.DISCORD_CHANNEL_ID;
@@ -795,9 +714,18 @@ async function enqueueScammerMessages(env, jobId) {
   try {
     await logJobActivity(env, jobId, 'starting', null, 'Job started - fetching messages to queue');
     
+    // Check if required environment variables are set
+    if (!env.DISCORD_BOT_TOKEN) {
+      throw new Error('DISCORD_BOT_TOKEN environment variable not set. Set it in Pages Functions settings or via wrangler secret.');
+    }
+    
+    if (!channelId) {
+      throw new Error('DISCORD_CHANNEL_ID environment variable not set. Set it in Pages Functions settings or via wrangler secret.');
+    }
+    
     // Check if queue is available
     if (!env.SCAMMER_QUEUE) {
-      throw new Error('Queue binding SCAMMER_QUEUE not configured. Add queue binding in wrangler.toml or Pages settings.');
+      throw new Error('Queue binding SCAMMER_QUEUE not configured. Add queue binding in Pages settings → Functions → Queue Bindings.');
     }
     
     // Fetch all messages and add to queue
@@ -816,6 +744,10 @@ async function enqueueScammerMessages(env, jobId) {
       const response = await fetch(url.toString(), {
         headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
       });
+      
+      if (response.status === 401) {
+        throw new Error('Discord API 401 Unauthorized - Bot token is invalid or missing. Check DISCORD_BOT_TOKEN environment variable.');
+      }
       
       if (response.status === 429) {
         const retryAfter = await response.json();
@@ -879,64 +811,14 @@ async function enqueueScammerMessages(env, jobId) {
   }
 }
 
-// ============================================================================
-// QUEUE CONSUMER - Process messages from queue
-// ============================================================================
+/**
+ * NOTE: Queue consumer is handled by emwiki/workers/scammer-queue-consumer.js
+ * Pages Functions do not support queue consumers directly.
+ */
 
-export async function onQueueBatch(batch, env) {
-  const messages = batch.messages;
-  const results = [];
-  
-  for (const message of messages) {
-    try {
-      const { jobId, messageId, channelId, message: msg } = message.body;
-      
-      // Process the message
-      await processScammerMessage(msg, env, channelId, jobId);
-      
-      // Update job progress
-      const jobStatus = await env.DB.prepare(`
-        SELECT messages_processed, total_messages
-        FROM scammer_job_status
-        WHERE job_id = ?
-      `).bind(jobId).first();
-      
-      const newProcessed = (jobStatus?.messages_processed || 0) + 1;
-      
-      await env.DB.prepare(`
-        UPDATE scammer_job_status 
-        SET messages_processed = ?, last_activity_at = ?, current_message_id = ?
-        WHERE job_id = ?
-      `).bind(newProcessed, Date.now(), messageId, jobId).run();
-      
-      // Check if all messages are processed
-      if (jobStatus && newProcessed >= jobStatus.total_messages) {
-        await logJobActivity(env, jobId, 'messages_complete', null, 'All messages processed, fetching threads');
-        await fetchAllThreadMessages(env, jobId);
-        
-        await env.DB.prepare(`
-          UPDATE scammer_job_status 
-          SET status = 'completed', completed_at = ?, last_activity_at = ?
-          WHERE job_id = ?
-        `).bind(Date.now(), Date.now(), jobId).run();
-      }
-      
-      results.push({ success: true, messageId });
-      message.ack();
-    } catch (err) {
-      console.error(`[QUEUE ERROR] Processing message:`, err);
-      results.push({ success: false, error: err.message });
-      // Don't ack on error - queue will retry
-      message.retry();
-    }
-  }
-  
-  return results;
-}
-
-// ============================================================================
-// FETCH ALL THREAD MESSAGES - Fetch thread messages for all scammers
-// ============================================================================
+/**
+ * Fetch all thread messages for scammers after main messages are processed
+ */
 
 async function fetchAllThreadMessages(env, jobId) {
   try {
@@ -1029,7 +911,13 @@ async function fetchAllThreadMessages(env, jobId) {
   }
 }
 
-// Helper function to upload video to Cloudflare Stream
+// ============================================================================
+// SECTION 6: MEDIA HANDLING (R2 & Stream)
+// ============================================================================
+
+/**
+ * Upload video to Cloudflare Stream for transcoding
+ */
 async function uploadVideoToStream(videoData, filename, env) {
   try {
     if (!env.CLOUDFLARE_ACCOUNT_ID || !env.CLOUDFLARE_STREAM_TOKEN) {
@@ -1083,7 +971,9 @@ async function uploadVideoToStream(videoData, filename, env) {
   }
 }
 
-// Helper function to download Discord video and upload to R2 (and Stream for QuickTime)
+/**
+ * Download Discord video and upload to R2 (and Stream for QuickTime videos)
+ */
 async function downloadVideoToR2(discordUrl, attachmentId, filename, contentType, env) {
   try {
     // Get file extension from filename or content type
@@ -1157,7 +1047,9 @@ async function downloadVideoToR2(discordUrl, attachmentId, filename, contentType
   }
 }
 
-// Helper function to download Discord image and upload to R2
+/**
+ * Download Discord image and upload to R2
+ */
 async function downloadImageToR2(discordUrl, attachmentId, filename, contentType, env) {
   try {
     // Get file extension from filename or content type
@@ -1219,7 +1111,9 @@ async function downloadImageToR2(discordUrl, attachmentId, filename, contentType
   }
 }
 
-// Helper function to fetch Discord thread messages
+/**
+ * Fetch all messages from a Discord thread
+ */
 async function fetchDiscordThread(threadId, env) {
   if (!threadId) return null;
 
@@ -1384,6 +1278,14 @@ async function fetchDiscordThread(threadId, env) {
   }
 }
 
+// ============================================================================
+// SECTION 7: API ENDPOINT HANDLER
+// ============================================================================
+
+/**
+ * Main API endpoint handler
+ * Handles all GET requests to /api/roblox-proxy
+ */
 export async function onRequestGet(context) {
   const { request, env } = context;
   const url = new URL(request.url);
@@ -2698,6 +2600,15 @@ export async function onRequestGet(context) {
       } else {
             jobStatus.logs = [];
           }
+          
+          // Add summary information
+          const messagesSkipped = (jobStatus.total_messages || 0) - (jobStatus.messages_processed || 0);
+          jobStatus.summary = {
+            total_messages: jobStatus.total_messages || 0,
+            messages_processed: jobStatus.messages_processed || 0,
+            messages_skipped: messagesSkipped,
+            note: messagesSkipped > 0 ? `${messagesSkipped} messages were skipped (no Roblox profile URL found). This is normal - not all Discord messages contain scammer reports.` : 'All messages processed successfully.'
+          };
           
           // Check if job is stuck (running for more than 10 minutes)
           if (jobStatus.status === 'running') {

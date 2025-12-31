@@ -3,8 +3,10 @@ main = "scammer-queue-consumer.js"
 compatibility_date = "2024-01-01"
 
 # D1 Database binding (same as your Pages project)
+# IMPORTANT: The binding name must match what your Pages Functions use
+# Check your Pages project settings to see if it's "DB" or "DBA"
 [[d1_databases]]
-binding = "DB"
+binding = "DB"  # Change to "DBA" if that's what your Pages project uses
 database_name = "DBA"
 database_id = "YOUR_D1_DATABASE_ID"  # Replace with your actual D1 database ID
 
