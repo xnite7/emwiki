@@ -799,6 +799,10 @@ async function processScammerMessages(env, jobId) {
     
     await logJobActivity(env, jobId, 'completed', null, `Processed ${processed}/${allMessages.length} messages`);
     
+    // Match threads to users by scanning thread content
+    await logJobActivity(env, jobId, 'matching_threads', null, 'Matching threads to users by scanning content');
+    await matchThreadsToUsers(env, channelId);
+    
     // Mark job as completed
     await env.DB.prepare(`
       UPDATE scammer_job_status 
