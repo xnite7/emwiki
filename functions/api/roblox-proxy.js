@@ -374,8 +374,21 @@ function extractAltIds(content) {
 }
 
 function extractRobloxUserId(content) {
-  const match = content.match(/https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i);
-  return match ? match[1] : null;
+  // Try multiple patterns to catch different formats
+  const patterns = [
+    /roblox\s+profile:\s*https?:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i,
+    /https?:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i,
+    /roblox\.com\/users\/(\d+)\/profile/i
+  ];
+  
+  for (const pattern of patterns) {
+    const match = content.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  
+  return null;
 }
 
 // ============================================================================
