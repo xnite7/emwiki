@@ -374,11 +374,11 @@ function extractAltIds(content) {
 }
 
 function extractRobloxUserId(content) {
-  // Try multiple patterns to catch different formats
+  // Match Roblox profile URL - handle markdown formatting and various formats
   const patterns = [
-    /roblox\s+profile:\s*https?:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i,
-    /https?:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i,
-    /roblox\.com\/users\/(\d+)\/profile/i
+    /https:\/\/www\.roblox\.com\/users\/(\d+)\/profile/i,
+    /roblox\.com\/users\/(\d+)\/profile/i,
+    /roblox\.com\/users\/(\d+)\//i
   ];
   
   for (const pattern of patterns) {
@@ -517,8 +517,10 @@ async function processScammerMessage(msg, env, channelId, jobId = null) {
   // REQUIRED: Roblox User ID (skip if missing)
   const userId = extractRobloxUserId(content);
   if (!userId) {
-    console.log(`Skipping message ${msg.id} - no Roblox profile URL`);
-    if (jobId) await logJobActivity(env, jobId, 'message_skipped', msg.id, 'No Roblox profile URL');
+    // Log content snippet for debugging
+    const contentSnippet = content.substring(0, 200).replace(/\n/g, ' ');
+    console.log(`Skipping message ${msg.id} - no Roblox profile URL found. Content preview: ${contentSnippet}`);
+    if (jobId) await logJobActivity(env, jobId, 'message_skipped', msg.id, `No Roblox profile URL. Preview: ${contentSnippet.substring(0, 100)}`);
     return;
   }
   
@@ -2427,9 +2429,9 @@ export async function onRequestGet(context) {
               SET status = 'failed', error = 'Cancelled - stuck for too long'
               WHERE job_id = ?
             `).bind(runningJob.job_id).run();
-          } else {
+            } else {
             // Job is still running and not stuck
-            return new Response(JSON.stringify({ 
+          return new Response(JSON.stringify({ 
               error: 'A job is already running',
               runningJob: {
                 jobId: runningJob.job_id,
@@ -2441,14 +2443,14 @@ export async function onRequestGet(context) {
               message: 'Use ?action=status&jobId=' + runningJob.job_id + ' to check progress, or ?action=cancel&jobId=' + runningJob.job_id + ' to cancel it.'
             }), {
               status: 409, // Conflict
-              headers: { 
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*" 
-              },
-            });
-          }
+            headers: { 
+              "Content-Type": "application/json", 
+              "Access-Control-Allow-Origin": "*" 
+            },
+          });
         }
-        
+      }
+
         // Cancel any other stuck jobs (running > 10 minutes)
         const tenMinutesAgo = Date.now() - (10 * 60 * 1000);
         await env.DB.prepare(`
@@ -2475,19 +2477,19 @@ export async function onRequestGet(context) {
             console.error(`Job ${newJobId} failed:`, err);
           });
         }
-        
-        return new Response(JSON.stringify({ 
+
+            return new Response(JSON.stringify({ 
           jobId: newJobId,
           status: 'running',
           message: 'Job started. Use ?action=status&jobId=' + newJobId + ' to check progress.'
-        }), {
-          headers: { 
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*" 
-          },
-        });
-      }
-      
+            }), {
+              headers: { 
+                "Content-Type": "application/json", 
+                "Access-Control-Allow-Origin": "*" 
+              },
+            });
+          }
+
       // Action: status - Check job status
       if (action === 'status') {
         // If jobId provided, check specific job
@@ -2502,18 +2504,18 @@ export async function onRequestGet(context) {
           if (!jobStatus) {
             return new Response(JSON.stringify({ error: 'Job not found' }), {
               status: 404,
-              headers: { "Content-Type": "application/json" },
-            });
-          }
-          
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
           // Parse logs
           if (jobStatus.logs) {
             try {
               jobStatus.logs = JSON.parse(jobStatus.logs);
             } catch (e) {
               jobStatus.logs = [];
-            }
-          } else {
+        }
+      } else {
             jobStatus.logs = [];
           }
           
@@ -2599,29 +2601,29 @@ export async function onRequestGet(context) {
           AND (victims IS NOT NULL OR items_scammed IS NOT NULL OR discord_id IS NOT NULL)
         ORDER BY last_message_id DESC
       `).all();
-      
+
       const scammers = results.map(row => ({
-        user_id: row.user_id,
+          user_id: row.user_id,
         robloxDisplay: row.roblox_display_name || null,
         robloxUser: row.roblox_name || null,
         avatar: row.roblox_avatar || "https://emwiki.com/imgs/plr.jpg",
-        discordDisplay: row.discord_display_name || null,
+          discordDisplay: row.discord_display_name || null,
         discordId: row.discord_id || null,
-        victims: row.victims || null,
-        itemsScammed: row.items_scammed || null,
-        robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : [],
-        hasThreadEvidence: !!row.thread_evidence
+          victims: row.victims || null,
+          itemsScammed: row.items_scammed || null,
+          robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : [],
+          hasThreadEvidence: !!row.thread_evidence
       }));
-      
+
       return new Response(JSON.stringify({ 
         scammers
       }), {
         headers: { 
-          "Content-Type": "application/json",
+          "Content-Type": "application/json", 
           "Access-Control-Allow-Origin": "*" 
         },
       });
-      
+
     } catch (err) {
       console.error("Discord Scammers Error:", err);
       return new Response(JSON.stringify({ error: err.message, stack: err.stack }), {
