@@ -383,19 +383,54 @@ function extractRobloxUserId(content) {
 // ============================================================================
 
 async function detectThreadId(msg, env, channelId) {
-  // Method 1: Check msg.thread property (if Discord includes it)
+  // Method 1: Check msg.thread property (if Discord includes it) - FASTEST
   if (msg.thread && msg.thread.id) {
     console.log(`[THREAD] Found thread ${msg.thread.id} via msg.thread property for message ${msg.id}`);
     return msg.thread.id;
   }
   
-  // Method 2: Fetch active threads and check if any thread's parent message ID matches this message
+  // Method 2: Try direct channel lookup first (fast, single API call)
+  // Some threads use message ID as thread ID
   try {
-    // Fetch active threads from the channel
+    const threadInfoUrl = `https://discord.com/api/v10/channels/${msg.id}`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
+    const threadInfoRes = await fetch(threadInfoUrl, {
+      headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (threadInfoRes.ok) {
+      const threadInfo = await threadInfoRes.json();
+      // Check if it's actually a thread (type 11 = public thread, type 12 = private thread)
+      if ((threadInfo.type === 11 || threadInfo.type === 12) && threadInfo.parent_id === channelId) {
+        console.log(`[THREAD] Found thread ${threadInfo.id} via direct channel lookup for message ${msg.id}`);
+        return threadInfo.id;
+      }
+    }
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      console.warn(`[THREAD] Direct lookup timeout for message ${msg.id}`);
+    }
+    // Not a thread or no access - continue to other methods
+  }
+  
+  // Method 3: Fetch active threads (slower, but necessary if direct lookup fails)
+  // Skip archived threads - they're slow and less common, can be fetched separately later
+  try {
     const activeThreadsUrl = `https://discord.com/api/v10/channels/${channelId}/threads/active`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
     const activeThreadsRes = await fetch(activeThreadsUrl, {
       headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
     
     if (activeThreadsRes.ok) {
       const threadsData = await activeThreadsRes.json();
@@ -404,60 +439,23 @@ async function detectThreadId(msg, env, channelId) {
       // Check if any thread's parent message ID matches this message
       for (const thread of threads) {
         if (thread.parent_id === channelId && thread.id) {
-          // For forum channels, check if message ID matches
-          // For regular channels, check message_id field
-          if (thread.message_id === msg.id || thread.id === msg.id) {
+          // Check message_id field (threads created from messages have this)
+          if (thread.message_id === msg.id) {
             console.log(`[THREAD] Found thread ${thread.id} via active threads API for message ${msg.id}`);
             return thread.id;
           }
         }
       }
     }
-    
-    // Method 3: Fetch archived public threads
-    const archivedThreadsUrl = `https://discord.com/api/v10/channels/${channelId}/threads/archived/public`;
-    const archivedThreadsRes = await fetch(archivedThreadsUrl, {
-      headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
-    });
-    
-    if (archivedThreadsRes.ok) {
-      const archivedData = await archivedThreadsRes.json();
-      const archivedThreads = archivedData.threads || [];
-      
-      // Check if any archived thread's parent message ID matches this message
-      for (const thread of archivedThreads) {
-        if (thread.parent_id === channelId && thread.id) {
-          if (thread.message_id === msg.id || thread.id === msg.id) {
-            console.log(`[THREAD] Found thread ${thread.id} via archived threads API for message ${msg.id}`);
-            return thread.id;
-          }
-        }
-      }
-    }
-    
-    // Method 4: Try fetching thread info directly using message ID (some threads use message ID as thread ID)
-    try {
-      const threadInfoUrl = `https://discord.com/api/v10/channels/${msg.id}`;
-      const threadInfoRes = await fetch(threadInfoUrl, {
-        headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
-      });
-      
-      if (threadInfoRes.ok) {
-        const threadInfo = await threadInfoRes.json();
-        // Check if it's actually a thread (type 11 = public thread, type 12 = private thread)
-        if ((threadInfo.type === 11 || threadInfo.type === 12) && threadInfo.parent_id === channelId) {
-          console.log(`[THREAD] Found thread ${threadInfo.id} via direct channel lookup for message ${msg.id}`);
-          return threadInfo.id;
-        }
-      }
-    } catch (err) {
-      // Not a thread or no access - that's okay
-    }
-    
   } catch (err) {
-    console.warn(`[THREAD] Error detecting thread for message ${msg.id}:`, err.message);
+    if (err.name === 'AbortError') {
+      console.warn(`[THREAD] Active threads fetch timeout for message ${msg.id}`);
+    } else {
+      console.warn(`[THREAD] Error fetching active threads for message ${msg.id}:`, err.message);
+    }
   }
   
+  // No thread found - return null
   return null;
 }
 
@@ -587,11 +585,23 @@ async function processScammerMessage(msg, env, channelId) {
     }
   }
   
-  // Detect thread ID (don't fetch messages)
+  // Detect thread ID (don't fetch messages) with timeout protection
   console.log(`[${msg.id}] Detecting thread ID`);
-  const threadId = await detectThreadId(msg, env, channelId);
-  if (threadId) {
-    console.log(`[THREAD] Found thread ${threadId} for message ${msg.id}`);
+  let threadId = null;
+  try {
+    const threadPromise = detectThreadId(msg, env, channelId);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Thread detection timeout')), 10000)
+    );
+    threadId = await Promise.race([threadPromise, timeoutPromise]);
+    if (threadId) {
+      console.log(`[THREAD] Found thread ${threadId} for message ${msg.id}`);
+    } else {
+      console.log(`[${msg.id}] No thread detected`);
+    }
+  } catch (err) {
+    console.warn(`[${msg.id}] Thread detection error:`, err.message);
+    // Continue without thread
   }
   
   // Store in D1
