@@ -785,79 +785,57 @@ async function storeScammerData(data, env) {
 // PROCESS SCAMMER MESSAGES - Main processing function
 // ============================================================================
 
-async function processScammerMessages(env, jobId) {
+// ============================================================================
+// QUEUE-BASED MESSAGE PROCESSING - Add messages to queue
+// ============================================================================
+
+async function enqueueScammerMessages(env, jobId) {
   const channelId = env.DISCORD_CHANNEL_ID;
-  let allMessages = [];
-  let lastId = null;
   
   try {
-    await logJobActivity(env, jobId, 'starting', null, 'Job started');
+    await logJobActivity(env, jobId, 'starting', null, 'Job started - fetching messages to queue');
     
-    // Fetch all messages with smart rate limit handling
-    // Discord allows ~50 requests/second, but be conservative: wait 1.5 seconds between batches
+    // Check if queue is available
+    if (!env.SCAMMER_QUEUE) {
+      throw new Error('Queue binding SCAMMER_QUEUE not configured. Add queue binding in wrangler.toml or Pages settings.');
+    }
+    
+    // Fetch all messages and add to queue
+    let allMessages = [];
+    let lastId = null;
     let batchCount = 0;
+    
     while (true) {
       batchCount++;
       await logJobActivity(env, jobId, 'fetching_batch', null, `Fetching batch ${batchCount}`);
       
       const url = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
-      url.searchParams.set('limit', '100'); // Max per request
-      if (lastId) {
-        url.searchParams.set('before', lastId);
+      url.searchParams.set('limit', '100');
+      if (lastId) url.searchParams.set('before', lastId);
+      
+      const response = await fetch(url.toString(), {
+        headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+      });
+      
+      if (response.status === 429) {
+        const retryAfter = await response.json();
+        await delay((retryAfter.retry_after || 1) * 1000);
+        continue;
       }
       
-      let response;
-      let retryCount = 0;
-      while (retryCount < 3) {
-        try {
-          await logJobActivity(env, jobId, 'discord_api_request', null, `Attempt ${retryCount + 1}/3`);
-          response = await fetch(url.toString(), {
-            headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
-          });
-          
-          if (response.status === 429) {
-            // Rate limited - respect Discord's retry-after header
-            const retryAfter = await response.json();
-            const waitTime = (retryAfter.retry_after || 1) * 1000;
-            await logJobActivity(env, jobId, 'rate_limited', null, `Waiting ${waitTime}ms`);
-            console.log(`[JOB ${jobId}] Rate limited, waiting ${waitTime}ms`);
-            await delay(waitTime);
-            retryCount++;
-            continue;
-          }
-          
-          if (!response.ok) {
-            throw new Error(`Discord API error: ${response.status}`);
-          }
-          
-          break;
-        } catch (err) {
-          await logJobActivity(env, jobId, 'discord_api_error', null, err.message);
-          retryCount++;
-          if (retryCount >= 3) {
-            throw err;
-          }
-          await delay(1000 * retryCount);
-        }
+      if (!response.ok) {
+        throw new Error(`Discord API error: ${response.status}`);
       }
       
       const messages = await response.json();
-      if (messages.length === 0) {
-        await logJobActivity(env, jobId, 'fetch_complete', null, `Fetched ${allMessages.length} total messages`);
-        break;
-      }
+      if (messages.length === 0) break;
       
       allMessages.push(...messages);
       lastId = messages[messages.length - 1].id;
-      
-      await logJobActivity(env, jobId, 'batch_received', null, `Batch ${batchCount}: ${messages.length} messages, total: ${allMessages.length}`);
-      
-      // Key: respect rate limits - wait 1.5 seconds between batches
-      // Discord allows ~50 requests/second but be conservative
       await delay(1500);
     }
     
-    console.log(`[JOB ${jobId}] Fetched ${allMessages.length} messages from Discord`);
+    await logJobActivity(env, jobId, 'messages_fetched', null, `Fetched ${allMessages.length} messages, adding to queue`);
     
     // Update total messages
     await env.DB.prepare(`
@@ -866,66 +844,94 @@ async function processScammerMessages(env, jobId) {
       WHERE job_id = ?
     `).bind(allMessages.length, Date.now(), jobId).run();
     
-    await logJobActivity(env, jobId, 'processing_started', null, `Starting to process ${allMessages.length} messages`);
-    
-    // Process each message
-    let processed = 0;
-    for (const msg of allMessages) {
-      try {
-        await logJobActivity(env, jobId, 'processing_message', msg.id, `Processing message ${processed + 1}/${allMessages.length}`);
-        
-        await processScammerMessage(msg, env, channelId, jobId);
-        processed++;
-        
-        await logJobActivity(env, jobId, 'message_completed', msg.id, `Completed message ${processed}/${allMessages.length}`);
-        
-        // Update progress after EVERY message to track progress accurately
-        await env.DB.prepare(`
-          UPDATE scammer_job_status 
-          SET messages_processed = ?, last_activity_at = ?
-          WHERE job_id = ?
-        `).bind(processed, Date.now(), jobId).run();
-        
-        if (processed % 10 === 0) {
-          console.log(`[JOB ${jobId}] Processed ${processed}/${allMessages.length} messages`);
-        }
-      } catch (err) {
-        await logJobActivity(env, jobId, 'message_error', msg.id, `Error: ${err.message}`);
-        console.error(`[ERROR] Processing message ${msg.id}:`, err.message);
-        // Update progress even on error so we don't lose track
-        processed++;
-        await env.DB.prepare(`
-          UPDATE scammer_job_status 
-          SET messages_processed = ?, last_activity_at = ?
-          WHERE job_id = ?
-        `).bind(processed, Date.now(), jobId).run();
-        // Continue processing next message
+    // Add all messages to queue in batches (queue supports batch sends)
+    const queueMessages = allMessages.map(msg => ({
+      body: {
+        jobId,
+        messageId: msg.id,
+        channelId,
+        message: msg // Include full message to avoid fetching again
       }
+    }));
+    
+    // Send in batches of 100 (queue batch limit)
+    for (let i = 0; i < queueMessages.length; i += 100) {
+      const batch = queueMessages.slice(i, i + 100);
+      await env.SCAMMER_QUEUE.sendBatch(batch);
     }
     
-    await logJobActivity(env, jobId, 'completed', null, `Processed ${processed}/${allMessages.length} messages`);
+    await logJobActivity(env, jobId, 'queued', null, `Added ${allMessages.length} messages to queue`);
     
-    // Fetch all thread messages for users that have threads
-    await logJobActivity(env, jobId, 'fetching_threads', null, 'Fetching all thread messages');
-    await fetchAllThreadMessages(env, jobId);
+    return {
+      queued: allMessages.length,
+      total: allMessages.length,
+      message: 'Messages added to queue. They will be processed automatically.'
+    };
     
-    // Mark job as completed
-    await env.DB.prepare(`
-      UPDATE scammer_job_status 
-      SET status = 'completed', messages_processed = ?, completed_at = ?, last_activity_at = ?
-      WHERE job_id = ?
-    `).bind(processed, Date.now(), Date.now(), jobId).run();
-    
-    console.log(`[JOB ${jobId}] Completed - processed ${processed}/${allMessages.length} messages`);
   } catch (err) {
     await logJobActivity(env, jobId, 'failed', null, `Failed: ${err.message}`);
-    console.error(`[JOB ${jobId}] Failed:`, err);
     await env.DB.prepare(`
       UPDATE scammer_job_status 
       SET status = 'failed', error = ?, last_activity_at = ?
       WHERE job_id = ?
     `).bind(err.message, Date.now(), jobId).run();
+    throw err;
   }
+}
+
+// ============================================================================
+// QUEUE CONSUMER - Process messages from queue
+// ============================================================================
+
+export async function onQueueBatch(batch, env) {
+  const messages = batch.messages;
+  const results = [];
+  
+  for (const message of messages) {
+    try {
+      const { jobId, messageId, channelId, message: msg } = message.body;
+      
+      // Process the message
+      await processScammerMessage(msg, env, channelId, jobId);
+      
+      // Update job progress
+      const jobStatus = await env.DB.prepare(`
+        SELECT messages_processed, total_messages
+        FROM scammer_job_status
+        WHERE job_id = ?
+      `).bind(jobId).first();
+      
+      const newProcessed = (jobStatus?.messages_processed || 0) + 1;
+      
+      await env.DB.prepare(`
+        UPDATE scammer_job_status 
+        SET messages_processed = ?, last_activity_at = ?, current_message_id = ?
+        WHERE job_id = ?
+      `).bind(newProcessed, Date.now(), messageId, jobId).run();
+      
+      // Check if all messages are processed
+      if (jobStatus && newProcessed >= jobStatus.total_messages) {
+        await logJobActivity(env, jobId, 'messages_complete', null, 'All messages processed, fetching threads');
+        await fetchAllThreadMessages(env, jobId);
+        
+        await env.DB.prepare(`
+          UPDATE scammer_job_status 
+          SET status = 'completed', completed_at = ?, last_activity_at = ?
+          WHERE job_id = ?
+        `).bind(Date.now(), Date.now(), jobId).run();
+      }
+      
+      results.push({ success: true, messageId });
+      message.ack();
+    } catch (err) {
+      console.error(`[QUEUE ERROR] Processing message:`, err);
+      results.push({ success: false, error: err.message });
+      // Don't ack on error - queue will retry
+      message.retry();
+    }
+  }
+  
+  return results;
 }
 
 // ============================================================================
@@ -2647,27 +2653,22 @@ export async function onRequestGet(context) {
           VALUES (?, 'running', ?, 0, 0)
         `).bind(newJobId, now).run();
         
-        // Start processing in background using waitUntil
-        if (context.waitUntil) {
-          context.waitUntil(processScammerMessages(env, newJobId));
-        } else {
-          // Fallback: process synchronously (not ideal but works)
-          processScammerMessages(env, newJobId).catch(err => {
-            console.error(`Job ${newJobId} failed:`, err);
-          });
-        }
-
-            return new Response(JSON.stringify({ 
+        // Enqueue all messages - they'll be processed automatically by queue consumer
+        const queueResult = await enqueueScammerMessages(env, newJobId);
+        
+        return new Response(JSON.stringify({ 
           jobId: newJobId,
-          status: 'running',
-          message: 'Job started. Use ?action=status&jobId=' + newJobId + ' to check progress.'
-            }), {
-              headers: { 
-                "Content-Type": "application/json", 
-                "Access-Control-Allow-Origin": "*" 
-              },
-            });
-          }
+          status: 'queued',
+          queued: queueResult.queued,
+          total: queueResult.total,
+          message: `Added ${queueResult.queued} messages to queue. They will be processed automatically. Use ?action=status&jobId=${newJobId} to check progress.`
+        }), {
+          headers: { 
+            "Content-Type": "application/json", 
+            "Access-Control-Allow-Origin": "*" 
+          },
+        });
+      }
 
       // Action: status - Check job status
       if (action === 'status') {
