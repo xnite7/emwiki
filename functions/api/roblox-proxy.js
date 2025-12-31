@@ -516,6 +516,11 @@ async function processScammerMessage(msg, env, channelId, jobId = null) {
   let content = msg.content || '';
   const originalContentLength = content.length;
   
+  // Check if message references another message (replies) - the referenced message might have the content
+  if (msg.referenced_message && msg.referenced_message.content) {
+    content += '\n' + msg.referenced_message.content;
+  }
+  
   // Also check embeds for content
   if (msg.embeds && msg.embeds.length > 0) {
     for (const embed of msg.embeds) {
@@ -533,11 +538,37 @@ async function processScammerMessage(msg, env, channelId, jobId = null) {
     }
   }
   
+  // Check if message has components (buttons/select menus) - sometimes content is there
+  if (msg.components && Array.isArray(msg.components)) {
+    for (const row of msg.components) {
+      if (row.components && Array.isArray(row.components)) {
+        for (const component of row.components) {
+          if (component.label) content += '\n' + component.label;
+          if (component.placeholder) content += '\n' + component.placeholder;
+        }
+      }
+    }
+  }
+  
   // REQUIRED: Roblox User ID (skip if missing)
-  const userId = extractRobloxUserId(content);
+  let userId = extractRobloxUserId(content);
+  
+  // If no userId found and message references another message, check the referenced message
+  if (!userId && msg.referenced_message && msg.referenced_message.content) {
+    const referencedContent = msg.referenced_message.content;
+    userId = extractRobloxUserId(referencedContent);
+    if (userId) {
+      // Found it in referenced message - use that content instead
+      content = referencedContent + '\n' + content;
+      console.log(`[${msg.id}] Found Roblox URL in referenced message ${msg.referenced_message.id}`);
+      if (jobId) await logJobActivity(env, jobId, 'found_in_reference', msg.id, `Found Roblox URL in referenced message ${msg.referenced_message.id}`);
+    }
+  }
+  
   if (!userId) {
     // Log more details for debugging - check what's actually in the message
     const hasEmbeds = msg.embeds && msg.embeds.length > 0;
+    const hasReference = msg.referenced_message ? true : false;
     let embedDebug = '';
     if (hasEmbeds) {
       embedDebug = ` Embeds: ${msg.embeds.length}`;
@@ -545,6 +576,7 @@ async function processScammerMessage(msg, env, channelId, jobId = null) {
         embedDebug += ` [${idx}: title=${embed.title || 'none'}, desc=${embed.description ? embed.description.substring(0, 50) : 'none'}, fields=${embed.fields ? embed.fields.length : 0}]`;
       });
     }
+    const refDebug = hasReference ? ` Has referenced_message (${msg.referenced_message.id})` : '';
     
     // Check if "roblox" appears anywhere in content (case-insensitive)
     const hasRobloxKeyword = /roblox/i.test(content);
@@ -555,10 +587,10 @@ async function processScammerMessage(msg, env, channelId, jobId = null) {
     const lastPart = content.length > 300 ? content.substring(content.length - 300).replace(/\n/g, ' ') : '';
     const preview = lastPart ? `${firstPart} ... [last 300: ${lastPart}]` : firstPart;
     
-    console.log(`Skipping message ${msg.id} - no Roblox profile URL found. Original content: ${originalContentLength} chars, Total: ${content.length} chars${embedDebug}${robloxDebug}. Preview: ${preview}`);
+    console.log(`Skipping message ${msg.id} - no Roblox profile URL found. Original content: ${originalContentLength} chars, Total: ${content.length} chars${embedDebug}${refDebug}${robloxDebug}. Preview: ${preview}`);
     if (jobId) {
       await logJobActivity(env, jobId, 'message_skipped', msg.id, 
-        `No Roblox profile URL. Original: ${originalContentLength} chars, Total: ${content.length} chars${embedDebug}${robloxDebug}. Preview: ${preview.substring(0, 200)}`);
+        `No Roblox profile URL. Original: ${originalContentLength} chars, Total: ${content.length} chars${embedDebug}${refDebug}${robloxDebug}. Preview: ${preview.substring(0, 200)}`);
     }
     return;
   }
@@ -656,9 +688,19 @@ async function processScammerMessage(msg, env, channelId, jobId = null) {
     }
   }
   
-  // Skip thread detection during message processing - will be matched at the end by scanning thread content
-  // This prevents hanging on individual messages
-  const threadId = null;
+  // Detect thread ID during message processing (but don't fetch messages yet)
+  // We'll fetch all thread messages after processing all main messages
+  let threadId = null;
+  try {
+    if (msg.thread && msg.thread.id) {
+      threadId = msg.thread.id;
+      console.log(`[${msg.id}] Found thread ${threadId} via msg.thread property`);
+      if (jobId) await logJobActivity(env, jobId, 'thread_detected', msg.id, `Thread detected: ${threadId}`);
+    }
+  } catch (err) {
+    console.warn(`[${msg.id}] Error detecting thread:`, err.message);
+    // Continue without thread
+  }
   
   // Store in D1
   if (jobId) await logJobActivity(env, jobId, 'storing_data', msg.id, `Storing data for user ${userId}`);
@@ -863,9 +905,9 @@ async function processScammerMessages(env, jobId) {
     
     await logJobActivity(env, jobId, 'completed', null, `Processed ${processed}/${allMessages.length} messages`);
     
-    // Match threads to users by scanning thread content
-    await logJobActivity(env, jobId, 'matching_threads', null, 'Matching threads to users by scanning content');
-    await matchThreadsToUsers(env, channelId);
+    // Fetch all thread messages for users that have threads
+    await logJobActivity(env, jobId, 'fetching_threads', null, 'Fetching all thread messages');
+    await fetchAllThreadMessages(env, jobId);
     
     // Mark job as completed
     await env.DB.prepare(`
@@ -883,6 +925,101 @@ async function processScammerMessages(env, jobId) {
       SET status = 'failed', error = ?, last_activity_at = ?
       WHERE job_id = ?
     `).bind(err.message, Date.now(), jobId).run();
+  }
+}
+
+// ============================================================================
+// FETCH ALL THREAD MESSAGES - Fetch thread messages for all scammers
+// ============================================================================
+
+async function fetchAllThreadMessages(env, jobId) {
+  try {
+    // Get all scammer entries that have thread_evidence with a thread_id
+    const { results } = await env.DB.prepare(`
+      SELECT user_id, thread_evidence, last_message_id
+      FROM scammer_profile_cache
+      WHERE thread_evidence IS NOT NULL
+    `).all();
+    
+    if (!results || results.length === 0) {
+      await logJobActivity(env, jobId, 'no_threads', null, 'No threads found to fetch');
+      console.log(`[JOB ${jobId}] No threads found to fetch`);
+      return;
+    }
+    
+    await logJobActivity(env, jobId, 'threads_found', null, `Found ${results.length} scammers with threads`);
+    console.log(`[JOB ${jobId}] Found ${results.length} scammers with threads`);
+    
+    let threadsProcessed = 0;
+    let threadsFetched = 0;
+    let totalMessagesFetched = 0;
+    
+    for (const row of results) {
+      try {
+        const threadEvidence = JSON.parse(row.thread_evidence);
+        const threadId = threadEvidence?.thread_id;
+        
+        if (!threadId) {
+          console.log(`[JOB ${jobId}] User ${row.user_id} has thread_evidence but no thread_id`);
+          continue;
+        }
+        
+        threadsProcessed++;
+        await logJobActivity(env, jobId, 'fetching_thread', threadId, `Fetching thread ${threadId} for user ${row.user_id} (${threadsProcessed}/${results.length})`);
+        console.log(`[JOB ${jobId}] Fetching thread ${threadId} for user ${row.user_id} (${threadsProcessed}/${results.length})`);
+        
+        // Fetch all messages from the thread
+        const threadMessages = await fetchDiscordThread(threadId, env);
+        
+        if (!threadMessages || threadMessages.length === 0) {
+          console.log(`[JOB ${jobId}] Thread ${threadId} has no messages or failed to fetch`);
+          await logJobActivity(env, jobId, 'thread_empty', threadId, `Thread ${threadId} has no messages`);
+          continue;
+        }
+        
+        threadsFetched++;
+        totalMessagesFetched += threadMessages.length;
+        
+        // Update thread evidence with all messages
+        const updatedThreadEvidence = {
+          thread_id: threadId,
+          messages: threadMessages,
+          message_count: threadMessages.length,
+          last_fetched: Date.now()
+        };
+        
+        await env.DB.prepare(`
+          UPDATE scammer_profile_cache
+          SET thread_evidence = ?,
+              thread_last_message_id = ?
+          WHERE user_id = ?
+        `).bind(
+          JSON.stringify(updatedThreadEvidence),
+          threadMessages[threadMessages.length - 1]?.id || null, // Last message ID
+          row.user_id
+        ).run();
+        
+        await logJobActivity(env, jobId, 'thread_fetched', threadId, `Fetched ${threadMessages.length} messages from thread ${threadId}`);
+        console.log(`[JOB ${jobId}] Fetched ${threadMessages.length} messages from thread ${threadId} for user ${row.user_id}`);
+        
+        // Rate limit: wait 1.5 seconds between thread fetches
+        if (threadsProcessed < results.length) {
+          await delay(1500);
+        }
+        
+      } catch (err) {
+        console.error(`[JOB ${jobId}] Error fetching thread for user ${row.user_id}:`, err.message);
+        await logJobActivity(env, jobId, 'thread_error', null, `Error fetching thread for user ${row.user_id}: ${err.message}`);
+        // Continue with next thread
+      }
+    }
+    
+    await logJobActivity(env, jobId, 'threads_complete', null, `Fetched ${totalMessagesFetched} messages from ${threadsFetched}/${threadsProcessed} threads`);
+    console.log(`[JOB ${jobId}] Thread fetching complete: ${totalMessagesFetched} messages from ${threadsFetched}/${threadsProcessed} threads`);
+  } catch (err) {
+    console.error(`[JOB ${jobId}] Error in fetchAllThreadMessages:`, err);
+    await logJobActivity(env, jobId, 'threads_error', null, `Error: ${err.message}`);
+    throw err;
   }
 }
 
@@ -1224,8 +1361,11 @@ async function fetchDiscordThread(threadId, env) {
       // Update before to fetch older messages
       before = messages[messages.length - 1].id;
       
-      // Safety limit
-      if (threadMessages.length >= 500) break;
+      // Rate limit: wait 1.5 seconds between batches to respect Discord API limits
+      await delay(1500);
+      
+      // Safety limit - remove or increase if needed (currently 5000 messages max per thread)
+      if (threadMessages.length >= 5000) break;
     }
 
     // Sort by timestamp (oldest first)
