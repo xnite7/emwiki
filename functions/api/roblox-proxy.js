@@ -498,15 +498,18 @@ async function logJobActivity(env, jobId, step, messageId = null, details = null
 // PROCESS SCAMMER MESSAGE - Extract and store scammer data
 // ============================================================================
 
-async function processScammerMessage(msg, env, channelId) {
+async function processScammerMessage(msg, env, channelId, jobId = null) {
   const content = msg.content || '';
   
   // REQUIRED: Roblox User ID (skip if missing)
   const userId = extractRobloxUserId(content);
   if (!userId) {
     console.log(`Skipping message ${msg.id} - no Roblox profile URL`);
+    if (jobId) await logJobActivity(env, jobId, 'message_skipped', msg.id, 'No Roblox profile URL');
     return;
   }
+  
+  if (jobId) await logJobActivity(env, jobId, 'extracting_fields', msg.id, `Extracting fields for user ${userId}`);
   
   // Extract all fields
   const displayName = extractDisplayName(content);
@@ -516,9 +519,10 @@ async function processScammerMessage(msg, env, channelId) {
   const itemsScammed = extractItemsScammed(content);
   const altIds = extractAltIds(content);
   
-  console.log(`[PROCESSING] Message ${msg.id} - userId: ${userId}, victims: ${victims || 'none'}, itemsScammed: ${itemsScammed || 'none'}, alts: ${altIds.length}`);
+  console.log(`[PROCESSING] Message ${msg.id} - userId: ${userId}, victims: ${victims || 'none'}, itemsScammed: ${itemsScammed || 'none'}, alts: ${altIds.length}, discordIds: ${discordIds.length}`);
   
   // Fetch Roblox profile with timeout protection
+  if (jobId) await logJobActivity(env, jobId, 'fetching_roblox', msg.id, `Fetching Roblox profile for ${userId}`);
   console.log(`[${msg.id}] Fetching Roblox profile for ${userId}`);
   let robloxData = null;
   try {
@@ -529,21 +533,26 @@ async function processScammerMessage(msg, env, channelId) {
     robloxData = await Promise.race([robloxPromise, timeoutPromise]);
     if (!robloxData) {
       console.warn(`Failed to fetch Roblox profile for ${userId}`);
-      // Continue anyway with extracted username
+      if (jobId) await logJobActivity(env, jobId, 'roblox_failed', msg.id, `Roblox profile fetch returned null`);
     } else {
       console.log(`[${msg.id}] Roblox profile fetched: ${robloxData.name}`);
+      if (jobId) await logJobActivity(env, jobId, 'roblox_success', msg.id, `Roblox profile: ${robloxData.name}`);
     }
   } catch (err) {
     console.warn(`[${msg.id}] Roblox profile fetch error for ${userId}:`, err.message);
+    if (jobId) await logJobActivity(env, jobId, 'roblox_error', msg.id, err.message);
     // Continue anyway with extracted username
   }
   
   // Fetch Discord profiles (for all Discord IDs) with timeout protection
+  if (jobId) await logJobActivity(env, jobId, 'fetching_discord', msg.id, `Fetching ${discordIds.length} Discord profiles`);
   const discordProfiles = [];
-  for (const discordId of discordIds) {
+  for (let i = 0; i < discordIds.length; i++) {
+    const discordId = discordIds[i];
     try {
-      console.log(`[${msg.id}] Fetching Discord profile for ${discordId}`);
-      // Add timeout wrapper for Discord profile fetch
+      console.log(`[${msg.id}] Fetching Discord profile ${i+1}/${discordIds.length} for ${discordId}`);
+      if (jobId) await logJobActivity(env, jobId, 'discord_fetch', msg.id, `Discord ${i+1}/${discordIds.length}: ${discordId}`);
+      
       const profilePromise = fetchDiscordProfile(discordId, env, userId);
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Discord profile fetch timeout')), 10000)
@@ -553,18 +562,24 @@ async function processScammerMessage(msg, env, channelId) {
       if (profile) {
         discordProfiles.push({ id: discordId, ...profile });
         console.log(`[${msg.id}] Discord profile fetched: ${profile.displayName}`);
+        if (jobId) await logJobActivity(env, jobId, 'discord_success', msg.id, `Discord ${discordId}: ${profile.displayName}`);
       }
     } catch (err) {
       console.warn(`[${msg.id}] Failed to fetch Discord profile for ${discordId}:`, err.message);
+      if (jobId) await logJobActivity(env, jobId, 'discord_error', msg.id, `Discord ${discordId}: ${err.message}`);
       // Continue without this Discord profile
     }
   }
   
   // Fetch alt account profiles with timeout protection
+  if (jobId) await logJobActivity(env, jobId, 'fetching_alts', msg.id, `Fetching ${altIds.length} alt profiles`);
   const altProfiles = [];
-  for (const alt of altIds) {
+  for (let i = 0; i < altIds.length; i++) {
+    const alt = altIds[i];
     try {
-      console.log(`[${msg.id}] Fetching alt profile for ${alt.userId}`);
+      console.log(`[${msg.id}] Fetching alt profile ${i+1}/${altIds.length} for ${alt.userId}`);
+      if (jobId) await logJobActivity(env, jobId, 'alt_fetch', msg.id, `Alt ${i+1}/${altIds.length}: ${alt.userId}`);
+      
       const altPromise = fetchRobloxProfile(alt.userId, env);
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Alt profile fetch timeout')), 15000)
@@ -578,9 +593,11 @@ async function processScammerMessage(msg, env, channelId) {
           avatar: altData.avatar
         });
         console.log(`[${msg.id}] Alt profile fetched: ${altData.name}`);
+        if (jobId) await logJobActivity(env, jobId, 'alt_success', msg.id, `Alt ${alt.userId}: ${altData.name}`);
       }
     } catch (err) {
       console.warn(`[${msg.id}] Failed to fetch alt profile for ${alt.userId}:`, err.message);
+      if (jobId) await logJobActivity(env, jobId, 'alt_error', msg.id, `Alt ${alt.userId}: ${err.message}`);
       // Continue without this alt
     }
   }
@@ -590,6 +607,7 @@ async function processScammerMessage(msg, env, channelId) {
   const threadId = null;
   
   // Store in D1
+  if (jobId) await logJobActivity(env, jobId, 'storing_data', msg.id, `Storing data for user ${userId}`);
   console.log(`[${msg.id}] Storing data for user ${userId}`);
   try {
     await storeScammerData({
@@ -605,8 +623,10 @@ async function processScammerMessage(msg, env, channelId) {
       messageId: msg.id
     }, env);
     console.log(`[${msg.id}] Data stored successfully`);
+    if (jobId) await logJobActivity(env, jobId, 'store_success', msg.id, `Data stored for user ${userId}`);
   } catch (err) {
     console.error(`[${msg.id}] Error storing data:`, err.message);
+    if (jobId) await logJobActivity(env, jobId, 'store_error', msg.id, err.message);
     throw err; // Re-throw to be caught by outer handler
   }
 }
@@ -758,7 +778,7 @@ async function processScammerMessages(env, jobId) {
       try {
         await logJobActivity(env, jobId, 'processing_message', msg.id, `Processing message ${processed + 1}/${allMessages.length}`);
         
-        await processScammerMessage(msg, env, channelId);
+        await processScammerMessage(msg, env, channelId, jobId);
         processed++;
         
         await logJobActivity(env, jobId, 'message_completed', msg.id, `Completed message ${processed}/${allMessages.length}`);
