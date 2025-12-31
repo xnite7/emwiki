@@ -585,40 +585,30 @@ async function processScammerMessage(msg, env, channelId) {
     }
   }
   
-  // Detect thread ID (don't fetch messages) with timeout protection
-  console.log(`[${msg.id}] Detecting thread ID`);
-  let threadId = null;
-  try {
-    const threadPromise = detectThreadId(msg, env, channelId);
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Thread detection timeout')), 10000)
-    );
-    threadId = await Promise.race([threadPromise, timeoutPromise]);
-    if (threadId) {
-      console.log(`[THREAD] Found thread ${threadId} for message ${msg.id}`);
-    } else {
-      console.log(`[${msg.id}] No thread detected`);
-    }
-  } catch (err) {
-    console.warn(`[${msg.id}] Thread detection error:`, err.message);
-    // Continue without thread
-  }
+  // Skip thread detection during message processing - will be matched at the end by scanning thread content
+  // This prevents hanging on individual messages
+  const threadId = null;
   
   // Store in D1
   console.log(`[${msg.id}] Storing data for user ${userId}`);
-  await storeScammerData({
-    userId,
-    robloxUsername: robloxData?.name || robloxUsername,
-    robloxDisplayName: robloxData?.displayName || displayName,
-    robloxAvatar: robloxData?.avatar,
-    discordProfiles,
-    victims,
-    itemsScammed,
-    altProfiles,
-    threadId,
-    messageId: msg.id
-  }, env);
-  console.log(`[${msg.id}] Data stored successfully`);
+  try {
+    await storeScammerData({
+      userId,
+      robloxUsername: robloxData?.name || robloxUsername,
+      robloxDisplayName: robloxData?.displayName || displayName,
+      robloxAvatar: robloxData?.avatar,
+      discordProfiles,
+      victims,
+      itemsScammed,
+      altProfiles,
+      threadId,
+      messageId: msg.id
+    }, env);
+    console.log(`[${msg.id}] Data stored successfully`);
+  } catch (err) {
+    console.error(`[${msg.id}] Error storing data:`, err.message);
+    throw err; // Re-throw to be caught by outer handler
+  }
 }
 
 // ============================================================================
