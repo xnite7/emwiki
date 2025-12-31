@@ -15,10 +15,10 @@ async function fetchRobloxProfile(userId, env, writeToScammerCache = true) {
   let cached = null;
   if (writeToScammerCache) {
     cached = await env.DB.prepare(
-      "SELECT roblox_name, roblox_display_name, roblox_avatar, updated_at FROM scammer_profile_cache WHERE user_id = ?"
+      "SELECT roblox_name, roblox_display_name, roblox_avatar FROM scammer_profile_cache WHERE user_id = ?"
     ).bind(userId).first();
 
-    if (cached && now - cached.updated_at < PROFILE_CACHE_TTL_MS && cached.roblox_name && cached.roblox_display_name && cached.roblox_avatar) {
+    if (cached && cached.roblox_name && cached.roblox_display_name && cached.roblox_avatar) {
       return {
         name: cached.roblox_name,
         displayName: cached.roblox_display_name,
@@ -64,14 +64,13 @@ async function fetchRobloxProfile(userId, env, writeToScammerCache = true) {
   // Update cache ONLY if writeToScammerCache is true (for scammer processing)
   if (writeToScammerCache) {
     await env.DB.prepare(`
-      INSERT INTO scammer_profile_cache (user_id, roblox_name, roblox_display_name, roblox_avatar, updated_at)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO scammer_profile_cache (user_id, roblox_name, roblox_display_name, roblox_avatar)
+      VALUES (?, ?, ?, ?)
       ON CONFLICT(user_id) DO UPDATE SET
         roblox_name = excluded.roblox_name,
         roblox_display_name = excluded.roblox_display_name,
-        roblox_avatar = excluded.roblox_avatar,
-        updated_at = excluded.updated_at
-    `).bind(userId, data.name || null, data.displayName || null, data.avatar || null, now).run();
+        roblox_avatar = excluded.roblox_avatar
+    `).bind(userId, data.name || null, data.displayName || null, data.avatar || null).run();
   }
 
   return data;
@@ -92,20 +91,19 @@ async function fetchDiscordProfile(discordId, env, userId = null, writeToScammer
     // Prefer user_id match if provided
     if (userId) {
       cached = await env.DB.prepare(
-        "SELECT discord_display_name, discord_avatar, updated_at FROM scammer_profile_cache WHERE user_id = ?"
+        "SELECT discord_display_name FROM scammer_profile_cache WHERE user_id = ?"
       ).bind(userId).first();
     }
     
     if (!cached) {
       cached = await env.DB.prepare(
-        "SELECT discord_display_name, discord_avatar, updated_at FROM scammer_profile_cache WHERE discord_id = ? LIMIT 1"
+        "SELECT discord_display_name FROM scammer_profile_cache WHERE discord_id = ? LIMIT 1"
       ).bind(discordId).first();
     }
 
-    if (cached && now - cached.updated_at < PROFILE_CACHE_TTL_MS && cached.discord_display_name) {
+    if (cached && cached.discord_display_name) {
       return {
-        displayName: cached.discord_display_name,
-        avatar: cached.discord_avatar || null
+        displayName: cached.discord_display_name
       };
     }
   }
@@ -128,7 +126,7 @@ async function fetchDiscordProfile(discordId, env, userId = null, writeToScammer
 
       if (response.status === 404) {
         // User not found - return null (don't cache for general endpoint)
-        data = { displayName: null, avatar: null };
+        data = { displayName: null };
         fetchSuccess = true;
         break;
       }
@@ -136,18 +134,8 @@ async function fetchDiscordProfile(discordId, env, userId = null, writeToScammer
       if (response.ok) {
         const userData = await response.json();
         const displayName = userData.global_name || userData.username || null;
-        let avatar = null;
 
-        if (userData.avatar) {
-          const extension = userData.avatar.startsWith('a_') ? 'gif' : 'png';
-          avatar = `https://cdn.discordapp.com/avatars/${discordId}/${userData.avatar}.${extension}`;
-        } else if (userData.discriminator && userData.discriminator !== '0') {
-          // Default avatar for users without custom avatar
-          const defaultAvatar = parseInt(userData.discriminator) % 5;
-          avatar = `https://cdn.discordapp.com/embed/avatars/${defaultAvatar}.png`;
-        }
-
-        data = { displayName, avatar };
+        data = { displayName };
         fetchSuccess = true;
         break;
       }
@@ -169,15 +157,15 @@ async function fetchDiscordProfile(discordId, env, userId = null, writeToScammer
     if (userId) {
       await env.DB.prepare(`
         UPDATE scammer_profile_cache
-        SET discord_id = ?, discord_display_name = ?, discord_avatar = ?, updated_at = ?
+        SET discord_id = ?, discord_display_name = ?
         WHERE user_id = ?
-      `).bind(discordId, data.displayName, data.avatar, now, userId).run();
+      `).bind(discordId, data.displayName, userId).run();
     } else {
       await env.DB.prepare(`
         UPDATE scammer_profile_cache
-        SET discord_display_name = ?, discord_avatar = ?, updated_at = ?
+        SET discord_display_name = ?
         WHERE discord_id = ?
-      `).bind(data.displayName, data.avatar, now, discordId).run();
+      `).bind(data.displayName, discordId).run();
     }
   }
 
@@ -401,6 +389,9 @@ async function detectThreadId(msg, env, channelId) {
   return null;
 }
 
+// Helper function for delays
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 // ============================================================================
 // PROCESS SCAMMER MESSAGE - Extract and store scammer data
 // ============================================================================
@@ -481,12 +472,9 @@ async function processScammerMessage(msg, env, channelId) {
 // ============================================================================
 
 async function storeScammerData(data, env) {
-  const now = Date.now();
-  
   // Primary Discord ID (first one, or null if none)
   const primaryDiscordId = data.discordProfiles[0]?.id || null;
   const primaryDiscordDisplay = data.discordProfiles[0]?.displayName || null;
-  const primaryDiscordAvatar = data.discordProfiles[0]?.avatar || null;
   
   // Thread evidence (just thread_id, no messages)
   const threadEvidence = data.threadId ? JSON.stringify({
@@ -497,25 +485,22 @@ async function storeScammerData(data, env) {
   await env.DB.prepare(`
     INSERT INTO scammer_profile_cache (
       user_id, roblox_name, roblox_display_name, roblox_avatar,
-      discord_id, discord_display_name, discord_avatar,
+      discord_id, discord_display_name,
       victims, items_scammed, roblox_alts,
-      thread_evidence, incomplete, last_message_id, updated_at
+      thread_evidence, last_message_id
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(user_id) DO UPDATE SET
       roblox_name = excluded.roblox_name,
       roblox_display_name = excluded.roblox_display_name,
       roblox_avatar = excluded.roblox_avatar,
       discord_id = excluded.discord_id,
       discord_display_name = excluded.discord_display_name,
-      discord_avatar = excluded.discord_avatar,
       victims = excluded.victims,
       items_scammed = excluded.items_scammed,
       roblox_alts = excluded.roblox_alts,
       thread_evidence = COALESCE(excluded.thread_evidence, thread_evidence),
-      incomplete = 0,
-      last_message_id = excluded.last_message_id,
-      updated_at = excluded.updated_at
+      last_message_id = excluded.last_message_id
   `).bind(
     data.userId,
     data.robloxUsername,
@@ -523,14 +508,11 @@ async function storeScammerData(data, env) {
     data.robloxAvatar,
     primaryDiscordId,
     primaryDiscordDisplay,
-    primaryDiscordAvatar,
     data.victims,
     data.itemsScammed,
     JSON.stringify(data.altProfiles),
     threadEvidence,
-    0,
-    data.messageId,
-    now
+    data.messageId
   ).run();
   
   console.log(`[STORED] User ${data.userId} - ${data.robloxUsername || 'unknown'}`);
@@ -543,14 +525,17 @@ async function storeScammerData(data, env) {
 async function processScammerMessages(env, jobId) {
   const channelId = env.DISCORD_CHANNEL_ID;
   let allMessages = [];
-  let before = null;
+  let lastId = null;
   
   try {
-    // Fetch all messages
+    // Fetch all messages with smart rate limit handling
+    // Discord allows ~50 requests/second, but be conservative: wait 1.5 seconds between batches
     while (true) {
       const url = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
-      url.searchParams.set('limit', '100');
-      if (before) url.searchParams.set('before', before);
+      url.searchParams.set('limit', '100'); // Max per request
+      if (lastId) {
+        url.searchParams.set('before', lastId);
+      }
       
       let response;
       let retryCount = 0;
@@ -561,8 +546,11 @@ async function processScammerMessages(env, jobId) {
           });
           
           if (response.status === 429) {
+            // Rate limited - respect Discord's retry-after header
             const retryAfter = await response.json();
-            await new Promise(r => setTimeout(r, (retryAfter.retry_after || 1) * 1000));
+            const waitTime = (retryAfter.retry_after || 1) * 1000;
+            console.log(`[JOB ${jobId}] Rate limited, waiting ${waitTime}ms`);
+            await delay(waitTime);
             retryCount++;
             continue;
           }
@@ -577,7 +565,7 @@ async function processScammerMessages(env, jobId) {
           if (retryCount >= 3) {
             throw err;
           }
-          await new Promise(r => setTimeout(r, 1000 * retryCount));
+          await delay(1000 * retryCount);
         }
       }
       
@@ -585,10 +573,11 @@ async function processScammerMessages(env, jobId) {
       if (messages.length === 0) break;
       
       allMessages.push(...messages);
-      before = messages[messages.length - 1].id;
+      lastId = messages[messages.length - 1].id;
       
-      // Rate limiting
-      await new Promise(r => setTimeout(r, 100));
+      // Key: respect rate limits - wait 1.5 seconds between batches
+      // Discord allows ~50 requests/second but be conservative
+      await delay(1500);
     }
     
     console.log(`[JOB ${jobId}] Fetched ${allMessages.length} messages from Discord`);
@@ -607,18 +596,26 @@ async function processScammerMessages(env, jobId) {
         await processScammerMessage(msg, env, channelId);
         processed++;
         
-        // Update progress every 10 messages
+        // Update progress after EVERY message to track progress accurately
+        await env.DB.prepare(`
+          UPDATE scammer_job_status 
+          SET messages_processed = ? 
+          WHERE job_id = ?
+        `).bind(processed, jobId).run();
+        
         if (processed % 10 === 0) {
-          await env.DB.prepare(`
-            UPDATE scammer_job_status 
-            SET messages_processed = ? 
-            WHERE job_id = ?
-          `).bind(processed, jobId).run();
           console.log(`[JOB ${jobId}] Processed ${processed}/${allMessages.length} messages`);
         }
       } catch (err) {
-        console.error(`[ERROR] Processing message ${msg.id}:`, err);
-        // Continue processing
+        console.error(`[ERROR] Processing message ${msg.id}:`, err.message);
+        // Update progress even on error so we don't lose track
+        processed++;
+        await env.DB.prepare(`
+          UPDATE scammer_job_status 
+          SET messages_processed = ? 
+          WHERE job_id = ?
+        `).bind(processed, jobId).run();
+        // Continue processing next message
       }
     }
     
@@ -1338,9 +1335,9 @@ export async function onRequestGet(context) {
           const updatedEvidenceJson = JSON.stringify(threadEvidence);
           await env.DB.prepare(`
             UPDATE scammer_profile_cache 
-            SET thread_evidence = ?, updated_at = ?
+            SET thread_evidence = ?
             WHERE user_id = ?
-          `).bind(updatedEvidenceJson, Date.now(), row.user_id).run();
+          `).bind(updatedEvidenceJson, row.user_id).run();
           processed++;
         }
       } catch (err) {
@@ -1519,9 +1516,9 @@ export async function onRequestGet(context) {
           const updatedEvidenceJson = JSON.stringify(threadEvidence);
           await env.DB.prepare(`
             UPDATE scammer_profile_cache 
-            SET thread_evidence = ?, updated_at = ?
+            SET thread_evidence = ?
             WHERE user_id = ?
-          `).bind(updatedEvidenceJson, Date.now(), row.user_id).run();
+          `).bind(updatedEvidenceJson, row.user_id).run();
           processed++;
         }
       } catch (err) {
@@ -1610,7 +1607,7 @@ export async function onRequestGet(context) {
           FROM scammer_profile_cache 
           WHERE thread_evidence IS NOT NULL
             AND (thread_needs_update = 1 OR thread_last_checked_at IS NULL OR thread_last_checked_at < ?)
-          ORDER BY updated_at DESC
+          ORDER BY thread_last_checked_at DESC
           LIMIT 10
         `;
         bindParams = [fiveHoursAgo];
@@ -1843,13 +1840,11 @@ export async function onRequestGet(context) {
               SET thread_evidence = ?,
                   thread_last_message_id = ?,
                   thread_last_checked_at = ?,
-                  thread_needs_update = 0,
-                  updated_at = ?
+                  thread_needs_update = 0
               WHERE user_id = ?
             `).bind(
               updatedEvidenceJson,
               newestMessageId || row.thread_last_message_id,
-              Date.now(),
               Date.now(),
               row.user_id
             ).run();
@@ -2043,9 +2038,9 @@ export async function onRequestGet(context) {
           const updatedEvidenceJson = JSON.stringify(threadEvidence);
           await env.DB.prepare(`
             UPDATE scammer_profile_cache 
-            SET thread_evidence = ?, updated_at = ?
+            SET thread_evidence = ?
             WHERE user_id = ?
-          `).bind(updatedEvidenceJson, Date.now(), row.user_id).run();
+          `).bind(updatedEvidenceJson, row.user_id).run();
           processed++;
         }
       } catch (err) {
@@ -2250,6 +2245,25 @@ export async function onRequestGet(context) {
           });
         }
         
+        // Check if job is stuck (running for more than 10 minutes without progress)
+        if (jobStatus.status === 'running') {
+          const now = Date.now();
+          const runningTime = now - jobStatus.started_at;
+          const tenMinutes = 10 * 60 * 1000;
+          
+          if (runningTime > tenMinutes) {
+            // Mark as failed if stuck
+            await env.DB.prepare(`
+              UPDATE scammer_job_status 
+              SET status = 'failed', error = ?
+              WHERE job_id = ?
+            `).bind(`Job stuck - no progress for ${Math.round(runningTime / 1000 / 60)} minutes`, jobId).run();
+            
+            jobStatus.status = 'failed';
+            jobStatus.error = `Job stuck - no progress for ${Math.round(runningTime / 1000 / 60)} minutes`;
+          }
+        }
+        
         return new Response(JSON.stringify(jobStatus), {
           headers: { 
             "Content-Type": "application/json",
@@ -2258,12 +2272,26 @@ export async function onRequestGet(context) {
         });
       }
       
-      // No action or default: Return results from D1
-      const now = Date.now();
-      const cacheCheck = await env.DB.prepare(
-        "SELECT MAX(updated_at) as last_updated FROM scammer_profile_cache"
-      ).first();
+      // Action: cancel - Cancel a running job
+      if (action === 'cancel' && jobId) {
+        const result = await env.DB.prepare(`
+          UPDATE scammer_job_status 
+          SET status = 'failed', error = 'Cancelled by user'
+          WHERE job_id = ? AND status = 'running'
+        `).bind(jobId).run();
+        
+        return new Response(JSON.stringify({ 
+          success: result.changes > 0,
+          message: result.changes > 0 ? 'Job cancelled' : 'Job not found or not running'
+        }), {
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          },
+        });
+      }
       
+      // No action or default: Return results from D1
       const { results } = await env.DB.prepare(`
         SELECT 
           user_id,
@@ -2272,48 +2300,31 @@ export async function onRequestGet(context) {
           roblox_avatar,
           discord_id,
           discord_display_name,
-          discord_avatar,
           victims,
           items_scammed,
           roblox_alts,
-          thread_evidence,
-          incomplete
+          thread_evidence
         FROM scammer_profile_cache
         WHERE user_id IS NOT NULL 
           AND (victims IS NOT NULL OR items_scammed IS NOT NULL OR discord_id IS NOT NULL)
-        ORDER BY incomplete ASC, updated_at DESC
+        ORDER BY last_message_id DESC
       `).all();
       
-      // Separate complete and incomplete scammers
-      const completeScammers = [];
-      const partialScammers = [];
-      
-      for (const row of results) {
-        const entry = {
-          user_id: row.user_id,
-          robloxDisplay: row.roblox_display_name || null,
-          robloxUser: row.roblox_name || null,
-          avatar: row.roblox_avatar || (row.incomplete === 0 ? "https://emwiki.com/imgs/plr.jpg" : null),
-          discordDisplay: row.discord_display_name || null,
-          discordId: row.discord_id || null,
-          victims: row.victims || null,
-          itemsScammed: row.items_scammed || null,
-          incomplete: row.incomplete === 1,
-          robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : [],
-          hasThreadEvidence: !!row.thread_evidence
-        };
-        
-        if (row.incomplete === 1) {
-          partialScammers.push(entry);
-        } else {
-          completeScammers.push(entry);
-        }
-      }
+      const scammers = results.map(row => ({
+        user_id: row.user_id,
+        robloxDisplay: row.roblox_display_name || null,
+        robloxUser: row.roblox_name || null,
+        avatar: row.roblox_avatar || "https://emwiki.com/imgs/plr.jpg",
+        discordDisplay: row.discord_display_name || null,
+        discordId: row.discord_id || null,
+        victims: row.victims || null,
+        itemsScammed: row.items_scammed || null,
+        robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : [],
+        hasThreadEvidence: !!row.thread_evidence
+      }));
       
       return new Response(JSON.stringify({ 
-        lastUpdated: cacheCheck?.last_updated || now, 
-        scammers: completeScammers, 
-        partials: partialScammers 
+        scammers
       }), {
         headers: { 
           "Content-Type": "application/json",
