@@ -54,25 +54,51 @@ export default {
         // Only increment if message was processed (not skipped)
         const newProcessed = processed ? (jobStatus.messages_processed || 0) + 1 : (jobStatus.messages_processed || 0);
         
-        await db.prepare(`
+        // Update progress atomically
+        const updateResult = await db.prepare(`
           UPDATE scammer_job_status 
           SET messages_processed = ?, last_activity_at = ?, current_message_id = ?
-          WHERE job_id = ?
+          WHERE job_id = ? AND status = 'running'
         `).bind(newProcessed, Date.now(), messageId, jobId).run();
         
-        // Check if all messages are processed
-        if (newProcessed >= jobStatus.total_messages) {
-          console.log(`[QUEUE] Job ${jobId} complete - all ${newProcessed} messages processed`);
-          await logJobActivity(env, jobId, 'messages_complete', null, `All ${newProcessed} messages processed, fetching threads`, db);
+        // Check if all messages are processed AND job is still running
+        // Use atomic check to prevent race conditions
+        if (newProcessed >= jobStatus.total_messages && updateResult.changes > 0) {
+          // Double-check job is still running (another worker might have completed it)
+          const currentJobStatus = await db.prepare(`
+            SELECT status FROM scammer_job_status WHERE job_id = ?
+          `).bind(jobId).first();
           
-          // Fetch threads after all messages are done
-          await fetchAllThreadMessages(env, jobId, db);
-          
-          await db.prepare(`
-            UPDATE scammer_job_status 
-            SET status = 'completed', completed_at = ?, last_activity_at = ?
-            WHERE job_id = ?
-          `).bind(Date.now(), Date.now(), jobId).run();
+          if (currentJobStatus && currentJobStatus.status === 'running') {
+            console.log(`[QUEUE] Job ${jobId} complete - all ${newProcessed} messages processed`);
+            await logJobActivity(env, jobId, 'messages_complete', null, `All ${newProcessed} messages processed, fetching threads`, db);
+            
+            try {
+              // Fetch threads after all messages are done
+              await fetchAllThreadMessages(env, jobId, db);
+              
+              // Mark as completed
+              await db.prepare(`
+                UPDATE scammer_job_status 
+                SET status = 'completed', completed_at = ?, last_activity_at = ?
+                WHERE job_id = ?
+              `).bind(Date.now(), Date.now(), jobId).run();
+              
+              await logJobActivity(env, jobId, 'job_completed', null, 'Job completed successfully', db);
+              console.log(`[QUEUE] Job ${jobId} marked as completed`);
+            } catch (threadErr) {
+              // If thread fetching fails, still mark as completed (threads can be fetched later)
+              console.error(`[QUEUE] Error fetching threads for job ${jobId}:`, threadErr);
+              await logJobActivity(env, jobId, 'threads_failed', null, `Thread fetching failed: ${threadErr.message}`, db);
+              
+              // Mark as completed anyway - threads can be fetched via periodic checker
+              await db.prepare(`
+                UPDATE scammer_job_status 
+                SET status = 'completed', completed_at = ?, last_activity_at = ?, error = ?
+                WHERE job_id = ?
+              `).bind(Date.now(), Date.now(), `Thread fetching failed: ${threadErr.message}`, jobId).run();
+            }
+          }
         }
         
         if (processed) {
