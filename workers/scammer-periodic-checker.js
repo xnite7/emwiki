@@ -450,7 +450,7 @@ async function fetchDiscordThread(threadId, env) {
     }
 
     // Sort by timestamp (oldest first)
-    threadMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    threadMessages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
     return threadMessages;
   } catch (err) {
