@@ -512,7 +512,22 @@ async function logJobActivity(env, jobId, step, messageId = null, details = null
 // ============================================================================
 
 async function processScammerMessage(msg, env, channelId, jobId = null) {
-  const content = msg.content || '';
+  // Get content from message content AND embeds (Discord sometimes puts content in embeds)
+  let content = msg.content || '';
+  
+  // Also check embeds for content
+  if (msg.embeds && msg.embeds.length > 0) {
+    for (const embed of msg.embeds) {
+      if (embed.description) content += '\n' + embed.description;
+      if (embed.title) content += '\n' + embed.title;
+      if (embed.fields) {
+        for (const field of embed.fields) {
+          if (field.name) content += '\n' + field.name;
+          if (field.value) content += '\n' + field.value;
+        }
+      }
+    }
+  }
   
   // REQUIRED: Roblox User ID (skip if missing)
   const userId = extractRobloxUserId(content);
