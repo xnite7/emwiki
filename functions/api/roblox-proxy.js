@@ -520,22 +520,36 @@ async function processScammerMessage(msg, env, channelId, jobId = null) {
     for (const embed of msg.embeds) {
       if (embed.description) content += '\n' + embed.description;
       if (embed.title) content += '\n' + embed.title;
-      if (embed.fields) {
+      if (embed.fields && Array.isArray(embed.fields)) {
         for (const field of embed.fields) {
           if (field.name) content += '\n' + field.name;
           if (field.value) content += '\n' + field.value;
         }
       }
+      // Also check embed footer and author
+      if (embed.footer && embed.footer.text) content += '\n' + embed.footer.text;
+      if (embed.author && embed.author.name) content += '\n' + embed.author.name;
     }
   }
   
   // REQUIRED: Roblox User ID (skip if missing)
   const userId = extractRobloxUserId(content);
   if (!userId) {
-    // Log content snippet for debugging
-    const contentSnippet = content.substring(0, 200).replace(/\n/g, ' ');
-    console.log(`Skipping message ${msg.id} - no Roblox profile URL found. Content preview: ${contentSnippet}`);
-    if (jobId) await logJobActivity(env, jobId, 'message_skipped', msg.id, `No Roblox profile URL. Preview: ${contentSnippet.substring(0, 100)}`);
+    // Log more details for debugging - check what's actually in embeds
+    const hasEmbeds = msg.embeds && msg.embeds.length > 0;
+    let embedDebug = '';
+    if (hasEmbeds) {
+      embedDebug = ` Embeds: ${msg.embeds.length}`;
+      msg.embeds.forEach((embed, idx) => {
+        embedDebug += ` [${idx}: title=${embed.title || 'none'}, desc=${embed.description ? embed.description.substring(0, 50) : 'none'}, fields=${embed.fields ? embed.fields.length : 0}]`;
+      });
+    }
+    const contentSnippet = content.substring(0, 300).replace(/\n/g, ' ');
+    console.log(`Skipping message ${msg.id} - no Roblox profile URL found. Content length: ${content.length}${embedDebug}. Preview: ${contentSnippet}`);
+    if (jobId) {
+      await logJobActivity(env, jobId, 'message_skipped', msg.id, 
+        `No Roblox profile URL. Content: ${content.length} chars${embedDebug}. Preview: ${contentSnippet.substring(0, 150)}`);
+    }
     return;
   }
   
