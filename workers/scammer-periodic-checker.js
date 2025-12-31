@@ -143,8 +143,8 @@ async function checkForNewMessages(env, db) {
     
     // Add job status entry
     await db.prepare(`
-      INSERT INTO scammer_job_status (job_id, status, started_at, messages_processed, total_messages)
-      VALUES (?, 'running', ?, 0, ?)
+      INSERT INTO scammer_job_status (job_id, status, started_at, messages_processed, messages_seen, total_messages)
+      VALUES (?, 'running', ?, 0, 0, ?)
     `).bind(jobId, Date.now(), newMessages.length).run();
     
     // Enqueue messages

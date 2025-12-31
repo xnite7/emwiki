@@ -2551,8 +2551,8 @@ export async function onRequestGet(context) {
         
         // Create job status entry
         await env.DB.prepare(`
-          INSERT INTO scammer_job_status (job_id, status, started_at, messages_processed, total_messages)
-          VALUES (?, 'running', ?, 0, 0)
+          INSERT INTO scammer_job_status (job_id, status, started_at, messages_processed, messages_seen, total_messages)
+          VALUES (?, 'running', ?, 0, 0, 0)
         `).bind(newJobId, now).run();
         
         // Enqueue all messages - they'll be processed automatically by queue consumer

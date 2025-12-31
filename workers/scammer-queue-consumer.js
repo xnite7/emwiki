@@ -38,9 +38,9 @@ export default {
         const processed = await processQueuedMessage(msg, env, channelId, jobId, db);
         
         // Update job progress atomically
-        // Only increment if message was actually processed (had Roblox URL)
+        // Track both processed (with Roblox URLs) and seen (all messages)
         const jobStatus = await db.prepare(`
-          SELECT messages_processed, total_messages
+          SELECT messages_processed, messages_seen, total_messages, status
           FROM scammer_job_status
           WHERE job_id = ?
         `).bind(jobId).first();
@@ -51,19 +51,31 @@ export default {
           continue;
         }
         
-        // Only increment if message was processed (not skipped)
-        const newProcessed = processed ? (jobStatus.messages_processed || 0) + 1 : (jobStatus.messages_processed || 0);
+        // Skip if job is already completed
+        if (jobStatus.status !== 'running') {
+          console.log(`[QUEUE] Job ${jobId} is already ${jobStatus.status}, skipping`);
+          message.ack();
+          continue;
+        }
         
-        // Update progress atomically
+        // Increment processed count only if message was actually processed (had Roblox URL)
+        const currentProcessed = jobStatus.messages_processed || 0;
+        const newProcessed = processed ? currentProcessed + 1 : currentProcessed;
+        
+        // Always increment messages_seen (tracks all messages, including skipped)
+        const currentSeen = jobStatus.messages_seen || 0;
+        const newSeen = currentSeen + 1;
+        
+        // Update progress atomically (only if still running)
         const updateResult = await db.prepare(`
           UPDATE scammer_job_status 
-          SET messages_processed = ?, last_activity_at = ?, current_message_id = ?
+          SET messages_processed = ?, messages_seen = ?, last_activity_at = ?, current_message_id = ?
           WHERE job_id = ? AND status = 'running'
-        `).bind(newProcessed, Date.now(), messageId, jobId).run();
+        `).bind(newProcessed, newSeen, Date.now(), messageId, jobId).run();
         
-        // Check if all messages are processed AND job is still running
-        // Use atomic check to prevent race conditions
-        if (newProcessed >= jobStatus.total_messages && updateResult.changes > 0) {
+        // Check if all messages are seen (processed + skipped) AND job is still running
+        // Use messages_seen instead of messages_processed to handle cases where all messages are skipped
+        if (newSeen >= jobStatus.total_messages && updateResult.changes > 0) {
           // Double-check job is still running (another worker might have completed it)
           const currentJobStatus = await db.prepare(`
             SELECT status FROM scammer_job_status WHERE job_id = ?
