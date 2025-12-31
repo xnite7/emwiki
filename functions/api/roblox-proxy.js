@@ -250,9 +250,10 @@ function extractRobloxUsername(content) {
 
 function extractDiscordIds(content) {
   // Handle both :emoji: and <:emoji:id> formats, with optional ** markdown
+  // Also handle multi-line Discord IDs
   const patterns = [
-    /<:\w+:\d+>\s*\*{0,2}\s*discord\s+user:\s*\*{0,2}\s*([^\n\r]+)/i,
-    /:\w+:\s*\*{0,2}\s*discord\s+user:\s*\*{0,2}\s*([^\n\r]+)/i
+    /<:\w+:\d+>\s*\*{0,2}\s*discord\s+user:\s*\*{0,2}\s*([\s\S]+?)(?=\n\n|\n(?::\w+:|<:\w+:\d+>|roblox|victims|items|$))/i,
+    /:\w+:\s*\*{0,2}\s*discord\s+user:\s*\*{0,2}\s*([\s\S]+?)(?=\n\n|\n(?::\w+:|<:\w+:\d+>|roblox|victims|items|$))/i
   ];
   
   let match = null;
@@ -268,9 +269,12 @@ function extractDiscordIds(content) {
   value = value.replace(/\*\*/g, '').replace(/\*/g, '').replace(/<:\w+:\d+>/g, '').replace(/:\w+:/g, '').trim();
   if (!value || value.toUpperCase() === 'NA') return [];
   
-  return value.split(',')
+  // Split by comma or newline, then filter
+  const ids = value.split(/[,\n\r]+/)
     .map(id => id.trim())
     .filter(id => id && id.toUpperCase() !== 'NA' && /^\d+$/.test(id));
+  
+  return ids;
 }
 
 function extractVictims(content) {
@@ -379,13 +383,81 @@ function extractRobloxUserId(content) {
 // ============================================================================
 
 async function detectThreadId(msg, env, channelId) {
-  // Check msg.thread property (if Discord includes it)
+  // Method 1: Check msg.thread property (if Discord includes it)
   if (msg.thread && msg.thread.id) {
+    console.log(`[THREAD] Found thread ${msg.thread.id} via msg.thread property for message ${msg.id}`);
     return msg.thread.id;
   }
   
-  // Note: We could also fetch all threads from the channel and match by message ID,
-  // but that's expensive. For now, we rely on Discord including msg.thread.
+  // Method 2: Fetch active threads and check if any thread's parent message ID matches this message
+  try {
+    // Fetch active threads from the channel
+    const activeThreadsUrl = `https://discord.com/api/v10/channels/${channelId}/threads/active`;
+    const activeThreadsRes = await fetch(activeThreadsUrl, {
+      headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+    });
+    
+    if (activeThreadsRes.ok) {
+      const threadsData = await activeThreadsRes.json();
+      const threads = threadsData.threads || [];
+      
+      // Check if any thread's parent message ID matches this message
+      for (const thread of threads) {
+        if (thread.parent_id === channelId && thread.id) {
+          // For forum channels, check if message ID matches
+          // For regular channels, check message_id field
+          if (thread.message_id === msg.id || thread.id === msg.id) {
+            console.log(`[THREAD] Found thread ${thread.id} via active threads API for message ${msg.id}`);
+            return thread.id;
+          }
+        }
+      }
+    }
+    
+    // Method 3: Fetch archived public threads
+    const archivedThreadsUrl = `https://discord.com/api/v10/channels/${channelId}/threads/archived/public`;
+    const archivedThreadsRes = await fetch(archivedThreadsUrl, {
+      headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+    });
+    
+    if (archivedThreadsRes.ok) {
+      const archivedData = await archivedThreadsRes.json();
+      const archivedThreads = archivedData.threads || [];
+      
+      // Check if any archived thread's parent message ID matches this message
+      for (const thread of archivedThreads) {
+        if (thread.parent_id === channelId && thread.id) {
+          if (thread.message_id === msg.id || thread.id === msg.id) {
+            console.log(`[THREAD] Found thread ${thread.id} via archived threads API for message ${msg.id}`);
+            return thread.id;
+          }
+        }
+      }
+    }
+    
+    // Method 4: Try fetching thread info directly using message ID (some threads use message ID as thread ID)
+    try {
+      const threadInfoUrl = `https://discord.com/api/v10/channels/${msg.id}`;
+      const threadInfoRes = await fetch(threadInfoUrl, {
+        headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+      });
+      
+      if (threadInfoRes.ok) {
+        const threadInfo = await threadInfoRes.json();
+        // Check if it's actually a thread (type 11 = public thread, type 12 = private thread)
+        if ((threadInfo.type === 11 || threadInfo.type === 12) && threadInfo.parent_id === channelId) {
+          console.log(`[THREAD] Found thread ${threadInfo.id} via direct channel lookup for message ${msg.id}`);
+          return threadInfo.id;
+        }
+      }
+    } catch (err) {
+      // Not a thread or no access - that's okay
+    }
+    
+  } catch (err) {
+    console.warn(`[THREAD] Error detecting thread for message ${msg.id}:`, err.message);
+  }
+  
   return null;
 }
 
@@ -448,40 +520,70 @@ async function processScammerMessage(msg, env, channelId) {
   
   console.log(`[PROCESSING] Message ${msg.id} - userId: ${userId}, victims: ${victims || 'none'}, itemsScammed: ${itemsScammed || 'none'}, alts: ${altIds.length}`);
   
-  // Fetch Roblox profile
+  // Fetch Roblox profile with timeout protection
   console.log(`[${msg.id}] Fetching Roblox profile for ${userId}`);
-  const robloxData = await fetchRobloxProfile(userId, env);
-  if (!robloxData) {
-    console.warn(`Failed to fetch Roblox profile for ${userId}`);
+  let robloxData = null;
+  try {
+    const robloxPromise = fetchRobloxProfile(userId, env);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Roblox profile fetch timeout')), 15000)
+    );
+    robloxData = await Promise.race([robloxPromise, timeoutPromise]);
+    if (!robloxData) {
+      console.warn(`Failed to fetch Roblox profile for ${userId}`);
+      // Continue anyway with extracted username
+    } else {
+      console.log(`[${msg.id}] Roblox profile fetched: ${robloxData.name}`);
+    }
+  } catch (err) {
+    console.warn(`[${msg.id}] Roblox profile fetch error for ${userId}:`, err.message);
     // Continue anyway with extracted username
-  } else {
-    console.log(`[${msg.id}] Roblox profile fetched: ${robloxData.name}`);
   }
   
-  // Fetch Discord profiles (for all Discord IDs)
+  // Fetch Discord profiles (for all Discord IDs) with timeout protection
   const discordProfiles = [];
   for (const discordId of discordIds) {
-    console.log(`[${msg.id}] Fetching Discord profile for ${discordId}`);
-    const profile = await fetchDiscordProfile(discordId, env, userId);
-    if (profile) {
-      discordProfiles.push({ id: discordId, ...profile });
-      console.log(`[${msg.id}] Discord profile fetched: ${profile.displayName}`);
+    try {
+      console.log(`[${msg.id}] Fetching Discord profile for ${discordId}`);
+      // Add timeout wrapper for Discord profile fetch
+      const profilePromise = fetchDiscordProfile(discordId, env, userId);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Discord profile fetch timeout')), 10000)
+      );
+      
+      const profile = await Promise.race([profilePromise, timeoutPromise]);
+      if (profile) {
+        discordProfiles.push({ id: discordId, ...profile });
+        console.log(`[${msg.id}] Discord profile fetched: ${profile.displayName}`);
+      }
+    } catch (err) {
+      console.warn(`[${msg.id}] Failed to fetch Discord profile for ${discordId}:`, err.message);
+      // Continue without this Discord profile
     }
   }
   
-  // Fetch alt account profiles
+  // Fetch alt account profiles with timeout protection
   const altProfiles = [];
   for (const alt of altIds) {
-    console.log(`[${msg.id}] Fetching alt profile for ${alt.userId}`);
-    const altData = await fetchRobloxProfile(alt.userId, env);
-    if (altData) {
-      altProfiles.push({
-        userId: alt.userId,
-        username: alt.username || altData.name,
-        displayName: altData.displayName,
-        avatar: altData.avatar
-      });
-      console.log(`[${msg.id}] Alt profile fetched: ${altData.name}`);
+    try {
+      console.log(`[${msg.id}] Fetching alt profile for ${alt.userId}`);
+      const altPromise = fetchRobloxProfile(alt.userId, env);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Alt profile fetch timeout')), 15000)
+      );
+      const altData = await Promise.race([altPromise, timeoutPromise]);
+      if (altData) {
+        altProfiles.push({
+          userId: alt.userId,
+          username: alt.username || altData.name,
+          displayName: altData.displayName,
+          avatar: altData.avatar
+        });
+        console.log(`[${msg.id}] Alt profile fetched: ${altData.name}`);
+      }
+    } catch (err) {
+      console.warn(`[${msg.id}] Failed to fetch alt profile for ${alt.userId}:`, err.message);
+      // Continue without this alt
     }
   }
   
@@ -541,7 +643,10 @@ async function storeScammerData(data, env) {
       victims = excluded.victims,
       items_scammed = excluded.items_scammed,
       roblox_alts = excluded.roblox_alts,
-      thread_evidence = COALESCE(excluded.thread_evidence, thread_evidence),
+      thread_evidence = CASE 
+        WHEN excluded.thread_evidence IS NOT NULL THEN excluded.thread_evidence 
+        ELSE thread_evidence 
+      END,
       last_message_id = excluded.last_message_id
   `).bind(
     data.userId,
