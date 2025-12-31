@@ -514,6 +514,7 @@ async function logJobActivity(env, jobId, step, messageId = null, details = null
 async function processScammerMessage(msg, env, channelId, jobId = null) {
   // Get content from message content AND embeds (Discord sometimes puts content in embeds)
   let content = msg.content || '';
+  const originalContentLength = content.length;
   
   // Also check embeds for content
   if (msg.embeds && msg.embeds.length > 0) {
@@ -535,7 +536,7 @@ async function processScammerMessage(msg, env, channelId, jobId = null) {
   // REQUIRED: Roblox User ID (skip if missing)
   const userId = extractRobloxUserId(content);
   if (!userId) {
-    // Log more details for debugging - check what's actually in embeds
+    // Log more details for debugging - check what's actually in the message
     const hasEmbeds = msg.embeds && msg.embeds.length > 0;
     let embedDebug = '';
     if (hasEmbeds) {
@@ -544,11 +545,20 @@ async function processScammerMessage(msg, env, channelId, jobId = null) {
         embedDebug += ` [${idx}: title=${embed.title || 'none'}, desc=${embed.description ? embed.description.substring(0, 50) : 'none'}, fields=${embed.fields ? embed.fields.length : 0}]`;
       });
     }
-    const contentSnippet = content.substring(0, 300).replace(/\n/g, ' ');
-    console.log(`Skipping message ${msg.id} - no Roblox profile URL found. Content length: ${content.length}${embedDebug}. Preview: ${contentSnippet}`);
+    
+    // Check if "roblox" appears anywhere in content (case-insensitive)
+    const hasRobloxKeyword = /roblox/i.test(content);
+    const robloxDebug = hasRobloxKeyword ? ' (contains "roblox")' : ' (NO "roblox" keyword)';
+    
+    // Show first 300 chars and last 300 chars to see if content is truncated
+    const firstPart = content.substring(0, 300).replace(/\n/g, ' ');
+    const lastPart = content.length > 300 ? content.substring(content.length - 300).replace(/\n/g, ' ') : '';
+    const preview = lastPart ? `${firstPart} ... [last 300: ${lastPart}]` : firstPart;
+    
+    console.log(`Skipping message ${msg.id} - no Roblox profile URL found. Original content: ${originalContentLength} chars, Total: ${content.length} chars${embedDebug}${robloxDebug}. Preview: ${preview}`);
     if (jobId) {
       await logJobActivity(env, jobId, 'message_skipped', msg.id, 
-        `No Roblox profile URL. Content: ${content.length} chars${embedDebug}. Preview: ${contentSnippet.substring(0, 150)}`);
+        `No Roblox profile URL. Original: ${originalContentLength} chars, Total: ${content.length} chars${embedDebug}${robloxDebug}. Preview: ${preview.substring(0, 200)}`);
     }
     return;
   }
