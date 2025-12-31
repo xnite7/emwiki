@@ -1,0 +1,24 @@
+name = "scammer-queue-consumer"
+main = "scammer-queue-consumer.js"
+compatibility_date = "2024-01-01"
+
+# D1 Database binding (same as your Pages project)
+[[d1_databases]]
+binding = "DB"
+database_name = "DBA"
+database_id = "YOUR_D1_DATABASE_ID"  # Replace with your actual D1 database ID
+
+# Queue consumer binding
+[[queues.consumers]]
+queue = "scammer-messages"
+max_batch_size = 10        # Number of messages per batch
+max_batch_timeout = 10     # Max seconds to wait for batch to fill (10 seconds)
+max_retries = 3            # Max retries before giving up
+retry_delay = 2            # Seconds to wait before retry (2s to respect Discord rate limits)
+# max_concurrency = "auto"  # Auto-scaling (recommended, set in dashboard)
+# dead_letter_queue = "scammer-messages-dlq"  # Optional: queue for failed messages
+
+# Environment variables (set via wrangler secret put or dashboard)
+# DISCORD_BOT_TOKEN
+# DISCORD_CHANNEL_ID
+

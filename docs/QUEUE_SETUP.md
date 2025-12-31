@@ -19,24 +19,7 @@ The queue system processes messages independently, avoiding Worker timeout issue
 3. Name it: `scammer-messages`
 4. Note the queue ID
 
-### Step 2: Configure Queue Binding
-
-#### Option A: Using wrangler.toml (if deploying with Wrangler)
-
-Add to `emwiki/wrangler.toml`:
-
-```toml
-[[queues.producers]]
-queue = "scammer-messages"
-binding = "SCAMMER_QUEUE"
-
-[[queues.consumers]]
-queue = "scammer-messages"
-max_batch_size = 10
-max_batch_timeout = 30
-```
-
-#### Option B: Using Cloudflare Dashboard (Pages)
+### Step 2: Configure Queue Producer (Pages Functions)
 
 1. Go to Workers & Pages → Your Pages Project → Settings → Functions
 2. Scroll to **Queue Bindings**
@@ -45,13 +28,27 @@ max_batch_timeout = 30
    - **Queue name**: `scammer-messages`
    - **Type**: Producer
 
-4. For the consumer, you need to create a separate Worker or use Pages Functions queue consumer
+### Step 3: Deploy Queue Consumer Worker
 
-### Step 3: Deploy Queue Consumer
+The queue consumer must be a **separate Worker** (not a Pages Function).
 
-The queue consumer is in `emwiki/functions/_queue/scammer-messages.js`.
+1. **Create the Worker**:
+   - File: `emwiki/workers/scammer-queue-consumer.js` (already created)
+   - Config: `emwiki/workers/scammer-queue-consumer-wrangler.toml` (already created)
 
-For Pages Functions, queue consumers need to be in `functions/_queue/` directory.
+2. **Update wrangler.toml**:
+   - Replace `YOUR_D1_DATABASE_ID` with your actual D1 database ID
+   - Set environment variables via `wrangler secret put DISCORD_BOT_TOKEN` and `wrangler secret put DISCORD_CHANNEL_ID`
+
+3. **Deploy the Worker**:
+   ```bash
+   cd emwiki/workers
+   wrangler deploy --config scammer-queue-consumer-wrangler.toml
+   ```
+
+4. **Verify Queue Consumer**:
+   - Go to Cloudflare Dashboard → Workers & Pages → Queues → scammer-messages
+   - You should see "Active" status with the consumer attached
 
 ## Usage
 
