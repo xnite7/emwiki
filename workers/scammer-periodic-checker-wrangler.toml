@@ -1,0 +1,29 @@
+name = "scammer-periodic-checker"
+main = "scammer-periodic-checker.js"
+compatibility_date = "2024-01-01"
+
+# D1 Database binding (same as your Pages project)
+[[d1_databases]]
+binding = "DB" # Or "DBA" if that's your binding name in Pages
+database_name = "DBA"
+database_id = "YOUR_D1_DATABASE_ID"  # Replace with your actual D1 database ID
+
+# Queue binding (for enqueueing new messages)
+[[queues.producers]]
+queue = "scammer-messages"
+binding = "SCAMMER_QUEUE"
+
+# R2 bucket binding (for storing images/videos)
+[[r2_buckets]]
+binding = "MY_BUCKET"
+bucket_name = "YOUR_R2_BUCKET_NAME"  # Replace with your actual R2 bucket name
+
+# Cron trigger - runs every hour
+[[triggers.crons]]
+cron = "0 * * * *"  # Every hour at minute 0
+
+# Environment variables (set via wrangler secret put or dashboard)
+# DISCORD_BOT_TOKEN (REQUIRED)
+# DISCORD_CHANNEL_ID (REQUIRED)
+# CLOUDFLARE_ACCOUNT_ID (optional, for Stream)
+# CLOUDFLARE_STREAM_TOKEN (optional, for Stream)

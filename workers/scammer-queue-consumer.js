@@ -479,9 +479,15 @@ async function storeScammerData(data, env, db) {
   ).run();
 }
 
-async function logJobActivity(env, jobId, step, messageId, details) {
+async function logJobActivity(env, jobId, step, messageId, details, db = null) {
   try {
-    const db = env.DB || env.DBA;
+    if (!db) {
+      db = env.DB || env.DBA;
+    }
+    if (!db) {
+      console.warn(`[QUEUE] D1 database binding not found, skipping log`);
+      return;
+    }
     if (!db) {
       console.warn(`[QUEUE] D1 database binding not found, skipping log`);
       return;
@@ -544,22 +550,407 @@ async function fetchAllThreadMessages(env, jobId, db = null) {
     WHERE thread_evidence IS NOT NULL
   `).all();
   
-  if (!results || results.length === 0) return;
+  if (!results || results.length === 0) {
+    await logJobActivity(env, jobId, 'no_threads', null, 'No threads found to fetch', db);
+    return;
+  }
   
-  await logJobActivity(env, jobId, 'threads_found', null, `Found ${results.length} scammers with threads`);
+  await logJobActivity(env, jobId, 'threads_found', null, `Found ${results.length} scammers with threads`, db);
+  console.log(`[QUEUE] Found ${results.length} scammers with threads`);
   
-  // Import fetchDiscordThread from main file logic
-  // For now, just mark threads as pending - full implementation can be added later
+  let threadsProcessed = 0;
+  let threadsFetched = 0;
+  let totalMessagesFetched = 0;
+  
   for (const row of results) {
     try {
       const threadEvidence = JSON.parse(row.thread_evidence);
       const threadId = threadEvidence?.thread_id;
-      if (!threadId) continue;
       
-      await logJobActivity(env, jobId, 'thread_pending', threadId, `Thread ${threadId} queued for processing`);
+      if (!threadId) {
+        console.log(`[QUEUE] User ${row.user_id} has thread_evidence but no thread_id`);
+        continue;
+      }
+      
+      threadsProcessed++;
+      await logJobActivity(env, jobId, 'fetching_thread', threadId, `Fetching thread ${threadId} for user ${row.user_id} (${threadsProcessed}/${results.length})`, db);
+      console.log(`[QUEUE] Fetching thread ${threadId} for user ${row.user_id} (${threadsProcessed}/${results.length})`);
+      
+      // Fetch all messages from the thread
+      const threadMessages = await fetchDiscordThread(threadId, env);
+      
+      if (!threadMessages || threadMessages.length === 0) {
+        console.log(`[QUEUE] Thread ${threadId} has no messages or failed to fetch`);
+        await logJobActivity(env, jobId, 'thread_empty', threadId, `Thread ${threadId} has no messages`, db);
+        continue;
+      }
+      
+      threadsFetched++;
+      totalMessagesFetched += threadMessages.length;
+      
+      // Update thread evidence with all messages
+      const updatedThreadEvidence = {
+        thread_id: threadId,
+        messages: threadMessages,
+        message_count: threadMessages.length,
+        last_fetched: Date.now()
+      };
+      
+      await db.prepare(`
+        UPDATE scammer_profile_cache
+        SET thread_evidence = ?,
+            thread_last_message_id = ?
+        WHERE user_id = ?
+      `).bind(
+        JSON.stringify(updatedThreadEvidence),
+        threadMessages[threadMessages.length - 1]?.id || null,
+        row.user_id
+      ).run();
+      
+      await logJobActivity(env, jobId, 'thread_fetched', threadId, `Fetched ${threadMessages.length} messages from thread ${threadId}`, db);
+      console.log(`[QUEUE] Fetched ${threadMessages.length} messages from thread ${threadId} for user ${row.user_id}`);
+      
+      // Rate limit: wait 1.5 seconds between thread fetches
+      if (threadsProcessed < results.length) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
     } catch (err) {
-      console.error(`Error processing thread:`, err);
+      console.error(`[QUEUE] Error fetching thread for user ${row.user_id}:`, err.message);
+      await logJobActivity(env, jobId, 'thread_error', null, `Error fetching thread for user ${row.user_id}: ${err.message}`, db);
     }
+  }
+  
+  await logJobActivity(env, jobId, 'threads_complete', null, `Fetched ${totalMessagesFetched} messages from ${threadsFetched}/${threadsProcessed} threads`, db);
+  console.log(`[QUEUE] Thread fetching complete: ${totalMessagesFetched} messages from ${threadsFetched}/${threadsProcessed} threads`);
+}
+
+/**
+ * Fetch all messages from a Discord thread
+ * Downloads images/videos to R2 automatically
+ */
+async function fetchDiscordThread(threadId, env) {
+  if (!threadId) return null;
+
+  try {
+    const threadMessages = [];
+    let before = null;
+
+    // Fetch all messages from the thread
+    while (true) {
+      const fetchUrl = new URL(`https://discord.com/api/v10/channels/${threadId}/messages`);
+      fetchUrl.searchParams.set("limit", "100");
+      if (before) {
+        fetchUrl.searchParams.set("before", before);
+      }
+
+      let response;
+      let retryCount = 0;
+      while (retryCount < 3) {
+        try {
+          response = await fetch(fetchUrl.toString(), {
+            headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+          });
+
+          if (response.status === 429) {
+            const retryAfter = await response.json();
+            await new Promise(r => setTimeout(r, (retryAfter.retry_after || 1) * 1000));
+            retryCount++;
+            continue;
+          }
+
+          if (response.status === 404) {
+            return null;
+          }
+
+          if (!response.ok) {
+            throw new Error(`Discord API error: ${response.status}`);
+          }
+
+          break;
+        } catch (err) {
+          retryCount++;
+          if (retryCount >= 3) {
+            throw err;
+          }
+          await new Promise(r => setTimeout(r, 1000 * retryCount));
+        }
+      }
+
+      const messages = await response.json();
+      if (messages.length === 0) break;
+
+      // Process messages and download attachments to R2
+      for (const msg of messages) {
+        const messageData = {
+          id: msg.id,
+          author: {
+            id: msg.author?.id,
+            username: msg.author?.username,
+            global_name: msg.author?.global_name,
+            avatar: msg.author?.avatar,
+            discriminator: msg.author?.discriminator
+          },
+          content: msg.content,
+          timestamp: msg.timestamp,
+          edited_timestamp: msg.edited_timestamp,
+          attachments: [],
+          embeds: msg.embeds || []
+        };
+
+        // Process attachments (download to R2)
+        if (msg.attachments && msg.attachments.length > 0) {
+          const attachmentPromises = msg.attachments.map(async (att) => {
+            const isVideo = att.content_type?.startsWith('video/') || false;
+            const isImage = att.content_type?.startsWith('image/') || false;
+            
+            let r2Url = null;
+            let streamId = null;
+            let streamUrl = null;
+            
+            if (isVideo && att.url && env.MY_BUCKET) {
+              try {
+                const result = await downloadVideoToR2(
+                  att.url,
+                  att.id,
+                  att.filename,
+                  att.content_type,
+                  env
+                );
+                r2Url = result.r2_url;
+                streamId = result.stream_id;
+                streamUrl = result.stream_url;
+              } catch (err) {
+                console.warn(`[QUEUE] Failed to download video ${att.id}:`, err.message);
+              }
+            }
+            
+            if (isImage && att.url && env.MY_BUCKET) {
+              try {
+                const result = await downloadImageToR2(
+                  att.url,
+                  att.id,
+                  att.filename,
+                  att.content_type,
+                  env
+                );
+                r2Url = result.r2_url;
+              } catch (err) {
+                console.warn(`[QUEUE] Failed to download image ${att.id}:`, err.message);
+              }
+            }
+
+            return {
+              id: att.id,
+              filename: att.filename,
+              url: att.url,
+              r2_url: r2Url,
+              stream_id: streamId,
+              stream_url: streamUrl,
+              proxy_url: att.proxy_url,
+              size: att.size,
+              content_type: att.content_type,
+              width: att.width,
+              height: att.height,
+              is_image: isImage,
+              is_video: isVideo
+            };
+          });
+
+          messageData.attachments = await Promise.all(attachmentPromises);
+        }
+
+        threadMessages.push(messageData);
+      }
+
+      before = messages[messages.length - 1].id;
+      
+      // Rate limit: wait 1.5 seconds between batches
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Safety limit
+      if (threadMessages.length >= 5000) break;
+    }
+
+    // Sort by timestamp (oldest first)
+    threadMessages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+    return threadMessages;
+  } catch (err) {
+    console.warn(`[QUEUE] Failed to fetch thread ${threadId}:`, err);
+    return null;
+  }
+}
+
+/**
+ * Download Discord video and upload to R2 (and Stream for QuickTime)
+ */
+async function downloadVideoToR2(discordUrl, attachmentId, filename, contentType, env) {
+  try {
+    if (!env.MY_BUCKET) return { r2_url: null, stream_id: null };
+    
+    let ext = filename.split('.').pop();
+    if (!ext || ext === filename) {
+      if (contentType?.includes('mp4')) ext = 'mp4';
+      else if (contentType?.includes('webm')) ext = 'webm';
+      else if (contentType?.includes('quicktime')) ext = 'mov';
+      else ext = 'mp4';
+    }
+
+    const isQuickTime = contentType?.includes('quicktime') || ext === 'mov';
+    const key = `scammer-evidence/videos/${attachmentId}.${ext}`;
+
+    // Check if already exists
+    try {
+      const existing = await env.MY_BUCKET.head(key);
+      if (existing) {
+        return { r2_url: `https://cdn.emwiki.com/${key}`, stream_id: null };
+      }
+    } catch {}
+
+    // Download from Discord
+    const videoResponse = await fetch(discordUrl, {
+      headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
+    });
+
+    if (!videoResponse.ok) {
+      return { r2_url: null, stream_id: null };
+    }
+
+    const videoData = await videoResponse.arrayBuffer();
+
+    // Upload to R2
+    await env.MY_BUCKET.put(key, videoData, {
+      httpMetadata: { 
+        contentType: contentType || 'video/mp4',
+        cacheControl: 'public, max-age=31536000'
+      },
+      customMetadata: {
+        'original-filename': filename || 'video'
+      }
+    });
+
+    const r2Url = `https://cdn.emwiki.com/${key}`;
+
+    // For QuickTime videos, upload to Stream
+    let streamData = null;
+    if (isQuickTime && env.CLOUDFLARE_ACCOUNT_ID && env.CLOUDFLARE_STREAM_TOKEN) {
+      try {
+        streamData = await uploadVideoToStream(videoData, filename, env);
+      } catch (err) {
+        console.warn(`[QUEUE] Failed to upload to Stream:`, err.message);
+      }
+    }
+
+    return { 
+      r2_url: r2Url, 
+      stream_id: streamData?.id || null,
+      stream_url: streamData?.playback_url || null
+    };
+  } catch (err) {
+    console.error(`[QUEUE] Error downloading video:`, err);
+    return { r2_url: null, stream_id: null };
+  }
+}
+
+/**
+ * Download Discord image and upload to R2
+ */
+async function downloadImageToR2(discordUrl, attachmentId, filename, contentType, env) {
+  try {
+    if (!env.MY_BUCKET) return { r2_url: null };
+    
+    let ext = filename.split('.').pop();
+    if (!ext || ext === filename) {
+      if (contentType?.includes('png')) ext = 'png';
+      else if (contentType?.includes('jpeg') || contentType?.includes('jpg')) ext = 'jpg';
+      else if (contentType?.includes('gif')) ext = 'gif';
+      else if (contentType?.includes('webp')) ext = 'webp';
+      else ext = 'png';
+    }
+
+    const key = `scammer-evidence/images/${attachmentId}.${ext}`;
+
+    // Check if already exists
+    try {
+      const existing = await env.MY_BUCKET.head(key);
+      if (existing) {
+        return { r2_url: `https://cdn.emwiki.com/${key}` };
+      }
+    } catch {}
+
+    // Download from Discord
+    const imageResponse = await fetch(discordUrl, {
+      headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
+    });
+
+    if (!imageResponse.ok) {
+      return { r2_url: null };
+    }
+
+    const imageData = await imageResponse.arrayBuffer();
+
+    // Upload to R2
+    await env.MY_BUCKET.put(key, imageData, {
+      httpMetadata: { 
+        contentType: contentType || 'image/png',
+        cacheControl: 'public, max-age=31536000'
+      },
+      customMetadata: {
+        'original-filename': filename || 'image'
+      }
+    });
+
+    return { r2_url: `https://cdn.emwiki.com/${key}` };
+  } catch (err) {
+    console.error(`[QUEUE] Error downloading image:`, err);
+    return { r2_url: null };
+  }
+}
+
+/**
+ * Upload video to Cloudflare Stream
+ */
+async function uploadVideoToStream(videoData, filename, env) {
+  try {
+    if (!env.CLOUDFLARE_ACCOUNT_ID || !env.CLOUDFLARE_STREAM_TOKEN) {
+      return null;
+    }
+
+    const formData = new FormData();
+    const blob = new Blob([videoData], { type: 'video/quicktime' });
+    formData.append('file', blob, filename);
+
+    const uploadResponse = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/stream`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${env.CLOUDFLARE_STREAM_TOKEN}`
+        },
+        body: formData
+      }
+    );
+
+    if (!uploadResponse.ok) {
+      return null;
+    }
+
+    const streamData = await uploadResponse.json();
+    const videoId = streamData.result?.uid;
+    if (videoId) {
+      let playbackUrl = streamData.result?.playback?.hls || streamData.result?.playback?.dash;
+      if (!playbackUrl) {
+        playbackUrl = `https://customer-wosapspiey2ql225.cloudflarestream.com/${videoId}/manifest/video.m3u8`;
+      }
+      return {
+        id: videoId,
+        playback_url: playbackUrl
+      };
+    }
+    return null;
+  } catch (err) {
+    console.error(`[QUEUE] Error uploading to Stream:`, err);
+    return null;
   }
 }
 
