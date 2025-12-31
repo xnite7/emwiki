@@ -10,7 +10,11 @@ CREATE TABLE IF NOT EXISTS scammer_job_status (
   total_messages INTEGER DEFAULT 0,
   started_at INTEGER NOT NULL,
   completed_at INTEGER,
-  error TEXT
+  last_activity_at INTEGER, -- Last time job made progress
+  current_message_id TEXT, -- Currently processing message ID
+  current_step TEXT, -- What step the job is on
+  error TEXT,
+  logs TEXT -- JSON array of log entries
 );
 
 -- Create index for querying active jobs

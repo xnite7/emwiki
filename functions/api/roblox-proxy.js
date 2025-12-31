@@ -392,6 +392,38 @@ async function detectThreadId(msg, env, channelId) {
 // Helper function for delays
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+// Helper function to log job activity
+async function logJobActivity(env, jobId, step, messageId = null, details = null) {
+  const now = Date.now();
+  try {
+    // Get current logs
+    const job = await env.DB.prepare(`
+      SELECT logs FROM scammer_job_status WHERE job_id = ?
+    `).bind(jobId).first();
+    
+    const logs = job?.logs ? JSON.parse(job.logs) : [];
+    logs.push({
+      timestamp: now,
+      step,
+      messageId,
+      details
+    });
+    
+    // Keep only last 100 log entries
+    if (logs.length > 100) {
+      logs.shift();
+    }
+    
+    await env.DB.prepare(`
+      UPDATE scammer_job_status 
+      SET last_activity_at = ?, current_message_id = ?, current_step = ?, logs = ?
+      WHERE job_id = ?
+    `).bind(now, messageId, step, JSON.stringify(logs), jobId).run();
+  } catch (err) {
+    console.error(`Failed to log job activity:`, err);
+  }
+}
+
 // ============================================================================
 // PROCESS SCAMMER MESSAGE - Extract and store scammer data
 // ============================================================================
@@ -417,24 +449,30 @@ async function processScammerMessage(msg, env, channelId) {
   console.log(`[PROCESSING] Message ${msg.id} - userId: ${userId}, victims: ${victims || 'none'}, itemsScammed: ${itemsScammed || 'none'}, alts: ${altIds.length}`);
   
   // Fetch Roblox profile
+  console.log(`[${msg.id}] Fetching Roblox profile for ${userId}`);
   const robloxData = await fetchRobloxProfile(userId, env);
   if (!robloxData) {
     console.warn(`Failed to fetch Roblox profile for ${userId}`);
     // Continue anyway with extracted username
+  } else {
+    console.log(`[${msg.id}] Roblox profile fetched: ${robloxData.name}`);
   }
   
   // Fetch Discord profiles (for all Discord IDs)
   const discordProfiles = [];
   for (const discordId of discordIds) {
+    console.log(`[${msg.id}] Fetching Discord profile for ${discordId}`);
     const profile = await fetchDiscordProfile(discordId, env, userId);
     if (profile) {
       discordProfiles.push({ id: discordId, ...profile });
+      console.log(`[${msg.id}] Discord profile fetched: ${profile.displayName}`);
     }
   }
   
   // Fetch alt account profiles
   const altProfiles = [];
   for (const alt of altIds) {
+    console.log(`[${msg.id}] Fetching alt profile for ${alt.userId}`);
     const altData = await fetchRobloxProfile(alt.userId, env);
     if (altData) {
       altProfiles.push({
@@ -443,16 +481,19 @@ async function processScammerMessage(msg, env, channelId) {
         displayName: altData.displayName,
         avatar: altData.avatar
       });
+      console.log(`[${msg.id}] Alt profile fetched: ${altData.name}`);
     }
   }
   
   // Detect thread ID (don't fetch messages)
+  console.log(`[${msg.id}] Detecting thread ID`);
   const threadId = await detectThreadId(msg, env, channelId);
   if (threadId) {
     console.log(`[THREAD] Found thread ${threadId} for message ${msg.id}`);
   }
   
   // Store in D1
+  console.log(`[${msg.id}] Storing data for user ${userId}`);
   await storeScammerData({
     userId,
     robloxUsername: robloxData?.name || robloxUsername,
@@ -465,6 +506,7 @@ async function processScammerMessage(msg, env, channelId) {
     threadId,
     messageId: msg.id
   }, env);
+  console.log(`[${msg.id}] Data stored successfully`);
 }
 
 // ============================================================================
@@ -528,9 +570,15 @@ async function processScammerMessages(env, jobId) {
   let lastId = null;
   
   try {
+    await logJobActivity(env, jobId, 'starting', null, 'Job started');
+    
     // Fetch all messages with smart rate limit handling
     // Discord allows ~50 requests/second, but be conservative: wait 1.5 seconds between batches
+    let batchCount = 0;
     while (true) {
+      batchCount++;
+      await logJobActivity(env, jobId, 'fetching_batch', null, `Fetching batch ${batchCount}`);
+      
       const url = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
       url.searchParams.set('limit', '100'); // Max per request
       if (lastId) {
@@ -541,6 +589,7 @@ async function processScammerMessages(env, jobId) {
       let retryCount = 0;
       while (retryCount < 3) {
         try {
+          await logJobActivity(env, jobId, 'discord_api_request', null, `Attempt ${retryCount + 1}/3`);
           response = await fetch(url.toString(), {
             headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
           });
@@ -549,6 +598,7 @@ async function processScammerMessages(env, jobId) {
             // Rate limited - respect Discord's retry-after header
             const retryAfter = await response.json();
             const waitTime = (retryAfter.retry_after || 1) * 1000;
+            await logJobActivity(env, jobId, 'rate_limited', null, `Waiting ${waitTime}ms`);
             console.log(`[JOB ${jobId}] Rate limited, waiting ${waitTime}ms`);
             await delay(waitTime);
             retryCount++;
@@ -561,6 +611,7 @@ async function processScammerMessages(env, jobId) {
           
           break;
         } catch (err) {
+          await logJobActivity(env, jobId, 'discord_api_error', null, err.message);
           retryCount++;
           if (retryCount >= 3) {
             throw err;
@@ -570,10 +621,15 @@ async function processScammerMessages(env, jobId) {
       }
       
       const messages = await response.json();
-      if (messages.length === 0) break;
+      if (messages.length === 0) {
+        await logJobActivity(env, jobId, 'fetch_complete', null, `Fetched ${allMessages.length} total messages`);
+        break;
+      }
       
       allMessages.push(...messages);
       lastId = messages[messages.length - 1].id;
+      
+      await logJobActivity(env, jobId, 'batch_received', null, `Batch ${batchCount}: ${messages.length} messages, total: ${allMessages.length}`);
       
       // Key: respect rate limits - wait 1.5 seconds between batches
       // Discord allows ~50 requests/second but be conservative
@@ -585,55 +641,65 @@ async function processScammerMessages(env, jobId) {
     // Update total messages
     await env.DB.prepare(`
       UPDATE scammer_job_status 
-      SET total_messages = ? 
+      SET total_messages = ?, last_activity_at = ?
       WHERE job_id = ?
-    `).bind(allMessages.length, jobId).run();
+    `).bind(allMessages.length, Date.now(), jobId).run();
+    
+    await logJobActivity(env, jobId, 'processing_started', null, `Starting to process ${allMessages.length} messages`);
     
     // Process each message
     let processed = 0;
     for (const msg of allMessages) {
       try {
+        await logJobActivity(env, jobId, 'processing_message', msg.id, `Processing message ${processed + 1}/${allMessages.length}`);
+        
         await processScammerMessage(msg, env, channelId);
         processed++;
+        
+        await logJobActivity(env, jobId, 'message_completed', msg.id, `Completed message ${processed}/${allMessages.length}`);
         
         // Update progress after EVERY message to track progress accurately
         await env.DB.prepare(`
           UPDATE scammer_job_status 
-          SET messages_processed = ? 
+          SET messages_processed = ?, last_activity_at = ?
           WHERE job_id = ?
-        `).bind(processed, jobId).run();
+        `).bind(processed, Date.now(), jobId).run();
         
         if (processed % 10 === 0) {
           console.log(`[JOB ${jobId}] Processed ${processed}/${allMessages.length} messages`);
         }
       } catch (err) {
+        await logJobActivity(env, jobId, 'message_error', msg.id, `Error: ${err.message}`);
         console.error(`[ERROR] Processing message ${msg.id}:`, err.message);
         // Update progress even on error so we don't lose track
         processed++;
         await env.DB.prepare(`
           UPDATE scammer_job_status 
-          SET messages_processed = ? 
+          SET messages_processed = ?, last_activity_at = ?
           WHERE job_id = ?
-        `).bind(processed, jobId).run();
+        `).bind(processed, Date.now(), jobId).run();
         // Continue processing next message
       }
     }
     
+    await logJobActivity(env, jobId, 'completed', null, `Processed ${processed}/${allMessages.length} messages`);
+    
     // Mark job as completed
     await env.DB.prepare(`
       UPDATE scammer_job_status 
-      SET status = 'completed', messages_processed = ?, completed_at = ?
+      SET status = 'completed', messages_processed = ?, completed_at = ?, last_activity_at = ?
       WHERE job_id = ?
-    `).bind(processed, Date.now(), jobId).run();
+    `).bind(processed, Date.now(), Date.now(), jobId).run();
     
     console.log(`[JOB ${jobId}] Completed - processed ${processed}/${allMessages.length} messages`);
   } catch (err) {
+    await logJobActivity(env, jobId, 'failed', null, `Failed: ${err.message}`);
     console.error(`[JOB ${jobId}] Failed:`, err);
     await env.DB.prepare(`
       UPDATE scammer_job_status 
-      SET status = 'failed', error = ?
+      SET status = 'failed', error = ?, last_activity_at = ?
       WHERE job_id = ?
-    `).bind(err.message, jobId).run();
+    `).bind(err.message, Date.now(), jobId).run();
   }
 }
 
@@ -2199,6 +2265,56 @@ export async function onRequestGet(context) {
       
       // Action: start - Start a new processing job
       if (action === 'start') {
+        // Check if there's already a running job
+        const runningJob = await env.DB.prepare(`
+          SELECT job_id, started_at, messages_processed, total_messages
+          FROM scammer_job_status
+          WHERE status = 'running'
+          ORDER BY started_at DESC
+          LIMIT 1
+        `).first();
+        
+        if (runningJob) {
+          const runningTime = Date.now() - runningJob.started_at;
+          const tenMinutes = 10 * 60 * 1000;
+          
+          // If job is stuck (running > 10 minutes), cancel it
+          if (runningTime > tenMinutes) {
+            await env.DB.prepare(`
+              UPDATE scammer_job_status 
+              SET status = 'failed', error = 'Cancelled - stuck for too long'
+              WHERE job_id = ?
+            `).bind(runningJob.job_id).run();
+          } else {
+            // Job is still running and not stuck
+            return new Response(JSON.stringify({ 
+              error: 'A job is already running',
+              runningJob: {
+                jobId: runningJob.job_id,
+                startedAt: runningJob.started_at,
+                messagesProcessed: runningJob.messages_processed,
+                totalMessages: runningJob.total_messages,
+                runningTimeMinutes: Math.round(runningTime / 1000 / 60)
+              },
+              message: 'Use ?action=status&jobId=' + runningJob.job_id + ' to check progress, or ?action=cancel&jobId=' + runningJob.job_id + ' to cancel it.'
+            }), {
+              status: 409, // Conflict
+              headers: { 
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*" 
+              },
+            });
+          }
+        }
+        
+        // Cancel any other stuck jobs (running > 10 minutes)
+        const tenMinutesAgo = Date.now() - (10 * 60 * 1000);
+        await env.DB.prepare(`
+          UPDATE scammer_job_status 
+          SET status = 'failed', error = 'Cancelled - stuck for too long'
+          WHERE status = 'running' AND started_at < ?
+        `).bind(tenMinutesAgo).run();
+        
         const newJobId = `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const now = Date.now();
         
@@ -2231,45 +2347,77 @@ export async function onRequestGet(context) {
       }
       
       // Action: status - Check job status
-      if (action === 'status' && jobId) {
-        const jobStatus = await env.DB.prepare(`
-          SELECT job_id, status, messages_processed, total_messages, started_at, completed_at, error
-          FROM scammer_job_status
-          WHERE job_id = ?
-        `).bind(jobId).first();
-        
-        if (!jobStatus) {
-          return new Response(JSON.stringify({ error: 'Job not found' }), {
-            status: 404,
-            headers: { "Content-Type": "application/json" },
+      if (action === 'status') {
+        // If jobId provided, check specific job
+        if (jobId) {
+          const jobStatus = await env.DB.prepare(`
+            SELECT job_id, status, messages_processed, total_messages, started_at, completed_at, 
+                   last_activity_at, current_message_id, current_step, error, logs
+            FROM scammer_job_status
+            WHERE job_id = ?
+          `).bind(jobId).first();
+          
+          if (!jobStatus) {
+            return new Response(JSON.stringify({ error: 'Job not found' }), {
+              status: 404,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+          
+          // Parse logs
+          if (jobStatus.logs) {
+            try {
+              jobStatus.logs = JSON.parse(jobStatus.logs);
+            } catch (e) {
+              jobStatus.logs = [];
+            }
+          } else {
+            jobStatus.logs = [];
+          }
+          
+          // Check if job is stuck (running for more than 10 minutes)
+          if (jobStatus.status === 'running') {
+            const now = Date.now();
+            const runningTime = now - jobStatus.started_at;
+            const timeSinceLastActivity = jobStatus.last_activity_at ? now - jobStatus.last_activity_at : runningTime;
+            const tenMinutes = 10 * 60 * 1000;
+            
+            if (runningTime > tenMinutes) {
+              // Mark as failed if stuck
+              const stuckReason = `Job stuck - running for ${Math.round(runningTime / 1000 / 60)} minutes, last activity ${Math.round(timeSinceLastActivity / 1000 / 60)} minutes ago. Current step: ${jobStatus.current_step || 'unknown'}, Current message: ${jobStatus.current_message_id || 'none'}`;
+              await env.DB.prepare(`
+                UPDATE scammer_job_status 
+                SET status = 'failed', error = ?
+                WHERE job_id = ?
+              `).bind(stuckReason, jobId).run();
+              
+              jobStatus.status = 'failed';
+              jobStatus.error = stuckReason;
+            }
+          }
+          
+          return new Response(JSON.stringify(jobStatus), {
+            headers: { 
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*" 
+            },
+          });
+        } else {
+          // No jobId - return all jobs
+          const allJobs = await env.DB.prepare(`
+            SELECT job_id, status, messages_processed, total_messages, started_at, completed_at, error
+            FROM scammer_job_status
+            ORDER BY started_at DESC
+            LIMIT 20
+          `).all();
+          
+          return new Response(JSON.stringify({ jobs: allJobs.results || [] }), {
+            headers: { 
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*" 
+            },
           });
         }
-        
-        // Check if job is stuck (running for more than 10 minutes without progress)
-        if (jobStatus.status === 'running') {
-          const now = Date.now();
-          const runningTime = now - jobStatus.started_at;
-          const tenMinutes = 10 * 60 * 1000;
-          
-          if (runningTime > tenMinutes) {
-            // Mark as failed if stuck
-            await env.DB.prepare(`
-              UPDATE scammer_job_status 
-              SET status = 'failed', error = ?
-              WHERE job_id = ?
-            `).bind(`Job stuck - no progress for ${Math.round(runningTime / 1000 / 60)} minutes`, jobId).run();
-            
-            jobStatus.status = 'failed';
-            jobStatus.error = `Job stuck - no progress for ${Math.round(runningTime / 1000 / 60)} minutes`;
-          }
-        }
-        
-        return new Response(JSON.stringify(jobStatus), {
-          headers: { 
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*" 
-          },
-        });
       }
       
       // Action: cancel - Cancel a running job
