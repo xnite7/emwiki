@@ -2924,6 +2924,49 @@ export async function onRequestGet(context) {
         });
       }
       
+      // Action: debug - Check message tracking table status
+      if (action === 'debug' && jobId) {
+        // Check job status
+        const jobStatus = await env.DB.prepare(`
+          SELECT * FROM scammer_job_status WHERE job_id = ?
+        `).bind(jobId).first();
+        
+        // Check message tracking counts
+        const messageCounts = await env.DB.prepare(`
+          SELECT status, COUNT(*) as count 
+          FROM scammer_job_messages 
+          WHERE job_id = ?
+          GROUP BY status
+        `).bind(jobId).all();
+        
+        // Check scammer count
+        const scammerCount = await env.DB.prepare(`
+          SELECT COUNT(*) as count FROM scammer_profile_cache
+        `).first();
+        
+        // Sample of messages
+        const sampleMessages = await env.DB.prepare(`
+          SELECT message_id, status, error, processed_at
+          FROM scammer_job_messages 
+          WHERE job_id = ?
+          ORDER BY processed_at DESC
+          LIMIT 10
+        `).bind(jobId).all();
+        
+        return new Response(JSON.stringify({ 
+          job: jobStatus,
+          messagesByStatus: messageCounts.results || [],
+          scammersInDb: scammerCount?.count || 0,
+          sampleMessages: sampleMessages.results || [],
+          tip: 'If all messages are still "queued", the queue consumer is not processing them. Check: 1) Consumer is deployed, 2) Consumer logs in Cloudflare dashboard'
+        }, null, 2), {
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          },
+        });
+      }
+      
       // No action or default: Return results from D1
       const { results } = await env.DB.prepare(`
         SELECT 
