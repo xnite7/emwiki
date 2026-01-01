@@ -61,9 +61,24 @@ const CLOUDFLARE_IMAGES_PATTERNS = [
   'cloudflare-images.com',
 ];
 
+// URL patterns for Cloudflare Stream (videos migrated successfully)
+const CLOUDFLARE_STREAM_PATTERNS = [
+  'cloudflarestream.com',
+  'videodelivery.net',
+];
+
 function isCloudflareImagesUrl(url) {
   if (!url) return false;
   return CLOUDFLARE_IMAGES_PATTERNS.some(pattern => url.includes(pattern));
+}
+
+function isCloudflareStreamUrl(url) {
+  if (!url) return false;
+  return CLOUDFLARE_STREAM_PATTERNS.some(pattern => url.includes(pattern));
+}
+
+function isMigratedUrl(url) {
+  return isCloudflareImagesUrl(url) || isCloudflareStreamUrl(url);
 }
 
 async function queryD1(sql, params = []) {
@@ -140,10 +155,12 @@ async function cleanup() {
   const notMigrated = [];
 
   for (const item of items) {
-    if (!isCloudflareImagesUrl(item.media_url)) {
+    // Media URL must be migrated to either Cloudflare Images or Stream
+    if (!isMigratedUrl(item.media_url)) {
       allMigrated = false;
       notMigrated.push(item);
     }
+    // Thumbnails must be migrated to Cloudflare Images (they're always images)
     if (item.thumbnail_url && !isCloudflareImagesUrl(item.thumbnail_url)) {
       if (!notMigrated.find(i => i.id === item.id)) {
         allMigrated = false;
