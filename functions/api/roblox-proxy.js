@@ -786,17 +786,20 @@ async function enqueueScammerMessages(env, jobId) {
       enqueued_at: now
     }));
     
-    // Batch insert message tracking records (SQLite limit is 999 variables per query)
-    // Insert in chunks of 200 messages (4 columns * 200 = 800 variables, safe)
-    for (let i = 0; i < messageRecords.length; i += 200) {
-      const chunk = messageRecords.slice(i, i + 200);
-      const placeholders = chunk.map(() => '(?, ?, ?, ?)').join(', ');
-      const values = chunk.flatMap(r => [r.job_id, r.message_id, r.status, r.enqueued_at]);
-      
-      await env.DB.prepare(`
-        INSERT INTO scammer_job_messages (job_id, message_id, status, enqueued_at)
-        VALUES ${placeholders}
-      `).bind(...values).run();
+    // Insert message tracking records using D1 batch API
+    // This is more reliable than building large INSERT statements
+    const insertStmt = env.DB.prepare(`
+      INSERT INTO scammer_job_messages (job_id, message_id, status, enqueued_at)
+      VALUES (?, ?, ?, ?)
+    `);
+    
+    // D1 batch() allows up to 100 statements at once
+    for (let i = 0; i < messageRecords.length; i += 100) {
+      const chunk = messageRecords.slice(i, i + 100);
+      const statements = chunk.map(r => 
+        insertStmt.bind(r.job_id, r.message_id, r.status, r.enqueued_at)
+      );
+      await env.DB.batch(statements);
     }
     
     await logJobActivity(env, jobId, 'messages_tracked', null, `Tracked ${allMessages.length} messages in database`);
