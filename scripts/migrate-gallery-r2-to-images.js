@@ -18,9 +18,9 @@
  *   node scripts/migrate-gallery-r2-to-images.js --id=123
  *
  * Required Environment Variables:
- *   CLOUDFLARE_API_TOKEN - Cloudflare API token with R2 read + Images write permissions
+ *   CF_STREAM_TOKEN - Cloudflare API token with R2 read + Images write permissions
  *   CF_ACCOUNT_ID        - Cloudflare account ID
- *   CF_IMAGES_API_TOKEN  - Cloudflare Images API token (can be same as CLOUDFLARE_API_TOKEN)
+ *   CF_STREAM_TOKEN  - Cloudflare Images API token (can be same as CF_STREAM_TOKEN)
  *   CF_ACCOUNT_HASH      - Cloudflare Images account hash (for URL construction)
  *   D1_DATABASE_ID       - D1 database ID (DBA)
  *   R2_BUCKET_NAME       - R2 bucket name (e.g., "emwiki-media")
@@ -58,12 +58,11 @@ loadEnvVars();
 
 // Configuration
 const CONFIG = {
-  CF_ACCOUNT_ID: process.env.CF_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID,
-  CF_IMAGES_API_TOKEN: process.env.CF_IMAGES_API_TOKEN || process.env.CLOUDFLARE_API_TOKEN,
+  CF_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
   CF_ACCOUNT_HASH: process.env.CF_ACCOUNT_HASH || 'I2Jsf9fuZwSztWJZaX0DJA',
-  CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
+  CF_STREAM_TOKEN: process.env.CLOUDFLARE_STREAM_TOKEN,
   D1_DATABASE_ID: process.env.D1_DATABASE_ID,
-  R2_BUCKET_NAME: process.env.R2_BUCKET_NAME || 'emwiki-media',
+  R2_BUCKET_NAME: process.env.MY_BUCKET,
 };
 
 // Parse CLI arguments
@@ -147,8 +146,8 @@ function extractR2Key(url) {
  * Query D1 database via Cloudflare API
  */
 async function queryD1(sql, params = []) {
-  if (!CONFIG.CLOUDFLARE_API_TOKEN || !CONFIG.D1_DATABASE_ID) {
-    console.error('Missing CLOUDFLARE_API_TOKEN or D1_DATABASE_ID');
+  if (!CONFIG.CF_STREAM_TOKEN || !CONFIG.D1_DATABASE_ID) {
+    console.error('Missing CF_STREAM_TOKEN or D1_DATABASE_ID');
     console.error('Set these environment variables or add them to .dev.vars');
     process.exit(1);
   }
@@ -158,7 +157,7 @@ async function queryD1(sql, params = []) {
     {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${CONFIG.CLOUDFLARE_API_TOKEN}`,
+        'Authorization': `Bearer ${CONFIG.CF_STREAM_TOKEN}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ sql, params }),
@@ -178,15 +177,15 @@ async function queryD1(sql, params = []) {
  * Download image from R2 via Cloudflare API
  */
 async function downloadFromR2(key) {
-  if (!CONFIG.CLOUDFLARE_API_TOKEN) {
-    throw new Error('Missing CLOUDFLARE_API_TOKEN');
+  if (!CONFIG.CF_STREAM_TOKEN) {
+    throw new Error('Missing CF_STREAM_TOKEN');
   }
 
   const response = await fetch(
     `https://api.cloudflare.com/client/v4/accounts/${CONFIG.CF_ACCOUNT_ID}/r2/buckets/${CONFIG.R2_BUCKET_NAME}/objects/${encodeURIComponent(key)}`,
     {
       headers: {
-        'Authorization': `Bearer ${CONFIG.CLOUDFLARE_API_TOKEN}`,
+        'Authorization': `Bearer ${CONFIG.CF_STREAM_TOKEN}`,
       },
     }
   );
@@ -258,7 +257,7 @@ async function uploadToCloudflareImages(imageData, contentType, customId, metada
     {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${CONFIG.CF_IMAGES_API_TOKEN}`,
+        'Authorization': `Bearer ${CONFIG.CF_STREAM_TOKEN}`,
         ...form.getHeaders(),
       },
       body: form,
@@ -310,8 +309,8 @@ async function migrate() {
     console.error('❌ Missing CF_ACCOUNT_ID');
     process.exit(1);
   }
-  if (!CONFIG.CF_IMAGES_API_TOKEN) {
-    console.error('❌ Missing CF_IMAGES_API_TOKEN');
+  if (!CONFIG.CF_STREAM_TOKEN) {
+    console.error('❌ Missing CF_STREAM_TOKEN');
     process.exit(1);
   }
 
@@ -334,7 +333,7 @@ async function migrate() {
   } catch (err) {
     console.error('❌ Failed to query database:', err.message);
     console.log('\nMake sure you have set:');
-    console.log('  - CLOUDFLARE_API_TOKEN');
+    console.log('  - CF_STREAM_TOKEN');
     console.log('  - D1_DATABASE_ID');
     console.log('\nYou can find D1_DATABASE_ID by running:');
     console.log('  npx wrangler d1 list');
