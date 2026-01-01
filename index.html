@@ -40,95 +40,109 @@
 			animation: fadeIn 1s ease-out forwards;
 		}
 
-	@keyframes fadeIn {
-		99% {
-			background-image: none;
+		@keyframes fadeIn {
+			99% {
+				background-image: none;
+			}
+
+			to {
+				opacity: 1;
+				background-image: url(./imgs/bg.png);
+			}
+
 		}
 
-		to {
-			opacity: 1;
-			background-image: url(./imgs/bg.png);
+		@media screen and (max-width: 2062px) {
+			body {
+				background-repeat: repeat;
+			}
 		}
 
-	}
-
-	/* Pet Styles */
-	#petContainer {
-		position: absolute;
-		bottom: 20px;
-		left: 50px;
-		width: 32px;
-		height: 32px;
-		z-index: 100;
-		cursor: pointer;
-		overflow: visible;
-	}
-
-	#pet {
-		width: 32px;
-		height: 32px;
-		image-rendering: pixelated;
-		image-rendering: -moz-crisp-edges;
-		image-rendering: crisp-edges;
-		background: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/49.gif') no-repeat center;
-		background-size: contain;
-	}
-
-	#petContainer.walking {
-		animation: bounce 0.5s ease-in-out infinite;
-	}
-
-	#petContainer.idle {
-		animation: idle 2s ease-in-out infinite;
-	}
-
-	#pet.flipped {
-		transform: scaleX(-1);
-	}
-
-	@keyframes bounce {
-		0%, 100% {
-			transform: translateY(0);
+		/* Pet Styles */
+		#petContainer {
+			position: absolute;
+			bottom: 20px;
+			left: 50px;
+			width: 32px;
+			height: 32px;
+			z-index: 100;
+			cursor: pointer;
+			overflow: visible;
 		}
-		50% {
-			transform: translateY(-3px);
-		}
-	}
 
-	@keyframes idle {
-		0%, 100% {
-			transform: translateY(0) scale(1);
+		#pet {
+			width: 32px;
+			height: 32px;
+			image-rendering: pixelated;
+			image-rendering: -moz-crisp-edges;
+			image-rendering: crisp-edges;
+			background: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/49.gif') no-repeat center;
+			background-size: contain;
 		}
-		50% {
-			transform: translateY(-1px) scale(1.05);
-		}
-	}
 
-	.heart {
-		position: absolute;
-		bottom: 35px;
-		left: 50%;
-		transform: translateX(-50%);
-		font-size: 20px;
-		animation: floatHeart 1s ease-out forwards;
-		pointer-events: none;
-		z-index: 200;
-	}
+		#petContainer.walking {
+			animation: bounce 0.5s ease-in-out infinite;
+		}
 
-	@keyframes floatHeart {
-		0% {
-			opacity: 1;
-			transform: translateX(-50%) translateY(0) scale(0.5);
+		#petContainer.idle {
+			animation: idle 2s ease-in-out infinite;
 		}
-		50% {
-			transform: translateX(-50%) translateY(-20px) scale(1);
+
+		#pet.flipped {
+			transform: scaleX(-1);
 		}
-		100% {
-			opacity: 0;
-			transform: translateX(-50%) translateY(-40px) scale(0.8);
+
+		@keyframes bounce {
+
+			0%,
+			100% {
+				transform: translateY(0);
+			}
+
+			50% {
+				transform: translateY(-3px);
+			}
 		}
-	}
-</style>
+
+		@keyframes idle {
+
+			0%,
+			100% {
+				transform: translateY(0) scale(1);
+			}
+
+			50% {
+				transform: translateY(-1px) scale(1.05);
+			}
+		}
+
+		.heart {
+			position: absolute;
+			bottom: 35px;
+			left: 50%;
+			transform: translateX(-50%);
+			font-size: 20px;
+			animation: floatHeart 1s ease-out forwards;
+			pointer-events: none;
+			z-index: 200;
+		}
+
+		@keyframes floatHeart {
+			0% {
+				opacity: 1;
+				transform: translateX(-50%) translateY(0) scale(0.5);
+			}
+
+			50% {
+				transform: translateX(-50%) translateY(-20px) scale(1);
+			}
+
+			100% {
+				opacity: 0;
+				transform: translateX(-50%) translateY(-40px) scale(0.8);
+			}
+		}
+	</style>
 
 	<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
 	<script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.js"></script>
@@ -143,9 +157,10 @@
 <body>
 
 	<!-- Header with modern catalog style -->
-	<header><div id="christmaslights"
-		style="display:none;position: absolute;left: 0;top: -45px;background: url(./imgs/titles/7a889a5ce371c6aa3a59862815826ee7.png);background-position: center;width: 100%;height: 40%;z-index: -1;">
-	</div>
+	<header>
+		<div id="christmaslights"
+			style="display:none;position: absolute;left: 0;top: -45px;background: url(./imgs/titles/7a889a5ce371c6aa3a59862815826ee7.png);background-position: center;width: 100%;height: 40%;z-index: -1;">
+		</div>
 		<a href="https://emwiki.com">
 			<svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
 				<defs>
@@ -385,7 +400,8 @@
 			</div>
 		</div>
 		<div class="footer-bottom">
-			<p>© 2025 emwiki.com • made with ❤ by <span id="xnite-link" style="cursor: pointer; text-decoration: underline;">xnite</span></p>
+			<p>© 2025 emwiki.com • made with ❤ by <span id="xnite-link"
+					style="cursor: pointer; text-decoration: underline;">xnite</span></p>
 		</div>
 		<!-- Pet -->
 		<div id="petContainer">
@@ -480,20 +496,20 @@
 					const div = this.createItemElement(item)
 					const priceCodeRarity = item['price/code/rarity'];
 					if (item.weeklystar) {
-							div.querySelector('.item-price').textContent = priceCodeRarity?.split('<br>').pop().replace(' Stars', '');
-							div.querySelector('.item-price').classList.replace('item-price', 'star-price');
-							const outlineColors = {
-								'60': '#b31aff',
-								'30': '#ff2a00',
-								'15': '#fae351',
-								'5': '#e0e6df'
-							};
-							Object.entries(outlineColors).forEach(([num, color]) => {
-								if (priceCodeRarity.toLowerCase().includes(num)) {
-									div.style.outline = `4px solid ${color}`;
-									div.style.background = 'unset';
-								}
-							});
+						div.querySelector('.item-price').textContent = priceCodeRarity?.split('<br>').pop().replace(' Stars', '');
+						div.querySelector('.item-price').classList.replace('item-price', 'star-price');
+						const outlineColors = {
+							'60': '#b31aff',
+							'30': '#ff2a00',
+							'15': '#fae351',
+							'5': '#e0e6df'
+						};
+						Object.entries(outlineColors).forEach(([num, color]) => {
+							if (priceCodeRarity.toLowerCase().includes(num)) {
+								div.style.outline = `4px solid ${color}`;
+								div.style.background = 'unset';
+							}
+						});
 
 					} else if (item.weekly) {
 						if (priceCodeRarity) {
@@ -651,7 +667,7 @@
 					// Draw snowflake with Gaussian blur effect using radial gradient
 					this.ctx.save();
 					this.ctx.globalAlpha = p.opacity;
-					
+
 					// Create a radial gradient for Gaussian blur effect
 					const gradient = this.ctx.createRadialGradient(
 						p.x, p.y, 0,
@@ -661,7 +677,7 @@
 					gradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.5)');
 					gradient.addColorStop(0.6, 'rgba(255, 255, 255, 0.2)');
 					gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-					
+
 					this.ctx.fillStyle = gradient;
 					this.ctx.beginPath();
 					this.ctx.arc(p.x, p.y, p.size * 2, 0, Math.PI * 2);
