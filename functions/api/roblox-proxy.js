@@ -789,10 +789,22 @@ async function enqueueScammerMessages(env, jobId) {
     // =========================================================================
     const threadEvidence = new Map(); // threadId -> { messages: [], attachments: [] }
     
+    // Also build a map of thread metadata for debugging
+    const threadMetadata = new Map();
+    
     for (let i = 0; i < allThreads.length; i++) {
       const thread = allThreads[i];
+      
+      // Log thread structure for debugging
+      console.log(`[THREAD ${i+1}] id=${thread.id}, name=${thread.name}, parent_id=${thread.parent_id}, owner_id=${thread.owner_id}`);
+      threadMetadata.set(thread.id, {
+        name: thread.name,
+        parent_id: thread.parent_id,
+        owner_id: thread.owner_id
+      });
+      
       await logJobActivity(env, jobId, 'fetching_thread_messages', thread.id, 
-        `Fetching thread ${i + 1}/${allThreads.length}`);
+        `Fetching thread ${i + 1}/${allThreads.length}: ${thread.name || thread.id}`);
       
       try {
         const evidence = await fetchThreadEvidence(thread.id, env);
@@ -806,8 +818,12 @@ async function enqueueScammerMessages(env, jobId) {
       await delay(1000); // Rate limit
     }
     
+    // Log which thread IDs we have evidence for
+    const threadIds = Array.from(threadEvidence.keys());
+    console.log(`[THREADS] Evidence collected for thread IDs: ${threadIds.join(', ')}`);
+    
     await logJobActivity(env, jobId, 'threads_processed', null, 
-      `Processed ${threadEvidence.size} threads with evidence`);
+      `Processed ${threadEvidence.size} threads with evidence. Thread IDs: ${threadIds.slice(0, 5).join(', ')}${threadIds.length > 5 ? '...' : ''}`);
     
     // =========================================================================
     // STEP 3: Fetch all channel messages
@@ -848,7 +864,59 @@ async function enqueueScammerMessages(env, jobId) {
       `Fetched ${allMessages.length} channel messages`);
     
     // =========================================================================
-    // STEP 4: Bundle messages with their thread evidence and enqueue
+    // STEP 4: Check for orphan threads (messages with threads we didn't find)
+    // =========================================================================
+    
+    // Log message IDs that have msg.thread property
+    const messagesWithThread = allMessages.filter(msg => msg.thread?.id);
+    console.log(`[THREADS] Messages with msg.thread property: ${messagesWithThread.length}`);
+    if (messagesWithThread.length > 0) {
+      console.log(`[THREADS] Thread IDs from messages: ${messagesWithThread.map(m => m.thread.id).join(', ')}`);
+    }
+    
+    // Find messages that have msg.thread but we didn't get from thread list
+    const orphanThreadMessages = allMessages.filter(msg => 
+      msg.thread?.id && !threadEvidence.has(msg.id)
+    );
+    
+    if (orphanThreadMessages.length > 0) {
+      await logJobActivity(env, jobId, 'fetching_orphan_threads', null, 
+        `Found ${orphanThreadMessages.length} messages with threads not in thread list`);
+      
+      for (let i = 0; i < orphanThreadMessages.length; i++) {
+        const msg = orphanThreadMessages[i];
+        await logJobActivity(env, jobId, 'fetching_orphan_thread', msg.thread.id, 
+          `Fetching orphan thread ${i + 1}/${orphanThreadMessages.length}`);
+        
+        try {
+          const evidence = await fetchThreadEvidence(msg.thread.id, env);
+          if (evidence.length > 0) {
+            threadEvidence.set(msg.id, evidence);
+          }
+        } catch (err) {
+          console.error(`Failed to fetch orphan thread ${msg.thread.id}:`, err.message);
+        }
+        
+        await delay(1000);
+      }
+      
+      await logJobActivity(env, jobId, 'orphan_threads_done', null, 
+        `Fetched ${orphanThreadMessages.length} orphan threads, total with evidence: ${threadEvidence.size}`);
+    } else {
+      console.log(`[THREADS] No orphan threads found. All threads matched.`);
+    }
+    
+    // Check for unmatched threads (threads we fetched but don't match any message ID)
+    const messageIds = new Set(allMessages.map(m => m.id));
+    const unmatchedThreads = threadIds.filter(tid => !messageIds.has(tid));
+    if (unmatchedThreads.length > 0) {
+      console.log(`[THREADS] WARNING: ${unmatchedThreads.length} threads don't match any message ID: ${unmatchedThreads.join(', ')}`);
+      await logJobActivity(env, jobId, 'unmatched_threads', null, 
+        `WARNING: ${unmatchedThreads.length} threads don't match message IDs: ${unmatchedThreads.join(', ')}`);
+    }
+    
+    // =========================================================================
+    // STEP 5: Bundle messages with their thread evidence and enqueue
     // =========================================================================
     
     // Update total

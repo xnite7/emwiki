@@ -988,7 +988,7 @@
         // Build alt accounts HTML
         const altsHTML = Array.isArray(robloxAlts) && robloxAlts.length > 0
             ? `<p><strong>Alts:</strong> ${robloxAlts.map(alt =>
-                `<a href="https://www.roblox.com/users/${alt.userId}/profile" target="_blank" rel="noopener noreferrer">${alt.username}</a>`
+                `<a href="https://www.roblox.com/users/${alt.userId}/profile" target="_blank" rel="noopener noreferrer">${alt.name}</a>`
             ).join(", ")}</p>`
             : "";
 
@@ -1201,7 +1201,16 @@
 
     // Render thread evidence in investigation-style format
     function renderThreadEvidence(threadEvidence, container, userId, robloxUser) {
-        const { thread_name, message_count, messages } = threadEvidence;
+        // Handle both old format ({ thread_name, message_count, messages }) 
+        // and new format (direct array of messages)
+        let messages;
+        if (Array.isArray(threadEvidence)) {
+            // New format: threadEvidence is already an array of messages
+            messages = threadEvidence;
+        } else {
+            // Old format: threadEvidence is an object with messages property
+            messages = threadEvidence.messages || [];
+        }
 
         let html = `
             <div class="thread-header">
@@ -1210,16 +1219,21 @@
             </div>
             <div class="thread-info">
                 <p><strong>Evidence Against:</strong> <a href="/scammers?userId=${userId}" target="_blank">${robloxUser}</a></p>
-                <p><strong>Messages:</strong> ${message_count - 1 || messages?.length || 0}</p>
+                <p><strong>Messages:</strong> ${messages.length}</p>
             </div>
             <div class="thread-messages">
         `;
 
         if (messages && messages.length > 0) {
             messages.forEach((msg, index) => {
-                if (msg.content == '' || msg.content == null || msg.content == undefined) return;
-                const authorName = msg.author?.global_name || msg.author?.username || 'Unknown';
-                const authorAvatar = msg.author?.avatar
+                // Skip empty messages (but allow messages with just attachments)
+                if ((!msg.content || msg.content === '') && (!msg.attachments || msg.attachments.length === 0)) return;
+                
+                // Handle both author formats: string (new) or object (old)
+                const authorName = typeof msg.author === 'string' 
+                    ? msg.author 
+                    : (msg.author?.global_name || msg.author?.username || 'Unknown');
+                const authorAvatar = (typeof msg.author === 'object' && msg.author?.avatar && msg.author?.id)
                     ? `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png?size=64`
                     : 'https://cdn.discordapp.com/embed/avatars/0.png';
                 const timestamp = new Date(msg.timestamp).toLocaleString();
@@ -1240,7 +1254,12 @@
                 if (msg.attachments && msg.attachments.length > 0) {
                     html += '<div class="message-attachments">';
                     msg.attachments.forEach(att => {
-                        if (att.is_image) {
+                        // Check if image by content_type or is_image flag
+                        const isImage = att.is_image || (att.content_type && att.content_type.startsWith('image/'));
+                        // Check if video by content_type or is_video flag
+                        const isVideo = att.is_video || (att.content_type && (att.content_type.startsWith('video/') || att.content_type === 'video/quicktime'));
+                        
+                        if (isImage) {
                             // Use R2 URL if available (prevents Discord expiration), fallback to proxy_url or url
                             const imageUrl = att.r2_url || att.proxy_url || att.url;
                             const fullSizeUrl = att.r2_url || att.url; // Use R2 URL for full size if available
@@ -1250,7 +1269,7 @@
                                     <a href="${fullSizeUrl}" target="_blank" rel="noopener noreferrer" class="attachment-link">View Full Size</a>
                                 </div>
                             `;
-                        } else if (att.is_video) {
+                        } else if (isVideo) {
                             const videoId = `video-${att.id}-${index}`;
                             // Use Stream URL if available (for QuickTime), otherwise R2 or Discord URL
                             const videoUrl = att.stream_url || att.r2_url || att.url;
@@ -1267,8 +1286,8 @@
                         } else {
                             html += `
                                 <div class="attachment-file">
-                                    <a href="${att.url}" target="_blank" rel="noopener noreferrer">
-                                        📎 ${att.filename} (${formatFileSize(att.size)})
+                                    <a href="${att.r2_url || att.url}" target="_blank" rel="noopener noreferrer">
+                                        📎 ${att.filename} ${att.size ? `(${formatFileSize(att.size)})` : ''}
                                     </a>
                                 </div>
                             `;
