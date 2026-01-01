@@ -12,8 +12,17 @@ const CORS_HEADERS = {
 // Helper to determine media type from URL
 function getMediaType(url) {
   if (!url) return 'image';
-  const ext = url.split('.').pop().toLowerCase();
-  const videoExts = ['mp4', 'webm', 'mov'];
+
+  // Check for Cloudflare Stream URLs (videos)
+  if (url.includes('cloudflarestream.com') ||
+      url.includes('videodelivery.net') ||
+      url.includes('.m3u8')) {
+    return 'video';
+  }
+
+  // Check file extension
+  const ext = url.split('.').pop().toLowerCase().split('?')[0]; // Handle query params
+  const videoExts = ['mp4', 'webm', 'mov', 'avi', 'mkv'];
   return videoExts.includes(ext) ? 'video' : 'image';
 }
 
