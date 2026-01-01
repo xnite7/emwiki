@@ -26,8 +26,8 @@ export default {
  */
 async function checkForNewContent(env) {
   const startTime = Date.now();
-  console.log('[PERIODIC CHECK] Starting periodic check for new messages and threads');
-  
+  console.log('[PERIODIC CHECK] Starting periodic check for new messages, threads, and media');
+
   try {
     // Check required environment variables
     if (!env.DISCORD_BOT_TOKEN) {
@@ -36,20 +36,24 @@ async function checkForNewContent(env) {
     if (!env.DISCORD_CHANNEL_ID) {
       throw new Error('DISCORD_CHANNEL_ID not set');
     }
-    
+
     const db = env.DB || env.DBA;
     if (!db) {
       throw new Error('D1 database binding (DB or DBA) not found');
     }
-    
+
     const results = {
       newMessagesFound: 0,
       newMessagesProcessed: 0,
       newThreadsFound: 0,
       newThreadsFetched: 0,
+      threadUpdatesFound: 0,
+      threadUpdatesProcessed: 0,
+      mediaRetried: 0,
+      mediaFixed: 0,
       errors: []
     };
-    
+
     // Step 1: Check for new messages in the channel
     console.log('[PERIODIC CHECK] Step 1: Checking for new messages');
     const newMessagesResult = await checkForNewMessages(env, db);
@@ -58,7 +62,7 @@ async function checkForNewContent(env) {
     if (newMessagesResult.error) {
       results.errors.push(`New messages check: ${newMessagesResult.error}`);
     }
-    
+
     // Step 2: Check for new threads on existing messages
     console.log('[PERIODIC CHECK] Step 2: Checking for new threads');
     const newThreadsResult = await checkForNewThreads(env, db);
@@ -67,14 +71,32 @@ async function checkForNewContent(env) {
     if (newThreadsResult.error) {
       results.errors.push(`New threads check: ${newThreadsResult.error}`);
     }
-    
+
+    // Step 3: Check existing threads for new messages (new media)
+    console.log('[PERIODIC CHECK] Step 3: Checking existing threads for new messages');
+    const threadUpdatesResult = await checkForThreadUpdates(env, db);
+    results.threadUpdatesFound = threadUpdatesResult.found;
+    results.threadUpdatesProcessed = threadUpdatesResult.processed;
+    if (threadUpdatesResult.error) {
+      results.errors.push(`Thread updates check: ${threadUpdatesResult.error}`);
+    }
+
+    // Step 4: Retry failed media uploads (Discord URLs that weren't persisted)
+    console.log('[PERIODIC CHECK] Step 4: Retrying failed media uploads');
+    const mediaRetryResult = await retryFailedMediaUploads(env, db);
+    results.mediaRetried = mediaRetryResult.retried;
+    results.mediaFixed = mediaRetryResult.fixed;
+    if (mediaRetryResult.error) {
+      results.errors.push(`Media retry: ${mediaRetryResult.error}`);
+    }
+
     const duration = Date.now() - startTime;
     console.log('[PERIODIC CHECK] Completed:', {
       ...results,
       durationMs: duration,
       durationSeconds: Math.round(duration / 1000)
     });
-    
+
     return results;
   } catch (error) {
     console.error('[PERIODIC CHECK] Error:', error);
@@ -263,6 +285,298 @@ async function checkForNewThreads(env, db) {
   } catch (error) {
     console.error('[PERIODIC CHECK] Error checking for new threads:', error);
     return { found: 0, fetched: 0, error: error.message };
+  }
+}
+
+/**
+ * Check existing threads for new messages (new media to persist)
+ * Compares thread_last_message_id with current last message in thread
+ */
+async function checkForThreadUpdates(env, db) {
+  try {
+    // Get scammers with existing thread_evidence that have a thread_id
+    const scammersWithThreads = await db.prepare(`
+      SELECT user_id, thread_evidence, thread_last_message_id
+      FROM scammer_profile_cache
+      WHERE thread_evidence IS NOT NULL
+        AND thread_evidence != ''
+        AND thread_evidence LIKE '%"thread_id"%'
+      ORDER BY updated_at DESC
+      LIMIT 50
+    `).all();
+
+    if (!scammersWithThreads.results || scammersWithThreads.results.length === 0) {
+      return { found: 0, processed: 0 };
+    }
+
+    console.log(`[PERIODIC CHECK] Checking ${scammersWithThreads.results.length} existing threads for updates`);
+
+    let updatesFound = 0;
+    let updatesProcessed = 0;
+
+    for (const row of scammersWithThreads.results) {
+      try {
+        const evidence = JSON.parse(row.thread_evidence);
+        const threadId = evidence.thread_id;
+        if (!threadId) continue;
+
+        // Get the last message we have stored
+        const lastStoredMessageId = row.thread_last_message_id ||
+          (evidence.messages?.length > 0 ? evidence.messages[evidence.messages.length - 1]?.id : null);
+
+        // Fetch current last message from Discord thread
+        const lastMessageUrl = `https://discord.com/api/v10/channels/${threadId}/messages?limit=1`;
+        const lastMsgRes = await fetch(lastMessageUrl, {
+          headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
+        });
+
+        if (!lastMsgRes.ok) {
+          if (lastMsgRes.status === 404) {
+            console.log(`[PERIODIC CHECK] Thread ${threadId} not found (deleted/archived)`);
+          }
+          continue;
+        }
+
+        const lastMessages = await lastMsgRes.json();
+        if (!lastMessages.length) continue;
+
+        const currentLastMessageId = lastMessages[0].id;
+
+        // Check if there are new messages
+        if (lastStoredMessageId && BigInt(currentLastMessageId) <= BigInt(lastStoredMessageId)) {
+          // No new messages
+          continue;
+        }
+
+        updatesFound++;
+        console.log(`[PERIODIC CHECK] Thread ${threadId} has new messages (last stored: ${lastStoredMessageId}, current: ${currentLastMessageId})`);
+
+        // Fetch new messages after the last stored one
+        const newMessages = await fetchNewThreadMessages(threadId, lastStoredMessageId, env);
+
+        if (newMessages && newMessages.length > 0) {
+          // Merge new messages with existing evidence
+          const existingMessages = evidence.messages || [];
+          const allMessages = [...existingMessages, ...newMessages];
+
+          // Sort by timestamp (oldest first)
+          allMessages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+          // Remove duplicates by message ID
+          const uniqueMessages = [];
+          const seenIds = new Set();
+          for (const msg of allMessages) {
+            if (!seenIds.has(msg.id)) {
+              seenIds.add(msg.id);
+              uniqueMessages.push(msg);
+            }
+          }
+
+          // Update the evidence
+          const updatedEvidence = {
+            ...evidence,
+            messages: uniqueMessages,
+            message_count: uniqueMessages.length,
+            last_fetched: Date.now()
+          };
+
+          // Store back to database
+          await db.prepare(`
+            UPDATE scammer_profile_cache
+            SET thread_evidence = ?,
+                thread_last_message_id = ?
+            WHERE user_id = ?
+          `).bind(
+            JSON.stringify(updatedEvidence),
+            uniqueMessages[uniqueMessages.length - 1]?.id || currentLastMessageId,
+            row.user_id
+          ).run();
+
+          updatesProcessed++;
+          console.log(`[PERIODIC CHECK] Updated thread ${threadId} with ${newMessages.length} new messages`);
+        }
+
+        // Rate limit
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+      } catch (err) {
+        console.error(`[PERIODIC CHECK] Error checking thread for user ${row.user_id}:`, err.message);
+      }
+    }
+
+    return { found: updatesFound, processed: updatesProcessed };
+  } catch (error) {
+    console.error('[PERIODIC CHECK] Error checking for thread updates:', error);
+    return { found: 0, processed: 0, error: error.message };
+  }
+}
+
+/**
+ * Fetch new messages from a thread after a specific message ID
+ */
+async function fetchNewThreadMessages(threadId, afterMessageId, env) {
+  const messages = [];
+  let after = afterMessageId;
+
+  while (true) {
+    const url = new URL(`https://discord.com/api/v10/channels/${threadId}/messages`);
+    url.searchParams.set('limit', '100');
+    if (after) url.searchParams.set('after', after);
+
+    const response = await fetch(url.toString(), {
+      headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
+    });
+
+    if (response.status === 429) {
+      const retryAfter = await response.json();
+      await new Promise(r => setTimeout(r, (retryAfter.retry_after || 1) * 1000));
+      continue;
+    }
+
+    if (!response.ok) break;
+
+    const batch = await response.json();
+    if (batch.length === 0) break;
+
+    // Process messages and upload attachments
+    for (const msg of batch) {
+      const messageData = {
+        id: msg.id,
+        author: msg.author?.username || 'Unknown',
+        content: msg.content,
+        timestamp: msg.timestamp,
+        edited_timestamp: msg.edited_timestamp,
+        attachments: []
+      };
+
+      // Upload attachments to Cloudflare
+      if (msg.attachments && msg.attachments.length > 0) {
+        for (const att of msg.attachments) {
+          try {
+            const uploaded = await uploadToCloudflareMedia(att, env);
+            messageData.attachments.push(uploaded);
+          } catch (err) {
+            console.warn(`[PERIODIC CHECK] Failed to upload ${att.filename}:`, err.message);
+            messageData.attachments.push({
+              id: att.id,
+              filename: att.filename,
+              content_type: att.content_type,
+              url: att.url
+            });
+          }
+        }
+      }
+
+      messages.push(messageData);
+    }
+
+    // For 'after' pagination, Discord returns newest first, so get the newest ID
+    after = batch[0].id;
+
+    // Rate limit
+    await new Promise(resolve => setTimeout(resolve, 300));
+  }
+
+  // Sort oldest first
+  messages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+  return messages;
+}
+
+/**
+ * Retry failed media uploads
+ * Finds attachments with Discord URLs but no cf_url/stream_uid and tries to upload them
+ */
+async function retryFailedMediaUploads(env, db) {
+  try {
+    // Check if we have the required tokens
+    if (!env.CLOUDFLARE_ACCOUNT_ID || !env.CLOUDFLARE_STREAM_TOKEN) {
+      console.log('[PERIODIC CHECK] Skipping media retry - missing CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_STREAM_TOKEN');
+      return { retried: 0, fixed: 0 };
+    }
+
+    // Get scammers with thread_evidence
+    const scammersWithEvidence = await db.prepare(`
+      SELECT user_id, thread_evidence
+      FROM scammer_profile_cache
+      WHERE thread_evidence IS NOT NULL
+        AND thread_evidence != ''
+        AND thread_evidence LIKE '%cdn.discordapp.com%'
+      ORDER BY updated_at DESC
+      LIMIT 30
+    `).all();
+
+    if (!scammersWithEvidence.results || scammersWithEvidence.results.length === 0) {
+      return { retried: 0, fixed: 0 };
+    }
+
+    console.log(`[PERIODIC CHECK] Checking ${scammersWithEvidence.results.length} scammers for failed media uploads`);
+
+    let retried = 0;
+    let fixed = 0;
+
+    for (const row of scammersWithEvidence.results) {
+      try {
+        const evidence = JSON.parse(row.thread_evidence);
+        if (!evidence.messages || evidence.messages.length === 0) continue;
+
+        let hasChanges = false;
+
+        // Check each message's attachments
+        for (const msg of evidence.messages) {
+          if (!msg.attachments || msg.attachments.length === 0) continue;
+
+          for (let i = 0; i < msg.attachments.length; i++) {
+            const att = msg.attachments[i];
+
+            // Check if this is a Discord URL that wasn't uploaded
+            const isDiscordUrl = att.url && (
+              att.url.includes('cdn.discordapp.com') ||
+              att.url.includes('media.discordapp.net')
+            );
+            const hasCloudflareUrl = att.cf_url || att.stream_uid;
+
+            if (isDiscordUrl && !hasCloudflareUrl) {
+              retried++;
+              console.log(`[PERIODIC CHECK] Retrying upload for ${att.filename} (${att.id})`);
+
+              try {
+                const uploaded = await uploadToCloudflareMedia(att, env);
+                if (uploaded.cf_url || uploaded.stream_uid) {
+                  msg.attachments[i] = uploaded;
+                  hasChanges = true;
+                  fixed++;
+                  console.log(`[PERIODIC CHECK] ✓ Fixed: ${att.filename}`);
+                }
+              } catch (err) {
+                console.warn(`[PERIODIC CHECK] Failed to retry ${att.filename}:`, err.message);
+              }
+
+              // Rate limit
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
+          }
+        }
+
+        // Update database if we fixed any media
+        if (hasChanges) {
+          evidence.last_fetched = Date.now();
+          await db.prepare(`
+            UPDATE scammer_profile_cache
+            SET thread_evidence = ?
+            WHERE user_id = ?
+          `).bind(JSON.stringify(evidence), row.user_id).run();
+        }
+
+      } catch (err) {
+        console.error(`[PERIODIC CHECK] Error retrying media for user ${row.user_id}:`, err.message);
+      }
+    }
+
+    return { retried, fixed };
+  } catch (error) {
+    console.error('[PERIODIC CHECK] Error retrying failed media uploads:', error);
+    return { retried: 0, fixed: 0, error: error.message };
   }
 }
 
