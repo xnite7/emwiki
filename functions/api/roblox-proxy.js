@@ -700,54 +700,131 @@ async function storeScammerData(data, env) {
 }
 
 // ============================================================================
-// SECTION 5: QUEUE MANAGEMENT
+// SECTION 5: QUEUE MANAGEMENT - THREAD-FIRST APPROACH
 // ============================================================================
 
 /**
- * Enqueue all Discord messages for processing
- * Messages are processed by the queue consumer Worker
+ * NEW APPROACH: Fetch threads first, then channel messages
+ * 
+ * 1. Get all threads (active + archived) in the channel
+ * 2. For each thread, fetch all messages and download attachments
+ * 3. Build a map: threadId -> evidence[]
+ * 4. Get all channel messages
+ * 5. For each message:
+ *    - If message.id is in thread map, attach the evidence
+ *    - Process message with its evidence bundled
+ * 
+ * Benefits:
+ * - Threads are fetched upfront, no "missing thread" bugs
+ * - Thread ID = Message ID (Discord's design)
+ * - Evidence is already downloaded before processing
+ * - More efficient - fewer API calls
  */
 
 async function enqueueScammerMessages(env, jobId) {
   const channelId = env.DISCORD_CHANNEL_ID;
   
   try {
-    await logJobActivity(env, jobId, 'starting', null, 'Job started - fetching messages to queue');
+    await logJobActivity(env, jobId, 'starting', null, 'Job started - fetching threads first');
     
-    // Check if required environment variables are set
+    // Validate environment
     if (!env.DISCORD_BOT_TOKEN) {
-      throw new Error('DISCORD_BOT_TOKEN environment variable not set. Set it in Pages Functions settings or via wrangler secret.');
+      throw new Error('DISCORD_BOT_TOKEN not set');
     }
-    
     if (!channelId) {
-      throw new Error('DISCORD_CHANNEL_ID environment variable not set. Set it in Pages Functions settings or via wrangler secret.');
+      throw new Error('DISCORD_CHANNEL_ID not set');
     }
-    
-    // Check if queue is available
     if (!env.SCAMMER_QUEUE) {
-      throw new Error('Queue binding SCAMMER_QUEUE not configured. Add queue binding in Pages settings → Functions → Queue Bindings.');
+      throw new Error('SCAMMER_QUEUE binding not configured');
     }
     
-    // Fetch all messages and add to queue
+    // =========================================================================
+    // STEP 1: Fetch all threads (active + archived)
+    // =========================================================================
+    await logJobActivity(env, jobId, 'fetching_threads', null, 'Fetching all threads from channel');
+    
+    const allThreads = [];
+    
+    // Fetch active threads
+    const activeRes = await fetch(
+      `https://discord.com/api/v10/channels/${channelId}/threads/active`,
+      { headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` } }
+    );
+    if (activeRes.ok) {
+      const activeData = await activeRes.json();
+      if (activeData.threads) allThreads.push(...activeData.threads);
+    }
+    await delay(500);
+    
+    // Fetch archived threads (paginated)
+    let hasMore = true;
+    let beforeTimestamp = null;
+    while (hasMore) {
+      const url = new URL(`https://discord.com/api/v10/channels/${channelId}/threads/archived/public`);
+      if (beforeTimestamp) url.searchParams.set('before', beforeTimestamp);
+      url.searchParams.set('limit', '100');
+      
+      const archivedRes = await fetch(url.toString(), {
+        headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
+      });
+      
+      if (!archivedRes.ok) break;
+      
+      const archivedData = await archivedRes.json();
+      if (archivedData.threads?.length) {
+        allThreads.push(...archivedData.threads);
+        // Get the oldest thread's archive timestamp for pagination
+        const oldestThread = archivedData.threads[archivedData.threads.length - 1];
+        beforeTimestamp = oldestThread.thread_metadata?.archive_timestamp;
+      }
+      
+      hasMore = archivedData.has_more === true;
+      await delay(500);
+    }
+    
+    await logJobActivity(env, jobId, 'threads_found', null, `Found ${allThreads.length} threads`);
+    
+    // =========================================================================
+    // STEP 2: Fetch messages for each thread and build evidence map
+    // =========================================================================
+    const threadEvidence = new Map(); // threadId -> { messages: [], attachments: [] }
+    
+    for (let i = 0; i < allThreads.length; i++) {
+      const thread = allThreads[i];
+      await logJobActivity(env, jobId, 'fetching_thread_messages', thread.id, 
+        `Fetching thread ${i + 1}/${allThreads.length}`);
+      
+      try {
+        const evidence = await fetchThreadEvidence(thread.id, env);
+        if (evidence.length > 0) {
+          threadEvidence.set(thread.id, evidence);
+        }
+      } catch (err) {
+        console.error(`Failed to fetch thread ${thread.id}:`, err.message);
+      }
+      
+      await delay(1000); // Rate limit
+    }
+    
+    await logJobActivity(env, jobId, 'threads_processed', null, 
+      `Processed ${threadEvidence.size} threads with evidence`);
+    
+    // =========================================================================
+    // STEP 3: Fetch all channel messages
+    // =========================================================================
+    await logJobActivity(env, jobId, 'fetching_messages', null, 'Fetching channel messages');
+    
     let allMessages = [];
     let lastId = null;
-    let batchCount = 0;
     
     while (true) {
-      batchCount++;
-      await logJobActivity(env, jobId, 'fetching_batch', null, `Fetching batch ${batchCount}`);
-      
       const url = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
       url.searchParams.set('limit', '100');
       if (lastId) url.searchParams.set('before', lastId);
       
       const response = await fetch(url.toString(), {
-        headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+        headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
       });
-      
-      if (response.status === 401) {
-        throw new Error('Discord API 401 Unauthorized - Bot token is invalid or missing. Check DISCORD_BOT_TOKEN environment variable.');
-      }
       
       if (response.status === 429) {
         const retryAfter = await response.json();
@@ -764,68 +841,73 @@ async function enqueueScammerMessages(env, jobId) {
       
       allMessages.push(...messages);
       lastId = messages[messages.length - 1].id;
-      await delay(1500);
+      await delay(1000);
     }
     
-    await logJobActivity(env, jobId, 'messages_fetched', null, `Fetched ${allMessages.length} messages, adding to queue`);
+    await logJobActivity(env, jobId, 'messages_fetched', null, 
+      `Fetched ${allMessages.length} channel messages`);
     
-    // Update total messages
+    // =========================================================================
+    // STEP 4: Bundle messages with their thread evidence and enqueue
+    // =========================================================================
+    
+    // Update total
     await env.DB.prepare(`
       UPDATE scammer_job_status 
       SET total_messages = ?, last_activity_at = ?
       WHERE job_id = ?
     `).bind(allMessages.length, Date.now(), jobId).run();
     
-    // Track each message individually BEFORE enqueuing
-    // This allows us to verify all messages were processed and recover lost ones
+    // Track messages in DB
     const now = Date.now();
-    const messageRecords = allMessages.map(msg => ({
-      job_id: jobId,
-      message_id: msg.id,
-      status: 'queued',
-      enqueued_at: now
-    }));
-    
-    // Insert message tracking records using D1 batch API
-    // This is more reliable than building large INSERT statements
     const insertStmt = env.DB.prepare(`
       INSERT INTO scammer_job_messages (job_id, message_id, status, enqueued_at)
       VALUES (?, ?, ?, ?)
     `);
     
-    // D1 batch() allows up to 100 statements at once
-    for (let i = 0; i < messageRecords.length; i += 100) {
-      const chunk = messageRecords.slice(i, i + 100);
-      const statements = chunk.map(r => 
-        insertStmt.bind(r.job_id, r.message_id, r.status, r.enqueued_at)
+    for (let i = 0; i < allMessages.length; i += 100) {
+      const chunk = allMessages.slice(i, i + 100);
+      const statements = chunk.map(msg => 
+        insertStmt.bind(jobId, msg.id, 'queued', now)
       );
       await env.DB.batch(statements);
     }
     
-    await logJobActivity(env, jobId, 'messages_tracked', null, `Tracked ${allMessages.length} messages in database`);
+    await logJobActivity(env, jobId, 'messages_tracked', null, 
+      `Tracked ${allMessages.length} messages`);
     
-    // Add all messages to queue in batches (queue supports batch sends)
-    const queueMessages = allMessages.map(msg => ({
-      body: {
-        jobId,
-        messageId: msg.id,
-        channelId,
-        message: msg // Include full message to avoid fetching again
-      }
-    }));
+    // Create queue messages with thread evidence bundled
+    const queueMessages = allMessages.map(msg => {
+      // Check if this message has a thread (thread ID = message ID)
+      const evidence = threadEvidence.get(msg.id) || null;
+      
+      return {
+        body: {
+          jobId,
+          messageId: msg.id,
+          channelId,
+          message: msg,
+          threadEvidence: evidence // Pre-fetched evidence bundled in!
+        }
+      };
+    });
     
-    // Send in batches of 100 (queue batch limit)
+    // Send to queue
     for (let i = 0; i < queueMessages.length; i += 100) {
       const batch = queueMessages.slice(i, i + 100);
       await env.SCAMMER_QUEUE.sendBatch(batch);
     }
     
-    await logJobActivity(env, jobId, 'queued', null, `Added ${allMessages.length} messages to queue`);
+    const withThreads = allMessages.filter(m => threadEvidence.has(m.id)).length;
+    await logJobActivity(env, jobId, 'queued', null, 
+      `Queued ${allMessages.length} messages (${withThreads} with thread evidence)`);
     
     return {
       queued: allMessages.length,
       total: allMessages.length,
-      message: 'Messages added to queue. They will be processed automatically.'
+      threads: allThreads.length,
+      withEvidence: withThreads,
+      message: `Added ${allMessages.length} messages to queue. ${withThreads} have pre-fetched thread evidence.`
     };
     
   } catch (err) {
@@ -845,7 +927,100 @@ async function enqueueScammerMessages(env, jobId) {
  */
 
 /**
+ * Fetch all messages from a thread and download attachments to R2
+ * Returns array of processed messages with R2 URLs
+ */
+async function fetchThreadEvidence(threadId, env) {
+  const messages = [];
+  let lastId = null;
+  
+  while (true) {
+    const url = new URL(`https://discord.com/api/v10/channels/${threadId}/messages`);
+    url.searchParams.set('limit', '100');
+    if (lastId) url.searchParams.set('before', lastId);
+    
+    const response = await fetch(url.toString(), {
+      headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
+    });
+    
+    if (!response.ok) break;
+    
+    const batch = await response.json();
+    if (!batch.length) break;
+    
+    for (const msg of batch) {
+      const processed = {
+        id: msg.id,
+        author: msg.author?.username || 'Unknown',
+        content: msg.content || '',
+        timestamp: msg.timestamp,
+        edited_timestamp: msg.edited_timestamp,
+        attachments: []
+      };
+      
+      // Download attachments to R2
+      if (msg.attachments?.length && env.MY_BUCKET) {
+        for (const att of msg.attachments) {
+          try {
+            const r2Url = await downloadAttachmentToR2(att, env);
+            processed.attachments.push({
+              id: att.id,
+              filename: att.filename,
+              content_type: att.content_type,
+              r2_url: r2Url,
+              url: att.url // Fallback
+            });
+          } catch (e) {
+            // Keep original URL as fallback
+            processed.attachments.push({
+              id: att.id,
+              filename: att.filename,
+              url: att.url
+            });
+          }
+        }
+      }
+      
+      messages.push(processed);
+    }
+    
+    lastId = batch[batch.length - 1].id;
+    await delay(300);
+  }
+  
+  // Sort oldest first
+  return messages.sort((a, b) => 
+    new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  );
+}
+
+/**
+ * Download a Discord attachment to R2 storage
+ */
+async function downloadAttachmentToR2(attachment, env) {
+  const r2Key = `scammer-evidence/${attachment.id}-${attachment.filename}`;
+  
+  // Check if already exists
+  const existing = await env.MY_BUCKET.head(r2Key);
+  if (existing) {
+    return `/r2-proxy/${r2Key}`;
+  }
+  
+  // Download and upload
+  const response = await fetch(attachment.url);
+  if (!response.ok) throw new Error('Download failed');
+  
+  const data = await response.arrayBuffer();
+  await env.MY_BUCKET.put(r2Key, data, {
+    httpMetadata: { contentType: attachment.content_type || 'application/octet-stream' }
+  });
+  
+  return `/r2-proxy/${r2Key}`;
+}
+
+/**
  * Fetch all thread messages for scammers after main messages are processed
+ * (Legacy function - kept for periodic checker)
  */
 
 async function fetchAllThreadMessages(env, jobId) {

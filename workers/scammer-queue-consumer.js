@@ -35,10 +35,11 @@ export default {
 // ============================================================================
 
 async function processMessage(message, env, db) {
-  const { jobId, messageId, channelId, message: discordMsg } = message.body;
+  // Thread evidence is now bundled with the message (pre-fetched in roblox-proxy.js)
+  const { jobId, messageId, channelId, message: discordMsg, threadEvidence } = message.body;
   
   try {
-    console.log(`[QUEUE] Processing ${messageId} for job ${jobId}`);
+    console.log(`[QUEUE] Processing ${messageId} for job ${jobId}${threadEvidence ? ' (has thread)' : ''}`);
     
     // 1. Mark message as processing
     await db.prepare(`
@@ -59,21 +60,22 @@ async function processMessage(message, env, db) {
       return;
     }
     
-    // 3. Extract and store scammer data
-    const result = await extractAndStoreScammer(discordMsg, env, db, jobId);
+    // 3. Extract and store scammer data (with bundled thread evidence)
+    const result = await extractAndStoreScammer(discordMsg, env, db, jobId, threadEvidence);
     
     // 4. Mark message with final status
     if (result.processed) {
       await markMessageDone(db, jobId, messageId, 'completed');
       await incrementProcessed(db, jobId);
-      console.log(`[QUEUE] ✓ Processed ${messageId} - user ${result.userId}`);
+      const evidenceNote = threadEvidence ? ` + ${threadEvidence.length} evidence msgs` : '';
+      console.log(`[QUEUE] ✓ Processed ${messageId} - user ${result.userId}${evidenceNote}`);
     } else {
       await markMessageDone(db, jobId, messageId, 'skipped', result.reason);
       console.log(`[QUEUE] - Skipped ${messageId}: ${result.reason}`);
     }
     
-    // 5. Check if job is complete
-    await checkJobCompletion(env, db, jobId);
+    // 5. Check if job is complete (no separate thread fetch needed!)
+    await checkJobCompletion(db, jobId);
     
     message.ack();
     
@@ -100,7 +102,7 @@ async function incrementProcessed(db, jobId) {
   `).bind(Date.now(), jobId).run();
 }
 
-async function checkJobCompletion(env, db, jobId) {
+async function checkJobCompletion(db, jobId) {
   // Count remaining messages (queued or still processing)
   const remaining = await db.prepare(`
     SELECT COUNT(*) as count 
@@ -112,40 +114,16 @@ async function checkJobCompletion(env, db, jobId) {
     return; // Not done yet
   }
   
-  // All messages processed - try to complete the job
+  // All messages processed - mark job complete
+  // Thread evidence is already bundled in messages, no separate fetch needed!
   const lockResult = await db.prepare(`
     UPDATE scammer_job_status 
-    SET status = 'completing', last_activity_at = ?
+    SET status = 'completed', completed_at = ?, last_activity_at = ?
     WHERE job_id = ? AND status = 'running'
-  `).bind(Date.now(), jobId).run();
+  `).bind(Date.now(), Date.now(), jobId).run();
   
-  if (lockResult.changes === 0) {
-    console.log(`[QUEUE] Job ${jobId} already being completed by another worker`);
-    return;
-  }
-  
-  console.log(`[QUEUE] Job ${jobId} - all messages done, fetching threads...`);
-  
-  try {
-    await fetchAllThreads(env, db, jobId);
-    
-    await db.prepare(`
-      UPDATE scammer_job_status 
-      SET status = 'completed', completed_at = ?, last_activity_at = ?
-      WHERE job_id = ?
-    `).bind(Date.now(), Date.now(), jobId).run();
-    
-    console.log(`[QUEUE] ✓ Job ${jobId} completed`);
-    
-  } catch (err) {
-    console.error(`[QUEUE] Thread fetch failed for ${jobId}:`, err.message);
-    
-    // Still mark as completed - threads can be fetched later by periodic worker
-    await db.prepare(`
-      UPDATE scammer_job_status 
-      SET status = 'completed', completed_at = ?, last_activity_at = ?, error = ?
-      WHERE job_id = ?
-    `).bind(Date.now(), Date.now(), `Thread fetch failed: ${err.message}`, jobId).run();
+  if (lockResult.changes > 0) {
+    console.log(`[QUEUE] ✓ Job ${jobId} completed!`);
   }
 }
 
@@ -153,7 +131,7 @@ async function checkJobCompletion(env, db, jobId) {
 // SCAMMER DATA EXTRACTION
 // ============================================================================
 
-async function extractAndStoreScammer(msg, env, db, jobId) {
+async function extractAndStoreScammer(msg, env, db, jobId, threadEvidence = null) {
   // Aggregate all content from message
   const content = aggregateMessageContent(msg);
   
@@ -170,7 +148,9 @@ async function extractAndStoreScammer(msg, env, db, jobId) {
   const victims = extractVictims(content);
   const itemsScammed = extractItemsScammed(content);
   const altIds = extractAltIds(content);
-  const threadId = msg.thread?.id || null;
+  
+  // Thread ID = Message ID if we have thread evidence (Discord's design)
+  const threadId = threadEvidence ? msg.id : (msg.thread?.id || null);
   
   // Fetch Roblox profile
   let robloxData = null;
@@ -204,7 +184,7 @@ async function extractAndStoreScammer(msg, env, db, jobId) {
     await delay(200);
   }
   
-  // Store in database
+  // Store in database with bundled thread evidence
   await storeScammerData({
     userId: robloxUserId,
     robloxUsername: robloxData?.name || robloxUsername,
@@ -215,6 +195,7 @@ async function extractAndStoreScammer(msg, env, db, jobId) {
     itemsScammed,
     altProfiles,
     threadId,
+    threadEvidence, // Pre-fetched thread evidence!
     messageId: msg.id
   }, db);
   
@@ -375,13 +356,15 @@ async function storeScammerData(data, db) {
   const primaryDiscordId = data.discordProfiles[0]?.id || null;
   const primaryDiscordName = data.discordProfiles[0]?.displayName || null;
   const altsJson = data.altProfiles.length > 0 ? JSON.stringify(data.altProfiles) : null;
+  // Thread evidence is pre-fetched and bundled - store it directly
+  const threadEvidenceJson = data.threadEvidence ? JSON.stringify(data.threadEvidence) : null;
   
   await db.prepare(`
     INSERT INTO scammer_profile_cache (
       user_id, roblox_username, roblox_display_name, avatar_url,
       discord_id, discord_display_name, victims, items_scammed,
-      roblox_alts, thread_id, message_id
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      roblox_alts, thread_id, thread_evidence, message_id
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(user_id) DO UPDATE SET
       roblox_username = COALESCE(excluded.roblox_username, roblox_username),
       roblox_display_name = COALESCE(excluded.roblox_display_name, roblox_display_name),
@@ -392,6 +375,7 @@ async function storeScammerData(data, db) {
       items_scammed = CASE WHEN excluded.items_scammed IS NOT NULL AND excluded.items_scammed != '' THEN excluded.items_scammed ELSE items_scammed END,
       roblox_alts = CASE WHEN excluded.roblox_alts IS NOT NULL THEN excluded.roblox_alts ELSE roblox_alts END,
       thread_id = COALESCE(excluded.thread_id, thread_id),
+      thread_evidence = CASE WHEN excluded.thread_evidence IS NOT NULL THEN excluded.thread_evidence ELSE thread_evidence END,
       message_id = COALESCE(excluded.message_id, message_id)
   `).bind(
     data.userId,
@@ -404,132 +388,9 @@ async function storeScammerData(data, db) {
     data.itemsScammed,
     altsJson,
     data.threadId,
+    threadEvidenceJson,
     data.messageId
   ).run();
-}
-
-// ============================================================================
-// THREAD FETCHING
-// ============================================================================
-
-async function fetchAllThreads(env, db, jobId) {
-  // Get all scammers with thread IDs
-  const scammers = await db.prepare(`
-    SELECT user_id, thread_id 
-    FROM scammer_profile_cache 
-    WHERE thread_id IS NOT NULL AND thread_id != ''
-  `).all();
-  
-  if (!scammers.results?.length) {
-    console.log(`[QUEUE] No threads to fetch`);
-    return;
-  }
-  
-  console.log(`[QUEUE] Fetching ${scammers.results.length} threads`);
-  
-  for (const scammer of scammers.results) {
-    try {
-      const evidence = await fetchThread(scammer.thread_id, env, db);
-      
-      if (evidence.length > 0) {
-        await db.prepare(`
-          UPDATE scammer_profile_cache 
-          SET thread_evidence = ?, thread_last_checked_at = ?
-          WHERE user_id = ?
-        `).bind(JSON.stringify(evidence), Date.now(), scammer.user_id).run();
-        
-        console.log(`[QUEUE] ✓ Thread ${scammer.thread_id}: ${evidence.length} messages`);
-      }
-      
-      await delay(1000); // Rate limit
-      
-    } catch (err) {
-      console.error(`[QUEUE] Thread ${scammer.thread_id} failed:`, err.message);
-    }
-  }
-}
-
-async function fetchThread(threadId, env, db) {
-  const messages = [];
-  let lastId = null;
-  
-  while (true) {
-    const url = new URL(`https://discord.com/api/v10/channels/${threadId}/messages`);
-    url.searchParams.set('limit', '100');
-    if (lastId) url.searchParams.set('before', lastId);
-    
-    const response = await fetch(url.toString(), {
-      headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
-    });
-    
-    if (!response.ok) break;
-    
-    const batch = await response.json();
-    if (!batch.length) break;
-    
-    for (const msg of batch) {
-      const processedMsg = {
-        id: msg.id,
-        author: msg.author?.username,
-        content: msg.content,
-        timestamp: msg.timestamp,
-        edited_timestamp: msg.edited_timestamp,
-        attachments: []
-      };
-      
-      // Download attachments to R2
-      if (msg.attachments?.length && env.MY_BUCKET) {
-        for (const att of msg.attachments) {
-          try {
-            const r2Url = await downloadToR2(att, env);
-            processedMsg.attachments.push({
-              id: att.id,
-              filename: att.filename,
-              content_type: att.content_type,
-              r2_url: r2Url,
-              url: att.url
-            });
-          } catch (e) {
-            processedMsg.attachments.push({
-              id: att.id,
-              filename: att.filename,
-              url: att.url
-            });
-          }
-        }
-      }
-      
-      messages.push(processedMsg);
-    }
-    
-    lastId = batch[batch.length - 1].id;
-    await delay(500);
-  }
-  
-  return messages.sort((a, b) => 
-    new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-  );
-}
-
-async function downloadToR2(attachment, env) {
-  const r2Key = `scammer-evidence/${attachment.id}-${attachment.filename}`;
-  
-  // Check if already exists
-  const existing = await env.MY_BUCKET.head(r2Key);
-  if (existing) {
-    return `/r2-proxy/${r2Key}`;
-  }
-  
-  // Download and upload
-  const response = await fetch(attachment.url);
-  if (!response.ok) throw new Error('Failed to download');
-  
-  const data = await response.arrayBuffer();
-  await env.MY_BUCKET.put(r2Key, data, {
-    httpMetadata: { contentType: attachment.content_type }
-  });
-  
-  return `/r2-proxy/${r2Key}`;
 }
 
 // ============================================================================
