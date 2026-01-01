@@ -776,6 +776,31 @@ async function enqueueScammerMessages(env, jobId) {
       WHERE job_id = ?
     `).bind(allMessages.length, Date.now(), jobId).run();
     
+    // Track each message individually BEFORE enqueuing
+    // This allows us to verify all messages were processed and recover lost ones
+    const now = Date.now();
+    const messageRecords = allMessages.map(msg => ({
+      job_id: jobId,
+      message_id: msg.id,
+      status: 'queued',
+      enqueued_at: now
+    }));
+    
+    // Batch insert message tracking records (SQLite limit is 999 variables per query)
+    // Insert in chunks of 200 messages (4 columns * 200 = 800 variables, safe)
+    for (let i = 0; i < messageRecords.length; i += 200) {
+      const chunk = messageRecords.slice(i, i + 200);
+      const placeholders = chunk.map(() => '(?, ?, ?, ?)').join(', ');
+      const values = chunk.flatMap(r => [r.job_id, r.message_id, r.status, r.enqueued_at]);
+      
+      await env.DB.prepare(`
+        INSERT INTO scammer_job_messages (job_id, message_id, status, enqueued_at)
+        VALUES ${placeholders}
+      `).bind(...values).run();
+    }
+    
+    await logJobActivity(env, jobId, 'messages_tracked', null, `Tracked ${allMessages.length} messages in database`);
+    
     // Add all messages to queue in batches (queue supports batch sends)
     const queueMessages = allMessages.map(msg => ({
       body: {
@@ -2666,6 +2691,53 @@ export async function onRequestGet(context) {
         return new Response(JSON.stringify({ 
           success: result.changes > 0,
           message: result.changes > 0 ? 'Job cancelled' : 'Job not found or not running'
+        }), {
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          },
+        });
+      }
+      
+      // Action: force-complete - Force complete a stuck job
+      if (action === 'force-complete' && jobId) {
+        const result = await env.DB.prepare(`
+          UPDATE scammer_job_status 
+          SET status = 'completed', completed_at = ?, error = 'Force completed by user'
+          WHERE job_id = ? AND status IN ('running', 'completing')
+        `).bind(Date.now(), jobId).run();
+        
+        // Get scammer count for confirmation
+        const scammerCount = await env.DB.prepare(`
+          SELECT COUNT(*) as count FROM scammer_profile_cache
+        `).first();
+        
+        return new Response(JSON.stringify({ 
+          success: result.changes > 0,
+          message: result.changes > 0 
+            ? `Job force-completed. You have ${scammerCount?.count || 0} scammers in the database.` 
+            : 'Job not found or already completed',
+          scammers_in_db: scammerCount?.count || 0
+        }), {
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          },
+        });
+      }
+      
+      // Action: cleanup - Mark all stuck jobs as failed
+      if (action === 'cleanup') {
+        const tenMinutesAgo = Date.now() - (10 * 60 * 1000);
+        const result = await env.DB.prepare(`
+          UPDATE scammer_job_status 
+          SET status = 'failed', error = 'Cleaned up - stuck job'
+          WHERE status IN ('running', 'completing') AND last_activity_at < ?
+        `).bind(tenMinutesAgo).run();
+        
+        return new Response(JSON.stringify({ 
+          cleaned: result.changes,
+          message: `Cleaned up ${result.changes} stuck jobs`
         }), {
           headers: { 
             "Content-Type": "application/json",
