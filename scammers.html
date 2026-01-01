@@ -76,7 +76,17 @@
     transition: color 0.2s;
     }
 
+        .scammer-info a:-webkit-any-link:hover {
+    color: #4a9eff;
+    }
 
+.scammer-info a:-webkit-any-link h2 svg {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scammer-info a:-webkit-any-link:hover h2 svg {
+        transform: translateX(4px);
+}
 
     .hero-epic {
         -webkit-text-stroke: 2px #000;
@@ -126,11 +136,10 @@
     }
 
     .scammer-img {
-        width: 70px;
-        height: 70px;
-        border-radius: 12px;
-        border: 2px solid var(--border-color);
-        object-fit: cover;
+    width: 70px;
+    height: 70px;
+    filter: drop-shadow(2px 4px 6px black);
+    object-fit: cover;
     }
 
     .scammer-info {
