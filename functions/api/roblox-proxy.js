@@ -782,51 +782,12 @@ async function enqueueScammerMessages(env, jobId) {
       await delay(500);
     }
     
-    await logJobActivity(env, jobId, 'threads_found', null, `Found ${allThreads.length} threads`);
+    // Build a set of known thread IDs (for quick lookup)
+    const knownThreadIds = new Set(allThreads.map(t => t.id));
+    await logJobActivity(env, jobId, 'threads_indexed', null, `Indexed ${knownThreadIds.size} thread IDs`);
     
     // =========================================================================
-    // STEP 2: Fetch messages for each thread and build evidence map
-    // =========================================================================
-    const threadEvidence = new Map(); // threadId -> { messages: [], attachments: [] }
-    
-    // Also build a map of thread metadata for debugging
-    const threadMetadata = new Map();
-    
-    for (let i = 0; i < allThreads.length; i++) {
-      const thread = allThreads[i];
-      
-      // Log thread structure for debugging
-      console.log(`[THREAD ${i+1}] id=${thread.id}, name=${thread.name}, parent_id=${thread.parent_id}, owner_id=${thread.owner_id}`);
-      threadMetadata.set(thread.id, {
-        name: thread.name,
-        parent_id: thread.parent_id,
-        owner_id: thread.owner_id
-      });
-      
-      await logJobActivity(env, jobId, 'fetching_thread_messages', thread.id, 
-        `Fetching thread ${i + 1}/${allThreads.length}: ${thread.name || thread.id}`);
-      
-      try {
-        const evidence = await fetchThreadEvidence(thread.id, env);
-        if (evidence.length > 0) {
-          threadEvidence.set(thread.id, evidence);
-        }
-      } catch (err) {
-        console.error(`Failed to fetch thread ${thread.id}:`, err.message);
-      }
-      
-      await delay(1000); // Rate limit
-    }
-    
-    // Log which thread IDs we have evidence for
-    const threadIds = Array.from(threadEvidence.keys());
-    console.log(`[THREADS] Evidence collected for thread IDs: ${threadIds.join(', ')}`);
-    
-    await logJobActivity(env, jobId, 'threads_processed', null, 
-      `Processed ${threadEvidence.size} threads with evidence. Thread IDs: ${threadIds.slice(0, 5).join(', ')}${threadIds.length > 5 ? '...' : ''}`);
-    
-    // =========================================================================
-    // STEP 3: Fetch all channel messages
+    // STEP 2: Fetch all channel messages (FAST - no thread evidence fetching)
     // =========================================================================
     await logJobActivity(env, jobId, 'fetching_messages', null, 'Fetching channel messages');
     
@@ -857,66 +818,27 @@ async function enqueueScammerMessages(env, jobId) {
       
       allMessages.push(...messages);
       lastId = messages[messages.length - 1].id;
-      await delay(1000);
+      await delay(500); // Faster - just fetching, not processing
     }
     
     await logJobActivity(env, jobId, 'messages_fetched', null, 
       `Fetched ${allMessages.length} channel messages`);
     
     // =========================================================================
-    // STEP 4: Check for orphan threads (messages with threads we didn't find)
+    // STEP 3: Identify which messages have threads (from msg.thread or thread list)
     // =========================================================================
     
-    // Log message IDs that have msg.thread property
-    const messagesWithThread = allMessages.filter(msg => msg.thread?.id);
-    console.log(`[THREADS] Messages with msg.thread property: ${messagesWithThread.length}`);
-    if (messagesWithThread.length > 0) {
-      console.log(`[THREADS] Thread IDs from messages: ${messagesWithThread.map(m => m.thread.id).join(', ')}`);
-    }
-    
-    // Find messages that have msg.thread but we didn't get from thread list
-    const orphanThreadMessages = allMessages.filter(msg => 
-      msg.thread?.id && !threadEvidence.has(msg.id)
+    // Count messages with threads
+    const messagesWithThread = allMessages.filter(msg => 
+      msg.thread?.id || knownThreadIds.has(msg.id)
     );
     
-    if (orphanThreadMessages.length > 0) {
-      await logJobActivity(env, jobId, 'fetching_orphan_threads', null, 
-        `Found ${orphanThreadMessages.length} messages with threads not in thread list`);
-      
-      for (let i = 0; i < orphanThreadMessages.length; i++) {
-        const msg = orphanThreadMessages[i];
-        await logJobActivity(env, jobId, 'fetching_orphan_thread', msg.thread.id, 
-          `Fetching orphan thread ${i + 1}/${orphanThreadMessages.length}`);
-        
-        try {
-          const evidence = await fetchThreadEvidence(msg.thread.id, env);
-          if (evidence.length > 0) {
-            threadEvidence.set(msg.id, evidence);
-          }
-        } catch (err) {
-          console.error(`Failed to fetch orphan thread ${msg.thread.id}:`, err.message);
-        }
-        
-        await delay(1000);
-      }
-      
-      await logJobActivity(env, jobId, 'orphan_threads_done', null, 
-        `Fetched ${orphanThreadMessages.length} orphan threads, total with evidence: ${threadEvidence.size}`);
-    } else {
-      console.log(`[THREADS] No orphan threads found. All threads matched.`);
-    }
-    
-    // Check for unmatched threads (threads we fetched but don't match any message ID)
-    const messageIds = new Set(allMessages.map(m => m.id));
-    const unmatchedThreads = threadIds.filter(tid => !messageIds.has(tid));
-    if (unmatchedThreads.length > 0) {
-      console.log(`[THREADS] WARNING: ${unmatchedThreads.length} threads don't match any message ID: ${unmatchedThreads.join(', ')}`);
-      await logJobActivity(env, jobId, 'unmatched_threads', null, 
-        `WARNING: ${unmatchedThreads.length} threads don't match message IDs: ${unmatchedThreads.join(', ')}`);
-    }
+    await logJobActivity(env, jobId, 'threads_identified', null, 
+      `${messagesWithThread.length} messages have threads (will be fetched by queue consumer)`);
     
     // =========================================================================
-    // STEP 5: Bundle messages with their thread evidence and enqueue
+    // STEP 4: Bundle messages with thread IDs and enqueue
+    // Thread evidence will be fetched by the queue consumer for each message
     // =========================================================================
     
     // Update total
@@ -944,10 +866,11 @@ async function enqueueScammerMessages(env, jobId) {
     await logJobActivity(env, jobId, 'messages_tracked', null, 
       `Tracked ${allMessages.length} messages`);
     
-    // Create queue messages with thread evidence bundled
+    // Create queue messages with thread ID (evidence will be fetched by consumer)
     const queueMessages = allMessages.map(msg => {
-      // Check if this message has a thread (thread ID = message ID)
-      const evidence = threadEvidence.get(msg.id) || null;
+      // Check if this message has a thread
+      // Thread ID comes from: msg.thread.id (Discord includes it) OR the message ID is in our thread list
+      const threadId = msg.thread?.id || (knownThreadIds.has(msg.id) ? msg.id : null);
       
       return {
         body: {
@@ -955,7 +878,7 @@ async function enqueueScammerMessages(env, jobId) {
           messageId: msg.id,
           channelId,
           message: msg,
-          threadEvidence: evidence // Pre-fetched evidence bundled in!
+          threadId: threadId // Just the ID - consumer will fetch evidence
         }
       };
     });
@@ -966,15 +889,15 @@ async function enqueueScammerMessages(env, jobId) {
       await env.SCAMMER_QUEUE.sendBatch(batch);
     }
     
-    const withThreads = allMessages.filter(m => threadEvidence.has(m.id)).length;
+    const withThreads = queueMessages.filter(m => m.body.threadId).length;
     await logJobActivity(env, jobId, 'queued', null, 
-      `Queued ${allMessages.length} messages (${withThreads} with thread evidence)`);
+      `Queued ${allMessages.length} messages (${withThreads} have threads - evidence will be fetched by consumer)`);
     
     return {
       queued: allMessages.length,
       total: allMessages.length,
       threads: allThreads.length,
-      withEvidence: withThreads,
+      withThreads: withThreads,
       message: `Added ${allMessages.length} messages to queue. ${withThreads} have pre-fetched thread evidence.`
     };
     

@@ -35,23 +35,23 @@ export default {
 // ============================================================================
 
 async function processMessage(message, env, db) {
-    // Thread evidence is now bundled with the message (pre-fetched in roblox-proxy.js)
-    const { jobId, messageId, channelId, message: discordMsg, threadEvidence } = message.body;
+    // threadId is passed - we fetch evidence here (not upfront to avoid timeouts)
+    const { jobId, messageId, channelId, message: discordMsg, threadId } = message.body;
 
     try {
-        console.log(`[QUEUE] Processing ${messageId} for job ${jobId}${threadEvidence ? ' (has thread)' : ''}`);
+        console.log(`[QUEUE] Processing ${messageId} for job ${jobId}${threadId ? ` (thread: ${threadId})` : ''}`);
 
         // 1. Mark message as processing
         await db.prepare(`
-    UPDATE scammer_job_messages 
-    SET status = 'processing'
-    WHERE job_id = ? AND message_id = ?
-  `).bind(jobId, messageId).run();
+            UPDATE scammer_job_messages 
+            SET status = 'processing'
+            WHERE job_id = ? AND message_id = ?
+        `).bind(jobId, messageId).run();
 
         // 2. Check if job is still active
         const job = await db.prepare(`
-    SELECT status FROM scammer_job_status WHERE job_id = ?
-  `).bind(jobId).first();
+            SELECT status FROM scammer_job_status WHERE job_id = ?
+        `).bind(jobId).first();
 
         if (!job || job.status === 'completed' || job.status === 'cancelled') {
             console.log(`[QUEUE] Job ${jobId} is ${job?.status || 'not found'}, skipping`);
@@ -60,10 +60,21 @@ async function processMessage(message, env, db) {
             return;
         }
 
-        // 3. Extract and store scammer data (with bundled thread evidence)
+        // 3. Fetch thread evidence if this message has a thread
+        let threadEvidence = null;
+        if (threadId && env.DISCORD_BOT_TOKEN) {
+            try {
+                threadEvidence = await fetchThreadEvidence(threadId, env);
+                console.log(`[QUEUE] Fetched ${threadEvidence.length} thread messages for ${threadId}`);
+            } catch (err) {
+                console.warn(`[QUEUE] Failed to fetch thread ${threadId}: ${err.message}`);
+            }
+        }
+
+        // 4. Extract and store scammer data
         const result = await extractAndStoreScammer(discordMsg, env, db, jobId, threadEvidence);
 
-        // 4. Mark message with final status
+        // 5. Mark message with final status
         if (result.processed) {
             await markMessageDone(db, jobId, messageId, 'completed');
             await incrementProcessed(db, jobId);
@@ -74,7 +85,7 @@ async function processMessage(message, env, db) {
             console.log(`[QUEUE] - Skipped ${messageId}: ${result.reason}`);
         }
 
-        // 5. Check if job is complete (no separate thread fetch needed!)
+        // 6. Check if job is complete
         await checkJobCompletion(db, jobId);
 
         message.ack();
@@ -394,9 +405,109 @@ async function storeScammerData(data, db) {
 }
 
 // ============================================================================
+// THREAD EVIDENCE FETCHING
+// ============================================================================
+
+async function fetchThreadEvidence(threadId, env) {
+  const messages = [];
+  let lastId = null;
+  
+  while (true) {
+    const url = new URL(`https://discord.com/api/v10/channels/${threadId}/messages`);
+    url.searchParams.set('limit', '100');
+    if (lastId) url.searchParams.set('before', lastId);
+    
+    const response = await fetch(url.toString(), {
+      headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
+    });
+    
+    if (!response.ok) break;
+    
+    const batch = await response.json();
+    if (!batch.length) break;
+    
+    for (const msg of batch) {
+      const processed = {
+        id: msg.id,
+        author: msg.author?.username || 'Unknown',
+        content: msg.content || '',
+        timestamp: msg.timestamp,
+        edited_timestamp: msg.edited_timestamp,
+        attachments: []
+      };
+      
+      // Download attachments to R2 if bucket is available
+      if (msg.attachments?.length && env.MY_BUCKET) {
+        for (const att of msg.attachments) {
+          try {
+            const r2Url = await downloadAttachmentToR2(att, env);
+            processed.attachments.push({
+              id: att.id,
+              filename: att.filename,
+              content_type: att.content_type,
+              r2_url: r2Url,
+              url: att.url
+            });
+          } catch (e) {
+            // Keep original URL as fallback
+            processed.attachments.push({
+              id: att.id,
+              filename: att.filename,
+              content_type: att.content_type,
+              url: att.url
+            });
+          }
+        }
+      } else if (msg.attachments?.length) {
+        // No R2 bucket - just store original URLs
+        for (const att of msg.attachments) {
+          processed.attachments.push({
+            id: att.id,
+            filename: att.filename,
+            content_type: att.content_type,
+            url: att.url
+          });
+        }
+      }
+      
+      messages.push(processed);
+    }
+    
+    lastId = batch[batch.length - 1].id;
+    await delay(300); // Rate limit
+  }
+  
+  // Sort oldest first
+  return messages.sort((a, b) => 
+    new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  );
+}
+
+async function downloadAttachmentToR2(attachment, env) {
+  const r2Key = `scammer-evidence/${attachment.id}-${attachment.filename}`;
+  
+  // Check if already exists
+  const existing = await env.MY_BUCKET.head(r2Key);
+  if (existing) {
+    return `/r2-proxy/${r2Key}`;
+  }
+  
+  // Download and upload
+  const response = await fetch(attachment.url);
+  if (!response.ok) throw new Error('Download failed');
+  
+  const data = await response.arrayBuffer();
+  await env.MY_BUCKET.put(r2Key, data, {
+    httpMetadata: { contentType: attachment.content_type || 'application/octet-stream' }
+  });
+  
+  return `/r2-proxy/${r2Key}`;
+}
+
+// ============================================================================
 // UTILITIES
 // ============================================================================
 
 function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
