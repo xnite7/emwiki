@@ -10,11 +10,6 @@ binding = "DB"  # Change to "DBA" if that's what your Pages project uses
 database_name = "DBA"
 database_id = "YOUR_D1_DATABASE_ID"  # Replace with your actual D1 database ID
 
-# R2 bucket binding (REQUIRED for downloading thread images/videos)
-[[r2_buckets]]
-binding = "MY_BUCKET"
-bucket_name = "YOUR_R2_BUCKET_NAME"  # Replace with your actual R2 bucket name
-
 # Queue consumer binding
 [[queues.consumers]]
 queue = "scammer-messages"
@@ -25,8 +20,21 @@ retry_delay = 2            # Seconds to wait before retry (2s to respect Discord
 # max_concurrency = "auto"  # Auto-scaling (recommended, set in dashboard)
 dead_letter_queue = "scammer-messages-dlq"  # Queue for messages that fail after max retries
 
-# Environment variables (set via wrangler secret put or dashboard)
-# DISCORD_BOT_TOKEN (REQUIRED)
-# CLOUDFLARE_ACCOUNT_ID (optional, for Stream)
-# CLOUDFLARE_STREAM_TOKEN (optional, for Stream)
+# ============================================================================
+# REQUIRED SECRETS (set via: wrangler secret put SECRET_NAME)
+# ============================================================================
+# DISCORD_BOT_TOKEN - Your Discord bot token
+
+# ============================================================================
+# CLOUDFLARE IMAGES (for image evidence)
+# ============================================================================
+# CLOUDFLARE_ACCOUNT_ID - Your Cloudflare account ID (found in dashboard URL)
+# CLOUDFLARE_IMAGES_TOKEN - API token with Images:Edit permission
+#   OR use CLOUDFLARE_API_TOKEN with both Images and Stream permissions
+
+# ============================================================================
+# CLOUDFLARE STREAM (for video evidence)
+# ============================================================================
+# CLOUDFLARE_STREAM_TOKEN - API token with Stream:Edit permission
+#   OR use CLOUDFLARE_API_TOKEN with both Images and Stream permissions
 

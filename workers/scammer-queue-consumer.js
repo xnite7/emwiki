@@ -436,19 +436,14 @@ async function fetchThreadEvidence(threadId, env) {
         attachments: []
       };
       
-      // Download attachments to R2 if bucket is available
-      if (msg.attachments?.length && env.MY_BUCKET) {
+      // Upload attachments to Cloudflare Images/Stream
+      if (msg.attachments?.length) {
         for (const att of msg.attachments) {
           try {
-            const r2Url = await downloadAttachmentToR2(att, env);
-            processed.attachments.push({
-              id: att.id,
-              filename: att.filename,
-              content_type: att.content_type,
-              r2_url: r2Url,
-              url: att.url
-            });
+            const uploaded = await uploadToCloudflareMedia(att, env);
+            processed.attachments.push(uploaded);
           } catch (e) {
+            console.warn(`[UPLOAD] Failed to upload ${att.filename}: ${e.message}`);
             // Keep original URL as fallback
             processed.attachments.push({
               id: att.id,
@@ -457,16 +452,6 @@ async function fetchThreadEvidence(threadId, env) {
               url: att.url
             });
           }
-        }
-      } else if (msg.attachments?.length) {
-        // No R2 bucket - just store original URLs
-        for (const att of msg.attachments) {
-          processed.attachments.push({
-            id: att.id,
-            filename: att.filename,
-            content_type: att.content_type,
-            url: att.url
-          });
         }
       }
       
@@ -483,25 +468,189 @@ async function fetchThreadEvidence(threadId, env) {
   );
 }
 
-async function downloadAttachmentToR2(attachment, env) {
-  const r2Key = `scammer-evidence/${attachment.id}-${attachment.filename}`;
+// ============================================================================
+// CLOUDFLARE IMAGES & STREAM UPLOAD
+// ============================================================================
+
+async function uploadToCloudflareMedia(attachment, env) {
+  const contentType = attachment.content_type || '';
+  const isImage = contentType.startsWith('image/');
+  const isVideo = contentType.startsWith('video/') || contentType === 'video/quicktime';
   
-  // Check if already exists
-  const existing = await env.MY_BUCKET.head(r2Key);
-  if (existing) {
-    return `/r2-proxy/${r2Key}`;
+  if (isImage) {
+    return await uploadToCloudflareImages(attachment, env);
+  } else if (isVideo) {
+    return await uploadToCloudflareStream(attachment, env);
+  } else {
+    // Other file types - just return original URL
+    return {
+      id: attachment.id,
+      filename: attachment.filename,
+      content_type: attachment.content_type,
+      url: attachment.url
+    };
+  }
+}
+
+async function uploadToCloudflareImages(attachment, env) {
+  const accountId = env.CLOUDFLARE_ACCOUNT_ID;
+    const apiToken = env.CLOUDFLARE_STREAM_TOKEN;
+  
+  if (!accountId || !apiToken) {
+    console.warn('[IMAGES] Missing CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_STREAM_TOKEN');
+    return {
+      id: attachment.id,
+      filename: attachment.filename,
+      content_type: attachment.content_type,
+      url: attachment.url
+    };
   }
   
-  // Download and upload
-  const response = await fetch(attachment.url);
-  if (!response.ok) throw new Error('Download failed');
+  // Use attachment ID as custom ID to check for duplicates
+  const customId = `scammer-evidence-${attachment.id}`;
   
-  const data = await response.arrayBuffer();
-  await env.MY_BUCKET.put(r2Key, data, {
-    httpMetadata: { contentType: attachment.content_type || 'application/octet-stream' }
+  // Check if image already exists
+  const checkUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1/${customId}`;
+  const checkRes = await fetch(checkUrl, {
+    headers: { Authorization: `Bearer ${apiToken}` }
   });
   
-  return `/r2-proxy/${r2Key}`;
+  if (checkRes.ok) {
+    const existing = await checkRes.json();
+    if (existing.success && existing.result?.variants?.[0]) {
+      console.log(`[IMAGES] Already exists: ${customId}`);
+      return {
+        id: attachment.id,
+        filename: attachment.filename,
+        content_type: attachment.content_type,
+        cf_url: existing.result.variants[0],
+        url: attachment.url
+      };
+    }
+  }
+  
+  // Download from Discord
+  const downloadRes = await fetch(attachment.url);
+  if (!downloadRes.ok) throw new Error('Failed to download from Discord');
+  
+  const imageBlob = await downloadRes.blob();
+  
+  // Upload to Cloudflare Images
+  const formData = new FormData();
+  formData.append('file', imageBlob, attachment.filename);
+  formData.append('id', customId);
+  formData.append('metadata', JSON.stringify({
+    source: 'discord',
+    attachment_id: attachment.id,
+    filename: attachment.filename
+  }));
+  
+  const uploadUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1`;
+  const uploadRes = await fetch(uploadUrl, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiToken}` },
+    body: formData
+  });
+  
+  if (!uploadRes.ok) {
+    const error = await uploadRes.text();
+    throw new Error(`Upload failed: ${error}`);
+  }
+  
+  const result = await uploadRes.json();
+  if (!result.success) {
+    throw new Error(result.errors?.[0]?.message || 'Upload failed');
+  }
+  
+  console.log(`[IMAGES] Uploaded: ${customId}`);
+  
+  return {
+    id: attachment.id,
+    filename: attachment.filename,
+    content_type: attachment.content_type,
+    cf_url: result.result.variants[0], // Public URL
+    url: attachment.url
+  };
+}
+
+async function uploadToCloudflareStream(attachment, env) {
+  const accountId = env.CLOUDFLARE_ACCOUNT_ID;
+  const apiToken = env.CLOUDFLARE_STREAM_TOKEN;
+  
+  if (!accountId || !apiToken) {
+    console.warn('[STREAM] Missing CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_STREAM_TOKEN');
+    return {
+      id: attachment.id,
+      filename: attachment.filename,
+      content_type: attachment.content_type,
+      url: attachment.url
+    };
+  }
+  
+  // Use attachment ID as UID to check for duplicates
+  const customUid = `scammer-evidence-${attachment.id}`;
+  
+  // Check if video already exists by searching
+  const searchUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream?search=${customUid}`;
+  const searchRes = await fetch(searchUrl, {
+    headers: { Authorization: `Bearer ${apiToken}` }
+  });
+  
+  if (searchRes.ok) {
+    const existing = await searchRes.json();
+    if (existing.success && existing.result?.length > 0) {
+      const video = existing.result[0];
+      console.log(`[STREAM] Already exists: ${customUid}`);
+      return {
+        id: attachment.id,
+        filename: attachment.filename,
+        content_type: attachment.content_type,
+        stream_url: `https://customer-${accountId}.cloudflarestream.com/${video.uid}/manifest/video.m3u8`,
+        stream_uid: video.uid,
+        url: attachment.url
+      };
+    }
+  }
+  
+  // Upload via URL (Stream can fetch from Discord directly)
+  const uploadUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/copy`;
+  const uploadRes = await fetch(uploadUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      url: attachment.url,
+      meta: {
+        name: customUid,
+        source: 'discord',
+        attachment_id: attachment.id,
+        filename: attachment.filename
+      }
+    })
+  });
+  
+  if (!uploadRes.ok) {
+    const error = await uploadRes.text();
+    throw new Error(`Stream upload failed: ${error}`);
+  }
+  
+  const result = await uploadRes.json();
+  if (!result.success) {
+    throw new Error(result.errors?.[0]?.message || 'Stream upload failed');
+  }
+  
+  console.log(`[STREAM] Uploaded: ${customUid} -> ${result.result.uid}`);
+  
+  return {
+    id: attachment.id,
+    filename: attachment.filename,
+    content_type: attachment.content_type,
+    stream_url: `https://customer-${accountId}.cloudflarestream.com/${result.result.uid}/manifest/video.m3u8`,
+    stream_uid: result.result.uid,
+    url: attachment.url
+  };
 }
 
 // ============================================================================

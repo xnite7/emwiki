@@ -1254,39 +1254,50 @@
                 if (msg.attachments && msg.attachments.length > 0) {
                     html += '<div class="message-attachments">';
                     msg.attachments.forEach(att => {
-                        // Check if image by content_type or is_image flag
-                        const isImage = att.is_image || (att.content_type && att.content_type.startsWith('image/'));
-                        // Check if video by content_type or is_video flag
-                        const isVideo = att.is_video || (att.content_type && (att.content_type.startsWith('video/') || att.content_type === 'video/quicktime'));
+                        // Check if image by content_type
+                        const isImage = att.content_type && att.content_type.startsWith('image/');
+                        // Check if video by stream URL or content_type
+                        const isVideo = att.stream_url || att.stream_uid || (att.content_type && (att.content_type.startsWith('video/') || att.content_type === 'video/quicktime'));
                         
                         if (isImage) {
-                            // Use R2 URL if available (prevents Discord expiration), fallback to proxy_url or url
-                            const imageUrl = att.r2_url || att.proxy_url || att.url;
-                            const fullSizeUrl = att.r2_url || att.url; // Use R2 URL for full size if available
+                            // Use Cloudflare Images URL (cf_url), fallback to Discord URL
+                            const imageUrl = att.cf_url || att.url;
                             html += `
                                 <div class="attachment-image">
                                     <img src="${imageUrl}" alt="${att.filename}" loading="lazy" />
-                                    <a href="${fullSizeUrl}" target="_blank" rel="noopener noreferrer" class="attachment-link">View Full Size</a>
+                                    <a href="${imageUrl}" target="_blank" rel="noopener noreferrer" class="attachment-link">View Full Size</a>
                                 </div>
                             `;
                         } else if (isVideo) {
                             const videoId = `video-${att.id}-${index}`;
-                            // Use Stream URL if available (for QuickTime), otherwise R2 or Discord URL
-                            const videoUrl = att.stream_url || att.r2_url || att.url;
-                            const videoType = att.stream_url ? 'application/x-mpegURL' : (att.content_type || 'video/mp4');
-
-                            html += `
-                                <div class="attachment-video">
-                                    <video id="${videoId}" controls playsinline preload="metadata" style="width: 100%; max-width: 600px; height: auto; background: #000; border-radius: 4px;">
-                                        <source src="${videoUrl}" type="${videoType}">
-                                        Your browser does not support the video tag.
-                                    </video>
-                                </div>
-                            `;
+                            
+                            if (att.stream_uid) {
+                                // Use Cloudflare Stream iframe embed for best playback
+                                html += `
+                                    <div class="attachment-video">
+                                        <iframe 
+                                            src="https://iframe.videodelivery.net/${att.stream_uid}" 
+                                            style="width: 100%; max-width: 600px; aspect-ratio: 16/9; border: none; border-radius: 4px;"
+                                            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+                                            allowfullscreen>
+                                        </iframe>
+                                    </div>
+                                `;
+                            } else {
+                                // Fallback to regular video element
+                                html += `
+                                    <div class="attachment-video">
+                                        <video id="${videoId}" controls playsinline preload="metadata" style="width: 100%; max-width: 600px; height: auto; background: #000; border-radius: 4px;">
+                                            <source src="${att.url}" type="${att.content_type || 'video/mp4'}">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    </div>
+                                `;
+                            }
                         } else {
                             html += `
                                 <div class="attachment-file">
-                                    <a href="${att.r2_url || att.url}" target="_blank" rel="noopener noreferrer">
+                                    <a href="${att.url}" target="_blank" rel="noopener noreferrer">
                                         📎 ${att.filename} ${att.size ? `(${formatFileSize(att.size)})` : ''}
                                     </a>
                                 </div>
