@@ -367,7 +367,7 @@ async function handlePost({ request, env, params }) {
       }
 
       const accountId = env.CLOUDFLARE_ACCOUNT_ID;
-      const apiToken = env.CLOUDFLARE_API_TOKEN || env.CLOUDFLARE_IMAGES_TOKEN;
+      const apiToken = env.CLOUDFLARE_STREAM_TOKEN;
 
       if (!accountId || !apiToken) {
         return new Response(JSON.stringify({
@@ -737,7 +737,7 @@ async function handleDelete({ request, env, params }) {
 
   // Delete from Cloudflare Images or Stream
   const accountId = env.CLOUDFLARE_ACCOUNT_ID;
-  const apiToken = env.CLOUDFLARE_API_TOKEN || env.CLOUDFLARE_IMAGES_TOKEN;
+  const apiToken = env.CLOUDFLARE_STREAM_TOKEN;
   
   if (accountId && apiToken && item.media_url) {
     try {
