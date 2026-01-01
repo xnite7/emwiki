@@ -5127,24 +5127,24 @@
             formatTime(timestamp) {
                 const ts = new Date(timestamp);
                 const now = new Date();
-                const yesterday = new Date();
-                yesterday.setDate(now.getDate() - 1);
+                const diff = now - ts;
 
-                const isToday = ts.toDateString() === now.toDateString();
-                const isYesterday = ts.toDateString() === yesterday.toDateString();
+                const seconds = Math.floor(diff / 1000);
+                const minutes = Math.floor(diff / 60000);
+                const hours = Math.floor(diff / 3600000);
+                const days = Math.floor(diff / 86400000);
+                const weeks = Math.floor(days / 7);
+                const months = Math.floor(days / 30);
+                const years = Math.floor(days / 365);
 
-                if (!isToday && !isYesterday) {
-                    return ts.toLocaleString();
-                }
-
-                let hours = ts.getHours();
-                const minutes = ts.getMinutes().toString().padStart(2, '0');
-                const seconds = ts.getSeconds().toString().padStart(2, '0');
-                const ampm = hours >= 12 ? 'PM' : 'AM';
-                hours = hours % 12 || 12;
-
-                const formattedTime = `${hours}:${minutes}:${seconds} ${ampm}`;
-                return `${isToday ? 'Today' : 'Yesterday'}, ${formattedTime}`;
+                if (seconds < 60) return 'just now';
+                if (minutes < 60) return `${minutes}m ago`;
+                if (hours < 24) return `${hours}h ago`;
+                if (days === 1) return 'yesterday';
+                if (days < 7) return `${days}d ago`;
+                if (weeks < 4) return `${weeks}w ago`;
+                if (months < 12) return `${months}mo ago`;
+                return `${years}y ago`;
             },
 
             parseValue(value) {
@@ -8822,19 +8822,22 @@
                 const now = new Date();
                 const diff = now - date;
 
+                const seconds = Math.floor(diff / 1000);
                 const minutes = Math.floor(diff / 60000);
                 const hours = Math.floor(diff / 3600000);
                 const days = Math.floor(diff / 86400000);
+                const weeks = Math.floor(days / 7);
+                const months = Math.floor(days / 30);
+                const years = Math.floor(days / 365);
 
-                if (minutes < 60) {
-                    return `${minutes}m ago`;
-                } else if (hours < 24) {
-                    return `${hours}h ago`;
-                } else if (days < 7) {
-                    return `${days}d ago`;
-                } else {
-                    return date.toLocaleDateString();
-                }
+                if (seconds < 60) return 'just now';
+                if (minutes < 60) return `${minutes}m ago`;
+                if (hours < 24) return `${hours}h ago`;
+                if (days === 1) return 'yesterday';
+                if (days < 7) return `${days}d ago`;
+                if (weeks < 4) return `${weeks}w ago`;
+                if (months < 12) return `${months}mo ago`;
+                return `${years}y ago`;
             }
         };
 
