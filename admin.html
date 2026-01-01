@@ -1395,7 +1395,8 @@
                     // Upload to Cloudflare Images
                     const response = await fetch('/api/images/upload', {
                         method: 'POST',
-                        body: formData
+                        body: formData,
+                        credentials: 'include'
                     });
 
                     clearInterval(progressInterval);
@@ -3712,7 +3713,8 @@
                     // Upload to Cloudflare Images
                     const response = await fetch('/api/images/upload', {
                         method: 'POST',
-                        body: formData
+                        body: formData,
+                        credentials: 'include'
                     });
 
                     if (!response.ok) {

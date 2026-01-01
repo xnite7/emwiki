@@ -1,16 +1,53 @@
 /**
  * Cloudflare Images upload endpoint
- * 
+ *
  * Uploads images to Cloudflare Images and returns the optimized URL
- * 
+ *
  * POST /api/images/upload
  * Body: FormData with 'file' field
- * 
+ * Requires: Admin session cookie
+ *
  * Returns: { url: string, id: string, variants: string[] }
  */
 
+import { verifySession } from '../_utils/auth.js';
+
 export async function onRequestPost({ request, env }) {
   try {
+    // Verify admin session from cookie
+    const cookieHeader = request.headers.get('Cookie') || '';
+    const sessionToken = cookieHeader
+      .split('; ')
+      .find(c => c.startsWith('session='))
+      ?.split('=')[1];
+
+    if (!sessionToken) {
+      return new Response(JSON.stringify({ error: 'Unauthorized - No session' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    const session = await verifySession(sessionToken, env.SECRET_KEY);
+    if (!session) {
+      return new Response(JSON.stringify({ error: 'Unauthorized - Invalid session' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Check if user is admin
+    const admin = await env.DBH.prepare('SELECT name FROM admins WHERE name = ?')
+      .bind(session.name)
+      .first();
+
+    if (!admin) {
+      return new Response(JSON.stringify({ error: 'Insufficient permissions' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     const formData = await request.formData();
     const file = formData.get('file');
 
