@@ -108,12 +108,13 @@ function needsMigration(url) {
   if (isCloudflareImagesUrl(url)) return false;
   if (isCloudflareStreamUrl(url)) return false;
 
-  // These are R2 or local URLs that need migration
+  // These are R2 or CDN URLs that need migration
   const r2Patterns = [
     'r2.cloudflarestorage.com',
     'r2.dev',
     '/api/images/',
     '/gallery/',
+    'cdn.emwiki.com/gallery',  // CDN-served gallery images
     'MY_BUCKET',
   ];
 
@@ -202,17 +203,19 @@ async function downloadFromR2(key) {
 }
 
 /**
- * Alternative: Download from public R2 URL or /api/images endpoint
+ * Download from CDN URL (cdn.emwiki.com) or other public URLs
  */
 async function downloadFromPublicUrl(url) {
   // If it's a relative URL, construct full URL
   let fullUrl = url;
   if (url.startsWith('/')) {
     // Assume production domain
-    fullUrl = `https://emwiki.com${url}`;
+    fullUrl = `https://cdn.emwiki.com${url}`;
   } else if (!url.startsWith('http')) {
-    fullUrl = `https://emwiki.com/api/images/${url}`;
+    fullUrl = `https://cdn.emwiki.com/${url}`;
   }
+
+  if (VERBOSE) console.log(`   📥 Fetching: ${fullUrl}`);
 
   const response = await fetch(fullUrl);
 
@@ -227,15 +230,9 @@ async function downloadFromPublicUrl(url) {
 }
 
 /**
- * Upload image to Cloudflare Images
+ * Upload image to Cloudflare Images using Node.js native FormData (Node 18+)
  */
 async function uploadToCloudflareImages(imageData, contentType, customId, metadata = {}) {
-  const FormData = (await import('form-data')).default;
-  const form = new FormData();
-
-  // Create a buffer from ArrayBuffer
-  const buffer = Buffer.from(imageData);
-
   // Determine file extension from content type
   const extMap = {
     'image/jpeg': '.jpg',
@@ -246,10 +243,10 @@ async function uploadToCloudflareImages(imageData, contentType, customId, metada
   const ext = extMap[contentType] || '.png';
   const filename = `${customId}${ext}`;
 
-  form.append('file', buffer, {
-    filename,
-    contentType,
-  });
+  // Use Node.js native Blob and FormData (Node 18+)
+  const blob = new Blob([imageData], { type: contentType });
+  const form = new FormData();
+  form.append('file', blob, filename);
   form.append('id', customId);
   form.append('metadata', JSON.stringify(metadata));
 
@@ -259,7 +256,6 @@ async function uploadToCloudflareImages(imageData, contentType, customId, metada
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${CONFIG.CF_IMAGES_API_TOKEN}`,
-        ...form.getHeaders(),
       },
       body: form,
     }
@@ -398,14 +394,18 @@ async function migrate() {
         console.log(`   ⬇️  Downloading media from: ${item.media_url}`);
 
         let imageData;
-        try {
-          // Try R2 API first
-          const r2Key = extractR2Key(item.media_url);
-          imageData = await downloadFromR2(r2Key);
-        } catch (err) {
-          if (VERBOSE) console.log(`   ⚠️  R2 API failed, trying public URL: ${err.message}`);
-          // Fallback to public URL
+        // For CDN URLs (http/https), download directly
+        if (item.media_url.startsWith('http')) {
           imageData = await downloadFromPublicUrl(item.media_url);
+        } else {
+          // For R2 bucket paths, try R2 API
+          try {
+            const r2Key = extractR2Key(item.media_url);
+            imageData = await downloadFromR2(r2Key);
+          } catch (err) {
+            if (VERBOSE) console.log(`   ⚠️  R2 API failed, trying public URL: ${err.message}`);
+            imageData = await downloadFromPublicUrl(item.media_url);
+          }
         }
 
         console.log(`   ⬆️  Uploading to Cloudflare Images...`);
@@ -431,12 +431,18 @@ async function migrate() {
         console.log(`   ⬇️  Downloading thumbnail from: ${item.thumbnail_url}`);
 
         let thumbData;
-        try {
-          const r2Key = extractR2Key(item.thumbnail_url);
-          thumbData = await downloadFromR2(r2Key);
-        } catch (err) {
-          if (VERBOSE) console.log(`   ⚠️  R2 API failed, trying public URL: ${err.message}`);
+        // For CDN URLs (http/https), download directly
+        if (item.thumbnail_url.startsWith('http')) {
           thumbData = await downloadFromPublicUrl(item.thumbnail_url);
+        } else {
+          // For R2 bucket paths, try R2 API
+          try {
+            const r2Key = extractR2Key(item.thumbnail_url);
+            thumbData = await downloadFromR2(r2Key);
+          } catch (err) {
+            if (VERBOSE) console.log(`   ⚠️  R2 API failed, trying public URL: ${err.message}`);
+            thumbData = await downloadFromPublicUrl(item.thumbnail_url);
+          }
         }
 
         console.log(`   ⬆️  Uploading thumbnail to Cloudflare Images...`);
