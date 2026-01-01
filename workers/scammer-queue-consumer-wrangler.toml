@@ -23,7 +23,7 @@ max_batch_timeout = 10     # Max seconds to wait for batch to fill (10 seconds)
 max_retries = 3            # Max retries before giving up
 retry_delay = 2            # Seconds to wait before retry (2s to respect Discord rate limits)
 # max_concurrency = "auto"  # Auto-scaling (recommended, set in dashboard)
-# dead_letter_queue = "scammer-messages-dlq"  # Optional: queue for failed messages
+dead_letter_queue = "scammer-messages-dlq"  # Queue for messages that fail after max retries
 
 # Environment variables (set via wrangler secret put or dashboard)
 # DISCORD_BOT_TOKEN (REQUIRED)

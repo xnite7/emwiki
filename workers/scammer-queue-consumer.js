@@ -21,6 +21,8 @@ export default {
     const messages = batch.messages;
     const results = [];
     
+    console.log(`[QUEUE] Received batch of ${messages.length} messages`);
+    
     // Process messages sequentially to avoid overwhelming Discord API
     for (const message of messages) {
       const { jobId, messageId, channelId, message: msg } = message.body;
@@ -65,41 +67,106 @@ export default {
         // This ensures we count every message attempt, even if it fails
         const currentSeen = jobStatus.messages_seen || 0;
         const newSeen = currentSeen + 1;
+        const totalMessages = jobStatus.total_messages || 0;
+        const remaining = totalMessages - currentSeen;
+        
+        console.log(`[QUEUE] Job ${jobId}: Processing message ${messageId}, messages_seen ${currentSeen} -> ${newSeen}, total: ${totalMessages}, remaining: ${remaining}`);
         
         // Update messages_seen immediately (before processing)
         // This way, even if processing fails, we've counted this message
-        await db.prepare(`
+        const updateSeenResult = await db.prepare(`
           UPDATE scammer_job_status 
           SET messages_seen = ?, last_activity_at = ?, current_message_id = ?
           WHERE job_id = ? AND status = 'running'
         `).bind(newSeen, Date.now(), messageId, jobId).run();
         
+        if (updateSeenResult.changes === 0) {
+          console.warn(`[QUEUE] Failed to update messages_seen for job ${jobId} (current: ${currentSeen}, trying: ${newSeen}) - job may have been completed or doesn't exist`);
+          // Check what the actual status is
+          const actualStatus = await db.prepare(`
+            SELECT status, messages_seen, total_messages FROM scammer_job_status WHERE job_id = ?
+          `).bind(jobId).first();
+          if (actualStatus) {
+            console.warn(`[QUEUE] Job ${jobId} actual status: ${actualStatus.status}, messages_seen: ${actualStatus.messages_seen}, total: ${actualStatus.total_messages}`);
+          }
+          message.ack(); // Ack to prevent infinite retries
+          continue;
+        }
+        
         messageSeen = true;
+        
+        // CRITICAL: Check for completion immediately after incrementing messages_seen
+        // This ensures we catch completion even with concurrent processing
+        // Refetch to get the actual current value (might have been updated by another worker)
+        const currentStatusCheck = await db.prepare(`
+          SELECT messages_seen, total_messages, status FROM scammer_job_status WHERE job_id = ?
+        `).bind(jobId).first();
+        
+        const actualSeen = currentStatusCheck?.messages_seen || newSeen;
+        const actualTotal = currentStatusCheck?.total_messages || totalMessages;
+        
+        if (actualSeen >= actualTotal && currentStatusCheck?.status === 'running') {
+          console.log(`[QUEUE] Job ${jobId} completion check (after increment): ${actualSeen} >= ${actualTotal}`);
+          const completionCheck = await db.prepare(`
+            UPDATE scammer_job_status 
+            SET status = 'completing', last_activity_at = ?
+            WHERE job_id = ? AND status = 'running' AND messages_seen >= total_messages
+          `).bind(Date.now(), jobId).run();
+          
+          if (completionCheck.changes > 0) {
+            console.log(`[QUEUE] Job ${jobId} marked as completing - all ${actualSeen} messages seen, triggering completion`);
+            // Mark job as completing, but still process this message to update messages_processed
+            // The completion will be handled after processing
+          }
+        }
         
         // Now process the message
         const processed = await processQueuedMessage(msg, env, channelId, jobId, db);
         
         // Update messages_processed only if message was actually processed (had Roblox URL)
         if (processed) {
-          const currentProcessed = jobStatus.messages_processed || 0;
+          // Refetch job status to get latest values (in case another worker updated it)
+          const latestJobStatus = await db.prepare(`
+            SELECT messages_processed, messages_seen, total_messages, status
+            FROM scammer_job_status
+            WHERE job_id = ?
+          `).bind(jobId).first();
+          
+          if (!latestJobStatus || latestJobStatus.status !== 'running') {
+            console.log(`[QUEUE] Job ${jobId} is no longer running, skipping completion check`);
+            message.ack();
+            continue;
+          }
+          
+          const currentProcessed = latestJobStatus.messages_processed || 0;
           const newProcessed = currentProcessed + 1;
+          const latestSeen = latestJobStatus.messages_seen || 0;
+          const latestTotal = latestJobStatus.total_messages || 0;
           
           await db.prepare(`
             UPDATE scammer_job_status 
             SET messages_processed = ?, last_activity_at = ?, current_message_id = ?
-            WHERE job_id = ? AND status = 'running'
+            WHERE job_id = ? AND status IN ('running', 'completing')
           `).bind(newProcessed, Date.now(), messageId, jobId).run();
           
+          console.log(`[QUEUE] Job ${jobId}: messages_processed ${currentProcessed} -> ${newProcessed}, messages_seen: ${latestSeen}, total: ${latestTotal}`);
+          
           // Check if all messages are seen (processed + skipped) AND job is still running
-          if (newSeen >= jobStatus.total_messages) {
-            // Double-check job is still running (another worker might have completed it)
-            const currentJobStatus = await db.prepare(`
-              SELECT status FROM scammer_job_status WHERE job_id = ?
-            `).bind(jobId).first();
+          // Use >= to handle any race conditions where messages_seen might slightly exceed total
+          if (latestSeen >= latestTotal) {
+            console.log(`[QUEUE] Job ${jobId} completion check: ${latestSeen} >= ${latestTotal}`);
             
-            if (currentJobStatus && currentJobStatus.status === 'running') {
-              console.log(`[QUEUE] Job ${jobId} complete - all ${newSeen} messages seen, ${newProcessed} processed`);
-              await logJobActivity(env, jobId, 'messages_complete', null, `All ${newSeen} messages seen, ${newProcessed} processed, fetching threads`, db);
+            // Use atomic update to mark as completing (handles both 'running' and 'completing' states)
+            const completionCheck = await db.prepare(`
+              UPDATE scammer_job_status 
+              SET status = 'completing', last_activity_at = ?
+              WHERE job_id = ? AND status IN ('running', 'completing') AND messages_seen >= total_messages
+            `).bind(Date.now(), jobId).run();
+            
+            if (completionCheck.changes > 0) {
+              // We successfully marked it as completing - proceed with thread fetch
+              console.log(`[QUEUE] Job ${jobId} complete - all ${latestSeen} messages seen, ${newProcessed} processed`);
+              await logJobActivity(env, jobId, 'messages_complete', null, `All ${latestSeen} messages seen, ${newProcessed} processed, fetching threads`, db);
               
               try {
                 // Fetch threads after all messages are done
@@ -126,18 +193,50 @@ export default {
                   WHERE job_id = ?
                 `).bind(Date.now(), Date.now(), `Thread fetching failed: ${threadErr.message}`, jobId).run();
               }
+            } else {
+              // Another worker is already completing this job, or it's already completed
+              console.log(`[QUEUE] Job ${jobId} completion already in progress or completed by another worker`);
+            }
+          } else {
+            // Not all messages seen yet
+            const remaining = latestTotal - latestSeen;
+            if (remaining <= 10) {
+              console.log(`[QUEUE] Job ${jobId} almost complete: ${remaining} messages remaining`);
             }
           }
         } else {
           // Message was skipped (no Roblox URL) - check completion anyway
-          if (newSeen >= jobStatus.total_messages) {
-            const currentJobStatus = await db.prepare(`
-              SELECT status FROM scammer_job_status WHERE job_id = ?
-            `).bind(jobId).first();
+          // Refetch job status to get latest values
+          const latestJobStatus = await db.prepare(`
+            SELECT messages_seen, total_messages, status
+            FROM scammer_job_status
+            WHERE job_id = ?
+          `).bind(jobId).first();
+          
+          if (!latestJobStatus || latestJobStatus.status !== 'running') {
+            console.log(`[QUEUE] Job ${jobId} is no longer running, skipping completion check`);
+            message.ack();
+            continue;
+          }
+          
+          const latestSeen = latestJobStatus.messages_seen || 0;
+          const latestTotal = latestJobStatus.total_messages || 0;
+          
+          console.log(`[QUEUE] Job ${jobId}: Message skipped, messages_seen: ${latestSeen}, total: ${latestTotal}`);
+          
+          if (latestSeen >= latestTotal) {
+            console.log(`[QUEUE] Job ${jobId} completion check: ${latestSeen} >= ${latestTotal}`);
             
-            if (currentJobStatus && currentJobStatus.status === 'running') {
-              console.log(`[QUEUE] Job ${jobId} complete - all ${newSeen} messages seen (all skipped)`);
-              await logJobActivity(env, jobId, 'messages_complete', null, `All ${newSeen} messages seen (all skipped), fetching threads`, db);
+            // Use atomic update to prevent race conditions
+            const completionCheck = await db.prepare(`
+              UPDATE scammer_job_status 
+              SET status = 'completing', last_activity_at = ?
+              WHERE job_id = ? AND status = 'running' AND messages_seen >= total_messages
+            `).bind(Date.now(), jobId).run();
+            
+            if (completionCheck.changes > 0) {
+              console.log(`[QUEUE] Job ${jobId} complete - all ${latestSeen} messages seen (all skipped)`);
+              await logJobActivity(env, jobId, 'messages_complete', null, `All ${latestSeen} messages seen (all skipped), fetching threads`, db);
               
               try {
                 await fetchAllThreadMessages(env, jobId, db);
@@ -156,6 +255,13 @@ export default {
                   WHERE job_id = ?
                 `).bind(Date.now(), Date.now(), `Thread fetching failed: ${threadErr.message}`, jobId).run();
               }
+            } else {
+              console.log(`[QUEUE] Job ${jobId} completion already in progress or completed by another worker`);
+            }
+          } else {
+            const remaining = latestTotal - latestSeen;
+            if (remaining <= 10) {
+              console.log(`[QUEUE] Job ${jobId} almost complete: ${remaining} messages remaining`);
             }
           }
         }
@@ -229,11 +335,39 @@ export default {
         
         // Let queue handle retries - don't ack, don't retry manually
         // The queue will retry based on max_retries and retry_delay settings
+        console.log(`[QUEUE ERROR] Message ${messageId} will be retried by queue`);
         message.retry();
       }
     }
     
-    console.log(`[QUEUE] Batch processed: ${results.filter(r => r.success).length}/${messages.length} successful`);
+    const successful = results.filter(r => r.success).length;
+    const failed = results.filter(r => !r.success).length;
+    console.log(`[QUEUE] Batch processed: ${successful} successful, ${failed} failed out of ${messages.length} total`);
+    
+    // Log summary of job progress for debugging
+    if (messages.length > 0) {
+      const firstJobId = messages[0]?.body?.jobId;
+      if (firstJobId) {
+        try {
+          const db = env.DB || env.DBA;
+          if (db) {
+            const jobStatus = await db.prepare(`
+              SELECT messages_seen, messages_processed, total_messages, status
+              FROM scammer_job_status
+              WHERE job_id = ?
+            `).bind(firstJobId).first();
+            
+            if (jobStatus) {
+              const remaining = jobStatus.total_messages - jobStatus.messages_seen;
+              console.log(`[QUEUE] Job ${firstJobId} progress: ${jobStatus.messages_seen}/${jobStatus.total_messages} seen, ${jobStatus.messages_processed} processed, ${remaining} remaining`);
+            }
+          }
+        } catch (err) {
+          // Ignore errors in diagnostic logging
+        }
+      }
+    }
+    
     return results;
   }
 };

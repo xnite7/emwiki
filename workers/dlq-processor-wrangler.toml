@@ -1,0 +1,19 @@
+name = "dlq-processor"
+main = "dlq-processor.js"
+compatibility_date = "2024-01-01"
+
+# D1 Database binding (optional, for logging)
+[[d1_databases]]
+binding = "DB"
+database_name = "DBA"
+database_id = "YOUR_D1_DATABASE_ID"  # Replace with your actual D1 database ID
+
+# Queue consumer binding for DLQ
+[[queues.consumers]]
+queue = "scammer-messages-dlq"
+max_batch_size = 10
+max_batch_timeout = 10
+
+# No retries for DLQ - these messages have already failed
+max_retries = 0
+
