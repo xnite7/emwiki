@@ -44,11 +44,13 @@ function loadEnvVars() {
 
 loadEnvVars();
 
+// Configuration
 const CONFIG = {
-  CF_ACCOUNT_ID: process.env.CF_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID,
-  CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
+  CF_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
+  CF_ACCOUNT_HASH: process.env.CF_ACCOUNT_HASH || 'I2Jsf9fuZwSztWJZaX0DJA',
+  CF_STREAM_TOKEN: process.env.CLOUDFLARE_STREAM_TOKEN,
   D1_DATABASE_ID: process.env.D1_DATABASE_ID,
-  R2_BUCKET_NAME: process.env.R2_BUCKET_NAME || 'emwiki-media',
+  R2_BUCKET_NAME: process.env.MY_BUCKET,
 };
 
 const args = process.argv.slice(2);
@@ -72,7 +74,7 @@ async function queryD1(sql, params = []) {
     {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${CONFIG.CLOUDFLARE_API_TOKEN}`,
+        'Authorization': `Bearer ${CONFIG.CF_STREAM_TOKEN}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ sql, params }),
@@ -92,7 +94,7 @@ async function listR2GalleryObjects() {
     `https://api.cloudflare.com/client/v4/accounts/${CONFIG.CF_ACCOUNT_ID}/r2/buckets/${CONFIG.R2_BUCKET_NAME}/objects?prefix=gallery/`,
     {
       headers: {
-        'Authorization': `Bearer ${CONFIG.CLOUDFLARE_API_TOKEN}`,
+        'Authorization': `Bearer ${CONFIG.CF_STREAM_TOKEN}`,
       },
     }
   );
@@ -110,7 +112,7 @@ async function deleteR2Object(key) {
     {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${CONFIG.CLOUDFLARE_API_TOKEN}`,
+        'Authorization': `Bearer ${CONFIG.CF_STREAM_TOKEN}`,
       },
     }
   );

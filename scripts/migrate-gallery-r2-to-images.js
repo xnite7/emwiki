@@ -292,7 +292,7 @@ async function uploadToCloudflareImages(imageData, contentType, customId, metada
  * Upload video to Cloudflare Stream
  */
 async function uploadToCloudflareStream(videoData, contentType, customId, metadata = {}) {
-  const streamToken = CONFIG.CLOUDFLARE_STREAM_TOKEN || CONFIG.CF_IMAGES_API_TOKEN;
+  const streamToken = CONFIG.CF_STREAM_TOKEN;
 
   // Determine file extension
   const extMap = {
