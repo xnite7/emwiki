@@ -743,18 +743,30 @@ class Gallery {
         const now = new Date();
         const diff = now - date;
 
+        const seconds = Math.floor(diff / 1000);
         const minutes = Math.floor(diff / 60000);
         const hours = Math.floor(diff / 3600000);
         const days = Math.floor(diff / 86400000);
+        const weeks = Math.floor(days / 7);
+        const months = Math.floor(days / 30);
+        const years = Math.floor(days / 365);
 
-        if (minutes < 60) {
-            return `${minutes}m ago`;
+        if (seconds < 60) {
+            return 'just now';
+        } else if (minutes < 60) {
+            return minutes === 1 ? '1m' : `${minutes}m`;
         } else if (hours < 24) {
-            return `${hours}h ago`;
+            return hours === 1 ? '1h' : `${hours}h`;
+        } else if (days === 1) {
+            return 'yesterday';
         } else if (days < 7) {
-            return `${days}d ago`;
+            return `${days}d`;
+        } else if (weeks < 5) {
+            return weeks === 1 ? '1w' : `${weeks}w`;
+        } else if (months < 12) {
+            return months === 1 ? '1mo' : `${months}mo`;
         } else {
-            return date.toLocaleDateString();
+            return years === 1 ? '1y' : `${years}y`;
         }
     }
 
