@@ -62,6 +62,7 @@ const CONFIG = {
   CF_IMAGES_API_TOKEN: process.env.CF_IMAGES_API_TOKEN || process.env.CLOUDFLARE_API_TOKEN,
   CF_ACCOUNT_HASH: process.env.CF_ACCOUNT_HASH || 'I2Jsf9fuZwSztWJZaX0DJA',
   CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
+  CLOUDFLARE_STREAM_TOKEN: process.env.CLOUDFLARE_STREAM_TOKEN,
   D1_DATABASE_ID: process.env.D1_DATABASE_ID,
   R2_BUCKET_NAME: process.env.R2_BUCKET_NAME || 'emwiki-media',
 };
@@ -230,6 +231,24 @@ async function downloadFromPublicUrl(url) {
 }
 
 /**
+ * Check if content type is a video
+ */
+function isVideoContentType(contentType) {
+  const videoTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/mov', 'video/x-msvideo'];
+  return videoTypes.some(type => contentType?.toLowerCase().includes(type.split('/')[1]));
+}
+
+/**
+ * Check if URL is a video file
+ */
+function isVideoUrl(url) {
+  if (!url) return false;
+  const videoExtensions = ['.mp4', '.mov', '.webm', '.avi', '.mkv'];
+  const lowerUrl = url.toLowerCase();
+  return videoExtensions.some(ext => lowerUrl.includes(ext));
+}
+
+/**
  * Upload image to Cloudflare Images using Node.js native FormData (Node 18+)
  */
 async function uploadToCloudflareImages(imageData, contentType, customId, metadata = {}) {
@@ -269,6 +288,61 @@ async function uploadToCloudflareImages(imageData, contentType, customId, metada
 
   // Return the public variant URL
   return data.result.variants[0];
+}
+
+/**
+ * Upload video to Cloudflare Stream
+ */
+async function uploadToCloudflareStream(videoData, contentType, customId, metadata = {}) {
+  const streamToken = CONFIG.CLOUDFLARE_STREAM_TOKEN || CONFIG.CF_IMAGES_API_TOKEN;
+
+  // Determine file extension
+  const extMap = {
+    'video/mp4': '.mp4',
+    'video/webm': '.webm',
+    'video/quicktime': '.mov',
+  };
+  const ext = extMap[contentType] || '.mp4';
+  const filename = `${customId}${ext}`;
+
+  // Use Node.js native Blob and FormData
+  const blob = new Blob([videoData], { type: contentType });
+  const form = new FormData();
+  form.append('file', blob, filename);
+  form.append('meta', JSON.stringify({
+    name: customId,
+    ...metadata
+  }));
+
+  console.log(`   📤 Uploading ${(videoData.byteLength / 1024 / 1024).toFixed(2)} MB to Cloudflare Stream...`);
+
+  const response = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${CONFIG.CF_ACCOUNT_ID}/stream`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${streamToken}`,
+      },
+      body: form,
+    }
+  );
+
+  const data = await response.json();
+
+  if (!data.success) {
+    throw new Error(`Cloudflare Stream upload failed: ${JSON.stringify(data.errors)}`);
+  }
+
+  const streamUid = data.result.uid;
+  // Return the HLS manifest URL (same format as gallery uses)
+  const hlsUrl = data.result.playback?.hls ||
+    `https://customer-${CONFIG.CF_ACCOUNT_ID}.cloudflarestream.com/${streamUid}/manifest/video.m3u8`;
+
+  return {
+    url: hlsUrl,
+    streamUid,
+    iframeUrl: `https://iframe.videodelivery.net/${streamUid}`,
+  };
 }
 
 /**
@@ -393,37 +467,56 @@ async function migrate() {
       if (needsMigration(item.media_url)) {
         console.log(`   ⬇️  Downloading media from: ${item.media_url}`);
 
-        let imageData;
+        let mediaData;
         // For CDN URLs (http/https), download directly
         if (item.media_url.startsWith('http')) {
-          imageData = await downloadFromPublicUrl(item.media_url);
+          mediaData = await downloadFromPublicUrl(item.media_url);
         } else {
           // For R2 bucket paths, try R2 API
           try {
             const r2Key = extractR2Key(item.media_url);
-            imageData = await downloadFromR2(r2Key);
+            mediaData = await downloadFromR2(r2Key);
           } catch (err) {
             if (VERBOSE) console.log(`   ⚠️  R2 API failed, trying public URL: ${err.message}`);
-            imageData = await downloadFromPublicUrl(item.media_url);
+            mediaData = await downloadFromPublicUrl(item.media_url);
           }
         }
 
-        console.log(`   ⬆️  Uploading to Cloudflare Images...`);
-
         const customId = `gallery-migrated-${item.id}-${Date.now()}`;
-        newMediaUrl = await uploadToCloudflareImages(
-          imageData.data,
-          imageData.contentType,
-          customId,
-          {
-            gallery_item_id: item.id,
-            user_id: item.user_id,
-            migrated_from: 'r2',
-            original_url: item.media_url,
-          }
-        );
+        const isVideo = isVideoUrl(item.media_url) || isVideoContentType(mediaData.contentType);
 
-        console.log(`   ✅ Media uploaded: ${newMediaUrl}`);
+        if (isVideo) {
+          // Upload video to Cloudflare Stream
+          console.log(`   🎬 Detected video (${mediaData.contentType})`);
+          const streamResult = await uploadToCloudflareStream(
+            mediaData.data,
+            mediaData.contentType,
+            customId,
+            {
+              gallery_item_id: item.id,
+              user_id: item.user_id,
+              migrated_from: 'cdn',
+              original_url: item.media_url,
+            }
+          );
+          newMediaUrl = streamResult.url;
+          console.log(`   ✅ Video uploaded to Stream: ${newMediaUrl}`);
+        } else {
+          // Upload image to Cloudflare Images
+          console.log(`   🖼️  Uploading to Cloudflare Images...`);
+          newMediaUrl = await uploadToCloudflareImages(
+            mediaData.data,
+            mediaData.contentType,
+            customId,
+            {
+              gallery_item_id: item.id,
+              user_id: item.user_id,
+              migrated_from: 'cdn',
+              original_url: item.media_url,
+            }
+          );
+          console.log(`   ✅ Image uploaded: ${newMediaUrl}`);
+        }
       }
 
       // Migrate thumbnail_url if needed
