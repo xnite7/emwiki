@@ -1396,7 +1396,9 @@
                     const response = await fetch('/api/images/upload', {
                         method: 'POST',
                         body: formData,
-                        credentials: 'include'
+                        headers: {
+                            'Authorization': `Bearer ${Auth.authToken || localStorage.getItem('auth_token')}`
+                        }
                     });
 
                     clearInterval(progressInterval);
@@ -3714,7 +3716,9 @@
                     const response = await fetch('/api/images/upload', {
                         method: 'POST',
                         body: formData,
-                        credentials: 'include'
+                        headers: {
+                            'Authorization': `Bearer ${Auth.authToken || localStorage.getItem('auth_token')}`
+                        }
                     });
 
                     if (!response.ok) {
