@@ -473,62 +473,58 @@ class Gallery {
         actionsContainer.innerHTML = '';
         // Set media
         if (item.media_type === 'video') {
-            // Check if this is a Cloudflare Stream video (use iframe embed)
-            const isStreamVideo = item.media_url?.includes('cloudflarestream.com') || 
-                                  item.media_url?.includes('videodelivery.net') ||
-                                  item.media_url?.includes('.m3u8');
-            
-            if (isStreamVideo) {
-                // Extract stream UID and use iframe embed for best compatibility
-                let streamUid = '';
-                if (item.media_url.includes('videodelivery.net/')) {
-                    streamUid = item.media_url.split('videodelivery.net/')[1]?.split('/')[0];
-                } else if (item.media_url.includes('cloudflarestream.com/')) {
-                    streamUid = item.media_url.split('cloudflarestream.com/')[1]?.split('/')[0];
-                }
-                
-                if (streamUid) {
-                    mediaContainer.innerHTML = `
-                        <iframe 
-                            src="https://iframe.videodelivery.net/${streamUid}?loop=true&preload=auto"
-                            style="width: 100%; aspect-ratio: 16/9; border: none; border-radius: 8px;"
-                            allow="accelerometer; gyroscope; autoplay;"
-                            allowfullscreen>
-                        </iframe>
-                    `;
-                } else {
-                    // Fallback to regular video tag
-                    mediaContainer.innerHTML = `
-                        <video src="${item.media_url}" controls loop playsinline style="width: 100%; border-radius: 8px;"></video>
-                    `;
-                }
-            } else {
-                // Regular video (non-Stream)
-                mediaContainer.innerHTML = `
-                    <div class="custom-video-player">
-                        <video src="${item.media_url}" loop playsinline disablePictureInPicture controlsList="nodownload noplaybackrate" oncontextmenu="return false;"></video>
-                        <div class="custom-controls">
-                            <button class="play-pause-btn" aria-label="Play/Pause">
-                                <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                <svg class="pause-icon" viewBox="0 0 24 24" style="display:none;"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>
-                            </button>
-                            <div class="progress-bar-container">
-                                <div class="progress-bar">
-                                    <div class="progress-filled"></div>
-                                </div>
+            // Check if this is an HLS stream (.m3u8)
+            const isHlsVideo = item.media_url?.includes('.m3u8');
+
+            // Use custom video player for all videos
+            mediaContainer.innerHTML = `
+                <div class="custom-video-player">
+                    <video loop playsinline disablePictureInPicture controlsList="nodownload noplaybackrate" oncontextmenu="return false;"></video>
+                    <div class="custom-controls">
+                        <button class="play-pause-btn" aria-label="Play/Pause">
+                            <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            <svg class="pause-icon" viewBox="0 0 24 24" style="display:none;"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>
+                        </button>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar">
+                                <div class="progress-filled"></div>
                             </div>
-                            <span class="time-display">0:00 / 0:00</span>
-                            <button class="volume-btn" aria-label="Volume">
-                                <svg class="volume-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-                            </button>
-                            <button class="fullscreen-btn" aria-label="Fullscreen">
-                                <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
-                            </button>
                         </div>
+                        <span class="time-display">0:00 / 0:00</span>
+                        <button class="volume-btn" aria-label="Volume">
+                            <svg class="volume-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+                        </button>
+                        <button class="fullscreen-btn" aria-label="Fullscreen">
+                            <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                        </button>
                     </div>
-                `;
-                this.setupCustomVideoPlayer(mediaContainer);
+                </div>
+            `;
+
+            const video = mediaContainer.querySelector('video');
+
+            if (isHlsVideo && typeof Hls !== 'undefined' && Hls.isSupported()) {
+                // Use HLS.js for .m3u8 streams
+                const hls = new Hls({
+                    enableWorker: true,
+                    lowLatencyMode: false,
+                });
+                hls.loadSource(item.media_url);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    // Video is ready
+                });
+                // Store HLS instance for cleanup
+                video._hls = hls;
+            } else if (isHlsVideo && video.canPlayType('application/vnd.apple.mpegurl')) {
+                // Safari native HLS support
+                video.src = item.media_url;
+            } else {
+                // Regular video file
+                video.src = item.media_url;
             }
+
+            this.setupCustomVideoPlayer(mediaContainer);
         } else {
             mediaContainer.innerHTML = `<img src="${item.media_url}" alt="${item.title}" oncontextmenu="return false;">`;
         }
@@ -720,11 +716,16 @@ class Gallery {
             window.history.pushState(null, '', window.location.pathname);
         }
 
-        // Stop videos
+        // Stop videos and cleanup HLS instances
         const videos = modal.querySelectorAll('video');
         videos.forEach(video => {
             video.pause();
             video.currentTime = 0;
+            // Cleanup HLS.js instance to prevent memory leaks
+            if (video._hls) {
+                video._hls.destroy();
+                video._hls = null;
+            }
         });
     }
 
@@ -743,18 +744,30 @@ class Gallery {
         const now = new Date();
         const diff = now - date;
 
+        const seconds = Math.floor(diff / 1000);
         const minutes = Math.floor(diff / 60000);
         const hours = Math.floor(diff / 3600000);
         const days = Math.floor(diff / 86400000);
+        const weeks = Math.floor(days / 7);
+        const months = Math.floor(days / 30);
+        const years = Math.floor(days / 365);
 
-        if (minutes < 60) {
-            return `${minutes}m ago`;
+        if (seconds < 60) {
+            return 'just now';
+        } else if (minutes < 60) {
+            return minutes === 1 ? '1m' : `${minutes}m`;
         } else if (hours < 24) {
-            return `${hours}h ago`;
+            return hours === 1 ? '1h' : `${hours}h`;
+        } else if (days === 1) {
+            return 'yesterday';
         } else if (days < 7) {
-            return `${days}d ago`;
+            return `${days}d`;
+        } else if (weeks < 5) {
+            return weeks === 1 ? '1w' : `${weeks}w`;
+        } else if (months < 12) {
+            return months === 1 ? '1mo' : `${months}mo`;
         } else {
-            return date.toLocaleDateString();
+            return years === 1 ? '1y' : `${years}y`;
         }
     }
 
