@@ -2981,9 +2981,8 @@ export async function onRequestGet(context) {
           roblox_alts,
           thread_evidence
         FROM scammer_profile_cache
-        WHERE user_id IS NOT NULL 
-          AND (victims IS NOT NULL OR items_scammed IS NOT NULL OR discord_id IS NOT NULL)
-        ORDER BY last_message_id DESC
+        WHERE user_id IS NOT NULL
+        ORDER BY updated_at DESC
       `).all();
 
       const scammers = results.map(row => ({
