@@ -56,10 +56,10 @@ The Gallery feature allows users to submit images and videos from their Epic Min
   - Returns: `{ items: [...] }`
 
 ##### Authenticated Endpoints
-- `POST /api/gallery/upload` - Upload media file to R2
+- `POST /api/gallery/upload` - Upload media file to Cloudflare Images/Stream
   - Body: `FormData` with `file`
-  - Returns: `{ url, type }`
-  - Validates: file type, file size (max 100MB)
+  - Returns: `{ url, type, cf_id, provider }` for images, `{ url, type, stream_uid, iframe_url, provider }` for videos
+  - Validates: file type, file size (10MB images, 100MB videos)
 
 - `POST /api/gallery/submit` - Submit gallery item
   - Body: `{ title, description, media_url, media_type }`
@@ -71,7 +71,7 @@ The Gallery feature allows users to submit images and videos from their Epic Min
 
 - `DELETE /api/gallery/:id` - Delete own submission
   - Requires: ownership or admin role
-  - Also deletes file from R2 bucket
+  - Also deletes file from Cloudflare Images/Stream
 
 ##### Admin-Only Endpoints
 - `GET /api/gallery/pending` - List pending submissions
@@ -113,15 +113,22 @@ CREATE TABLE gallery_items (
 
 ### Storage
 
-Media files are stored in Cloudflare R2 bucket (`MY_BUCKET`) with the following structure:
+Media files are stored in **Cloudflare Images** (for images) and **Cloudflare Stream** (for videos):
 
-```
-gallery/
-  {user_id}/
-    {timestamp}-{random}.{ext}
-```
+**Images:**
+- Service: Cloudflare Images API
+- URL format: `https://imagedelivery.net/{accountHash}/{imageId}/public`
+- Custom ID format: `gallery-{user_id}-{timestamp}-{random}`
+- Automatic optimization and WebP/AVIF conversion
 
-Public URL format: `https://pub-49351598fde84dec89feb871921190e9.r2.dev/gallery/...`
+**Videos:**
+- Service: Cloudflare Stream API
+- URL format: `https://customer-{accountId}.cloudflarestream.com/{streamUid}/manifest/video.m3u8` (HLS)
+- Iframe embed: `https://iframe.videodelivery.net/{streamUid}`
+- Automatic transcoding and adaptive bitrate streaming
+
+**Thumbnails:**
+- Video thumbnails are generated client-side and uploaded to Cloudflare Images
 
 ## Setup Instructions
 
@@ -135,16 +142,24 @@ wrangler d1 execute DBA --local --file=migrations/001_create_gallery_items.sql
 wrangler d1 execute DBA --file=migrations/001_create_gallery_items.sql
 ```
 
-### 2. Verify R2 Bucket
+### 2. Configure Cloudflare Images & Stream
 
-Ensure `MY_BUCKET` is configured in your Cloudflare Workers environment:
+Add the following environment variables to your `.dev.vars` (local) or Cloudflare Dashboard (production):
 
-```toml
-# wrangler.toml
-[[r2_buckets]]
-binding = "MY_BUCKET"
-bucket_name = "your-bucket-name"
+```bash
+# Cloudflare Images Configuration
+CF_ACCOUNT_ID=your-account-id
+CF_ACCOUNT_HASH=your-account-hash
+CF_IMAGES_API_TOKEN=your-images-api-token
+
+# Cloudflare Stream Configuration (optional, uses CF_IMAGES_API_TOKEN if not set)
+CLOUDFLARE_STREAM_TOKEN=your-stream-api-token
 ```
+
+To get these values:
+1. **CF_ACCOUNT_ID**: Cloudflare Dashboard → Account Home → Account ID (sidebar)
+2. **CF_ACCOUNT_HASH**: Cloudflare Dashboard → Images → Overview → Account Hash
+3. **CF_IMAGES_API_TOKEN**: Create API token with "Cloudflare Images" + "Cloudflare Stream" permissions
 
 ### 3. Deploy
 
@@ -206,11 +221,13 @@ wrangler deploy
 1. User logs in
 2. Clicks "Upload Media" button
 3. Selects file (preview shown)
-4. Enters title and optional description
-5. Submits for review
-6. File uploads to R2
-7. Database entry created with status='pending'
-8. Success message shown
+4. For videos: thumbnail generated from first frame
+5. Enters title and optional description
+6. Submits for review
+7. File uploads to Cloudflare Images (images) or Cloudflare Stream (videos)
+8. Thumbnail uploaded to Cloudflare Images (for videos)
+9. Database entry created with status='pending' (or 'approved' for VIP/admins)
+10. Success message shown
 
 ### Moderation Flow
 1. Admin logs into admin panel
@@ -264,10 +281,10 @@ Potential improvements:
 ## Troubleshooting
 
 ### Upload Fails
-- Check file size (< 100MB)
+- Check file size (10MB for images, 100MB for videos)
 - Verify file type is supported
 - Ensure user is authenticated
-- Check R2 bucket permissions
+- Check CF_IMAGES_API_TOKEN is valid
 
 ### Items Not Appearing
 - Verify database migration ran successfully
@@ -279,10 +296,11 @@ Potential improvements:
 - Check session token is valid
 - Ensure admin is logged in
 
-### R2 Upload Issues
-- Verify MY_BUCKET binding exists
-- Check bucket CORS settings if needed
-- Verify bucket is public or has correct access policies
+### Cloudflare Images/Stream Upload Issues
+- Verify CF_ACCOUNT_ID and CF_IMAGES_API_TOKEN are set
+- Check API token has "Cloudflare Images" and "Cloudflare Stream" permissions
+- Verify account has Cloudflare Images enabled (it's a paid feature)
+- For videos: ensure CLOUDFLARE_STREAM_TOKEN is set if using separate token
 
 ## API Response Examples
 
@@ -292,14 +310,16 @@ Potential improvements:
   "items": [
     {
       "id": 1,
-      "user_id": "123456789",
+      "user_id": 123456789,
       "username": "EpicGamer123",
       "title": "Amazing Victory!",
       "description": "Won the final minigame!",
-      "media_url": "https://pub-49351598fde84dec89feb871921190e9.r2.dev/gallery/123456789/1234567890-abc123.jpg",
-      "media_type": "image",
+      "media_url": "https://imagedelivery.net/I2Jsf9fuZwSztWJZaX0DJA/gallery-123456789-1234567890-abc123/public",
+      "thumbnail_url": null,
       "created_at": 1698765432000,
-      "views": 42
+      "views": 42,
+      "likes_count": 5,
+      "user_liked": false
     }
   ]
 }
@@ -320,13 +340,13 @@ Potential improvements:
   "items": [
     {
       "id": 3,
-      "user_id": "987654321",
+      "user_id": 987654321,
       "username": "ProPlayer456",
       "title": "Epic Clutch Moment",
       "description": "Last second win!",
-      "media_url": "https://pub-49351598fde84dec89feb871921190e9.r2.dev/gallery/987654321/1234567890-def456.mp4",
-      "media_type": "video",
-      "status": "pending",
+      "media_url": "https://customer-d9fecb3357660ea0fcfee5b23d5dd2f6.cloudflarestream.com/abc123def456/manifest/video.m3u8",
+      "thumbnail_url": "https://imagedelivery.net/I2Jsf9fuZwSztWJZaX0DJA/gallery-thumb-987654321-1234567890-xyz/public",
+      "status": 2,
       "created_at": 1698765432000,
       "views": 0
     }
@@ -334,9 +354,31 @@ Potential improvements:
 }
 ```
 
+## Migrating from R2 to Cloudflare Images
+
+If you have legacy gallery items stored in R2, use the migration scripts:
+
+```bash
+# Preview what would be migrated
+node scripts/migrate-gallery-r2-to-images.js --dry-run
+
+# Run the migration
+node scripts/migrate-gallery-r2-to-images.js
+
+# After migration, clean up R2 objects
+node scripts/cleanup-gallery-r2-after-migration.js --dry-run
+node scripts/cleanup-gallery-r2-after-migration.js --confirm-delete
+```
+
+Required environment variables for migration:
+- `CLOUDFLARE_API_TOKEN` - API token with R2 read + Images write permissions
+- `CF_ACCOUNT_ID` - Cloudflare account ID
+- `D1_DATABASE_ID` - D1 database ID
+- `R2_BUCKET_NAME` - R2 bucket name (default: `emwiki-media`)
+
 ## Credits
 
-- Built with Cloudflare Workers, D1, and R2
+- Built with Cloudflare Workers, D1, Cloudflare Images, and Cloudflare Stream
 - Uses existing emwiki authentication system
 - Responsive design with CSS custom properties
 - Vanilla JavaScript (no frameworks)
