@@ -492,7 +492,7 @@ class Gallery {
                         <iframe 
                             src="https://iframe.videodelivery.net/${streamUid}?loop=true&preload=auto"
                             style="width: 100%; aspect-ratio: 16/9; border: none; border-radius: 8px;"
-                            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+                            allow="accelerometer; gyroscope; autoplay;"
                             allowfullscreen>
                         </iframe>
                     `;
