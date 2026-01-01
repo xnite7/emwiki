@@ -13,17 +13,25 @@ database_id = "YOUR_D1_DATABASE_ID"  # Replace with your actual D1 database ID
 queue = "scammer-messages"
 binding = "SCAMMER_QUEUE"
 
-# R2 bucket binding (for storing images/videos)
-[[r2_buckets]]
-binding = "MY_BUCKET"
-bucket_name = "YOUR_R2_BUCKET_NAME"  # Replace with your actual R2 bucket name
-
 # Cron trigger - runs every hour
 [[triggers.crons]]
 cron = "0 * * * *"  # Every hour at minute 0
 
-# Environment variables (set via wrangler secret put or dashboard)
-# DISCORD_BOT_TOKEN (REQUIRED)
-# DISCORD_CHANNEL_ID (REQUIRED)
-# CLOUDFLARE_ACCOUNT_ID (optional, for Stream)
-# CLOUDFLARE_STREAM_TOKEN (optional, for Stream)
+# ============================================================================
+# REQUIRED SECRETS (set via: wrangler secret put SECRET_NAME)
+# ============================================================================
+# DISCORD_BOT_TOKEN - Your Discord bot token
+# DISCORD_CHANNEL_ID - The Discord channel ID to monitor
+
+# ============================================================================
+# CLOUDFLARE IMAGES (for image evidence)
+# ============================================================================
+# CLOUDFLARE_ACCOUNT_ID - Your Cloudflare account ID
+# CLOUDFLARE_STREAM_TOKEN - API token with Images:Edit permission
+#   OR use CLOUDFLARE_API_TOKEN with both Images and Stream permissions
+
+# ============================================================================
+# CLOUDFLARE STREAM (for video evidence)
+# ============================================================================
+# CLOUDFLARE_STREAM_TOKEN - API token with Stream:Edit permission
+#   OR use CLOUDFLARE_API_TOKEN with both Images and Stream permissions

@@ -147,13 +147,14 @@ async function checkForNewMessages(env, db) {
       VALUES (?, 'running', ?, 0, 0, ?)
     `).bind(jobId, Date.now(), newMessages.length).run();
     
-    // Enqueue messages
+    // Enqueue messages with threadId if present
     const queueMessages = newMessages.map(msg => ({
       body: {
         jobId,
         messageId: msg.id,
         channelId,
-        message: msg
+        message: msg,
+        threadId: msg.thread?.id || null  // Queue consumer will fetch thread evidence
       }
     }));
     
@@ -321,7 +322,7 @@ async function fetchActiveThreads(channelId, env) {
 
 /**
  * Fetch all messages from a Discord thread
- * Downloads images/videos to R2 automatically
+ * Uploads images/videos to Cloudflare Images/Stream
  */
 async function fetchDiscordThread(threadId, env) {
   if (!threadId) return null;
@@ -349,7 +350,6 @@ async function fetchDiscordThread(threadId, env) {
       }
 
       if (response.status === 404) {
-        // Thread not found or no access
         return null;
       }
 
@@ -360,96 +360,43 @@ async function fetchDiscordThread(threadId, env) {
       const messages = await response.json();
       if (messages.length === 0) break;
 
-      // Process messages and download attachments to R2
+      // Process messages and upload attachments to Cloudflare
       for (const msg of messages) {
         const messageData = {
           id: msg.id,
-          author: {
-            id: msg.author?.id,
-            username: msg.author?.username,
-            global_name: msg.author?.global_name,
-            avatar: msg.author?.avatar,
-            discriminator: msg.author?.discriminator
-          },
+          author: msg.author?.username || 'Unknown',
           content: msg.content,
           timestamp: msg.timestamp,
           edited_timestamp: msg.edited_timestamp,
-          attachments: [],
-          embeds: msg.embeds || []
+          attachments: []
         };
 
-        // Process attachments (download to R2)
+        // Process attachments (upload to Cloudflare Images/Stream)
         if (msg.attachments && msg.attachments.length > 0) {
-          const attachmentPromises = msg.attachments.map(async (att) => {
-            const isVideo = att.content_type?.startsWith('video/') || false;
-            const isImage = att.content_type?.startsWith('image/') || false;
-            
-            let r2Url = null;
-            let streamId = null;
-            let streamUrl = null;
-            
-            if (isVideo && att.url && env.MY_BUCKET) {
-              try {
-                const result = await downloadVideoToR2(
-                  att.url,
-                  att.id,
-                  att.filename,
-                  att.content_type,
-                  env
-                );
-                r2Url = result.r2_url;
-                streamId = result.stream_id;
-                streamUrl = result.stream_url;
-              } catch (err) {
-                console.warn(`[PERIODIC CHECK] Failed to download video ${att.id}:`, err.message);
-              }
+          for (const att of msg.attachments) {
+            try {
+              const uploaded = await uploadToCloudflareMedia(att, env);
+              messageData.attachments.push(uploaded);
+            } catch (err) {
+              console.warn(`[PERIODIC CHECK] Failed to upload ${att.filename}:`, err.message);
+              messageData.attachments.push({
+                id: att.id,
+                filename: att.filename,
+                content_type: att.content_type,
+                url: att.url
+              });
             }
-            
-            if (isImage && att.url && env.MY_BUCKET) {
-              try {
-                const result = await downloadImageToR2(
-                  att.url,
-                  att.id,
-                  att.filename,
-                  att.content_type,
-                  env
-                );
-                r2Url = result.r2_url;
-              } catch (err) {
-                console.warn(`[PERIODIC CHECK] Failed to download image ${att.id}:`, err.message);
-              }
-            }
-
-            return {
-              id: att.id,
-              filename: att.filename,
-              url: att.url,
-              r2_url: r2Url,
-              stream_id: streamId,
-              stream_url: streamUrl,
-              proxy_url: att.proxy_url,
-              size: att.size,
-              content_type: att.content_type,
-              width: att.width,
-              height: att.height,
-              is_image: isImage,
-              is_video: isVideo
-            };
-          });
-
-          messageData.attachments = await Promise.all(attachmentPromises);
+          }
         }
 
         threadMessages.push(messageData);
       }
 
       before = messages[messages.length - 1].id;
-      
-      // Safety limit
       if (threadMessages.length >= 1000) break;
     }
 
-    // Sort by timestamp (oldest first)
+    // Sort oldest first
     threadMessages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
     return threadMessages;
@@ -459,176 +406,153 @@ async function fetchDiscordThread(threadId, env) {
   }
 }
 
-/**
- * Download Discord video and upload to R2 (and Stream for QuickTime)
- */
-async function downloadVideoToR2(discordUrl, attachmentId, filename, contentType, env) {
-  try {
-    if (!env.MY_BUCKET) return { r2_url: null, stream_id: null };
-    
-    let ext = filename.split('.').pop();
-    if (!ext || ext === filename) {
-      if (contentType?.includes('mp4')) ext = 'mp4';
-      else if (contentType?.includes('webm')) ext = 'webm';
-      else if (contentType?.includes('quicktime')) ext = 'mov';
-      else ext = 'mp4';
-    }
+// ============================================================================
+// CLOUDFLARE IMAGES & STREAM UPLOAD
+// ============================================================================
 
-    const isQuickTime = contentType?.includes('quicktime') || ext === 'mov';
-    const key = `scammer-evidence/videos/${attachmentId}.${ext}`;
-
-    // Check if already exists
-    try {
-      const existing = await env.MY_BUCKET.head(key);
-      if (existing) {
-        return { r2_url: `https://cdn.emwiki.com/${key}`, stream_id: null };
-      }
-    } catch {}
-
-    // Download from Discord
-    const videoResponse = await fetch(discordUrl, {
-      headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
-    });
-
-    if (!videoResponse.ok) {
-      return { r2_url: null, stream_id: null };
-    }
-
-    const videoData = await videoResponse.arrayBuffer();
-
-    // Upload to R2
-    await env.MY_BUCKET.put(key, videoData, {
-      httpMetadata: { 
-        contentType: contentType || 'video/mp4',
-        cacheControl: 'public, max-age=31536000'
-      },
-      customMetadata: {
-        'original-filename': filename || 'video'
-      }
-    });
-
-    const r2Url = `https://cdn.emwiki.com/${key}`;
-
-    // For QuickTime videos, upload to Stream
-    let streamData = null;
-    if (isQuickTime && env.CLOUDFLARE_ACCOUNT_ID && env.CLOUDFLARE_STREAM_TOKEN) {
-      try {
-        streamData = await uploadVideoToStream(videoData, filename, env);
-      } catch (err) {
-        console.warn(`[PERIODIC CHECK] Failed to upload to Stream:`, err.message);
-      }
-    }
-
-    return { 
-      r2_url: r2Url, 
-      stream_id: streamData?.id || null,
-      stream_url: streamData?.playback_url || null
+async function uploadToCloudflareMedia(attachment, env) {
+  const contentType = attachment.content_type || '';
+  const isImage = contentType.startsWith('image/');
+  const isVideo = contentType.startsWith('video/') || contentType === 'video/quicktime';
+  
+  if (isImage) {
+    return await uploadToCloudflareImages(attachment, env);
+  } else if (isVideo) {
+    return await uploadToCloudflareStream(attachment, env);
+  } else {
+    return {
+      id: attachment.id,
+      filename: attachment.filename,
+      content_type: attachment.content_type,
+      url: attachment.url
     };
-  } catch (err) {
-    console.error(`[PERIODIC CHECK] Error downloading video:`, err);
-    return { r2_url: null, stream_id: null };
   }
 }
 
-/**
- * Download Discord image and upload to R2
- */
-async function downloadImageToR2(discordUrl, attachmentId, filename, contentType, env) {
-  try {
-    if (!env.MY_BUCKET) return { r2_url: null };
-    
-    let ext = filename.split('.').pop();
-    if (!ext || ext === filename) {
-      if (contentType?.includes('png')) ext = 'png';
-      else if (contentType?.includes('jpeg') || contentType?.includes('jpg')) ext = 'jpg';
-      else if (contentType?.includes('gif')) ext = 'gif';
-      else if (contentType?.includes('webp')) ext = 'webp';
-      else ext = 'png';
-    }
-
-    const key = `scammer-evidence/images/${attachmentId}.${ext}`;
-
-    // Check if already exists
-    try {
-      const existing = await env.MY_BUCKET.head(key);
-      if (existing) {
-        return { r2_url: `https://cdn.emwiki.com/${key}` };
-      }
-    } catch {}
-
-    // Download from Discord
-    const imageResponse = await fetch(discordUrl, {
-      headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
-    });
-
-    if (!imageResponse.ok) {
-      return { r2_url: null };
-    }
-
-    const imageData = await imageResponse.arrayBuffer();
-
-    // Upload to R2
-    await env.MY_BUCKET.put(key, imageData, {
-      httpMetadata: { 
-        contentType: contentType || 'image/png',
-        cacheControl: 'public, max-age=31536000'
-      },
-      customMetadata: {
-        'original-filename': filename || 'image'
-      }
-    });
-
-    return { r2_url: `https://cdn.emwiki.com/${key}` };
-  } catch (err) {
-    console.error(`[PERIODIC CHECK] Error downloading image:`, err);
-    return { r2_url: null };
+async function uploadToCloudflareImages(attachment, env) {
+  const accountId = env.CLOUDFLARE_ACCOUNT_ID;
+    const apiToken = env.CLOUDFLARE_STREAM_TOKEN;
+  
+  if (!accountId || !apiToken) {
+    return {
+      id: attachment.id,
+      filename: attachment.filename,
+      content_type: attachment.content_type,
+      url: attachment.url
+    };
   }
-}
-
-/**
- * Upload video to Cloudflare Stream
- */
-async function uploadVideoToStream(videoData, filename, env) {
-  try {
-    if (!env.CLOUDFLARE_ACCOUNT_ID || !env.CLOUDFLARE_STREAM_TOKEN) {
-      return null;
-    }
-
-    const formData = new FormData();
-    const blob = new Blob([videoData], { type: 'video/quicktime' });
-    formData.append('file', blob, filename);
-
-    const uploadResponse = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/stream`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${env.CLOUDFLARE_STREAM_TOKEN}`
-        },
-        body: formData
-      }
-    );
-
-    if (!uploadResponse.ok) {
-      return null;
-    }
-
-    const streamData = await uploadResponse.json();
-    const videoId = streamData.result?.uid;
-    if (videoId) {
-      let playbackUrl = streamData.result?.playback?.hls || streamData.result?.playback?.dash;
-      if (!playbackUrl) {
-        playbackUrl = `https://customer-wosapspiey2ql225.cloudflarestream.com/${videoId}/manifest/video.m3u8`;
-      }
+  
+  const customId = `scammer-evidence-${attachment.id}`;
+  
+  // Check if already exists
+  const checkUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1/${customId}`;
+  const checkRes = await fetch(checkUrl, {
+    headers: { Authorization: `Bearer ${apiToken}` }
+  });
+  
+  if (checkRes.ok) {
+    const existing = await checkRes.json();
+    if (existing.success && existing.result?.variants?.[0]) {
       return {
-        id: videoId,
-        playback_url: playbackUrl
+        id: attachment.id,
+        filename: attachment.filename,
+        content_type: attachment.content_type,
+        cf_url: existing.result.variants[0],
+        url: attachment.url
       };
     }
-    return null;
-  } catch (err) {
-    console.error(`[PERIODIC CHECK] Error uploading to Stream:`, err);
-    return null;
   }
+  
+  // Download and upload
+  const downloadRes = await fetch(attachment.url);
+  if (!downloadRes.ok) throw new Error('Failed to download');
+  
+  const imageBlob = await downloadRes.blob();
+  
+  const formData = new FormData();
+  formData.append('file', imageBlob, attachment.filename);
+  formData.append('id', customId);
+  
+  const uploadUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1`;
+  const uploadRes = await fetch(uploadUrl, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiToken}` },
+    body: formData
+  });
+  
+  if (!uploadRes.ok) throw new Error('Upload failed');
+  
+  const result = await uploadRes.json();
+  if (!result.success) throw new Error(result.errors?.[0]?.message || 'Upload failed');
+  
+  return {
+    id: attachment.id,
+    filename: attachment.filename,
+    content_type: attachment.content_type,
+    cf_url: result.result.variants[0],
+    url: attachment.url
+  };
 }
 
+async function uploadToCloudflareStream(attachment, env) {
+  const accountId = env.CLOUDFLARE_ACCOUNT_ID;
+  const apiToken = env.CLOUDFLARE_STREAM_TOKEN;
+  
+  if (!accountId || !apiToken) {
+    return {
+      id: attachment.id,
+      filename: attachment.filename,
+      content_type: attachment.content_type,
+      url: attachment.url
+    };
+  }
+  
+  const customUid = `scammer-evidence-${attachment.id}`;
+  
+  // Check if exists
+  const searchUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream?search=${customUid}`;
+  const searchRes = await fetch(searchUrl, {
+    headers: { Authorization: `Bearer ${apiToken}` }
+  });
+  
+  if (searchRes.ok) {
+    const existing = await searchRes.json();
+    if (existing.success && existing.result?.length > 0) {
+      const video = existing.result[0];
+      return {
+        id: attachment.id,
+        filename: attachment.filename,
+        content_type: attachment.content_type,
+        stream_uid: video.uid,
+        url: attachment.url
+      };
+    }
+  }
+  
+  // Upload via URL
+  const uploadUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/copy`;
+  const uploadRes = await fetch(uploadUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      url: attachment.url,
+      meta: { name: customUid }
+    })
+  });
+  
+  if (!uploadRes.ok) throw new Error('Stream upload failed');
+  
+  const result = await uploadRes.json();
+  if (!result.success) throw new Error(result.errors?.[0]?.message || 'Upload failed');
+  
+  return {
+    id: attachment.id,
+    filename: attachment.filename,
+    content_type: attachment.content_type,
+    stream_uid: result.result.uid,
+    url: attachment.url
+  };
+}

@@ -473,30 +473,62 @@ class Gallery {
         actionsContainer.innerHTML = '';
         // Set media
         if (item.media_type === 'video') {
-            mediaContainer.innerHTML = `
-                <div class="custom-video-player">
-                    <video src="${item.media_url}" loop playsinline disablePictureInPicture controlsList="nodownload noplaybackrate" oncontextmenu="return false;"></video>
-                    <div class="custom-controls">
-                        <button class="play-pause-btn" aria-label="Play/Pause">
-                            <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                            <svg class="pause-icon" viewBox="0 0 24 24" style="display:none;"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>
-                        </button>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar">
-                                <div class="progress-filled"></div>
+            // Check if this is a Cloudflare Stream video (use iframe embed)
+            const isStreamVideo = item.media_url?.includes('cloudflarestream.com') || 
+                                  item.media_url?.includes('videodelivery.net') ||
+                                  item.media_url?.includes('.m3u8');
+            
+            if (isStreamVideo) {
+                // Extract stream UID and use iframe embed for best compatibility
+                let streamUid = '';
+                if (item.media_url.includes('videodelivery.net/')) {
+                    streamUid = item.media_url.split('videodelivery.net/')[1]?.split('/')[0];
+                } else if (item.media_url.includes('cloudflarestream.com/')) {
+                    streamUid = item.media_url.split('cloudflarestream.com/')[1]?.split('/')[0];
+                }
+                
+                if (streamUid) {
+                    mediaContainer.innerHTML = `
+                        <iframe 
+                            src="https://iframe.videodelivery.net/${streamUid}?loop=true&preload=auto"
+                            style="width: 100%; aspect-ratio: 16/9; border: none; border-radius: 8px;"
+                            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
+                    `;
+                } else {
+                    // Fallback to regular video tag
+                    mediaContainer.innerHTML = `
+                        <video src="${item.media_url}" controls loop playsinline style="width: 100%; border-radius: 8px;"></video>
+                    `;
+                }
+            } else {
+                // Regular video (non-Stream)
+                mediaContainer.innerHTML = `
+                    <div class="custom-video-player">
+                        <video src="${item.media_url}" loop playsinline disablePictureInPicture controlsList="nodownload noplaybackrate" oncontextmenu="return false;"></video>
+                        <div class="custom-controls">
+                            <button class="play-pause-btn" aria-label="Play/Pause">
+                                <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                <svg class="pause-icon" viewBox="0 0 24 24" style="display:none;"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>
+                            </button>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar">
+                                    <div class="progress-filled"></div>
+                                </div>
                             </div>
+                            <span class="time-display">0:00 / 0:00</span>
+                            <button class="volume-btn" aria-label="Volume">
+                                <svg class="volume-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+                            </button>
+                            <button class="fullscreen-btn" aria-label="Fullscreen">
+                                <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                            </button>
                         </div>
-                        <span class="time-display">0:00 / 0:00</span>
-                        <button class="volume-btn" aria-label="Volume">
-                            <svg class="volume-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-                        </button>
-                        <button class="fullscreen-btn" aria-label="Fullscreen">
-                            <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
-                        </button>
                     </div>
-                </div>
-            `;
-            this.setupCustomVideoPlayer(mediaContainer);
+                `;
+                this.setupCustomVideoPlayer(mediaContainer);
+            }
         } else {
             mediaContainer.innerHTML = `<img src="${item.media_url}" alt="${item.title}" oncontextmenu="return false;">`;
         }

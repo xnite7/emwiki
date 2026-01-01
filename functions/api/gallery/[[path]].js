@@ -327,7 +327,7 @@ async function handlePost({ request, env, params }) {
     });
   }
 
-  // POST /api/gallery/upload - Upload media file
+  // POST /api/gallery/upload - Upload media file to Cloudflare Images/Stream
   if (path === 'upload') {
     try {
       const formData = await request.formData();
@@ -336,67 +336,144 @@ async function handlePost({ request, env, params }) {
       if (!file) {
         return new Response(JSON.stringify({ error: 'No file uploaded' }), {
           status: 400,
-          headers: {
-            'Content-Type': 'application/json',
-            ...CORS_HEADERS
-          }
+          headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
         });
       }
 
       // Validate file type
       const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
       const validVideoTypes = ['video/mp4', 'video/webm', 'video/quicktime'];
-      const validTypes = [...validImageTypes, ...validVideoTypes];
+      const isImage = validImageTypes.includes(file.type);
+      const isVideo = validVideoTypes.includes(file.type);
 
-      if (!validTypes.includes(file.type)) {
+      if (!isImage && !isVideo) {
         return new Response(JSON.stringify({
           error: 'Invalid file type. Only images (JPEG, PNG, GIF, WebP) and videos (MP4, WebM, MOV) are allowed.'
         }), {
           status: 400,
-          headers: {
-            'Content-Type': 'application/json',
-            ...CORS_HEADERS
-          }
+          headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
         });
       }
 
-      // Validate file size (max 100MB)
-      if (file.size > 100 * 1024 * 1024) {
+      // Validate file size (max 100MB for videos, 10MB for images)
+      const maxSize = isVideo ? 100 * 1024 * 1024 : 10 * 1024 * 1024;
+      if (file.size > maxSize) {
         return new Response(JSON.stringify({
-          error: 'File too large. Maximum size is 100MB.'
+          error: `File too large. Maximum size is ${isVideo ? '100MB' : '10MB'}.`
         }), {
           status: 400,
-          headers: {
-            'Content-Type': 'application/json',
-            ...CORS_HEADERS
-          }
+          headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
         });
       }
 
-      // Generate unique key for R2
-      const ext = file.name.split('.').pop();
-      const key = `gallery/${user.user_id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
+      const accountId = env.CLOUDFLARE_ACCOUNT_ID;
+      const apiToken = env.CLOUDFLARE_API_TOKEN || env.CLOUDFLARE_IMAGES_TOKEN;
 
-      // Upload to R2
-      await env.MY_BUCKET.put(key, await file.arrayBuffer(), {
-        httpMetadata: { contentType: file.type }
-      });
+      if (!accountId || !apiToken) {
+        return new Response(JSON.stringify({
+          error: 'Cloudflare credentials not configured'
+        }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+        });
+      }
 
-      const url = `https://cdn.emwiki.com/${key}`;
+      // Generate unique ID for the upload
+      const customId = `gallery-${user.user_id}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
 
-      return new Response(JSON.stringify({ url, type: file.type }), {
-        headers: {
-          'Content-Type': 'application/json',
-          ...CORS_HEADERS
+      if (isImage) {
+        // Upload to Cloudflare Images
+        const uploadForm = new FormData();
+        uploadForm.append('file', file, file.name);
+        uploadForm.append('id', customId);
+        uploadForm.append('metadata', JSON.stringify({
+          user_id: user.user_id,
+          username: user.username,
+          uploaded_at: Date.now()
+        }));
+
+        const uploadRes = await fetch(
+          `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1`,
+          {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${apiToken}` },
+            body: uploadForm
+          }
+        );
+
+        if (!uploadRes.ok) {
+          const error = await uploadRes.text();
+          throw new Error(`Images upload failed: ${error}`);
         }
-      });
+
+        const result = await uploadRes.json();
+        if (!result.success) {
+          throw new Error(result.errors?.[0]?.message || 'Upload failed');
+        }
+
+        // Return the public variant URL
+        const url = result.result.variants[0];
+        return new Response(JSON.stringify({ 
+          url, 
+          type: file.type,
+          cf_id: customId,
+          provider: 'cloudflare-images'
+        }), {
+          headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+        });
+
+      } else {
+        // Upload to Cloudflare Stream
+        const streamToken = env.CLOUDFLARE_STREAM_TOKEN || apiToken;
+        
+        // Use TUS upload for larger files, direct upload for smaller
+        const uploadForm = new FormData();
+        uploadForm.append('file', file, file.name);
+        uploadForm.append('meta', JSON.stringify({
+          name: customId,
+          user_id: user.user_id,
+          username: user.username
+        }));
+
+        const uploadRes = await fetch(
+          `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream`,
+          {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${streamToken}` },
+            body: uploadForm
+          }
+        );
+
+        if (!uploadRes.ok) {
+          const error = await uploadRes.text();
+          throw new Error(`Stream upload failed: ${error}`);
+        }
+
+        const result = await uploadRes.json();
+        if (!result.success) {
+          throw new Error(result.errors?.[0]?.message || 'Upload failed');
+        }
+
+        const streamUid = result.result.uid;
+        // Return the HLS manifest URL for direct video playback
+        // Also store stream_uid for iframe embedding if needed
+        const url = result.result.playback?.hls || `https://customer-${accountId}.cloudflarestream.com/${streamUid}/manifest/video.m3u8`;
+        
+        return new Response(JSON.stringify({ 
+          url,  // HLS manifest for video players
+          type: file.type,
+          stream_uid: streamUid,
+          iframe_url: `https://iframe.videodelivery.net/${streamUid}`,
+          provider: 'cloudflare-stream'
+        }), {
+          headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+        });
+      }
     } catch (err) {
+      console.error('Gallery upload error:', err);
       return new Response(JSON.stringify({ error: 'Upload failed: ' + err.message }), {
         status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          ...CORS_HEADERS
-        }
+        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
       });
     }
   }
@@ -658,24 +735,57 @@ async function handleDelete({ request, env, params }) {
   // Delete from database
   await env.DBA.prepare('DELETE FROM gallery_items WHERE id = ?').bind(itemId).run();
 
-  // Optionally delete from R2 (extract key from URL)
-  try {
-    const key = item.media_url.split('.r2.dev/')[1];
-    if (key) {
-      await env.MY_BUCKET.delete(key);
+  // Delete from Cloudflare Images or Stream
+  const accountId = env.CLOUDFLARE_ACCOUNT_ID;
+  const apiToken = env.CLOUDFLARE_API_TOKEN || env.CLOUDFLARE_IMAGES_TOKEN;
+  
+  if (accountId && apiToken && item.media_url) {
+    try {
+      // Check if it's a Cloudflare Images URL
+      if (item.media_url.includes('imagedelivery.net')) {
+        // Extract image ID from URL (format: .../imagedelivery.net/{account_hash}/{image_id}/...)
+        const parts = item.media_url.split('/');
+        const imageId = parts[parts.length - 2]; // Second to last segment
+        if (imageId && imageId.startsWith('gallery-')) {
+          await fetch(
+            `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1/${imageId}`,
+            {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${apiToken}` }
+            }
+          );
+          console.log(`Deleted image: ${imageId}`);
+        }
+      }
+      // Check if it's a Cloudflare Stream URL
+      else if (item.media_url.includes('videodelivery.net') || item.media_url.includes('cloudflarestream.com')) {
+        // Extract stream UID from URL
+        const streamToken = env.CLOUDFLARE_STREAM_TOKEN || apiToken;
+        const parts = item.media_url.split('/');
+        // Try to find the UID (usually after videodelivery.net/)
+        const uidIndex = parts.findIndex(p => p.includes('videodelivery.net') || p.includes('cloudflarestream.com'));
+        const streamUid = uidIndex >= 0 ? parts[uidIndex + 1] : null;
+        if (streamUid) {
+          await fetch(
+            `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/${streamUid}`,
+            {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${streamToken}` }
+            }
+          );
+          console.log(`Deleted video: ${streamUid}`);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to delete from Cloudflare:', err);
     }
-  } catch (err) {
-    console.error('Failed to delete R2 object:', err);
   }
 
   return new Response(JSON.stringify({
     success: true,
     message: 'Item deleted successfully'
   }), {
-    headers: {
-      'Content-Type': 'application/json',
-      ...CORS_HEADERS
-    }
+    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
   });
 }
 
