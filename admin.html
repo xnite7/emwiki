@@ -477,7 +477,8 @@
                     gamenightOnly: false,
                     sort: 'default',
                     showPrices: false,
-                    newestOnly: false
+                    newestOnly: false,
+                    searchDescriptions: false
                 };
                 this.ws = {
                     admin: null,
@@ -2920,6 +2921,21 @@
                     innerHTML: '<span class="icon search-icon"></span>',
                 });
 
+                // Description search checkbox
+                const descSearchLabel = document.createElement('label');
+                descSearchLabel.style.cssText = 'display: flex; align-items: center; gap: 6px; font-size: 13px; color: #999; cursor: pointer; white-space: nowrap;';
+                const descSearchCheckbox = document.createElement('input');
+                descSearchCheckbox.type = 'checkbox';
+                descSearchCheckbox.id = 'search-descriptions';
+                descSearchCheckbox.checked = state.filters.searchDescriptions;
+                descSearchCheckbox.style.cursor = 'pointer';
+                descSearchCheckbox.addEventListener('change', (e) => {
+                    state.filters.searchDescriptions = e.target.checked;
+                    UI.renderItems();
+                });
+                descSearchLabel.appendChild(descSearchCheckbox);
+                descSearchLabel.appendChild(document.createTextNode('Search descriptions'));
+
                 // Category filter
                 const categorySelect = Utils.createElement('select', {
                     id: 'category-filter',
@@ -3007,6 +3023,7 @@
                 pricesBtn.click();
                 container.appendChild(searchInput);
                 container.appendChild(i);
+                container.appendChild(descSearchLabel);
                 container.appendChild(categorySelect);
                 container.appendChild(newestBtn);
                 container.appendChild(sortSelect);
@@ -3042,8 +3059,9 @@
                 }
 
                 if (state.filters.search) {
+                    const searchKeys = state.filters.searchDescriptions ? ['from'] : ['name'];
                     const fuse = new Fuse(filtered, {
-                        keys: ['name'],
+                        keys: searchKeys,
                         threshold: 0.35
                     });
                     filtered = fuse.search(state.filters.search).map(r => r.item);
@@ -5917,7 +5935,8 @@
                     gamenightOnly: false,
                     sort: 'default',
                     showPrices: false,
-                    newestOnly: false
+                    newestOnly: false,
+                    searchDescriptions: false
                 };
 
                 // Update UI

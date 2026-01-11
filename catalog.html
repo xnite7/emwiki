@@ -1325,6 +1325,9 @@
                     if (isRobloxId) {
                         Utils.getRobloxUserData(credit).then(userData => {
                             if (userData) {
+                                if (credit == '792651524') {
+                                    userData.name = 'Nooby_Dev';
+                                }
                                 document.getElementById('season-label').textContent = `Credits: ${userData.name || credit}`;
                             } else {
                                 document.getElementById('season-label').textContent = `Credits: ${credit}`;
