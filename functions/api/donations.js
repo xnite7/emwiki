@@ -38,28 +38,47 @@ async function replaceUserTotals(kv, userId, totalSpent, purchases) {
 async function processRobloxTransactionsReplace(kv, transactions, allowedProductIds) {
   // Group transactions by buyer (agent.id)
   const userTotals = new Map(); // userId -> { totalSpent, purchases }
+  const foundProductIds = new Set(); // For debugging
+  let skippedCount = 0;
+  let processedCount = 0;
 
   for (const tx of transactions) {
     // Only process "Sale" transactions with currency type "Robux"
     if (tx.transactionType !== 'Sale' || tx.currency?.type !== 'Robux') {
+      skippedCount++;
       continue;
     }
 
     // Filter by developer product ID if specified
     const productId = tx.details?.id;
+    if (productId) {
+      foundProductIds.add(productId);
+    }
+
     if (allowedProductIds && allowedProductIds.length > 0) {
-      if (!productId || !allowedProductIds.includes(productId)) {
+      // Convert both to numbers for comparison (handle string/number mismatch)
+      const productIdNum = productId ? Number(productId) : null;
+      const isAllowed = productIdNum && allowedProductIds.some(id => Number(id) === productIdNum);
+      
+      if (!isAllowed) {
+        skippedCount++;
         continue; // Skip transactions not for our products
       }
     }
 
     // Extract user ID from agent (the buyer)
     const userId = tx.agent?.id;
-    if (!userId) continue;
+    if (!userId) {
+      skippedCount++;
+      continue;
+    }
 
     // Extract price (in Robux, before Roblox takes their cut)
     const price = tx.currency?.amount || 0;
-    if (price <= 0) continue;
+    if (price <= 0) {
+      skippedCount++;
+      continue;
+    }
 
     // Accumulate totals per user
     const userIdStr = String(userId);
@@ -70,6 +89,7 @@ async function processRobloxTransactionsReplace(kv, transactions, allowedProduct
     const totals = userTotals.get(userIdStr);
     totals.totalSpent += price;
     totals.purchases += 1;
+    processedCount++;
   }
 
   // Replace all user totals in KV
@@ -83,7 +103,16 @@ async function processRobloxTransactionsReplace(kv, transactions, allowedProduct
     });
   }
 
-  return processed;
+  // Add debug info to response
+  return {
+    processed,
+    debug: {
+      totalTransactions: transactions.length,
+      processedCount,
+      skippedCount,
+      foundProductIds: Array.from(foundProductIds).slice(0, 20) // Limit to first 20 for response size
+    }
+  };
 }
 
 /**
@@ -188,7 +217,9 @@ async function handleScheduledFetch(request, env, kv) {
     }
 
     // Process all transactions and replace totals
-    const processed = await processRobloxTransactionsReplace(kv, allTransactions, allowedProductIds);
+    const result = await processRobloxTransactionsReplace(kv, allTransactions, allowedProductIds);
+    const processed = result.processed;
+    const debug = result.debug;
 
     return new Response(JSON.stringify({
       status: 'ok',
@@ -196,7 +227,12 @@ async function handleScheduledFetch(request, env, kv) {
       totalTransactions: allTransactions.length,
       processedUsers: processed.length,
       allowedProductIds: allowedProductIds || 'all',
-      results: processed
+      results: processed,
+      debug: {
+        processedCount: debug.processedCount,
+        skippedCount: debug.skippedCount,
+        foundProductIds: debug.foundProductIds
+      }
     }), {
       headers: {
         'Content-Type': 'application/json',
