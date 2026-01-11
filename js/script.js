@@ -2083,7 +2083,7 @@ class ItemModal {
             this.elements.quantity.style.display = 'none';
         }
 
-
+        this.elements.image.style.scale = 0;
 
         // Image/SVG
         if (item.img) {
@@ -2093,11 +2093,13 @@ class ItemModal {
                 this.elements.image.width = img.width;
                 this.elements.image.height = img.height;
                 ctx.drawImage(img, 0, 0);
+                this.elements.image.style.scale = 1;
             }.bind(this);
             // Use optimized image for modal (higher quality, larger size)
             img.src = Utils.getOptimizedImage(item.img, { width: 800, quality: 90, format: 'webp', fit: 'scale-down' }) || item.img;
             Utils.protectCanvas(this.elements.image);
 
+            
             this.elements.image.style.display = 'block';
             this.elements.svg.style.display = 'none';
             this.elements.title.style.opacity = 'unset';

@@ -222,14 +222,21 @@ async function handleWebhook(request, env, kv) {
   try {
     const data = await request.json();
 
-    // Support both direct transaction format and wrapped format
+    // Support multiple formats:
+    // 1. Game format: {userId, productId, price}
+    // 2. Full Roblox API format: {transactionType: 'Sale', agent: {id}, currency: {amount}, ...}
+    // 3. Array of either format
     let transactions = [];
+    
     if (Array.isArray(data)) {
       transactions = data;
     } else if (data.transactions && Array.isArray(data.transactions)) {
       transactions = data.transactions;
+    } else if (data.userId && data.price !== undefined) {
+      // Game format: simple {userId, productId, price}
+      transactions = [data];
     } else if (data.transactionType === 'Sale') {
-      // Single transaction
+      // Full Roblox API format
       transactions = [data];
     } else {
       return new Response(JSON.stringify({ error: 'Invalid webhook format' }), {
@@ -241,29 +248,44 @@ async function handleWebhook(request, env, kv) {
       });
     }
 
-    // Webhook still uses increment logic (for real-time updates)
-    // This processes transactions and increments totals
+    // Process transactions (handles both formats)
     const processed = [];
     const seenTokens = new Set();
 
     for (const tx of transactions) {
-      if (tx.purchaseToken && seenTokens.has(tx.purchaseToken)) {
+      let userId, price;
+
+      // Check if it's the game format (simple: {userId, productId, price})
+      if (tx.userId !== undefined && tx.price !== undefined) {
+        userId = tx.userId;
+        price = tx.price;
+        
+        // Validate
+        if (!userId || price <= 0) continue;
+      }
+      // Check if it's the full Roblox API format
+      else if (tx.transactionType === 'Sale' && tx.currency?.type === 'Robux') {
+        // Skip if already processed (check by purchaseToken)
+        if (tx.purchaseToken && seenTokens.has(tx.purchaseToken)) {
+          continue;
+        }
+        if (tx.purchaseToken) {
+          seenTokens.add(tx.purchaseToken);
+        }
+
+        // Extract user ID from agent (the buyer)
+        userId = tx.agent?.id;
+        if (!userId) continue;
+
+        // Extract price (in Robux, before Roblox takes their cut)
+        price = tx.currency?.amount || 0;
+        if (price <= 0) continue;
+      } else {
+        // Unknown format, skip
         continue;
       }
-      if (tx.purchaseToken) {
-        seenTokens.add(tx.purchaseToken);
-      }
 
-      if (tx.transactionType !== 'Sale' || tx.currency?.type !== 'Robux') {
-        continue;
-      }
-
-      const userId = tx.agent?.id;
-      if (!userId) continue;
-
-      const price = tx.currency?.amount || 0;
-      if (price <= 0) continue;
-
+      // Increment totals for this user
       const userIdStr = String(userId);
       const purchaseKey = `purchase:${userIdStr}`;
       const existing = await kv.get(purchaseKey);
@@ -273,9 +295,9 @@ async function handleWebhook(request, env, kv) {
       
       if (existing) {
         try {
-          const data = JSON.parse(existing);
-          totalSpent = (data.totalSpent || 0) + price;
-          purchases = (data.purchases || 0) + 1;
+          const existingData = JSON.parse(existing);
+          totalSpent = (existingData.totalSpent || 0) + price;
+          purchases = (existingData.purchases || 0) + 1;
         } catch (e) {
           console.error('Failed to parse existing purchase data:', e);
         }

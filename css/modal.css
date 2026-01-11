@@ -431,6 +431,7 @@ body:has(.item-modal.active) {
 }
 
 .modal-image {
+        transition: scale 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     width: 153px;
     height: 153px;
 }
