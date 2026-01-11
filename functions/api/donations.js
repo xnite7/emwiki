@@ -33,14 +33,17 @@ async function replaceUserTotals(kv, userId, totalSpent, purchases) {
 
 /**
  * Process Roblox transaction API response and replace totals (recalculate from scratch)
- * Filters by specific developer product IDs
+ * Filters by universe name: "👤 EMWIKI Account Linker 🌐"
  */
-async function processRobloxTransactionsReplace(kv, transactions, allowedProductIds) {
+async function processRobloxTransactionsReplace(kv, transactions, allowedUniverseName) {
   // Group transactions by buyer (agent.id)
   const userTotals = new Map(); // userId -> { totalSpent, purchases }
-  const foundProductIds = new Set(); // For debugging
+  const foundUniverseNames = new Set(); // For debugging
   let skippedCount = 0;
   let processedCount = 0;
+
+  // Default universe name if not specified
+  const targetUniverseName = allowedUniverseName || "👤 EMWIKI Account Linker 🌐";
 
   for (const tx of transactions) {
     // Only process "Sale" transactions with currency type "Robux"
@@ -49,21 +52,16 @@ async function processRobloxTransactionsReplace(kv, transactions, allowedProduct
       continue;
     }
 
-    // Filter by developer product ID if specified
-    const productId = tx.details?.id;
-    if (productId) {
-      foundProductIds.add(productId);
+    // Filter by universe name
+    const universeName = tx.details?.place?.name;
+    if (universeName) {
+      foundUniverseNames.add(universeName);
     }
 
-    if (allowedProductIds && allowedProductIds.length > 0) {
-      // Convert both to numbers for comparison (handle string/number mismatch)
-      const productIdNum = productId ? Number(productId) : null;
-      const isAllowed = productIdNum && allowedProductIds.some(id => Number(id) === productIdNum);
-      
-      if (!isAllowed) {
-        skippedCount++;
-        continue; // Skip transactions not for our products
-      }
+    // Check if universe name matches
+    if (universeName !== targetUniverseName) {
+      skippedCount++;
+      continue; // Skip transactions not from our universe
     }
 
     // Extract user ID from agent (the buyer)
@@ -110,7 +108,8 @@ async function processRobloxTransactionsReplace(kv, transactions, allowedProduct
       totalTransactions: transactions.length,
       processedCount,
       skippedCount,
-      foundProductIds: Array.from(foundProductIds).slice(0, 20) // Limit to first 20 for response size
+      targetUniverseName,
+      foundUniverseNames: Array.from(foundUniverseNames) // Show all found universe names
     }
   };
 }
@@ -121,12 +120,12 @@ async function processRobloxTransactionsReplace(kv, transactions, allowedProduct
 async function fetchUserTransactions(userId, robloxCookie, cursor = '') {
   try {
     const url = new URL(`https://apis.roblox.com/transaction-records/v1/users/${userId}/transactions`);
-    url.searchParams.set('transactionType', 'Sale');
-    url.searchParams.set('itemPricingType', 'PaidAndLimited');
-    url.searchParams.set('limit', '100');
     if (cursor) {
       url.searchParams.set('cursor', cursor);
     }
+    url.searchParams.set('limit', '100');
+    url.searchParams.set('transactionType', 'Sale');
+    url.searchParams.set('itemPricingType', 'PaidAndLimited');
 
     // Format cookie header correctly: .ROBLOSECURITY=<value>
     // Handle both cases: if user provides just the value or the full cookie string
@@ -162,7 +161,7 @@ async function handleScheduledFetch(request, env, kv) {
     // Get owner's user ID and Roblox cookie from environment variables
     const ownerUserId = env.DONATIONS_OWNER_USER_ID;
     const robloxCookie = env.ROBLOX_COOKIE;
-    const productIdsStr = env.DONATIONS_PRODUCT_IDS; // Comma-separated list of product IDs
+    const universeName = env.DONATIONS_UNIVERSE_NAME; // Optional: universe name to filter by
 
     if (!ownerUserId) {
       return new Response(JSON.stringify({ error: 'DONATIONS_OWNER_USER_ID not configured' }), {
@@ -184,14 +183,8 @@ async function handleScheduledFetch(request, env, kv) {
       });
     }
 
-    // Parse product IDs (comma-separated string to array of numbers)
-    let allowedProductIds = null;
-    if (productIdsStr) {
-      allowedProductIds = productIdsStr.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
-      if (allowedProductIds.length === 0) {
-        allowedProductIds = null; // If invalid, don't filter
-      }
-    }
+    // Use universe name from env or default to "👤 EMWIKI Account Linker 🌐"
+    const targetUniverseName = universeName || "👤 EMWIKI Account Linker 🌐";
 
     // Fetch all transactions for owner's account
     let allTransactions = [];
@@ -217,7 +210,7 @@ async function handleScheduledFetch(request, env, kv) {
     }
 
     // Process all transactions and replace totals
-    const result = await processRobloxTransactionsReplace(kv, allTransactions, allowedProductIds);
+    const result = await processRobloxTransactionsReplace(kv, allTransactions, targetUniverseName);
     const processed = result.processed;
     const debug = result.debug;
 
@@ -226,12 +219,12 @@ async function handleScheduledFetch(request, env, kv) {
       ownerUserId,
       totalTransactions: allTransactions.length,
       processedUsers: processed.length,
-      allowedProductIds: allowedProductIds || 'all',
+      targetUniverseName: debug.targetUniverseName,
       results: processed,
       debug: {
         processedCount: debug.processedCount,
         skippedCount: debug.skippedCount,
-        foundProductIds: debug.foundProductIds
+        foundUniverseNames: debug.foundUniverseNames
       }
     }), {
       headers: {
