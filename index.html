@@ -496,7 +496,7 @@
 					const div = this.createItemElement(item)
 					const priceCodeRarity = item['price/code/rarity'];
 					if (item.weeklystar) {
-						div.querySelector('.item-price').textContent = priceCodeRarity?.split('<br>').pop().replace(' Stars', '');
+						div.querySelector('.item-price').textContent = priceCodeRarity?.toLowerCase().split('<br>').pop().replace(' stars', '');
 						div.querySelector('.item-price').classList.replace('item-price', 'star-price');
 						const outlineColors = {
 							'60': '#b31aff',
@@ -513,7 +513,7 @@
 
 					} else if (item.weekly) {
 						if (priceCodeRarity) {
-							const coinValue = priceCodeRarity.split('<br>').pop().replace(' Coins', '').trim();
+							const coinValue = priceCodeRarity?.toLowerCase().split('<br>').pop().replace(' coins', '').trim();
 							if (coinValue) {
 								div.querySelector('.item-price').textContent = coinValue;
 								div.querySelector('.item-price').classList.add('coin-price');
