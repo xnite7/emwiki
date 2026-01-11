@@ -1775,9 +1775,16 @@
                         }
                     }
 
-                    // Search filter
-                    if (this.filters.search && !item.name.toLowerCase().includes(this.filters.search)) {
-                        return false;
+                    // Search filter (by name or alias)
+                    if (this.filters.search) {
+                        const nameMatches = item.name.toLowerCase().includes(this.filters.search.toLowerCase());
+                        const aliasMatches = item.alias && typeof item.alias === 'string' && item.alias.trim() 
+                            ? item.alias.toLowerCase().includes(this.filters.search.toLowerCase())
+                            : false;
+                        
+                        if (!nameMatches && !aliasMatches) {
+                            return false;
+                        }
                     }
 
                     // Tag filters

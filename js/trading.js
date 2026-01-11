@@ -1,51 +1,67 @@
-// Lightweight Trading Hub App
+// Trading Hub - Mobile-First Multi-Step Wizard
 class TradingHub {
     constructor() {
         this.trades = [];
+        this.allItems = [];
         this.filters = {
             category: 'all',
             status: 'active',
-            sort: 'recent'
+            sort: 'recent',
+            search: ''
         };
         this.apiBase = 'https://emwiki.com/api/trades';
-        this.allItems = [];
+        this.itemsApiBase = 'https://emwiki.com/api/items';
+        this.currentUser = null;
         this.categories = ['gears', 'deaths', 'pets', 'effects', 'titles'];
-        //wait till the Auth object is available
-        //wait 5 seconds
-
-        window.Auth.addEventListener("sessionReady", () => {
-            console.log("User loaded:", window.Auth.user);
-            this.currentUser = window.Auth.user;
-
-            this.loadTheme();
-            this.init();
-        });
-
-
-
+        
+        // Wizard state
+        this.wizardState = {
+            currentStep: 1,
+            seekingItems: [],
+            offeringItems: [],
+            description: '',
+            category: '',
+            theme: 'default'
+        };
+        
+        // Search state
+        this.searchTimeouts = {};
+        this.selectedTheme = 'default';
+        
+        // Wait for Auth to be ready
+        if (window.Auth) {
+            window.Auth.addEventListener('sessionReady', () => {
+                this.currentUser = window.Auth.user;
+                this.init();
+            });
+        } else {
+            // Fallback: init after a delay
+            setTimeout(() => {
+                if (window.Auth && window.Auth.user) {
+                    this.currentUser = window.Auth.user;
+                }
+                this.init();
+            }, 500);
+        }
     }
 
     async init() {
         await this.loadItems();
         await this.loadTrades();
-        this.setupFilters();
+        this.setupEventListeners();
         this.renderTrades();
-        this.updateStats();
-        this.updateUserUI();
     }
 
     async loadItems() {
         try {
             this.allItems = [];
-            
-            // Load all categories in parallel
             const categoryPromises = this.categories.map(async (category) => {
                 let offset = 0;
                 const limit = 500;
                 let hasMore = true;
                 
                 while (hasMore) {
-                    const url = new URL('https://emwiki.com/api/items');
+                    const url = new URL(this.itemsApiBase);
                     url.searchParams.set('category', category);
                     url.searchParams.set('limit', limit.toString());
                     url.searchParams.set('offset', offset.toString());
@@ -69,806 +85,766 @@ class TradingHub {
             });
             
             await Promise.all(categoryPromises);
-            
-            console.log('Loaded', this.allItems.length, 'items from database');
-            return this.allItems;
+            console.log('Loaded', this.allItems.length, 'items');
         } catch (error) {
             console.error('Failed to load items:', error);
-            return null;
         }
-    }
-
-    loadTheme() {
-        const theme = localStorage.getItem('theme') || 'dark';
-        if (theme === 'light') {
-            document.body.classList.add('light-theme');
-        }
-
-        const themeToggle = document.querySelector('.theme-toggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', this.toggleTheme.bind(this));
-        }
-    }
-
-    toggleTheme() {
-        document.body.classList.toggle('light-theme');
-        const isLight = document.body.classList.contains('light-theme');
-        localStorage.setItem('theme', isLight ? 'light' : 'dark');
     }
 
     async loadTrades() {
         try {
             const params = new URLSearchParams({
                 status: this.filters.status,
-                ...(this.filters.category !== 'all' && { category: this.filters.category })
+                ...(this.filters.category !== 'all' && { category: this.filters.category }),
+                ...(this.filters.search && { search: this.filters.search })
             });
 
             const response = await fetch(`${this.apiBase}/listings?${params}`);
             if (!response.ok) throw new Error('Failed to load trades');
 
             const data = await response.json();
-
-            // Transform API data to match expected format
-            this.trades = data.listings.map(listing => ({
+            this.trades = (data.listings || []).map(listing => ({
                 id: listing.id,
-                trader: {
-                    id: listing.user.user_id,
-                    name: listing.user.username,
-                    avatar: listing.user.avatar_url || './imgs/placeholder.png',
-                    rating: listing.user.average_rating || 0,
-                    totalTrades: listing.user.total_trades || 0
-                },
+                user_id: listing.user_id,
                 title: listing.title,
                 description: listing.description,
-                offering: listing.offering_items,
-                offering_robux: listing.offering_robux || 0,
-                lookingFor: listing.seeking_items || [],
-                seeking_robux: listing.seeking_robux || 0,
+                category: listing.category,
                 status: listing.status,
-                createdAt: new Date(listing.created_at),
+                offering_items: listing.offering_items || [],
+                seeking_items: listing.seeking_items || [],
+                created_at: listing.created_at,
+                updated_at: listing.updated_at,
                 views: listing.views || 0,
+                user: listing.user
             }));
         } catch (error) {
             console.error('Error loading trades:', error);
-            // Fallback to mock data on error
-            if (window.Utils) {
-                Utils.showToast('Error', 'Failed to load trades from server', 'error');
+            if (window.Utils && window.Utils.showToast) {
+                window.Utils.showToast('Error', 'Failed to load trades', 'error');
             }
         }
     }
 
-    setupFilters() {
-        const categoryFilter = document.getElementById('filter-category');
-        const statusFilter = document.getElementById('filter-status');
-        const sortFilter = document.getElementById('filter-sort');
-
-        if (categoryFilter) {
-            categoryFilter.addEventListener('change', (e) => {
-                this.filters.category = e.target.value;
-                this.renderTrades();
-            });
+    setupEventListeners() {
+        // Browse/Create toggle
+        const createTradeBtn = document.getElementById('createTradeBtn');
+        if (createTradeBtn) {
+            createTradeBtn.addEventListener('click', () => this.showCreateWizard());
         }
 
-        if (statusFilter) {
-            statusFilter.addEventListener('change', (e) => {
-                this.filters.status = e.target.value;
-                this.renderTrades();
+        // Wizard navigation
+        document.getElementById('cancelWizardBtn')?.addEventListener('click', () => this.cancelWizard());
+        document.getElementById('nextStep1Btn')?.addEventListener('click', () => this.nextStep());
+        document.getElementById('backStep2Btn')?.addEventListener('click', () => this.previousStep());
+        document.getElementById('nextStep2Btn')?.addEventListener('click', () => this.nextStep());
+        document.getElementById('backStep3Btn')?.addEventListener('click', () => this.previousStep());
+        document.getElementById('createListingBtn')?.addEventListener('click', () => this.createListing());
+
+        // Item search
+        this.setupItemSearch('seekingSearchInput', 'seekingSearchResults', 'seekingItemsContainer', 'seekingItems');
+        this.setupItemSearch('offeringSearchInput', 'offeringSearchResults', 'offeringItemsContainer', 'offeringItems');
+
+        // Custom items modal
+        document.getElementById('addSeekingCustomBtn')?.addEventListener('click', () => this.openCustomModal('seekingItems'));
+        document.getElementById('addOfferingCustomBtn')?.addEventListener('click', () => this.openCustomModal('offeringItems'));
+        document.getElementById('closeCustomModal')?.addEventListener('click', () => this.closeCustomModal());
+        document.getElementById('cancelCustomModal')?.addEventListener('click', () => this.closeCustomModal());
+        document.getElementById('addCustomItemBtn')?.addEventListener('click', () => this.addCustomItem());
+        document.getElementById('customTypeRobux')?.addEventListener('click', () => this.selectCustomType('robux'));
+        document.getElementById('customTypeOther')?.addEventListener('click', () => this.selectCustomType('other'));
+
+        // Theme selector
+        document.querySelectorAll('.theme-option').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const theme = e.currentTarget.dataset.theme;
+                this.selectTheme(theme);
             });
+        });
+
+        // Browse filters
+        document.getElementById('browseSearchInput')?.addEventListener('input', (e) => {
+            clearTimeout(this.searchTimeouts.browse);
+            this.searchTimeouts.browse = setTimeout(() => {
+                this.filters.search = e.target.value;
+                this.loadTrades().then(() => this.renderTrades());
+            }, 300);
+        });
+
+        document.getElementById('filterCategory')?.addEventListener('change', (e) => {
+            this.filters.category = e.target.value;
+            this.loadTrades().then(() => this.renderTrades());
+        });
+
+        document.getElementById('filterStatus')?.addEventListener('change', (e) => {
+            this.filters.status = e.target.value;
+            this.loadTrades().then(() => this.renderTrades());
+        });
+
+        document.getElementById('filterSort')?.addEventListener('change', (e) => {
+            this.filters.sort = e.target.value;
+            this.renderTrades();
+        });
+
+        // Modal overlay click
+        document.getElementById('customItemModal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'customItemModal') {
+                this.closeCustomModal();
+            }
+        });
+
+        // Description and category
+        document.getElementById('tradeDescription')?.addEventListener('input', (e) => {
+            this.wizardState.description = e.target.value;
+            this.updatePreview();
+        });
+
+        document.getElementById('tradeCategory')?.addEventListener('change', (e) => {
+            this.wizardState.category = e.target.value;
+            this.updatePreview();
+        });
+    }
+
+    setupItemSearch(inputId, resultsId, containerId, itemsKey) {
+        const input = document.getElementById(inputId);
+        const results = document.getElementById(resultsId);
+        const container = document.getElementById(containerId);
+        
+        if (!input || !results || !container) return;
+
+        let searchTimeout;
+        input.addEventListener('input', (e) => {
+            const query = e.target.value.trim().toLowerCase();
+            
+            clearTimeout(searchTimeout);
+            if (!query) {
+                results.classList.remove('active');
+                results.innerHTML = '';
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                this.performItemSearch(query, results, container, itemsKey);
+            }, 200);
+        });
+
+        // Close results on outside click
+        document.addEventListener('click', (e) => {
+            if (!input.contains(e.target) && !results.contains(e.target)) {
+                results.classList.remove('active');
+            }
+        });
+    }
+
+    performItemSearch(query, resultsEl, containerEl, itemsKey) {
+        const matches = this.allItems
+            .filter(item => item.name.toLowerCase().includes(query))
+            .slice(0, 20);
+
+        if (matches.length === 0) {
+            resultsEl.innerHTML = '<div class="search-result-item">No items found</div>';
+            resultsEl.classList.add('active');
+            return;
         }
 
-        if (sortFilter) {
-            sortFilter.addEventListener('change', (e) => {
-                this.filters.sort = e.target.value;
-                this.renderTrades();
+        resultsEl.innerHTML = '';
+        matches.forEach(item => {
+            const itemEl = document.createElement('div');
+            itemEl.className = 'search-result-item';
+            itemEl.innerHTML = `
+                <img src="${item.img || './imgs/placeholder.png'}" alt="${item.name}" onerror="this.src='./imgs/placeholder.png'">
+                <span class="search-result-item-name">${this.escapeHtml(item.name)}</span>
+            `;
+            itemEl.addEventListener('click', () => {
+                this.addItem(item, itemsKey);
+                resultsEl.classList.remove('active');
+                document.getElementById(resultsEl.id.replace('Results', 'Input')).value = '';
             });
+            resultsEl.appendChild(itemEl);
+        });
+
+        resultsEl.classList.add('active');
+    }
+
+    addItem(item, itemsKey) {
+        const items = this.wizardState[itemsKey];
+        if (items.some(i => i.type === 'game-item' && i.item_name === item.name)) {
+            this.showToast('Item already added', 'info');
+            return;
+        }
+
+        items.push({
+            type: 'game-item',
+            item_name: item.name,
+            item_image: item.img || null,
+            category: item.category
+        });
+
+        this.renderItems(itemsKey);
+        this.updatePreview();
+    }
+
+    removeItem(itemsKey, index) {
+        this.wizardState[itemsKey].splice(index, 1);
+        this.renderItems(itemsKey);
+        this.updatePreview();
+    }
+
+    renderItems(itemsKey) {
+        const container = document.getElementById(itemsKey.replace('Items', 'ItemsContainer'));
+        if (!container) return;
+
+        const items = this.wizardState[itemsKey];
+        
+        if (items.length === 0) {
+            container.innerHTML = '<div class="empty-state"><span>No items selected</span></div>';
+            return;
+        }
+
+        container.innerHTML = '';
+        items.forEach((item, index) => {
+            const itemEl = document.createElement('div');
+            itemEl.className = 'selected-item';
+            
+            if (item.type === 'robux') {
+                itemEl.innerHTML = `
+                    <span class="selected-item-robux">💰 ${item.amount} R$</span>
+                    <button class="selected-item-remove" onclick="tradingHub.removeItem('${itemsKey}', ${index})">×</button>
+                `;
+            } else if (item.type === 'other-game') {
+                itemEl.innerHTML = `
+                    <span class="selected-item-other">🎮 ${this.escapeHtml(item.game_name)}: ${this.escapeHtml(item.item_name)}</span>
+                    <button class="selected-item-remove" onclick="tradingHub.removeItem('${itemsKey}', ${index})">×</button>
+                `;
+            } else {
+                itemEl.innerHTML = `
+                    <img src="${item.item_image || './imgs/placeholder.png'}" alt="${this.escapeHtml(item.item_name)}" onerror="this.src='./imgs/placeholder.png'">
+                    <span class="selected-item-name">${this.escapeHtml(item.item_name)}</span>
+                    <button class="selected-item-remove" onclick="tradingHub.removeItem('${itemsKey}', ${index})">×</button>
+                `;
+            }
+            
+            container.appendChild(itemEl);
+        });
+    }
+
+    openCustomModal(itemsKey) {
+        this.currentCustomItemsKey = itemsKey;
+        const modal = document.getElementById('customItemModal');
+        if (modal) {
+            modal.classList.add('active');
+            this.selectCustomType('robux');
+            document.getElementById('robuxAmount').value = '';
+            document.getElementById('gameName').value = '';
+            document.getElementById('itemName').value = '';
+        }
+    }
+
+    closeCustomModal() {
+        const modal = document.getElementById('customItemModal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    }
+
+    selectCustomType(type) {
+        this.currentCustomType = type;
+        document.querySelectorAll('.option-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.type === type);
+        });
+
+        const robuxGroup = document.getElementById('robuxInputGroup');
+        const otherGameGroup = document.getElementById('otherGameInputGroup');
+        const otherItemGroup = document.getElementById('otherItemInputGroup');
+
+        if (type === 'robux') {
+            robuxGroup?.classList.remove('hidden');
+            otherGameGroup?.classList.add('hidden');
+            otherItemGroup?.classList.add('hidden');
+        } else {
+            robuxGroup?.classList.add('hidden');
+            otherGameGroup?.classList.remove('hidden');
+            otherItemGroup?.classList.remove('hidden');
+        }
+    }
+
+    addCustomItem() {
+        if (!this.currentCustomItemsKey) return;
+
+        const items = this.wizardState[this.currentCustomItemsKey];
+        let newItem;
+
+        if (this.currentCustomType === 'robux') {
+            const amount = parseInt(document.getElementById('robuxAmount').value);
+            if (!amount || amount <= 0) {
+                this.showToast('Please enter a valid amount', 'error');
+                return;
+            }
+            newItem = { type: 'robux', amount };
+        } else {
+            const gameName = document.getElementById('gameName').value.trim();
+            const itemName = document.getElementById('itemName').value.trim();
+            if (!gameName || !itemName) {
+                this.showToast('Please fill in all fields', 'error');
+                return;
+            }
+            newItem = { type: 'other-game', game_name: gameName, item_name: itemName };
+        }
+
+        items.push(newItem);
+        this.renderItems(this.currentCustomItemsKey);
+        this.updatePreview();
+        this.closeCustomModal();
+    }
+
+    selectTheme(theme) {
+        this.selectedTheme = theme;
+        this.wizardState.theme = theme;
+        document.querySelectorAll('.theme-option').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.theme === theme);
+        });
+        this.updatePreview();
+    }
+
+    showCreateWizard() {
+        if (!this.currentUser) {
+            if (window.Utils && window.Utils.showToast) {
+                window.Utils.showToast('Login Required', 'Please login to create a trade', 'warning');
+            }
+            return;
+        }
+
+        document.getElementById('browseView').classList.remove('active');
+        document.getElementById('createView').classList.add('active');
+        this.setStep(1);
+        this.loadWizardState();
+    }
+
+    cancelWizard() {
+        if (confirm('Are you sure you want to cancel? Your progress will be saved.')) {
+            this.saveWizardState();
+            document.getElementById('browseView').classList.add('active');
+            document.getElementById('createView').classList.remove('active');
+            this.wizardState = {
+                currentStep: 1,
+                title: '',
+                seekingItems: [],
+                offeringItems: [],
+                description: '',
+                category: '',
+                theme: 'default'
+            };
+        }
+    }
+
+    setStep(step) {
+        this.wizardState.currentStep = step;
+        
+        // Update progress indicators
+        document.querySelectorAll('.progress-step').forEach((el, index) => {
+            const stepNum = index + 1;
+            el.classList.toggle('active', stepNum === step);
+            el.classList.toggle('completed', stepNum < step);
+        });
+
+        // Update progress bar
+        const progressFill = document.getElementById('progressFill');
+        if (progressFill) {
+            progressFill.style.width = `${((step - 1) / 2) * 100}%`;
+        }
+
+        // Show/hide steps
+        document.querySelectorAll('.wizard-step').forEach((el, index) => {
+            el.classList.toggle('active', index + 1 === step);
+        });
+
+        // Update wizard state
+        if (step === 2) {
+            this.renderItems('offeringItems');
+        } else if (step === 3) {
+            this.wizardState.description = document.getElementById('tradeDescription')?.value || '';
+            this.wizardState.category = document.getElementById('tradeCategory')?.value || '';
+            this.renderItems('seekingItems');
+            this.renderItems('offeringItems');
+            this.updatePreview();
+        }
+    }
+
+    nextStep() {
+        if (this.wizardState.currentStep === 1) {
+            this.setStep(2);
+        } else if (this.wizardState.currentStep === 2) {
+            if (this.wizardState.offeringItems.length === 0) {
+                this.showToast('Please add at least one item to offer', 'error');
+                return;
+            }
+            this.setStep(3);
+        }
+    }
+
+    previousStep() {
+        if (this.wizardState.currentStep > 1) {
+            this.setStep(this.wizardState.currentStep - 1);
+        }
+    }
+
+    updatePreview() {
+        const previewCard = document.getElementById('tradePreviewCard');
+        if (!previewCard || this.wizardState.currentStep !== 3) return;
+
+        const description = this.wizardState.description;
+        const offeringItems = this.wizardState.offeringItems;
+        const seekingItems = this.wizardState.seekingItems;
+
+        // Apply theme
+        const themeClass = `theme-${this.selectedTheme}`;
+        previewCard.className = `trade-preview-card ${themeClass}`;
+
+        previewCard.innerHTML = `
+            <div class="trade-card-header">
+                <div class="trader-avatar" style="background: var(--bg-item);"></div>
+                <div class="trader-info">
+                    <div class="trader-name">${this.escapeHtml(this.currentUser?.displayName || this.currentUser?.username || 'You')}</div>
+                    <div class="trade-meta">Preview</div>
+                </div>
+                <span class="trade-status active">Active</span>
+            </div>
+            ${description ? `<div class="trade-description">${this.escapeHtml(description)}</div>` : ''}
+            <div class="trade-items-container">
+                <div class="trade-side">
+                    <div class="trade-side-label">Offering</div>
+                    <div class="trade-items-list">
+                        ${offeringItems.map(item => this.renderPreviewItem(item)).join('')}
+                        ${offeringItems.length === 0 ? '<div style="color: var(--text-secondary);">No items</div>' : ''}
+                    </div>
+                </div>
+                <div class="trade-side">
+                    <div class="trade-side-label">Looking For</div>
+                    <div class="trade-items-list">
+                        ${seekingItems.map(item => this.renderPreviewItem(item)).join('')}
+                        ${seekingItems.length === 0 ? '<div style="color: var(--text-secondary);">Open to offers</div>' : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    renderPreviewItem(item) {
+        if (item.type === 'robux') {
+            return `<div class="trade-item-robux">💰 ${item.amount} R$</div>`;
+        } else if (item.type === 'other-game') {
+            return `<div class="trade-item-other">🎮 ${this.escapeHtml(item.game_name)}: ${this.escapeHtml(item.item_name)}</div>`;
+        } else {
+            return `
+                <div class="trade-item">
+                    <img class="trade-item-img" src="${item.item_image || './imgs/placeholder.png'}" alt="${this.escapeHtml(item.item_name)}" onerror="this.src='./imgs/placeholder.png'">
+                    <span class="trade-item-name">${this.escapeHtml(item.item_name)}</span>
+                </div>
+            `;
+        }
+    }
+
+    async createListing() {
+        if (!this.currentUser) {
+            this.showToast('Please login to create a trade', 'warning');
+            return;
+        }
+
+        if (this.wizardState.offeringItems.length === 0) {
+            this.showToast('Please add at least one item to offer', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('createListingBtn');
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Creating...';
+
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                throw new Error('Not authenticated');
+            }
+
+            const response = await fetch(`${this.apiBase}/listings`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    title: this.generateAutoTitle(),
+                    description: this.wizardState.description || null,
+                    category: this.wizardState.category || 'other',
+                    offering_items: this.wizardState.offeringItems,
+                    seeking_items: this.wizardState.seekingItems.length > 0 ? this.wizardState.seekingItems : null
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to create listing');
+            }
+
+            this.showToast('Trade listing created successfully!', 'success');
+            
+            // Reset wizard
+            this.wizardState = {
+                currentStep: 1,
+                seekingItems: [],
+                offeringItems: [],
+                description: '',
+                category: '',
+                theme: 'default'
+            };
+            localStorage.removeItem('trading_wizard_draft');
+            
+            // Switch to browse view
+            document.getElementById('browseView').classList.add('active');
+            document.getElementById('createView').classList.remove('active');
+            
+            // Reload trades
+            await this.loadTrades();
+            this.renderTrades();
+        } catch (error) {
+            console.error('Error creating listing:', error);
+            this.showToast(error.message || 'Failed to create trade', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
+    }
+
+    saveWizardState() {
+        localStorage.setItem('trading_wizard_draft', JSON.stringify(this.wizardState));
+    }
+
+    generateAutoTitle() {
+        const offeringCount = this.wizardState.offeringItems.length;
+        const seekingCount = this.wizardState.seekingItems.length;
+        
+        if (offeringCount === 0) {
+            return 'Trade Offer';
+        }
+        
+        const firstOffering = this.wizardState.offeringItems[0];
+        let offeringText = '';
+        if (firstOffering.type === 'robux') {
+            offeringText = `${firstOffering.amount} R$`;
+        } else if (firstOffering.type === 'other-game') {
+            offeringText = `${firstOffering.game_name} ${firstOffering.item_name}`;
+        } else {
+            offeringText = firstOffering.item_name;
+        }
+        
+        if (offeringCount > 1) {
+            offeringText += ` + ${offeringCount - 1} more`;
+        }
+        
+        if (seekingCount === 0) {
+            return `Trading ${offeringText}`;
+        }
+        
+        const firstSeeking = this.wizardState.seekingItems[0];
+        let seekingText = '';
+        if (firstSeeking.type === 'robux') {
+            seekingText = `${firstSeeking.amount} R$`;
+        } else if (firstSeeking.type === 'other-game') {
+            seekingText = `${firstSeeking.game_name} ${firstSeeking.item_name}`;
+        } else {
+            seekingText = firstSeeking.item_name;
+        }
+        
+        if (seekingCount > 1) {
+            seekingText += ` + ${seekingCount - 1} more`;
+        }
+        
+        return `Trading ${offeringText} for ${seekingText}`;
+    }
+
+    loadWizardState() {
+        const saved = localStorage.getItem('trading_wizard_draft');
+        if (saved) {
+            try {
+                const state = JSON.parse(saved);
+                this.wizardState = { ...this.wizardState, ...state };
+                
+                // Restore form fields
+                if (this.wizardState.description) {
+                    document.getElementById('tradeDescription').value = this.wizardState.description;
+                }
+                if (this.wizardState.category) {
+                    document.getElementById('tradeCategory').value = this.wizardState.category;
+                }
+                
+                // Restore items
+                this.renderItems('seekingItems');
+                this.renderItems('offeringItems');
+                
+                // Restore theme
+                if (this.wizardState.theme) {
+                    this.selectTheme(this.wizardState.theme);
+                }
+            } catch (error) {
+                console.error('Failed to load wizard state:', error);
+            }
         }
     }
 
     renderTrades() {
-        const grid = document.getElementById('trades-grid');
+        const grid = document.getElementById('tradesGrid');
         if (!grid) return;
 
-        let filteredTrades = this.filterTrades();
-        filteredTrades = this.sortTrades(filteredTrades);
+        let filteredTrades = this.trades.filter(trade => {
+            if (this.filters.status !== 'all' && trade.status !== this.filters.status) {
+                return false;
+            }
+            if (this.filters.category !== 'all' && trade.category !== this.filters.category) {
+                return false;
+            }
+            if (this.filters.search) {
+                const searchTerm = this.filters.search.toLowerCase();
+                const matchesTitle = trade.title?.toLowerCase().includes(searchTerm);
+                const matchesDescription = trade.description?.toLowerCase().includes(searchTerm);
+                if (!matchesTitle && !matchesDescription) {
+                    return false;
+                }
+            }
+            return true;
+        });
 
-        grid.innerHTML = '';
+        // Sort
+        if (this.filters.sort === 'recent') {
+            filteredTrades.sort((a, b) => b.created_at - a.created_at);
+        } else if (this.filters.sort === 'views') {
+            filteredTrades.sort((a, b) => (b.views || 0) - (a.views || 0));
+        }
 
         if (filteredTrades.length === 0) {
             grid.innerHTML = `
-                <div class="empty-state">
+                <div class="empty-state" style="grid-column: 1/-1;">
                     <div class="empty-state-icon">📭</div>
-                    <h2 class="empty-state-title">No Trades Found</h2>
-                    <p class="empty-state-text">Try adjusting your filters or create a new trade!</p>
-                    <button class="create-trade-btn" onclick="tradingHub.openCreateTrade()">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-                        </svg>
-                        Create Your First Trade
-                    </button>
+                    <div class="empty-state-title">No Trades Found</div>
+                    <div class="empty-state-text">Try adjusting your filters or create a new trade!</div>
                 </div>
             `;
             return;
         }
 
+        grid.innerHTML = '';
         filteredTrades.forEach(trade => {
             grid.appendChild(this.createTradeCard(trade));
         });
     }
 
-    filterTrades() {
-        return this.trades.filter(trade => {
-            // Category filter
-            if (this.filters.category !== 'all' && trade.category !== this.filters.category) {
-                return false;
-            }
-
-            // Status filter
-            if (this.filters.status !== 'all' && trade.status !== this.filters.status) {
-                return false;
-            }
-
-            return true;
-        });
-    }
-
-    sortTrades(trades) {
-        const sorted = [...trades];
-
-        switch (this.filters.sort) {
-            case 'recent':
-                sorted.sort((a, b) => b.createdAt - a.createdAt);
-                break;
-            case 'value-high':
-                sorted.sort((a, b) => b.value - a.value);
-                break;
-            case 'value-low':
-                sorted.sort((a, b) => a.value - b.value);
-                break;
-        }
-
-        return sorted;
-    }
-
     createTradeCard(trade) {
         const card = document.createElement('div');
         card.className = 'trade-card';
-
-        const timeAgo = this.getTimeAgo(trade.createdAt);
-        const stars = '★'.repeat(Math.floor(trade.trader.rating)) + '☆'.repeat(5 - Math.floor(trade.trader.rating));
+        
+        const timeAgo = this.getTimeAgo(trade.created_at);
+        const stars = '★'.repeat(Math.floor(trade.user?.average_rating || 0)) + '☆'.repeat(5 - Math.floor(trade.user?.average_rating || 0));
 
         card.innerHTML = `
-            <div class="trade-header">
-                <img class="trader-avatar" src="${trade.trader.avatar}" alt="${trade.trader.name}" style="cursor: pointer;" onclick="window.location.href = '/profile/${trade.trader.id}'">
+            <div class="trade-card-header">
+                <img class="trader-avatar" src="${trade.user?.avatar_url || './imgs/placeholder.png'}" alt="${this.escapeHtml(trade.user?.username || 'Unknown')}" onerror="this.src='./imgs/placeholder.png'">
                 <div class="trader-info">
-                    <div class="trader-name" style="cursor: pointer; text-decoration: underline;" onclick="window.location.href = '/profile/${trade.trader.id}'">${trade.trader.name}</div>
-                    <div class="trader-stats" style="font-size: 0.75rem; color: var(--text-secondary);">
-                        ${stars} (${trade.trader.totalTrades} trades)
-                    </div>
-                    <div class="trade-time">${timeAgo} • ${trade.views || 0} views</div>
+                    <div class="trader-name">${this.escapeHtml(trade.user?.username || 'Unknown')}</div>
+                    <div class="trader-stats">${stars} (${trade.user?.total_trades || 0} trades)</div>
+                    <div class="trade-meta">${timeAgo} • ${trade.views || 0} views</div>
                 </div>
                 <span class="trade-status ${trade.status}">${trade.status}</span>
             </div>
-
-            ${trade.title ? `<div class="trade-title" style="font-weight: 600; margin: 0.5rem 0;">${trade.title}</div>` : ''}
-            ${trade.description ? `<div class="trade-description" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">${trade.description}</div>` : ''}
-
-            <div class="trade-items">
+            ${trade.description ? `<div class="trade-description">${this.escapeHtml(trade.description)}</div>` : ''}
+            <div class="trade-items-container">
                 <div class="trade-side">
                     <div class="trade-side-label">Offering</div>
-                    ${trade.offering.map(item => `
-                        <div class="trade-item-mini">
-                            <img class="trade-item-img" src="${item.item_image || './imgs/placeholder.png'}" alt="${item.item_name}">
-                            <span class="trade-item-name">${item.item_name}</span>
-                        </div>
-                    `).join('')}
-                    ${trade.offering_robux > 0 ? `
-                        <div class="trade-item-mini" style="background: linear-gradient(135deg, #11f54a20, #667eea20);">
-                            <span style="font-size: 20px;">💰</span>
-                            <span class="trade-item-name">${trade.offering_robux} R$</span>
-                        </div>
-                    ` : ''}
+                    <div class="trade-items-list">
+                        ${trade.offering_items.map(item => this.renderTradeItem(item)).join('')}
+                    </div>
                 </div>
-
-                <div class="trade-arrow">⇄</div>
-
                 <div class="trade-side">
                     <div class="trade-side-label">Looking For</div>
-                    ${trade.lookingFor && trade.lookingFor.length > 0 ? trade.lookingFor.map(item => `
-                        <div class="trade-item-mini">
-                            <img class="trade-item-img" src="${item.item_image || './imgs/placeholder.png'}" alt="${item.item_name}">
-                            <span class="trade-item-name">${item.item_name}</span>
-                        </div>
-                    `).join('') : ''}
-                    ${trade.seeking_robux > 0 ? `
-                        <div class="trade-item-mini" style="background: linear-gradient(135deg, #11f54a20, #667eea20);">
-                            <span style="font-size: 20px;">💰</span>
-                            <span class="trade-item-name">${trade.seeking_robux} R$</span>
-                        </div>
-                    ` : ''}
-                    ${(!trade.lookingFor || trade.lookingFor.length === 0) && (!trade.seeking_robux || trade.seeking_robux === 0) ? '<div style="text-align: center; color: var(--text-secondary);">Open to offers</div>' : ''}
+                    <div class="trade-items-list">
+                        ${trade.seeking_items && trade.seeking_items.length > 0 
+                            ? trade.seeking_items.map(item => this.renderTradeItem(item)).join('')
+                            : '<div style="color: var(--text-secondary);">Open to offers</div>'
+                        }
+                    </div>
                 </div>
             </div>
-
             <div class="trade-actions">
-                <button class="trade-action-btn primary" onclick="tradingHub.viewTrade(${trade.id})">
-                    View Details
-                </button>
-                ${this.currentUser && trade.trader.name !== this.currentUser.username ? `
-                    <button class="trade-action-btn secondary" onclick="tradingHub.makeOffer(${trade.id})">
-                        Make Offer
-                    </button>
-                ` : ''}
+                <button class="btn-view" onclick="tradingHub.viewTrade(${trade.id})">View Details</button>
+                ${this.currentUser && trade.user_id !== this.currentUser.userId ? `<button class="btn-offer" onclick="tradingHub.makeOffer(${trade.id})">Make Offer</button>` : ''}
             </div>
         `;
 
         return card;
     }
 
-    getTimeAgo(date) {
-        const seconds = Math.floor((new Date() - date) / 1000);
-
-        const intervals = {
-            year: 31536000,
-            month: 2592000,
-            week: 604800,
-            day: 86400,
-            hour: 3600,
-            minute: 60
-        };
-
-        for (const [unit, secondsInUnit] of Object.entries(intervals)) {
-            const interval = Math.floor(seconds / secondsInUnit);
-            if (interval >= 1) {
-                return `${interval} ${unit}${interval > 1 ? 's' : ''} ago`;
-            }
-        }
-
-        return 'Just now';
-    }
-
-    updateStats() {
-        const totalTrades = document.getElementById('total-trades');
-        const totalTraders = document.getElementById('total-traders');
-        const tradesToday = document.getElementById('trades-today');
-
-        if (totalTrades) totalTrades.textContent = this.trades.length;
-        if (totalTraders) {
-            const uniqueTraders = new Set(this.trades.map(t => t.trader.name)).size;
-            totalTraders.textContent = uniqueTraders;
-        }
-        if (tradesToday) {
-            const today = new Date().setHours(0, 0, 0, 0);
-            const count = this.trades.filter(t => t.createdAt >= today).length;
-            tradesToday.textContent = count;
-        }
-    }
-
-    updateUserUI() {
-        const createBtn = document.querySelector('.create-trade-btn');
-        if (createBtn && !this.currentUser) {
-            console.log(this.currentUser);
-            createBtn.setAttribute('popovertarget', 'auth-modal');
-            createBtn.setAttribute('popovertargetaction', 'show');
-            createBtn.classList.add('create-account');
-            createBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6.75 6.5a5.25 5.25 0 1 1 10.5 0 5.25 5.25 0 0 1-10.5 0m-2.5 12.071a5.32 5.32 0 0 1 5.321-5.321h4.858a5.32 5.32 0 0 1 5.321 5.321 4.18 4.18 0 0 1-4.179 4.179H8.43a4.18 4.18 0 0 1-4.179-4.179" clip-rule="evenodd"/></svg>Please login to create trades';
-        }
-
-        // Show/hide navigation links based on login status
-        const myTradesLink = document.getElementById('my-trades-link');
-
-        if (this.currentUser) {
-            if (myTradesLink) myTradesLink.style.display = '';
+    renderTradeItem(item) {
+        if (item.type === 'robux') {
+            return `<div class="trade-item-robux">💰 ${item.amount} R$</div>`;
+        } else if (item.type === 'other-game') {
+            return `<div class="trade-item-other">🎮 ${this.escapeHtml(item.game_name)}: ${this.escapeHtml(item.item_name)}</div>`;
         } else {
-            if (myTradesLink) myTradesLink.style.display = 'none';
+            return `
+                <div class="trade-item">
+                    <img class="trade-item-img" src="${item.item_image || './imgs/placeholder.png'}" alt="${this.escapeHtml(item.item_name)}" onerror="this.src='./imgs/placeholder.png'">
+                    <span class="trade-item-name">${this.escapeHtml(item.item_name)}</span>
+                </div>
+            `;
         }
-    }
-
-    setView(view) {
-        const grid = document.getElementById('trades-grid');
-        const buttons = document.querySelectorAll('.view-btn');
-
-        buttons.forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.view === view);
-        });
-
-        if (view === 'list') {
-            grid.classList.add('list-view');
-        } else {
-            grid.classList.remove('list-view');
-        }
-    }
-
-    async openCreateTrade() {
-        if (!this.currentUser) {
-            if (window.Utils) {
-                Utils.showToast('Login Required', 'Please login to create a trade', 'warning');
-            }
-            return;
-        }
-
-        this.showCreateTradeModal();
     }
 
     async viewTrade(id) {
-        try {
-            const response = await fetch(`${this.apiBase}/listings/${id}`);
-            if (!response.ok) throw new Error('Failed to load trade details');
+        // TODO: Implement trade detail view
+        console.log('View trade:', id);
+    }
 
-            const data = await response.json();
-            this.showTradeDetailsModal(data);
-        } catch (error) {
-            console.error('Error viewing trade:', error);
-            if (window.Utils) {
-                Utils.showToast('Error', 'Failed to load trade details', 'error');
-            }
+    async makeOffer(id) {
+        // TODO: Implement make offer functionality
+        console.log('Make offer:', id);
+    }
+
+    getTimeAgo(timestamp) {
+        const seconds = Math.floor((Date.now() - timestamp) / 1000);
+        if (seconds < 60) return 'Just now';
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+        const days = Math.floor(hours / 24);
+        if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`;
+        const weeks = Math.floor(days / 7);
+        if (weeks < 4) return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+        const months = Math.floor(days / 30);
+        if (months < 12) return `${months} month${months > 1 ? 's' : ''} ago`;
+        const years = Math.floor(days / 365);
+        return `${years} year${years > 1 ? 's' : ''} ago`;
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    showToast(message, type = 'info') {
+        if (window.Utils && window.Utils.showToast) {
+            window.Utils.showToast('Trading', message, type);
+        } else {
+            alert(message);
         }
-    }
-
-    async makeOffer(listingId) {
-        if (!this.currentUser) {
-            if (window.Utils) {
-                Utils.showToast('Login Required', 'Please login to make an offer', 'warning');
-            }
-            return;
-        }
-
-        // Load listing details
-        const listing = await fetch(`${this.apiBase}/listings/${listingId}`).then(r => r.json());
-
-        this.showMakeOfferModal(listingId, listing);
-    }
-
-    async createListing(listingData) {
-        if (!this.currentUser) {
-            throw new Error('Must be logged in to create a listing');
-        }
-
-        const sessionToken = localStorage.getItem('sessionToken');
-        const response = await fetch(`${this.apiBase}/listings`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${sessionToken}`
-            },
-            body: JSON.stringify(listingData)
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to create listing');
-        }
-
-        return await response.json();
-    }
-
-    async submitOffer(listingId, offerData) {
-        if (!this.currentUser) {
-            throw new Error('Must be logged in to make an offer');
-        }
-
-        const sessionToken = localStorage.getItem('sessionToken');
-        const response = await fetch(`${this.apiBase}/offers`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${sessionToken}`
-            },
-            body: JSON.stringify({
-                listing_id: listingId,
-                ...offerData
-            })
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to submit offer');
-        }
-
-        return await response.json();
-    }
-
-    async getAuthHeaders() {
-        const sessionToken = localStorage.getItem('sessionToken');
-        return {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionToken}`
-        };
-    }
-
-    showCreateTradeModal() {
-        const modal = this.createModal('Create Trade Listing', `
-            <form id="create-trade-form" class="trade-form">
-                <div class="form-group">
-                    <label>Title</label>
-                    <input type="text" name="title" placeholder="e.g., Trading Omega Sword for Pets" required maxlength="100">
-                </div>
-
-                <div class="form-group">
-                    <label>Description</label>
-                    <textarea name="description" placeholder="Describe what you're looking for..." rows="3" maxlength="500"></textarea>
-                </div>
-
-
-                <div class="form-group">
-                    <label>Items You're Offering</label>
-                    <div class="item-search-container">
-                        <input type="text" id="offering-search" placeholder="Search items..." class="item-search-input">
-                        <div id="offering-search-results" class="item-search-results"></div>
-                    </div>
-                    <div id="offering-items-selected" class="selected-items-grid"></div>
-                </div>
-
-                <div class="form-group">
-                    <label>Robux You're Offering (Optional)</label>
-                    <input type="number" name="offering_robux" placeholder="0" min="0" step="1" class="robux-input">
-                </div>
-
-                <div class="form-group">
-                    <label>Items You Want (Optional - leave empty for open offers)</label>
-                    <div class="item-search-container">
-                        <input type="text" id="seeking-search" placeholder="Search items..." class="item-search-input">
-                        <div id="seeking-search-results" class="item-search-results"></div>
-                    </div>
-                    <div id="seeking-items-selected" class="selected-items-grid"></div>
-                </div>
-
-                <div class="form-group">
-                    <label>Robux You Want (Optional)</label>
-                    <input type="number" name="seeking_robux" placeholder="0" min="0" step="1" class="robux-input">
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn-secondary" onclick="tradingHub.closeModal()">Cancel</button>
-                    <button type="submit" class="btn-primary">Create Listing</button>
-                </div>
-            </form>
-        `);
-
-        document.body.appendChild(modal);
-
-        // Setup item search for offering
-        this.setupItemSearch('offering-search', 'offering-search-results', 'offering-items-selected', 'offering');
-
-        // Setup item search for seeking
-        this.setupItemSearch('seeking-search', 'seeking-search-results', 'seeking-items-selected', 'seeking');
-
-        const form = document.getElementById('create-trade-form');
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.handleCreateTrade(form);
-        });
-    }
-
-    setupItemSearch(searchInputId, resultsContainerId, selectedContainerId, type) {
-        const searchInput = document.getElementById(searchInputId);
-        const resultsContainer = document.getElementById(resultsContainerId);
-        const selectedContainer = document.getElementById(selectedContainerId);
-
-        if (!searchInput || !resultsContainer || !selectedContainer) return;
-
-        const selectedItems = new Set();
-
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.trim().toLowerCase();
-
-            if (!query) {
-                resultsContainer.innerHTML = '';
-                resultsContainer.style.display = 'none';
-                return;
-            }
-
-            // Filter items based on search
-            const matches = this.allItems.filter(item =>
-                item.name.toLowerCase().includes(query)
-            ).slice(0, 20); // Limit to 20 results
-
-            if (matches.length === 0) {
-                resultsContainer.innerHTML = '<div class="no-results">No items found</div>';
-                resultsContainer.style.display = 'block';
-                return;
-            }
-
-            resultsContainer.innerHTML = '';
-            resultsContainer.style.display = 'grid';
-
-            matches.forEach(item => {
-                const itemCard = document.createElement('div');
-                itemCard.className = 'search-result-item';
-                itemCard.innerHTML = `
-                    <img src="${item.img || './imgs/placeholder.png'}" alt="${item.name}">
-                    <span class="item-name-small">${item.name}</span>
-                `;
-
-                itemCard.addEventListener('click', () => {
-                    if (selectedItems.has(item.name)) return; // Already selected
-
-                    selectedItems.add(item.name);
-                    this.addSelectedItem(selectedContainer, item, () => {
-                        selectedItems.delete(item.name);
-                    });
-
-                    searchInput.value = '';
-                    resultsContainer.innerHTML = '';
-                    resultsContainer.style.display = 'none';
-                });
-
-                resultsContainer.appendChild(itemCard);
-            });
-        });
-
-        // Close results when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
-                resultsContainer.style.display = 'none';
-            }
-        });
-    }
-
-    addSelectedItem(container, item, onRemove) {
-        const itemCard = document.createElement('div');
-        itemCard.className = 'selected-item-card';
-        itemCard.dataset.itemName = item.name;
-        itemCard.innerHTML = `
-            <img src="${item.img || './imgs/placeholder.png'}" alt="${item.name}">
-            <span class="selected-item-name">${item.name}</span>
-            <button type="button" class="remove-selected-item">×</button>
-        `;
-
-        const removeBtn = itemCard.querySelector('.remove-selected-item');
-        removeBtn.addEventListener('click', () => {
-            itemCard.remove();
-            if (onRemove) onRemove();
-        });
-
-        container.appendChild(itemCard);
-    }
-
-    async handleCreateTrade(form) {
-        const formData = new FormData(form);
-
-        // Get offering items from selected cards
-        const offeringContainer = document.getElementById('offering-items-selected');
-        const offeringItems = Array.from(offeringContainer.querySelectorAll('.selected-item-card'))
-            .map(card => {
-                const itemName = card.dataset.itemName;
-                const item = this.allItems.find(i => i.name === itemName);
-                return {
-                    item_name: itemName,
-                    item_image: item?.img || null
-                };
-            });
-
-        const offeringRobux = parseInt(formData.get('offering_robux')) || 0;
-
-        if (offeringItems.length === 0 && offeringRobux === 0) {
-            if (window.Utils) Utils.showToast('Error', 'Please add at least one item or robux to offer', 'error');
-            return;
-        }
-
-        // Get seeking items from selected cards
-        const seekingContainer = document.getElementById('seeking-items-selected');
-        const seekingItems = Array.from(seekingContainer.querySelectorAll('.selected-item-card'))
-            .map(card => {
-                const itemName = card.dataset.itemName;
-                const item = this.allItems.find(i => i.name === itemName);
-                return {
-                    item_name: itemName,
-                    item_image: item?.img || null
-                };
-            });
-
-        const seekingRobux = parseInt(formData.get('seeking_robux')) || 0;
-
-        const listingData = {
-            title: formData.get('title'),
-            description: formData.get('description'),
-            offering_items: offeringItems,
-            offering_robux: offeringRobux,
-            seeking_items: seekingItems,
-            seeking_robux: seekingRobux
-        };
-
-        try {
-            const result = await this.createListing(listingData);
-            if (window.Utils) Utils.showToast('Success', 'Trade listing created!', 'success');
-            this.closeModal();
-            await this.loadTrades();
-            this.renderTrades();
-            this.updateStats();
-        } catch (error) {
-            if (window.Utils) Utils.showToast('Error', error.message, 'error');
-        }
-    }
-
-    showTradeDetailsModal(data) {
-        const listing = data.listing || data;
-        const timeAgo = this.getTimeAgo(new Date(listing.created_at));
-        const stars = '★'.repeat(Math.floor(listing.user.average_rating || 0)) + '☆'.repeat(5 - Math.floor(listing.user.average_rating || 0));
-
-        const modal = this.createModal(listing.title || `Trade #${listing.id}`, `
-            <div class="trade-details">
-                <div class="trade-detail-header">
-                    <img class="trader-avatar-large" src="${listing.user.avatar_url || './imgs/placeholder.png'}" alt="${listing.user.username}">
-                    <div class="trader-info-large">
-                        <h3>${listing.user.username}</h3>
-                        <div class="trader-rating">${stars} (${listing.user.total_trades || 0} trades)</div>
-                        <div class="trade-meta">Posted ${timeAgo} • ${listing.views || 0} views</div>
-                    </div>
-                    <span class="trade-status-large ${listing.status}">${listing.status}</span>
-                </div>
-
-                ${listing.description ? `<div class="trade-detail-description">${listing.description}</div>` : ''}
-
-                <div class="trade-detail-items">
-                    <div class="trade-detail-side">
-                        <h4>Offering</h4>
-                        <div class="item-list">
-                            ${listing.offering_items.map(item => `
-                                <div class="detail-item">
-                                    <img src="${item.item_image || './imgs/placeholder.png'}" alt="${item.item_name}">
-                                    <span>${item.item_name}</span>
-                                </div>
-                            `).join('')}
-                            ${(listing.offering_robux || 0) > 0 ? `
-                                <div class="detail-item" style="background: linear-gradient(135deg, #11f54a15, #667eea15);">
-                                    <span style="font-size: 32px;">💰</span>
-                                    <span style="font-weight: 700; color: #11f54a;">${listing.offering_robux} Robux</span>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-
-                    <div class="trade-detail-arrow">⇄</div>
-
-                    <div class="trade-detail-side">
-                        <h4>Looking For</h4>
-                        <div class="item-list">
-                            ${listing.seeking_items && listing.seeking_items.length > 0 ? listing.seeking_items.map(item => `
-                                <div class="detail-item">
-                                    <img src="${item.item_image || './imgs/placeholder.png'}" alt="${item.item_name}">
-                                    <span>${item.item_name}</span>
-                                </div>
-                            `).join('') : ''}
-                            ${(listing.seeking_robux || 0) > 0 ? `
-                                <div class="detail-item" style="background: linear-gradient(135deg, #11f54a15, #667eea15);">
-                                    <span style="font-size: 32px;">💰</span>
-                                    <span style="font-weight: 700; color: #11f54a;">${listing.seeking_robux} Robux</span>
-                                </div>
-                            ` : ''}
-                            ${(!listing.seeking_items || listing.seeking_items.length === 0) && (!listing.seeking_robux || listing.seeking_robux === 0) ? '<p style="text-align:center;color:var(--text-secondary)">Open to all offers</p>' : ''}
-                        </div>
-                    </div>
-                </div>
-
-                ${this.currentUser && listing.user.username !== this.currentUser.username && listing.status === 'active' ? `
-                    <div class="trade-detail-actions">
-                        <button class="btn-primary" onclick="tradingHub.makeOffer(${listing.id})">Make an Offer</button>
-                    </div>
-                ` : ''}
-            </div>
-        `);
-
-        document.body.appendChild(modal);
-    }
-
-    showMakeOfferModal(listingId, listing) {
-        const modal = this.createModal('Make an Offer', `
-            <form id="make-offer-form" class="trade-form">
-                <div class="offer-context">
-                    <p><strong>${listing.listing?.user?.username || listing.user?.username || 'User'}</strong> is looking for:</p>
-                    <div class="seeking-preview">
-                        ${listing.listing?.seeking_items || listing.seeking_items && (listing.listing?.seeking_items || listing.seeking_items).length > 0 ?
-                (listing.listing?.seeking_items || listing.seeking_items).map(item => `<span class="tag">${item.item_name}</span>`).join('') :
-                '<span class="tag">Any items</span>'}
-                    </div>
-                    ${(listing.listing?.seeking_robux || listing.seeking_robux) > 0 ? `
-                        <p style="margin-top: 10px;"><strong>Robux wanted:</strong> ${listing.listing?.seeking_robux || listing.seeking_robux} R$</p>
-                    ` : ''}
-                </div>
-
-                <div class="form-group">
-                    <label>Your Item Offer</label>
-                    <div class="item-search-container">
-                        <input type="text" id="offer-search" placeholder="Search items..." class="item-search-input">
-                        <div id="offer-search-results" class="item-search-results"></div>
-                    </div>
-                    <div id="offer-items-selected" class="selected-items-grid"></div>
-                </div>
-
-                <div class="form-group">
-                    <label>Robux You're Offering (Optional)</label>
-                    <input type="number" name="offering_robux" placeholder="0" min="0" step="1" class="robux-input">
-                </div>
-
-                <div class="form-group">
-                    <label>Message (Optional)</label>
-                    <textarea name="message" placeholder="Add a message to your offer..." rows="3" maxlength="500"></textarea>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn-secondary" onclick="tradingHub.closeModal()">Cancel</button>
-                    <button type="submit" class="btn-primary">Submit Offer</button>
-                </div>
-            </form>
-        `);
-
-        document.body.appendChild(modal);
-
-        // Setup item search for offer
-        this.setupItemSearch('offer-search', 'offer-search-results', 'offer-items-selected', 'offer');
-
-        const form = document.getElementById('make-offer-form');
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.handleMakeOffer(listingId, form);
-        });
-    }
-
-    async handleMakeOffer(listingId, form) {
-        const formData = new FormData(form);
-
-        // Get offered items from selected cards
-        const offerContainer = document.getElementById('offer-items-selected');
-        const offeredItems = Array.from(offerContainer.querySelectorAll('.selected-item-card'))
-            .map(card => {
-                const itemName = card.dataset.itemName;
-                const item = this.allItems.find(i => i.name === itemName);
-                return {
-                    item_name: itemName,
-                    item_image: item?.img || null
-                };
-            });
-
-        const offeringRobux = parseInt(formData.get('offering_robux')) || 0;
-
-        if (offeredItems.length === 0 && offeringRobux === 0) {
-            if (window.Utils) Utils.showToast('Error', 'Please add at least one item or robux to offer', 'error');
-            return;
-        }
-
-        const offerData = {
-            offered_items: offeredItems,
-            offering_robux: offeringRobux,
-            message: formData.get('message') || ''
-        };
-
-        try {
-            await this.submitOffer(listingId, offerData);
-            if (window.Utils) Utils.showToast('Success', 'Offer submitted!', 'success');
-            this.closeModal();
-        } catch (error) {
-            if (window.Utils) Utils.showToast('Error', error.message, 'error');
-        }
-    }
-
-    createModal(title, content) {
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>${title}</h2>
-                    <button class="modal-close" onclick="tradingHub.closeModal()">×</button>
-                </div>
-                <div class="modal-body">
-                    ${content}
-                </div>
-            </div>
-        `;
-
-        // Close on overlay click
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) this.closeModal();
-        });
-
-        return modal;
-    }
-
-    closeModal() {
-        const modal = document.querySelector('.modal-overlay');
-        if (modal) modal.remove();
     }
 }
 
-// Initialize
-const tradingHub = new TradingHub();
+// Initialize TradingHub
+let tradingHub;
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        tradingHub = new TradingHub();
+        window.tradingHub = tradingHub;
+    });
+} else {
+    tradingHub = new TradingHub();
+    window.tradingHub = tradingHub;
+}

@@ -215,3 +215,4 @@ For your item catalog, **R2 + Image Resizing is sufficient** and cost-effective.
 
 Then **Cloudflare Images is worth the switch**, especially since the cost difference is minimal for smaller catalogs.
 
+

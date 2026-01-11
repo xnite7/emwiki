@@ -8,17 +8,14 @@
     <meta name="description" content="Trade Epic Minigames items with other players safely and easily!">
     <meta property="og:title" content="Trading Hub - Epic Catalogue">
     <meta property="og:image" content="https://emwiki.com/imgs/QgWIUWf.png">
-    <link rel="stylesheet" href="./css/style.css"><link rel="stylesheet" href="./css/trading.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/trading.css">
     <link rel="icon" href="./imgs/favicon.png" type="image/png">
     <meta name="theme-color" content="#000000">
 
     <!-- Popover compatibility for older browsers -->
     <script src="./js/popover-loader.js"></script>
-
-    <!-- SortableJS for drag and drop -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
-
 
 <body>
     <!-- Header -->
@@ -63,110 +60,205 @@
     </header>
 
     <div class="trading-container">
-        <!-- View Toggle Button -->
-        <div class="view-toggle-container">
-            <button class="view-toggle-btn" id="viewToggleBtn">
-                <span id="toggleBtnText">Create Trade</span>
-                <span id="toggleBtnIcon">➕</span>
-            </button>
-        </div>
-
-        <!-- Trades List View (Default) -->
-        <div class="view-container active" id="browseView">
-            <div class="trades-list-header">
-                <h1 class="trades-list-title">Browse Trades</h1>
-                <div class="trades-filters">
-                    <div class="trades-search-box">
-                        <input type="text" class="trades-search-input" id="tradesSearchInput" placeholder="Search trades...">
-                    </div>
-                    <div class="trades-filter-row">
-                        <select class="trades-filter-select" id="filterCategory">
-                            <option value="all">All Categories</option>
-                            <option value="gears">Gears</option>
-                            <option value="deaths">Deaths</option>
-                            <option value="pets">Pets</option>
-                            <option value="effects">Effects</option>
-                            <option value="titles">Titles</option>
-                        </select>
-                        <select class="trades-filter-select" id="filterStatus">
-                            <option value="active">Active</option>
-                            <option value="all">All Status</option>
-                            <option value="completed">Completed</option>
-                        </select>
-                        <select class="trades-filter-select" id="filterSort">
-                            <option value="recent">Most Recent</option>
-                            <option value="views">Most Views</option>
-                        </select>
-                    </div>
-                </div>
+        <!-- Browse View (Default) -->
+        <div class="trading-view active" id="browseView">
+            <div class="browse-header">
+                <h1 class="browse-title">Browse Trades</h1>
+                <button class="btn-create-trade" id="createTradeBtn">
+                    <span>Create Trade</span>
+                    <span class="btn-icon">➕</span>
+                </button>
             </div>
-            <div class="trades-grid" id="tradesGrid"></div>
-        </div>
 
-        <!-- Create Trade View -->
-        <div class="view-container" id="createView">
-            <div class="create-trade-form">
-                <div class="create-trade-form-group">
-                    <label class="create-trade-label" for="tradeTitle">Title *</label>
-                    <input type="text" class="create-trade-input" id="tradeTitle" placeholder="e.g., Trading Epic Sword for Pets" required maxlength="100">
+            <div class="browse-filters">
+                <div class="search-box">
+                    <input type="text" class="search-input" id="browseSearchInput" placeholder="Search trades...">
                 </div>
-                <div class="create-trade-form-group">
-                    <label class="create-trade-label" for="tradeDescription">Description (Optional)</label>
-                    <textarea class="create-trade-textarea" id="tradeDescription" placeholder="Describe what you're looking for..." rows="3" maxlength="500"></textarea>
-                </div>
-                <div class="create-trade-form-group">
-                    <label class="create-trade-label" for="tradeCategory">Category (Optional)</label>
-                    <select class="create-trade-input" id="tradeCategory">
-                        <option value="">Select category...</option>
+                <div class="filter-row">
+                    <select class="filter-select" id="filterCategory">
+                        <option value="all">All Categories</option>
                         <option value="gears">Gears</option>
                         <option value="deaths">Deaths</option>
                         <option value="pets">Pets</option>
                         <option value="effects">Effects</option>
                         <option value="titles">Titles</option>
                     </select>
+                    <select class="filter-select" id="filterStatus">
+                        <option value="active">Active</option>
+                        <option value="all">All Status</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                    <select class="filter-select" id="filterSort">
+                        <option value="recent">Most Recent</option>
+                        <option value="views">Most Views</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="trade-panels">
-                <div class="trade-panel">
-                    <div class="panel-header">
-                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <div class="panel-title">you give</div>
-                            <div class="trade-summary" id="youGiveSummary" style="display: none;">
-                                <span class="trade-summary-count">0</span> items
+            <div class="trades-grid" id="tradesGrid"></div>
+        </div>
+
+        <!-- Create Trade Wizard -->
+        <div class="trading-view" id="createView">
+            <div class="wizard-container">
+                <!-- Progress Indicator -->
+                <div class="wizard-progress">
+                    <div class="progress-step" data-step="1">
+                        <div class="step-number">1</div>
+                        <div class="step-label">Looking For</div>
+                    </div>
+                    <div class="progress-step" data-step="2">
+                        <div class="step-number">2</div>
+                        <div class="step-label">What I Offer</div>
+                    </div>
+                    <div class="progress-step" data-step="3">
+                        <div class="step-number">3</div>
+                        <div class="step-label">Details</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+
+                <!-- Step 1: Looking For -->
+                <div class="wizard-step active" data-step="1">
+                    <div class="step-header">
+                        <h2>What are you looking for?</h2>
+                        <p class="step-subtitle">Add items, Robux, or other game items you want</p>
+                    </div>
+
+                    <div class="step-content">
+                        <div class="items-section">
+                            <div class="section-header-row">
+                                <label class="form-label">They Give</label>
+                                <button class="btn-add-custom" id="addSeekingCustomBtn">
+                                    <span>💰</span>
+                                    <span>Add Robux/Other</span>
+                                </button>
+                            </div>
+
+                            <div class="item-search-container">
+                                <input type="text" class="item-search-input" id="seekingSearchInput" placeholder="Search items...">
+                                <div class="item-search-results" id="seekingSearchResults"></div>
+                            </div>
+
+                            <div class="selected-items-container" id="seekingItemsContainer">
+                                <div class="empty-state">
+                                    <span>No items selected</span>
+                                </div>
                             </div>
                         </div>
-                        <button class="r-button" onclick="openCustomModal('youGive')" title="Add Robux or other game items">R</button>
                     </div>
-                    <div class="panel-items empty" id="youGiveItems"></div>
+
+                    <div class="step-actions">
+                        <button class="btn-secondary" id="cancelWizardBtn">Cancel</button>
+                        <button class="btn-primary" id="nextStep1Btn">Continue</button>
+                    </div>
                 </div>
 
-                <div class="trade-panel">
-                    <div class="panel-header">
-                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <div class="panel-title">they give</div>
-                            <div class="trade-summary" id="theyGiveSummary" style="display: none;">
-                                <span class="trade-summary-count">0</span> items
+                <!-- Step 2: What I Offer -->
+                <div class="wizard-step" data-step="2">
+                    <div class="step-header">
+                        <h2>What are you offering?</h2>
+                        <p class="step-subtitle">Add items, Robux, or other game items you're giving</p>
+                    </div>
+
+                    <div class="step-content">
+                        <div class="items-section">
+                            <div class="section-header-row">
+                                <label class="form-label">You Give *</label>
+                                <button class="btn-add-custom" id="addOfferingCustomBtn">
+                                    <span>💰</span>
+                                    <span>Add Robux/Other</span>
+                                </button>
+                            </div>
+
+                            <div class="item-search-container">
+                                <input type="text" class="item-search-input" id="offeringSearchInput" placeholder="Search items...">
+                                <div class="item-search-results" id="offeringSearchResults"></div>
+                            </div>
+
+                            <div class="selected-items-container" id="offeringItemsContainer">
+                                <div class="empty-state">
+                                    <span>No items selected</span>
+                                </div>
                             </div>
                         </div>
-                        <button class="r-button" onclick="openCustomModal('theyGive')" title="Add Robux or other game items">R</button>
                     </div>
-                    <div class="panel-items empty" id="theyGiveItems"></div>
-                </div>
-            </div>
 
-            <div class="all-items-section">
-                <div class="section-header">
-                    <div class="section-title">all items</div>
-                    <div class="search-box">
-                        <input type="text" class="search-input" id="searchInput" placeholder="Search items...">
+                    <div class="step-actions">
+                        <button class="btn-secondary" id="backStep2Btn">Back</button>
+                        <button class="btn-primary" id="nextStep2Btn">Continue</button>
                     </div>
                 </div>
-                <div class="category-filter" id="categoryFilter"></div>
-                <div class="items-grid2" id="allItemsGrid"></div>
-            </div>
 
-            <button class="create-listing-btn" id="createListingBtn" onclick="submitTrade()">Create Listing</button>
+                <!-- Step 3: Extra Details -->
+                <div class="wizard-step" data-step="3">
+                    <div class="step-header">
+                        <h2>Extra Details</h2>
+                        <p class="step-subtitle">Add description, category, theme, and preview your trade</p>
+                    </div>
+
+                    <div class="step-content step-3-content">
+                        <div class="details-column">
+                            <div class="form-group">
+                                <label class="form-label" for="tradeDescription">Description (Optional)</label>
+                                <textarea class="form-textarea" id="tradeDescription" placeholder="Add any additional details about your trade..." rows="4" maxlength="500"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="tradeCategory">Category (Optional)</label>
+                                <select class="form-select" id="tradeCategory">
+                                    <option value="">Select category...</option>
+                                    <option value="gears">Gears</option>
+                                    <option value="deaths">Deaths</option>
+                                    <option value="pets">Pets</option>
+                                    <option value="effects">Effects</option>
+                                    <option value="titles">Titles</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Theme</label>
+                                <div class="theme-selector" id="themeSelector">
+                                    <button class="theme-option active" data-theme="default">
+                                        <div class="theme-preview theme-default"></div>
+                                        <span>Default</span>
+                                    </button>
+                                    <button class="theme-option" data-theme="ocean">
+                                        <div class="theme-preview theme-ocean"></div>
+                                        <span>Ocean</span>
+                                    </button>
+                                    <button class="theme-option" data-theme="sunset">
+                                        <div class="theme-preview theme-sunset"></div>
+                                        <span>Sunset</span>
+                                    </button>
+                                    <button class="theme-option" data-theme="forest">
+                                        <div class="theme-preview theme-forest"></div>
+                                        <span>Forest</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="preview-column">
+                            <div class="preview-container">
+                                <h3 class="preview-title">Preview</h3>
+                                <div class="trade-preview-card" id="tradePreviewCard">
+                                    <div class="preview-loading">Building preview...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step-actions">
+                        <button class="btn-secondary" id="backStep3Btn">Back</button>
+                        <button class="btn-primary" id="createListingBtn">
+                            <span>Create Listing</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -197,738 +289,49 @@
     </footer>
 
     <!-- Custom Item Modal -->
-    <div class="trading-modal-overlay" id="customModal">
-        <div class="trading-modal-content">
-            <div class="trading-modal-header">
-                <div class="trading-modal-title">Add Custom Item</div>
-                <div class="trading-modal-subtitle">Robux or items from other games</div>
+    <div class="modal-overlay" id="customItemModal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Custom Item</h3>
+                <button class="modal-close" id="closeCustomModal">&times;</button>
             </div>
-            <div class="trading-modal-body">
-                <div class="trading-form-group">
-                    <div class="trading-form-label">Type</div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Type</label>
                     <div class="option-group">
-                        <button class="option-btn active" data-type="robux" onclick="selectCustomType('robux')">
+                        <button class="option-btn active" data-type="robux" id="customTypeRobux">
                             💰 Robux
                         </button>
-                        <button class="option-btn" data-type="other" onclick="selectCustomType('other')">
+                        <button class="option-btn" data-type="other" id="customTypeOther">
                             🎮 Other Game
                         </button>
                     </div>
                 </div>
 
-                <div class="trading-form-group" id="robuxInput">
-                    <div class="trading-form-label">Amount</div>
-                    <input type="number" class="trading-form-input" id="robuxAmount" placeholder="Enter amount..." min="0" step="1">
+                <div class="form-group" id="robuxInputGroup">
+                    <label class="form-label" for="robuxAmount">Amount</label>
+                    <input type="number" class="form-input" id="robuxAmount" placeholder="Enter amount..." min="0" step="1">
                 </div>
 
-                <div class="trading-form-group hidden" id="otherGameInput">
-                    <div class="trading-form-label">Game Name</div>
-                    <input type="text" class="trading-form-input" id="gameName" placeholder="e.g., Adopt Me">
+                <div class="form-group hidden" id="otherGameInputGroup">
+                    <label class="form-label" for="gameName">Game Name</label>
+                    <input type="text" class="form-input" id="gameName" placeholder="e.g., Adopt Me">
                 </div>
 
-                <div class="trading-form-group hidden" id="otherItemInput">
-                    <div class="trading-form-label">Item Name</div>
-                    <input type="text" class="trading-form-input" id="itemName" placeholder="e.g., Legendary Dragon">
+                <div class="form-group hidden" id="otherItemInputGroup">
+                    <label class="form-label" for="itemName">Item Name</label>
+                    <input type="text" class="form-input" id="itemName" placeholder="e.g., Legendary Dragon">
                 </div>
             </div>
-            <div class="trading-modal-actions">
-                <button class="btn btn-secondary" onclick="closeCustomModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="addCustomItem()">Add Item</button>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="cancelCustomModal">Cancel</button>
+                <button class="btn-primary" id="addCustomItemBtn">Add Item</button>
             </div>
         </div>
     </div>
 
     <script src="./js/script.js"></script>
     <script src="./js/trading.js"></script>
-    <script>
-        // Global state
-        const state = {
-            currentView: 'browse', // 'browse' or 'create'
-            allItems: [],
-            filteredItems: [],
-            youGiveItems: [],
-            theyGiveItems: [],
-            currentPanel: null,
-            customType: 'robux',
-            categories: ['all', 'gears', 'deaths', 'pets', 'effects', 'titles'],
-            activeCategory: 'all',
-            sortableInstances: {},
-            itemsPerPage: 50,
-            currentPage: 0,
-            tradingHub: null
-        };
-
-        // Wait for TradingHub class to be loaded, then override methods
-        function initTradingHub() {
-            // Check if TradingHub is available
-            if (typeof TradingHub === 'undefined') {
-                setTimeout(initTradingHub, 100);
-                return;
-            }
-
-            // Override TradingHub's renderTrades to use our grid
-            TradingHub.prototype.renderTrades = function() {
-                const grid = document.getElementById('tradesGrid');
-                if (!grid) return;
-
-                let filteredTrades = this.filterTrades();
-                filteredTrades = this.sortTrades(filteredTrades);
-
-                grid.innerHTML = '';
-
-                if (filteredTrades.length === 0) {
-                    grid.innerHTML = `
-                        <div class="empty-state" style="grid-column: 1/-1;">
-                            <div class="empty-state-icon">📭</div>
-                            <div class="empty-state-title">No Trades Found</div>
-                            <div class="empty-state-text">Try adjusting your filters or create a new trade!</div>
-                        </div>
-                    `;
-                    return;
-                }
-
-                filteredTrades.forEach(trade => {
-                    grid.appendChild(this.createTradeCard(trade));
-                });
-            };
-
-            // Override setupFilters to use our filter elements
-            TradingHub.prototype.setupFilters = function() {
-                const categoryFilter = document.getElementById('filterCategory');
-                const statusFilter = document.getElementById('filterStatus');
-                const sortFilter = document.getElementById('filterSort');
-                const searchInput = document.getElementById('tradesSearchInput');
-
-                if (categoryFilter) {
-                    categoryFilter.addEventListener('change', (e) => {
-                        this.filters.category = e.target.value;
-                        this.loadTrades().then(() => this.renderTrades());
-                    });
-                }
-
-                if (statusFilter) {
-                    statusFilter.addEventListener('change', (e) => {
-                        this.filters.status = e.target.value;
-                        this.loadTrades().then(() => this.renderTrades());
-                    });
-                }
-
-                if (sortFilter) {
-                    sortFilter.addEventListener('change', (e) => {
-                        this.filters.sort = e.target.value;
-                        this.renderTrades();
-                    });
-                }
-
-                if (searchInput) {
-                    let searchTimeout;
-                    searchInput.addEventListener('input', (e) => {
-                        clearTimeout(searchTimeout);
-                        searchTimeout = setTimeout(() => {
-                            this.filters.search = e.target.value;
-                            this.renderTrades();
-                        }, 300);
-                    });
-                }
-            };
-
-            // Override filterTrades to include search
-            TradingHub.prototype.filterTrades = function() {
-                return this.trades.filter(trade => {
-                    // Category filter
-                    if (this.filters.category !== 'all' && trade.category !== this.filters.category) {
-                        return false;
-                    }
-
-                    // Status filter
-                    if (this.filters.status !== 'all' && trade.status !== this.filters.status) {
-                        return false;
-                    }
-
-                    // Search filter
-                    if (this.filters.search) {
-                        const searchTerm = this.filters.search.toLowerCase();
-                        const matchesTitle = trade.title?.toLowerCase().includes(searchTerm);
-                        const matchesDescription = trade.description?.toLowerCase().includes(searchTerm);
-                        const matchesItems = trade.offering?.some(item => 
-                            item.item_name?.toLowerCase().includes(searchTerm)
-                        ) || trade.lookingFor?.some(item => 
-                            item.item_name?.toLowerCase().includes(searchTerm)
-                        );
-                        if (!matchesTitle && !matchesDescription && !matchesItems) {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                });
-            };
-
-            // Override sortTrades to include views sorting
-            TradingHub.prototype.sortTrades = function(trades) {
-                const sorted = [...trades];
-
-                switch (this.filters.sort) {
-                    case 'recent':
-                        sorted.sort((a, b) => b.createdAt - a.createdAt);
-                        break;
-                    case 'views':
-                        sorted.sort((a, b) => (b.views || 0) - (a.views || 0));
-                        break;
-                    case 'value-high':
-                        sorted.sort((a, b) => (b.value || 0) - (a.value || 0));
-                        break;
-                    case 'value-low':
-                        sorted.sort((a, b) => (a.value || 0) - (b.value || 0));
-                        break;
-                }
-
-                return sorted;
-            };
-
-            // Initialize TradingHub instance
-            if (window.Auth) {
-                window.Auth.addEventListener("sessionReady", () => {
-                    state.tradingHub = new TradingHub();
-                });
-            } else {
-                // Fallback: create TradingHub directly after a short delay
-                setTimeout(() => {
-                    state.tradingHub = new TradingHub();
-                }, 500);
-            }
-        }
-
-        // Initialize TradingHub after scripts are loaded
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initTradingHub);
-        } else {
-            initTradingHub();
-        }
-
-        // View Toggle
-        function toggleView() {
-            state.currentView = state.currentView === 'browse' ? 'create' : 'browse';
-            
-            const browseView = document.getElementById('browseView');
-            const createView = document.getElementById('createView');
-            const toggleBtn = document.getElementById('viewToggleBtn');
-            const toggleBtnText = document.getElementById('toggleBtnText');
-            const toggleBtnIcon = document.getElementById('toggleBtnIcon');
-
-            if (state.currentView === 'browse') {
-                browseView.classList.add('active');
-                createView.classList.remove('active');
-                toggleBtnText.textContent = 'Create Trade';
-                toggleBtnIcon.textContent = '➕';
-            } else {
-                browseView.classList.remove('active');
-                createView.classList.add('active');
-                toggleBtnText.textContent = 'Browse Trades';
-                toggleBtnIcon.textContent = '📋';
-                
-                // Initialize create view if not already done
-                if (!state.sortableInstances.allItems) {
-                    initCreateView();
-                }
-            }
-        }
-
-        // Initialize Create View
-        function initCreateView() {
-            loadItems();
-            renderCategories();
-            renderAllItems();
-            setupEventListeners();
-            initializeSortable();
-        }
-
-        // Load items for drag-and-drop
-        async function loadItems() {
-            const grid = document.getElementById('allItemsGrid');
-            if (!grid) return;
-
-            grid.innerHTML = Array(12).fill(0).map(() =>
-                '<div class="skeleton-card"></div>'
-            ).join('');
-
-            try {
-                const categories = ['gears', 'deaths', 'pets', 'effects', 'titles'];
-                state.allItems = [];
-
-                const categoryPromises = categories.map(async (cat) => {
-                    let offset = 0;
-                    const limit = 500;
-                    let hasMore = true;
-                    
-                    while (hasMore) {
-                        const url = new URL('https://emwiki.com/api/items');
-                        url.searchParams.set('category', cat);
-                        url.searchParams.set('limit', limit.toString());
-                        url.searchParams.set('offset', offset.toString());
-                        
-                        const res = await fetch(url.toString());
-                        if (!res.ok) throw new Error(`Failed to fetch ${cat} items`);
-                        
-                        const data = await res.json();
-                        const items = data.items || [];
-                        
-                        items.forEach(item => {
-                            state.allItems.push({
-                                ...item,
-                                category: cat
-                            });
-                        });
-                        
-                        hasMore = items.length === limit;
-                        offset += limit;
-                    }
-                });
-                
-                await Promise.all(categoryPromises);
-                console.log('✅ Loaded', state.allItems.length, 'items');
-            } catch (error) {
-                console.error('❌ Failed to load items:', error);
-                grid.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">⚠️</div>
-                        <div class="empty-state-text">Failed to load items</div>
-                    </div>
-                `;
-            }
-        }
-
-        function renderCategories() {
-            const container = document.getElementById('categoryFilter');
-            if (!container) return;
-            container.innerHTML = state.categories.map(cat =>
-                `<div class="category-pill ${cat === state.activeCategory ? 'active' : ''}"
-                      onclick="filterByCategory('${cat}')">${cat}</div>`
-            ).join('');
-        }
-
-        function filterByCategory(category) {
-            state.activeCategory = category;
-            renderCategories();
-            renderAllItems();
-        }
-
-        function renderAllItems() {
-            const grid = document.getElementById('allItemsGrid');
-            if (!grid) return;
-            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
-
-            let items = state.allItems;
-
-            if (state.activeCategory !== 'all') {
-                items = items.filter(item => item.category === state.activeCategory);
-            }
-
-            if (searchTerm) {
-                items = items.filter(item =>
-                    item.name.toLowerCase().includes(searchTerm)
-                );
-            }
-
-            state.filteredItems = items;
-
-            const itemsHTML = items.slice(0, state.itemsPerPage).map(item => `
-                <div class="item" data-item='${JSON.stringify(item).replace(/'/g, "&apos;")}'>
-                    <img src="${item.img || './imgs/placeholder.png'}" alt="${item.name}">
-                    <small class="item-name">${item.name}</small>
-                </div>
-            `).join('');
-
-            grid.innerHTML = itemsHTML;
-
-            if (items.length === 0) {
-                grid.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🔍</div>
-                        <div class="empty-state-text">No items found</div>
-                    </div>
-                `;
-            }
-        }
-
-        function setupEventListeners() {
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.addEventListener('input', renderAllItems);
-            }
-        }
-
-        function initializeSortable() {
-            const allItemsGrid = document.getElementById('allItemsGrid');
-            const youGivePanel = document.getElementById('youGiveItems');
-            const theyGivePanel = document.getElementById('theyGiveItems');
-
-            if (!allItemsGrid || !youGivePanel || !theyGivePanel) return;
-
-            // Sortable for all items (source)
-            state.sortableInstances.allItems = new Sortable(allItemsGrid, {
-                group: {
-                    name: 'shared',
-                    pull: 'clone',
-                    put: false
-                },
-                animation: 150,
-                sort: false,
-                ghostClass: 'sortable-ghost',
-                dragClass: 'sortable-drag',
-                touchStartThreshold: 5,
-                onEnd: function (evt) {
-                    if (evt.to !== evt.from) {
-                        evt.item.remove();
-                    }
-                }
-            });
-
-            // Sortable for youGive panel
-            state.sortableInstances.youGive = new Sortable(youGivePanel, {
-                group: 'shared',
-                animation: 150,
-                ghostClass: 'sortable-ghost',
-                dragClass: 'sortable-drag',
-                touchStartThreshold: 5,
-                onAdd: function (evt) {
-                    const item = evt.item;
-                    const itemData = JSON.parse(item.dataset.item);
-                    addItemToPanel(itemData, 'youGive', evt.newIndex);
-                },
-                onEnd: function () {
-                    updatePanelState('youGive');
-                }
-            });
-
-            // Sortable for theyGive panel
-            state.sortableInstances.theyGive = new Sortable(theyGivePanel, {
-                group: 'shared',
-                animation: 150,
-                ghostClass: 'sortable-ghost',
-                dragClass: 'sortable-drag',
-                touchStartThreshold: 5,
-                onAdd: function (evt) {
-                    const item = evt.item;
-                    const itemData = JSON.parse(item.dataset.item);
-                    addItemToPanel(itemData, 'theyGive', evt.newIndex);
-                },
-                onEnd: function () {
-                    updatePanelState('theyGive');
-                }
-            });
-        }
-
-        function showToast(message, type = 'info') {
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-
-            const icons = {
-                success: '✅',
-                error: '❌',
-                info: 'ℹ️',
-                warning: '⚠️'
-            };
-
-            toast.innerHTML = `
-                <div class="toast-icon">${icons[type] || icons.info}</div>
-                <div class="toast-message">${message}</div>
-            `;
-
-            document.body.appendChild(toast);
-
-            setTimeout(() => {
-                toast.style.animation = 'slideInRight 0.3s ease-out reverse';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        function addItemToPanel(item, panelType, index) {
-            const panel = panelType === 'youGive' ? state.youGiveItems : state.theyGiveItems;
-
-            if (panel.some(i => i.name === item.name && i.type === 'game-item')) {
-                showToast('Item already added to this panel', 'info');
-                renderPanel(panelType);
-                return;
-            }
-
-            if (index !== undefined) {
-                panel.splice(index, 0, { ...item, type: 'game-item' });
-            } else {
-                panel.push({ ...item, type: 'game-item' });
-            }
-
-            showToast(`Added ${item.name}`, 'success');
-            renderPanel(panelType);
-        }
-
-        function updatePanelState(panelType) {
-            const container = document.getElementById(`${panelType}Items`);
-            if (!container) return;
-            const items = Array.from(container.querySelectorAll('.panel-item'));
-
-            if (panelType === 'youGive') {
-                state.youGiveItems = [];
-            } else {
-                state.theyGiveItems = [];
-            }
-
-            items.forEach(itemEl => {
-                const itemData = itemEl.dataset.itemData;
-                if (itemData) {
-                    const panel = panelType === 'youGive' ? state.youGiveItems : state.theyGiveItems;
-                    panel.push(JSON.parse(itemData));
-                }
-            });
-        }
-
-        function renderPanel(panelType) {
-            const container = document.getElementById(`${panelType}Items`);
-            const summaryEl = document.getElementById(`${panelType}Summary`);
-            if (!container) return;
-
-            const items = panelType === 'youGive' ? state.youGiveItems : state.theyGiveItems;
-
-            if (summaryEl) {
-                if (items.length > 0) {
-                    summaryEl.style.display = 'flex';
-                    summaryEl.querySelector('.trade-summary-count').textContent = items.length;
-                } else {
-                    summaryEl.style.display = 'none';
-                }
-            }
-
-            if (items.length === 0) {
-                container.classList.add('empty');
-                container.innerHTML = '';
-                return;
-            }
-
-            container.classList.remove('empty');
-            container.innerHTML = items.map((item, index) => {
-                if (item.type === 'robux') {
-                    return `
-                        <div class="panel-item custom-item" data-item-data='${JSON.stringify(item).replace(/'/g, "&apos;")}'>
-                            <button class="remove-wishlist" onclick="removeItem('${panelType}', ${index})">×</button>
-                            <div class="custom-item-icon">💰</div>
-                            <div class="custom-item-text">${item.amount} R$</div>
-                        </div>
-                    `;
-                } else if (item.type === 'other-game') {
-                    return `
-                        <div class="panel-item custom-item" data-item-data='${JSON.stringify(item).replace(/'/g, "&apos;")}'>
-                            <button class="remove-wishlist" onclick="removeItem('${panelType}', ${index})">×</button>
-                            <div class="custom-item-icon">🎮</div>
-                            <div class="custom-item-text">${item.gameName}: ${item.itemName}</div>
-                        </div>
-                    `;
-                } else {
-                    return `
-                        <div class="panel-item" data-item='${JSON.stringify(item).replace(/'/g, "&apos;")}' data-item-data='${JSON.stringify(item).replace(/'/g, "&apos;")}'>
-                            <button class="remove-wishlist" onclick="removeItem('${panelType}', ${index})">×</button>
-                            <img src="${item.img || './imgs/placeholder.png'}" alt="${item.name}">
-                            <small class="item-name">${item.name}</small>
-                        </div>
-                    `;
-                }
-            }).join('');
-        }
-
-        function removeItem(panelType, index) {
-            const panel = panelType === 'youGive' ? state.youGiveItems : state.theyGiveItems;
-            panel.splice(index, 1);
-            renderPanel(panelType);
-        }
-
-        function openCustomModal(panel) {
-            state.currentPanel = panel;
-            document.getElementById('customModal').classList.add('active');
-            document.getElementById('robuxAmount').value = '';
-            document.getElementById('gameName').value = '';
-            document.getElementById('itemName').value = '';
-            selectCustomType('robux');
-        }
-
-        function closeCustomModal() {
-            document.getElementById('customModal').classList.remove('active');
-            state.currentPanel = null;
-        }
-
-        function selectCustomType(type) {
-            state.customType = type;
-            document.querySelectorAll('.option-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.type === type);
-            });
-
-            if (type === 'robux') {
-                document.getElementById('robuxInput').classList.remove('hidden');
-                document.getElementById('otherGameInput').classList.add('hidden');
-                document.getElementById('otherItemInput').classList.add('hidden');
-            } else {
-                document.getElementById('robuxInput').classList.add('hidden');
-                document.getElementById('otherGameInput').classList.remove('hidden');
-                document.getElementById('otherItemInput').classList.remove('hidden');
-            }
-        }
-
-        function addCustomItem() {
-            if (!state.currentPanel) return;
-            const panel = state.currentPanel === 'youGive' ? state.youGiveItems : state.theyGiveItems;
-
-            if (state.customType === 'robux') {
-                const amount = parseInt(document.getElementById('robuxAmount').value);
-                if (!amount || amount <= 0) {
-                    showToast('Please enter a valid amount', 'error');
-                    return;
-                }
-                panel.push({ type: 'robux', amount });
-            } else {
-                const gameName = document.getElementById('gameName').value.trim();
-                const itemName = document.getElementById('itemName').value.trim();
-                if (!gameName || !itemName) {
-                    showToast('Please fill in all fields', 'error');
-                    return;
-                }
-                panel.push({ type: 'other-game', gameName, itemName });
-            }
-
-            renderPanel(state.currentPanel);
-            closeCustomModal();
-        }
-
-        // Submit Trade
-        async function submitTrade() {
-            const title = document.getElementById('tradeTitle').value.trim();
-            if (!title) {
-                showToast('Please enter a title', 'error');
-                return;
-            }
-
-            if (state.youGiveItems.length === 0) {
-                showToast('Please add at least one item to "you give"', 'error');
-                return;
-            }
-
-            // Check if user is logged in
-            const sessionToken = localStorage.getItem('sessionToken');
-            if (!sessionToken) {
-                showToast('Please login to create a trade', 'warning');
-                return;
-            }
-
-            const btn = document.getElementById('createListingBtn');
-            btn.disabled = true;
-            btn.textContent = 'Creating...';
-
-            try {
-                // Convert items to API format
-                const offeringItems = state.youGiveItems
-                    .filter(item => item.type === 'game-item')
-                    .map(item => ({
-                        item_name: item.name,
-                        item_image: item.img || null
-                    }));
-
-                const offeringRobux = state.youGiveItems
-                    .find(item => item.type === 'robux')?.amount || 0;
-
-                const seekingItems = state.theyGiveItems
-                    .filter(item => item.type === 'game-item')
-                    .map(item => ({
-                        item_name: item.name,
-                        item_image: item.img || null
-                    }));
-
-                const seekingRobux = state.theyGiveItems
-                    .find(item => item.type === 'robux')?.amount || 0;
-
-                const listingData = {
-                    title: title,
-                    description: document.getElementById('tradeDescription').value.trim() || null,
-                    category: document.getElementById('tradeCategory').value || 'other',
-                    offering_items: offeringItems,
-                    offering_robux: offeringRobux,
-                    seeking_items: seekingItems.length > 0 ? seekingItems : null,
-                    seeking_robux: seekingRobux || null
-                };
-
-                const response = await fetch('https://emwiki.com/api/trades/listings', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${sessionToken}`
-                    },
-                    body: JSON.stringify(listingData)
-                });
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Failed to create listing');
-                }
-
-                showToast('Trade listing created successfully!', 'success');
-                
-                // Reset form
-                document.getElementById('tradeTitle').value = '';
-                document.getElementById('tradeDescription').value = '';
-                document.getElementById('tradeCategory').value = '';
-                state.youGiveItems = [];
-                state.theyGiveItems = [];
-                renderPanel('youGive');
-                renderPanel('theyGive');
-
-                // Switch to browse view and refresh
-                state.currentView = 'browse';
-                const browseView = document.getElementById('browseView');
-                const createView = document.getElementById('createView');
-                const toggleBtnText = document.getElementById('toggleBtnText');
-                const toggleBtnIcon = document.getElementById('toggleBtnIcon');
-                
-                browseView.classList.add('active');
-                createView.classList.remove('active');
-                toggleBtnText.textContent = 'Create Trade';
-                toggleBtnIcon.textContent = '➕';
-                
-                if (state.tradingHub) {
-                    await state.tradingHub.loadTrades();
-                    state.tradingHub.renderTrades();
-                }
-            } catch (error) {
-                console.error('Error creating trade:', error);
-                showToast(error.message || 'Failed to create trade', 'error');
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Create Listing';
-            }
-        }
-
-        // Setup modal close handlers
-        document.getElementById('customModal').addEventListener('click', (e) => {
-            if (e.target.id === 'customModal') {
-                closeCustomModal();
-            }
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeCustomModal();
-            }
-        });
-
-        // Initialize
-        document.getElementById('viewToggleBtn').addEventListener('click', toggleView);
-
-        // Initialize on page load
-        window.addEventListener('DOMContentLoaded', () => {
-            // TradingHub will initialize when Auth is ready
-            // For now, ensure browse view is shown
-            if (state.tradingHub) {
-                state.tradingHub.loadTrades().then(() => {
-                    state.tradingHub.renderTrades();
-                });
-            }
-        });
-    </script>
 </body>
 
 </html>

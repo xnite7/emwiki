@@ -128,7 +128,7 @@ async function handlePost(request, env, path, user) {
     if (!path || path === '') {
         const data = await request.json();
 
-        const error = validateFields(data, ['title', 'offering_items']);
+        const error = validateFields(data, ['offering_items']);
         if (error) {
             return errorResponse(error);
         }
@@ -147,6 +147,74 @@ async function handlePost(request, env, path, user) {
             return errorResponse('offering_items must be a non-empty array');
         }
 
+        // Validate item types and robux amounts
+        const validateItems = (items, fieldName) => {
+            for (const item of items) {
+                if (item.type === 'robux') {
+                    const amount = parseInt(item.amount);
+                    if (isNaN(amount) || amount < 0 || amount > 1000000) {
+                        return `Invalid robux amount in ${fieldName}: must be between 0 and 1,000,000`;
+                    }
+                } else if (item.type === 'other-game') {
+                    if (!item.game_name || !item.item_name) {
+                        return `Invalid other-game item in ${fieldName}: game_name and item_name are required`;
+                    }
+                } else if (item.type === 'game-item') {
+                    if (!item.item_name) {
+                        return `Invalid game-item in ${fieldName}: item_name is required`;
+                    }
+                }
+            }
+            return null;
+        };
+
+        const offeringError = validateItems(offering_items, 'offering_items');
+        if (offeringError) {
+            return errorResponse(offeringError);
+        }
+
+        if (seeking_items && Array.isArray(seeking_items)) {
+            const seekingError = validateItems(seeking_items, 'seeking_items');
+            if (seekingError) {
+                return errorResponse(seekingError);
+            }
+        }
+
+        // Generate auto title if not provided
+        let finalTitle = title;
+        if (!finalTitle) {
+            const firstOffering = offering_items[0];
+            let offeringText = '';
+            if (firstOffering.type === 'robux') {
+                offeringText = `${firstOffering.amount} R$`;
+            } else if (firstOffering.type === 'other-game') {
+                offeringText = `${firstOffering.game_name} ${firstOffering.item_name}`;
+            } else {
+                offeringText = firstOffering.item_name;
+            }
+            if (offering_items.length > 1) {
+                offeringText += ` + ${offering_items.length - 1} more`;
+            }
+            
+            if (seeking_items && seeking_items.length > 0) {
+                const firstSeeking = seeking_items[0];
+                let seekingText = '';
+                if (firstSeeking.type === 'robux') {
+                    seekingText = `${firstSeeking.amount} R$`;
+                } else if (firstSeeking.type === 'other-game') {
+                    seekingText = `${firstSeeking.game_name} ${firstSeeking.item_name}`;
+                } else {
+                    seekingText = firstSeeking.item_name;
+                }
+                if (seeking_items.length > 1) {
+                    seekingText += ` + ${seeking_items.length - 1} more`;
+                }
+                finalTitle = `Trading ${offeringText} for ${seekingText}`;
+            } else {
+                finalTitle = `Trading ${offeringText}`;
+            }
+        }
+
         const now = Date.now();
         const expiresAt = now + (expires_in_days * 24 * 60 * 60 * 1000);
 
@@ -156,7 +224,7 @@ async function handlePost(request, env, path, user) {
             VALUES (?, ?, ?, ?, 'active', ?, ?, ?, ?, ?)`
         ).bind(
             user.user_id,
-            title,
+            finalTitle,
             description || null,
             category,
             JSON.stringify(offering_items),

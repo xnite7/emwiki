@@ -1747,7 +1747,8 @@ class ItemModal {
                             <div class="modal-title-wrapper">
                                 <h1 class="modal-title"></h1>
                                 <div class="modal-alias" id="modal-alias-front" style="display:none;"></div>
-                            </div>
+                            <div class="modal-quantity" id="modal-quantity" style="display:none;"></div>
+                                </div>
                             <div class="modal-price"></div>
                         </div>
 
@@ -1764,6 +1765,8 @@ class ItemModal {
                             <span class="badge-removed" style="display:none;">Removed</span>
                             <span class="badge-untradable" style="display:none;">Untradable</span>
                         </div>
+                        
+                        
                     </div>
 
                     <!-- Back Side (Graph & Metadata) -->
@@ -1777,13 +1780,6 @@ class ItemModal {
                             <h4>Price History</h4>
                             <div class="modal-graph-container"></div>
                             <div class="modal-last-admin"></div>
-                        </div>
-
-                        <!-- Quantity displayed below graph -->
-                        <div class="modal-quantity-section" id="modal-quantity-section" style="display:none;">
-                            <div class="metadata-item">
-                                <strong>Quantity Given:</strong> <span id="modal-quantity-text"></span>
-                            </div>
                         </div>
                         
                         <div class="modal-metadata-section" style="display:none;">
@@ -1857,7 +1853,8 @@ class ItemModal {
                 retired: document.querySelector('.badge-retired'),
                 removed: document.querySelector('.badge-removed'),
                 untradable: document.querySelector('.badge-untradable')
-            }
+            },
+            quantity: document.getElementById('modal-quantity')
         };
     }
 
@@ -1943,8 +1940,7 @@ class ItemModal {
         const hasHistory = item.priceHistory && item.priceHistory.filter(h => h.price !== 0 && h.price !== '0').length >= 2;
         const hasMetadata = item.author;
         const hasLore = item.lore && item.lore.trim() !== '';
-        const hasQuantity = item.quantity && item.quantity.trim() !== '';
-        const hasBackContent = hasHistory || hasMetadata || hasLore || hasQuantity;
+        const hasBackContent = hasHistory || hasMetadata || hasLore;
 
         // Show/hide flip button
         this.elements.flipBtn.classList.toggle('hidden', !hasBackContent);
@@ -1997,7 +1993,6 @@ class ItemModal {
         const hasHistory = item.priceHistory && item.priceHistory.length >= 2;
         const hasMetadata = item.author;
         const hasLore = item.lore && item.lore.trim() !== '';
-        const hasQuantity = item.quantity && item.quantity.trim() !== '';
 
         // Update graph section
         if (hasHistory) {
@@ -2019,16 +2014,6 @@ class ItemModal {
             }
         } else {
             this.elements.graphSection.style.display = 'none';
-        }
-
-        // Update quantity section (below graph)
-        const quantitySection = document.getElementById('modal-quantity-section');
-        const quantityText = document.getElementById('modal-quantity-text');
-        if (hasQuantity && quantitySection && quantityText) {
-            quantitySection.style.display = 'block';
-            quantityText.textContent = item.quantity;
-        } else if (quantitySection) {
-            quantitySection.style.display = 'none';
         }
 
         // Update metadata section (for author)
@@ -2088,6 +2073,14 @@ class ItemModal {
             this.elements.price.style.display = 'flex';
         } else {
             this.elements.price.style.display = 'none';
+        }
+
+        // Quantity (displayed on front, left bottom corner, tilted)
+        if (item.quantity && item.quantity.trim() !== '' && this.elements.quantity) {
+            this.elements.quantity.textContent = 'x' + item.quantity;
+            this.elements.quantity.style.display = 'block';
+        } else if (this.elements.quantity) {
+            this.elements.quantity.style.display = 'none';
         }
 
 
@@ -2261,9 +2254,7 @@ class ItemModal {
                 const hasHistory = this.currentItem.priceHistory && this.currentItem.priceHistory.filter(h => h.price !== 0 && h.price !== '0').length >= 2;
                 const hasMetadata = this.currentItem.author;
                 const hasLore = this.currentItem.lore && this.currentItem.lore.trim() !== '';
-                const hasAlias = this.currentItem.alias && this.currentItem.alias.trim() !== '';
-                const hasQuantity = this.currentItem.quantity && this.currentItem.quantity.trim() !== '';
-                const hasBackContent = hasHistory || hasMetadata || hasLore || hasAlias || hasQuantity;
+                const hasBackContent = hasHistory || hasMetadata || hasLore;
 
                 // Show/hide flip button
                 this.elements.flipBtn.classList.toggle('hidden', !hasBackContent);

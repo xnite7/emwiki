@@ -1,39 +1,51 @@
+/* Mobile-First Trading Page Styles */
 
-/* Mobile-first base styles */
+/* ========== CONTAINER & BASE ========== */
 .trading-container {
     max-width: 1600px;
     margin: 0 auto;
     padding: 1rem;
     min-height: calc(100vh - 200px);
-    animation: fadeInUp 0.5s ease-out;
 }
 
-@keyframes fadeInUp {
+.trading-view {
+    display: none;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.trading-view.active {
+    display: block;
+}
+
+@keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(10px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-/* View Toggle Button - Sticky */
-.view-toggle-container {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: var(--bg-secondary);
-    border-bottom: 1px solid var(--border-color);
-    padding: 1rem;
-    margin: -1rem -1rem 1.5rem -1rem;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 2px 10px var(--shadow-color);
+/* ========== BROWSE VIEW ========== */
+.browse-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 }
 
-.view-toggle-btn {
+.browse-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea, #4a9eff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.btn-create-trade {
     width: 100%;
     padding: 0.875rem 1.5rem;
     background: linear-gradient(135deg, #667eea, #4a9eff);
@@ -50,67 +62,30 @@
     justify-content: center;
     gap: 0.5rem;
     min-height: 44px;
-    /* Touch-friendly */
 }
 
-.view-toggle-btn:hover {
+.btn-create-trade:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
 }
 
-.view-toggle-btn:active {
+.btn-create-trade:active {
     transform: scale(0.98);
 }
 
-/* View containers */
-.view-container {
-    display: none;
-    animation: fadeIn 0.3s ease-out;
-}
-
-.view-container.active {
-    display: block;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-/* ========== TRADES LIST VIEW ========== */
-.trades-list-header {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.trades-list-title {
-    font-size: 1.5rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, #667eea, #4a9eff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.trades-filters {
+.browse-filters {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    margin-bottom: 1.5rem;
 }
 
-.trades-search-box {
+.search-box {
     position: relative;
     width: 100%;
 }
 
-.trades-search-box::before {
+.search-box::before {
     content: '🔍';
     position: absolute;
     left: 1rem;
@@ -121,7 +96,7 @@
     z-index: 1;
 }
 
-.trades-search-input {
+.search-input {
     width: 100%;
     padding: 0.75rem 1rem 0.75rem 2.75rem;
     background: var(--bg-item);
@@ -133,20 +108,20 @@
     min-height: 44px;
 }
 
-.trades-search-input:focus {
+.search-input:focus {
     outline: none;
     background: var(--bg-item-hover);
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.trades-filter-row {
+.filter-row {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
 }
 
-.trades-filter-select {
+.filter-select {
     flex: 1;
     min-width: 120px;
     padding: 0.75rem 1rem;
@@ -161,13 +136,13 @@
     min-height: 44px;
 }
 
-.trades-filter-select:focus {
+.filter-select:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-/* Trades Grid - Mobile First */
+/* Trade Cards Grid */
 .trades-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -189,7 +164,7 @@
     border-color: #667eea;
 }
 
-.trade-header {
+.trade-card-header {
     display: flex;
     align-items: flex-start;
     gap: 0.75rem;
@@ -213,18 +188,16 @@
     font-weight: 700;
     font-size: 0.95rem;
     margin-bottom: 0.25rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    color: CanvasText;
 }
 
 .trader-stats {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
     margin-bottom: 0.25rem;
 }
 
-.trade-time {
+.trade-meta {
     font-size: 0.75rem;
     color: var(--text-secondary);
 }
@@ -235,16 +208,13 @@
     font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
-    white-space: nowrap;
+    background: var(--bg-item-hover);
+    border: 1px solid var(--border-color);
 }
 
 .trade-status.active {
-    background: rgba(17, 245, 74, 0.2);
-    color: #11f54a;
-}
-
-.trade-status.completed {
     background: rgba(102, 126, 234, 0.2);
+    border-color: #667eea;
     color: #667eea;
 }
 
@@ -252,168 +222,290 @@
     font-weight: 600;
     font-size: 1rem;
     margin-bottom: 0.5rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+    color: CanvasText;
 }
 
 .trade-description {
-    font-size: 0.85rem;
+    font-size: 0.875rem;
     color: var(--text-secondary);
-    margin-bottom: 0.75rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+    margin-bottom: 1rem;
+    line-height: 1.5;
 }
 
-.trade-items {
+.trade-items-container {
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
-    padding: 0.75rem;
-    background: var(--bg-item-hover);
-    border-radius: 12px;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
 .trade-side {
-    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    min-width: 0;
 }
 
 .trade-side-label {
     font-size: 0.75rem;
     font-weight: 700;
-    color: var(--text-secondary);
     text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
 }
 
-.trade-item-mini {
+.trade-items-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.trade-item {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem;
-    background: var(--bg-item);
+    background: var(--bg-item-hover);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    font-size: 0.8rem;
+    font-size: 0.875rem;
 }
 
 .trade-item-img {
     width: 32px;
     height: 32px;
-    object-fit: contain;
+    object-fit: cover;
     border-radius: 6px;
 }
 
 .trade-item-name {
+    font-weight: 600;
+    color: CanvasText;
+    max-width: 150px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    flex: 1;
-    min-width: 0;
 }
 
-.trade-arrow {
-    font-size: 1.5rem;
-    opacity: 0.5;
-    flex-shrink: 0;
+.trade-item-robux {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: linear-gradient(135deg, rgba(17, 245, 74, 0.2), rgba(102, 126, 234, 0.2));
+    border: 1px solid rgba(17, 245, 74, 0.3);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #11f54a;
+}
+
+.trade-item-other {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--bg-item-hover);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.875rem;
 }
 
 .trade-actions {
     display: flex;
     gap: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
 }
 
-.trade-action-btn {
+.btn-view {
     flex: 1;
-    padding: 0.75rem;
+    padding: 0.625rem 1rem;
+    background: linear-gradient(135deg, #667eea, #4a9eff);
     border: none;
-    border-radius: 10px;
-    font-size: 0.9rem;
+    border-radius: 8px;
+    color: white;
+    font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
     min-height: 44px;
 }
 
-.trade-action-btn.primary {
-    background: linear-gradient(135deg, #667eea, #4a9eff);
-    color: white;
+.btn-view:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
-.trade-action-btn.secondary {
-    background: var(--bg-item-hover);
-    color: CanvasText;
+.btn-offer {
+    flex: 1;
+    padding: 0.625rem 1rem;
+    background: var(--bg-item);
     border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: CanvasText;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-height: 44px;
 }
 
-.trade-action-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px var(--shadow-color);
+.btn-offer:hover {
+    background: var(--bg-item-hover);
+    border-color: #667eea;
 }
 
-.trade-action-btn:active {
-    transform: scale(0.98);
-}
-
-/* Empty state */
 .empty-state {
     text-align: center;
     padding: 3rem 1rem;
-    opacity: 0.6;
+    color: var(--text-secondary);
 }
 
 .empty-state-icon {
-    font-size: 4rem;
+    font-size: 3rem;
     margin-bottom: 1rem;
-    opacity: 0.5;
 }
 
 .empty-state-title {
-    font-size: 1.2rem;
-    font-weight: 600;
+    font-size: 1.25rem;
+    font-weight: 700;
     margin-bottom: 0.5rem;
+    color: CanvasText;
 }
 
 .empty-state-text {
-    font-size: 0.9rem;
-    opacity: 0.7;
-    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
 }
 
-/* ========== CREATE TRADE VIEW ========== */
-.create-trade-form {
+/* ========== WIZARD ========== */
+.wizard-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.wizard-progress {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+}
+
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 2;
+    flex: 1;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     background: var(--bg-item);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    border: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    transition: all 0.3s;
 }
 
-.create-trade-form-group {
-    margin-bottom: 1rem;
+.progress-step.active .step-number {
+    background: linear-gradient(135deg, #667eea, #4a9eff);
+    border-color: #667eea;
+    color: white;
 }
 
-.create-trade-label {
-    display: block;
-    font-size: 0.9rem;
+.progress-step.completed .step-number {
+    background: #11f54a;
+    border-color: #11f54a;
+    color: white;
+}
+
+.step-label {
+    font-size: 0.75rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--text-primary);
+    color: var(--text-secondary);
+    text-align: center;
 }
 
-.create-trade-input,
-.create-trade-textarea {
+.progress-step.active .step-label {
+    color: CanvasText;
+}
+
+.progress-bar {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--border-color);
+    z-index: 1;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #4a9eff);
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.wizard-step {
+    display: none;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.wizard-step.active {
+    display: block;
+}
+
+.step-header {
+    margin-bottom: 2rem;
+}
+
+.step-header h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: CanvasText;
+}
+
+.step-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.step-content {
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: CanvasText;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-input,
+.form-textarea,
+.form-select {
     width: 100%;
     padding: 0.75rem 1rem;
-    background: var(--bg-item-hover);
+    background: var(--bg-item);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     color: CanvasText;
@@ -423,695 +515,589 @@
     min-height: 44px;
 }
 
-.create-trade-textarea {
-    resize: vertical;
+.form-textarea {
     min-height: 100px;
+    resize: vertical;
 }
 
-.create-trade-input:focus,
-.create-trade-textarea:focus {
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
     outline: none;
+    background: var(--bg-item-hover);
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.trade-panels {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
+.items-section {
+    margin-bottom: 2rem;
 }
 
-.trade-panel {
-    background: var(--bg-item);
-    border: 2px dashed var(--border-color);
-    border-radius: 16px;
-    padding: 1rem;
+.section-header-row {
     display: flex;
-    flex-direction: column;
-    transition: all 0.3s;
-    min-height: 200px;
-}
-
-.panel-header {
-    display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: center;
     margin-bottom: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border-color);
 }
 
-.panel-title {
-    font-size: 1.25rem;
-    font-weight: 800;
-    opacity: 0.9;
-}
-
-.r-button {
-    width: 44px;
-    height: 44px;
-    background: linear-gradient(135deg, #667eea, #4a9eff);
-    border: none;
-    border-radius: 50%;
-    color: white;
-    font-size: 1.3rem;
-    font-weight: 900;
+.btn-add-custom {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--bg-item);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: CanvasText;
+    font-size: 0.875rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+    min-height: 44px;
 }
 
-.r-button:hover {
-    transform: scale(1.1) rotate(90deg);
-    box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
-}
-
-.r-button:active {
-    transform: scale(0.95) rotate(90deg);
-}
-
-.panel-items {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-    gap: 0.5rem;
-    flex: 1;
-    overflow-y: auto;
-    padding: 0.5rem;
-    min-height: 150px;
-    align-content: start;
-    position: relative;
-}
-
-.panel-items::-webkit-scrollbar {
-    width: 6px;
-}
-
-.panel-items::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 10px;
-}
-
-.panel-items.empty::before {
-    content: 'Drag items here';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 1rem;
-    font-weight: 600;
-    opacity: 0.2;
-    pointer-events: none;
-    color: var(--text-secondary);
-}
-
-.panel-item {
+.btn-add-custom:hover {
     background: var(--bg-item-hover);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 0.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
+    border-color: #667eea;
+}
+
+.item-search-container {
     position: relative;
-    animation: itemDrop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    cursor: grab;
-    min-height: 80px;
-}
-
-.panel-item:active {
-    cursor: grabbing;
-}
-
-@keyframes itemDrop {
-    from {
-        opacity: 0;
-        transform: scale(0.5) translateY(-20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-.panel-item img {
-    width: 100%;
-    height: auto;
-    max-height: 50px;
-    object-fit: contain;
-    pointer-events: none;
-}
-
-.panel-item .item-name {
-    font-size: 0.7rem;
-    text-align: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    line-height: 1.2;
-}
-
-.remove-wishlist {
-    position: absolute;
-    top: 0.25rem;
-    right: 0.25rem;
-    width: 24px;
-    height: 24px;
-    background: rgba(0, 0, 0, 0.5);
-    border: none;
-    border-radius: 50%;
-    color: white;
-    font-size: 1.2rem;
-    font-weight: 900;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    z-index: 10;
-    transition: all 0.2s;
-}
-
-.remove-wishlist:hover {
-    background: rgba(255, 0, 0, 0.7);
-    transform: scale(1.1);
-}
-
-.custom-item {
-    background: linear-gradient(135deg, rgba(17, 245, 74, 0.15), rgba(102, 126, 234, 0.15));
-    border: 1px solid rgba(17, 245, 74, 0.3);
-}
-
-.custom-item-icon {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    pointer-events: none;
-}
-
-.custom-item-text {
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-align: center;
-    line-height: 1.3;
-    pointer-events: none;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-}
-
-.all-items-section {
-    background: linear-gradient(320deg, rgba(255, 255, 255, 0.03), #ffffff0d);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 1rem;
-    backdrop-filter: blur(10px);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    min-height: 300px;
-    max-height: 50vh;
-}
-
-.section-header {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
     margin-bottom: 1rem;
 }
 
-.section-title {
-    font-size: 1.1rem;
-    font-weight: 800;
-    opacity: 0.95;
-    background: linear-gradient(135deg, #667eea, #4a9eff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.search-box {
+.item-search-input {
     width: 100%;
-    position: relative;
+    padding: 0.75rem 1rem 0.75rem 2.75rem;
+    background: var(--bg-item);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: CanvasText;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    min-height: 44px;
 }
 
-.search-box::before {
+.item-search-input::before {
     content: '🔍';
     position: absolute;
     left: 1rem;
     top: 50%;
     transform: translateY(-50%);
     opacity: 0.5;
-    pointer-events: none;
-    z-index: 1;
 }
 
-.search-input {
-    width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.75rem;
-    background: var(--bg-item-hover);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    color: CanvasText;
-    font-size: 0.95rem;
-    transition: all 0.3s;
-    min-height: 44px;
-}
-
-.search-input:focus {
+.item-search-input:focus {
     outline: none;
-    background: var(--bg-item);
+    background: var(--bg-item-hover);
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.category-filter {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-bottom: 0.75rem;
-}
-
-.category-pill {
-    padding: 0.5rem 1rem;
-    background: var(--bg-item-hover);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    color: CanvasText;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.25s;
-    min-height: 36px;
-    display: flex;
-    align-items: center;
-}
-
-.category-pill:hover {
-    background: var(--bg-item);
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px var(--shadow-color);
-}
-
-.category-pill.active {
-    background: linear-gradient(135deg, #667eea, #4a9eff);
-    border-color: transparent;
-    color: white;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-.items-grid2 {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-    gap: 0.5rem;
-    overflow-y: auto;
-    padding: 0.5rem;
-    flex: 1;
-}
-
-.items-grid2::-webkit-scrollbar {
-    width: 8px;
-}
-
-.items-grid2::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 10px;
-}
-
-.item {
-    background: var(--bg-item-hover);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 0.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-    cursor: grab;
-    transition: all 0.2s;
-    position: relative;
-    min-height: 80px;
-}
-
-.item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px var(--shadow-color);
-}
-
-.item:active {
-    cursor: grabbing;
-    transform: scale(0.98);
-}
-
-.item img {
-    max-width: 70%;
-    max-height: 70%;
-    object-fit: contain;
+.item-search-results {
     position: absolute;
-    pointer-events: none;
-    place-self: anchor-center;
-}
-
-.item-name {
-    font-size: 0.7rem;
-    text-align: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    line-height: 1.2;
-    margin-top: auto;
-}
-
-.item.sortable-ghost {
-    opacity: 0.3;
-    transform: scale(0.95);
-}
-
-.item.sortable-drag {
-    opacity: 0.9;
-    transform: rotate(5deg) scale(1.05);
-    cursor: grabbing;
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-}
-
-.trade-summary {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.4rem 0.75rem;
-    background: var(--bg-item-hover);
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 0.5rem;
+    background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    font-size: 0.75rem;
-    opacity: 0.8;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 4px 12px var(--shadow-color);
 }
 
-.trade-summary-count {
-    font-weight: 700;
-    color: #667eea;
+.item-search-results.active {
+    display: block;
 }
 
-.create-listing-btn {
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item:hover {
+    background: var(--bg-item-hover);
+}
+
+.search-result-item img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.search-result-item-name {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: CanvasText;
+}
+
+.selected-items-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    min-height: 60px;
+    padding: 1rem;
+    background: var(--bg-item);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+
+.selected-items-container .empty-state {
     width: 100%;
     padding: 1rem;
-    background: linear-gradient(135deg, #667eea, #4a9eff);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.selected-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--bg-item-hover);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    position: relative;
+}
+
+.selected-item img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.selected-item-name {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: CanvasText;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.selected-item-remove {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(255, 0, 0, 0.2);
+    border: none;
+    color: #ff4444;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 700;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.selected-item-remove:hover {
+    background: rgba(255, 0, 0, 0.3);
+}
+
+.selected-item-robux,
+.selected-item-other {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--bg-item-hover);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.selected-item-robux {
+    background: linear-gradient(135deg, rgba(17, 245, 74, 0.2), rgba(102, 126, 234, 0.2));
+    border-color: rgba(17, 245, 74, 0.3);
+    color: #11f54a;
+}
+
+.step-actions {
+    display: flex;
+    gap: 0.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    position: sticky;
+    bottom: 0;
+    background: Canvas;
+    margin: 0 -1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 1rem;
+}
+
+.btn-primary,
+.btn-secondary {
+    flex: 1;
+    padding: 0.875rem 1.5rem;
     border: none;
     border-radius: 12px;
-    color: white;
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-    min-height: 48px;
-    margin-top: 1rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.create-listing-btn:hover {
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #4a9eff);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
 }
 
-.create-listing-btn:active {
+.btn-primary:active {
     transform: scale(0.98);
 }
 
-.create-listing-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
+.btn-secondary {
+    background: var(--bg-item);
+    border: 1px solid var(--border-color);
+    color: CanvasText;
 }
 
-/* Custom Item Modal */
-.trading-modal-overlay {
+.btn-secondary:hover {
+    background: var(--bg-item-hover);
+    border-color: #667eea;
+}
+
+/* Step 3 Specific Styles */
+.step-3-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.details-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.theme-selector {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.theme-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: var(--bg-item);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.theme-option:hover {
+    background: var(--bg-item-hover);
+    border-color: #667eea;
+}
+
+.theme-option.active {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.theme-preview {
+    width: 60px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.theme-default {
+    background: linear-gradient(135deg, #667eea, #4a9eff);
+}
+
+.theme-ocean {
+    background: linear-gradient(135deg, #00c9ff, #92fe9d);
+}
+
+.theme-sunset {
+    background: linear-gradient(135deg, #ff6b6b, #ffa500);
+}
+
+.theme-forest {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+}
+
+.theme-option span {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: CanvasText;
+}
+
+.preview-column {
+    display: none;
+}
+
+.preview-container {
+    position: sticky;
+    top: 1rem;
+}
+
+.preview-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: CanvasText;
+}
+
+.trade-preview-card {
+    background: var(--bg-item);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1rem;
+}
+
+.preview-loading {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+
+/* ========== MODAL ========== */
+.modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(10px);
+    z-index: 1000;
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
-    animation: fadeIn 0.2s;
     padding: 1rem;
+    animation: fadeIn 0.3s ease-out;
 }
 
-.trading-modal-overlay.active {
+.modal-overlay.active {
     display: flex;
 }
 
-.trading-modal-content {
+.modal-content {
     background: var(--bg-secondary);
-    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
-    padding: 1.5rem;
-    max-width: 500px;
     width: 100%;
+    max-width: 500px;
     max-height: 90vh;
     overflow-y: auto;
-    animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.3s ease-out;
+}
+
+.modal-small {
+    max-width: 400px;
 }
 
 @keyframes slideUp {
     from {
         opacity: 0;
-        transform: translateY(50px) scale(0.9);
+        transform: translateY(20px);
     }
-
     to {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateY(0);
     }
 }
 
-.trading-modal-header {
-    margin-bottom: 1.5rem;
-}
-
-.trading-modal-title {
-    font-size: 1.3rem;
-    font-weight: 800;
-    margin-bottom: 0.5rem;
-    color: var(--text-primary);
-}
-
-.trading-modal-subtitle {
-    font-size: 0.85rem;
-    opacity: 0.6;
-    color: var(--text-secondary);
-}
-
-.trading-modal-body {
+.modal-header {
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
 }
 
-.trading-form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.trading-form-label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    opacity: 0.8;
-    color: var(--text-primary);
-}
-
-.trading-form-input,
-.trading-form-textarea {
-    padding: 0.75rem 1rem;
-    background: var(--bg-item);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 700;
     color: CanvasText;
-    font-size: 0.95rem;
-    font-family: inherit;
-    transition: all 0.3s;
-    resize: vertical;
-    min-height: 44px;
 }
 
-.trading-form-input:focus,
-.trading-form-textarea:focus {
-    outline: none;
-    background: var(--bg-item-hover);
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.trading-modal-actions {
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-item);
+    border: none;
+    color: CanvasText;
+    font-size: 1.5rem;
+    cursor: pointer;
     display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    background: var(--bg-item-hover);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    border-top: 1px solid var(--border-color);
 }
 
 .option-group {
     display: flex;
     gap: 0.75rem;
-    margin-top: 0.5rem;
 }
 
 .option-btn {
     flex: 1;
-    padding: 0.75rem;
+    padding: 0.75rem 1rem;
     background: var(--bg-item);
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--border-color);
     border-radius: 12px;
     color: CanvasText;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
-    text-align: center;
     min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .option-btn:hover {
     background: var(--bg-item-hover);
+    border-color: #667eea;
 }
 
 .option-btn.active {
-    background: linear-gradient(135deg, #667eea, #4a9eff);
-    border-color: transparent;
-    color: white;
+    background: rgba(102, 126, 234, 0.1);
+    border-color: #667eea;
+    color: #667eea;
 }
 
 .hidden {
     display: none !important;
 }
 
-/* Toast notifications */
-.toast {
-    position: fixed;
-    bottom: 1rem;
-    right: 1rem;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1rem 1.5rem;
-    box-shadow: 0 4px 20px var(--shadow-color);
-    z-index: 2000;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    animation: slideInRight 0.3s ease-out;
-    max-width: 90%;
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(100px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.toast-icon {
-    font-size: 1.2rem;
-}
-
-.toast-message {
-    font-weight: 600;
-}
-
-/* Tablet and Desktop */
+/* ========== TABLET & DESKTOP ========== */
 @media (min-width: 768px) {
     .trading-container {
         padding: 1.5rem;
     }
 
-    .view-toggle-container {
-        margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+    .browse-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .btn-create-trade {
+        width: auto;
+        min-width: 180px;
+    }
+
+    .browse-filters {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .search-box {
+        flex: 1;
+    }
+
+    .filter-row {
+        flex-wrap: nowrap;
+    }
+
+    .filter-select {
+        min-width: 140px;
     }
 
     .trades-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 
-    .trade-panels {
-        grid-template-columns: 1fr 1fr;
+    .wizard-progress {
+        padding: 0 2rem;
     }
 
-    .trades-filters {
+    .step-3-content {
         flex-direction: row;
-        align-items: center;
+        gap: 2rem;
     }
 
-    .trades-search-box {
+    .details-column {
         flex: 1;
-        max-width: 400px;
     }
 
-    .section-header {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
+    .preview-column {
+        display: block;
+        flex: 0 0 320px;
     }
 
-    .search-box {
-        max-width: 400px;
+    .theme-selector {
+        grid-template-columns: repeat(4, 1fr);
     }
 
-    .items-grid2,
-    .panel-items {
-        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    .step-actions {
+        position: relative;
+        margin: 0;
+        padding-left: 0;
+        padding-right: 0;
     }
 }
 
 @media (min-width: 1024px) {
-    .trading-container {
-        padding: 2rem;
-    }
-
-    .view-toggle-container {
-        margin: -2rem -2rem 2rem -2rem;
-    }
-
     .trades-grid {
         grid-template-columns: repeat(3, 1fr);
     }
 
-    .items-grid2,
-    .panel-items {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 0.75rem;
+    .wizard-container {
+        max-width: 1000px;
     }
 
-    .all-items-section {
-        max-height: 60vh;
+    .step-3-content {
+        gap: 3rem;
     }
-}
 
-@media (min-width: 1440px) {
-    .trades-grid {
-        grid-template-columns: repeat(4, 1fr);
+    .preview-column {
+        flex: 0 0 380px;
     }
 }
-

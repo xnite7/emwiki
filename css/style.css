@@ -43,7 +43,7 @@ html::before {
     --shadow-color: light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.5));
     --edges-color: light-dark(rgba(255, 255, 255, 0.4), rgba(0, 0, 0, 0.3));
     --accent: #4a9eff;
-    --accent-christmas: #ff4a4a;
+    --accent-christmas: #4a9eff;
 
     &:has(.light-theme) {
         color-scheme: light;
