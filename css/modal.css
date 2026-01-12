@@ -167,6 +167,7 @@ body:has(.item-modal.active) {
     display: inline-flex;
     align-items: flex-start;
     height: auto;
+        max-height: 82px;
     min-height: 60px;
 }
 
