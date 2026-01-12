@@ -626,15 +626,16 @@
 
                 // List of fields to check
                 const fields = ['name', 'img', 'svg', 'price', 'from', 'price/code/rarity',
-                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed', 'demand', 'credits', 'lore', 'alias', 'quantity'];
+                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed', 'demand', 'demand_updated_at', 'credits', 'lore', 'alias', 'quantity'];
 
                 // Boolean fields that need normalization
                 const booleanFields = ['weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed'];
 
                 // Check each field for changes
                 for (const field of fields) {
-                    let val1 = original[field];
-                    let val2 = current[field];
+                    // Use 'in' operator to check if field exists, or get undefined
+                    let val1 = original.hasOwnProperty(field) ? original[field] : undefined;
+                    let val2 = current.hasOwnProperty(field) ? current[field] : undefined;
 
                     // Normalize price field
                     if (field === 'price') {
@@ -651,9 +652,20 @@
                         val1 = parseInt(val1) || 0;
                         val2 = parseInt(val2) || 0;
                     }
+                    // Normalize demand_updated_at field (it's a number/timestamp)
+                    else if (field === 'demand_updated_at') {
+                        // Handle null/undefined - convert to null for comparison
+                        val1 = (val1 === null || val1 === undefined) ? null : (typeof val1 === 'number' ? val1 : parseInt(val1) || null);
+                        val2 = (val2 === null || val2 === undefined) ? null : (typeof val2 === 'number' ? val2 : parseInt(val2) || null);
+                        
+                        // Debug logging for demand_updated_at changes
+                        if (val1 !== val2) {
+                            console.log(`Demand updated at changed for ${original.name || 'unknown'}`);
+                        }
+                    }
 
                     // Convert undefined/null to empty string for comparison (only for non-boolean, non-number fields)
-                    if (!booleanFields.includes(field) && field !== 'demand' && field !== 'price') {
+                    if (!booleanFields.includes(field) && field !== 'demand' && field !== 'demand_updated_at' && field !== 'price') {
                         if (val1 === undefined || val1 === null) val1 = '';
                         if (val2 === undefined || val2 === null) val2 = '';
                     }
@@ -6693,18 +6705,19 @@
             compareItems(original, current) {
                 const changes = [];
                 const fields = ['name', 'img', 'svg', 'price', 'from', 'price/code/rarity',
-                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed', 'demand', 'credits', 'lore', 'alias', 'quantity'];
+                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed', 'demand', 'demand_updated_at', 'credits', 'lore', 'alias', 'quantity'];
 
                 fields.forEach(field => {
-                    const oldVal = this.normalizeValue(field, original[field]);
-                    const newVal = this.normalizeValue(field, current[field]);
+                    // Use hasOwnProperty to check if field exists, or get undefined
+                    const oldVal = this.normalizeValue(field, original.hasOwnProperty(field) ? original[field] : undefined);
+                    const newVal = this.normalizeValue(field, current.hasOwnProperty(field) ? current[field] : undefined);
 
                     if (oldVal !== newVal) {
                         changes.push({
                             field,
-                            oldValue: original[field],
-                            newValue: current[field],
-                            display: this.formatFieldChange(field, original[field], current[field])
+                            oldValue: original.hasOwnProperty(field) ? original[field] : undefined,
+                            newValue: current.hasOwnProperty(field) ? current[field] : undefined,
+                            display: this.formatFieldChange(field, original.hasOwnProperty(field) ? original[field] : undefined, current.hasOwnProperty(field) ? current[field] : undefined)
                         });
                     }
                 });
@@ -6718,6 +6731,14 @@
                         return '0';
                     }
                     return String(value);
+                }
+                // Normalize demand_updated_at for comparison (handle null/undefined)
+                if (field === 'demand_updated_at') {
+                    if (value === null || value === undefined) {
+                        return null;
+                    }
+                    // Convert to number for comparison
+                    return typeof value === 'number' ? value : parseInt(value) || null;
                 }
                 return value;
             },
@@ -6749,6 +6770,16 @@
                         const oldLabel = labels[old || 0];
                         const newLabel = labels[val || 0];
                         return `Demand: ${oldLabel} (${old || 0}★) → ${newLabel} (${val || 0}★)`;
+                    },
+                    'demand_updated_at': (old, val) => {
+                        const formatDate = (timestamp) => {
+                            if (!timestamp) return 'Never';
+                            const date = new Date(typeof timestamp === 'number' 
+                                ? (timestamp < 10000000000 ? timestamp * 1000 : timestamp)
+                                : timestamp);
+                            return date.toLocaleDateString();
+                        };
+                        return `Demand updated: ${formatDate(old)} → ${formatDate(val)}`;
                     },
                     'credits': (old, val) => {
                         const oldText = old ? (old.length > 30 ? old.substring(0, 30) + '...' : old) : '(empty)';
@@ -9703,8 +9734,20 @@
                 // Update the review item's updatedAt for display
                 item.updatedAt = Date.now();
 
-                // Mark as modified for saving (will be saved when Publish is clicked)
+                // Force mark as modified - checkModifications should detect it, but ensure it's marked
                 ChangeTracker.checkModifications(actualItem);
+                
+                // Double-check: if checkModifications didn't mark it, force it
+                // This handles edge cases where the original might not have had demand_updated_at
+                if (!ChangeTracker.isModifiedItem(actualItem.name)) {
+                    console.log('Force marking item as modified (demand_updated_at changed):', actualItem.name, {
+                        original: previousDemandUpdatedAt,
+                        new: now
+                    });
+                    ChangeTracker.modifiedItems.add(actualItem.name);
+                } else {
+                    console.log('Item marked as modified:', actualItem.name);
+                }
 
                 // Record change for undo/redo
                 if (!UndoRedoManager.isApplyingChange && previousDemandUpdatedAt !== now) {
