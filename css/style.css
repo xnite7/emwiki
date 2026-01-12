@@ -2335,7 +2335,6 @@ textarea {
     white-space: nowrap;
     padding: 10px 15px;
     cursor: pointer;
-    transition: background 0.2s;
     align-items: center;
     gap: 7px;
     border-bottom: 1px solid var(--border-color);
