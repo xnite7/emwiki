@@ -71,12 +71,16 @@ async function processRobloxTransactionsReplace(kv, transactions, allowedUnivers
       continue;
     }
 
-    // Extract price (in Robux, before Roblox takes their cut)
-    const price = tx.currency?.amount || 0;
-    if (price <= 0) {
+    // Extract price (in Robux, after Roblox takes 30% tax)
+    // Add back the 30% tax to get the actual amount the user paid
+    const priceAfterTax = tx.currency?.amount || 0;
+    if (priceAfterTax <= 0) {
       skippedCount++;
       continue;
     }
+    // Calculate actual price: priceAfterTax / 0.7 = priceBeforeTax
+    // Example: 70 Robux after tax = 100 Robux before tax
+    const price = Math.round(priceAfterTax / 0.7);
 
     // Accumulate totals per user
     const userIdStr = String(userId);
@@ -306,9 +310,13 @@ async function handleWebhook(request, env, kv) {
         userId = tx.agent?.id;
         if (!userId) continue;
 
-        // Extract price (in Robux, before Roblox takes their cut)
-        price = tx.currency?.amount || 0;
-        if (price <= 0) continue;
+        // Extract price (in Robux, after Roblox takes 30% tax)
+        // Add back the 30% tax to get the actual amount the user paid
+        const priceAfterTax = tx.currency?.amount || 0;
+        if (priceAfterTax <= 0) continue;
+        // Calculate actual price: priceAfterTax / 0.7 = priceBeforeTax
+        // Example: 70 Robux after tax = 100 Robux before tax
+        price = Math.round(priceAfterTax / 0.7);
       } else {
         // Unknown format, skip
         continue;

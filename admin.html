@@ -2384,6 +2384,28 @@
                                     ? null 
                                     : (serverUpdatedAt || item.updated_at || null);
                                 
+                                // Check if demand_updated_at was manually updated (for "Keep Demand" button)
+                                // Compare with original item to see if demand_updated_at changed
+                                let forceUpdateDemandTimestamp = false;
+                                if (!ChangeTracker.newItems.has(item.name)) {
+                                    const originalJson = ChangeTracker.originalItems.get(item.name);
+                                    if (originalJson) {
+                                        try {
+                                            const originalItem = JSON.parse(originalJson);
+                                            // If demand_updated_at was manually set (different from original)
+                                            // and demand itself didn't change, we need to force update the timestamp
+                                            const demandChanged = (item.demand || 0) !== (originalItem.demand || 0);
+                                            const demandUpdatedAtChanged = item.demand_updated_at !== originalItem.demand_updated_at;
+                                            
+                                            if (demandUpdatedAtChanged && !demandChanged) {
+                                                forceUpdateDemandTimestamp = true;
+                                            }
+                                        } catch (e) {
+                                            console.error('Error parsing original item:', e);
+                                        }
+                                    }
+                                }
+                                
                                 const updateRes = await fetch(`https://emwiki.com/api/items/${itemId}`, {
                                     method: 'PUT',
                                     headers: { 'Content-Type': 'application/json' },
@@ -2408,7 +2430,8 @@
                                         lore: item.lore || null,
                                         alias: item.alias || null,
                                         quantity: item.quantity || null,
-                                        updated_at: updatedAtToSend // Use server's updated_at for optimistic locking
+                                        updated_at: updatedAtToSend, // Use server's updated_at for optimistic locking
+                                        force_update_demand_timestamp: forceUpdateDemandTimestamp || undefined
                                     })
                                 });
                                 
@@ -8688,6 +8711,7 @@
 
                     if (items.length === 0) {
                         container.innerHTML = '<p class="loading">No pending submissions</p>';
+                        document.getElementById('gallery-moderation-section').style.display = 'none';
                         return;
                     }
 
@@ -9085,7 +9109,8 @@
             const reviewSection = document.getElementById('demand-review-section');
             if (reviewSection) {
                 const observer = new MutationObserver((mutations) => {
-                    if (reviewSection.style.display !== 'none' && DemandReview.reviewItems.length === 0) {
+                    if (reviewSection.style.display !== 'none') {
+                        // Reload items when section becomes visible (in case data was loaded after initial check)
                         DemandReview.init();
                     }
                 });
@@ -9185,10 +9210,111 @@
             categoryFilter: 'all',
             showNoRating: true,
             showOldRating: true,
+            eventListenersSetup: false,
+            minimizedItems: new Set(), // Track minimized items by "category:name"
 
             async init() {
-                this.setupEventListeners();
+                // Wait for data to be loaded if not ready
+                if (!state.jsData || Object.keys(state.jsData).length === 0) {
+                    const grid = document.getElementById('demand-items-grid');
+                    if (grid) {
+                        grid.innerHTML = '<p class="loading">Loading items...</p>';
+                    }
+                    // Wait a bit and retry (up to 5 seconds)
+                    for (let i = 0; i < 10; i++) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        if (state.jsData && Object.keys(state.jsData).length > 0) {
+                            break;
+                        }
+                    }
+                    if (!state.jsData || Object.keys(state.jsData).length === 0) {
+                        const grid = document.getElementById('demand-items-grid');
+                        if (grid) {
+                            grid.innerHTML = '<p class="error">No items loaded. Please refresh the page.</p>';
+                        }
+                        return;
+                    }
+                }
+
+                // Only setup event listeners once
+                if (!this.eventListenersSetup) {
+                    this.setupEventListeners();
+                    this.eventListenersSetup = true;
+                }
+
+                this.loadReviewItems();
                 this.renderItems();
+            },
+
+            loadReviewItems() {
+                this.reviewItems = [];
+                const now = Date.now();
+                const thirtyDaysAgo = now - (1 * 24 * 60 * 60 * 1000); // 30 days in milliseconds
+
+                // Iterate through all categories in state.jsData
+                for (const [category, items] of Object.entries(state.jsData)) {
+                    if (!Array.isArray(items)) continue;
+
+                    for (const item of items) {
+                        const demand = item.demand ?? 0;
+                        const demandUpdatedAt = item.demand_updated_at;
+
+                        // Check if item needs review
+                        let hasNoRating = false;
+                        let isOld = false;
+
+                        // No rating: demand is 0 or null/undefined
+                        if (demand === 0 || demand === null || demand === undefined) {
+                            hasNoRating = true;
+                        }
+
+                        // Old rating: demand_updated_at is older than 30 days or null/undefined
+                        if (demand > 0) {
+                            if (!demandUpdatedAt) {
+                                isOld = true;
+                            } else {
+                                // Convert Unix timestamp (seconds) to milliseconds
+                                const updatedAtMs = typeof demandUpdatedAt === 'number' 
+                                    ? (demandUpdatedAt < 10000000000 ? demandUpdatedAt * 1000 : demandUpdatedAt)
+                                    : new Date(demandUpdatedAt).getTime();
+                                
+                                if (updatedAtMs > thirtyDaysAgo) {
+                                    isOld = true;
+                                }
+                            }
+                        }
+
+                        // Only include items that need review
+                        if (hasNoRating || isOld) {
+                            this.reviewItems.push({
+                                name: item.name,
+                                category: category,
+                                demand: demand,
+                                hasNoRating: hasNoRating,
+                                isOld: isOld,
+                                updatedAt: demandUpdatedAt ? (
+                                    typeof demandUpdatedAt === 'number'
+                                        ? (demandUpdatedAt < 10000000000 ? demandUpdatedAt * 1000 : demandUpdatedAt)
+                                        : new Date(demandUpdatedAt).getTime()
+                                ) : null
+                            });
+                        }
+                    }
+                }
+
+                // Sort by priority: no rating first, then by how old the rating is
+                this.reviewItems.sort((a, b) => {
+                    if (a.hasNoRating && !b.hasNoRating) return -1;
+                    if (!a.hasNoRating && b.hasNoRating) return 1;
+                    if (a.isOld && !b.isOld) return -1;
+                    if (!a.isOld && b.isOld) return 1;
+                    // Both have same priority, sort by update date (oldest first)
+                    const aTime = a.updatedAt || 0;
+                    const bTime = b.updatedAt || 0;
+                    return aTime - bTime;
+                });
+
+                console.log(`Loaded ${this.reviewItems.length} items needing review`);
             },
             
             setupEventListeners() {
@@ -9261,25 +9387,93 @@
                 const grid = document.getElementById('demand-items-grid');
                 if (!grid) return;
 
+                if (this.reviewItems.length === 0) {
+                    grid.innerHTML = '<p class="loading">No items need review. All items have up-to-date demand ratings!</p>';
+                } else if (this.currentItems.length === 0) {
+                    grid.innerHTML = '<p class="loading">No items match the current filters. Try adjusting your search or filter options.</p>';
+                } else {
                     grid.innerHTML = pageItems.map(item => this.renderItemCard(item)).join('');
+                }
 
 
                 // Update pagination
                 this.updatePagination();
 
-                // Add double-click handlers to open Quick Editor
+                // Setup event handlers for star ratings and buttons
                 pageItems.forEach(item => {
-                    const card = document.getElementById(`review-card-${item.category}-${item.name}`);
-                    if (card) {
-                        card.addEventListener('dblclick', () => {
-                            const actualItem = this.findItemInState(item.name, item.category);
-                            if (actualItem) {
-                                QuickEditor.open(actualItem);
+                    this.setupItemHandlers(item);
+                });
+            },
+
+            setupItemHandlers(item) {
+                const card = document.getElementById(`review-card-${item.category}-${item.name}`);
+                if (!card) return;
+
+                const itemKey = `${item.category}:${item.name}`;
+
+                // Setup star rating clicks and hover effects
+                const stars = card.querySelectorAll('.demand-star');
+                stars.forEach((star) => {
+                    const rating = parseInt(star.dataset.rating);
+                    
+                    // Click handler
+                    star.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.updateDemandRating(item, rating);
+                    });
+
+                    // Hover effects
+                    star.addEventListener('mouseenter', () => {
+                        stars.forEach((s, idx) => {
+                            const sRating = idx + 1;
+                            if (sRating <= rating) {
+                                s.style.transform = 'scale(1.2)';
+                                s.style.color = this.getStarColor(rating);
                             }
                         });
-                        card.style.cursor = 'pointer';
-                    }
+                    });
+
+                    star.addEventListener('mouseleave', () => {
+                        const currentRating = item.demand || 0;
+                        stars.forEach((s, idx) => {
+                            const sRating = idx + 1;
+                            s.style.transform = 'scale(1)';
+                            s.style.color = sRating <= currentRating 
+                                ? this.getStarColor(currentRating) 
+                                : '#666';
+                        });
+                    });
                 });
+
+                // Setup "Keep Demand" button
+                const keepBtn = card.querySelector('.keep-demand-btn');
+                if (keepBtn) {
+                    keepBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.keepDemandRating(item);
+                    });
+                }
+
+                // Setup expand/collapse toggle
+                const expandBtns = card.querySelectorAll('.expand-toggle-btn');
+                expandBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.toggleMinimize(item);
+                    });
+                });
+            },
+
+            getStarColor(rating) {
+                const demandColors = {
+                    5: '#90EE90',
+                    4: '#ADD8E6',
+                    3: '#FFD700',
+                    2: '#FFA500',
+                    1: '#FF6347',
+                    0: '#CD5C5C'
+                };
+                return demandColors[rating] || '#FFD700';
             },
 
             findItemInState(name, category) {
@@ -9313,9 +9507,91 @@
                     ? '<span style="background: #ff980033; border: 1px solid #ff9800; color: #ff9800; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">OLD (30+ days)</span>'
                     : '';
 
-                const lastUpdated = item.updatedAt
-                    ? new Date(item.updatedAt).toLocaleDateString()
-                    : 'Never';
+                let lastUpdated = 'Never';
+                if (item.updatedAt) {
+                    try {
+                        const date = new Date(item.updatedAt);
+                        if (!isNaN(date.getTime())) {
+                            lastUpdated = date.toLocaleDateString();
+                        }
+                    } catch (e) {
+                        lastUpdated = 'Unknown';
+                    }
+                }
+
+                const itemKey = `${item.category}:${item.name}`;
+                const isMinimized = this.minimizedItems.has(itemKey);
+                const currentRating = item.demand || 0;
+
+                // Generate star rating HTML
+                const starsHtml = Array.from({ length: 5 }, (_, i) => {
+                    const starValue = i + 1;
+                    const isFilled = starValue <= currentRating;
+                    const starColor = isFilled ? (demandColors[currentRating] || '#FFD700') : '#666';
+                    return `
+                        <span class="demand-star" data-rating="${starValue}" data-item-key="${itemKey}" style="
+                            font-size: 24px;
+                            color: ${starColor};
+                            cursor: pointer;
+                            user-select: none;
+                            transition: all 0.2s;
+                            display: inline-block;
+                            line-height: 1;
+                        " title="Rating: ${starValue} - ${demandLabels[starValue]}">${isFilled ? '★' : '☆'}</span>
+                    `;
+                }).join('');
+
+                const expandedContent = `
+                    <div class="demand-rating-section" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #6363637d;">
+                        <div style="margin-bottom: 8px;">
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px;">Current Rating:</div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                ${starsHtml}
+                                <span style="font-size: 12px; color: ${demandColors[currentRating]}; margin-left: 8px;">${demandLabels[currentRating]}</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-top: 12px;">
+                            <button class="keep-demand-btn" style="
+                                flex: 1;
+                                padding: 8px 16px;
+                                border: 1px solid #6363637d;
+                                background: #63636347;
+                                color: white;
+                                border-radius: 4px;
+                                cursor: pointer;
+                                font-weight: 500;
+                                transition: all 0.2s;
+                            " onmouseover="this.style.background='#63636366'; this.style.borderColor='#3b82f6'" onmouseout="this.style.background='#63636347'; this.style.borderColor='#6363637d'">Keep Demand</button>
+                        </div>
+                    </div>
+                `;
+
+                const minimizedStarsHtml = Array.from({ length: 5 }, (_, i) => {
+                    const starValue = i + 1;
+                    const isFilled = starValue <= currentRating;
+                    const starColor = isFilled ? (demandColors[currentRating] || '#FFD700') : '#666';
+                    return `<span style="font-size: 14px; color: ${starColor};">${isFilled ? '★' : '☆'}</span>`;
+                }).join('');
+
+                const minimizedContent = `
+                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #6363637d;">
+                        <span style="font-size: 11px; color: var(--text-secondary);">✓ Reviewed</span>
+                        <div style="display: flex; align-items: center; gap: 2px; margin-left: 8px;">
+                            ${minimizedStarsHtml}
+                        </div>
+                        <span style="font-size: 11px; color: ${demandColors[currentRating]}; margin-left: 4px;">${demandLabels[currentRating]}</span>
+                        <button class="expand-toggle-btn" style="
+                            margin-left: auto;
+                            padding: 4px 8px;
+                            border: 1px solid #6363637d;
+                            background: transparent;
+                            color: #3b82f6;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 11px;
+                        ">Expand</button>
+                    </div>
+                `;
 
                 return `
                     <div id="review-card-${item.category}-${item.name}" style="
@@ -9324,26 +9600,160 @@
                         border-radius: 8px;
                         border: 1px solid #6363637d;
                         transition: all 0.2s;
-                    "
-                    onmouseover="this.style.borderColor='#3b82f6'; this.style.transform='translateY(-2px)'"
-                    onmouseout="this.style.borderColor='#6363637d'; this.style.transform='translateY(0)'"
-                    title="Double-click to edit in Quick Editor">
+                        ${isMinimized ? 'opacity: 0.6;' : ''}
+                    ">
                         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
                             <div style="flex: 1;">
                                 <div style="font-weight: 600; color: white; margin-bottom: 4px;">${item.name}</div>
                                 <div style="font-size: 11px; color: var(--text-secondary); text-transform: capitalize; margin-bottom: 4px;">${item.category}</div>
                                 ${statusBadge}
                             </div>
+                            ${isMinimized ? '' : `<button class="expand-toggle-btn" style="
+                                padding: 4px 8px;
+                                border: 1px solid #6363637d;
+                                background: transparent;
+                                color: #999;
+                                border-radius: 4px;
+                                cursor: pointer;
+                                font-size: 11px;
+                            ">−</button>`}
                         </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid #6363637d;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
                             <div>
-                                <div style="font-size: 11px; color: var(--text-secondary);">Current: <strong style="color: ${demandColors[item.demand]};">${demandLabels[item.demand]}</strong></div>
+                                <div style="font-size: 11px; color: var(--text-secondary);">Current: <strong style="color: ${demandColors[currentRating]};">${demandLabels[currentRating]}</strong></div>
                                 <div style="font-size: 10px; color: var(--text-secondary); margin-top: 2px;">Updated: ${lastUpdated}</div>
                             </div>
-                            <div style="font-size: 11px; color: #3b82f6; font-style: italic;">Double-click to edit</div>
                         </div>
+                        ${isMinimized ? minimizedContent : expandedContent}
                     </div>
                 `;
+            },
+
+            updateDemandRating(item, newRating) {
+                const actualItem = this.findItemInState(item.name, item.category);
+                if (!actualItem) {
+                    console.error('Item not found in state:', item.name);
+                    ErrorHandler.showToast('Item not found', 'error');
+                    return;
+                }
+
+                // Save previous state for undo/redo
+                const previousState = JSON.parse(JSON.stringify(actualItem));
+                const previousDemand = actualItem.demand || 0;
+
+                // Update the item in state
+                actualItem.demand = newRating;
+                
+                // Mark as modified for saving (will be saved when Publish is clicked)
+                ChangeTracker.checkModifications(actualItem);
+
+                // Update the review item
+                item.demand = newRating;
+                item.hasNoRating = false;
+                item.isOld = false;
+
+                // Record change for undo/redo
+                if (!UndoRedoManager.isApplyingChange && previousDemand !== newRating) {
+                    UndoRedoManager.recordChange({
+                        type: 'edit',
+                        itemName: actualItem.name,
+                        category: actualItem.category,
+                        previousState: previousState,
+                        newState: JSON.parse(JSON.stringify(actualItem))
+                    });
+                }
+
+                // Update Quick Editor if it's open for this item
+                // state.currentEditingItem should be the same reference as actualItem, but update it to be sure
+                if (state.currentEditingItem && state.currentEditingItem.name === actualItem.name) {
+                    // Update the currentEditingItem reference to match actualItem
+                    state.currentEditingItem.demand = actualItem.demand;
+                    state.currentEditingItem.demand_updated_at = actualItem.demand_updated_at;
+                    // Update Quick Editor UI
+                    QuickEditor.setupDemandRating(state.currentEditingItem);
+                }
+
+                // Minimize the card
+                this.minimizeItem(item);
+                
+                // Update UI
+                UI.renderItems(true);
+                UI.renderShops();
+                ChangeTracker.updateHighlights();
+                
+                ErrorHandler.showToast(`Demand rating updated to ${newRating} (will save on Publish)`, 'success');
+            },
+
+            keepDemandRating(item) {
+                const actualItem = this.findItemInState(item.name, item.category);
+                if (!actualItem) {
+                    console.error('Item not found in state:', item.name);
+                    ErrorHandler.showToast('Item not found', 'error');
+                    return;
+                }
+
+                // Save previous state for undo/redo
+                const previousState = JSON.parse(JSON.stringify(actualItem));
+                const previousDemandUpdatedAt = actualItem.demand_updated_at;
+
+                // Update demand_updated_at to current time (Unix timestamp in seconds)
+                const now = Math.floor(Date.now() / 1000);
+                actualItem.demand_updated_at = now;
+
+                // Update the review item's updatedAt for display
+                item.updatedAt = Date.now();
+
+                // Mark as modified for saving (will be saved when Publish is clicked)
+                ChangeTracker.checkModifications(actualItem);
+
+                // Record change for undo/redo
+                if (!UndoRedoManager.isApplyingChange && previousDemandUpdatedAt !== now) {
+                    UndoRedoManager.recordChange({
+                        type: 'edit',
+                        itemName: actualItem.name,
+                        category: actualItem.category,
+                        previousState: previousState,
+                        newState: JSON.parse(JSON.stringify(actualItem))
+                    });
+                }
+
+                // Update Quick Editor if it's open for this item
+                if (state.currentEditingItem && state.currentEditingItem.name === actualItem.name) {
+                    // Update the currentEditingItem reference to match actualItem
+                    state.currentEditingItem.demand_updated_at = actualItem.demand_updated_at;
+                    // Update Quick Editor UI if needed
+                    QuickEditor.setupDemandRating(state.currentEditingItem);
+                }
+
+                // Update review item flags
+                item.hasNoRating = false;
+                item.isOld = false;
+
+                // Minimize the card
+                this.minimizeItem(item);
+                
+                // Update UI
+                UI.renderItems(true);
+                UI.renderShops();
+                ChangeTracker.updateHighlights();
+                
+                ErrorHandler.showToast('Demand rating kept (will save on Publish)', 'success');
+            },
+
+            minimizeItem(item) {
+                const itemKey = `${item.category}:${item.name}`;
+                this.minimizedItems.add(itemKey);
+                this.renderItems();
+            },
+
+            toggleMinimize(item) {
+                const itemKey = `${item.category}:${item.name}`;
+                if (this.minimizedItems.has(itemKey)) {
+                    this.minimizedItems.delete(itemKey);
+                } else {
+                    this.minimizedItems.add(itemKey);
+                }
+                this.renderItems();
             },
 
             updatePagination() {

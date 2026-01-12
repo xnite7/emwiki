@@ -401,7 +401,8 @@ async function updateItem(id, request, env, corsHeaders) {
     const {
         name, category, img, svg, price, from, price_code_rarity,
         tradable, new: newItem, weekly, weeklystar, retired, premium, removed,
-        price_history, demand, credits, lore, alias, quantity, color, updated_at: clientUpdatedAt
+        price_history, demand, credits, lore, alias, quantity, color, updated_at: clientUpdatedAt,
+        force_update_demand_timestamp
     } = data;
 
     // Optimistic locking: Check if item was modified since client loaded it
@@ -452,12 +453,18 @@ async function updateItem(id, request, env, corsHeaders) {
     }
 
     // Check if demand is being updated - if so, update demand_updated_at
+    // Also update if force_update_demand_timestamp flag is set (for "Keep Demand" button)
     let demandChanged = false;
     if (demand !== undefined) {
         const currentItem = await env.DBA.prepare(`
             SELECT demand FROM items WHERE id = ?
         `).bind(id).first();
         demandChanged = currentItem && currentItem.demand !== demand;
+    }
+    
+    // Force update demand_updated_at if flag is set (even if demand didn't change)
+    if (force_update_demand_timestamp === true) {
+        demandChanged = true;
     }
 
     // Merge price_history: get existing history and merge with incoming history

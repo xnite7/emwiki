@@ -543,16 +543,25 @@ main {
     outline: 1px solid #313131;
     background: linear-gradient(180deg, var(--shade), var(--glass));
     border-radius: 10px;
-    padding: 8px;
+    padding: 6px;
     display: flex;
     flex-direction: column;
     gap: 6px;
     height: 120px;
     width: 120px;
+    transition: all 0.1s ease;
     scale: 1;
     cursor: grab;
     align-items: center;
     justify-content: center;
+}
+
+.item-card:hover {
+    scale: 1.02;
+}
+
+.item-card:active {
+    scale: 0.98;
 }
 
 .item-card.pulse {
