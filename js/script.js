@@ -30,11 +30,20 @@ const Utils = {
         const token = localStorage.getItem('auth_token');
         if (!token) return false;
 
+        // Wait for session check to complete before making authenticated API calls
+        if (window.Auth?.waitForSession) {
+            await window.Auth.waitForSession();
+        }
+        
+        // Re-check token after waiting (session check might have invalidated it)
+        const currentToken = localStorage.getItem('auth_token');
+        if (!currentToken) return false;
+
         try {
             const response = await fetch('https://emwiki.com/api/auth/user/preferences', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${currentToken}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ [key]: value })
@@ -50,9 +59,18 @@ const Utils = {
         const token = localStorage.getItem('auth_token');
         if (!token) return defaultValue;
 
+        // Wait for session check to complete before making authenticated API calls
+        if (window.Auth?.waitForSession) {
+            await window.Auth.waitForSession();
+        }
+        
+        // Re-check token after waiting (session check might have invalidated it)
+        const currentToken = localStorage.getItem('auth_token');
+        if (!currentToken) return defaultValue;
+
         try {
             const response = await fetch(`https://emwiki.com/api/auth/user/preferences?key=${key}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 'Authorization': `Bearer ${currentToken}` }
             });
 
             if (response.ok) {
@@ -70,9 +88,19 @@ const Utils = {
         const token = localStorage.getItem('auth_token');
         if (!token) return defaults;
 
+        // Wait for session check to complete before making authenticated API calls
+        // This prevents race conditions where this call interferes with the session check
+        if (window.Auth?.waitForSession) {
+            await window.Auth.waitForSession();
+        }
+        
+        // Re-check token after waiting (session check might have invalidated it)
+        const currentToken = localStorage.getItem('auth_token');
+        if (!currentToken) return defaults;
+
         try {
             const response = await fetch('https://emwiki.com/api/auth/user/preferences', {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 'Authorization': `Bearer ${currentToken}` }
             });
 
             if (response.ok) {
@@ -89,13 +117,23 @@ const Utils = {
     async migrateToAccount() {
         const token = localStorage.getItem('auth_token');
         if (!token) return;
+        
+        // Wait for session check to complete before making authenticated API calls
+        if (window.Auth?.waitForSession) {
+            await window.Auth.waitForSession();
+        }
+        
+        // Re-check token after waiting (session check might have invalidated it)
+        const currentToken = localStorage.getItem('auth_token');
+        if (!currentToken) return;
+        
         const localData = {
             favorites: Utils.loadFromStorage('favorites', []),
             wishlist: Utils.loadFromStorage('wishlist', [])
         };
         const onlineData = {
-            favorites: Utils.loadFromAccount('favorites', []),
-            wishlist: Utils.loadFromAccount('wishlist', [])
+            favorites: await Utils.loadFromAccount('favorites', []),
+            wishlist: await Utils.loadFromAccount('wishlist', [])
         };
         const hasData = localData.favorites.length > 0 ||
             localData.wishlist.length > 0;
@@ -107,7 +145,7 @@ const Utils = {
             const response = await fetch('https://emwiki.com/api/auth/user/preferences/migrate', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${currentToken}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(localData)
@@ -2562,7 +2600,20 @@ class Auth extends EventTarget {
         this.timerInterval = null;
         this.scammersList = [];
         this.deferredPrompt = null;
+        
+        // Promise that resolves when session check is complete
+        // Other code should await this before making authenticated API calls
+        this._sessionReadyPromise = new Promise(resolve => {
+            this._resolveSessionReady = resolve;
+        });
+        
         this.init();
+    }
+    
+    // Returns a promise that resolves when the session has been checked
+    // Call this before making any authenticated API calls
+    waitForSession() {
+        return this._sessionReadyPromise;
     }
 
     async init() {
@@ -2658,6 +2709,9 @@ class Auth extends EventTarget {
             await this.checkSession();
             await this.checkDonationStatus(true);
         } else {
+            // No token - resolve session ready immediately (user is not logged in)
+            this._resolveSessionReady();
+            this.dispatchEvent(new Event("sessionReady"));
             const authButton = document.getElementById('auth-button');
             if (authButton) {
                 authButton.style.display = 'flex';
@@ -2905,6 +2959,7 @@ class Auth extends EventTarget {
         // In dev mode, use the fake user
         if (this.isDevelopmentMode() && this.token === 'dev_mode_token') {
             this.user = this.getDevUser();
+            this._resolveSessionReady();
             this.dispatchEvent(new Event("sessionReady"));
             this.updateUI();
             return;
@@ -2926,6 +2981,7 @@ class Auth extends EventTarget {
                     window.history.replaceState({}, document.title, window.location.pathname);
                     this.render3DPlayerModel(this.user.userId, document.getElementById('player-model-container'));
                 }
+                this._resolveSessionReady();
                 this.dispatchEvent(new Event("sessionReady"));
                 if (this.isUserScammer()) {
                     if (!this.user.role) this.user.role = ['user'];
@@ -2941,6 +2997,7 @@ class Auth extends EventTarget {
             } else {
                 localStorage.removeItem('auth_token');
                 this.token = null;
+                this._resolveSessionReady();
                 this.dispatchEvent(new Event("sessionReady"));
                 const authButton = document.getElementById('auth-button');
                 if (authButton) {
@@ -2949,6 +3006,7 @@ class Auth extends EventTarget {
             }
         } catch (error) {
             console.error('Session check failed:', error);
+            this._resolveSessionReady();
             this.dispatchEvent(new Event("sessionReady"));
             const authButton = document.getElementById('auth-button');
             if (authButton) {
