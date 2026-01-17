@@ -2036,25 +2036,7 @@ class ItemModal {
     setupEventListeners() {
 
         window.addEventListener('popstate', () => {
-            const url = new URL(window.location);
-            const itemParam = url.searchParams.get('item');
-
-            // Handle item modal
-            if (itemParam) {
-                const itemName = itemParam.replace(/-/g, ' ');
-                const item = this.catalog.allItems.find(i =>
-                    i.name.toLowerCase() === itemName.toLowerCase()
-                );
-                if (item && !this.isOpen) {
-                    this.open(item);
-                }
-            } else {
-                if (this.isOpen) {
-                    this.elements.modal.classList.remove('active');
-                    this.isOpen = false;
-                    document.body.style.overflow = '';
-                }
-            }
+            this.handleURLParams(true);
         });
 
         // Close events
@@ -2124,6 +2106,28 @@ class ItemModal {
                 this.navigate(diff > 0 ? 1 : -1);
             }
         });
+    }
+
+    handleURLParams(reset = false) {
+        const url = new URL(window.location);
+        const itemParam = url.searchParams.get('item');
+
+        // Handle item modal
+        if (itemParam) {
+            const itemName = itemParam.replace(/-/g, ' ');
+            const item = this.catalog.allItems.find(i =>
+                i.name.toLowerCase() === itemName.toLowerCase()
+            );
+            if (item && !this.isOpen) {
+                this.open(item);
+            }
+        } else {
+            if (this.isOpen) {
+                this.elements.modal.classList.remove('active');
+                this.isOpen = false;
+                document.body.style.overflow = '';
+            }
+        }
     }
 
     open(item) {
