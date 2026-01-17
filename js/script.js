@@ -2038,6 +2038,7 @@ class ItemModal {
         window.addEventListener('popstate', () => {
             this.handleURLParams(true);
         });
+        this.handleURLParams();
 
         // Close events
         this.elements.overlay.addEventListener('click', () => this.close());
@@ -2129,6 +2130,8 @@ class ItemModal {
             }
         }
     }
+
+    
 
     open(item) {
         this.currentItem = item;
