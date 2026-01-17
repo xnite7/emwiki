@@ -601,39 +601,54 @@ async function handleSavePreferences(request, env) {
 
     const preferences = await request.json();
     const now = Date.now();
+    const userId = session.user_id;
 
-    // Save each preference key
+    // Collect all statements for batch execution
+    const batch = [];
+
     for (const [key, value] of Object.entries(preferences)) {
         const valueJson = JSON.stringify(value);
 
-        await env.DBA.prepare(`
-            INSERT INTO user_preferences (user_id, preference_key, preference_value, updated_at)
-            VALUES (?, ?, ?, ?)
-            ON CONFLICT(user_id, preference_key) DO UPDATE SET
-                preference_value = excluded.preference_value,
-                updated_at = excluded.updated_at
-        `).bind(session.user_id, key, valueJson, now).run();
-        
+        // Upsert preference
+        batch.push(
+            env.DBA.prepare(`
+                INSERT INTO user_preferences (user_id, preference_key, preference_value, updated_at)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(user_id, preference_key) DO UPDATE SET
+                    preference_value = excluded.preference_value,
+                    updated_at = excluded.updated_at
+            `).bind(userId, key, valueJson, now)
+        );
+
         // Sync favorites/wishlist to normalized table for efficient counting
         if ((key === 'favorites' || key === 'wishlist') && Array.isArray(value)) {
             const prefType = key === 'favorites' ? 'favorite' : 'wishlist';
-            
+
             // Delete existing entries for this user/type
-            await env.DBA.prepare(`
-                DELETE FROM user_item_preferences
-                WHERE user_id = ? AND preference_type = ?
-            `).bind(session.user_id, prefType).run();
-            
-            // Insert new entries (batch if many items)
+            batch.push(
+                env.DBA.prepare(`
+                    DELETE FROM user_item_preferences
+                    WHERE user_id = ? AND preference_type = ?
+                `).bind(userId, prefType)
+            );
+
+            // Insert new entries
             for (const itemName of value) {
                 if (typeof itemName === 'string' && itemName.trim()) {
-                    await env.DBA.prepare(`
-                        INSERT OR IGNORE INTO user_item_preferences (user_id, item_name, preference_type)
-                        VALUES (?, ?, ?)
-                    `).bind(session.user_id, itemName, prefType).run();
+                    batch.push(
+                        env.DBA.prepare(`
+                            INSERT OR IGNORE INTO user_item_preferences (user_id, item_name, preference_type)
+                            VALUES (?, ?, ?)
+                        `).bind(userId, itemName, prefType)
+                    );
                 }
             }
         }
+    }
+
+    // Execute all statements in a single batch
+    if (batch.length > 0) {
+        await env.DBA.batch(batch);
     }
 
     return new Response(JSON.stringify({ success: true }), {
