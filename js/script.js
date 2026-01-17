@@ -2255,6 +2255,8 @@ class ItemModal {
             this.elements.image.style.display = 'block';
             this.elements.svg.style.display = 'none';
             this.elements.title.style.opacity = 'unset';
+            this.elements.title.style.lineHeight = 'unset';
+
         } else if (item.svg) {
             this.elements.svg.outerHTML = item.svg;
             this.elements.svg = this.elements.container.querySelector('.modal-content>svg');
@@ -2263,6 +2265,7 @@ class ItemModal {
             this.elements.svg.style.display = 'unset';
             this.elements.image.style.display = 'none';
             this.elements.title.style.opacity = '0';
+            this.elements.title.style.lineHeight = '0';
 
 
 
