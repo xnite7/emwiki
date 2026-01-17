@@ -15,22 +15,15 @@ class Gallery {
     }
 
     async init() {
-        // Wait for auth to be ready
+        // Wait for auth to be ready before loading gallery
+        // This prevents concurrent auth database queries that cause slowdowns
         if (window.Auth) {
-            window.Auth.addEventListener('sessionReady', () => {
-                this.currentUser = window.Auth.user;
-                this.updateUIForAuth();
-            });
-
-            // Check if already authenticated
-            if (window.Auth.user) {
-                this.currentUser = window.Auth.user;
-                this.updateUIForAuth();
-            }
+            await window.Auth.waitForSession();
+            this.currentUser = window.Auth.user;
+            this.updateUIForAuth();
         }
         this.setupEventListeners();
         this.setupLazyLoading();
-        await new Promise(resolve => setTimeout(resolve, 920));
         await this.loadGallery();
         // Check for direct post link
         const hash = window.location.hash;

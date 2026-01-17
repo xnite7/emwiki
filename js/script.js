@@ -2994,7 +2994,8 @@ class Auth extends EventTarget {
                 }
 
                 this.updateUI();
-            } else {
+            } else if (response.status === 401) {
+                // Only log out if session is actually invalid (401), not on server errors (500)
                 localStorage.removeItem('auth_token');
                 this.token = null;
                 this._resolveSessionReady();
@@ -3003,15 +3004,17 @@ class Auth extends EventTarget {
                 if (authButton) {
                     authButton.style.display = 'flex';
                 }
+            } else {
+                // Server error (500, etc.) - keep user logged in, just show auth button
+                console.error('Session check returned error:', response.status);
+                this._resolveSessionReady();
+                this.dispatchEvent(new Event("sessionReady"));
             }
         } catch (error) {
+            // Network error - keep user logged in, don't clear token
             console.error('Session check failed:', error);
             this._resolveSessionReady();
             this.dispatchEvent(new Event("sessionReady"));
-            const authButton = document.getElementById('auth-button');
-            if (authButton) {
-                authButton.style.display = 'flex';
-            }
         }
     }
 
