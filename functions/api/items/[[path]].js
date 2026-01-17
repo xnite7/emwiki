@@ -289,7 +289,7 @@ async function listItems(request, env, corsHeaders) {
     const url = new URL(request.url);
     
     // Pagination
-    const limit = Math.min(parseInt(url.searchParams.get('limit') || '100'), 500);
+    const limit = Math.min(parseInt(url.searchParams.get('limit') || '100'), 2500);
     const offset = Math.max(parseInt(url.searchParams.get('offset') || '0'), 0);
     
     // Filters
@@ -395,7 +395,7 @@ async function listItems(request, env, corsHeaders) {
         headers: {
             ...corsHeaders,
             'Content-Type': 'application/json',
-            'Cache-Control': 'public, max-age=300' // Cache for 5 minutes
+            'Cache-Control': 'public, max-age=3' // Cache for 3 seconds
         }
     });
 }

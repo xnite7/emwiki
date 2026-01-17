@@ -821,7 +821,7 @@ class BaseApp {
             // Check localStorage cache first
             const cached = Utils.loadFromStorage('itemsCache', null);
             const cacheTime = Utils.loadFromStorage('itemsCacheTime', 0);
-            const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+            const CACHE_TTL = 60 * 60 * 1000; // 1 hour cache
 
             if (cached && (Date.now() - cacheTime) < CACHE_TTL) {
                 this.allItems = cached;
