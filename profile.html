@@ -655,9 +655,9 @@
                 postCard.className = 'gallery-post-card';
                 postCard.dataset.id = post.id;
 
-                const mediaElement = post.media_type === 'video'
+                const mediaElement = post.thumbnail_url !== null
                     ? `<div class="gallery-post-media-wrapper">
-                           <img class="gallery-post-media" src="${post.thumbnail_url}" muted preload="metadata"></img>
+                           <img class="gallery-post-media" src="${post.thumbnail_url}" alt="${this.escapeHtml(post.title)}" loading="lazy">
                            <div class="gallery-post-play-icon">
                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                    <path d="M8 5v14l11-7z"/>
