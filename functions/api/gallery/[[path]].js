@@ -26,6 +26,18 @@ function getMediaType(url) {
   return videoExts.includes(ext) ? 'video' : 'image';
 }
 
+// Helper to safely parse likes JSON with fallback to empty array
+function parseLikes(likesStr) {
+  if (!likesStr) return [];
+  try {
+    const parsed = JSON.parse(likesStr);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    console.error('Failed to parse likes JSON:', likesStr);
+    return [];
+  }
+}
+
 // Helper to get user from session token
 async function getUserFromToken(token, env) {
   if (!token) return null;
@@ -103,8 +115,8 @@ async function handleGet({ request, env, params }) {
     ).all();
 
     // Parse JSON fields and add computed fields
-    const processedItems = items.results.map(item => {
-      const likes = JSON.parse(item.likes || '[]');
+    const processedItems = (items.results || []).map(item => {
+      const likes = parseLikes(item.likes);
       const mediaType = getMediaType(item.media_url);
       return {
         ...item,
@@ -147,8 +159,8 @@ async function handleGet({ request, env, params }) {
     ).bind(currentUser.user_id).all();
 
     // Parse JSON fields and add computed fields
-    const processedItems = items.results.map(item => {
-      const likes = JSON.parse(item.likes || '[]');
+    const processedItems = (items.results || []).map(item => {
+      const likes = parseLikes(item.likes);
       const mediaType = getMediaType(item.media_url);
       const statusText = item.status === 1 ? 'approved' : item.status === 0 ? 'rejected' : 'pending';
       return {
@@ -198,12 +210,7 @@ async function handleGet({ request, env, params }) {
       ).bind(itemId).run().catch(err => console.error('View increment failed:', err));
 
       // Parse likes array
-      let likes = [];
-      try {
-        likes = JSON.parse(item.likes || '[]');
-      } catch {
-        likes = [];
-      }
+      const likes = parseLikes(item.likes);
 
       // Check if current user liked this item (only fetch user if token exists)
       const currentUser = await getUser();
@@ -271,8 +278,8 @@ async function handleGet({ request, env, params }) {
     ).bind(limit, offset).all();
 
     // Process items
-    processedItems = items.results.map(item => {
-      const likes = JSON.parse(item.likes || '[]');
+    processedItems = (items.results || []).map(item => {
+      const likes = parseLikes(item.likes);
       const mediaType = getMediaType(item.media_url);
       const userLiked = currentUser ? likes.includes(currentUser.user_id) : false;
 
@@ -298,8 +305,8 @@ async function handleGet({ request, env, params }) {
     ).bind(limit, offset).all();
 
     // Process items
-    processedItems = items.results.map(item => {
-      const likes = JSON.parse(item.likes || '[]');
+    processedItems = (items.results || []).map(item => {
+      const likes = parseLikes(item.likes);
       const mediaType = getMediaType(item.media_url);
       const userLiked = currentUser ? likes.includes(currentUser.user_id) : false;
 
@@ -623,7 +630,7 @@ async function handlePost({ request, env, params }) {
       }
 
       // Parse likes array
-      const likes = JSON.parse(item.likes || '[]');
+      const likes = parseLikes(item.likes);
       const likeIndex = likes.indexOf(user.user_id);
 
       if (likeIndex > -1) {
@@ -804,15 +811,48 @@ async function handleDelete({ request, env, params }) {
 }
 
 export async function onRequestGet(context) {
-  return handleGet(context);
+  try {
+    return await handleGet(context);
+  } catch (error) {
+    console.error('Gallery GET error:', error.message, error.stack);
+    return new Response(JSON.stringify({ 
+      error: 'Internal server error',
+      details: error.message 
+    }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+    });
+  }
 }
 
 export async function onRequestPost(context) {
-  return handlePost(context);
+  try {
+    return await handlePost(context);
+  } catch (error) {
+    console.error('Gallery POST error:', error.message, error.stack);
+    return new Response(JSON.stringify({ 
+      error: 'Internal server error',
+      details: error.message 
+    }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+    });
+  }
 }
 
 export async function onRequestDelete(context) {
-  return handleDelete(context);
+  try {
+    return await handleDelete(context);
+  } catch (error) {
+    console.error('Gallery DELETE error:', error.message, error.stack);
+    return new Response(JSON.stringify({ 
+      error: 'Internal server error',
+      details: error.message 
+    }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+    });
+  }
 }
 
 export async function onRequestOptions(context) {
