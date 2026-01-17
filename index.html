@@ -427,13 +427,6 @@
 			}
 
 			async init() {
-				// Check for ?item parameter and redirect to catalog
-				const url = new URL(window.location);
-				const itemParam = url.searchParams.get('item');
-				if (itemParam) {
-					window.location.href = `/catalog?item=${itemParam}`;
-					return;
-				}
 
 				await this.loadHomepageData();
 				await this.loadPreferences();
@@ -452,7 +445,7 @@
 
 			async loadHomepageData() {
 				try {
-					const res = await fetch('/api/items/homepage');
+					const res = await fetch('https://emwiki.com/api/items/homepage');
 					if (!res.ok) throw new Error('Failed to fetch homepage items');
 					
 					const data = await res.json();

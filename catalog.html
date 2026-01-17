@@ -1855,26 +1855,6 @@
                     }
                 });
                 window.addEventListener('popstate', () => {
-                    const url = new URL(window.location);
-                    const itemParam = url.searchParams.get('item');
-                    
-                    // Handle item modal
-                    if (itemParam) {
-                        const itemName = itemParam.replace(/-/g, ' ');
-                        const item = this.allItems.find(i =>
-                            i.name.toLowerCase() === itemName.toLowerCase()
-                        );
-                        if (item && !this.modal.isOpen) {
-                            this.modal.open(item);
-                        }
-                    } else {
-                        if (this.modal.isOpen) {
-                            this.modal.elements.modal.classList.remove('active');
-                            this.modal.isOpen = false;
-                            document.body.style.overflow = '';
-                        }
-                    }
-                    
                     // Restore filters from URL
                     this.handleURLParams(true);
                 });
