@@ -27,6 +27,25 @@ function cleanUserRole(roles) {
     // Otherwise keep ['user'] as default
     return filtered.length > 0 ? filtered : ['user'];
 }
+
+// Lightweight session validation - just verifies token and returns user_id
+// Does NOT update last_online or roles - use for read-only operations
+async function validateSessionLight(request, env) {
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!token) {
+        return null;
+    }
+
+    // Use a simpler query that only fetches what we need
+    const session = await env.DBA.prepare(`
+        SELECT s.user_id FROM sessions s
+        WHERE s.token = ? AND s.expires_at > ?
+    `).bind(token, Date.now()).first();
+
+    return session?.user_id || null;
+}
 function generateCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -145,11 +164,12 @@ async function handleGetSession(request, env) {
         });
     }
 
+    const now = Date.now();
     const session = await env.DBA.prepare(`
         SELECT s.*, u.* FROM sessions s
         JOIN users u ON s.user_id = u.user_id
         WHERE s.token = ? AND s.expires_at > ?
-    `).bind(token, Date.now()).first();
+    `).bind(token, now).first();
 
     if (!session) {
         return new Response(JSON.stringify({ error: 'Invalid session' }), {
@@ -157,10 +177,6 @@ async function handleGetSession(request, env) {
             headers: { 'Content-Type': 'application/json' }
         });
     }
-
-    // Update last_online
-    await env.DBA.prepare('UPDATE users SET last_online = ? WHERE user_id = ?')
-        .bind(Date.now(), session.user_id).run();
 
     // Safely parse roles with fallback
     let userRoles;
@@ -172,13 +188,30 @@ async function handleGetSession(request, env) {
     }
 
     // Ensure it's a valid array
-    if (!Array.isArray(userRoles) || userRoles.length === 0) {
+    const needsRoleUpdate = !Array.isArray(userRoles) || userRoles.length === 0;
+    if (needsRoleUpdate) {
         userRoles = ['user'];
-        
-        // Update the database with default role for this user
+    }
+
+    // Throttle last_online updates: only update if more than 5 minutes since last update
+    const fiveMinutesAgo = now - (5 * 60 * 1000);
+    const needsOnlineUpdate = !session.last_online || session.last_online < fiveMinutesAgo;
+    
+    // Batch both updates into one query if needed, or do single update, or skip entirely
+    if (needsRoleUpdate && needsOnlineUpdate) {
+        // Both updates needed - batch them
+        await env.DBA.prepare('UPDATE users SET last_online = ?, role = ? WHERE user_id = ?')
+            .bind(now, '["user"]', session.user_id).run();
+    } else if (needsRoleUpdate) {
+        // Only role update
         await env.DBA.prepare('UPDATE users SET role = ? WHERE user_id = ?')
             .bind('["user"]', session.user_id).run();
+    } else if (needsOnlineUpdate) {
+        // Only last_online update - fire and forget (don't await)
+        env.DBA.prepare('UPDATE users SET last_online = ? WHERE user_id = ?')
+            .bind(now, session.user_id).run();
     }
+    // If neither needed, skip database update entirely
 
     return new Response(JSON.stringify({
         userId: session.user_id,
@@ -588,24 +621,10 @@ async function handleSavePreferences(request, env) {
 }
 
 async function handleLoadPreferences(request, env) {
-    const authHeader = request.headers.get('Authorization');
-    const token = authHeader?.replace('Bearer ', '');
+    // Use lightweight validation for read-only operation
+    const userId = await validateSessionLight(request, env);
 
-    if (!token) {
-        return new Response(JSON.stringify({ error: 'No token provided' }), {
-            status: 401,
-            headers: { 'Content-Type': 'application/json' }
-        });
-    }
-
-    // Get user from session
-    const session = await env.DBA.prepare(`
-        SELECT u.user_id FROM sessions s
-        JOIN users u ON s.user_id = u.user_id
-        WHERE s.token = ? AND s.expires_at > ?
-    `).bind(token, Date.now()).first();
-
-    if (!session) {
+    if (!userId) {
         return new Response(JSON.stringify({ error: 'Invalid session' }), {
             status: 401,
             headers: { 'Content-Type': 'application/json' }
@@ -619,7 +638,7 @@ async function handleLoadPreferences(request, env) {
         // Load specific preference
         const pref = await env.DBA.prepare(
             'SELECT preference_value FROM user_preferences WHERE user_id = ? AND preference_key = ?'
-        ).bind(session.user_id, key).first();
+        ).bind(userId, key).first();
 
         if (pref) {
             return new Response(JSON.stringify({
@@ -636,7 +655,7 @@ async function handleLoadPreferences(request, env) {
         // Load all preferences
         const prefs = await env.DBA.prepare(
             'SELECT preference_key, preference_value FROM user_preferences WHERE user_id = ?'
-        ).bind(session.user_id).all();
+        ).bind(userId).all();
 
         const result = {};
         prefs.results.forEach(pref => {
