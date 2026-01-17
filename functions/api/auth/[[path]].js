@@ -613,6 +613,27 @@ async function handleSavePreferences(request, env) {
                 preference_value = excluded.preference_value,
                 updated_at = excluded.updated_at
         `).bind(session.user_id, key, valueJson, now).run();
+        
+        // Sync favorites/wishlist to normalized table for efficient counting
+        if ((key === 'favorites' || key === 'wishlist') && Array.isArray(value)) {
+            const prefType = key === 'favorites' ? 'favorite' : 'wishlist';
+            
+            // Delete existing entries for this user/type
+            await env.DBA.prepare(`
+                DELETE FROM user_item_preferences
+                WHERE user_id = ? AND preference_type = ?
+            `).bind(session.user_id, prefType).run();
+            
+            // Insert new entries (batch if many items)
+            for (const itemName of value) {
+                if (typeof itemName === 'string' && itemName.trim()) {
+                    await env.DBA.prepare(`
+                        INSERT OR IGNORE INTO user_item_preferences (user_id, item_name, preference_type)
+                        VALUES (?, ?, ?)
+                    `).bind(session.user_id, itemName, prefType).run();
+                }
+            }
+        }
     }
 
     return new Response(JSON.stringify({ success: true }), {
@@ -741,59 +762,27 @@ async function handleGetPreferenceStats(request, env) {
                 });
             }
             
-            // Get all preferences once
-            const favoritesPrefs = await env.DBA.prepare(`
-                SELECT preference_value
-                FROM user_preferences
-                WHERE preference_key = 'favorites'
-            `).all();
+            // Use normalized table for efficient counting
+            const placeholders = itemNames.map(() => '?').join(',');
+            const { results } = await env.DBA.prepare(`
+                SELECT item_name, COUNT(*) as count
+                FROM user_item_preferences
+                WHERE item_name IN (${placeholders})
+                GROUP BY item_name
+            `).bind(...itemNames).all();
             
-            const wishlistPrefs = await env.DBA.prepare(`
-                SELECT preference_value
-                FROM user_preferences
-                WHERE preference_key = 'wishlist'
-            `).all();
-            
-            // Build a map of item counts
+            // Build result map, defaulting missing items to 0
             const itemCounts = {};
-            itemNames.forEach(itemName => {
-                itemCounts[itemName] = 0;
-            });
-            
-            // Count favorites
-            favoritesPrefs.results.forEach(pref => {
-                try {
-                    const favorites = JSON.parse(pref.preference_value || '[]');
-                    if (Array.isArray(favorites)) {
-                        favorites.forEach(itemName => {
-                            if (itemCounts.hasOwnProperty(itemName)) {
-                                itemCounts[itemName]++;
-                            }
-                        });
-                    }
-                } catch (e) {
-                    // Skip invalid JSON
-                }
-            });
-            
-            // Count wishlist
-            wishlistPrefs.results.forEach(pref => {
-                try {
-                    const wishlist = JSON.parse(pref.preference_value || '[]');
-                    if (Array.isArray(wishlist)) {
-                        wishlist.forEach(itemName => {
-                            if (itemCounts.hasOwnProperty(itemName)) {
-                                itemCounts[itemName]++;
-                            }
-                        });
-                    }
-                } catch (e) {
-                    // Skip invalid JSON
-                }
+            itemNames.forEach(name => { itemCounts[name] = 0; });
+            (results || []).forEach(row => {
+                itemCounts[row.item_name] = row.count;
             });
             
             return new Response(JSON.stringify({ itemCounts }), {
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'public, max-age=60'
+                }
             });
         } catch (e) {
             console.error('Error fetching bulk preference stats:', e);
@@ -803,58 +792,37 @@ async function handleGetPreferenceStats(request, env) {
         }
     }
     
-    // Support single item via GET query param (backward compatibility)
+    // Support single item via GET query param
     const itemName = url.searchParams.get('item');
     
     if (itemName) {
         try {
-            // Get all favorites preferences and count manually (SQLite doesn't have great JSON support)
-            const favoritesPrefs = await env.DBA.prepare(`
-                SELECT preference_value
-                FROM user_preferences
-                WHERE preference_key = 'favorites'
-            `).all();
+            // Efficient single query using the normalized table with index
+            const [favResult, wishResult] = await Promise.all([
+                env.DBA.prepare(`
+                    SELECT COUNT(*) as count
+                    FROM user_item_preferences
+                    WHERE item_name = ? AND preference_type = 'favorite'
+                `).bind(itemName).first(),
+                env.DBA.prepare(`
+                    SELECT COUNT(*) as count
+                    FROM user_item_preferences
+                    WHERE item_name = ? AND preference_type = 'wishlist'
+                `).bind(itemName).first()
+            ]);
             
-            // Get all wishlist preferences
-            const wishlistPrefs = await env.DBA.prepare(`
-                SELECT preference_value
-                FROM user_preferences
-                WHERE preference_key = 'wishlist'
-            `).all();
-            
-            let favoritesCount = 0;
-            let wishlistCount = 0;
-            
-            // Count favorites
-            favoritesPrefs.results.forEach(pref => {
-                try {
-                    const favorites = JSON.parse(pref.preference_value || '[]');
-                    if (Array.isArray(favorites) && favorites.includes(itemName)) {
-                        favoritesCount++;
-                    }
-                } catch (e) {
-                    // Skip invalid JSON
-                }
-            });
-            
-            // Count wishlist
-            wishlistPrefs.results.forEach(pref => {
-                try {
-                    const wishlist = JSON.parse(pref.preference_value || '[]');
-                    if (Array.isArray(wishlist) && wishlist.includes(itemName)) {
-                        wishlistCount++;
-                    }
-                } catch (e) {
-                    // Skip invalid JSON
-                }
-            });
+            const favoritesCount = favResult?.count || 0;
+            const wishlistCount = wishResult?.count || 0;
             
             return new Response(JSON.stringify({
                 favorites_count: favoritesCount,
                 wishlist_count: wishlistCount,
                 total_count: favoritesCount + wishlistCount
             }), {
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'public, max-age=60' // Cache for 1 minute
+                }
             });
         } catch (e) {
             console.error('Error fetching preference stats:', e);
@@ -876,6 +844,105 @@ async function handleGetPreferenceStats(request, env) {
     }), {
         headers: { 'Content-Type': 'application/json' }
     });
+}
+
+// Migrate existing JSON preferences to normalized table (one-time admin operation)
+async function handleMigrateItemPreferences(request, env) {
+    // Admin check - require authorization
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+    
+    if (!token) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+    
+    const session = await env.DBA.prepare(`
+        SELECT u.user_id, u.role FROM sessions s
+        JOIN users u ON s.user_id = u.user_id
+        WHERE s.token = ? AND s.expires_at > ?
+    `).bind(token, Date.now()).first();
+    
+    if (!session || !session.role?.includes('admin')) {
+        return new Response(JSON.stringify({ error: 'Admin access required' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+    
+    try {
+        let migratedUsers = 0;
+        let migratedItems = 0;
+        
+        // Get all favorites preferences
+        const { results: favResults } = await env.DBA.prepare(`
+            SELECT user_id, preference_value
+            FROM user_preferences
+            WHERE preference_key = 'favorites'
+        `).all();
+        
+        for (const row of (favResults || [])) {
+            try {
+                const items = JSON.parse(row.preference_value || '[]');
+                if (Array.isArray(items)) {
+                    for (const itemName of items) {
+                        if (typeof itemName === 'string' && itemName.trim()) {
+                            await env.DBA.prepare(`
+                                INSERT OR IGNORE INTO user_item_preferences (user_id, item_name, preference_type)
+                                VALUES (?, ?, 'favorite')
+                            `).bind(row.user_id, itemName).run();
+                            migratedItems++;
+                        }
+                    }
+                    migratedUsers++;
+                }
+            } catch (e) {
+                // Skip invalid JSON
+            }
+        }
+        
+        // Get all wishlist preferences
+        const { results: wishResults } = await env.DBA.prepare(`
+            SELECT user_id, preference_value
+            FROM user_preferences
+            WHERE preference_key = 'wishlist'
+        `).all();
+        
+        for (const row of (wishResults || [])) {
+            try {
+                const items = JSON.parse(row.preference_value || '[]');
+                if (Array.isArray(items)) {
+                    for (const itemName of items) {
+                        if (typeof itemName === 'string' && itemName.trim()) {
+                            await env.DBA.prepare(`
+                                INSERT OR IGNORE INTO user_item_preferences (user_id, item_name, preference_type)
+                                VALUES (?, ?, 'wishlist')
+                            `).bind(row.user_id, itemName).run();
+                            migratedItems++;
+                        }
+                    }
+                }
+            } catch (e) {
+                // Skip invalid JSON
+            }
+        }
+        
+        return new Response(JSON.stringify({
+            success: true,
+            migratedUsers,
+            migratedItems
+        }), {
+            headers: { 'Content-Type': 'application/json' }
+        });
+    } catch (e) {
+        console.error('Migration error:', e);
+        return new Response(JSON.stringify({ error: e.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
 }
 
 // ==================== OAUTH 2.0 ====================
@@ -1057,6 +1124,9 @@ export async function onRequest(context) {
                 break;
             case 'user/preferences/stats':
                 response = await handleGetPreferenceStats(request, env);
+                break;
+            case 'admin/migrate-item-preferences':
+                response = await handleMigrateItemPreferences(request, env);
                 break;
             // OAUTH 2.0 ENDPOINTS
             case 'oauth/authorize':

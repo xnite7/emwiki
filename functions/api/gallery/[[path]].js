@@ -70,10 +70,18 @@ async function handleGet({ request, env, params }) {
   const url = new URL(request.url);
   const path = params.path ? params.path.join('/') : '';
 
-  // Get auth token
+  // Get auth token - only fetch user if token exists (saves 2 DB queries for public requests)
   const authHeader = request.headers.get('Authorization');
-  const token = authHeader?.replace('Bearer ', '');
-  const user = token ? await getUserFromToken(token, env) : null;
+  const token = authHeader?.replace('Bearer ', '').trim();
+  // Defer user lookup until actually needed, cache result
+  let userCache = { fetched: false, user: null };
+  const getUser = async () => {
+    if (!userCache.fetched && token) {
+      userCache.user = await getUserFromToken(token, env);
+      userCache.fetched = true;
+    }
+    return userCache.user;
+  };
 
   // GET /api/gallery/pending - Get pending items (admin only)
   if (path === 'pending') {
@@ -118,7 +126,8 @@ async function handleGet({ request, env, params }) {
 
   // GET /api/gallery/my-submissions - Get user's own submissions
   if (path === 'my-submissions') {
-    if (!user) {
+    const currentUser = await getUser();
+    if (!currentUser) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: {
@@ -135,7 +144,7 @@ async function handleGet({ request, env, params }) {
        LEFT JOIN users u ON g.user_id = u.user_id
        WHERE g.user_id = ?
        ORDER BY g.created_at DESC`
-    ).bind(user.user_id).all();
+    ).bind(currentUser.user_id).all();
 
     // Parse JSON fields and add computed fields
     const processedItems = items.results.map(item => {
@@ -196,8 +205,9 @@ async function handleGet({ request, env, params }) {
         likes = [];
       }
 
-      // Check if current user liked this item
-      const userLiked = user ? likes.includes(user.user_id) : false;
+      // Check if current user liked this item (only fetch user if token exists)
+      const currentUser = await getUser();
+      const userLiked = currentUser ? likes.includes(currentUser.user_id) : false;
       const mediaType = getMediaType(item.media_url);
 
       const processedItem = {
@@ -241,6 +251,9 @@ async function handleGet({ request, env, params }) {
   ).first();
   const total = countResult?.total || 0;
 
+  // Get user info only if token exists (skip 2 DB queries for unauthenticated requests)
+  const currentUser = await getUser();
+
   // For likes sorting, we need to fetch all items, sort them, then paginate
   // For newest sorting, we can sort in SQL and paginate efficiently
   let processedItems;
@@ -261,7 +274,7 @@ async function handleGet({ request, env, params }) {
     processedItems = items.results.map(item => {
       const likes = JSON.parse(item.likes || '[]');
       const mediaType = getMediaType(item.media_url);
-      const userLiked = user ? likes.includes(user.user_id) : false;
+      const userLiked = currentUser ? likes.includes(currentUser.user_id) : false;
 
       return {
         ...item,
@@ -288,7 +301,7 @@ async function handleGet({ request, env, params }) {
     processedItems = items.results.map(item => {
       const likes = JSON.parse(item.likes || '[]');
       const mediaType = getMediaType(item.media_url);
-      const userLiked = user ? likes.includes(user.user_id) : false;
+      const userLiked = currentUser ? likes.includes(currentUser.user_id) : false;
 
       return {
         ...item,
