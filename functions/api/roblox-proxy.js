@@ -1055,6 +1055,41 @@ export async function onRequestGet(context) {
     }
   }
 
+  // Handle badge data proxy (for CORS)
+  if (mode === "badge") {
+    const badgeId = url.searchParams.get("badgeId");
+    if (!badgeId || !/^\d{10}$/.test(badgeId)) {
+      return new Response(JSON.stringify({ error: 'Valid 10-digit badge ID required' }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    }
+
+    try {
+      const badgeResponse = await fetch(`https://badges.roblox.com/v1/badges/${badgeId}`);
+      
+      if (!badgeResponse.ok) {
+        return new Response(JSON.stringify({ error: 'Badge not found', status: badgeResponse.status }), {
+          status: badgeResponse.status,
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+        });
+      }
+
+      const badgeData = await badgeResponse.json();
+      return new Response(JSON.stringify(badgeData), {
+        headers: { 
+          "Content-Type": "application/json", 
+          "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "public, max-age=3600" // Cache for 1 hour
+        }
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    }
+  }
 
   // Handle 3D avatar mode
   if (mode === "avatar-3d" && userId) {

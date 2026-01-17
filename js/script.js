@@ -292,9 +292,9 @@ const Utils = {
             this.badgeCache.delete(badgeIdStr);
         }
 
-        // Fetch from Roblox API
+        // Fetch from Roblox API (via proxy to avoid CORS)
         try {
-            const response = await fetch(`https://badges.roblox.com/v1/badges/${badgeIdStr}`);
+            const response = await fetch(`/api/roblox-proxy?mode=badge&badgeId=${badgeIdStr}`);
             if (response.ok) {
                 const data = await response.json();
                 const cacheEntry = {

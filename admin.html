@@ -3096,9 +3096,15 @@
                     const searchKeys = state.filters.searchDescriptions ? ['from'] : ['name'];
                     const fuse = new Fuse(filtered, {
                         keys: searchKeys,
-                        threshold: 0.35
+                        threshold: 0.1,
+                        ignoreLocation: true
                     });
                     filtered = fuse.search(state.filters.search).map(r => r.item);
+                    console.log(filtered);
+                    console.log(state.filters.search);
+                    console.log(searchKeys);
+                    console.log(fuse.search(state.filters.search));
+                    console.log(fuse.search(state.filters.search).map(r => r.item));
                 }
 
                 // Apply sorting
@@ -3938,8 +3944,8 @@
                         quantityDisplay.style.color = '#24ff5a';
                         quantityDisplay.textContent = quantityValue + ' (validating...)';
                         
-                        // Fetch badge data to validate and show badge name
-                        fetch(`https://badges.roblox.com/v1/badges/${quantityValue}`)
+                        // Fetch badge data to validate and show badge name (via proxy to avoid CORS)
+                        fetch(`/api/roblox-proxy?mode=badge&badgeId=${quantityValue}`)
                             .then(res => res.ok ? res.json() : null)
                             .then(badgeData => {
                                 if (badgeData && badgeData.name) {
@@ -4228,8 +4234,8 @@
                             quantityDisplay.style.color = '#24ff5a';
                             quantityDisplay.textContent = newValue + ' (validating...)';
                             
-                            // Fetch badge data to validate and show badge name
-                            fetch(`https://badges.roblox.com/v1/badges/${newValue}`)
+                            // Fetch badge data to validate and show badge name (via proxy to avoid CORS)
+                            fetch(`/api/roblox-proxy?mode=badge&badgeId=${newValue}`)
                                 .then(res => res.ok ? res.json() : null)
                                 .then(badgeData => {
                                     if (badgeData && badgeData.name) {
