@@ -65,6 +65,16 @@ export async function onRequest(context) {
                 return await searchItems(request, env, corsHeaders);
             }
 
+            // GET /api/items/homepage - Get items for homepage (new, weekly, weeklystar, random)
+            if (path === 'homepage') {
+                return await getHomepageItems(env, corsHeaders);
+            }
+
+            // GET /api/items/random - Get a single random item
+            if (path === 'random') {
+                return await getRandomItem(env, corsHeaders);
+            }
+
             // GET /api/items/:category/:name - Get single item
             const pathMatch = path.match(/^([^/]+)\/(.+)$/);
             if (pathMatch) {
@@ -138,6 +148,119 @@ async function getCategories(env, corsHeaders) {
             ...corsHeaders,
             'Content-Type': 'application/json',
             'Cache-Control': 'public, max-age=300' // Cache for 5 minutes
+        }
+    });
+}
+
+// Get items for homepage (new, weekly, weeklystar items + random item + stats)
+async function getHomepageItems(env, corsHeaders) {
+    // Run queries in parallel for better performance
+    const [featuredResults, statsResult, randomResult] = await Promise.all([
+        // Get all featured items (new, weekly, or weeklystar)
+        env.DBA.prepare(`
+            SELECT id, name, category, img, svg, price, "from", price_code_rarity,
+                   tradable, "new", weekly, weeklystar, retired, premium, removed, demand,
+                   credits, lore, alias, quantity, color, demand_updated_at, updated_at
+            FROM items
+            WHERE "new" = 1 OR weekly = 1 OR weeklystar = 1
+            ORDER BY category, name
+        `).all(),
+        
+        // Get stats (total items and new items count)
+        env.DBA.prepare(`
+            SELECT 
+                COUNT(*) as totalItems,
+                SUM(CASE WHEN "new" = 1 THEN 1 ELSE 0 END) as newItemsCount
+            FROM items
+        `).first(),
+        
+        // Get 1 random item
+        env.DBA.prepare(`
+            SELECT id, name, category, img, svg, price, "from", price_code_rarity,
+                   tradable, "new", weekly, weeklystar, retired, premium, removed, demand,
+                   credits, lore, alias, quantity, color, demand_updated_at, updated_at
+            FROM items
+            ORDER BY RANDOM()
+            LIMIT 1
+        `).first()
+    ]);
+
+    const featured = featuredResults.results || [];
+    
+    // Transform items helper
+    const transformItem = (item) => ({
+        ...item,
+        img: normalizeImageUrl(item.img),
+        tradable: item.tradable === 1,
+        new: item.new === 1,
+        weekly: item.weekly === 1,
+        weeklystar: item.weeklystar === 1,
+        retired: item.retired === 1,
+        premium: item.premium === 1,
+        removed: item.removed === 1,
+        'price/code/rarity': item.price_code_rarity
+    });
+
+    // Separate items into categories
+    const newItems = featured.filter(item => item.new === 1).slice(0, 50).map(transformItem);
+    const weeklyItems = featured.filter(item => item.weekly === 1).slice(0, 8).map(transformItem);
+    const weeklystarItems = featured.filter(item => item.weeklystar === 1).slice(0, 8).map(transformItem);
+    const randomItem = randomResult ? transformItem(randomResult) : null;
+
+    return new Response(JSON.stringify({
+        newItems,
+        weeklyItems,
+        weeklystarItems,
+        randomItem,
+        stats: {
+            totalItems: statsResult?.totalItems || 0,
+            newItemsCount: statsResult?.newItemsCount || 0
+        }
+    }), {
+        headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+            'Cache-Control': 'public, max-age=60' // Cache for 1 minute
+        }
+    });
+}
+
+// Get a single random item
+async function getRandomItem(env, corsHeaders) {
+    const item = await env.DBA.prepare(`
+        SELECT id, name, category, img, svg, price, "from", price_code_rarity,
+               tradable, "new", weekly, weeklystar, retired, premium, removed, demand,
+               credits, lore, alias, quantity, color, demand_updated_at, updated_at
+        FROM items
+        ORDER BY RANDOM()
+        LIMIT 1
+    `).first();
+
+    if (!item) {
+        return new Response(JSON.stringify({ error: 'No items found' }), {
+            status: 404,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+    }
+
+    const result = {
+        ...item,
+        img: normalizeImageUrl(item.img),
+        tradable: item.tradable === 1,
+        new: item.new === 1,
+        weekly: item.weekly === 1,
+        weeklystar: item.weeklystar === 1,
+        retired: item.retired === 1,
+        premium: item.premium === 1,
+        removed: item.removed === 1,
+        'price/code/rarity': item.price_code_rarity
+    };
+
+    return new Response(JSON.stringify({ item: result }), {
+        headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache' // Don't cache random items
         }
     });
 }

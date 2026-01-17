@@ -418,8 +418,12 @@
 				super();
 				this.currentCategory = 'all';
 				this.countdownManager = new CountdownManager();
+				// Homepage-specific item arrays (pre-filtered from API)
+				this.newItems = [];
+				this.weeklyItems = [];
+				this.weeklystarItems = [];
+				this.randomItem = null;
 				this.init();
-
 			}
 
 			async init() {
@@ -431,7 +435,7 @@
 					return;
 				}
 
-				await this.loadData();
+				await this.loadHomepageData();
 				await this.loadPreferences();
 				this.setupEventListeners();
 				this.countdownManager.add('countdown-shop');
@@ -440,17 +444,38 @@
 				document.querySelector('.patch-link').addEventListener('click', () => {
 					Utils.showToast(':3', 'poop update coming soon', 'info');
 				});
-				const totalItems = this.allItems.length;
-				document.getElementById('total-items').textContent = totalItems;
-				const newItems = this.allItems.filter(item => item.new).length;
-				document.getElementById('new-items').textContent = newItems;
 
 				this.loadDonators();
 				this.populateGrids();
 				this.initializeSearch();
 			}
 
-
+			async loadHomepageData() {
+				try {
+					const res = await fetch('/api/items/homepage');
+					if (!res.ok) throw new Error('Failed to fetch homepage items');
+					
+					const data = await res.json();
+					
+					// Store pre-filtered items
+					this.newItems = data.newItems || [];
+					this.weeklyItems = data.weeklyItems || [];
+					this.weeklystarItems = data.weeklystarItems || [];
+					this.randomItem = data.randomItem || null;
+					
+					// Update stats display
+					document.getElementById('total-items').textContent = data.stats?.totalItems || 0;
+					document.getElementById('new-items').textContent = data.stats?.newItemsCount || 0;
+					
+					// Also populate allItems for search functionality (combined from all categories)
+					this.allItems = [...this.newItems, ...this.weeklyItems, ...this.weeklystarItems];
+					
+					console.log(`Loaded homepage items: ${this.newItems.length} new, ${this.weeklyItems.length} weekly, ${this.weeklystarItems.length} weeklystar`);
+				} catch (error) {
+					console.error('Failed to load homepage data:', error);
+					Utils.showToast('Error', 'Failed to load items', 'error');
+				}
+			}
 
 			setupEventListeners() {
 				document.querySelectorAll('.category-btn').forEach(btn => {
@@ -468,22 +493,29 @@
 						if (e.target.value.toLowerCase().trim() === 'dev') {
 							window.location.href = '/admin';
 						}
-
 					}
 				});
+				
+				// Setup refresh button animation (only once)
+				const myButton = document.querySelector('.refresh-btn');
+				if (myButton) {
+					myButton.addEventListener('click', () => {
+						myButton.classList.add('active');
+						setTimeout(() => myButton.classList.remove('active'), 300);
+					});
+				}
 			}
 
 			populateGrids() {
-				const newItems = this.allItems.filter(item => item.new).slice(0, 50);
-				this.renderItems('new-items-grid', newItems);
-
-				const weeklyShop = this.allItems.filter(item => item.weekly).slice(0, 8);
-				this.renderItems('weekly-shop-grid', weeklyShop);
-
-				const weeklyRotation = this.allItems.filter(item => item.weeklystar).slice(0, 8);
-				this.renderItems('weekly-rotation-grid', weeklyRotation);
-
-				this.refreshRandom();
+				// Use pre-filtered items from the API
+				this.renderItems('new-items-grid', this.newItems);
+				this.renderItems('weekly-shop-grid', this.weeklyItems);
+				this.renderItems('weekly-rotation-grid', this.weeklystarItems);
+				
+				// Render initial random item
+				if (this.randomItem) {
+					this.renderItems('random-items-grid', [this.randomItem]);
+				}
 			}
 
 			renderItems(gridId, items) {
@@ -531,21 +563,19 @@
 				});
 			}
 
-			refreshRandom() {
-				const randomItems = [];
-				const myButton = document.querySelector('.refresh-btn');
-
-				myButton.addEventListener('click', () => {
-					myButton.classList.add('active');
-					setTimeout(() => myButton.classList.remove('active'), 300);
-				});
-
-				for (let i = 0; i < 1; i++) {
-					const randomIndex = Math.floor(Math.random() * this.allItems.length);
-					randomItems.push(this.allItems[randomIndex]);
+			async refreshRandom() {
+				try {
+					const res = await fetch('/api/items/random');
+					if (!res.ok) throw new Error('Failed to fetch random item');
+					
+					const data = await res.json();
+					if (data.item) {
+						this.randomItem = data.item;
+						this.renderItems('random-items-grid', [this.randomItem]);
+					}
+				} catch (error) {
+					console.error('Failed to refresh random item:', error);
 				}
-
-				this.renderItems('random-items-grid', randomItems);
 			}
 
 			async loadDonators() {
