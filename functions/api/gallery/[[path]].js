@@ -244,18 +244,19 @@ async function handleGet({ request, env, params }) {
   let processedItems;
 
   if (sortBy === 'likes') {
-    // Fetch ALL approved items (needed to sort by likes count)
-    const allItems = await env.DBA.prepare(
+    // Use likes_count column for efficient SQL-based sorting and pagination
+    const items = await env.DBA.prepare(
       `SELECT g.id, g.user_id, u.username, g.title, g.description, g.media_url, g.thumbnail_url,
-              g.created_at, g.views, g.likes, u.avatar_url, u.role
+              g.created_at, g.views, g.likes, g.likes_count, u.avatar_url, u.role
        FROM gallery_items g
        LEFT JOIN users u ON g.user_id = u.user_id
        WHERE g.status = 1
-       ORDER BY g.created_at DESC`
-    ).all();
+       ORDER BY g.likes_count DESC, g.created_at DESC
+       LIMIT ? OFFSET ?`
+    ).bind(limit, offset).all();
 
-    // Process and sort all items by likes count
-    const allProcessed = allItems.results.map(item => {
+    // Process items
+    processedItems = items.results.map(item => {
       const likes = JSON.parse(item.likes || '[]');
       const mediaType = getMediaType(item.media_url);
       const userLiked = user ? likes.includes(user.user_id) : false;
@@ -265,21 +266,10 @@ async function handleGet({ request, env, params }) {
         username: item.username || 'Unknown',
         media_type: mediaType,
         views: item.views || 0,
-        likes_count: likes.length,
+        likes_count: item.likes_count || likes.length,
         user_liked: userLiked
       };
     });
-
-    // Sort by likes (descending), then by created_at (descending) as tiebreaker
-    allProcessed.sort((a, b) => {
-      if (b.likes_count !== a.likes_count) {
-        return b.likes_count - a.likes_count;
-      }
-      return b.created_at - a.created_at;
-    });
-
-    // Apply pagination after sorting
-    processedItems = allProcessed.slice(offset, offset + limit);
   } else {
     // For newest, we can paginate in SQL efficiently
     const items = await env.DBA.prepare(
@@ -626,8 +616,8 @@ async function handlePost({ request, env, params }) {
         likes.splice(likeIndex, 1);
 
         await env.DBA.prepare(
-          'UPDATE gallery_items SET likes = ? WHERE id = ?'
-        ).bind(JSON.stringify(likes), itemId).run();
+          'UPDATE gallery_items SET likes = ?, likes_count = ? WHERE id = ?'
+        ).bind(JSON.stringify(likes), likes.length, itemId).run();
 
         return new Response(JSON.stringify({
           success: true,
@@ -645,8 +635,8 @@ async function handlePost({ request, env, params }) {
         likes.push(user.user_id);
 
         await env.DBA.prepare(
-          'UPDATE gallery_items SET likes = ? WHERE id = ?'
-        ).bind(JSON.stringify(likes), itemId).run();
+          'UPDATE gallery_items SET likes = ?, likes_count = ? WHERE id = ?'
+        ).bind(JSON.stringify(likes), likes.length, itemId).run();
 
         return new Response(JSON.stringify({
           success: true,
