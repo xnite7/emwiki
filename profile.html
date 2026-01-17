@@ -430,6 +430,7 @@
 
                 const data = await response.json();
                 this.renderUsersGrid(data.users || []);
+
             } catch (error) {
                 console.error('Error searching users:', error);
                 container.innerHTML = '<p class="no-users-message">Search failed. Please try again.</p>';

@@ -615,6 +615,215 @@
                 }
             }
 
+            // Build filter state object for URL
+            getFilterState() {
+                return {
+                    tags: Array.from(this.filters.tags),
+                    season: this.seasonFilter,
+                    event: this.eventFilter,
+                    chest: this.chestFilter,
+                    credits: this.creditsFilter,
+                    category: this.filters.category
+                };
+            }
+
+            // Push current filter state to URL
+            updateFilterURL() {
+                const url = new URL(window.location);
+                const state = this.getFilterState();
+                
+                // Clear existing filter params
+                url.searchParams.delete('filter');
+                url.searchParams.delete('tags');
+                url.searchParams.delete('season');
+                url.searchParams.delete('event');
+                url.searchParams.delete('chest');
+                url.searchParams.delete('credits');
+                url.searchParams.delete('category');
+                
+                // Only add params if they have values
+                if (state.tags.length > 0) {
+                    url.searchParams.set('tags', state.tags.join(','));
+                }
+                if (state.season !== 'all') {
+                    url.searchParams.set('season', state.season);
+                }
+                if (state.event !== 'all') {
+                    url.searchParams.set('event', state.event);
+                }
+                if (state.chest !== 'all') {
+                    url.searchParams.set('chest', state.chest);
+                }
+                if (state.credits !== 'all') {
+                    url.searchParams.set('credits', state.credits);
+                }
+                if (state.category !== 'all') {
+                    url.searchParams.set('category', state.category);
+                }
+                
+                history.pushState(state, '', url);
+            }
+
+            // Restore filters from URL (used for popstate)
+            restoreFiltersFromURL() {
+                const url = new URL(window.location);
+                
+                // Reset all filters first
+                this.filters.tags.clear();
+                this.seasonFilter = 'all';
+                this.eventFilter = 'all';
+                this.chestFilter = 'all';
+                this.creditsFilter = 'all';
+                this.filters.category = 'all';
+                
+                // Restore tags
+                const tagsParam = url.searchParams.get('tags');
+                if (tagsParam) {
+                    tagsParam.split(',').forEach(tag => {
+                        this.filters.tags.add(tag);
+                    });
+                }
+                
+                // Handle legacy ?filter= param
+                const filterParam = url.searchParams.get('filter');
+                if (filterParam) {
+                    this.filters.tags.add(filterParam);
+                }
+                
+                // Restore subfilters
+                const seasonParam = url.searchParams.get('season');
+                if (seasonParam) {
+                    this.seasonFilter = seasonParam;
+                }
+                
+                const eventParam = url.searchParams.get('event');
+                if (eventParam) {
+                    this.eventFilter = eventParam;
+                }
+                
+                const chestParam = url.searchParams.get('chest');
+                if (chestParam) {
+                    this.chestFilter = chestParam;
+                }
+                
+                const creditsParam = url.searchParams.get('credits');
+                if (creditsParam) {
+                    this.creditsFilter = creditsParam;
+                }
+                
+                const categoryParam = url.searchParams.get('category');
+                if (categoryParam) {
+                    this.filters.category = categoryParam;
+                }
+                
+                // Update UI to match restored state
+                this.updateFilterUI();
+                this.updateTagsLabel();
+                this.applyFilters();
+            }
+
+            // Update UI elements to match current filter state
+            updateFilterUI() {
+                // Reset all dropdown item selections
+                document.querySelectorAll('#filters-menu .dropdown-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                
+                document.querySelectorAll('.chest-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Restore tag selections
+                this.filters.tags.forEach(tag => {
+                    const tagElement = document.querySelector(`.dropdown-item[data-filter="${tag}"]`);
+                    if (tagElement) {
+                        tagElement.classList.add('selected');
+                    }
+                });
+                
+                // Show/hide retired filter based on gamenight
+                const retiredItem = document.querySelector('.dropdown-item[data-filter="retired"]');
+                if (this.filters.tags.has('gamenight')) {
+                    retiredItem.classList.add('show-retired');
+                } else {
+                    retiredItem.classList.remove('show-retired');
+                }
+                
+                // Show/hide weekly filter based on coinshop
+                const weeklyItem = document.querySelector('.dropdown-item[data-filter="weekly"]');
+                if (this.filters.tags.has('coinshop')) {
+                    weeklyItem.classList.add('show-weekly');
+                } else {
+                    weeklyItem.classList.remove('show-weekly');
+                }
+                
+                // Restore chest selection
+                if (this.chestFilter !== 'all') {
+                    const chestItem = document.querySelector(`.chest-item[data-data="${this.chestFilter}"]`);
+                    if (chestItem) {
+                        chestItem.classList.add('active');
+                    }
+                }
+                
+                // Restore season selection
+                if (this.seasonFilter !== 'all') {
+                    document.querySelectorAll('#season-menu .dropdown-item').forEach(item => {
+                        item.classList.toggle('active', item.dataset.data == this.seasonFilter);
+                    });
+                }
+                
+                // Restore event selection
+                if (this.eventFilter !== 'all') {
+                    document.querySelectorAll('#event-menu .dropdown-item').forEach(item => {
+                        item.classList.toggle('active', item.dataset.data == this.eventFilter);
+                    });
+                }
+                
+                // Restore credits selection
+                if (this.creditsFilter !== 'all') {
+                    document.querySelectorAll('#credits-menu .dropdown-item').forEach(item => {
+                        item.classList.toggle('active', item.dataset.data == this.creditsFilter);
+                    });
+                }
+                
+                // Update season label
+                if (this.seasonFilter !== 'all') {
+                    document.getElementById('season-label').textContent = `Season ${this.seasonFilter}`;
+                } else if (this.eventFilter !== 'all') {
+                    document.getElementById('season-label').textContent = this.eventFilter;
+                } else if (this.chestFilter !== 'all') {
+                    const selectedChest = document.querySelector(`.chest-item[data-data="${this.chestFilter}"] .chest-name`);
+                    if (selectedChest) {
+                        document.getElementById('season-label').textContent = selectedChest.textContent;
+                    }
+                } else if (this.creditsFilter !== 'all') {
+                    if (this.creditsFilter === 'any') {
+                        document.getElementById('season-label').textContent = 'By Any Creator';
+                    } else {
+                        document.getElementById('season-label').textContent = `By ${this.creditsFilter}`;
+                    }
+                } else {
+                    document.getElementById('season-label').textContent = '';
+                }
+                
+                // Update category carousel
+                const categoryIndex = this.categories.findIndex(c => c.id === this.filters.category);
+                if (categoryIndex !== -1 && categoryIndex !== this.currentCategoryIndex) {
+                    this.selectCategory(categoryIndex, true); // skipURL=true to avoid infinite loops
+                }
+                
+                // Enable/disable date sorting based on code/gamenight filters
+                const hasDateFilters = this.filters.tags.has('code') || this.filters.tags.has('gamenight');
+                const dateOptions = document.querySelectorAll('[data-sort="date-desc"], [data-sort="date-asc"]');
+                dateOptions.forEach(option => {
+                    if (hasDateFilters) {
+                        option.classList.remove('disabled');
+                    } else {
+                        option.classList.add('disabled');
+                    }
+                });
+            }
+
 
             toggleChestMenu() {
                 const menu = document.getElementById('chest-menu');
@@ -687,11 +896,14 @@
                 return carousel;
             }
 
-            selectCategory(index) {
+            selectCategory(index, skipURL = false) {
                 this.currentCategoryIndex = index;
                 this.filters.category = this.categories[index].id;
                 this.renderCategoryCarousel();
                 this.applyFilters();
+                if (!skipURL) {
+                    this.updateFilterURL();
+                }
             }
 
             prevCategory() {
@@ -1219,6 +1431,7 @@
 
                 this.updateTagsLabel();
                 this.applyFilters();
+                this.updateFilterURL();
             }
 
             selectSeason(season) {
@@ -1259,6 +1472,7 @@
 
                 this.updateTagsLabel();
                 this.applyFilters();
+                this.updateFilterURL();
             }
 
             selectEvent(event) {
@@ -1299,6 +1513,7 @@
 
                 this.updateTagsLabel();
                 this.applyFilters();
+                this.updateFilterURL();
             }
 
             selectCredits(credit) {
@@ -1363,6 +1578,7 @@
 
                 this.updateTagsLabel();
                 this.applyFilters();
+                this.updateFilterURL();
             }
 
             selectTag(tagElement, tagName) {
@@ -1482,6 +1698,7 @@
 
                 this.updateTagsLabel();
                 this.applyFilters();
+                this.updateFilterURL();
             }
 
             clearAllFilters() {
@@ -1533,6 +1750,17 @@
 
                 // Close the dropdown
                 document.getElementById('filters-menu').classList.remove('show');
+
+                // Clear URL filter params
+                const url = new URL(window.location);
+                url.searchParams.delete('filter');
+                url.searchParams.delete('tags');
+                url.searchParams.delete('season');
+                url.searchParams.delete('event');
+                url.searchParams.delete('chest');
+                url.searchParams.delete('credits');
+                url.searchParams.delete('category');
+                history.pushState({}, '', url);
 
                 // Update UI and reapply filters
                 this.updateTagsLabel();
@@ -1671,6 +1899,8 @@
                 window.addEventListener('popstate', () => {
                     const url = new URL(window.location);
                     const itemParam = url.searchParams.get('item');
+                    
+                    // Handle item modal
                     if (itemParam) {
                         const itemName = itemParam.replace(/-/g, ' ');
                         const item = this.allItems.find(i =>
@@ -1686,6 +1916,9 @@
                             document.body.style.overflow = '';
                         }
                     }
+                    
+                    // Restore filters from URL
+                    this.restoreFiltersFromURL();
                 });
             }
 

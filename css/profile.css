@@ -110,6 +110,14 @@ main {
     min-height: 400px;
 }
 
+.users-grid-container:has(.loading-spinner) {
+    display: flex;
+    justify-items: center;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
 .users-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -625,7 +633,7 @@ main {
 .wishlist-section {
     border: 3px solid var(--border-color);
     border-radius: 8px;
-    padding: 10px 0px 0px;
+    padding: 10px 0px;
     max-height: 37vh;
     overflow-y: auto;
 }
