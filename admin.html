@@ -1889,6 +1889,9 @@
             // Cache for Roblox usernames and avatars with timestamps
             robloxCache: new Map(),
 
+            // Cache for Roblox badge data with timestamps
+            badgeCache: new Map(),
+
             // Initialize cache from localStorage
             initRobloxCache() {
                 try {
@@ -1917,6 +1920,34 @@
                 }
             },
 
+            // Initialize badge cache from localStorage
+            initRobloxBadgeCache() {
+                try {
+                    const cached = localStorage.getItem('roblox_badge_cache');
+                    if (cached) {
+                        const cacheData = JSON.parse(cached);
+                        const now = Date.now();
+                        const oneDayMs = 24 * 60 * 60 * 1000;
+
+                        // Load valid entries (less than 24 hours old)
+                        for (const [badgeId, entry] of Object.entries(cacheData)) {
+                            if (now - entry.timestamp < oneDayMs) {
+                                this.badgeCache.set(badgeId, entry);
+                            }
+                        }
+
+                        // Clean up expired entries from localStorage
+                        const validCache = {};
+                        for (const [badgeId, entry] of this.badgeCache.entries()) {
+                            validCache[badgeId] = entry;
+                        }
+                        localStorage.setItem('roblox_badge_cache', JSON.stringify(validCache));
+                    }
+                } catch (error) {
+                    console.error('Failed to load Roblox badge cache:', error);
+                }
+            },
+
             // Save cache to localStorage
             saveRobloxCache() {
                 try {
@@ -1927,6 +1958,19 @@
                     localStorage.setItem('roblox_user_cache', JSON.stringify(cacheData));
                 } catch (error) {
                     console.error('Failed to save Roblox cache:', error);
+                }
+            },
+
+            // Save badge cache to localStorage
+            saveRobloxBadgeCache() {
+                try {
+                    const cacheData = {};
+                    for (const [badgeId, entry] of this.badgeCache.entries()) {
+                        cacheData[badgeId] = entry;
+                    }
+                    localStorage.setItem('roblox_badge_cache', JSON.stringify(cacheData));
+                } catch (error) {
+                    console.error('Failed to save Roblox badge cache:', error);
                 }
             },
 
@@ -1975,6 +2019,50 @@
                 return null;
             },
 
+            // Fetch Roblox badge data from badge ID
+            async getRobloxBadgeData(badgeId) {
+                if (!badgeId || !/^\d+$/.test(badgeId)) {
+                    return null;
+                }
+
+                const now = Date.now();
+                const oneDayMs = 24 * 60 * 60 * 1000;
+
+                // Check cache first
+                if (this.badgeCache.has(badgeId)) {
+                    const cached = this.badgeCache.get(badgeId);
+                    if (now - cached.timestamp < oneDayMs) {
+                        return cached;
+                    }
+                    this.badgeCache.delete(badgeId);
+                }
+
+                try {
+                    const response = await fetch(`https://badges.roblox.com/v1/badges/${badgeId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (!data || !data.id || !(data.displayName || data.name)) {
+                            return null;
+                        }
+                        const cacheEntry = {
+                            id: data.id,
+                            name: data.displayName || data.name,
+                            description: data.displayDescription || data.description || null,
+                            iconImageId: data.displayIconImageId || data.iconImageId || null,
+                            timestamp: now
+                        };
+
+                        this.badgeCache.set(badgeId, cacheEntry);
+                        this.saveRobloxBadgeCache();
+                        return cacheEntry;
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch Roblox badge data:', error);
+                }
+
+                return null;
+            },
+
             // Fetch Roblox username from user ID (backward compatibility)
             async getRobloxUsername(credits) {
                 if (!credits || !credits.trim()) return credits;
@@ -1993,6 +2081,7 @@
 
         // Initialize Roblox cache on load
         Utils.initRobloxCache();
+        Utils.initRobloxBadgeCache();
 
         // ============================
         // DOM Cache
@@ -3892,6 +3981,30 @@
                 const aliasDeleteBtn = DOM.get('alias-delete-btn');
                 const quantityDeleteBtn = DOM.get('quantity-delete-btn');
 
+                const applyQuantityDisplay = (value) => {
+                    const trimmed = value ? value.trim() : '';
+                    if (!trimmed) {
+                        quantityContainer.style.display = 'none';
+                        return;
+                    }
+
+                    quantityContainer.style.display = 'block';
+                    quantityDisplay.textContent = trimmed;
+                    quantityDisplay.style.textShadow = '';
+                    quantityDisplay.style.color = 'white';
+
+                    if (/^\d{10}$/.test(trimmed)) {
+                        const currentItemName = item.name;
+                        Utils.getRobloxBadgeData(trimmed).then((badge) => {
+                            if (!badge) return;
+                            if (!state.currentEditingItem || state.currentEditingItem.name !== currentItemName) return;
+                            quantityDisplay.textContent = badge.name;
+                            quantityDisplay.style.textShadow = '0 0 8px rgba(36, 255, 90, 0.8), 0 0 12px rgba(36, 255, 90, 0.6)';
+                            quantityDisplay.style.color = '#24ff5a';
+                        });
+                    }
+                };
+
                 // Show/hide containers based on whether values exist
                 if (item.credits && item.credits.trim()) {
                     creditsContainer.style.display = 'block';
@@ -3928,12 +4041,7 @@
                     aliasContainer.style.display = 'none';
                 }
 
-                if (item.quantity && item.quantity.trim()) {
-                    quantityContainer.style.display = 'block';
-                    quantityDisplay.textContent = item.quantity;
-                } else {
-                    quantityContainer.style.display = 'none';
-                }
+                applyQuantityDisplay(item.quantity);
 
                 // Credits edit button
                 creditsEditBtn.onclick = () => {
@@ -4175,8 +4283,7 @@
                     state.currentEditingItem.quantity = newValue;
                     
                     if (newValue) {
-                        quantityContainer.style.display = 'block';
-                        quantityDisplay.textContent = newValue;
+                        applyQuantityDisplay(newValue);
                     } else {
                         quantityContainer.style.display = 'none';
                     }

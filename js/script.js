@@ -108,6 +108,9 @@ const Utils = {
     // Cache for Roblox usernames and avatars with timestamps
     robloxCache: new Map(),
 
+    // Cache for Roblox badge data with timestamps
+    badgeCache: new Map(),
+
     // Initialize cache from localStorage
     initRobloxCache() {
         try {
@@ -136,6 +139,34 @@ const Utils = {
         }
     },
 
+    // Initialize badge cache from localStorage
+    initRobloxBadgeCache() {
+        try {
+            const cached = localStorage.getItem('roblox_badge_cache');
+            if (cached) {
+                const cacheData = JSON.parse(cached);
+                const now = Date.now();
+                const oneDayMs = 24 * 60 * 60 * 1000;
+
+                // Load valid entries (less than 24 hours old)
+                for (const [badgeId, entry] of Object.entries(cacheData)) {
+                    if (now - entry.timestamp < oneDayMs) {
+                        this.badgeCache.set(badgeId, entry);
+                    }
+                }
+
+                // Clean up expired entries from localStorage
+                const validCache = {};
+                for (const [badgeId, entry] of this.badgeCache.entries()) {
+                    validCache[badgeId] = entry;
+                }
+                localStorage.setItem('roblox_badge_cache', JSON.stringify(validCache));
+            }
+        } catch (error) {
+            console.error('Failed to load Roblox badge cache:', error);
+        }
+    },
+
     // Save cache to localStorage
     saveRobloxCache() {
         try {
@@ -146,6 +177,19 @@ const Utils = {
             localStorage.setItem('roblox_user_cache', JSON.stringify(cacheData));
         } catch (error) {
             console.error('Failed to save Roblox cache:', error);
+        }
+    },
+
+    // Save badge cache to localStorage
+    saveRobloxBadgeCache() {
+        try {
+            const cacheData = {};
+            for (const [badgeId, entry] of this.badgeCache.entries()) {
+                cacheData[badgeId] = entry;
+            }
+            localStorage.setItem('roblox_badge_cache', JSON.stringify(cacheData));
+        } catch (error) {
+            console.error('Failed to save Roblox badge cache:', error);
         }
     },
 
@@ -189,6 +233,50 @@ const Utils = {
             }
         } catch (error) {
             console.error('Failed to fetch Roblox user data:', error);
+        }
+
+        return null;
+    },
+
+    // Fetch Roblox badge data from badge ID
+    async getRobloxBadgeData(badgeId) {
+        if (!badgeId || !/^\d+$/.test(badgeId)) {
+            return null;
+        }
+
+        const now = Date.now();
+        const oneDayMs = 24 * 60 * 60 * 1000;
+
+        // Check cache first
+        if (this.badgeCache.has(badgeId)) {
+            const cached = this.badgeCache.get(badgeId);
+            if (now - cached.timestamp < oneDayMs) {
+                return cached;
+            }
+            this.badgeCache.delete(badgeId);
+        }
+
+        try {
+            const response = await fetch(`https://badges.roblox.com/v1/badges/${badgeId}`);
+            if (response.ok) {
+                const data = await response.json();
+                if (!data || !data.id || !(data.displayName || data.name)) {
+                    return null;
+                }
+                const cacheEntry = {
+                    id: data.id,
+                    name: data.displayName || data.name,
+                    description: data.displayDescription || data.description || null,
+                    iconImageId: data.displayIconImageId || data.iconImageId || null,
+                    timestamp: now
+                };
+
+                this.badgeCache.set(badgeId, cacheEntry);
+                this.saveRobloxBadgeCache();
+                return cacheEntry;
+            }
+        } catch (error) {
+            console.error('Failed to fetch Roblox badge data:', error);
         }
 
         return null;
@@ -2077,8 +2165,19 @@ class ItemModal {
 
         // Quantity (displayed on front, left bottom corner, tilted)
         if (item.quantity && item.quantity.trim() !== '' && this.elements.quantity) {
-            this.elements.quantity.textContent = 'x' + item.quantity;
+            const rawQuantity = item.quantity.trim();
+            this.elements.quantity.textContent = 'x' + rawQuantity;
             this.elements.quantity.style.display = 'block';
+
+            // If quantity is a 10-digit badge ID, try to resolve it dynamically
+            if (/^\d{10}$/.test(rawQuantity)) {
+                const currentItemName = item.name;
+                Utils.getRobloxBadgeData(rawQuantity).then((badge) => {
+                    if (!badge) return;
+                    if (!this.currentItem || this.currentItem.name !== currentItemName) return;
+                    this.elements.quantity.textContent = 'x' + badge.name;
+                });
+            }
         } else if (this.elements.quantity) {
             this.elements.quantity.style.display = 'none';
         }
@@ -3753,6 +3852,7 @@ const auth = new Auth();
 if (typeof window !== 'undefined') {
     // Initialize Roblox cache on load
     Utils.initRobloxCache();
+    Utils.initRobloxBadgeCache();
     
     window.Utils = Utils;
     window.BaseApp = BaseApp;
