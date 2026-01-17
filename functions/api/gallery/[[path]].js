@@ -161,7 +161,7 @@ async function handleGet({ request, env, params }) {
 
   // GET /api/gallery/:id - Get single gallery item and increment views
   if (path && path.match(/^\d+$/)) {
-    const itemId = path;
+    const itemId = parseInt(path, 10);
 
     try {
       // Get item first
@@ -183,11 +183,10 @@ async function handleGet({ request, env, params }) {
         });
       }
 
-      await env.DBA.prepare(
+      // Increment views (don't await to speed up response)
+      env.DBA.prepare(
         'UPDATE gallery_items SET views = views + 1 WHERE id = ?'
-      ).bind(itemId).run();
-      item.views += 1;
-
+      ).bind(itemId).run().catch(err => console.error('View increment failed:', err));
 
       // Parse likes array
       let likes = [];
@@ -205,7 +204,7 @@ async function handleGet({ request, env, params }) {
         ...item,
         username: item.username || 'Unknown',
         media_type: mediaType,
-        views: item.views,
+        views: (item.views || 0) + 1,
         likes_count: likes.length,
         user_liked: userLiked
       };
@@ -217,8 +216,11 @@ async function handleGet({ request, env, params }) {
         }
       });
     } catch (error) {
-      console.error('Error fetching gallery item:', error);
-      return new Response(JSON.stringify({ error: 'Failed to fetch item' }), {
+      console.error('Error fetching gallery item:', error.message, error.stack);
+      return new Response(JSON.stringify({ 
+        error: 'Failed to fetch item',
+        details: error.message 
+      }), {
         status: 500,
         headers: {
           'Content-Type': 'application/json',

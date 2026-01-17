@@ -66,6 +66,26 @@ const Utils = {
         return defaultValue;
     },
 
+    async loadAllFromAccount(defaults) {
+        const token = localStorage.getItem('auth_token');
+        if (!token) return defaults;
+
+        try {
+            const response = await fetch('https://emwiki.com/api/auth/user/preferences', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                return { ...defaults, ...data };
+            }
+        } catch (error) {
+            console.error('Failed to load all preferences:', error);
+        }
+
+        return defaults;
+    },
+
     async migrateToAccount() {
         const token = localStorage.getItem('auth_token');
         if (!token) return;
@@ -771,10 +791,17 @@ class BaseApp {
 
     async loadPreferences() {
         if (this.isLoggedIn) {
-            this.favorites = await Utils.loadFromAccount('favorites', []);
-            this.wishlist = await Utils.loadFromAccount('wishlist', []);
-            this.recentlyViewed = await Utils.loadFromAccount('recentlyViewed', []);
-            this.taxMode = await Utils.loadFromAccount('taxMode', 'nt');
+            // Fetch all preferences in one API call instead of 4 separate calls
+            const prefs = await Utils.loadAllFromAccount({
+                favorites: [],
+                wishlist: [],
+                recentlyViewed: [],
+                taxMode: 'nt'
+            });
+            this.favorites = prefs.favorites;
+            this.wishlist = prefs.wishlist;
+            this.recentlyViewed = prefs.recentlyViewed;
+            this.taxMode = prefs.taxMode;
         } else {
             this.favorites = Utils.loadFromStorage('favorites', []);
             this.wishlist = Utils.loadFromStorage('wishlist', []);
@@ -791,43 +818,31 @@ class BaseApp {
 
     async loadData() {
         try {
-            // Load items from D1 database in batches by category
-            this.allItems = [];
-            
-            // Load all categories in parallel
-            const categoryPromises = this.categories.map(async (category) => {
-                let offset = 0;
-                const limit = 500; // Large batch size for initial load
-                let hasMore = true;
-                
-                while (hasMore) {
-                    const url = new URL('https://emwiki.com/api/items');
-                    url.searchParams.set('category', category);
-                    url.searchParams.set('limit', limit.toString());
-                    url.searchParams.set('offset', offset.toString());
-                    
-                    const res = await fetch(url.toString());
-                    if (!res.ok) throw new Error(`Failed to fetch ${category} items`);
-                    
-                    const data = await res.json();
-                    const items = data.items || [];
-                    
-                    // Add category to each item and push to allItems
-                    items.forEach(item => {
-                        this.allItems.push({
-                            ...item,
-                            category: category
-                        });
-                    });
-                    
-                    // Check if there are more items
-                    hasMore = items.length === limit;
-                    offset += limit;
-                }
-            });
-            
-            await Promise.all(categoryPromises);
-            
+            // Check localStorage cache first
+            const cached = Utils.loadFromStorage('itemsCache', null);
+            const cacheTime = Utils.loadFromStorage('itemsCacheTime', 0);
+            const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+            if (cached && (Date.now() - cacheTime) < CACHE_TTL) {
+                this.allItems = cached;
+                console.log(`Loaded ${this.allItems.length} items from cache`);
+                return this.allItems;
+            }
+
+            // Fetch all items at once (no category filter) - single API call
+            const url = new URL('https://emwiki.com/api/items');
+            url.searchParams.set('limit', '2000');
+
+            const res = await fetch(url.toString());
+            if (!res.ok) throw new Error('Failed to fetch items');
+
+            const data = await res.json();
+            this.allItems = data.items || [];
+
+            // Cache in localStorage
+            Utils.saveToStorage('itemsCache', this.allItems);
+            Utils.saveToStorage('itemsCacheTime', Date.now());
+
             console.log(`Loaded ${this.allItems.length} items from database`);
             return this.allItems;
         } catch (error) {

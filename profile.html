@@ -657,7 +657,7 @@
 
                 const mediaElement = post.media_type === 'video'
                     ? `<div class="gallery-post-media-wrapper">
-                           <video class="gallery-post-media" src="${post.media_url}" poster="${post.thumbnail_url || ''}" muted preload="metadata"></video>
+                           <img class="gallery-post-media" src="${post.thumbnail_url}" muted preload="metadata"></img>
                            <div class="gallery-post-play-icon">
                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                    <path d="M8 5v14l11-7z"/>
@@ -755,42 +755,26 @@
             carousel.addEventListener('scroll', updateArrowStates);
         }
 
-        async fetchItemByName(itemName) {
-            // Try each category with the single item endpoint: /api/items/:category/:name
-            const categories = ['gears', 'deaths', 'pets', 'effects', 'titles'];
+        // Batch fetch items by name using the new batch endpoint
+        async fetchItemsByNames(itemNames) {
+            if (!itemNames || itemNames.length === 0) return [];
             
-            for (const category of categories) {
-                try {
-                    const response = await fetch(`${this.apiBase}/items/${category}/${encodeURIComponent(itemName)}`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.item && data.item.name === itemName) {
-                            return { ...data.item, category };
-                        }
-                    }
-                } catch (error) {
-                    // Item not found in this category, continue to next
-                }
-            }
-            
-            // If not found by exact category/name, try search endpoint
             try {
-                const response = await fetch(`${this.apiBase}/items/search?q=${encodeURIComponent(itemName)}&limit=20`);
+                const response = await fetch(`${this.apiBase}/items/batch`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ names: itemNames })
+                });
+                
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.items && data.items.length > 0) {
-                        // Find exact match
-                        const exactMatch = data.items.find(item => item.name === itemName);
-                        if (exactMatch) {
-                            return exactMatch;
-                        }
-                    }
+                    return data.items || [];
                 }
             } catch (error) {
-                console.error(`Error searching for item ${itemName}:`, error);
+                console.error('Error fetching items batch:', error);
             }
             
-            return null;
+            return [];
         }
 
         async renderWishlist(wishlistItemNames) {
@@ -801,25 +785,45 @@
                 return;
             }
 
+            // Store all wishlist names and pagination state
+            this.wishlistItemNames = wishlistItemNames;
+            this.wishlistPageSize = 12;
+            this.wishlistCurrentPage = 0;
+            this.wishlistItems = null; // Cache fetched items
+
             // Show loading state
             container.innerHTML = '<p class="no-data-message">Loading wishlist items...</p>';
 
-            // Fetch item details for all wishlist items
-            const itemPromises = wishlistItemNames.map(itemName => this.fetchItemByName(itemName));
-            const items = await Promise.all(itemPromises);
+            // Fetch all item details in one batch request
+            this.wishlistItems = await this.fetchItemsByNames(wishlistItemNames);
 
-            // Filter out null results (items not found)
-            const validItems = items.filter(item => item !== null);
+            // Create a map for quick lookup and preserve wishlist order
+            const itemMap = new Map(this.wishlistItems.map(item => [item.name, item]));
+            
+            // Reorder items to match wishlist order
+            this.wishlistItems = wishlistItemNames
+                .map(name => itemMap.get(name))
+                .filter(item => item !== null && item !== undefined);
 
-            if (validItems.length === 0) {
+            if (this.wishlistItems.length === 0) {
                 container.innerHTML = '';
                 return;
             }
 
-            // Clear container and render items using the same structure as catalog wishlist
+            // Render first page
+            this.renderWishlistPage();
+        }
+
+        renderWishlistPage() {
+            const container = document.getElementById('wishlist-container');
+            const startIndex = 0;
+            const endIndex = (this.wishlistCurrentPage + 1) * this.wishlistPageSize;
+            const itemsToShow = this.wishlistItems.slice(startIndex, endIndex);
+            const hasMore = endIndex < this.wishlistItems.length;
+
             container.innerHTML = '';
 
-            validItems.forEach(item => {
+            itemsToShow.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'item';
                 div.innerHTML = `<small class="item-name">${this.escapeHtml(item.name)}</small>`;
@@ -833,7 +837,8 @@
                         canvas.height = img.height;
                         ctx.drawImage(img, 0, 0);
                     };
-                    img.src = item.img.startsWith('http') ? item.img : `https://emwiki.com/${item.img}`;
+                    // Use optimized image with smaller size for thumbnails
+                    img.src = Utils.getOptimizedImage(item.img, { width: 128, height: 128, format: 'webp', fit: 'scale-down' }) || item.img;
                     img.onerror = function() {
                         // If image fails, try to show SVG or placeholder
                         if (item.svg) {
@@ -841,11 +846,7 @@
                         }
                     };
                     // Prevent right-click and drag
-                    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-                    canvas.addEventListener('dragstart', (e) => e.preventDefault());
-                    canvas.addEventListener('selectstart', (e) => e.preventDefault());
-                    canvas.style.userSelect = 'none';
-                    canvas.style.webkitUserSelect = 'none';
+                    Utils.protectCanvas(canvas);
                     div.appendChild(canvas);
                 } else if (item.svg) {
                     div.insertAdjacentHTML('beforeend', item.svg);
@@ -865,13 +866,25 @@
                     div.appendChild(priceDiv);
                 }
 
-                // Make clickable - navigate to catalog with item filter
-                div.addEventListener('click', () => {//lower case item name
-                    window.location.href = `/catalog?item=${encodeURIComponent(item.name.toLowerCase())}`;
+                // Make clickable - open item modal
+                div.addEventListener('click', () => {
+                    this.modal.open(item);
                 });
 
                 container.appendChild(div);
             });
+
+            // Add "Load More" button if there are more items
+            if (hasMore) {
+                const loadMoreBtn = document.createElement('button');
+                loadMoreBtn.className = 'btn btn-secondary wishlist-load-more';
+                loadMoreBtn.textContent = `Load More (${this.wishlistItems.length - endIndex} remaining)`;
+                loadMoreBtn.addEventListener('click', () => {
+                    this.wishlistCurrentPage++;
+                    this.renderWishlistPage();
+                });
+                container.appendChild(loadMoreBtn);
+            }
         }
 
         formatPrice(price) {

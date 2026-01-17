@@ -46,9 +46,18 @@ class Gallery {
             if (response.ok) {
                 const { item } = await response.json();
                 this.openViewer(item);
+            } else if (response.status === 404) {
+                this.showToast('This gallery post was not found or has been removed.', 'error');
+                // Clear the URL hash since the post doesn't exist
+                history.replaceState(null, '', window.location.pathname);
+            } else {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('Gallery API error:', response.status, errorData);
+                this.showToast('Failed to load gallery post. Please try again.', 'error');
             }
         } catch (error) {
             console.error('Failed to open post:', error);
+            this.showToast('Failed to load gallery post. Please check your connection.', 'error');
         }
     }
 

@@ -696,6 +696,13 @@ main {
     grid-column: 1 / -1;
 }
 
+.wishlist-load-more {
+    grid-column: 1 / -1;
+    margin: 10px auto;
+    padding: 8px 20px;
+    font-size: 0.9rem;
+}
+
 /* Gallery Posts */
 .gallery-section-header {
     display: flex;

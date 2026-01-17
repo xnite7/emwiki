@@ -76,6 +76,11 @@ export async function onRequest(context) {
             return await listItems(request, env, corsHeaders);
         }
 
+        // POST /api/items/batch - Fetch multiple items by name
+        if (request.method === 'POST' && path === 'batch') {
+            return await batchGetItems(request, env, corsHeaders);
+        }
+
         // POST /api/items - Create new item (admin only)
         if (request.method === 'POST' && path === '') {
             return await createItem(request, env, corsHeaders);
@@ -187,6 +192,61 @@ async function searchItems(request, env, corsHeaders) {
     });
 }
 
+// Batch fetch items by name (for wishlists, etc.)
+async function batchGetItems(request, env, corsHeaders) {
+    let data;
+    try {
+        data = await request.json();
+    } catch (e) {
+        return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+    }
+
+    const { names } = data;
+
+    if (!names || !Array.isArray(names) || names.length === 0) {
+        return new Response(JSON.stringify({ items: [] }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+    }
+
+    // Limit to 100 items per batch to prevent abuse
+    const limitedNames = names.slice(0, 100);
+
+    // Build parameterized query with placeholders
+    const placeholders = limitedNames.map(() => '?').join(', ');
+    const sql = `
+        SELECT id, name, category, img, svg, price, "from", price_code_rarity,
+               tradable, "new", weekly, weeklystar, retired, premium, removed, demand,
+               credits, lore, alias, quantity, color, demand_updated_at, updated_at
+        FROM items
+        WHERE name IN (${placeholders})
+        ORDER BY name
+    `;
+
+    const { results } = await env.DBA.prepare(sql).bind(...limitedNames).all();
+
+    const items = (results || []).map(item => ({
+        ...item,
+        img: normalizeImageUrl(item.img),
+        tradable: item.tradable === 1,
+        new: item.new === 1,
+        weekly: item.weekly === 1,
+        weeklystar: item.weeklystar === 1,
+        retired: item.retired === 1,
+        premium: item.premium === 1,
+        removed: item.removed === 1,
+        'price/code/rarity': item.price_code_rarity,
+        color: item.color ? JSON.parse(item.color) : null
+    }));
+
+    return new Response(JSON.stringify({ items }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+}
+
 // Get single item by category and name
 async function getItem(category, name, env, corsHeaders) {
     const item = await env.DBA.prepare(`
@@ -288,14 +348,17 @@ async function listItems(request, env, corsHeaders) {
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-    // Get total count
-    const countResult = await env.DBA.prepare(`
-        SELECT COUNT(*) as total
-        FROM items
-        ${whereClause}
-    `).bind(...params).first();
-
-    const total = countResult?.total || 0;
+    // Only run count query if specifically needed (offset pagination or smaller batches)
+    // Skip for bulk fetches (limit >= 500 and offset === 0) to improve performance
+    let total = null;
+    if (offset > 0 || limit < 500) {
+        const countResult = await env.DBA.prepare(`
+            SELECT COUNT(*) as total
+            FROM items
+            ${whereClause}
+        `).bind(...params).first();
+        total = countResult?.total || 0;
+    }
 
     // Get items (include updated_at for optimistic locking)
     const { results } = await env.DBA.prepare(`
@@ -332,7 +395,7 @@ async function listItems(request, env, corsHeaders) {
         headers: {
             ...corsHeaders,
             'Content-Type': 'application/json',
-            'Cache-Control': 'public, max-age=60' // Cache for 1 minute
+            'Cache-Control': 'public, max-age=300' // Cache for 5 minutes
         }
     });
 }
