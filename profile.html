@@ -866,8 +866,8 @@
                 }
 
                 // Make clickable - navigate to catalog with item filter
-                div.addEventListener('click', () => {
-                    window.location.href = `/catalog?item=${encodeURIComponent(item.name)}`;
+                div.addEventListener('click', () => {//lower case item name
+                    window.location.href = `/catalog?item=${encodeURIComponent(item.name.toLowerCase())}`;
                 });
 
                 container.appendChild(div);
