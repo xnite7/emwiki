@@ -483,16 +483,27 @@ async function listItems(request, env, corsHeaders) {
         total = countResult?.total || 0;
     }
 
-    // Get items (include updated_at for optimistic locking)
+    // Get items (include updated_at for optimistic locking, target_flikes for sorting)
     const { results } = await env.DBA.prepare(`
         SELECT id, name, category, img, svg, price, "from", price_code_rarity,
                tradable, "new", weekly, weeklystar, retired, premium, removed, demand, 
-               credits, lore, alias, quantity, color, demand_updated_at, updated_at, price_history
+               credits, lore, alias, quantity, color, demand_updated_at, updated_at, price_history,
+               target_flikes, created_at
         FROM items
         ${whereClause}
         ORDER BY category, name
         LIMIT ? OFFSET ?
     `).bind(...params, limit, offset).all();
+
+    // Helper to calculate displayed flikes (gradual ramp over 30 days)
+    const calculateDisplayedFlikes = (targetFlikes, createdAt) => {
+        if (!targetFlikes || targetFlikes <= 0) return 0;
+        const now = Date.now();
+        const createdAtMs = createdAt * 1000;
+        const ageDays = (now - createdAtMs) / (1000 * 60 * 60 * 24);
+        const progress = Math.min(ageDays / 30, 1);
+        return Math.floor(targetFlikes * progress);
+    };
 
     const items = (results || []).map(item => ({
         ...item,
@@ -506,7 +517,9 @@ async function listItems(request, env, corsHeaders) {
         removed: item.removed === 1,
         'price/code/rarity': item.price_code_rarity,
         priceHistory: item.price_history ? JSON.parse(item.price_history) : null,
-        color: item.color ? JSON.parse(item.color) : null
+        color: item.color ? JSON.parse(item.color) : null,
+        // Include calculated flikes for sorting (gradual ramp based on item age)
+        flikes: calculateDisplayedFlikes(item.target_flikes, item.created_at)
     }));
 
     return new Response(JSON.stringify({

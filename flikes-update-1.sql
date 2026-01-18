@@ -1,604 +1,505 @@
--- Generated target_flikes values (Part 1/10)
--- Generated at: 2026-01-18T14:40:14.422Z
--- Items 1 to 200 of 1811
-
--- "Abduct": real=0, boost=17, target=17
-UPDATE items SET target_flikes = 17 WHERE name = 'Abduct';
-
--- "Ascend": real=0, boost=42, target=42
-UPDATE items SET target_flikes = 42 WHERE name = 'Ascend';
-
--- "Avalanche": real=1, boost=31, target=32
-UPDATE items SET target_flikes = 32 WHERE name = 'Avalanche';
-
--- "Balloon": real=0, boost=49, target=49
-UPDATE items SET target_flikes = 49 WHERE name = 'Balloon';
-
--- "Bats": real=3, boost=42, target=45
-UPDATE items SET target_flikes = 45 WHERE name = 'Bats';
-
--- "Baublify": real=1, boost=35, target=36
-UPDATE items SET target_flikes = 36 WHERE name = 'Baublify';
-
--- "Big Bunny": real=5, boost=41, target=46
-UPDATE items SET target_flikes = 46 WHERE name = 'Big Bunny';
-
--- "Bird of Prey": real=1, boost=25, target=26
-UPDATE items SET target_flikes = 26 WHERE name = 'Bird of Prey';
-
--- "Bouncy": real=0, boost=27, target=27
-UPDATE items SET target_flikes = 27 WHERE name = 'Bouncy';
-
--- "Bowl Over": real=3, boost=39, target=42
-UPDATE items SET target_flikes = 42 WHERE name = 'Bowl Over';
-
--- "Brick": real=1, boost=25, target=26
-UPDATE items SET target_flikes = 26 WHERE name = 'Brick';
-
--- "Bullet Barrage": real=0, boost=12, target=12
-UPDATE items SET target_flikes = 12 WHERE name = 'Bullet Barrage';
-
--- "Burn": real=0, boost=46, target=46
-UPDATE items SET target_flikes = 46 WHERE name = 'Burn';
-
--- "Caked": real=4, boost=24, target=28
-UPDATE items SET target_flikes = 28 WHERE name = 'Caked';
-
--- "Camouflage": real=0, boost=49, target=49
-UPDATE items SET target_flikes = 49 WHERE name = 'Camouflage';
-
--- "Carrot Attack": real=2, boost=10, target=12
-UPDATE items SET target_flikes = 12 WHERE name = 'Carrot Attack';
-
--- "Coffin": real=2, boost=41, target=43
-UPDATE items SET target_flikes = 43 WHERE name = 'Coffin';
-
--- "Comic Thwack": real=0, boost=30, target=30
-UPDATE items SET target_flikes = 30 WHERE name = 'Comic Thwack';
-
--- "Confetti Explosion": real=2, boost=14, target=16
-UPDATE items SET target_flikes = 16 WHERE name = 'Confetti Explosion';
-
--- "Cupid's Arrow": real=3, boost=14, target=17
-UPDATE items SET target_flikes = 17 WHERE name = 'Cupid''s Arrow';
-
--- "Curse": real=1, boost=17, target=18
-UPDATE items SET target_flikes = 18 WHERE name = 'Curse';
-
--- "Disappear": real=0, boost=17, target=17
-UPDATE items SET target_flikes = 17 WHERE name = 'Disappear';
-
--- "Disco": real=0, boost=11, target=11
-UPDATE items SET target_flikes = 11 WHERE name = 'Disco';
-
--- "Disconnect": real=1, boost=31, target=32
-UPDATE items SET target_flikes = 32 WHERE name = 'Disconnect';
-
--- "Disperse": real=0, boost=34, target=34
-UPDATE items SET target_flikes = 34 WHERE name = 'Disperse';
-
--- "Drop Coins": real=1, boost=33, target=34
-UPDATE items SET target_flikes = 34 WHERE name = 'Drop Coins';
-
--- "Drop Robux": real=0, boost=18, target=18
-UPDATE items SET target_flikes = 18 WHERE name = 'Drop Robux';
-
--- "Drop Stars": real=0, boost=45, target=45
-UPDATE items SET target_flikes = 45 WHERE name = 'Drop Stars';
-
--- "Drop Tokens": real=0, boost=18, target=18
-UPDATE items SET target_flikes = 18 WHERE name = 'Drop Tokens';
-
--- "Eggify": real=0, boost=45, target=45
-UPDATE items SET target_flikes = 45 WHERE name = 'Eggify';
-
--- "Electrocute": real=0, boost=29, target=29
-UPDATE items SET target_flikes = 29 WHERE name = 'Electrocute';
-
--- "Explode": real=0, boost=39, target=39
-UPDATE items SET target_flikes = 39 WHERE name = 'Explode';
-
--- "Firecracker": real=1, boost=14, target=15
-UPDATE items SET target_flikes = 15 WHERE name = 'Firecracker';
-
--- "Flatten": real=0, boost=13, target=13
-UPDATE items SET target_flikes = 13 WHERE name = 'Flatten';
-
--- "Freeze": real=0, boost=21, target=21
-UPDATE items SET target_flikes = 21 WHERE name = 'Freeze';
-
--- "Frostbite": real=4, boost=28, target=32
-UPDATE items SET target_flikes = 32 WHERE name = 'Frostbite';
-
--- "Ghost": real=0, boost=18, target=18
-UPDATE items SET target_flikes = 18 WHERE name = 'Ghost';
-
--- "Gifted": real=4, boost=21, target=25
-UPDATE items SET target_flikes = 25 WHERE name = 'Gifted';
-
--- "Gravestone": real=0, boost=13, target=13
-UPDATE items SET target_flikes = 13 WHERE name = 'Gravestone';
-
--- "Halrog of Prey": real=6, boost=18, target=24
-UPDATE items SET target_flikes = 24 WHERE name = 'Halrog of Prey';
-
--- "Helium Head": real=1, boost=32, target=33
-UPDATE items SET target_flikes = 33 WHERE name = 'Helium Head';
-
--- "Jellied": real=3, boost=36, target=39
-UPDATE items SET target_flikes = 39 WHERE name = 'Jellied';
-
--- "Lightning": real=1, boost=15, target=16
-UPDATE items SET target_flikes = 16 WHERE name = 'Lightning';
-
--- "Lovely Explosion": real=6, boost=31, target=37
-UPDATE items SET target_flikes = 37 WHERE name = 'Lovely Explosion';
-
--- "Metal": real=1, boost=45, target=46
-UPDATE items SET target_flikes = 46 WHERE name = 'Metal';
-
--- "Mined": real=1, boost=40, target=41
-UPDATE items SET target_flikes = 41 WHERE name = 'Mined';
-
--- "Neon": real=0, boost=29, target=29
-UPDATE items SET target_flikes = 29 WHERE name = 'Neon';
-
--- "Pause": real=1, boost=36, target=37
-UPDATE items SET target_flikes = 37 WHERE name = 'Pause';
-
--- "Pedestrian": real=3, boost=23, target=26
-UPDATE items SET target_flikes = 26 WHERE name = 'Pedestrian';
-
--- "Petrify": real=0, boost=50, target=50
-UPDATE items SET target_flikes = 50 WHERE name = 'Petrify';
-
--- "Pop": real=0, boost=47, target=47
-UPDATE items SET target_flikes = 47 WHERE name = 'Pop';
-
--- "Ragdoll": real=1, boost=48, target=49
-UPDATE items SET target_flikes = 49 WHERE name = 'Ragdoll';
-
--- "Rocket Head": real=2, boost=41, target=43
-UPDATE items SET target_flikes = 43 WHERE name = 'Rocket Head';
-
--- "Separate": real=1, boost=31, target=32
-UPDATE items SET target_flikes = 32 WHERE name = 'Separate';
-
--- "Shark Attack": real=1, boost=26, target=27
-UPDATE items SET target_flikes = 27 WHERE name = 'Shark Attack';
-
--- "Shatter": real=1, boost=45, target=46
-UPDATE items SET target_flikes = 46 WHERE name = 'Shatter';
-
--- "Skeletonize": real=1, boost=27, target=28
-UPDATE items SET target_flikes = 28 WHERE name = 'Skeletonize';
-
--- "Sleigh of Prey": real=3, boost=32, target=35
-UPDATE items SET target_flikes = 35 WHERE name = 'Sleigh of Prey';
-
--- "Spaghettificate": real=0, boost=22, target=22
-UPDATE items SET target_flikes = 22 WHERE name = 'Spaghettificate';
-
--- "Spider": real=3, boost=13, target=16
-UPDATE items SET target_flikes = 16 WHERE name = 'Spider';
-
--- "Spontaneous Combustion": real=0, boost=37, target=37
-UPDATE items SET target_flikes = 37 WHERE name = 'Spontaneous Combustion';
-
--- "Teleport Away": real=4, boost=12, target=16
-UPDATE items SET target_flikes = 16 WHERE name = 'Teleport Away';
-
--- "Terminate": real=1, boost=14, target=15
-UPDATE items SET target_flikes = 15 WHERE name = 'Terminate';
-
--- "The Claw": real=1, boost=34, target=35
-UPDATE items SET target_flikes = 35 WHERE name = 'The Claw';
-
--- "Top of Tree": real=2, boost=45, target=47
-UPDATE items SET target_flikes = 47 WHERE name = 'Top of Tree';
-
--- "Vanish": real=1, boost=29, target=30
-UPDATE items SET target_flikes = 30 WHERE name = 'Vanish';
-
--- "Water Drop": real=1, boost=31, target=32
-UPDATE items SET target_flikes = 32 WHERE name = 'Water Drop';
-
--- "Zero Gravity": real=0, boost=26, target=26
-UPDATE items SET target_flikes = 26 WHERE name = 'Zero Gravity';
-
--- "Zero Gravity Ragdoll": real=2, boost=31, target=33
-UPDATE items SET target_flikes = 33 WHERE name = 'Zero Gravity Ragdoll';
-
--- "!!!!!!!": real=0, boost=31, target=31
-UPDATE items SET target_flikes = 31 WHERE name = '!!!!!!!';
-
--- ":O": real=3, boost=37, target=40
-UPDATE items SET target_flikes = 40 WHERE name = ':O';
-
--- "???????": real=0, boost=50, target=50
-UPDATE items SET target_flikes = 50 WHERE name = '???????';
-
--- "Abducting": real=1, boost=44, target=45
-UPDATE items SET target_flikes = 45 WHERE name = 'Abducting';
-
--- "American Flags": real=0, boost=29, target=29
-UPDATE items SET target_flikes = 29 WHERE name = 'American Flags';
-
--- "Angel of Bliss": real=7, boost=17, target=24
-UPDATE items SET target_flikes = 24 WHERE name = 'Angel of Bliss';
-
--- "Angry Canaries": real=0, boost=12, target=12
-UPDATE items SET target_flikes = 12 WHERE name = 'Angry Canaries';
-
--- "Angry Emojis": real=0, boost=33, target=33
-UPDATE items SET target_flikes = 33 WHERE name = 'Angry Emojis';
-
--- "Apples": real=0, boost=31, target=31
-UPDATE items SET target_flikes = 31 WHERE name = 'Apples';
-
--- "Aqua Aura": real=2, boost=19, target=21
-UPDATE items SET target_flikes = 21 WHERE name = 'Aqua Aura';
-
--- "Asteroids": real=0, boost=49, target=49
-UPDATE items SET target_flikes = 49 WHERE name = 'Asteroids';
-
--- "Atomizer": real=2, boost=26, target=28
-UPDATE items SET target_flikes = 28 WHERE name = 'Atomizer';
-
--- "Atoms": real=0, boost=46, target=46
-UPDATE items SET target_flikes = 46 WHERE name = 'Atoms';
-
--- "Aura": real=0, boost=30, target=30
-UPDATE items SET target_flikes = 30 WHERE name = 'Aura';
-
--- "Aurora Borealis": real=2, boost=41, target=43
-UPDATE items SET target_flikes = 43 WHERE name = 'Aurora Borealis';
-
--- "Aurora Sphere": real=5, boost=32, target=37
-UPDATE items SET target_flikes = 37 WHERE name = 'Aurora Sphere';
-
--- "Autumn Mood": real=1, boost=21, target=22
-UPDATE items SET target_flikes = 22 WHERE name = 'Autumn Mood';
-
--- "Autumn Ritual": real=3, boost=43, target=46
-UPDATE items SET target_flikes = 46 WHERE name = 'Autumn Ritual';
-
--- "Azure Eye": real=1, boost=40, target=41
-UPDATE items SET target_flikes = 41 WHERE name = 'Azure Eye';
-
--- "Balloons": real=0, boost=12, target=12
-UPDATE items SET target_flikes = 12 WHERE name = 'Balloons';
-
--- "Bananas": real=0, boost=23, target=23
-UPDATE items SET target_flikes = 23 WHERE name = 'Bananas';
-
--- "Basketballs": real=0, boost=41, target=41
-UPDATE items SET target_flikes = 41 WHERE name = 'Basketballs';
-
--- "Bauble Master": real=0, boost=18, target=18
-UPDATE items SET target_flikes = 18 WHERE name = 'Bauble Master';
-
--- "Bees": real=0, boost=17, target=17
-UPDATE items SET target_flikes = 17 WHERE name = 'Bees';
-
--- "Big Heads": real=0, boost=29, target=29
-UPDATE items SET target_flikes = 29 WHERE name = 'Big Heads';
-
--- "Billion Trail": real=0, boost=45, target=45
-UPDATE items SET target_flikes = 45 WHERE name = 'Billion Trail';
-
--- "Biohazard": real=0, boost=19, target=19
-UPDATE items SET target_flikes = 19 WHERE name = 'Biohazard';
-
--- "Black flame": real=1, boost=49, target=50
-UPDATE items SET target_flikes = 50 WHERE name = 'Black flame';
-
--- "Black sparkles": real=1, boost=42, target=43
-UPDATE items SET target_flikes = 43 WHERE name = 'Black sparkles';
-
--- "Blackhole": real=3, boost=23, target=26
-UPDATE items SET target_flikes = 26 WHERE name = 'Blackhole';
-
--- "Blackholes": real=0, boost=31, target=31
-UPDATE items SET target_flikes = 31 WHERE name = 'Blackholes';
-
--- "Blood Moon": real=3, boost=34, target=37
-UPDATE items SET target_flikes = 37 WHERE name = 'Blood Moon';
-
--- "Blue Anime Aura": real=0, boost=23, target=23
-UPDATE items SET target_flikes = 23 WHERE name = 'Blue Anime Aura';
-
--- "Blue Electro": real=1, boost=35, target=36
-UPDATE items SET target_flikes = 36 WHERE name = 'Blue Electro';
-
--- "Blue Hearts": real=1, boost=39, target=40
-UPDATE items SET target_flikes = 40 WHERE name = 'Blue Hearts';
-
--- "Blue Ringed": real=0, boost=43, target=43
-UPDATE items SET target_flikes = 43 WHERE name = 'Blue Ringed';
-
--- "Blue Smoke": real=1, boost=17, target=18
-UPDATE items SET target_flikes = 18 WHERE name = 'Blue Smoke';
-
--- "Blue flame": real=1, boost=12, target=13
-UPDATE items SET target_flikes = 13 WHERE name = 'Blue flame';
-
--- "Blue sparkles": real=1, boost=21, target=22
-UPDATE items SET target_flikes = 22 WHERE name = 'Blue sparkles';
-
--- "Blueberries": real=0, boost=48, target=48
-UPDATE items SET target_flikes = 48 WHERE name = 'Blueberries';
-
--- "Books": real=0, boost=13, target=13
-UPDATE items SET target_flikes = 13 WHERE name = 'Books';
-
--- "Bubblehead": real=1, boost=20, target=21
-UPDATE items SET target_flikes = 21 WHERE name = 'Bubblehead';
-
--- "Bubbles": real=3, boost=35, target=38
-UPDATE items SET target_flikes = 38 WHERE name = 'Bubbles';
-
--- "Burning Flames": real=1, boost=43, target=44
-UPDATE items SET target_flikes = 44 WHERE name = 'Burning Flames';
-
--- "Butterflies": real=0, boost=16, target=16
-UPDATE items SET target_flikes = 16 WHERE name = 'Butterflies';
-
--- "Calendars": real=0, boost=46, target=46
-UPDATE items SET target_flikes = 46 WHERE name = 'Calendars';
-
--- "Cameras": real=0, boost=25, target=25
-UPDATE items SET target_flikes = 25 WHERE name = 'Cameras';
-
--- "Candy": real=0, boost=42, target=42
-UPDATE items SET target_flikes = 42 WHERE name = 'Candy';
-
--- "Candy Canes": real=0, boost=49, target=49
-UPDATE items SET target_flikes = 49 WHERE name = 'Candy Canes';
-
--- "Candy Corns": real=0, boost=15, target=15
-UPDATE items SET target_flikes = 15 WHERE name = 'Candy Corns';
-
--- "Carrots": real=0, boost=11, target=11
-UPDATE items SET target_flikes = 11 WHERE name = 'Carrots';
-
--- "Cars": real=0, boost=38, target=38
-UPDATE items SET target_flikes = 38 WHERE name = 'Cars';
-
--- "Cats": real=0, boost=29, target=29
-UPDATE items SET target_flikes = 29 WHERE name = 'Cats';
-
--- "Caution Crazy": real=0, boost=21, target=21
-UPDATE items SET target_flikes = 21 WHERE name = 'Caution Crazy';
-
--- "Center of the Universe": real=1, boost=11, target=12
-UPDATE items SET target_flikes = 12 WHERE name = 'Center of the Universe';
-
--- "Chickens": real=0, boost=22, target=22
-UPDATE items SET target_flikes = 22 WHERE name = 'Chickens';
-
--- "Chocolate Bars": real=0, boost=22, target=22
-UPDATE items SET target_flikes = 22 WHERE name = 'Chocolate Bars';
-
--- "Christmas Puddings": real=0, boost=40, target=40
-UPDATE items SET target_flikes = 40 WHERE name = 'Christmas Puddings';
-
--- "Clovers": real=0, boost=42, target=42
-UPDATE items SET target_flikes = 42 WHERE name = 'Clovers';
-
--- "Clown Emojis": real=0, boost=36, target=36
-UPDATE items SET target_flikes = 36 WHERE name = 'Clown Emojis';
-
--- "Cobwebs": real=0, boost=41, target=41
-UPDATE items SET target_flikes = 41 WHERE name = 'Cobwebs';
-
--- "Cogs": real=0, boost=32, target=32
-UPDATE items SET target_flikes = 32 WHERE name = 'Cogs';
-
--- "Cold Fusion": real=1, boost=18, target=19
-UPDATE items SET target_flikes = 19 WHERE name = 'Cold Fusion';
-
--- "Colourful Fireworks": real=1, boost=39, target=40
-UPDATE items SET target_flikes = 40 WHERE name = 'Colourful Fireworks';
-
--- "Colourful Sparkles": real=0, boost=48, target=48
-UPDATE items SET target_flikes = 48 WHERE name = 'Colourful Sparkles';
-
--- "Confetti": real=0, boost=10, target=10
-UPDATE items SET target_flikes = 10 WHERE name = 'Confetti';
-
--- "Confetti Crazy": real=3, boost=46, target=49
-UPDATE items SET target_flikes = 49 WHERE name = 'Confetti Crazy';
-
--- "Confetti Sprinklers": real=0, boost=17, target=17
-UPDATE items SET target_flikes = 17 WHERE name = 'Confetti Sprinklers';
-
--- "Confetti Trail": real=1, boost=19, target=20
-UPDATE items SET target_flikes = 20 WHERE name = 'Confetti Trail';
-
--- "Confused": real=0, boost=48, target=48
-UPDATE items SET target_flikes = 48 WHERE name = 'Confused';
-
--- "Conscience": real=0, boost=50, target=50
-UPDATE items SET target_flikes = 50 WHERE name = 'Conscience';
-
--- "Constellation": real=3, boost=36, target=39
-UPDATE items SET target_flikes = 39 WHERE name = 'Constellation';
-
--- "Controllers": real=0, boost=45, target=45
-UPDATE items SET target_flikes = 45 WHERE name = 'Controllers';
-
--- "Cookies": real=1, boost=40, target=41
-UPDATE items SET target_flikes = 41 WHERE name = 'Cookies';
-
--- "Cool Dogs": real=0, boost=26, target=26
-UPDATE items SET target_flikes = 26 WHERE name = 'Cool Dogs';
-
--- "Corrupted Aura": real=2, boost=40, target=42
-UPDATE items SET target_flikes = 42 WHERE name = 'Corrupted Aura';
-
--- "Corruption": real=1, boost=44, target=45
-UPDATE items SET target_flikes = 45 WHERE name = 'Corruption';
-
--- "Cosmic Swirl": real=3, boost=33, target=36
-UPDATE items SET target_flikes = 36 WHERE name = 'Cosmic Swirl';
-
--- "Cosmic Trail": real=1, boost=50, target=51
-UPDATE items SET target_flikes = 51 WHERE name = 'Cosmic Trail';
-
--- "Cosmology": real=3, boost=10, target=13
-UPDATE items SET target_flikes = 13 WHERE name = 'Cosmology';
-
--- "Crimson Array": real=2, boost=14, target=16
-UPDATE items SET target_flikes = 16 WHERE name = 'Crimson Array';
-
--- "Crimson Cats": real=0, boost=11, target=11
-UPDATE items SET target_flikes = 11 WHERE name = 'Crimson Cats';
-
--- "Crow Feathers": real=0, boost=37, target=37
-UPDATE items SET target_flikes = 37 WHERE name = 'Crow Feathers';
-
--- "Crumpets": real=0, boost=50, target=50
-UPDATE items SET target_flikes = 50 WHERE name = 'Crumpets';
-
--- "Crystal Streaks": real=3, boost=10, target=13
-UPDATE items SET target_flikes = 13 WHERE name = 'Crystal Streaks';
-
--- "Crystalized": real=0, boost=27, target=27
-UPDATE items SET target_flikes = 27 WHERE name = 'Crystalized';
-
--- "Cupcakes": real=0, boost=50, target=50
-UPDATE items SET target_flikes = 50 WHERE name = 'Cupcakes';
-
--- "Cups of tea": real=0, boost=15, target=15
-UPDATE items SET target_flikes = 15 WHERE name = 'Cups of tea';
-
--- "Cyan flame": real=1, boost=21, target=22
-UPDATE items SET target_flikes = 22 WHERE name = 'Cyan flame';
-
--- "Cyan sparkles": real=3, boost=15, target=18
-UPDATE items SET target_flikes = 18 WHERE name = 'Cyan sparkles';
-
--- "Dark Sprite": real=0, boost=44, target=44
-UPDATE items SET target_flikes = 44 WHERE name = 'Dark Sprite';
-
--- "Dark Swirls": real=0, boost=46, target=46
-UPDATE items SET target_flikes = 46 WHERE name = 'Dark Swirls';
-
--- "Dark blue flame": real=1, boost=23, target=24
-UPDATE items SET target_flikes = 24 WHERE name = 'Dark blue flame';
-
--- "Debuff": real=0, boost=18, target=18
-UPDATE items SET target_flikes = 18 WHERE name = 'Debuff';
-
--- "Demonic Summon": real=0, boost=38, target=38
-UPDATE items SET target_flikes = 38 WHERE name = 'Demonic Summon';
-
--- "Devious Devil": real=3, boost=24, target=27
-UPDATE items SET target_flikes = 27 WHERE name = 'Devious Devil';
-
--- "Devious Emojis": real=1, boost=25, target=26
-UPDATE items SET target_flikes = 26 WHERE name = 'Devious Emojis';
-
--- "Diamonds": real=0, boost=41, target=41
-UPDATE items SET target_flikes = 41 WHERE name = 'Diamonds';
-
--- "Dice": real=0, boost=20, target=20
-UPDATE items SET target_flikes = 20 WHERE name = 'Dice';
-
--- "Disco Balls": real=0, boost=13, target=13
-UPDATE items SET target_flikes = 13 WHERE name = 'Disco Balls';
-
--- "Discs": real=0, boost=34, target=34
-UPDATE items SET target_flikes = 34 WHERE name = 'Discs';
-
--- "Divinity": real=1, boost=21, target=22
-UPDATE items SET target_flikes = 22 WHERE name = 'Divinity';
-
--- "Dollar signs": real=0, boost=25, target=25
-UPDATE items SET target_flikes = 25 WHERE name = 'Dollar signs';
-
--- "Doodle Hearts": real=2, boost=22, target=24
-UPDATE items SET target_flikes = 24 WHERE name = 'Doodle Hearts';
-
--- "Double Spotlights": real=3, boost=47, target=50
-UPDATE items SET target_flikes = 50 WHERE name = 'Double Spotlights';
-
--- "Dragons": real=0, boost=34, target=34
-UPDATE items SET target_flikes = 34 WHERE name = 'Dragons';
-
--- "Ducks": real=0, boost=28, target=28
-UPDATE items SET target_flikes = 28 WHERE name = 'Ducks';
-
--- "Earths": real=0, boost=10, target=10
-UPDATE items SET target_flikes = 10 WHERE name = 'Earths';
-
--- "Easter Aura": real=2, boost=46, target=48
-UPDATE items SET target_flikes = 48 WHERE name = 'Easter Aura';
-
--- "Easter Eggs": real=0, boost=41, target=41
-UPDATE items SET target_flikes = 41 WHERE name = 'Easter Eggs';
-
--- "Egg Protection": real=2, boost=30, target=32
-UPDATE items SET target_flikes = 32 WHERE name = 'Egg Protection';
-
--- "Egg Suit": real=1, boost=39, target=40
-UPDATE items SET target_flikes = 40 WHERE name = 'Egg Suit';
-
--- "Egg Trio": real=0, boost=24, target=24
-UPDATE items SET target_flikes = 24 WHERE name = 'Egg Trio';
-
--- "Electric Aura": real=0, boost=42, target=42
-UPDATE items SET target_flikes = 42 WHERE name = 'Electric Aura';
-
--- "Electricity": real=0, boost=43, target=43
-UPDATE items SET target_flikes = 43 WHERE name = 'Electricity';
-
--- "Emeralds": real=0, boost=28, target=28
-UPDATE items SET target_flikes = 28 WHERE name = 'Emeralds';
-
--- "Enlightened": real=1, boost=39, target=40
-UPDATE items SET target_flikes = 40 WHERE name = 'Enlightened';
-
--- "Epic faces": real=0, boost=16, target=16
-UPDATE items SET target_flikes = 16 WHERE name = 'Epic faces';
-
--- "Ethereal Mist": real=0, boost=14, target=14
-UPDATE items SET target_flikes = 14 WHERE name = 'Ethereal Mist';
-
--- "Euphoria": real=0, boost=21, target=21
-UPDATE items SET target_flikes = 21 WHERE name = 'Euphoria';
-
--- "Evolving": real=2, boost=38, target=40
-UPDATE items SET target_flikes = 40 WHERE name = 'Evolving';
-
--- "Eyes": real=0, boost=10, target=10
-UPDATE items SET target_flikes = 10 WHERE name = 'Eyes';
-
--- "Fabergé Trio": real=2, boost=48, target=50
-UPDATE items SET target_flikes = 50 WHERE name = 'Fabergé Trio';
-
--- "Fairy Wings": real=3, boost=29, target=32
-UPDATE items SET target_flikes = 32 WHERE name = 'Fairy Wings';
-
--- "Fall": real=0, boost=43, target=43
-UPDATE items SET target_flikes = 43 WHERE name = 'Fall';
-
--- "Feeling Down": real=1, boost=41, target=42
-UPDATE items SET target_flikes = 42 WHERE name = 'Feeling Down';
-
--- "Festive Framework": real=3, boost=36, target=39
-UPDATE items SET target_flikes = 39 WHERE name = 'Festive Framework';
-
--- "Festive Lights Trail": real=1, boost=44, target=45
-UPDATE items SET target_flikes = 45 WHERE name = 'Festive Lights Trail';
-
--- "Festive Tree": real=1, boost=48, target=49
-UPDATE items SET target_flikes = 49 WHERE name = 'Festive Tree';
-
--- "Fire Whirl": real=0, boost=14, target=14
-UPDATE items SET target_flikes = 14 WHERE name = 'Fire Whirl';
-
--- "Fireballs": real=0, boost=13, target=13
-UPDATE items SET target_flikes = 13 WHERE name = 'Fireballs';
-
+-- Generated target_flikes values (Part 1/4)
+-- Generated at: 2026-01-18T14:53:08.341Z
+-- Items 1 to 500 of 1811
+-- Using IDs for fast primary key lookups
+
+UPDATE items SET target_flikes = 49 WHERE id = 491;
+UPDATE items SET target_flikes = 27 WHERE id = 492;
+UPDATE items SET target_flikes = 25 WHERE id = 493;
+UPDATE items SET target_flikes = 38 WHERE id = 494;
+UPDATE items SET target_flikes = 22 WHERE id = 495;
+UPDATE items SET target_flikes = 31 WHERE id = 496;
+UPDATE items SET target_flikes = 38 WHERE id = 497;
+UPDATE items SET target_flikes = 34 WHERE id = 498;
+UPDATE items SET target_flikes = 18 WHERE id = 499;
+UPDATE items SET target_flikes = 27 WHERE id = 500;
+UPDATE items SET target_flikes = 17 WHERE id = 501;
+UPDATE items SET target_flikes = 14 WHERE id = 502;
+UPDATE items SET target_flikes = 36 WHERE id = 503;
+UPDATE items SET target_flikes = 54 WHERE id = 504;
+UPDATE items SET target_flikes = 43 WHERE id = 505;
+UPDATE items SET target_flikes = 39 WHERE id = 506;
+UPDATE items SET target_flikes = 25 WHERE id = 507;
+UPDATE items SET target_flikes = 31 WHERE id = 508;
+UPDATE items SET target_flikes = 44 WHERE id = 509;
+UPDATE items SET target_flikes = 32 WHERE id = 510;
+UPDATE items SET target_flikes = 38 WHERE id = 511;
+UPDATE items SET target_flikes = 46 WHERE id = 512;
+UPDATE items SET target_flikes = 31 WHERE id = 513;
+UPDATE items SET target_flikes = 18 WHERE id = 514;
+UPDATE items SET target_flikes = 33 WHERE id = 515;
+UPDATE items SET target_flikes = 27 WHERE id = 516;
+UPDATE items SET target_flikes = 21 WHERE id = 517;
+UPDATE items SET target_flikes = 21 WHERE id = 518;
+UPDATE items SET target_flikes = 14 WHERE id = 519;
+UPDATE items SET target_flikes = 38 WHERE id = 520;
+UPDATE items SET target_flikes = 44 WHERE id = 521;
+UPDATE items SET target_flikes = 35 WHERE id = 522;
+UPDATE items SET target_flikes = 37 WHERE id = 523;
+UPDATE items SET target_flikes = 37 WHERE id = 524;
+UPDATE items SET target_flikes = 45 WHERE id = 525;
+UPDATE items SET target_flikes = 25 WHERE id = 1780;
+UPDATE items SET target_flikes = 49 WHERE id = 526;
+UPDATE items SET target_flikes = 37 WHERE id = 1781;
+UPDATE items SET target_flikes = 39 WHERE id = 527;
+UPDATE items SET target_flikes = 35 WHERE id = 528;
+UPDATE items SET target_flikes = 38 WHERE id = 529;
+UPDATE items SET target_flikes = 41 WHERE id = 530;
+UPDATE items SET target_flikes = 34 WHERE id = 531;
+UPDATE items SET target_flikes = 19 WHERE id = 532;
+UPDATE items SET target_flikes = 49 WHERE id = 533;
+UPDATE items SET target_flikes = 43 WHERE id = 534;
+UPDATE items SET target_flikes = 24 WHERE id = 535;
+UPDATE items SET target_flikes = 35 WHERE id = 536;
+UPDATE items SET target_flikes = 16 WHERE id = 537;
+UPDATE items SET target_flikes = 30 WHERE id = 538;
+UPDATE items SET target_flikes = 36 WHERE id = 539;
+UPDATE items SET target_flikes = 35 WHERE id = 540;
+UPDATE items SET target_flikes = 46 WHERE id = 541;
+UPDATE items SET target_flikes = 17 WHERE id = 542;
+UPDATE items SET target_flikes = 15 WHERE id = 543;
+UPDATE items SET target_flikes = 31 WHERE id = 544;
+UPDATE items SET target_flikes = 38 WHERE id = 545;
+UPDATE items SET target_flikes = 52 WHERE id = 546;
+UPDATE items SET target_flikes = 39 WHERE id = 547;
+UPDATE items SET target_flikes = 35 WHERE id = 548;
+UPDATE items SET target_flikes = 35 WHERE id = 549;
+UPDATE items SET target_flikes = 22 WHERE id = 550;
+UPDATE items SET target_flikes = 31 WHERE id = 551;
+UPDATE items SET target_flikes = 50 WHERE id = 552;
+UPDATE items SET target_flikes = 33 WHERE id = 553;
+UPDATE items SET target_flikes = 35 WHERE id = 554;
+UPDATE items SET target_flikes = 50 WHERE id = 555;
+UPDATE items SET target_flikes = 13 WHERE id = 556;
+UPDATE items SET target_flikes = 49 WHERE id = 557;
+UPDATE items SET target_flikes = 29 WHERE id = 1412;
+UPDATE items SET target_flikes = 21 WHERE id = 1413;
+UPDATE items SET target_flikes = 20 WHERE id = 1414;
+UPDATE items SET target_flikes = 22 WHERE id = 1415;
+UPDATE items SET target_flikes = 16 WHERE id = 1416;
+UPDATE items SET target_flikes = 28 WHERE id = 1802;
+UPDATE items SET target_flikes = 21 WHERE id = 1417;
+UPDATE items SET target_flikes = 33 WHERE id = 1418;
+UPDATE items SET target_flikes = 33 WHERE id = 1419;
+UPDATE items SET target_flikes = 29 WHERE id = 1420;
+UPDATE items SET target_flikes = 18 WHERE id = 1421;
+UPDATE items SET target_flikes = 40 WHERE id = 1422;
+UPDATE items SET target_flikes = 50 WHERE id = 1423;
+UPDATE items SET target_flikes = 40 WHERE id = 1424;
+UPDATE items SET target_flikes = 24 WHERE id = 1425;
+UPDATE items SET target_flikes = 41 WHERE id = 1426;
+UPDATE items SET target_flikes = 42 WHERE id = 1427;
+UPDATE items SET target_flikes = 38 WHERE id = 1428;
+UPDATE items SET target_flikes = 48 WHERE id = 1429;
+UPDATE items SET target_flikes = 15 WHERE id = 1430;
+UPDATE items SET target_flikes = 35 WHERE id = 1431;
+UPDATE items SET target_flikes = 13 WHERE id = 1432;
+UPDATE items SET target_flikes = 29 WHERE id = 1433;
+UPDATE items SET target_flikes = 31 WHERE id = 1434;
+UPDATE items SET target_flikes = 42 WHERE id = 1435;
+UPDATE items SET target_flikes = 28 WHERE id = 1436;
+UPDATE items SET target_flikes = 35 WHERE id = 1437;
+UPDATE items SET target_flikes = 24 WHERE id = 1438;
+UPDATE items SET target_flikes = 46 WHERE id = 1439;
+UPDATE items SET target_flikes = 52 WHERE id = 1440;
+UPDATE items SET target_flikes = 48 WHERE id = 1441;
+UPDATE items SET target_flikes = 15 WHERE id = 1442;
+UPDATE items SET target_flikes = 10 WHERE id = 1443;
+UPDATE items SET target_flikes = 15 WHERE id = 1444;
+UPDATE items SET target_flikes = 23 WHERE id = 1445;
+UPDATE items SET target_flikes = 39 WHERE id = 1446;
+UPDATE items SET target_flikes = 40 WHERE id = 1447;
+UPDATE items SET target_flikes = 38 WHERE id = 1448;
+UPDATE items SET target_flikes = 11 WHERE id = 1449;
+UPDATE items SET target_flikes = 18 WHERE id = 1450;
+UPDATE items SET target_flikes = 14 WHERE id = 1451;
+UPDATE items SET target_flikes = 26 WHERE id = 1452;
+UPDATE items SET target_flikes = 44 WHERE id = 1453;
+UPDATE items SET target_flikes = 35 WHERE id = 1454;
+UPDATE items SET target_flikes = 47 WHERE id = 1455;
+UPDATE items SET target_flikes = 22 WHERE id = 1456;
+UPDATE items SET target_flikes = 10 WHERE id = 1457;
+UPDATE items SET target_flikes = 27 WHERE id = 1458;
+UPDATE items SET target_flikes = 29 WHERE id = 1459;
+UPDATE items SET target_flikes = 45 WHERE id = 1779;
+UPDATE items SET target_flikes = 22 WHERE id = 1461;
+UPDATE items SET target_flikes = 48 WHERE id = 1462;
+UPDATE items SET target_flikes = 19 WHERE id = 1463;
+UPDATE items SET target_flikes = 18 WHERE id = 1464;
+UPDATE items SET target_flikes = 19 WHERE id = 1465;
+UPDATE items SET target_flikes = 13 WHERE id = 1466;
+UPDATE items SET target_flikes = 42 WHERE id = 1467;
+UPDATE items SET target_flikes = 20 WHERE id = 1468;
+UPDATE items SET target_flikes = 49 WHERE id = 1469;
+UPDATE items SET target_flikes = 49 WHERE id = 1470;
+UPDATE items SET target_flikes = 38 WHERE id = 1471;
+UPDATE items SET target_flikes = 46 WHERE id = 1472;
+UPDATE items SET target_flikes = 12 WHERE id = 1786;
+UPDATE items SET target_flikes = 32 WHERE id = 1473;
+UPDATE items SET target_flikes = 24 WHERE id = 1474;
+UPDATE items SET target_flikes = 46 WHERE id = 1475;
+UPDATE items SET target_flikes = 31 WHERE id = 1476;
+UPDATE items SET target_flikes = 13 WHERE id = 1477;
+UPDATE items SET target_flikes = 11 WHERE id = 1478;
+UPDATE items SET target_flikes = 40 WHERE id = 1479;
+UPDATE items SET target_flikes = 14 WHERE id = 1480;
+UPDATE items SET target_flikes = 38 WHERE id = 1481;
+UPDATE items SET target_flikes = 24 WHERE id = 1482;
+UPDATE items SET target_flikes = 33 WHERE id = 1483;
+UPDATE items SET target_flikes = 23 WHERE id = 1484;
+UPDATE items SET target_flikes = 19 WHERE id = 1485;
+UPDATE items SET target_flikes = 18 WHERE id = 1486;
+UPDATE items SET target_flikes = 13 WHERE id = 1487;
+UPDATE items SET target_flikes = 42 WHERE id = 1488;
+UPDATE items SET target_flikes = 49 WHERE id = 1489;
+UPDATE items SET target_flikes = 24 WHERE id = 1490;
+UPDATE items SET target_flikes = 40 WHERE id = 1491;
+UPDATE items SET target_flikes = 39 WHERE id = 1492;
+UPDATE items SET target_flikes = 10 WHERE id = 1493;
+UPDATE items SET target_flikes = 24 WHERE id = 1494;
+UPDATE items SET target_flikes = 30 WHERE id = 1495;
+UPDATE items SET target_flikes = 11 WHERE id = 1496;
+UPDATE items SET target_flikes = 28 WHERE id = 1497;
+UPDATE items SET target_flikes = 28 WHERE id = 1498;
+UPDATE items SET target_flikes = 51 WHERE id = 1499;
+UPDATE items SET target_flikes = 31 WHERE id = 1500;
+UPDATE items SET target_flikes = 46 WHERE id = 1501;
+UPDATE items SET target_flikes = 22 WHERE id = 1502;
+UPDATE items SET target_flikes = 17 WHERE id = 1503;
+UPDATE items SET target_flikes = 39 WHERE id = 1504;
+UPDATE items SET target_flikes = 27 WHERE id = 1505;
+UPDATE items SET target_flikes = 38 WHERE id = 1506;
+UPDATE items SET target_flikes = 45 WHERE id = 1507;
+UPDATE items SET target_flikes = 12 WHERE id = 1508;
+UPDATE items SET target_flikes = 46 WHERE id = 1509;
+UPDATE items SET target_flikes = 50 WHERE id = 1510;
+UPDATE items SET target_flikes = 47 WHERE id = 1511;
+UPDATE items SET target_flikes = 19 WHERE id = 1512;
+UPDATE items SET target_flikes = 50 WHERE id = 1513;
+UPDATE items SET target_flikes = 21 WHERE id = 1514;
+UPDATE items SET target_flikes = 18 WHERE id = 1515;
+UPDATE items SET target_flikes = 40 WHERE id = 1516;
+UPDATE items SET target_flikes = 47 WHERE id = 1517;
+UPDATE items SET target_flikes = 37 WHERE id = 1518;
+UPDATE items SET target_flikes = 31 WHERE id = 1519;
+UPDATE items SET target_flikes = 24 WHERE id = 1520;
+UPDATE items SET target_flikes = 20 WHERE id = 1521;
+UPDATE items SET target_flikes = 48 WHERE id = 1522;
+UPDATE items SET target_flikes = 50 WHERE id = 1523;
+UPDATE items SET target_flikes = 40 WHERE id = 1524;
+UPDATE items SET target_flikes = 20 WHERE id = 1525;
+UPDATE items SET target_flikes = 45 WHERE id = 1526;
+UPDATE items SET target_flikes = 42 WHERE id = 1527;
+UPDATE items SET target_flikes = 22 WHERE id = 1528;
+UPDATE items SET target_flikes = 46 WHERE id = 1529;
+UPDATE items SET target_flikes = 19 WHERE id = 1530;
+UPDATE items SET target_flikes = 27 WHERE id = 1531;
+UPDATE items SET target_flikes = 33 WHERE id = 1532;
+UPDATE items SET target_flikes = 44 WHERE id = 1533;
+UPDATE items SET target_flikes = 17 WHERE id = 1534;
+UPDATE items SET target_flikes = 29 WHERE id = 1535;
+UPDATE items SET target_flikes = 36 WHERE id = 1536;
+UPDATE items SET target_flikes = 23 WHERE id = 1537;
+UPDATE items SET target_flikes = 16 WHERE id = 1538;
+UPDATE items SET target_flikes = 50 WHERE id = 1539;
+UPDATE items SET target_flikes = 11 WHERE id = 1540;
+UPDATE items SET target_flikes = 12 WHERE id = 1541;
+UPDATE items SET target_flikes = 42 WHERE id = 1542;
+UPDATE items SET target_flikes = 27 WHERE id = 1543;
+UPDATE items SET target_flikes = 39 WHERE id = 1544;
+UPDATE items SET target_flikes = 24 WHERE id = 1545;
+UPDATE items SET target_flikes = 38 WHERE id = 1546;
+UPDATE items SET target_flikes = 20 WHERE id = 1547;
+UPDATE items SET target_flikes = 39 WHERE id = 1548;
+UPDATE items SET target_flikes = 20 WHERE id = 1549;
+UPDATE items SET target_flikes = 20 WHERE id = 1550;
+UPDATE items SET target_flikes = 45 WHERE id = 1551;
+UPDATE items SET target_flikes = 13 WHERE id = 1552;
+UPDATE items SET target_flikes = 31 WHERE id = 1553;
+UPDATE items SET target_flikes = 39 WHERE id = 1789;
+UPDATE items SET target_flikes = 48 WHERE id = 1554;
+UPDATE items SET target_flikes = 51 WHERE id = 1555;
+UPDATE items SET target_flikes = 17 WHERE id = 1556;
+UPDATE items SET target_flikes = 24 WHERE id = 1557;
+UPDATE items SET target_flikes = 17 WHERE id = 1558;
+UPDATE items SET target_flikes = 28 WHERE id = 1559;
+UPDATE items SET target_flikes = 16 WHERE id = 1560;
+UPDATE items SET target_flikes = 19 WHERE id = 1561;
+UPDATE items SET target_flikes = 31 WHERE id = 1562;
+UPDATE items SET target_flikes = 14 WHERE id = 1563;
+UPDATE items SET target_flikes = 36 WHERE id = 1564;
+UPDATE items SET target_flikes = 11 WHERE id = 1565;
+UPDATE items SET target_flikes = 14 WHERE id = 1566;
+UPDATE items SET target_flikes = 46 WHERE id = 1568;
+UPDATE items SET target_flikes = 28 WHERE id = 1569;
+UPDATE items SET target_flikes = 19 WHERE id = 1567;
+UPDATE items SET target_flikes = 12 WHERE id = 1570;
+UPDATE items SET target_flikes = 26 WHERE id = 1571;
+UPDATE items SET target_flikes = 26 WHERE id = 1572;
+UPDATE items SET target_flikes = 23 WHERE id = 1573;
+UPDATE items SET target_flikes = 17 WHERE id = 1574;
+UPDATE items SET target_flikes = 32 WHERE id = 1575;
+UPDATE items SET target_flikes = 32 WHERE id = 1576;
+UPDATE items SET target_flikes = 20 WHERE id = 1577;
+UPDATE items SET target_flikes = 45 WHERE id = 1582;
+UPDATE items SET target_flikes = 37 WHERE id = 1578;
+UPDATE items SET target_flikes = 24 WHERE id = 1579;
+UPDATE items SET target_flikes = 11 WHERE id = 1580;
+UPDATE items SET target_flikes = 18 WHERE id = 1581;
+UPDATE items SET target_flikes = 35 WHERE id = 1583;
+UPDATE items SET target_flikes = 18 WHERE id = 1584;
+UPDATE items SET target_flikes = 36 WHERE id = 1585;
+UPDATE items SET target_flikes = 48 WHERE id = 1586;
+UPDATE items SET target_flikes = 52 WHERE id = 1587;
+UPDATE items SET target_flikes = 33 WHERE id = 1588;
+UPDATE items SET target_flikes = 34 WHERE id = 1589;
+UPDATE items SET target_flikes = 22 WHERE id = 1590;
+UPDATE items SET target_flikes = 22 WHERE id = 1591;
+UPDATE items SET target_flikes = 31 WHERE id = 1592;
+UPDATE items SET target_flikes = 29 WHERE id = 1593;
+UPDATE items SET target_flikes = 33 WHERE id = 1594;
+UPDATE items SET target_flikes = 27 WHERE id = 1595;
+UPDATE items SET target_flikes = 18 WHERE id = 1596;
+UPDATE items SET target_flikes = 14 WHERE id = 1597;
+UPDATE items SET target_flikes = 21 WHERE id = 1598;
+UPDATE items SET target_flikes = 47 WHERE id = 1599;
+UPDATE items SET target_flikes = 31 WHERE id = 1600;
+UPDATE items SET target_flikes = 41 WHERE id = 1601;
+UPDATE items SET target_flikes = 29 WHERE id = 1602;
+UPDATE items SET target_flikes = 48 WHERE id = 1603;
+UPDATE items SET target_flikes = 32 WHERE id = 1604;
+UPDATE items SET target_flikes = 38 WHERE id = 1605;
+UPDATE items SET target_flikes = 13 WHERE id = 1606;
+UPDATE items SET target_flikes = 40 WHERE id = 1607;
+UPDATE items SET target_flikes = 44 WHERE id = 1608;
+UPDATE items SET target_flikes = 27 WHERE id = 1609;
+UPDATE items SET target_flikes = 23 WHERE id = 1610;
+UPDATE items SET target_flikes = 43 WHERE id = 1611;
+UPDATE items SET target_flikes = 42 WHERE id = 1612;
+UPDATE items SET target_flikes = 21 WHERE id = 1613;
+UPDATE items SET target_flikes = 44 WHERE id = 1614;
+UPDATE items SET target_flikes = 13 WHERE id = 1615;
+UPDATE items SET target_flikes = 40 WHERE id = 1616;
+UPDATE items SET target_flikes = 27 WHERE id = 1617;
+UPDATE items SET target_flikes = 25 WHERE id = 1618;
+UPDATE items SET target_flikes = 46 WHERE id = 1619;
+UPDATE items SET target_flikes = 23 WHERE id = 1620;
+UPDATE items SET target_flikes = 13 WHERE id = 1621;
+UPDATE items SET target_flikes = 41 WHERE id = 1622;
+UPDATE items SET target_flikes = 11 WHERE id = 1623;
+UPDATE items SET target_flikes = 33 WHERE id = 1624;
+UPDATE items SET target_flikes = 22 WHERE id = 1625;
+UPDATE items SET target_flikes = 20 WHERE id = 1626;
+UPDATE items SET target_flikes = 35 WHERE id = 1627;
+UPDATE items SET target_flikes = 48 WHERE id = 1628;
+UPDATE items SET target_flikes = 47 WHERE id = 1629;
+UPDATE items SET target_flikes = 22 WHERE id = 1630;
+UPDATE items SET target_flikes = 50 WHERE id = 1631;
+UPDATE items SET target_flikes = 10 WHERE id = 1632;
+UPDATE items SET target_flikes = 35 WHERE id = 1633;
+UPDATE items SET target_flikes = 18 WHERE id = 1634;
+UPDATE items SET target_flikes = 10 WHERE id = 1635;
+UPDATE items SET target_flikes = 15 WHERE id = 1636;
+UPDATE items SET target_flikes = 34 WHERE id = 1637;
+UPDATE items SET target_flikes = 15 WHERE id = 1638;
+UPDATE items SET target_flikes = 46 WHERE id = 1639;
+UPDATE items SET target_flikes = 22 WHERE id = 1640;
+UPDATE items SET target_flikes = 39 WHERE id = 1641;
+UPDATE items SET target_flikes = 13 WHERE id = 1642;
+UPDATE items SET target_flikes = 16 WHERE id = 1643;
+UPDATE items SET target_flikes = 44 WHERE id = 1644;
+UPDATE items SET target_flikes = 39 WHERE id = 1645;
+UPDATE items SET target_flikes = 25 WHERE id = 1646;
+UPDATE items SET target_flikes = 36 WHERE id = 1647;
+UPDATE items SET target_flikes = 16 WHERE id = 1648;
+UPDATE items SET target_flikes = 47 WHERE id = 1649;
+UPDATE items SET target_flikes = 26 WHERE id = 1650;
+UPDATE items SET target_flikes = 41 WHERE id = 1651;
+UPDATE items SET target_flikes = 45 WHERE id = 1652;
+UPDATE items SET target_flikes = 25 WHERE id = 1653;
+UPDATE items SET target_flikes = 44 WHERE id = 1654;
+UPDATE items SET target_flikes = 33 WHERE id = 1655;
+UPDATE items SET target_flikes = 22 WHERE id = 1656;
+UPDATE items SET target_flikes = 40 WHERE id = 1657;
+UPDATE items SET target_flikes = 49 WHERE id = 1658;
+UPDATE items SET target_flikes = 43 WHERE id = 1659;
+UPDATE items SET target_flikes = 37 WHERE id = 1660;
+UPDATE items SET target_flikes = 24 WHERE id = 1661;
+UPDATE items SET target_flikes = 45 WHERE id = 1662;
+UPDATE items SET target_flikes = 37 WHERE id = 1663;
+UPDATE items SET target_flikes = 32 WHERE id = 1664;
+UPDATE items SET target_flikes = 39 WHERE id = 1665;
+UPDATE items SET target_flikes = 49 WHERE id = 1666;
+UPDATE items SET target_flikes = 46 WHERE id = 1667;
+UPDATE items SET target_flikes = 18 WHERE id = 1668;
+UPDATE items SET target_flikes = 31 WHERE id = 1669;
+UPDATE items SET target_flikes = 25 WHERE id = 1670;
+UPDATE items SET target_flikes = 16 WHERE id = 1671;
+UPDATE items SET target_flikes = 30 WHERE id = 1672;
+UPDATE items SET target_flikes = 22 WHERE id = 1673;
+UPDATE items SET target_flikes = 32 WHERE id = 1785;
+UPDATE items SET target_flikes = 47 WHERE id = 1674;
+UPDATE items SET target_flikes = 18 WHERE id = 1675;
+UPDATE items SET target_flikes = 36 WHERE id = 1676;
+UPDATE items SET target_flikes = 43 WHERE id = 1692;
+UPDATE items SET target_flikes = 43 WHERE id = 1677;
+UPDATE items SET target_flikes = 35 WHERE id = 1678;
+UPDATE items SET target_flikes = 40 WHERE id = 1679;
+UPDATE items SET target_flikes = 45 WHERE id = 1680;
+UPDATE items SET target_flikes = 22 WHERE id = 1681;
+UPDATE items SET target_flikes = 22 WHERE id = 1682;
+UPDATE items SET target_flikes = 36 WHERE id = 1683;
+UPDATE items SET target_flikes = 33 WHERE id = 1684;
+UPDATE items SET target_flikes = 13 WHERE id = 1685;
+UPDATE items SET target_flikes = 44 WHERE id = 1686;
+UPDATE items SET target_flikes = 43 WHERE id = 1687;
+UPDATE items SET target_flikes = 25 WHERE id = 1688;
+UPDATE items SET target_flikes = 43 WHERE id = 1689;
+UPDATE items SET target_flikes = 12 WHERE id = 1690;
+UPDATE items SET target_flikes = 41 WHERE id = 1691;
+UPDATE items SET target_flikes = 50 WHERE id = 1693;
+UPDATE items SET target_flikes = 11 WHERE id = 1694;
+UPDATE items SET target_flikes = 14 WHERE id = 1695;
+UPDATE items SET target_flikes = 46 WHERE id = 1696;
+UPDATE items SET target_flikes = 28 WHERE id = 1697;
+UPDATE items SET target_flikes = 44 WHERE id = 1698;
+UPDATE items SET target_flikes = 37 WHERE id = 1699;
+UPDATE items SET target_flikes = 31 WHERE id = 1700;
+UPDATE items SET target_flikes = 14 WHERE id = 1701;
+UPDATE items SET target_flikes = 22 WHERE id = 1702;
+UPDATE items SET target_flikes = 43 WHERE id = 1703;
+UPDATE items SET target_flikes = 31 WHERE id = 1704;
+UPDATE items SET target_flikes = 11 WHERE id = 1705;
+UPDATE items SET target_flikes = 34 WHERE id = 1706;
+UPDATE items SET target_flikes = 47 WHERE id = 1707;
+UPDATE items SET target_flikes = 17 WHERE id = 1708;
+UPDATE items SET target_flikes = 39 WHERE id = 1709;
+UPDATE items SET target_flikes = 49 WHERE id = 1710;
+UPDATE items SET target_flikes = 25 WHERE id = 1711;
+UPDATE items SET target_flikes = 30 WHERE id = 1712;
+UPDATE items SET target_flikes = 15 WHERE id = 1713;
+UPDATE items SET target_flikes = 27 WHERE id = 1714;
+UPDATE items SET target_flikes = 35 WHERE id = 1715;
+UPDATE items SET target_flikes = 16 WHERE id = 1716;
+UPDATE items SET target_flikes = 36 WHERE id = 1717;
+UPDATE items SET target_flikes = 13 WHERE id = 1718;
+UPDATE items SET target_flikes = 19 WHERE id = 1719;
+UPDATE items SET target_flikes = 43 WHERE id = 1720;
+UPDATE items SET target_flikes = 20 WHERE id = 1721;
+UPDATE items SET target_flikes = 21 WHERE id = 1722;
+UPDATE items SET target_flikes = 24 WHERE id = 1723;
+UPDATE items SET target_flikes = 25 WHERE id = 1724;
+UPDATE items SET target_flikes = 14 WHERE id = 1725;
+UPDATE items SET target_flikes = 13 WHERE id = 1726;
+UPDATE items SET target_flikes = 34 WHERE id = 1727;
+UPDATE items SET target_flikes = 39 WHERE id = 1728;
+UPDATE items SET target_flikes = 46 WHERE id = 1729;
+UPDATE items SET target_flikes = 49 WHERE id = 1730;
+UPDATE items SET target_flikes = 14 WHERE id = 1731;
+UPDATE items SET target_flikes = 35 WHERE id = 1732;
+UPDATE items SET target_flikes = 35 WHERE id = 1733;
+UPDATE items SET target_flikes = 12 WHERE id = 1734;
+UPDATE items SET target_flikes = 21 WHERE id = 1735;
+UPDATE items SET target_flikes = 45 WHERE id = 1736;
+UPDATE items SET target_flikes = 21 WHERE id = 1737;
+UPDATE items SET target_flikes = 30 WHERE id = 1738;
+UPDATE items SET target_flikes = 30 WHERE id = 1739;
+UPDATE items SET target_flikes = 19 WHERE id = 1740;
+UPDATE items SET target_flikes = 17 WHERE id = 1741;
+UPDATE items SET target_flikes = 14 WHERE id = 1742;
+UPDATE items SET target_flikes = 37 WHERE id = 1743;
+UPDATE items SET target_flikes = 31 WHERE id = 1744;
+UPDATE items SET target_flikes = 29 WHERE id = 1745;
+UPDATE items SET target_flikes = 27 WHERE id = 1746;
+UPDATE items SET target_flikes = 20 WHERE id = 1747;
+UPDATE items SET target_flikes = 19 WHERE id = 1748;
+UPDATE items SET target_flikes = 49 WHERE id = 1749;
+UPDATE items SET target_flikes = 46 WHERE id = 1750;
+UPDATE items SET target_flikes = 31 WHERE id = 1751;
+UPDATE items SET target_flikes = 13 WHERE id = 1752;
+UPDATE items SET target_flikes = 31 WHERE id = 1753;
+UPDATE items SET target_flikes = 15 WHERE id = 1754;
+UPDATE items SET target_flikes = 32 WHERE id = 1755;
+UPDATE items SET target_flikes = 46 WHERE id = 1756;
+UPDATE items SET target_flikes = 28 WHERE id = 1757;
+UPDATE items SET target_flikes = 11 WHERE id = 1758;
+UPDATE items SET target_flikes = 41 WHERE id = 1759;
+UPDATE items SET target_flikes = 23 WHERE id = 1760;
+UPDATE items SET target_flikes = 42 WHERE id = 1761;
+UPDATE items SET target_flikes = 38 WHERE id = 1762;
+UPDATE items SET target_flikes = 46 WHERE id = 1783;
+UPDATE items SET target_flikes = 28 WHERE id = 1784;
+UPDATE items SET target_flikes = 31 WHERE id = 1763;
+UPDATE items SET target_flikes = 50 WHERE id = 1764;
+UPDATE items SET target_flikes = 20 WHERE id = 1765;
+UPDATE items SET target_flikes = 43 WHERE id = 1766;
+UPDATE items SET target_flikes = 44 WHERE id = 1767;
+UPDATE items SET target_flikes = 34 WHERE id = 1768;
+UPDATE items SET target_flikes = 15 WHERE id = 1769;
+UPDATE items SET target_flikes = 47 WHERE id = 1770;
+UPDATE items SET target_flikes = 42 WHERE id = 1771;
+UPDATE items SET target_flikes = 24 WHERE id = 1772;
+UPDATE items SET target_flikes = 22 WHERE id = 1773;
+UPDATE items SET target_flikes = 36 WHERE id = 1;
+UPDATE items SET target_flikes = 28 WHERE id = 2;
+UPDATE items SET target_flikes = 33 WHERE id = 3;
+UPDATE items SET target_flikes = 26 WHERE id = 4;
+UPDATE items SET target_flikes = 29 WHERE id = 5;
+UPDATE items SET target_flikes = 39 WHERE id = 6;
+UPDATE items SET target_flikes = 43 WHERE id = 7;
+UPDATE items SET target_flikes = 37 WHERE id = 8;
+UPDATE items SET target_flikes = 47 WHERE id = 9;
+UPDATE items SET target_flikes = 39 WHERE id = 11;
+UPDATE items SET target_flikes = 30 WHERE id = 10;
+UPDATE items SET target_flikes = 34 WHERE id = 12;
+UPDATE items SET target_flikes = 24 WHERE id = 14;
+UPDATE items SET target_flikes = 34 WHERE id = 13;
+UPDATE items SET target_flikes = 17 WHERE id = 15;
+UPDATE items SET target_flikes = 31 WHERE id = 16;
+UPDATE items SET target_flikes = 31 WHERE id = 17;
+UPDATE items SET target_flikes = 47 WHERE id = 18;
+UPDATE items SET target_flikes = 38 WHERE id = 1793;
+UPDATE items SET target_flikes = 36 WHERE id = 19;
+UPDATE items SET target_flikes = 21 WHERE id = 20;
+UPDATE items SET target_flikes = 43 WHERE id = 21;
+UPDATE items SET target_flikes = 31 WHERE id = 22;
+UPDATE items SET target_flikes = 17 WHERE id = 23;
+UPDATE items SET target_flikes = 50 WHERE id = 24;
+UPDATE items SET target_flikes = 37 WHERE id = 26;
+UPDATE items SET target_flikes = 34 WHERE id = 27;
+UPDATE items SET target_flikes = 45 WHERE id = 28;
+UPDATE items SET target_flikes = 14 WHERE id = 29;
+UPDATE items SET target_flikes = 18 WHERE id = 30;
+UPDATE items SET target_flikes = 40 WHERE id = 31;
+UPDATE items SET target_flikes = 33 WHERE id = 32;
+UPDATE items SET target_flikes = 26 WHERE id = 25;
+UPDATE items SET target_flikes = 21 WHERE id = 33;
+UPDATE items SET target_flikes = 24 WHERE id = 34;
+UPDATE items SET target_flikes = 47 WHERE id = 35;
+UPDATE items SET target_flikes = 36 WHERE id = 36;
+UPDATE items SET target_flikes = 47 WHERE id = 37;
+UPDATE items SET target_flikes = 31 WHERE id = 38;
+UPDATE items SET target_flikes = 34 WHERE id = 39;
+UPDATE items SET target_flikes = 29 WHERE id = 40;
+UPDATE items SET target_flikes = 24 WHERE id = 41;
+UPDATE items SET target_flikes = 17 WHERE id = 42;
+UPDATE items SET target_flikes = 40 WHERE id = 43;
+UPDATE items SET target_flikes = 38 WHERE id = 44;
+UPDATE items SET target_flikes = 17 WHERE id = 45;
+UPDATE items SET target_flikes = 85 WHERE id = 46;
+UPDATE items SET target_flikes = 19 WHERE id = 50;
+UPDATE items SET target_flikes = 21 WHERE id = 51;
+UPDATE items SET target_flikes = 24 WHERE id = 52;
+UPDATE items SET target_flikes = 33 WHERE id = 53;
+UPDATE items SET target_flikes = 40 WHERE id = 47;
+UPDATE items SET target_flikes = 45 WHERE id = 54;
+UPDATE items SET target_flikes = 41 WHERE id = 55;
+UPDATE items SET target_flikes = 48 WHERE id = 48;
+UPDATE items SET target_flikes = 49 WHERE id = 49;
+UPDATE items SET target_flikes = 30 WHERE id = 56;
+UPDATE items SET target_flikes = 38 WHERE id = 57;
+UPDATE items SET target_flikes = 50 WHERE id = 58;
+UPDATE items SET target_flikes = 49 WHERE id = 59;
+UPDATE items SET target_flikes = 22 WHERE id = 60;
+UPDATE items SET target_flikes = 45 WHERE id = 61;
+UPDATE items SET target_flikes = 24 WHERE id = 62;

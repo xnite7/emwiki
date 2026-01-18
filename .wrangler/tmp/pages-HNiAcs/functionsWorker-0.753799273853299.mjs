@@ -9,14 +9,14 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// ../.wrangler/tmp/bundle-uUtMoO/strip-cf-connecting-ip-header.js
+// ../.wrangler/tmp/bundle-MHNEp7/strip-cf-connecting-ip-header.js
 function stripCfConnectingIPHeader(input, init) {
   const request = new Request(input, init);
   request.headers.delete("CF-Connecting-IP");
   return request;
 }
 var init_strip_cf_connecting_ip_header = __esm({
-  "../.wrangler/tmp/bundle-uUtMoO/strip-cf-connecting-ip-header.js"() {
+  "../.wrangler/tmp/bundle-MHNEp7/strip-cf-connecting-ip-header.js"() {
     __name(stripCfConnectingIPHeader, "stripCfConnectingIPHeader");
     globalThis.fetch = new Proxy(globalThis.fetch, {
       apply(target, thisArg, argArray) {
@@ -5023,12 +5023,21 @@ async function listItems(request, env, corsHeaders) {
   const { results } = await env.DBA.prepare(`
         SELECT id, name, category, img, svg, price, "from", price_code_rarity,
                tradable, "new", weekly, weeklystar, retired, premium, removed, demand, 
-               credits, lore, alias, quantity, color, demand_updated_at, updated_at, price_history
+               credits, lore, alias, quantity, color, demand_updated_at, updated_at, price_history,
+               target_flikes, created_at
         FROM items
         ${whereClause}
         ORDER BY category, name
         LIMIT ? OFFSET ?
     `).bind(...params, limit, offset).all();
+  const calculateDisplayedFlikes2 = /* @__PURE__ */ __name((targetFlikes, createdAt) => {
+    if (!targetFlikes || targetFlikes <= 0) return 0;
+    const now = Date.now();
+    const createdAtMs = createdAt * 1e3;
+    const ageDays = (now - createdAtMs) / (1e3 * 60 * 60 * 24);
+    const progress = Math.min(ageDays / 30, 1);
+    return Math.floor(targetFlikes * progress);
+  }, "calculateDisplayedFlikes");
   const items = (results || []).map((item) => ({
     ...item,
     img: normalizeImageUrl(item.img),
@@ -5042,7 +5051,9 @@ async function listItems(request, env, corsHeaders) {
     removed: item.removed === 1,
     "price/code/rarity": item.price_code_rarity,
     priceHistory: item.price_history ? JSON.parse(item.price_history) : null,
-    color: item.color ? JSON.parse(item.color) : null
+    color: item.color ? JSON.parse(item.color) : null,
+    // Include calculated flikes for sorting (gradual ramp based on item age)
+    flikes: calculateDisplayedFlikes2(item.target_flikes, item.created_at)
   }));
   return new Response(JSON.stringify({
     items,
@@ -7788,11 +7799,11 @@ var init_functionsRoutes_0_9869384314896521 = __esm({
   }
 });
 
-// ../.wrangler/tmp/bundle-uUtMoO/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-MHNEp7/middleware-loader.entry.ts
 init_functionsRoutes_0_9869384314896521();
 init_strip_cf_connecting_ip_header();
 
-// ../.wrangler/tmp/bundle-uUtMoO/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-MHNEp7/middleware-insertion-facade.js
 init_functionsRoutes_0_9869384314896521();
 init_strip_cf_connecting_ip_header();
 
@@ -8293,7 +8304,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// ../.wrangler/tmp/bundle-uUtMoO/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-MHNEp7/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -8327,7 +8338,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// ../.wrangler/tmp/bundle-uUtMoO/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-MHNEp7/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

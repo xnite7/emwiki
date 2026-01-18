@@ -2552,18 +2552,21 @@ class ItemModal {
 
         this.elements.favoriteBtn.classList.toggle('active', isFavorite);
         this.elements.favoriteBtn.title = isFavorite ? 'Remove from Favorites' : 'Add to Favorites';
-
         // Update wishlist button
         this.elements.wishlistBtn.classList.toggle('active', isWishlisted);
         this.elements.wishlistBtn.title = isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist';
 
+    
         // Fetch and update favorite count
         await this.updateFavoriteCount();
+
+        this.elements.favoriteCount.textContent = isFavorite ? parseInt(this.elements.favoriteCount.textContent) + 1 : this.elements.favoriteCount.textContent;
+
+        this.elements.favoriteCount.textContent = isWishlisted ? parseInt(this.elements.favoriteCount.textContent) + 1 : this.elements.favoriteCount.textContent;
     }
 
-    async updateFavoriteCount() {
+    async updateFavoriteCount(zeed = true) {
         if (!this.currentItem || !this.elements.favoriteCount) return;
-        this.elements.favoriteCount.textContent = '0';
         try {
             const response = await fetch(`https://emwiki.com/api/auth/user/preferences/stats?item=${encodeURIComponent(this.currentItem.name)}`);
             if (response.ok) {
