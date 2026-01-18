@@ -580,18 +580,38 @@
 					const donatorsList = document.getElementById('donators-list');
 					donatorsList.innerHTML = '';
 
-					const topDonators = data.sort((a, b) => b.amount - a.amount).slice(0, 4);
+					// Sort by amount and get all donators
+					const allDonators = data.sort((a, b) => b.amount - a.amount);
 
-					topDonators.forEach(donator => {
+					// Create the scrolling track
+					const track = document.createElement('div');
+					track.className = 'donators-track';
+
+					// Create donator items
+					const createDonatorItem = (donator) => {
 						const div = document.createElement('div');
 						div.className = 'donator-item';
 						div.innerHTML = `
-                    <img class="donator-avatar" src="${donator.avatar || 'https://emwiki.com/imgs/plr.jpg'}" alt="${donator.displayName}">
-                    <div class="donator-name">${donator.displayName}</div>
-                    <div class="donator-amount">${Utils.formatPrice(donator.totalSpent)}</div>
-                `;
-						donatorsList.appendChild(div);
-					});
+							<img class="donator-avatar" src="${donator.avatar || 'https://emwiki.com/imgs/plr.jpg'}" alt="${donator.displayName}">
+							<div class="donator-name">${donator.displayName}</div>
+							<div class="donator-amount">${Utils.formatPrice(donator.totalSpent)}</div>
+						`;
+						div.addEventListener('click', () => {
+							window.open(`https://www.roblox.com/users/${donator.userId}/profile`, '_blank');
+						});
+						return div;
+					};
+
+					// Add all donators twice for seamless infinite scroll
+					allDonators.forEach(donator => track.appendChild(createDonatorItem(donator)));
+					allDonators.forEach(donator => track.appendChild(createDonatorItem(donator)));
+
+					donatorsList.appendChild(track);
+
+					// Adjust animation speed based on number of donators
+					const itemCount = allDonators.length;
+					const duration = Math.max(15, itemCount * 2.5); // Min 15s, scales with count
+					track.style.animationDuration = `${duration}s`;
 				} catch (error) {
 					console.error('Failed to load donators:', error);
 				}
