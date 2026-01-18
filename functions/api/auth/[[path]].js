@@ -762,6 +762,22 @@ async function handleMigratePreferences(request, env) {
 }
 
 // Get aggregated favorite/wishlist counts for items
+// Helper: Calculate displayed flikes based on target and item age
+// Gradually ramps up from 0 to target_flikes over 30 days
+function calculateDisplayedFlikes(targetFlikes, createdAt) {
+    if (!targetFlikes || targetFlikes <= 0) return 0;
+    
+    const now = Date.now();
+    const createdAtMs = createdAt * 1000; // created_at is in seconds
+    const ageMs = now - createdAtMs;
+    const ageDays = ageMs / (1000 * 60 * 60 * 24);
+    
+    // Progress from 0 to 1 over 30 days
+    const progress = Math.min(ageDays / 30, 1);
+    
+    return Math.floor(targetFlikes * progress);
+}
+
 async function handleGetPreferenceStats(request, env) {
     const url = new URL(request.url);
     
@@ -777,20 +793,19 @@ async function handleGetPreferenceStats(request, env) {
                 });
             }
             
-            // Use normalized table for efficient counting
+            // Get target_flikes and created_at from items table for gradual display
             const placeholders = itemNames.map(() => '?').join(',');
             const { results } = await env.DBA.prepare(`
-                SELECT item_name, COUNT(*) as count
-                FROM user_item_preferences
-                WHERE item_name IN (${placeholders})
-                GROUP BY item_name
+                SELECT name, target_flikes, created_at
+                FROM items
+                WHERE name IN (${placeholders})
             `).bind(...itemNames).all();
             
-            // Build result map, defaulting missing items to 0
+            // Build result map with gradual flikes calculation
             const itemCounts = {};
             itemNames.forEach(name => { itemCounts[name] = 0; });
             (results || []).forEach(row => {
-                itemCounts[row.item_name] = row.count;
+                itemCounts[row.name] = calculateDisplayedFlikes(row.target_flikes, row.created_at);
             });
             
             return new Response(JSON.stringify({ itemCounts }), {
@@ -812,27 +827,20 @@ async function handleGetPreferenceStats(request, env) {
     
     if (itemName) {
         try {
-            // Efficient single query using the normalized table with index
-            const [favResult, wishResult] = await Promise.all([
-                env.DBA.prepare(`
-                    SELECT COUNT(*) as count
-                    FROM user_item_preferences
-                    WHERE item_name = ? AND preference_type = 'favorite'
-                `).bind(itemName).first(),
-                env.DBA.prepare(`
-                    SELECT COUNT(*) as count
-                    FROM user_item_preferences
-                    WHERE item_name = ? AND preference_type = 'wishlist'
-                `).bind(itemName).first()
-            ]);
+            // Get item's target_flikes and created_at for gradual display calculation
+            const item = await env.DBA.prepare(`
+                SELECT target_flikes, created_at
+                FROM items
+                WHERE name = ?
+            `).bind(itemName).first();
             
-            const favoritesCount = favResult?.count || 0;
-            const wishlistCount = wishResult?.count || 0;
+            // Calculate displayed value based on item age (gradual ramp over 30 days)
+            const displayedCount = item ? calculateDisplayedFlikes(item.target_flikes, item.created_at) : 0;
             
             return new Response(JSON.stringify({
-                favorites_count: favoritesCount,
-                wishlist_count: wishlistCount,
-                total_count: favoritesCount + wishlistCount
+                favorites_count: displayedCount,
+                wishlist_count: 0,
+                total_count: displayedCount
             }), {
                 headers: { 
                     'Content-Type': 'application/json',
