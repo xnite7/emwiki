@@ -7591,6 +7591,7 @@
                 setTimeout(() => {
                     DOM.query(".login-card").style.backdropFilter = "url(#frosted)";
                     DOM.query(".login-card").style.webkitBackdropFilter = "url(#frosted)";
+                    App.init();
                 }, 1000);
 
                 const typeInterval = setInterval(() => {
@@ -7604,10 +7605,7 @@
                         clearInterval(typeInterval);
                         setTimeout(() => DOM.query(".login-card").classList.add("bobble"), 2400);
                     }
-                }, 40).finally(() => {
-                    App.init();
-                    console.log('onSuccess3');
-                });
+                }, 40);
             },
         };
 
