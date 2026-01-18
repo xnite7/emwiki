@@ -1,0 +1,16 @@
+name = "avatar-refresh-scheduler"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# Cron triggers - runs every hour at minute 30
+# This staggers updates throughout the day
+# Each run processes ~20 users, so 24 runs = ~480 users/day
+[triggers]
+crons = ["30 * * * *"]
+
+# D1 database binding - same as the main site
+[[d1_databases]]
+binding = "DBA"
+database_name = "emwiki-db"
+database_id = "YOUR_D1_DATABASE_ID"  # Replace with your actual D1 database ID
+

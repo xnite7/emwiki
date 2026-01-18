@@ -105,10 +105,10 @@ async function handleVerifyCode(request, env) {
     ).bind(userId).first();
 
     let avatarUrl = null;
-    const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+    const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
 
-    if (existingUser?.avatar_url && existingUser.avatar_cached_at > sevenDaysAgo) {
-        // Use cached avatar
+    if (existingUser?.avatar_url && existingUser.avatar_cached_at > oneDayAgo) {
+        // Use cached avatar (24h cache, background cron refreshes daily)
         avatarUrl = existingUser.avatar_url;
     } else {
         // Fetch fresh avatar from Roblox
