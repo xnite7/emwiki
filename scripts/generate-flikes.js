@@ -7,14 +7,22 @@
  * 3. Calculates target_flikes = real + random boost
  *    - Under 10 real: boost 10-50
  *    - 10+ real: boost 50-80
- * 4. Outputs SQL UPDATE statements to stdout
+ * 4. Outputs multiple SQL files (to avoid D1 size limits)
  * 
  * Usage:
- *   node scripts/generate-flikes.js > flikes-update.sql
- *   wrangler d1 execute DBA --file=flikes-update.sql
+ *   cd emwiki
+ *   node scripts/generate-flikes.js
+ *   # Then run each generated file:
+ *   wrangler d1 execute DBA --file=flikes-update-1.sql
+ *   wrangler d1 execute DBA --file=flikes-update-2.sql
+ *   # etc.
  */
 
+const fs = require('fs');
+const path = require('path');
+
 const API_BASE = 'https://emwiki.com/api';
+const ITEMS_PER_FILE = 200; // Split into files of 200 items each
 
 // Random integer between min and max (inclusive)
 function randomInt(min, max) {
@@ -72,7 +80,7 @@ async function getAllItems() {
     let offset = 0;
     const limit = 100;
     
-    console.error('Fetching items from API...');
+    console.log('Fetching items from API...');
     
     while (true) {
         const url = `${API_BASE}/items?limit=${limit}&offset=${offset}`;
@@ -83,7 +91,7 @@ async function getAllItems() {
         }
         
         items.push(...data.items);
-        console.error(`  Fetched ${items.length} items...`);
+        console.log(`  Fetched ${items.length} items...`);
         
         if (data.items.length < limit) {
             break;
@@ -96,21 +104,14 @@ async function getAllItems() {
 }
 
 async function main() {
-    console.error('=== Generate target_flikes Script ===\n');
+    console.log('=== Generate target_flikes Script ===\n');
     
     // Fetch all items
     const items = await getAllItems();
-    console.error(`\nTotal items: ${items.length}\n`);
+    console.log(`\nTotal items: ${items.length}\n`);
     
-    // Output SQL header
-    console.log('-- Generated target_flikes values');
-    console.log(`-- Generated at: ${new Date().toISOString()}`);
-    console.log(`-- Total items: ${items.length}`);
-    console.log('');
-    console.log('BEGIN TRANSACTION;');
-    console.log('');
-    
-    // Process each item
+    // Process each item and collect SQL statements
+    const sqlStatements = [];
     let processed = 0;
     const batchSize = 10; // Process in batches to avoid rate limiting
     
@@ -128,14 +129,15 @@ async function main() {
             const boost = calculateBoost(realCount);
             const targetFlikes = realCount + boost;
             
-            console.log(`-- "${item.name}": real=${realCount}, boost=${boost}, target=${targetFlikes}`);
-            console.log(`UPDATE items SET target_flikes = ${targetFlikes} WHERE name = '${escapeSql(item.name)}';`);
-            console.log('');
+            sqlStatements.push({
+                comment: `-- "${item.name}": real=${realCount}, boost=${boost}, target=${targetFlikes}`,
+                sql: `UPDATE items SET target_flikes = ${targetFlikes} WHERE name = '${escapeSql(item.name)}';`
+            });
             
             processed++;
         }
         
-        console.error(`  Processed ${processed}/${items.length} items...`);
+        console.log(`  Processed ${processed}/${items.length} items...`);
         
         // Small delay between batches to be nice to the API
         if (i + batchSize < items.length) {
@@ -143,16 +145,43 @@ async function main() {
         }
     }
     
-    console.log('COMMIT;');
-    console.log('');
-    console.log(`-- Done! Updated ${processed} items.`);
+    // Split into multiple files
+    const totalFiles = Math.ceil(sqlStatements.length / ITEMS_PER_FILE);
+    console.log(`\nWriting ${totalFiles} SQL files (${ITEMS_PER_FILE} items each)...\n`);
     
-    console.error(`\nDone! Generated SQL for ${processed} items.`);
-    console.error('Pipe output to a file: node scripts/generate-flikes.js > flikes-update.sql');
+    const outputFiles = [];
+    
+    for (let fileNum = 0; fileNum < totalFiles; fileNum++) {
+        const start = fileNum * ITEMS_PER_FILE;
+        const end = Math.min(start + ITEMS_PER_FILE, sqlStatements.length);
+        const chunk = sqlStatements.slice(start, end);
+        
+        const fileName = `flikes-update-${fileNum + 1}.sql`;
+        const filePath = path.join(process.cwd(), fileName);
+        
+        let content = `-- Generated target_flikes values (Part ${fileNum + 1}/${totalFiles})\n`;
+        content += `-- Generated at: ${new Date().toISOString()}\n`;
+        content += `-- Items ${start + 1} to ${end} of ${sqlStatements.length}\n\n`;
+        
+        for (const stmt of chunk) {
+            content += `${stmt.comment}\n${stmt.sql}\n\n`;
+        }
+        
+        fs.writeFileSync(filePath, content);
+        outputFiles.push(fileName);
+        console.log(`  Created ${fileName} (${chunk.length} items)`);
+    }
+    
+    console.log(`\n✅ Done! Generated ${totalFiles} SQL files.\n`);
+    console.log('To apply to production, run each file:');
+    console.log('');
+    for (const file of outputFiles) {
+        console.log(`  wrangler d1 execute DBA --file=${file}`);
+    }
+    console.log('');
 }
 
 main().catch(error => {
     console.error('Fatal error:', error);
     process.exit(1);
 });
-
