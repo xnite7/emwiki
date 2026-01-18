@@ -53,10 +53,11 @@ async function fetchWithRetry(url, retries = 3) {
     }
 }
 
-// Fetch preference stats for an item
+// Fetch REAL preference stats for an item (bypasses flikes, gets actual user counts)
 async function getPreferenceStats(itemName) {
     try {
-        const url = `${API_BASE}/auth/user/preferences/stats?item=${encodeURIComponent(itemName)}`;
+        // Use ?real=true to get actual counts from user_item_preferences table
+        const url = `${API_BASE}/auth/user/preferences/stats?item=${encodeURIComponent(itemName)}&real=true`;
         const data = await fetchWithRetry(url);
         return (data.favorites_count || 0) + (data.wishlist_count || 0);
     } catch (error) {

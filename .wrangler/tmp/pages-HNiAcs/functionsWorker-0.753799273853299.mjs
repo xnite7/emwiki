@@ -9,14 +9,14 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// ../.wrangler/tmp/bundle-O94IH9/strip-cf-connecting-ip-header.js
+// ../.wrangler/tmp/bundle-eNajoR/strip-cf-connecting-ip-header.js
 function stripCfConnectingIPHeader(input, init) {
   const request = new Request(input, init);
   request.headers.delete("CF-Connecting-IP");
   return request;
 }
 var init_strip_cf_connecting_ip_header = __esm({
-  "../.wrangler/tmp/bundle-O94IH9/strip-cf-connecting-ip-header.js"() {
+  "../.wrangler/tmp/bundle-eNajoR/strip-cf-connecting-ip-header.js"() {
     __name(stripCfConnectingIPHeader, "stripCfConnectingIPHeader");
     globalThis.fetch = new Proxy(globalThis.fetch, {
       apply(target, thisArg, argArray) {
@@ -3953,6 +3953,7 @@ function calculateDisplayedFlikes(targetFlikes, createdAt) {
 }
 async function handleGetPreferenceStats(request, env) {
   const url = new URL(request.url);
+  const wantReal = url.searchParams.get("real") === "true";
   if (request.method === "POST") {
     try {
       const body = await request.json();
@@ -3963,6 +3964,24 @@ async function handleGetPreferenceStats(request, env) {
         });
       }
       const placeholders = itemNames.map(() => "?").join(",");
+      if (wantReal) {
+        const { results: results2 } = await env.DBA.prepare(`
+                    SELECT item_name, COUNT(*) as count
+                    FROM user_item_preferences
+                    WHERE item_name IN (${placeholders})
+                    GROUP BY item_name
+                `).bind(...itemNames).all();
+        const itemCounts2 = {};
+        itemNames.forEach((name) => {
+          itemCounts2[name] = 0;
+        });
+        (results2 || []).forEach((row) => {
+          itemCounts2[row.item_name] = row.count;
+        });
+        return new Response(JSON.stringify({ itemCounts: itemCounts2 }), {
+          headers: { "Content-Type": "application/json" }
+        });
+      }
       const { results } = await env.DBA.prepare(`
                 SELECT name, target_flikes, created_at
                 FROM items
@@ -3991,6 +4010,29 @@ async function handleGetPreferenceStats(request, env) {
   const itemName = url.searchParams.get("item");
   if (itemName) {
     try {
+      if (wantReal) {
+        const [favResult, wishResult] = await Promise.all([
+          env.DBA.prepare(`
+                        SELECT COUNT(*) as count
+                        FROM user_item_preferences
+                        WHERE item_name = ? AND preference_type = 'favorite'
+                    `).bind(itemName).first(),
+          env.DBA.prepare(`
+                        SELECT COUNT(*) as count
+                        FROM user_item_preferences
+                        WHERE item_name = ? AND preference_type = 'wishlist'
+                    `).bind(itemName).first()
+        ]);
+        const favoritesCount = favResult?.count || 0;
+        const wishlistCount = wishResult?.count || 0;
+        return new Response(JSON.stringify({
+          favorites_count: favoritesCount,
+          wishlist_count: wishlistCount,
+          total_count: favoritesCount + wishlistCount
+        }), {
+          headers: { "Content-Type": "application/json" }
+        });
+      }
       const item = await env.DBA.prepare(`
                 SELECT target_flikes, created_at
                 FROM items
@@ -7746,11 +7788,11 @@ var init_functionsRoutes_0_9869384314896521 = __esm({
   }
 });
 
-// ../.wrangler/tmp/bundle-O94IH9/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-eNajoR/middleware-loader.entry.ts
 init_functionsRoutes_0_9869384314896521();
 init_strip_cf_connecting_ip_header();
 
-// ../.wrangler/tmp/bundle-O94IH9/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-eNajoR/middleware-insertion-facade.js
 init_functionsRoutes_0_9869384314896521();
 init_strip_cf_connecting_ip_header();
 
@@ -8251,7 +8293,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// ../.wrangler/tmp/bundle-O94IH9/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-eNajoR/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -8285,7 +8327,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// ../.wrangler/tmp/bundle-O94IH9/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-eNajoR/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

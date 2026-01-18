@@ -781,6 +781,9 @@ function calculateDisplayedFlikes(targetFlikes, createdAt) {
 async function handleGetPreferenceStats(request, env) {
     const url = new URL(request.url);
     
+    // Check if requesting real counts (for admin/scripts to calculate flikes)
+    const wantReal = url.searchParams.get('real') === 'true';
+    
     // Support bulk requests via POST with JSON body
     if (request.method === 'POST') {
         try {
@@ -793,8 +796,29 @@ async function handleGetPreferenceStats(request, env) {
                 });
             }
             
-            // Get target_flikes and created_at from items table for gradual display
             const placeholders = itemNames.map(() => '?').join(',');
+            
+            if (wantReal) {
+                // Return REAL counts from user_item_preferences table
+                const { results } = await env.DBA.prepare(`
+                    SELECT item_name, COUNT(*) as count
+                    FROM user_item_preferences
+                    WHERE item_name IN (${placeholders})
+                    GROUP BY item_name
+                `).bind(...itemNames).all();
+                
+                const itemCounts = {};
+                itemNames.forEach(name => { itemCounts[name] = 0; });
+                (results || []).forEach(row => {
+                    itemCounts[row.item_name] = row.count;
+                });
+                
+                return new Response(JSON.stringify({ itemCounts }), {
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+            
+            // Get target_flikes and created_at from items table for gradual display
             const { results } = await env.DBA.prepare(`
                 SELECT name, target_flikes, created_at
                 FROM items
@@ -827,6 +851,33 @@ async function handleGetPreferenceStats(request, env) {
     
     if (itemName) {
         try {
+            if (wantReal) {
+                // Return REAL counts from user_item_preferences table
+                const [favResult, wishResult] = await Promise.all([
+                    env.DBA.prepare(`
+                        SELECT COUNT(*) as count
+                        FROM user_item_preferences
+                        WHERE item_name = ? AND preference_type = 'favorite'
+                    `).bind(itemName).first(),
+                    env.DBA.prepare(`
+                        SELECT COUNT(*) as count
+                        FROM user_item_preferences
+                        WHERE item_name = ? AND preference_type = 'wishlist'
+                    `).bind(itemName).first()
+                ]);
+                
+                const favoritesCount = favResult?.count || 0;
+                const wishlistCount = wishResult?.count || 0;
+                
+                return new Response(JSON.stringify({
+                    favorites_count: favoritesCount,
+                    wishlist_count: wishlistCount,
+                    total_count: favoritesCount + wishlistCount
+                }), {
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+            
             // Get item's target_flikes and created_at for gradual display calculation
             const item = await env.DBA.prepare(`
                 SELECT target_flikes, created_at
