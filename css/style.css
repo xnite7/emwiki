@@ -1082,7 +1082,6 @@ div#random-items-grid {
     border: 2px solid var(--border-color);
     border-radius: 15px;
     flex: 1 1 322px;
-    max-width: 322px;
     padding: 25px;
     position: relative;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.0), inset -2px -2px 6px light-dark(transparent, #00000066);
@@ -1122,7 +1121,8 @@ div#random-items-grid {
 
 .donators-list {
     display: flex;
-    margin: 0px 0px 18px 0;
+    max-width: 322px;
+        margin: 0px auto;
     padding-top: 18px;
     overflow: hidden;
     mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
