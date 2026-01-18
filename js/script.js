@@ -2109,16 +2109,39 @@ class ItemModal {
         });
     }
 
-    handleURLParams(reset = false) {
+    async handleURLParams(reset = false) {
         const url = new URL(window.location);
         const itemParam = url.searchParams.get('item');
 
         // Handle item modal
         if (itemParam) {
             const itemName = itemParam.replace(/-/g, ' ');
-            const item = this.catalog.allItems.find(i =>
+            
+            // First try local cache
+            let item = this.catalog.allItems.find(i =>
                 i.name.toLowerCase() === itemName.toLowerCase()
             );
+            
+            // If not found locally, fetch from API
+            if (!item) {
+                try {
+                    const searchUrl = new URL('https://emwiki.com/api/items/search');
+                    searchUrl.searchParams.set('q', itemName);
+                    searchUrl.searchParams.set('limit', '10');
+                    
+                    const res = await fetch(searchUrl.toString());
+                    if (res.ok) {
+                        const data = await res.json();
+                        // Find exact match from results
+                        item = data.items?.find(i =>
+                            i.name.toLowerCase() === itemName.toLowerCase()
+                        );
+                    }
+                } catch (err) {
+                    console.error('Failed to fetch item:', err);
+                }
+            }
+            
             if (item && !this.isOpen) {
                 this.open(item);
             }
