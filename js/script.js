@@ -313,15 +313,15 @@ const Utils = {
 
     /**
      * Check if a quantity value is a valid Roblox badge ID
-     * Badge IDs are 10-digit numbers
+     * Badge IDs are 9+ digit numbers
      * @param {string} quantity - The quantity value to check
      * @returns {boolean} - True if it's a valid badge ID format
      */
     isBadgeId(quantity) {
         if (!quantity || typeof quantity !== 'string') return false;
         const trimmed = quantity.trim();
-        // Badge IDs are exactly 10 digits
-        return /^\d{10}$/.test(trimmed);
+        // Badge IDs are exactly 9+ digits
+        return /^\d{9,}$/.test(trimmed);
     },
 
     /**
@@ -331,7 +331,7 @@ const Utils = {
      * @returns {Object|null} - Badge data or null if fetch failed
      */
     async getBadgeData(badgeId) {
-        if (!badgeId || !/^\d{10}$/.test(badgeId.trim())) {
+        if (!badgeId || !/^\d{9,}$/.test(badgeId.trim())) {
             return null;
         }
 
@@ -2303,11 +2303,11 @@ class ItemModal {
         }
 
         // Quantity (displayed on front, left bottom corner, tilted)
-        // Can be static (string) or dynamic (10-digit badge ID for live count from Roblox)
+        // Can be static (string) or dynamic (9+ digits badge ID for live count from Roblox)
         if (item.quantity && item.quantity.trim() !== '' && this.elements.quantity) {
             const quantityValue = item.quantity.trim();
             
-            // Check if quantity is a badge ID (10 digits) for dynamic count
+            // Check if quantity is a badge ID (9+ digits) for dynamic count
             if (Utils.isBadgeId(quantityValue)) {
                 // Show loading state
                 this.elements.quantity.textContent = 'x...';

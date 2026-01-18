@@ -4216,7 +4216,7 @@
                     
                     // Extract badge ID from Roblox badge URL if pasted
                     // URL format: https://www.roblox.com/badges/{badgeId}/{badgeName}
-                    const badgeUrlMatch = newValue.match(/roblox\.com\/badges\/(\d{10})/i);
+                    const badgeUrlMatch = newValue.match(/roblox\.com\/badges\/(\d{9,})/i);
                     if (badgeUrlMatch) {
                         newValue = badgeUrlMatch[1];
                         quantityInput.value = newValue; // Update input to show extracted ID
@@ -4226,7 +4226,7 @@
                     
                     if (newValue) {
                         quantityContainer.style.display = 'block';
-                        const isBadgeId = /^\d{10}$/.test(newValue);
+                        const isBadgeId = /^\d{9,}$/.test(newValue);
                         
                         // Add green glow if it's a valid badge ID (10 digits)
                         if (isBadgeId) {

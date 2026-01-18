@@ -1058,8 +1058,8 @@ export async function onRequestGet(context) {
   // Handle badge data proxy (for CORS)
   if (mode === "badge") {
     const badgeId = url.searchParams.get("badgeId");
-    if (!badgeId || !/^\d{10}$/.test(badgeId)) {
-      return new Response(JSON.stringify({ error: 'Valid 10-digit badge ID required' }), {
+    if (!badgeId || !/^\d{9,}$/.test(badgeId)) {
+      return new Response(JSON.stringify({ error: 'Valid 9+ digit badge ID required' }), {
         status: 400,
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
       });
