@@ -7567,8 +7567,10 @@
             },
 
             async onSuccess() {
+                console.log('onSuccess1');
                 this.showWelcome();
-                await App.init();
+                console.log('onSuccess2');
+                
             },
 
             showWelcome() {
@@ -7602,7 +7604,10 @@
                         clearInterval(typeInterval);
                         setTimeout(() => DOM.query(".login-card").classList.add("bobble"), 2400);
                     }
-                }, 40);
+                }, 40).finally(() => {
+                    App.init();
+                    console.log('onSuccess3');
+                });
             },
         };
 
