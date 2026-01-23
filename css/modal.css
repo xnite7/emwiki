@@ -589,6 +589,11 @@ body:has(.item-modal.active) {
     color: white;
 }
 
+.badge-typicalgroup {
+    background: linear-gradient(90deg, #21aeff, #4093ff 70%);
+    color: white;
+}
+
 .badge-removed {
     background: linear-gradient(90deg, #000000, #000000 70%);
     color: white;

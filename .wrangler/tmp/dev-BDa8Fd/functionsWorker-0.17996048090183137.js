@@ -4947,7 +4947,7 @@ async function batchGetItems(request, env, corsHeaders) {
   const sql = `
         SELECT id, name, category, img, svg, price, "from", price_code_rarity,
                tradable, "new", weekly, weeklystar, retired, premium, removed, demand,
-               credits, lore, alias, quantity, color, demand_updated_at, updated_at
+               credits, lore, alias, quantity, color, demand_updated_at, updated_at, typicalgroup
         FROM items
         WHERE name IN (${placeholders})
         ORDER BY name
