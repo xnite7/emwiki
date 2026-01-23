@@ -4613,7 +4613,7 @@
 
                 const descriptions = (item.from || '').split('<br>').map(x => x.trim()).filter(Boolean);
                 descriptions.forEach(desc => {
-                    const isGamenight = /\([A-Z][a-z]{2}\./.test(desc);
+                    const isGamenight = /Gamenight \([A-Z][a-z]{2}\./.test(desc);
                     this.createDescItem(desc, isGamenight);
                 });
 
