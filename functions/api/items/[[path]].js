@@ -159,7 +159,7 @@ async function getHomepageItems(env, corsHeaders) {
         // Get all featured items (new, weekly, or weeklystar)
         env.DBA.prepare(`
             SELECT id, name, category, img, svg, price, "from", price_code_rarity,
-                   tradable, "new", weekly, weeklystar, retired, premium, removed, demand,
+                   tradable, "new", weekly, weeklystar, retired, premium, removed, typicalgroup, demand,
                    credits, lore, alias, quantity, color, demand_updated_at, updated_at
             FROM items
             WHERE "new" = 1 OR weekly = 1 OR weeklystar = 1
@@ -177,7 +177,7 @@ async function getHomepageItems(env, corsHeaders) {
         // Get 1 random item
         env.DBA.prepare(`
             SELECT id, name, category, img, svg, price, "from", price_code_rarity,
-                   tradable, "new", weekly, weeklystar, retired, premium, removed, demand,
+                   tradable, "new", weekly, weeklystar, retired, premium, removed, typicalgroup, demand,
                    credits, lore, alias, quantity, color, demand_updated_at, updated_at
             FROM items
             ORDER BY RANDOM()
@@ -361,6 +361,7 @@ async function batchGetItems(request, env, corsHeaders) {
         retired: item.retired === 1,
         premium: item.premium === 1,
         removed: item.removed === 1,
+        typicalgroup: item.typicalgroup === 1,
         'price/code/rarity': item.price_code_rarity,
         color: item.color ? JSON.parse(item.color) : null
     }));
@@ -374,7 +375,7 @@ async function batchGetItems(request, env, corsHeaders) {
 async function getItem(category, name, env, corsHeaders) {
     const item = await env.DBA.prepare(`
         SELECT id, name, category, img, svg, price, "from", price_code_rarity,
-               tradable, "new", weekly, weeklystar, retired, premium, removed,
+               tradable, "new", weekly, weeklystar, retired, premium, removed, typicalgroup,
                price_history, demand, credits, lore, alias, quantity, color, demand_updated_at, created_at, updated_at
         FROM items
         WHERE category = ? AND name = ?
@@ -486,7 +487,7 @@ async function listItems(request, env, corsHeaders) {
     // Get items (include updated_at for optimistic locking, target_flikes for sorting)
     const { results } = await env.DBA.prepare(`
         SELECT id, name, category, img, svg, price, "from", price_code_rarity,
-               tradable, "new", weekly, weeklystar, retired, premium, removed, demand, 
+               tradable, "new", weekly, weeklystar, retired, premium, removed, typicalgroup, demand, 
                credits, lore, alias, quantity, color, demand_updated_at, updated_at, price_history,
                target_flikes, created_at
         FROM items
@@ -557,10 +558,10 @@ async function createItem(request, env, corsHeaders) {
     const result = await env.DBA.prepare(`
         INSERT INTO items (
             name, category, img, svg, price, "from", price_code_rarity,
-            tradable, "new", weekly, weeklystar, retired, premium, removed,
+            tradable, "new", weekly, weeklystar, retired, premium, removed, typicalgroup,
             price_history, demand, credits, lore, alias, quantity, color, demand_updated_at, created_at, updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
                 CASE WHEN ? > 0 THEN strftime('%s', 'now') ELSE NULL END,
                 strftime('%s', 'now'), strftime('%s', 'now'))
     `).bind(
@@ -573,6 +574,7 @@ async function createItem(request, env, corsHeaders) {
         retired === true ? 1 : 0,
         premium === true ? 1 : 0,
         removed === true ? 1 : 0,
+        typicalgroup === true ? 1 : 0,
         price_history ? JSON.stringify(price_history.slice(-15)) : null,
         demand || 0,
         credits || null,
@@ -599,7 +601,7 @@ async function updateItem(id, request, env, corsHeaders) {
     
     const {
         name, category, img, svg, price, from, price_code_rarity,
-        tradable, new: newItem, weekly, weeklystar, retired, premium, removed,
+        tradable, new: newItem, weekly, weeklystar, retired, premium, removed, typicalgroup,
         price_history, demand, credits, lore, alias, quantity, color, updated_at: clientUpdatedAt,
         force_update_demand_timestamp
     } = data;
@@ -622,7 +624,7 @@ async function updateItem(id, request, env, corsHeaders) {
             // Get current item data to show what changed
             const currentItemData = await env.DBA.prepare(`
                 SELECT id, name, category, img, svg, price, "from", price_code_rarity,
-                       tradable, "new", weekly, weeklystar, retired, premium, removed,
+                       tradable, "new", weekly, weeklystar, retired, premium, removed, typicalgroup,
                        price_history, demand, credits, lore, demand_updated_at, updated_at
                 FROM items WHERE id = ?
             `).bind(id).first();
@@ -639,6 +641,7 @@ async function updateItem(id, request, env, corsHeaders) {
                     retired: currentItemData.retired === 1,
                     premium: currentItemData.premium === 1,
                     removed: currentItemData.removed === 1,
+                    typicalgroup: currentItemData.typicalgroup === 1,
                     'price/code/rarity': currentItemData.price_code_rarity,
                     priceHistory: currentItemData.price_history ? JSON.parse(currentItemData.price_history) : null
                 },
@@ -724,6 +727,7 @@ async function updateItem(id, request, env, corsHeaders) {
             retired = COALESCE(?, retired),
             premium = COALESCE(?, premium),
             removed = COALESCE(?, removed),
+            typicalgroup = COALESCE(?, typicalgroup),
             price_history = CASE WHEN ? IS NOT NULL THEN ? ELSE price_history END,
             demand = COALESCE(?, demand),
             credits = ?,
@@ -743,6 +747,7 @@ async function updateItem(id, request, env, corsHeaders) {
         retired !== undefined ? (retired ? 1 : 0) : null,
         premium !== undefined ? (premium ? 1 : 0) : null,
         removed !== undefined ? (removed ? 1 : 0) : null,
+        typicalgroup !== undefined ? (typicalgroup ? 1 : 0) : null,
         mergedPriceHistory ? JSON.stringify(mergedPriceHistory) : null,
         mergedPriceHistory ? JSON.stringify(mergedPriceHistory) : null,
         demand,

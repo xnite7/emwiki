@@ -1246,6 +1246,15 @@ class BaseApp {
             element.appendChild(badge);
         }
 
+        if (item.typicalgroup) {
+            const badge = document.createElement('img');
+            badge.className = 'badge typicalgroup';
+            badge.src = 'https://emwiki.com/imgs/tggroup.png';
+            badge.title = 'Typical Games Roblox Group';
+            element.appendChild(badge);
+        }
+
+
         if (item.from?.toLowerCase().includes('unreleased') ||
             item.from?.toLowerCase().includes('@zarabelle') ||
             item.from?.toLowerCase().includes('@typicaltype')) {

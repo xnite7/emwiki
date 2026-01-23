@@ -1,0 +1,1 @@
+ALTER TABLE items ADD COLUMN typicalgroup INTEGER DEFAULT 0;

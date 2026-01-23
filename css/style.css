@@ -1953,6 +1953,23 @@ svg~.badge.retired {
     margin: 0px -1px;
 
     border-radius: 0 0 14px 14px;
+}
+
+.badge.typicalgroup {
+    font-variant: all-petite-caps;
+    background: linear-gradient(180deg, rgba(230,230,230,1) 0%, rgba(180,180,180,1) 100%);
+    color: #333;
+    font-weight: bold;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.7);
+    border: 1px solid rgba(0,0,0,0.2);
+    border-radius: 4px;
+    padding: 2px 5px;
+    bottom: 5px;
+    right: 5px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+
+
 
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
