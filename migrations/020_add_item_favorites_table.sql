@@ -22,3 +22,4 @@ CREATE INDEX IF NOT EXISTS idx_item_prefs_by_user ON user_item_preferences(user_
 -- After creating the table, run the migration endpoint:
 -- POST /api/auth/admin/migrate-item-preferences
 
+

@@ -48,3 +48,4 @@ CREATE INDEX IF NOT EXISTS idx_auth_codes_expires ON auth_codes(expires_at);
 -- Composite index for preference lookups
 CREATE INDEX IF NOT EXISTS idx_user_prefs_lookup ON user_preferences(user_id, preference_key);
 
+

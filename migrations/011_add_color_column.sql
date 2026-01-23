@@ -4,3 +4,4 @@ ALTER TABLE items ADD COLUMN color TEXT;
 
 
 
+
