@@ -515,6 +515,7 @@
                     new: 0,
                     untradable: 0,
                     premium: 0,
+                    typicalgroup: 0,
                     retired: 0,
                     removed: 0,
                     weekly: 0,
@@ -1869,6 +1870,7 @@
                     if (item.new) this.tagCounts.new++;
                     if (item.tradable === false) this.tagCounts.untradable++;
                     if (item.premium) this.tagCounts.premium++;
+                    if (item.typicalgroup) this.tagCounts.typicalgroup++;
                     if (item.retired) this.tagCounts.retired++;
                     if (item.removed) this.tagCounts.removed++;
                     if (this.favorites.includes(item.name)) this.tagCounts.favorites++;
@@ -1983,6 +1985,9 @@
                                 break;
                             case 'premium':
                                 if (!item.premium) return false;
+                                break;
+                            case 'typicalgroup':
+                                if (!item.typicalgroup) return false;
                                 break;
                             case 'gamenight':
                                 if (!item.from.toLowerCase().includes('gamenight') && !item.from.toLowerCase().includes('rodis')) return false;

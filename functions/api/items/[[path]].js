@@ -198,7 +198,8 @@ async function getHomepageItems(env, corsHeaders) {
         retired: item.retired === 1,
         premium: item.premium === 1,
         removed: item.removed === 1,
-        'price/code/rarity': item.price_code_rarity
+        'price/code/rarity': item.price_code_rarity,
+        typicalgroup: item.typicalgroup === 1
     });
 
     // Separate items into categories
@@ -253,7 +254,8 @@ async function getRandomItem(env, corsHeaders) {
         retired: item.retired === 1,
         premium: item.premium === 1,
         removed: item.removed === 1,
-        'price/code/rarity': item.price_code_rarity
+        'price/code/rarity': item.price_code_rarity,
+        typicalgroup: item.typicalgroup === 1
     };
 
     return new Response(JSON.stringify({ item: result }), {
@@ -307,7 +309,8 @@ async function searchItems(request, env, corsHeaders) {
         retired: item.retired === 1,
         premium: item.premium === 1,
         removed: item.removed === 1,
-        'price/code/rarity': item.price_code_rarity
+        'price/code/rarity': item.price_code_rarity,
+        typicalgroup: item.typicalgroup === 1
     }));
 
     return new Response(JSON.stringify({ items }), {
@@ -399,6 +402,7 @@ async function getItem(category, name, env, corsHeaders) {
         premium: item.premium === 1,
         removed: item.removed === 1,
         'price/code/rarity': item.price_code_rarity,
+        typicalgroup: item.typicalgroup === 1,
         priceHistory: item.price_history ? JSON.parse(item.price_history) : null,
         color: item.color ? JSON.parse(item.color) : null
     };
@@ -517,6 +521,7 @@ async function listItems(request, env, corsHeaders) {
         premium: item.premium === 1,
         removed: item.removed === 1,
         'price/code/rarity': item.price_code_rarity,
+        typicalgroup: item.typicalgroup === 1,
         priceHistory: item.price_history ? JSON.parse(item.price_history) : null,
         color: item.color ? JSON.parse(item.color) : null,
         // Include calculated flikes for sorting (gradual ramp based on item age)

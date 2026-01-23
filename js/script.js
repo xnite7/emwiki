@@ -1945,6 +1945,7 @@ class ItemModal {
                         
                         <div class="modal-badges">
                             <span class="badge-premium" style="display:none;">Premium</span>
+                            <span class="badge-typicalgroup" style="display:none;">Typical Games</span>
                             <span class="badge-retired" style="display:none;">Retired</span>
                             <span class="badge-removed" style="display:none;">Removed</span>
                             <span class="badge-untradable" style="display:none;">Untradable</span>
@@ -2034,6 +2035,7 @@ class ItemModal {
             loreContent: document.getElementById('modal-lore-content'),
             badges: {
                 premium: document.querySelector('.badge-premium'),
+                typicalgroup: document.querySelector('.badge-typicalgroup'),
                 retired: document.querySelector('.badge-retired'),
                 removed: document.querySelector('.badge-removed'),
                 untradable: document.querySelector('.badge-untradable')
@@ -2404,6 +2406,7 @@ class ItemModal {
 
         // Badges
         this.elements.badges.premium.style.display = item.premium ? 'inline-block' : 'none';
+        this.elements.badges.typicalgroup.style.display = item.typicalgroup ? 'inline-block' : 'none';
         this.elements.badges.retired.style.display = item.retired ? 'inline-block' : 'none';
         this.elements.badges.removed.style.display = item.removed ? 'inline-block' : 'none';
         this.elements.badges.untradable.style.display = !item.tradable ? 'inline-block' : 'none';

@@ -4749,7 +4749,8 @@ async function getHomepageItems(env, corsHeaders) {
     retired: item.retired === 1,
     premium: item.premium === 1,
     removed: item.removed === 1,
-    "price/code/rarity": item.price_code_rarity
+    "price/code/rarity": item.price_code_rarity,
+    typicalgroup: item.typicalgroup === 1
   }), "transformItem");
   const newItems = featured.filter((item) => item.new === 1).slice(0, 50).map(transformItem);
   const weeklyItems = featured.filter((item) => item.weekly === 1).slice(0, 8).map(transformItem);
@@ -4798,7 +4799,8 @@ async function getRandomItem(env, corsHeaders) {
     retired: item.retired === 1,
     premium: item.premium === 1,
     removed: item.removed === 1,
-    "price/code/rarity": item.price_code_rarity
+    "price/code/rarity": item.price_code_rarity,
+    typicalgroup: item.typicalgroup === 1
   };
   return new Response(JSON.stringify({ item: result }), {
     headers: {
@@ -4845,7 +4847,8 @@ async function searchItems(request, env, corsHeaders) {
     retired: item.retired === 1,
     premium: item.premium === 1,
     removed: item.removed === 1,
-    "price/code/rarity": item.price_code_rarity
+    "price/code/rarity": item.price_code_rarity,
+    typicalgroup: item.typicalgroup === 1
   }));
   return new Response(JSON.stringify({ items }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -4922,6 +4925,7 @@ async function getItem(category, name, env, corsHeaders) {
     premium: item.premium === 1,
     removed: item.removed === 1,
     "price/code/rarity": item.price_code_rarity,
+    typicalgroup: item.typicalgroup === 1,
     priceHistory: item.price_history ? JSON.parse(item.price_history) : null,
     color: item.color ? JSON.parse(item.color) : null
   };
@@ -5015,6 +5019,7 @@ async function listItems(request, env, corsHeaders) {
     premium: item.premium === 1,
     removed: item.removed === 1,
     "price/code/rarity": item.price_code_rarity,
+    typicalgroup: item.typicalgroup === 1,
     priceHistory: item.price_history ? JSON.parse(item.price_history) : null,
     color: item.color ? JSON.parse(item.color) : null,
     // Include calculated flikes for sorting (gradual ramp based on item age)
@@ -7756,10 +7761,10 @@ var init_functionsRoutes_0_10531370690170583 = __esm({
   }
 });
 
-// ../.wrangler/tmp/bundle-Aa1sFN/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-tI2CdS/middleware-loader.entry.ts
 init_functionsRoutes_0_10531370690170583();
 
-// ../.wrangler/tmp/bundle-Aa1sFN/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-tI2CdS/middleware-insertion-facade.js
 init_functionsRoutes_0_10531370690170583();
 
 // ../../../../AppData/Roaming/npm/node_modules/wrangler/templates/pages-template-worker.ts
@@ -8255,7 +8260,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// ../.wrangler/tmp/bundle-Aa1sFN/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-tI2CdS/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -8288,7 +8293,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// ../.wrangler/tmp/bundle-Aa1sFN/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-tI2CdS/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
