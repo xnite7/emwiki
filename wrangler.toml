@@ -1,8 +1,0 @@
-name = "emwiki"
-main = "functions/_middleware.js"
-pages_build_output_dir = "./"
-
-[[d1_databases]] # This needs to be [[d1_databases]] for an array of tables
-binding = "DB" # This is the binding name you'll use in your Worker code
-database_name = "emwiki-accounts"
-database_id = "7454d9df-cea0-499c-aa78-a171a3879379" # Replace with your database ID if different
