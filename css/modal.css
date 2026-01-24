@@ -823,7 +823,7 @@ body:has(.item-modal.active) {
     right: unset;
     left: -70px;
     opacity: 1;
-    transform: translateY(-50%) rotate(180deg);
+    transform: translateY(-50%) rotateY(180deg);
     transition: opacity 2s ease allow-discrete;
 
     @starting-style {
