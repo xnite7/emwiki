@@ -761,10 +761,35 @@ body:has(.item-modal.active) {
 }
 
 .modal-lore-section {
-    background: var(--bg-item);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 20px;
+        margin: 4px 20px;
+        width: -webkit-fill-available;
+background: linear-gradient(135deg, #feffa0 0%, #fff2a0 100%);
+    border: 1px solid #d4c23a;
+    border-radius: 4px;
+    padding: 19px 14px 16px;
+    position: relative;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    transform: rotate(-1deg);
+    transition: all 0.3s ease;
+}
+
+
+.modal-lore-section::before {
+    content: '';
+        position: absolute;
+        top: 0px;
+        left: 39%;
+        translate: 50% -72%;
+        width: 29px;
+        height: 47px;
+        background: linear-gradient(180deg, #ffffec85 0%, #dbdbd57d 100%);
+        backdrop-filter: blur(14px);
+        border-top-left-radius: 11px;
+        border-top-right-radius: 8px;
+        @supports (corner-shape: squircle) {
+        corner-top-left-shape: squircle;
+        corner-top-right-shape: bevel;
+        }
 }
 
 .modal-lore-section h4 {
@@ -774,11 +799,11 @@ body:has(.item-modal.active) {
 }
 
 .modal-lore-content {
-    color: rgba(255, 255, 255, 0.9);
-    line-height: 1.6;
-    font-size: 14px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
+    color: #000000e3;
+        line-height: 1.1;
+        font-family: 'Cairo';
+        font-size: 15px;
+        overflow-wrap: break-word;
 }
 
 /* Credits displayed vertically on the right */
