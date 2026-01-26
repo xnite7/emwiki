@@ -251,10 +251,10 @@ body:has(.item-modal.active) {
 
 .modal-quantity {
     font-family: 'Nothing You Could Do';
-    font-size: 49px;
+    font-size: 37px;
     font-weight: bold;
     color: #ffffff;
-    line-height: 55px;
+    line-height: 45px;
     height: 0px;
     filter: opacity(0.5);
     z-index: 10;
