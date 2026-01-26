@@ -379,6 +379,104 @@ const Utils = {
         return null;
     },
 
+    // Cache for Roblox group data with timestamps
+    groupCache: new Map(),
+
+    // Initialize group cache from localStorage
+    initGroupCache() {
+        try {
+            const cached = localStorage.getItem('roblox_group_cache');
+            if (cached) {
+                const cacheData = JSON.parse(cached);
+                const now = Date.now();
+                const oneDayMs = 24 * 60 * 60 * 1000; // 24 hour cache for group stats
+                
+                // Load valid entries (less than 24 hours old)
+                for (const [groupId, entry] of Object.entries(cacheData)) {
+                    if (now - entry.timestamp < oneDayMs) {
+                        this.groupCache.set(groupId, entry);
+                    }
+                }
+                
+                // Clean up expired entries from localStorage
+                const validCache = {};
+                for (const [groupId, entry] of this.groupCache.entries()) {
+                    validCache[groupId] = entry;
+                }
+                localStorage.setItem('roblox_group_cache', JSON.stringify(validCache));
+            }
+        } catch (error) {
+            console.error('Failed to load group cache:', error);
+        }
+    },
+
+    // Save group cache to localStorage
+    saveGroupCache() {
+        try {
+            const cacheData = {};
+            for (const [groupId, entry] of this.groupCache.entries()) {
+                cacheData[groupId] = entry;
+            }
+            localStorage.setItem('roblox_group_cache', JSON.stringify(cacheData));
+        } catch (error) {
+            console.error('Failed to save group cache:', error);
+        }
+    },
+
+    /**
+     * Fetch Roblox group data from group ID
+     * Returns group info including memberCount
+     * @param {string} groupId - The Roblox group ID (defaults to '2649054')
+     * @returns {Object|null} - Group data or null if fetch failed
+     */
+    async getGroupData(groupId = '2649054') {
+        if (!groupId || !/^\d+$/.test(groupId.toString().trim())) {
+            return null;
+        }
+
+        const groupIdStr = groupId.toString().trim();
+        const now = Date.now();
+        const oneDayMs = 24 * 60 * 60 * 1000;
+
+        // Check cache first
+        if (this.groupCache.has(groupIdStr)) {
+            const cached = this.groupCache.get(groupIdStr);
+            // If cache is less than 24 hours old, return cached data
+            if (now - cached.timestamp < oneDayMs) {
+                return cached;
+            }
+            // Cache expired, remove it
+            this.groupCache.delete(groupIdStr);
+        }
+
+        // Fetch from Roblox API (via proxy to avoid CORS)
+        try {
+            const response = await fetch(`/api/roblox-proxy?mode=group&groupId=${groupIdStr}`);
+            if (response.ok) {
+                const data = await response.json();
+                const cacheEntry = {
+                    id: data.id,
+                    name: data.name,
+                    memberCount: data.memberCount || 0,
+                    description: data.description,
+                    owner: data.owner,
+                    created: data.created,
+                    timestamp: now
+                };
+                
+                // Cache the result
+                this.groupCache.set(groupIdStr, cacheEntry);
+                this.saveGroupCache();
+                
+                return cacheEntry;
+            }
+        } catch (error) {
+            console.error('Failed to fetch group data:', error);
+        }
+
+        return null;
+    },
+
     /**
      * Format large numbers with commas for display
      * @param {number} num - The number to format
@@ -2314,7 +2412,7 @@ class ItemModal {
         }
 
         // Quantity (displayed on front, left bottom corner, tilted)
-        // Can be static (string) or dynamic (9+ digits badge ID for live count from Roblox)
+        // Can be static (string), dynamic (9+ digits badge ID for live count from Roblox), or 'group' for group member count
         if (item.quantity && item.quantity.trim() !== '' && this.elements.quantity) {
             const quantityValue = item.quantity.trim();
             
@@ -2332,6 +2430,27 @@ class ItemModal {
                         this.elements.quantity.title = `${badgeData.name || 'Badge'}: ${Utils.formatNumber(badgeData.awardedCount)} awarded`;
                     } else {
                         // Badge fetch failed, hide quantity
+                        this.elements.quantity.style.display = 'none';
+                        this.elements.quantity.title = '';
+                    }
+                }).catch(() => {
+                    // On error, hide quantity
+                    this.elements.quantity.style.display = 'none';
+                    this.elements.quantity.title = '';
+                });
+            } else if (quantityValue === 'group') {
+                // Show loading state
+                this.elements.quantity.textContent = 'x...';
+                this.elements.quantity.style.display = 'block';
+                this.elements.quantity.title = 'Loading group member count...';
+                
+                // Fetch group data asynchronously
+                Utils.getGroupData('2649054').then(groupData => {
+                    if (groupData && groupData.memberCount !== undefined) {
+                        this.elements.quantity.textContent = 'x' + Utils.formatNumber(groupData.memberCount);
+                        this.elements.quantity.title = `${groupData.name || 'Group'}: ${Utils.formatNumber(groupData.memberCount)} members`;
+                    } else {
+                        // Group fetch failed, hide quantity
                         this.elements.quantity.style.display = 'none';
                         this.elements.quantity.title = '';
                     }
@@ -4052,6 +4171,7 @@ if (typeof window !== 'undefined') {
     // Initialize caches on load
     Utils.initRobloxCache();
     Utils.initBadgeCache();
+    Utils.initGroupCache();
     
     window.Utils = Utils;
     window.BaseApp = BaseApp;

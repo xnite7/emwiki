@@ -6329,6 +6329,38 @@ async function onRequestGet4(context) {
       });
     }
   }
+  if (mode === "group") {
+    const groupId = url.searchParams.get("groupId") || "2649054";
+    if (!groupId || !/^\d+$/.test(groupId)) {
+      return new Response(JSON.stringify({ error: "Valid group ID required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    }
+    try {
+      const groupResponse = await fetch(`https://groups.roblox.com/v1/groups/${groupId}`);
+      if (!groupResponse.ok) {
+        return new Response(JSON.stringify({ error: "Group not found", status: groupResponse.status }), {
+          status: groupResponse.status,
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+        });
+      }
+      const groupData = await groupResponse.json();
+      return new Response(JSON.stringify(groupData), {
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "public, max-age=86400"
+          // Cache for 24 hours
+        }
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    }
+  }
   if (mode === "avatar-3d" && userId) {
     try {
       const avatar3dResponse = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-3d?userId=${userId}`);

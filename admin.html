@@ -3937,6 +3937,7 @@
                     }
                     
                     const isBadgeId = /^\d{10}$/.test(quantityValue);
+                    const isGroup = quantityValue.toLowerCase() === 'group';
                     
                     // Add green glow if it's a valid badge ID (10 digits)
                     if (isBadgeId) {
@@ -3965,6 +3966,34 @@
                                 quantityDisplay.style.color = 'white';
                                 quantityDisplay.textContent = quantityValue;
                                 quantityDisplay.title = 'Could not validate badge ID';
+                            });
+                    } else if (isGroup) {
+                        // Add blue glow for group quantity
+                        quantityDisplay.style.textShadow = '0 0 8px rgba(100, 149, 237, 0.8), 0 0 12px rgba(100, 149, 237, 0.6)';
+                        quantityDisplay.style.color = '#6495ed';
+                        quantityDisplay.textContent = 'group (loading...)';
+                        
+                        // Fetch group data to show member count (via proxy to avoid CORS)
+                        fetch(`/api/roblox-proxy?mode=group&groupId=2649054`)
+                            .then(res => res.ok ? res.json() : null)
+                            .then(groupData => {
+                                if (groupData && groupData.memberCount !== undefined) {
+                                    quantityDisplay.textContent = `group (${groupData.name || 'Group'}: ${groupData.memberCount.toLocaleString()} members)`;
+                                    quantityDisplay.title = `Group: ${groupData.name || 'Group'}\nMembers: ${groupData.memberCount.toLocaleString()}`;
+                                } else {
+                                    // Group fetch failed - remove blue indicator
+                                    quantityDisplay.style.textShadow = '';
+                                    quantityDisplay.style.color = 'white';
+                                    quantityDisplay.textContent = quantityValue;
+                                    quantityDisplay.title = 'Could not fetch group data';
+                                }
+                            })
+                            .catch(() => {
+                                // Fetch failed - remove blue indicator
+                                quantityDisplay.style.textShadow = '';
+                                quantityDisplay.style.color = 'white';
+                                quantityDisplay.textContent = quantityValue;
+                                quantityDisplay.title = 'Could not fetch group data';
                             });
                     } else {
                         quantityDisplay.style.textShadow = '';
