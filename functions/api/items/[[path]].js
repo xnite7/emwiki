@@ -549,7 +549,7 @@ async function createItem(request, env, corsHeaders) {
     
     const {
         name, category, img, svg, price, from, price_code_rarity,
-        tradable, new: newItem, weekly, weeklystar, retired, premium, removed,
+        tradable, new: newItem, weekly, weeklystar, retired, premium, removed, typicalgroup,
         price_history, demand, credits, lore, alias, quantity, color
     } = data;
 

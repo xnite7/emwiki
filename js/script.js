@@ -948,7 +948,8 @@ class BaseApp {
         this.showPrices = Utils.loadFromStorage('showPrices', true);
         this.LoadPrice();
 
-        this.selectTax(this.taxMode);
+        await this.selectTax(this.taxMode);
+        // Don't await here - let it update async in background
         this.updateStatsIfOpen();
     }
 
@@ -988,6 +989,23 @@ class BaseApp {
         }
     }
 
+    /**
+     * Ensures items are loaded for "My Lists" functionality.
+     * Only fetches if we have wishlist/favorites items that aren't in allItems.
+     */
+    async ensureItemsLoaded() {
+        const itemsToShow = this.currentListMode === 'wishlist' ? this.wishlist : this.favorites;
+        
+        // Check if all needed items are already loaded
+        const allItemsSet = new Set(this.allItems.map(i => i.name));
+        const missingItems = itemsToShow.filter(name => !allItemsSet.has(name));
+        
+        if (missingItems.length === 0) return; // All items already loaded
+        
+        // Need to load items - fetch from API
+        console.log(`Loading ${missingItems.length} missing items for My Lists...`);
+        await this.loadData();
+    }
 
     async togglePrice() {
         this.showPrices = !this.showPrices;
@@ -1592,18 +1610,17 @@ class BaseApp {
         }
     }
 
-    openStats() {
+    async openStats() {
         document.getElementById('stats-dashboard').classList.add('show');
-        this.updateStatsIfOpen();
-        document.getElementById('profile-dropdown').hidePopover();
-
+        await this.updateStatsIfOpen();
+        document.getElementById('profile-dropdown')?.hidePopover();
     }
 
     closeStats() {
         document.getElementById('stats-dashboard').classList.remove('show');
     }
 
-    switchListMode(mode) {
+    async switchListMode(mode) {
         this.currentListMode = mode;
 
         // Update tab styling
@@ -1621,7 +1638,7 @@ class BaseApp {
             listLabel.textContent = 'Favorites';
         }
 
-        this.updateStatsIfOpen();
+        await this.updateStatsIfOpen();
     }
 
     viewAllInCatalog() {
@@ -1629,15 +1646,26 @@ class BaseApp {
         window.location.href = `/catalog?filter=${this.currentListMode}`;
     }
 
-    updateStatsIfOpen() {
+    async updateStatsIfOpen() {
         if (!document.getElementById('stats-dashboard').classList.contains('show')) return;
 
-        // Update wishlist or favorites based on mode
         const wishlistDiv = document.getElementById('wishlist-items');
+        const itemsToShow = this.currentListMode === 'wishlist' ? this.wishlist : this.favorites;
+        
+        // Check if we need to load items
+        const allItemsSet = new Set(this.allItems.map(i => i.name));
+        const missingItems = itemsToShow.filter(name => !allItemsSet.has(name));
+        
+        if (missingItems.length > 0) {
+            // Show loading state while fetching items
+            wishlistDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">Loading items...</div>';
+            await this.ensureItemsLoaded();
+        }
+
+        // Update wishlist or favorites based on mode
         wishlistDiv.innerHTML = '';
         let totalValue = 0;
 
-        const itemsToShow = this.currentListMode === 'wishlist' ? this.wishlist : this.favorites;
         itemsToShow.forEach(itemName => {
             const item = this.allItems.find(i => i.name === itemName);
             if (item) {
@@ -1686,6 +1714,15 @@ class BaseApp {
                 }
             }
         });
+
+        // Show empty state if no items
+        if (itemsToShow.length === 0) {
+            const listType = this.currentListMode === 'wishlist' ? 'wishlist' : 'favorites';
+            wishlistDiv.innerHTML = `<div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                Your ${listType} is empty.<br>
+                <small>Add items from the <a href="/catalog" style="color: var(--text-primary);">catalog</a>!</small>
+            </div>`;
+        }
 
         document.getElementById('wishlist-value').textContent = totalValue.toLocaleString();
 
