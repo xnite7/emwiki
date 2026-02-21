@@ -308,7 +308,7 @@ class ForumV2 {
             const formData = new FormData();
             formData.append('file', file);
 
-            const response = await this.fetchWithAuth('/api/forum/posts/upload', {
+            const response = await this.fetchWithAuth('https://emwiki.com/api/forum/posts/upload', {
                 method: 'POST',
                 body: formData
             });
@@ -402,7 +402,7 @@ class ForumV2 {
             if (empty) empty.style.display = 'none';
             if (error) error.style.display = 'none';
 
-            const response = await fetch('/api/forum/posts');
+            const response = await fetch('https://emwiki.com/api/forum/posts');
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
             const data = await response.json();
@@ -483,13 +483,16 @@ class ForumV2 {
         });
     }
 
+    avatarImg(userId, username) {
+        if (userId) {
+            return `<img src="https://www.roblox.com/headshot-thumbnail/image?userId=${userId}&width=150&height=150&format=png" alt="${this.escapeHtml(username || '')}" loading="lazy">`;
+        }
+        return (username || '?').charAt(0).toUpperCase();
+    }
+
     createPostCard(post) {
         const thumb = this.extractFirstImage(post.content);
         const preview = this.stripFormatting(post.content).substring(0, 160);
-        const initial = (post.username || '?').charAt(0).toUpperCase();
-        const avatarUrl = post.user_id
-            ? `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${post.user_id}&size=48x48&format=Png&isCircular=true`
-            : null;
 
         const categoryGradients = {
             general: '#9e9e9e', trading: '#2196f3', updates: '#ff9800',
@@ -505,6 +508,7 @@ class ForumV2 {
             ? `background-image:url('${this.escapeHtml(thumb)}')`
             : `background:linear-gradient(135deg, ${catColor}22, ${catColor}11)`;
 
+        const initial = (post.username || '?').charAt(0).toUpperCase();
         const thumbInner = thumb ? '' : `<div class="post-thumb-fallback" style="color:${catColor}">${this.escapeHtml(initial)}</div>`;
 
         return `<div class="post-card ${post.is_pinned ? 'pinned' : ''}" data-id="${post.id}">
@@ -518,7 +522,7 @@ class ForumV2 {
                 <p class="post-preview">${this.escapeHtml(preview)}</p>
                 <div class="post-footer">
                     <div class="post-author">
-                        <div class="post-author-avatar" data-uid="${post.user_id || ''}">${initial}</div>
+                        <div class="post-author-avatar">${this.avatarImg(post.user_id, post.username)}</div>
                         <span class="post-author-name">${this.escapeHtml(post.username)}</span>
                         <span class="post-time">${this.timeAgo(post.created_at)}</span>
                     </div>
@@ -530,27 +534,6 @@ class ForumV2 {
                 </div>
             </div>
         </div>`;
-    }
-
-    // ── Roblox Avatar Loading ──
-
-    async loadAvatarForElement(el, userId) {
-        if (!userId) return;
-        try {
-            const resp = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=48x48&format=Png&isCircular=true`);
-            const data = await resp.json();
-            const imgUrl = data?.data?.[0]?.imageUrl;
-            if (imgUrl && el) {
-                el.innerHTML = `<img src="${imgUrl}" alt="">`;
-            }
-        } catch { /* silent fail */ }
-    }
-
-    loadAvatarsInContainer(container) {
-        container.querySelectorAll('[data-uid]').forEach(el => {
-            const uid = el.dataset.uid;
-            if (uid) this.loadAvatarForElement(el, uid);
-        });
     }
 
     // ── Category / Filter ──
@@ -574,7 +557,7 @@ class ForumV2 {
 
     async viewThread(postId) {
         try {
-            const response = await this.fetchWithAuth(`/api/forum/posts/${postId}`);
+            const response = await this.fetchWithAuth(`https://emwiki.com/api/forum/posts/${postId}`);
             if (!response.ok) throw new Error('Failed to load post');
 
             const data = await response.json();
@@ -599,7 +582,6 @@ class ForumV2 {
         const container = document.getElementById('thread-content');
         if (!container || !this.currentThread) return;
         const post = this.currentThread;
-        const initial = (post.username || '?').charAt(0).toUpperCase();
 
         const isOwner = this.currentUser && this.currentUser.user_id === post.user_id;
         const canAdmin = this.isAdminUser;
@@ -631,7 +613,7 @@ class ForumV2 {
                 </div>
                 <h1 class="thread-title">${this.escapeHtml(post.title)}</h1>
                 <div class="thread-author-row">
-                    <div class="thread-avatar" data-uid="${post.user_id || ''}">${initial}</div>
+                    <div class="thread-avatar">${this.avatarImg(post.user_id, post.username)}</div>
                     <div class="thread-author-info">
                         <span class="thread-author-name">${this.escapeHtml(post.username)} ${this._getRoleBadge(post.role)}</span>
                         <span class="thread-author-time">${this.timeAgo(post.created_at)} ${editedStr}</span>
@@ -676,12 +658,10 @@ class ForumV2 {
             </div>
         `;
 
-        this.loadAvatarsInContainer(container);
         this.bindThreadActions(container);
     }
 
     renderComment(comment) {
-        const initial = (comment.username || '?').charAt(0).toUpperCase();
         const isOwner = this.currentUser && this.currentUser.user_id === comment.user_id;
         const canDelete = isOwner || this.isAdminUser;
 
@@ -703,7 +683,7 @@ class ForumV2 {
 
         return `<div class="comment-item" data-comment-id="${comment.id}">
             <div class="comment-top">
-                <div class="comment-avatar" data-uid="${comment.user_id || ''}">${initial}</div>
+                <div class="comment-avatar">${this.avatarImg(comment.user_id, comment.username)}</div>
                 <span class="comment-author-name">${this.escapeHtml(comment.username)}</span>
                 ${this._getRoleBadge(comment.role)}
                 <span class="comment-time">${this.timeAgo(comment.created_at)}${editedStr}</span>
@@ -768,7 +748,7 @@ class ForumV2 {
         if (submitBtn) submitBtn.disabled = true;
 
         try {
-            const url = this.editingPostId ? `/api/forum/posts/${this.editingPostId}` : '/api/forum/posts';
+            const url = this.editingPostId ? `https://emwiki.com/api/forum/posts/${this.editingPostId}` : 'https://emwiki.com/api/forum/posts';
             const method = this.editingPostId ? 'PUT' : 'POST';
 
             const response = await this.fetchWithAuth(url, {
@@ -806,7 +786,7 @@ class ForumV2 {
         if (!ok) return;
 
         try {
-            const response = await this.fetchWithAuth(`/api/forum/posts/${this.currentThread.id}`, { method: 'DELETE' });
+            const response = await this.fetchWithAuth(`https://emwiki.com/api/forum/posts/${this.currentThread.id}`, { method: 'DELETE' });
             if (!response.ok) throw new Error('Failed to delete');
             this.showToast('Post deleted', 'success');
             this.showListView();
@@ -830,7 +810,7 @@ class ForumV2 {
         if (btn) btn.disabled = true;
 
         try {
-            const response = await this.fetchWithAuth('/api/forum/comments', {
+            const response = await this.fetchWithAuth('https://emwiki.com/api/forum/comments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ post_id: this.currentThread.id, content })
@@ -883,7 +863,7 @@ class ForumV2 {
         if (!content) return this.showToast('Comment cannot be empty', 'error');
 
         try {
-            const response = await this.fetchWithAuth(`/api/forum/comments/${commentId}`, {
+            const response = await this.fetchWithAuth(`https://emwiki.com/api/forum/comments/${commentId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content })
@@ -908,7 +888,7 @@ class ForumV2 {
         if (!ok) return;
 
         try {
-            const response = await this.fetchWithAuth(`/api/forum/comments/${commentId}`, { method: 'DELETE' });
+            const response = await this.fetchWithAuth(`https://emwiki.com/api/forum/comments/${commentId}`, { method: 'DELETE' });
             if (!response.ok) throw new Error('Failed to delete');
             this.comments = this.comments.filter(c => c.id !== commentId);
             this.renderThread();
@@ -941,7 +921,7 @@ class ForumV2 {
         if (countEl) countEl.textContent = this.currentThread.like_count;
 
         try {
-            const response = await this.fetchWithAuth(`/api/forum/posts/${this.currentThread.id}/like`, { method: 'POST' });
+            const response = await this.fetchWithAuth(`https://emwiki.com/api/forum/posts/${this.currentThread.id}/like`, { method: 'POST' });
             if (!response.ok) throw new Error();
             const data = await response.json();
             this.currentThread.like_count = data.like_count;
@@ -977,7 +957,7 @@ class ForumV2 {
         if (countEl) countEl.textContent = comment.like_count;
 
         try {
-            const response = await this.fetchWithAuth(`/api/forum/comments/${commentId}/like`, { method: 'POST' });
+            const response = await this.fetchWithAuth(`https://emwiki.com/api/forum/comments/${commentId}/like`, { method: 'POST' });
             if (!response.ok) throw new Error();
             const data = await response.json();
             comment.like_count = data.like_count;
@@ -998,7 +978,7 @@ class ForumV2 {
         if (!this.currentThread || !this.isAdminUser) return;
         const newVal = !this.currentThread.is_pinned;
         try {
-            const response = await this.fetchWithAuth(`/api/forum/posts/${this.currentThread.id}`, {
+            const response = await this.fetchWithAuth(`https://emwiki.com/api/forum/posts/${this.currentThread.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ is_pinned: newVal })
@@ -1018,7 +998,7 @@ class ForumV2 {
         if (!this.currentThread || !this.isAdminUser) return;
         const newVal = !this.currentThread.is_locked;
         try {
-            const response = await this.fetchWithAuth(`/api/forum/posts/${this.currentThread.id}`, {
+            const response = await this.fetchWithAuth(`https://emwiki.com/api/forum/posts/${this.currentThread.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ is_locked: newVal })
@@ -1047,7 +1027,7 @@ class ForumV2 {
     }
 
     async incrementViewCount(postId) {
-        try { await fetch(`/api/forum/posts/${postId}/view`, { method: 'POST' }); }
+        try { await fetch(`https://emwiki.com/api/forum/posts/${postId}/view`, { method: 'POST' }); }
         catch { /* non-critical */ }
     }
 
