@@ -820,7 +820,6 @@ small {
     align-items: center;
     justify-content: center;
     gap: 12px;
-    margin: 0 0 30px;
     flex-wrap: wrap;
 }
 

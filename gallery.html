@@ -5,10 +5,12 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 	<title>Gallery - EM Wiki</title>
-	<meta name="description" content="Community gallery for Epic Minigames - Share your favorite screenshots and videos!" />
+	<meta name="description"
+		content="Community gallery for Epic Minigames - Share your favorite screenshots and videos!" />
 	<meta property="og:title" content="Gallery - EM Wiki">
 	<meta property="og:image" content="https://emwiki.com/imgs/QgWIUWf.png">
-	<meta property="og:description" content="Community gallery for Epic Minigames - Share your favorite screenshots and videos!">
+	<meta property="og:description"
+		content="Community gallery for Epic Minigames - Share your favorite screenshots and videos!">
 	<link rel="icon" href="./imgs/favicon.png" type="image/png">
 	<link rel="apple-touch-icon" href="./imgs/app.png">
 	<link rel="manifest" href="/site.webmanifest">
@@ -19,34 +21,35 @@
 	<link rel="stylesheet" href="./css/style.css">
 	<link rel="stylesheet" href="./css/gallery.css">
 
-		<style>
-			body {
-				min-height: 100vh;
+	<style>
+		body {
+			min-height: 100vh;
+			background-image: none;
+			background-repeat: space;
+			background-position: center;
+			background-attachment: fixed;
+			opacity: 0;
+			animation: fadeIn 1s ease-out forwards;
+		}
+
+		@keyframes fadeIn {
+			99% {
 				background-image: none;
-				background-repeat: space;
-				background-position: center;
-				background-attachment: fixed;
-				opacity: 0;
-				animation: fadeIn 1s ease-out forwards;
 			}
-		
-			@keyframes fadeIn {
-				99% {
-					background-image: none;
-				}
-		
-				to {
-					opacity: 1;
-					background-image: url(./imgs/valentinesbg.png);
-				}
-		
+
+			to {
+				opacity: 1;
+				background-image: url(./imgs/valentinesbg.png);
 			}
-			@media screen and (max-width: 2062px) {
-				body {
-					background-repeat: repeat;
-				}
+
+		}
+
+		@media screen and (max-width: 2062px) {
+			body {
+				background-repeat: repeat;
 			}
-		</style>
+		}
+	</style>
 </head>
 
 <body>
@@ -93,7 +96,7 @@
 	</header>
 
 	<!-- Gallery Content -->
-	<main class="hero-section">
+	<section class="hero-section">
 		<div class="hero-content">
 			<h1 class="hero-title"><span class="hero-epic">Community Gallery</span></h1>
 			<p class="hero-subtitle">Share your Epic Minigames moments with the community!</p>
@@ -110,72 +113,76 @@
 				<button id="my-submissions-btn" class="btn btn-secondary">My Submissions</button>
 			</div>
 		</div>
-
-		<!-- Upload Modal -->
-		<div id="upload-modal" class="modal">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h2>Upload Media</h2>
-					<button class="modal-close">&times;</button>
-				</div>
-				<div class="modal-body">
-					<form id="upload-form">
-						<div class="form-group">
-							<label for="media-file">Select Image or Video</label>
-							<input type="file" id="media-file" accept="image/*,video/*" required>
-							<small>Max size: 100MB. Supported formats: JPEG, PNG, GIF, WebP, MP4, WebM, MOV</small>
-						</div>
-
-						<div id="preview-container" class="preview-container"></div>
-
-						<div class="form-group">
-							<label for="media-title">Title *</label>
-							<input type="text" id="media-title" maxlength="100" placeholder="Give your submission a title" required>
-						</div>
-
-						<div class="form-group">
-							<label for="media-description">Description (optional)</label>
-							<textarea id="media-description" maxlength="500" rows="3" placeholder="Tell us about this moment..."></textarea>
-						</div>
-
-						<div class="upload-progress" style="display: none;">
-							<div class="progress-bar">
-								<div class="progress-fill"></div>
-							</div>
-							<p class="progress-text">Uploading...</p>
-						</div>
-
-						<div class="modal-actions">
-							<button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
-							<button type="submit" class="btn btn-primary">Submit for Review</button>
-						</div>
-					</form>
-				</div>
+			<!-- Sort Controls -->
+			<div class="sort-controls">
+				<span class="sort-label">Sort by:</span>
+				<button class="sort-btn" data-sort="likes">Most Liked</button>
+				<button class="sort-btn active" data-sort="newest">Newest</button>
 			</div>
-		</div>
+	</section>
 
-		<!-- My Submissions Modal -->
-		<div id="submissions-modal" class="modal">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h2>My Submissions</h2>
-					<button class="modal-close">&times;</button>
-				</div>
-				<div class="modal-body">
-					<div id="my-submissions-list" class="submissions-list">
-						<p class="loading">Loading...</p>
+	<!-- Upload Modal -->
+	<div id="upload-modal" class="modal">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2>Upload Media</h2>
+				<button class="modal-close">&times;</button>
+			</div>
+			<div class="modal-body">
+				<form id="upload-form">
+					<div class="form-group">
+						<label for="media-file">Select Image or Video</label>
+						<input type="file" id="media-file" accept="image/*,video/*" required>
+						<small>Max size: 100MB. Supported formats: JPEG, PNG, GIF, WebP, MP4, WebM, MOV</small>
 					</div>
+
+					<div id="preview-container" class="preview-container"></div>
+
+					<div class="form-group">
+						<label for="media-title">Title *</label>
+						<input type="text" id="media-title" maxlength="100" placeholder="Give your submission a title"
+							required>
+					</div>
+
+					<div class="form-group">
+						<label for="media-description">Description (optional)</label>
+						<textarea id="media-description" maxlength="500" rows="3"
+							placeholder="Tell us about this moment..."></textarea>
+					</div>
+
+					<div class="upload-progress" style="display: none;">
+						<div class="progress-bar">
+							<div class="progress-fill"></div>
+						</div>
+						<p class="progress-text">Uploading...</p>
+					</div>
+
+					<div class="modal-actions">
+						<button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+						<button type="submit" class="btn btn-primary">Submit for Review</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- My Submissions Modal -->
+	<div id="submissions-modal" class="modal">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2>My Submissions</h2>
+				<button class="modal-close">&times;</button>
+			</div>
+			<div class="modal-body">
+				<div id="my-submissions-list" class="submissions-list">
+					<p class="loading">Loading...</p>
 				</div>
 			</div>
 		</div>
+	</div>
 
-		<!-- Sort Controls -->
-		<div class="sort-controls">
-			<span class="sort-label">Sort by:</span>
-			<button class="sort-btn" data-sort="likes">Most Liked</button>
-			<button class="sort-btn active" data-sort="newest">Newest</button>
-		</div>
 
+	<main>
 		<!-- Gallery Grid -->
 		<div id="gallery-grid" class="gallery-grid"></div>
 
@@ -193,44 +200,44 @@
 				<p class="viewer-views"></p>
 				<p class="viewer-author"></p>
 				<p class="viewer-description"></p>
-				</div>
-				<div class="viewer-actions"></div>
 			</div>
+			<div class="viewer-actions"></div>
 		</div>
 	</div>
-    <footer>
-        <div class="footer-content">
-            <div class="footer-section">
-                <h4>Browse</h4>
-                <a href="/catalog">Catalog</a>
-                <a href="/scammers">Scammers List</a>
-                <a href="/admin">Admin Portal</a>
-            </div>
-            <div class="footer-section">
-                <h4>Community</h4>
-                <a href="/forum">Forum</a>
-                <a href="/trading">Trading</a>
-                <a href="/gallery">Gallery</a>
-                <a href="https://discord.com/invite/tg">Typical Games Discord</a>
-            </div>
-            <div class="footer-section">
-                <h4>Contact</h4>
-                <p>Found a bug? Reach out to <b>@xnite</b> on Discord!</p>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>© 2025 emwiki.com • made with ❤ by xnite</p>
-        </div>
-    </footer>
+	</div>
+	<footer>
+		<div class="footer-content">
+			<div class="footer-section">
+				<h4>Browse</h4>
+				<a href="/catalog">Catalog</a>
+				<a href="/scammers">Scammers List</a>
+				<a href="/admin">Admin Portal</a>
+			</div>
+			<div class="footer-section">
+				<h4>Community</h4>
+				<a href="/forum">Forum</a>
+				<a href="/trading">Trading</a>
+				<a href="/gallery">Gallery</a>
+				<a href="https://discord.com/invite/tg">Typical Games Discord</a>
+			</div>
+			<div class="footer-section">
+				<h4>Contact</h4>
+				<p>Found a bug? Reach out to <b>@xnite</b> on Discord!</p>
+			</div>
+		</div>
+		<div class="footer-bottom">
+			<p>© 2025 emwiki.com • made with ❤ by xnite</p>
+		</div>
+	</footer>
 	<script src="./js/script.js"></script>
-	    <script>
-        class Catalog extends BaseApp {
-            constructor() {
-                super();
-            }
-        }
-        window.catalog = new Catalog();
-    </script>
+	<script>
+		class Catalog extends BaseApp {
+			constructor() {
+				super();
+			}
+		}
+		window.catalog = new Catalog();
+	</script>
 	<script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
 	<script src="./js/gallery.js"></script>
 </body>
