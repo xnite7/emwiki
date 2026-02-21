@@ -30,7 +30,6 @@
 			background-position: center;
 			background-attachment: fixed;
 			opacity: 0;
-			backdrop-filter: blur(10px);
 			animation: bodyFadeIn 1s ease-out forwards;
 		}
 
@@ -246,18 +245,20 @@
 		.post-meta-top {
 			display: flex;
 			align-items: center;
+			justify-content: space-between;
 			gap: 8px;
 			flex-wrap: wrap;
 		}
 
 		.post-category-badge {
-			padding: 3px 10px;
-			border-radius: 20px;
-			font-size: 11px;
-			font-weight: 700;
-			text-transform: uppercase;
-			letter-spacing: 0.4px;
-			line-height: 1.4;
+    padding: 0px 8px 1px;
+    border-radius: 6px;
+    font-size: 11px;
+    outline: 1px solid;
+    font-weight: 700;
+    font-variant: all-small-caps;
+    letter-spacing: 0.4px;
+    line-height: 1.4;
 		}
 
 		.post-category-badge.general { background: rgba(158, 158, 158, 0.18); color: #9e9e9e; }
@@ -312,7 +313,7 @@
 			align-items: center;
 			gap: 10px;
 			margin-top: auto;
-			padding-top: 10px;
+			padding-top: 0px;
 			flex-wrap: wrap;
 		}
 
@@ -324,18 +325,18 @@
 		}
 
 		.post-author-avatar {
-			width: 24px;
-			height: 24px;
-			border-radius: 50%;
-			background: #1a1a1a;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			font-weight: 700;
-			color: white;
-			font-size: 11px;
-			flex-shrink: 0;
-			overflow: hidden;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #5d5d5d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    font-size: 11px;
+    flex-shrink: 0;
+    overflow: hidden;
 		}
 
 		.post-author-avatar img {
@@ -349,6 +350,7 @@
 			font-size: 13px;
 			font-weight: 600;
 			color: var(--text-primary);
+			line-height: 2;
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
@@ -966,6 +968,7 @@ font-size: 18px;
 			border-radius: 18px;
 			width: 100%;
 			max-width: 640px;
+			margin: auto;
 			padding: 28px;
 			box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 			animation: modalIn 0.25s ease;
@@ -1512,7 +1515,7 @@ font-size: 18px;
 						<button type="button" class="fmt-btn" data-fmt="h3" title="Subheading">H3</button>
 						<div class="fmt-sep"></div>
 						<button type="button" class="fmt-btn" data-fmt="image" title="Upload image (or drag &amp; drop)">
-							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle fill="Canvas" stroke="Canvas" cx="8.5" cy="8.5" r="1.5"/><path fill="Canvas" stroke="Canvas" d="m21 15-5-5L5 21"/></svg>
 						</button>
 						<button type="button" class="fmt-btn" data-fmt="link" title="Link">
 							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
@@ -1522,7 +1525,7 @@ font-size: 18px;
 						</button>
 						<div class="fmt-sep"></div>
 						<button type="button" class="fmt-btn fmt-color-btn" data-fmt="color" title="Text Color">
-							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16"/><path d="m6 16 6-14 6 14"/><path d="M8 12h8"/></svg>
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16"/><path fill="Canvas" d="m6 16 6-14 6 14"/><path d="M8 12h8"/></svg>
 						</button>
 					</div>
 					<textarea id="post-content-input" maxlength="5000" placeholder="What would you like to discuss? Use the toolbar for formatting. Drag &amp; drop or paste images directly." required></textarea>

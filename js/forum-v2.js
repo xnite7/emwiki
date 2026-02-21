@@ -627,7 +627,7 @@ class ForumV2 {
 
         const thumbStyle = thumb
             ? `background-image:url('${this.escapeHtml(thumb)}')`
-            : `background:linear-gradient(135deg, ${catColor}22, ${catColor}11)`;
+            : `display:none; background:linear-gradient(135deg, ${catColor}22, ${catColor}11)`;
 
         const initial = (post.username || '?').charAt(0).toUpperCase();
         const thumbInner = thumb ? '' : `<div class="post-thumb-fallback" style="color:${catColor}">${this.escapeHtml(initial)}</div>`;
@@ -639,6 +639,7 @@ class ForumV2 {
                 <div class="post-meta-top">
                     <span class="post-category-badge ${this.escapeHtml(post.category)}">${this.capitalizeFirst(post.category)}</span>
                     ${badges.join('')}
+                    <span class="post-time">${this.timeAgo(post.created_at)}</span>
                 </div>
                 <h3 class="post-title">${this.escapeHtml(post.title)}</h3>
                 <p class="post-preview">${this.escapeHtml(preview)}</p>
@@ -646,10 +647,10 @@ class ForumV2 {
                     <div class="post-author">
                         ${this._profileLink(post.user_id, `<div class="post-author-avatar">${this.avatarImg(post.avatar_url, post.username)}</div><span class="post-author-name">${this.escapeHtml(post.username)}</span>`)}
                         ${this._getRoleBadge(post.role)}
-                        <span class="post-time">${this.timeAgo(post.created_at)}</span>
+                        
                     </div>
                     <div class="post-stats">
-                        <span class="post-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>${post.views || 0}</span>
+                        <span class="post-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle fill="Canvas" stroke="Canvas" cx="12" cy="12" r="3"/></svg>${post.views || 0}</span>
                         <span class="post-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>${post.like_count || 0}</span>
                         <span class="post-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${post.comment_count || 0}</span>
                     </div>
@@ -756,7 +757,7 @@ class ForumV2 {
                             <svg viewBox="0 0 24 24" ${heartFill} stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                             <span class="like-count">${post.like_count || 0}</span>
                         </button>
-                        <span class="thread-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>${post.views || 0} views</span>
+                        <span class="thread-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle fill="Canvas" stroke="Canvas" cx="12" cy="12" r="3"/></svg>${post.views || 0} views</span>
                         <span class="thread-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${this.comments.length} comments</span>
                     </div>
                 </div>
@@ -772,13 +773,13 @@ class ForumV2 {
                         <button type="button" class="fmt-btn" data-fmt="bold" title="Bold"><b>B</b></button>
                         <button type="button" class="fmt-btn" data-fmt="italic" title="Italic"><i>I</i></button>
                         <button type="button" class="fmt-btn" data-fmt="image" title="Image">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle fill="Canvas" stroke="Canvas" cx="8.5" cy="8.5" r="1.5"/><path fill="Canvas" d="m21 15-5-5L5 21"/></svg>
                         </button>
                         <button type="button" class="fmt-btn" data-fmt="link" title="Link">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                         </button>
                         <button type="button" class="fmt-btn fmt-color-btn" data-fmt="color" title="Text Color">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16"/><path d="m6 16 6-14 6 14"/><path d="M8 12h8"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path  d="M4 20h16"/><path fill="Canvas" d="m6 16 6-14 6 14"/><path d="M8 12h8"/></svg>
                         </button>
                     </div>
                     <textarea class="comment-textarea" id="comment-input" maxlength="2000" placeholder="Write a comment..."></textarea>
