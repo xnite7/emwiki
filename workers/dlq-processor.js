@@ -18,16 +18,16 @@ export default {
   async queue(batch, env) {
     const messages = batch.messages;
     console.error(`[DLQ] Received ${messages.length} failed messages`);
-    
+
     const db = env.DB || env.DBA;
-    
+
     for (const message of messages) {
       try {
         const { jobId, messageId, channelId, message: msg } = message.body;
-        
+
         console.error(`[DLQ] Failed message ${messageId} for job ${jobId}`);
         console.error(`[DLQ] Message content preview:`, msg.content?.substring(0, 200) || 'No content');
-        
+
         // Log to database if available
         if (db) {
           try {
@@ -37,7 +37,7 @@ export default {
               SET error = COALESCE(error || '\n', '') || ?
               WHERE job_id = ?
             `).bind(`Message ${messageId} failed and sent to DLQ`, jobId).run();
-            
+
             // Also log to a separate table if you want to track DLQ messages
             // You could create a table like:
             // CREATE TABLE dlq_messages (
@@ -51,7 +51,7 @@ export default {
             console.error(`[DLQ] Failed to log to database:`, dbErr);
           }
         }
-        
+
         // Ack the message to remove it from DLQ
         // Or you can keep it in DLQ for manual inspection
         message.ack();
@@ -61,7 +61,7 @@ export default {
         message.ack();
       }
     }
-    
+
     console.error(`[DLQ] Processed ${messages.length} DLQ messages`);
     return { processed: messages.length };
   }

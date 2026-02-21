@@ -12,7 +12,31 @@
  * See emwiki/workers/scammer-periodic-checker-wrangler.toml
  * 
  * Cron: "0 * * * *" (every hour)
- * ============================================================================
+ * ======================================
+ * 
+ * Bindings
+ * 
+D1 database
+
+DBA
+
+scammer-db
+
+
+R2 bucket
+
+MY_BUCKET
+
+user-uploads
+
+
+Queue
+
+SCAMMER_QUEUE
+
+scammer-messages
+ * 
+ * ======================================
  */
 
 export default {
@@ -111,24 +135,24 @@ async function checkForNewContent(env) {
 async function checkForNewMessages(env, db) {
   try {
     const channelId = env.DISCORD_CHANNEL_ID;
-    
+
     // Get the most recent message ID we've processed
     const lastProcessed = await db.prepare(`
-      SELECT MAX(last_message_id) as last_id
+      SELECT MAX(message_id) as last_id
       FROM scammer_profile_cache
-      WHERE last_message_id IS NOT NULL
+      WHERE message_id IS NOT NULL
     `).first();
-    
+
     const lastMessageId = lastProcessed?.last_id || null;
     console.log(`[PERIODIC CHECK] Last processed message ID: ${lastMessageId || 'none'}`);
-    
+
     // Fetch recent messages from Discord (last 100 messages)
     const messages = await fetchRecentMessages(channelId, env, 100);
-    
+
     if (messages.length === 0) {
       return { found: 0, processed: 0 };
     }
-    
+
     // Filter to only new messages (after lastMessageId)
     let newMessages = [];
     if (lastMessageId) {
@@ -148,27 +172,27 @@ async function checkForNewMessages(env, db) {
       // No last message ID - all messages are new
       newMessages = messages;
     }
-    
+
     console.log(`[PERIODIC CHECK] Found ${newMessages.length} new messages`);
-    
+
     if (newMessages.length === 0) {
       return { found: 0, processed: 0 };
     }
-    
+
     // Enqueue new messages for processing
     if (!env.SCAMMER_QUEUE) {
       throw new Error('SCAMMER_QUEUE binding not found');
     }
-    
+
     // Create a temporary job ID for tracking
     const jobId = `periodic_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     // Add job status entry
     await db.prepare(`
       INSERT INTO scammer_job_status (job_id, status, started_at, messages_processed, messages_seen, total_messages)
       VALUES (?, 'running', ?, 0, 0, ?)
     `).bind(jobId, Date.now(), newMessages.length).run();
-    
+
     // Enqueue messages with threadId if present
     const queueMessages = newMessages.map(msg => ({
       body: {
@@ -179,15 +203,15 @@ async function checkForNewMessages(env, db) {
         threadId: msg.thread?.id || null  // Queue consumer will fetch thread evidence
       }
     }));
-    
+
     // Send in batches of 100
     for (let i = 0; i < queueMessages.length; i += 100) {
       const batch = queueMessages.slice(i, i + 100);
       await env.SCAMMER_QUEUE.sendBatch(batch);
     }
-    
+
     console.log(`[PERIODIC CHECK] Enqueued ${newMessages.length} new messages`);
-    
+
     return {
       found: newMessages.length,
       processed: newMessages.length // They'll be processed by queue consumer
@@ -205,47 +229,47 @@ async function checkForNewMessages(env, db) {
 async function checkForNewThreads(env, db) {
   try {
     const channelId = env.DISCORD_CHANNEL_ID;
-    
+
     // Get recent messages that don't have threads yet
     // Check last 50 messages that were processed but don't have thread_evidence
     const recentMessages = await db.prepare(`
-      SELECT user_id, last_message_id
+      SELECT user_id, message_id
       FROM scammer_profile_cache
-      WHERE last_message_id IS NOT NULL
+      WHERE message_id IS NOT NULL
         AND (thread_evidence IS NULL OR thread_evidence = '')
-      ORDER BY last_message_id DESC
+      ORDER BY message_id DESC
       LIMIT 50
     `).all();
-    
+
     if (!recentMessages.results || recentMessages.results.length === 0) {
       return { found: 0, fetched: 0 };
     }
-    
+
     console.log(`[PERIODIC CHECK] Checking ${recentMessages.results.length} messages for new threads`);
-    
+
     // Fetch active threads from Discord
     const activeThreads = await fetchActiveThreads(channelId, env);
-    
+
     if (!activeThreads || activeThreads.length === 0) {
       return { found: 0, fetched: 0 };
     }
-    
+
     // Match threads to messages
     let newThreadsFound = 0;
     let newThreadsFetched = 0;
-    
+
     for (const row of recentMessages.results) {
       try {
         // Find thread for this message ID
-        const thread = activeThreads.find(t => t.message_id === row.last_message_id);
-        
+        const thread = activeThreads.find(t => t.message_id === row.message_id);
+
         if (thread && thread.id) {
           newThreadsFound++;
-          console.log(`[PERIODIC CHECK] Found new thread ${thread.id} for message ${row.last_message_id} (user ${row.user_id})`);
-          
+          console.log(`[PERIODIC CHECK] Found new thread ${thread.id} for message ${row.message_id} (user ${row.user_id})`);
+
           // Fetch thread messages
           const threadMessages = await fetchDiscordThread(thread.id, env);
-          
+
           if (threadMessages && threadMessages.length > 0) {
             // Update database with thread evidence
             const threadEvidence = {
@@ -254,21 +278,19 @@ async function checkForNewThreads(env, db) {
               message_count: threadMessages.length,
               last_fetched: Date.now()
             };
-            
+
             await db.prepare(`
               UPDATE scammer_profile_cache
-              SET thread_evidence = ?,
-                  thread_last_message_id = ?
+              SET thread_evidence = ?
               WHERE user_id = ?
             `).bind(
               JSON.stringify(threadEvidence),
-              threadMessages[threadMessages.length - 1]?.id || null,
               row.user_id
             ).run();
-            
+
             newThreadsFetched++;
             console.log(`[PERIODIC CHECK] Fetched ${threadMessages.length} messages from thread ${thread.id}`);
-            
+
             // Rate limit: wait 1.5 seconds between thread fetches
             await new Promise(resolve => setTimeout(resolve, 1500));
           }
@@ -277,7 +299,7 @@ async function checkForNewThreads(env, db) {
         console.error(`[PERIODIC CHECK] Error processing thread for user ${row.user_id}:`, err.message);
       }
     }
-    
+
     return {
       found: newThreadsFound,
       fetched: newThreadsFetched
@@ -296,12 +318,11 @@ async function checkForThreadUpdates(env, db) {
   try {
     // Get scammers with existing thread_evidence that have a thread_id
     const scammersWithThreads = await db.prepare(`
-      SELECT user_id, thread_evidence, thread_last_message_id
+      SELECT user_id, thread_evidence
       FROM scammer_profile_cache
       WHERE thread_evidence IS NOT NULL
         AND thread_evidence != ''
         AND thread_evidence LIKE '%"thread_id"%'
-      ORDER BY updated_at DESC
       LIMIT 50
     `).all();
 
@@ -321,8 +342,9 @@ async function checkForThreadUpdates(env, db) {
         if (!threadId) continue;
 
         // Get the last message we have stored
-        const lastStoredMessageId = row.thread_last_message_id ||
-          (evidence.messages?.length > 0 ? evidence.messages[evidence.messages.length - 1]?.id : null);
+        const lastStoredMessageId = evidence.messages?.length > 0
+          ? evidence.messages[evidence.messages.length - 1]?.id
+          : null;
 
         // Fetch current last message from Discord thread
         const lastMessageUrl = `https://discord.com/api/v10/channels/${threadId}/messages?limit=1`;
@@ -383,12 +405,10 @@ async function checkForThreadUpdates(env, db) {
           // Store back to database
           await db.prepare(`
             UPDATE scammer_profile_cache
-            SET thread_evidence = ?,
-                thread_last_message_id = ?
+            SET thread_evidence = ?
             WHERE user_id = ?
           `).bind(
             JSON.stringify(updatedEvidence),
-            uniqueMessages[uniqueMessages.length - 1]?.id || currentLastMessageId,
             row.user_id
           ).run();
 
@@ -586,21 +606,21 @@ async function retryFailedMediaUploads(env, db) {
 async function fetchRecentMessages(channelId, env, limit = 100) {
   const url = new URL(`https://discord.com/api/v10/channels/${channelId}/messages`);
   url.searchParams.set('limit', limit.toString());
-  
+
   const response = await fetch(url.toString(), {
     headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
   });
-  
+
   if (response.status === 429) {
     const retryAfter = await response.json();
     await new Promise(r => setTimeout(r, (retryAfter.retry_after || 1) * 1000));
     return fetchRecentMessages(channelId, env, limit);
   }
-  
+
   if (!response.ok) {
     throw new Error(`Discord API error: ${response.status}`);
   }
-  
+
   return await response.json();
 }
 
@@ -610,22 +630,22 @@ async function fetchRecentMessages(channelId, env, limit = 100) {
 async function fetchActiveThreads(channelId, env) {
   try {
     const url = `https://discord.com/api/v10/channels/${channelId}/threads/active`;
-    
+
     const response = await fetch(url, {
       headers: { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` }
     });
-    
+
     if (response.status === 429) {
       const retryAfter = await response.json();
       await new Promise(r => setTimeout(r, (retryAfter.retry_after || 1) * 1000));
       return fetchActiveThreads(channelId, env);
     }
-    
+
     if (!response.ok) {
       console.warn(`[PERIODIC CHECK] Failed to fetch active threads: ${response.status}`);
       return [];
     }
-    
+
     const data = await response.json();
     return data.threads || [];
   } catch (error) {
@@ -728,7 +748,7 @@ async function uploadToCloudflareMedia(attachment, env) {
   const contentType = attachment.content_type || '';
   const isImage = contentType.startsWith('image/');
   const isVideo = contentType.startsWith('video/') || contentType === 'video/quicktime';
-  
+
   if (isImage) {
     return await uploadToCloudflareImages(attachment, env);
   } else if (isVideo) {
@@ -745,8 +765,8 @@ async function uploadToCloudflareMedia(attachment, env) {
 
 async function uploadToCloudflareImages(attachment, env) {
   const accountId = env.CLOUDFLARE_ACCOUNT_ID;
-    const apiToken = env.CLOUDFLARE_STREAM_TOKEN;
-  
+  const apiToken = env.CLOUDFLARE_STREAM_TOKEN;
+
   if (!accountId || !apiToken) {
     return {
       id: attachment.id,
@@ -755,15 +775,15 @@ async function uploadToCloudflareImages(attachment, env) {
       url: attachment.url
     };
   }
-  
+
   const customId = `scammer-evidence-${attachment.id}`;
-  
+
   // Check if already exists
   const checkUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1/${customId}`;
   const checkRes = await fetch(checkUrl, {
     headers: { Authorization: `Bearer ${apiToken}` }
   });
-  
+
   if (checkRes.ok) {
     const existing = await checkRes.json();
     if (existing.success && existing.result?.variants?.[0]) {
@@ -776,29 +796,29 @@ async function uploadToCloudflareImages(attachment, env) {
       };
     }
   }
-  
+
   // Download and upload
   const downloadRes = await fetch(attachment.url);
   if (!downloadRes.ok) throw new Error('Failed to download');
-  
+
   const imageBlob = await downloadRes.blob();
-  
+
   const formData = new FormData();
   formData.append('file', imageBlob, attachment.filename);
   formData.append('id', customId);
-  
+
   const uploadUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1`;
   const uploadRes = await fetch(uploadUrl, {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiToken}` },
     body: formData
   });
-  
+
   if (!uploadRes.ok) throw new Error('Upload failed');
-  
+
   const result = await uploadRes.json();
   if (!result.success) throw new Error(result.errors?.[0]?.message || 'Upload failed');
-  
+
   return {
     id: attachment.id,
     filename: attachment.filename,
@@ -811,7 +831,7 @@ async function uploadToCloudflareImages(attachment, env) {
 async function uploadToCloudflareStream(attachment, env) {
   const accountId = env.CLOUDFLARE_ACCOUNT_ID;
   const apiToken = env.CLOUDFLARE_STREAM_TOKEN;
-  
+
   if (!accountId || !apiToken) {
     return {
       id: attachment.id,
@@ -820,15 +840,15 @@ async function uploadToCloudflareStream(attachment, env) {
       url: attachment.url
     };
   }
-  
+
   const customUid = `scammer-evidence-${attachment.id}`;
-  
+
   // Check if exists
   const searchUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream?search=${customUid}`;
   const searchRes = await fetch(searchUrl, {
     headers: { Authorization: `Bearer ${apiToken}` }
   });
-  
+
   if (searchRes.ok) {
     const existing = await searchRes.json();
     if (existing.success && existing.result?.length > 0) {
@@ -842,7 +862,7 @@ async function uploadToCloudflareStream(attachment, env) {
       };
     }
   }
-  
+
   // Upload via URL
   const uploadUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/copy`;
   const uploadRes = await fetch(uploadUrl, {
@@ -856,12 +876,12 @@ async function uploadToCloudflareStream(attachment, env) {
       meta: { name: customUid }
     })
   });
-  
+
   if (!uploadRes.ok) throw new Error('Stream upload failed');
-  
+
   const result = await uploadRes.json();
   if (!result.success) throw new Error(result.errors?.[0]?.message || 'Upload failed');
-  
+
   return {
     id: attachment.id,
     filename: attachment.filename,

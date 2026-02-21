@@ -74,7 +74,9 @@ async function handleGet({ request, env, params }) {
 
     // Get post
     const post = await env.DBA.prepare(
-      `SELECT p.*, u.role
+      `SELECT p.*, u.role, u.avatar_url,
+              COALESCE(u.display_name, u.username, p.username) as username,
+              CAST(p.user_id AS INTEGER) as user_id
        FROM forum_posts p
        LEFT JOIN users u ON p.user_id = u.user_id
        WHERE p.id = ? AND p.status = 'active'`
@@ -89,7 +91,9 @@ async function handleGet({ request, env, params }) {
 
     // Get comments for this post
     const comments = await env.DBA.prepare(
-      `SELECT c.*, u.role
+      `SELECT c.*, u.role, u.avatar_url,
+              COALESCE(u.display_name, u.username, c.username) as username,
+              CAST(c.user_id AS INTEGER) as user_id
        FROM forum_comments c
        LEFT JOIN users u ON c.user_id = u.user_id
        WHERE c.post_id = ? AND c.status = 'active'
@@ -120,7 +124,9 @@ async function handleGet({ request, env, params }) {
   const offset = parseInt(url.searchParams.get('offset')) || 0;
 
   let query = `
-    SELECT p.*, u.role
+    SELECT p.*, u.role, u.avatar_url,
+           COALESCE(u.display_name, u.username, p.username) as username,
+           CAST(p.user_id AS INTEGER) as user_id
     FROM forum_posts p
     LEFT JOIN users u ON p.user_id = u.user_id
     WHERE p.status = 'active'

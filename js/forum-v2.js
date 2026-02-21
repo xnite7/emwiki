@@ -483,9 +483,9 @@ class ForumV2 {
         });
     }
 
-    avatarImg(userId, username) {
-        if (userId) {
-            return `<img src="https://www.roblox.com/headshot-thumbnail/image?userId=${userId}&width=150&height=150&format=png" alt="${this.escapeHtml(username || '')}" loading="lazy">`;
+    avatarImg(avatarUrl, username) {
+        if (avatarUrl) {
+            return `<img src="${this.escapeHtml(avatarUrl)}" alt="${this.escapeHtml(username || '')}" loading="lazy">`;
         }
         return (username || '?').charAt(0).toUpperCase();
     }
@@ -522,8 +522,9 @@ class ForumV2 {
                 <p class="post-preview">${this.escapeHtml(preview)}</p>
                 <div class="post-footer">
                     <div class="post-author">
-                        <div class="post-author-avatar">${this.avatarImg(post.user_id, post.username)}</div>
+                        <div class="post-author-avatar">${this.avatarImg(post.avatar_url, post.username)}</div>
                         <span class="post-author-name">${this.escapeHtml(post.username)}</span>
+                        ${this._getRoleBadge(post.role)}
                         <span class="post-time">${this.timeAgo(post.created_at)}</span>
                     </div>
                     <div class="post-stats">
@@ -613,7 +614,7 @@ class ForumV2 {
                 </div>
                 <h1 class="thread-title">${this.escapeHtml(post.title)}</h1>
                 <div class="thread-author-row">
-                    <div class="thread-avatar">${this.avatarImg(post.user_id, post.username)}</div>
+                    <div class="thread-avatar">${this.avatarImg(post.avatar_url, post.username)}</div>
                     <div class="thread-author-info">
                         <span class="thread-author-name">${this.escapeHtml(post.username)} ${this._getRoleBadge(post.role)}</span>
                         <span class="thread-author-time">${this.timeAgo(post.created_at)} ${editedStr}</span>
@@ -683,7 +684,7 @@ class ForumV2 {
 
         return `<div class="comment-item" data-comment-id="${comment.id}">
             <div class="comment-top">
-                <div class="comment-avatar">${this.avatarImg(comment.user_id, comment.username)}</div>
+                <div class="comment-avatar">${this.avatarImg(comment.avatar_url, comment.username)}</div>
                 <span class="comment-author-name">${this.escapeHtml(comment.username)}</span>
                 ${this._getRoleBadge(comment.role)}
                 <span class="comment-time">${this.timeAgo(comment.created_at)}${editedStr}</span>

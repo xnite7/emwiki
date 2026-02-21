@@ -156,7 +156,9 @@ async function handlePost({ request, env, params }) {
 
     // Get the created comment with user role
     const comment = await env.DBA.prepare(
-      `SELECT c.*, u.role
+      `SELECT c.*, u.role, u.avatar_url,
+              COALESCE(u.display_name, u.username, c.username) as username,
+              CAST(c.user_id AS INTEGER) as user_id
        FROM forum_comments c
        LEFT JOIN users u ON c.user_id = u.user_id
        WHERE c.id = ?`
