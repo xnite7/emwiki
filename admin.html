@@ -320,7 +320,7 @@
                                     <option value="text">Text</option>
                                     <option value="timer">Timer</option>
                                     <option value="coins">Coins</option>
-                                    <option value="gems">Gems</option>
+                                    <option value="robux">Robux</option>
                                     <option value="custom">Custom Icon</option>
                                 </select>
                             </div>
@@ -8995,7 +8995,7 @@
                     return;
                 }
 
-                const metaTypeLabels = { timer: 'Timer', coins: 'Coins', gems: 'Gems', text: 'Text', custom: 'Custom' };
+                const metaTypeLabels = { timer: 'Timer', coins: 'Coins', robux: 'Robux', text: 'Text', custom: 'Custom' };
 
                 container.innerHTML = this.chests.map(c => `
                     <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#63636320;border:1px solid #6363633d;border-radius:8px;transition:background .2s"
@@ -9087,7 +9087,7 @@
                 };
 
                 if (!payload.id || !payload.name || !payload.image_url || !payload.from_keywords) {
-                    UI.showToast('Please fill in all required fields (ID, Name, Image URL, Keywords)', 'error');
+                    ErrorHandler.showToast('Please fill in all required fields (ID, Name, Image URL, Keywords)', 'error');
                     return;
                 }
 
@@ -9112,16 +9112,16 @@
 
                     const data = await res.json();
                     if (!res.ok) {
-                        UI.showToast(data.error || 'Failed to save chest', 'error');
+                        ErrorHandler.showToast(data.error || 'Failed to save chest', 'error');
                         return;
                     }
 
-                    UI.showToast(isEdit ? 'Chest updated' : 'Chest created', 'success');
+                    ErrorHandler.showToast(isEdit ? 'Chest updated' : 'Chest created', 'success');
                     this.closeEditor();
                     await this.loadChests();
                 } catch (e) {
                     console.error('Save chest error:', e);
-                    UI.showToast('Failed to save chest', 'error');
+                    ErrorHandler.showToast('Failed to save chest', 'error');
                 } finally {
                     saveBtn.disabled = false;
                     saveBtn.textContent = 'Save Chest';
@@ -9140,15 +9140,15 @@
 
                     if (!res.ok) {
                         const data = await res.json();
-                        UI.showToast(data.error || 'Failed to delete chest', 'error');
+                        ErrorHandler.showToast(data.error || 'Failed to delete chest', 'error');
                         return;
                     }
 
-                    UI.showToast('Chest deleted', 'success');
+                    ErrorHandler.showToast('Chest deleted', 'success');
                     await this.loadChests();
                 } catch (e) {
                     console.error('Delete chest error:', e);
-                    UI.showToast('Failed to delete chest', 'error');
+                    ErrorHandler.showToast('Failed to delete chest', 'error');
                 }
             },
 
