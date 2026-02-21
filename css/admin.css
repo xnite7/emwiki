@@ -3874,3 +3874,8 @@ body.dragging-panel {
 .title-category:hover::before {
     left: 100%;
 }
+
+@keyframes rainbow-chest {
+    from { filter: hue-rotate(0deg); }
+    to { filter: hue-rotate(360deg); }
+}

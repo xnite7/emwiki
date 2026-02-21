@@ -273,6 +273,92 @@
                 </div>
             </div>
 
+            <!-- Chest Management Section -->
+            <div class="section" id="chest-management-section">
+                <h2>Chest Management</h2>
+                <div class="panel">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+                        <span style="color:#999;font-size:13px" id="chest-count-label">0 chests</span>
+                        <button class="small-btn" id="add-chest-btn" style="padding:8px 18px">+ Add Chest</button>
+                    </div>
+                    <div id="chest-management-list" style="display:flex;flex-direction:column;gap:8px">
+                        <p class="loading">Loading chests...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chest Editor Modal -->
+            <div id="chest-editor-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:10000;justify-content:center;align-items:center">
+                <div style="background:#1e1e2e;border:1px solid #6363637d;border-radius:12px;width:min(520px,95vw);max-height:90vh;overflow-y:auto;padding:28px">
+                    <h2 id="chest-editor-title" style="margin:0 0 20px;font-size:18px">Add Chest</h2>
+                    <div style="display:flex;flex-direction:column;gap:14px">
+                        <div style="display:flex;gap:12px">
+                            <div style="flex:1">
+                                <label style="display:block;margin-bottom:4px;font-size:12px;color:#999">ID (slug)</label>
+                                <input id="chest-ed-id" type="text" placeholder="e.g. luckychest" style="width:100%;padding:9px;border:1px solid #6363637d;border-radius:6px;background:#63636347;color:white;box-sizing:border-box">
+                            </div>
+                            <div style="flex:1">
+                                <label style="display:block;margin-bottom:4px;font-size:12px;color:#999">Display Name</label>
+                                <input id="chest-ed-name" type="text" placeholder="e.g. Lucky Chest" style="width:100%;padding:9px;border:1px solid #6363637d;border-radius:6px;background:#63636347;color:white;box-sizing:border-box">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display:block;margin-bottom:4px;font-size:12px;color:#999">Image URL</label>
+                            <div style="display:flex;gap:8px;align-items:center">
+                                <input id="chest-ed-img" type="text" placeholder="https://emwiki.com/imgs/..." style="flex:1;padding:9px;border:1px solid #6363637d;border-radius:6px;background:#63636347;color:white">
+                                <img id="chest-ed-img-preview" src="" alt="" style="width:40px;height:40px;border-radius:6px;object-fit:contain;background:#63636347;display:none">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display:block;margin-bottom:4px;font-size:12px;color:#999">From Keywords <span style="color:#666">(comma-separated, matched against item "from" field)</span></label>
+                            <input id="chest-ed-keywords" type="text" placeholder="e.g. lucky chest" style="width:100%;padding:9px;border:1px solid #6363637d;border-radius:6px;background:#63636347;color:white;box-sizing:border-box">
+                        </div>
+                        <div style="display:flex;gap:12px">
+                            <div style="flex:1">
+                                <label style="display:block;margin-bottom:4px;font-size:12px;color:#999">Meta Type</label>
+                                <select id="chest-ed-metatype" style="width:100%;padding:9px;border:1px solid #6363637d;border-radius:6px;background:#63636347;color:white;box-sizing:border-box">
+                                    <option value="text">Text</option>
+                                    <option value="timer">Timer</option>
+                                    <option value="coins">Coins</option>
+                                    <option value="gems">Gems</option>
+                                    <option value="custom">Custom Icon</option>
+                                </select>
+                            </div>
+                            <div style="flex:1">
+                                <label style="display:block;margin-bottom:4px;font-size:12px;color:#999">Meta Value</label>
+                                <input id="chest-ed-metaval" type="text" placeholder="e.g. 30:00 or 99" style="width:100%;padding:9px;border:1px solid #6363637d;border-radius:6px;background:#63636347;color:white;box-sizing:border-box">
+                            </div>
+                        </div>
+                        <div id="chest-ed-custom-fields" style="display:none;flex-direction:column;gap:14px">
+                            <div>
+                                <label style="display:block;margin-bottom:4px;font-size:12px;color:#999">Custom Icon URL</label>
+                                <input id="chest-ed-metaicon" type="text" placeholder="https://..." style="width:100%;padding:9px;border:1px solid #6363637d;border-radius:6px;background:#63636347;color:white;box-sizing:border-box">
+                            </div>
+                            <div>
+                                <label style="display:block;margin-bottom:4px;font-size:12px;color:#999">Custom CSS Style</label>
+                                <input id="chest-ed-metastyle" type="text" placeholder="color:#fff;text-shadow:..." style="width:100%;padding:9px;border:1px solid #6363637d;border-radius:6px;background:#63636347;color:white;box-sizing:border-box">
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:12px">
+                            <div style="flex:1">
+                                <label style="display:block;margin-bottom:4px;font-size:12px;color:#999">Sort Order</label>
+                                <input id="chest-ed-sort" type="number" value="0" style="width:100%;padding:9px;border:1px solid #6363637d;border-radius:6px;background:#63636347;color:white;box-sizing:border-box">
+                            </div>
+                            <div style="flex:1;display:flex;align-items:end;padding-bottom:4px">
+                                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#ccc">
+                                    <input id="chest-ed-rainbow" type="checkbox" style="width:16px;height:16px">
+                                    Rainbow animation
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px">
+                        <button id="chest-ed-cancel" class="small-btn" style="padding:9px 20px;background:#444">Cancel</button>
+                        <button id="chest-ed-save" class="small-btn" style="padding:9px 20px;background:#667eea">Save Chest</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- User Management Section -->
             <div class="section" id="user-management-section">
                 <h2>User Management</h2>
@@ -6602,6 +6688,7 @@
                 { id: 'history-section', name: 'History', sectionId: 'history-section' },
                 { id: 'gallery-moderation-section', name: 'Gallery Moderation', sectionId: 'gallery-moderation-section' },
                 { id: 'demand-review-section', name: 'Demand Review', sectionId: 'demand-review-section' },
+                { id: 'chest-management-section', name: 'Chest Management', sectionId: 'chest-management-section' },
                 { id: 'user-management-section', name: 'User Management', sectionId: 'user-management-section' },
                 { id: 'notes-section', name: 'Notes', sectionId: 'notes-section' }
             ],
@@ -7675,6 +7762,7 @@
                 UndoRedoManager.init();
                 ItemAdder.init();
                 GalleryMod.init();
+                ChestManager.init();
                 UserManagement.init();
                 this.initEventListeners();
                 // UpdateChecker.start(); // Disabled - no longer needed with D1 database
@@ -8841,6 +8929,235 @@
                 }
             }
 
+        };
+
+        // ============================
+        // Chest Management
+        // ============================
+        const ChestManager = {
+            chests: [],
+            editingId: null,
+
+            async init() {
+                await this.loadChests();
+                this.bindEvents();
+            },
+
+            bindEvents() {
+                const addBtn = document.getElementById('add-chest-btn');
+                const overlay = document.getElementById('chest-editor-overlay');
+                const cancelBtn = document.getElementById('chest-ed-cancel');
+                const saveBtn = document.getElementById('chest-ed-save');
+                const metaTypeSelect = document.getElementById('chest-ed-metatype');
+                const imgInput = document.getElementById('chest-ed-img');
+
+                addBtn.addEventListener('click', () => this.openEditor());
+                cancelBtn.addEventListener('click', () => this.closeEditor());
+                saveBtn.addEventListener('click', () => this.saveChest());
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) this.closeEditor();
+                });
+                metaTypeSelect.addEventListener('change', () => {
+                    document.getElementById('chest-ed-custom-fields').style.display =
+                        metaTypeSelect.value === 'custom' ? 'flex' : 'none';
+                });
+                imgInput.addEventListener('input', () => {
+                    const preview = document.getElementById('chest-ed-img-preview');
+                    if (imgInput.value.trim()) {
+                        preview.src = imgInput.value.trim();
+                        preview.style.display = 'block';
+                    } else {
+                        preview.style.display = 'none';
+                    }
+                });
+            },
+
+            async loadChests() {
+                try {
+                    const res = await fetch('/api/chests');
+                    const data = await res.json();
+                    this.chests = data.chests || [];
+                    this.render();
+                } catch (e) {
+                    console.error('Failed to load chests:', e);
+                    document.getElementById('chest-management-list').innerHTML =
+                        '<p class="loading" style="color:#ff6b6b">Failed to load chests</p>';
+                }
+            },
+
+            render() {
+                const container = document.getElementById('chest-management-list');
+                const countLabel = document.getElementById('chest-count-label');
+                countLabel.textContent = `${this.chests.length} chest${this.chests.length !== 1 ? 's' : ''}`;
+
+                if (this.chests.length === 0) {
+                    container.innerHTML = '<p class="loading">No chests defined yet</p>';
+                    return;
+                }
+
+                const metaTypeLabels = { timer: 'Timer', coins: 'Coins', gems: 'Gems', text: 'Text', custom: 'Custom' };
+
+                container.innerHTML = this.chests.map(c => `
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#63636320;border:1px solid #6363633d;border-radius:8px;transition:background .2s"
+                         onmouseenter="this.style.background='#63636340'" onmouseleave="this.style.background='#63636320'">
+                        <img src="${this.escHtml(c.image_url)}" alt="${this.escHtml(c.name)}"
+                             style="width:38px;height:38px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));flex-shrink:0${c.rainbow_effect ? ';animation:2s rainbow-chest infinite linear' : ''}">
+                        <div style="flex:1;min-width:0">
+                            <div style="font-weight:600;font-size:14px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${this.escHtml(c.name)}</div>
+                            <div style="font-size:11px;color:#999;display:flex;gap:8px;flex-wrap:wrap;margin-top:2px">
+                                <span style="color:#667eea">${this.escHtml(c.id)}</span>
+                                <span>${metaTypeLabels[c.meta_type] || c.meta_type}: ${this.escHtml(c.meta_value || '—')}</span>
+                                <span style="color:#666">keywords: ${this.escHtml(c.from_keywords)}</span>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:6px;flex-shrink:0">
+                            <button class="small-btn" style="padding:5px 12px;font-size:12px"
+                                    onclick="ChestManager.openEditor('${this.escHtml(c.id)}')">Edit</button>
+                            <button class="small-btn" style="padding:5px 12px;font-size:12px;background:#c0392b"
+                                    onclick="ChestManager.confirmDelete('${this.escHtml(c.id)}','${this.escHtml(c.name)}')">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            openEditor(id) {
+                this.editingId = id || null;
+                const overlay = document.getElementById('chest-editor-overlay');
+                const title = document.getElementById('chest-editor-title');
+                const idInput = document.getElementById('chest-ed-id');
+
+                if (id) {
+                    const chest = this.chests.find(c => c.id === id);
+                    if (!chest) return;
+                    title.textContent = 'Edit Chest';
+                    idInput.value = chest.id;
+                    idInput.disabled = true;
+                    idInput.style.opacity = '0.5';
+                    document.getElementById('chest-ed-name').value = chest.name;
+                    document.getElementById('chest-ed-img').value = chest.image_url;
+                    document.getElementById('chest-ed-keywords').value = chest.from_keywords;
+                    document.getElementById('chest-ed-metatype').value = chest.meta_type;
+                    document.getElementById('chest-ed-metaval').value = chest.meta_value || '';
+                    document.getElementById('chest-ed-metaicon').value = chest.meta_icon || '';
+                    document.getElementById('chest-ed-metastyle').value = chest.meta_style || '';
+                    document.getElementById('chest-ed-sort').value = chest.sort_order;
+                    document.getElementById('chest-ed-rainbow').checked = !!chest.rainbow_effect;
+                    document.getElementById('chest-ed-custom-fields').style.display =
+                        chest.meta_type === 'custom' ? 'flex' : 'none';
+                    const preview = document.getElementById('chest-ed-img-preview');
+                    preview.src = chest.image_url;
+                    preview.style.display = 'block';
+                } else {
+                    title.textContent = 'Add Chest';
+                    idInput.disabled = false;
+                    idInput.style.opacity = '1';
+                    idInput.value = '';
+                    document.getElementById('chest-ed-name').value = '';
+                    document.getElementById('chest-ed-img').value = '';
+                    document.getElementById('chest-ed-keywords').value = '';
+                    document.getElementById('chest-ed-metatype').value = 'text';
+                    document.getElementById('chest-ed-metaval').value = '';
+                    document.getElementById('chest-ed-metaicon').value = '';
+                    document.getElementById('chest-ed-metastyle').value = '';
+                    document.getElementById('chest-ed-sort').value = this.chests.length;
+                    document.getElementById('chest-ed-rainbow').checked = false;
+                    document.getElementById('chest-ed-custom-fields').style.display = 'none';
+                    document.getElementById('chest-ed-img-preview').style.display = 'none';
+                }
+                overlay.style.display = 'flex';
+            },
+
+            closeEditor() {
+                document.getElementById('chest-editor-overlay').style.display = 'none';
+                this.editingId = null;
+            },
+
+            async saveChest() {
+                const payload = {
+                    id: document.getElementById('chest-ed-id').value.trim(),
+                    name: document.getElementById('chest-ed-name').value.trim(),
+                    image_url: document.getElementById('chest-ed-img').value.trim(),
+                    from_keywords: document.getElementById('chest-ed-keywords').value.trim(),
+                    meta_type: document.getElementById('chest-ed-metatype').value,
+                    meta_value: document.getElementById('chest-ed-metaval').value.trim() || null,
+                    meta_icon: document.getElementById('chest-ed-metaicon').value.trim() || null,
+                    meta_style: document.getElementById('chest-ed-metastyle').value.trim() || null,
+                    sort_order: parseInt(document.getElementById('chest-ed-sort').value) || 0,
+                    rainbow_effect: document.getElementById('chest-ed-rainbow').checked
+                };
+
+                if (!payload.id || !payload.name || !payload.image_url || !payload.from_keywords) {
+                    UI.showToast('Please fill in all required fields (ID, Name, Image URL, Keywords)', 'error');
+                    return;
+                }
+
+                const token = localStorage.getItem('auth_token');
+                const saveBtn = document.getElementById('chest-ed-save');
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Saving...';
+
+                try {
+                    const isEdit = !!this.editingId;
+                    const url = isEdit ? `/api/chests/${this.editingId}` : '/api/chests';
+                    const method = isEdit ? 'PUT' : 'POST';
+
+                    const res = await fetch(url, {
+                        method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await res.json();
+                    if (!res.ok) {
+                        UI.showToast(data.error || 'Failed to save chest', 'error');
+                        return;
+                    }
+
+                    UI.showToast(isEdit ? 'Chest updated' : 'Chest created', 'success');
+                    this.closeEditor();
+                    await this.loadChests();
+                } catch (e) {
+                    console.error('Save chest error:', e);
+                    UI.showToast('Failed to save chest', 'error');
+                } finally {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Save Chest';
+                }
+            },
+
+            async confirmDelete(id, name) {
+                if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+
+                const token = localStorage.getItem('auth_token');
+                try {
+                    const res = await fetch(`/api/chests/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (!res.ok) {
+                        const data = await res.json();
+                        UI.showToast(data.error || 'Failed to delete chest', 'error');
+                        return;
+                    }
+
+                    UI.showToast('Chest deleted', 'success');
+                    await this.loadChests();
+                } catch (e) {
+                    console.error('Delete chest error:', e);
+                    UI.showToast('Failed to delete chest', 'error');
+                }
+            },
+
+            escHtml(str) {
+                if (!str) return '';
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
         };
 
         // ============================

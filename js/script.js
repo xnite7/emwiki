@@ -1106,6 +1106,23 @@ class BaseApp {
                 ['#ff7518', '#000000']
             ];
 
+        } else if (now.getMonth() === 1) { // if february
+
+            rarities = [{
+                type: "https://emwiki.com/imgs/epicfaces/loveface.png",
+                chance: 20
+            }, {
+                type: "https://emwiki.com/imgs/epicfaces/o7IJiwl.png",
+                chance: 20
+            }, {
+                type: "https://emwiki.com/imgs/epicfaces/loveface.png",
+                chance: 0
+            }];
+
+            titleColors = [
+                ['#ff4d6d', '#ff8fab']
+            ];
+
         } else if (now.getMonth() === 11) { // if december
 
             rarities = [{
