@@ -4,11 +4,11 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-	<title>Forum - EM Wiki</title>
-	<meta name="description" content="Community forum for Epic Minigames - Discuss, trade, and connect with other players!" />
-	<meta property="og:title" content="Forum - EM Wiki">
+	<title>Community Forum - EM Wiki</title>
+	<meta name="description" content="Join the Epic Minigames community forum - Discuss, share, and connect with other players!" />
+	<meta property="og:title" content="Community Forum - EM Wiki">
 	<meta property="og:image" content="https://emwiki.com/imgs/QgWIUWf.png">
-	<meta property="og:description" content="Community forum for Epic Minigames - Discuss, trade, and connect with other players!">
+	<meta property="og:description" content="Join the Epic Minigames community forum - Discuss, share, and connect with other players!">
 	<link rel="icon" href="./imgs/favicon.png" type="image/png">
 	<link rel="apple-touch-icon" href="./imgs/app.png">
 	<link rel="manifest" href="/site.webmanifest">
@@ -17,10 +17,1013 @@
 	<meta name="mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 	<link rel="stylesheet" href="./css/style.css">
-	<link rel="stylesheet" href="./css/forum.css">
-	
+
 	<!-- Popover compatibility for older browsers -->
 	<script src="./js/popover-loader.js"></script>
+
+	<style>
+		body {
+			min-height: 100vh;
+			background-image: none;
+			background-repeat: space;
+			background-position: center;
+			background-attachment: fixed;
+			opacity: 0;
+			backdrop-filter: blur(10px);
+			animation: bodyFadeIn 1s ease-out forwards;
+		}
+
+		@keyframes bodyFadeIn {
+			99% { background-image: none; }
+			to { opacity: 1; background-image: url(./imgs/valentinesbg.png); }
+		}
+
+		@media screen and (max-width: 2062px) {
+			body { background-repeat: repeat; }
+		}
+
+		/* ── Forum Layout ── */
+
+		.forum-wrap {
+			max-width: 920px;
+			margin: 0 auto;
+			padding: 24px 16px 60px;
+		}
+
+		/* ── Toolbar ── */
+
+		.forum-toolbar {
+			display: flex;
+			gap: 12px;
+			align-items: center;
+			flex-wrap: wrap;
+			margin-bottom: 20px;
+		}
+
+		.forum-toolbar .search-container {
+			flex: 1;
+			min-width: 200px;
+			margin: 0;
+		}
+
+		.forum-toolbar #forum-search {
+			font-size: 15px;
+			width: 100%;
+			padding: 12px 50px 12px 18px;
+			border: 2px solid transparent;
+			border-radius: 50px;
+			background: var(--bg-item);
+			box-shadow: 0 0 20px var(--shadow-color), inset 0px 3px 18px #00000033;
+			transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+			color: var(--text-primary);
+			font-family: inherit;
+		}
+
+		.forum-toolbar #forum-search:focus {
+			outline: none;
+			transform: translateY(-2px);
+			background: var(--border-color);
+			box-shadow: 0 15px 40px var(--shadow-color), inset 0px 3px 18px #85858536, 0 0 20px rgba(74, 158, 255, 0.25);
+			border-color: #4a9eff;
+		}
+
+		.forum-toolbar #forum-search::placeholder { color: #868686a8; }
+
+		.forum-actions {
+			display: flex;
+			gap: 10px;
+			flex-wrap: wrap;
+		}
+
+		/* ── Category Nav ── */
+
+		.forum-wrap .category-nav-container {
+			margin: 0 0 20px;
+			position: relative;
+			top: 0;
+		}
+
+		/* ── Sort Row ── */
+
+		.forum-sort-row {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			margin-bottom: 20px;
+			font-size: 14px;
+			color: var(--text-secondary);
+		}
+
+		.forum-sort-row select {
+			padding: 7px 14px;
+			border: 2px solid var(--border-color);
+			border-radius: 10px;
+			background: var(--bg-item);
+			color: var(--text-primary);
+			font-size: 14px;
+			font-family: inherit;
+			cursor: pointer;
+			transition: border-color 0.2s;
+		}
+
+		.forum-sort-row select:focus {
+			outline: none;
+			border-color: #4a9eff;
+		}
+
+		/* ── Post Cards (vertical list) ── */
+
+		.forum-posts {
+			display: flex;
+			flex-direction: column;
+			gap: 14px;
+		}
+
+		.post-card {
+			display: flex;
+			gap: 16px;
+			background: var(--bg-item);
+			border: 1px solid var(--border-color);
+			border-radius: 14px;
+			padding: 18px;
+			cursor: pointer;
+			transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+			position: relative;
+			overflow: hidden;
+		}
+
+		.post-card::after {
+			content: '';
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 4px;
+			height: 100%;
+			background: linear-gradient(180deg, #4a9eff, #667eea);
+			transform: scaleY(0);
+			transition: transform 0.25s ease;
+		}
+
+		.post-card:hover {
+			transform: translateY(-3px);
+			box-shadow: 0 8px 30px var(--shadow-color);
+			border-color: rgba(74, 158, 255, 0.35);
+		}
+
+		.post-card:hover::after { transform: scaleY(1); }
+
+		.post-card.pinned {
+			border-color: rgba(255, 193, 7, 0.4);
+			background: linear-gradient(135deg, var(--bg-item) 0%, rgba(255, 193, 7, 0.06) 100%);
+		}
+
+		.post-card.pinned::after {
+			background: linear-gradient(180deg, #ffc107, #ff9800);
+			transform: scaleY(1);
+		}
+
+		/* Thumbnail */
+		.post-thumb {
+			width: 90px;
+			height: 90px;
+			border-radius: 10px;
+			flex-shrink: 0;
+			background-size: cover;
+			background-position: center;
+			background-color: var(--bg-item-hover);
+		}
+
+		.post-thumb-fallback {
+			width: 100%;
+			height: 100%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 28px;
+			font-weight: 800;
+			opacity: 0.25;
+			border-radius: 10px;
+		}
+
+		.post-body {
+			flex: 1;
+			min-width: 0;
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+		}
+
+		.post-meta-top {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			flex-wrap: wrap;
+		}
+
+		.post-category-badge {
+			padding: 3px 10px;
+			border-radius: 20px;
+			font-size: 11px;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.4px;
+			line-height: 1.4;
+		}
+
+		.post-category-badge.general { background: rgba(158, 158, 158, 0.18); color: #9e9e9e; }
+		.post-category-badge.trading { background: rgba(33, 150, 243, 0.18); color: #2196f3; }
+		.post-category-badge.updates { background: rgba(255, 152, 0, 0.18); color: #ff9800; }
+		.post-category-badge.guides { background: rgba(156, 39, 176, 0.18); color: #9c27b0; }
+		.post-category-badge.feedback { background: rgba(76, 175, 80, 0.18); color: #4caf50; }
+		.post-category-badge.off-topic { background: rgba(244, 67, 54, 0.18); color: #f44336; }
+
+		.post-badge {
+			padding: 2px 8px;
+			border-radius: 8px;
+			font-size: 10px;
+			font-weight: 700;
+			display: inline-flex;
+			align-items: center;
+			gap: 3px;
+		}
+
+		.post-badge svg { width: 11px; height: 11px; flex-shrink: 0; }
+		.post-badge.pin { background: rgba(255, 193, 7, 0.18); color: #ffc107; }
+		.post-badge.lock { background: rgba(244, 67, 54, 0.18); color: #f44336; }
+
+		.post-title {
+			font-size: 17px;
+			font-weight: 700;
+			color: var(--text-primary);
+			line-height: 1.35;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			line-clamp: 2;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+			margin: 0;
+		}
+
+		.post-preview {
+			font-size: 13.5px;
+			color: var(--text-secondary);
+			line-height: 1.55;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			line-clamp: 2;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+			margin: 0;
+		}
+
+		.post-footer {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 10px;
+			margin-top: auto;
+			padding-top: 8px;
+			flex-wrap: wrap;
+		}
+
+		.post-author {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			min-width: 0;
+		}
+
+		.post-author-avatar {
+			width: 26px;
+			height: 26px;
+			border-radius: 50%;
+			background: linear-gradient(135deg, #4a9eff, #667eea);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: 700;
+			color: white;
+			font-size: 12px;
+			flex-shrink: 0;
+			overflow: hidden;
+		}
+
+		.post-author-avatar img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			border-radius: 50%;
+		}
+
+		.post-author-name {
+			font-size: 13px;
+			font-weight: 600;
+			color: var(--text-primary);
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.post-time {
+			font-size: 12px;
+			color: var(--text-secondary);
+			white-space: nowrap;
+		}
+
+		.post-stats {
+			display: flex;
+			gap: 14px;
+			align-items: center;
+		}
+
+		.post-stat {
+			display: flex;
+			align-items: center;
+			gap: 4px;
+			font-size: 12.5px;
+			color: var(--text-secondary);
+		}
+
+		.post-stat svg { width: 14px; height: 14px; flex-shrink: 0; opacity: 0.7; }
+
+		/* ── Loading / Empty / Error ── */
+
+		.forum-state {
+			text-align: center;
+			padding: 70px 20px;
+		}
+
+		.forum-state svg { width: 56px; height: 56px; margin-bottom: 16px; opacity: 0.25; }
+		.forum-state h3 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+		.forum-state p { font-size: 15px; color: var(--text-secondary); margin-bottom: 20px; }
+
+		.forum-spinner {
+			width: 40px;
+			height: 40px;
+			margin: 0 auto 16px;
+			border: 3px solid var(--border-color);
+			border-top-color: #4a9eff;
+			border-radius: 50%;
+			animation: spin 0.8s linear infinite;
+		}
+
+		@keyframes spin { to { transform: rotate(360deg); } }
+
+		/* ── Thread View ── */
+
+		.thread-view { display: none; }
+		.thread-view.active { display: block; }
+
+		.thread-back {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			margin-bottom: 20px;
+			cursor: pointer;
+		}
+
+		.thread-post {
+			background: var(--bg-item);
+			border: 1px solid var(--border-color);
+			border-radius: 16px;
+			padding: 28px;
+			margin-bottom: 24px;
+		}
+
+		.thread-top-row {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 10px;
+			flex-wrap: wrap;
+			margin-bottom: 14px;
+		}
+
+		.thread-badges { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+		.thread-admin-actions {
+			display: flex;
+			gap: 8px;
+			flex-wrap: wrap;
+		}
+
+		.thread-admin-actions .btn { font-size: 12px; padding: 6px 12px; }
+
+		.thread-title {
+			font-size: 26px;
+			font-weight: 800;
+			line-height: 1.25;
+			margin-bottom: 16px;
+			color: var(--text-primary);
+		}
+
+		.thread-author-row {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			margin-bottom: 22px;
+			flex-wrap: wrap;
+		}
+
+		.thread-avatar {
+			width: 40px;
+			height: 40px;
+			border-radius: 50%;
+			background: linear-gradient(135deg, #4a9eff, #667eea);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: 700;
+			color: white;
+			font-size: 16px;
+			flex-shrink: 0;
+			overflow: hidden;
+		}
+
+		.thread-avatar img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			border-radius: 50%;
+		}
+
+		.thread-author-info { display: flex; flex-direction: column; gap: 1px; }
+		.thread-author-name { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+		.thread-author-time { font-size: 13px; color: var(--text-secondary); }
+
+		.role-badge {
+			padding: 2px 8px;
+			border-radius: 6px;
+			font-size: 10px;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.3px;
+		}
+
+		.role-badge.admin { background: rgba(244, 67, 54, 0.18); color: #f44336; }
+		.role-badge.moderator { background: rgba(255, 152, 0, 0.18); color: #ff9800; }
+
+		/* Rendered rich content */
+		.thread-content {
+			font-size: 15.5px;
+			line-height: 1.75;
+			color: var(--text-primary);
+			word-wrap: break-word;
+			overflow-wrap: break-word;
+			margin-bottom: 24px;
+		}
+
+		.thread-content h2 { font-size: 22px; font-weight: 700; margin: 18px 0 8px; }
+		.thread-content h3 { font-size: 18px; font-weight: 700; margin: 14px 0 6px; }
+
+		.thread-content strong { font-weight: 700; }
+		.thread-content em { font-style: italic; }
+		.thread-content u { text-decoration: underline; }
+
+		.thread-content img {
+			max-width: 100%;
+			border-radius: 10px;
+			margin: 10px 0;
+			display: block;
+		}
+
+		.thread-content a {
+			color: #4a9eff;
+			text-decoration: underline;
+			text-decoration-color: rgba(74, 158, 255, 0.3);
+			transition: text-decoration-color 0.2s;
+		}
+
+		.thread-content a:hover { text-decoration-color: #4a9eff; }
+
+		.thread-content blockquote {
+			border-left: 3px solid rgba(74, 158, 255, 0.4);
+			padding: 8px 16px;
+			margin: 10px 0;
+			color: var(--text-secondary);
+			background: rgba(74, 158, 255, 0.04);
+			border-radius: 0 8px 8px 0;
+		}
+
+		.thread-actions-row {
+			display: flex;
+			align-items: center;
+			gap: 16px;
+			padding-top: 18px;
+			border-top: 1px solid var(--border-color);
+			flex-wrap: wrap;
+		}
+
+		.thread-action-btn {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 8px 14px;
+			border: 1px solid var(--border-color);
+			border-radius: 10px;
+			background: transparent;
+			color: var(--text-secondary);
+			font-size: 13px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+			font-family: inherit;
+		}
+
+		.thread-action-btn svg { width: 16px; height: 16px; }
+
+		.thread-action-btn:hover {
+			background: var(--bg-item-hover);
+			color: var(--text-primary);
+			border-color: rgba(74, 158, 255, 0.3);
+		}
+
+		.thread-action-btn.liked {
+			color: #f44336;
+			border-color: rgba(244, 67, 54, 0.3);
+		}
+
+		.thread-action-btn.liked svg { fill: #f44336; }
+
+		.thread-stat {
+			font-size: 13px;
+			color: var(--text-secondary);
+			display: flex;
+			align-items: center;
+			gap: 5px;
+		}
+
+		.thread-stat svg { width: 15px; height: 15px; opacity: 0.6; }
+
+		/* ── Comments ── */
+
+		.comments-section {
+			background: var(--bg-item);
+			border: 1px solid var(--border-color);
+			border-radius: 16px;
+			padding: 24px;
+		}
+
+		.comments-header {
+			font-size: 18px;
+			font-weight: 700;
+			margin-bottom: 20px;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+
+		.comments-header svg { width: 20px; height: 20px; opacity: 0.6; }
+
+		.comment-count-num {
+			background: rgba(74, 158, 255, 0.15);
+			color: #4a9eff;
+			padding: 2px 8px;
+			border-radius: 8px;
+			font-size: 13px;
+		}
+
+		/* Comment Form */
+		.comment-form-wrap {
+			margin-bottom: 24px;
+			display: none;
+		}
+
+		.comment-form-wrap.visible { display: block; }
+
+		.comment-form-wrap .fmt-toolbar {
+			margin-bottom: 0;
+			border-radius: 10px 10px 0 0;
+			border-bottom: none;
+		}
+
+		.comment-textarea {
+			width: 100%;
+			min-height: 90px;
+			padding: 12px 14px;
+			border: 2px solid var(--border-color);
+			border-top: none;
+			border-radius: 0 0 10px 10px;
+			background: var(--bg-item);
+			color: var(--text-primary);
+			font-size: 14px;
+			font-family: inherit;
+			resize: vertical;
+			transition: border-color 0.2s;
+		}
+
+		.comment-textarea:focus {
+			outline: none;
+			border-color: #4a9eff;
+		}
+
+		.comment-form-footer {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-top: 10px;
+		}
+
+		.char-count {
+			font-size: 12px;
+			color: var(--text-secondary);
+		}
+
+		.char-count.over { color: #f44336; }
+
+		/* Comment Item */
+		.comment-item {
+			padding: 16px 0;
+			border-top: 1px solid var(--border-color);
+		}
+
+		.comment-item:first-of-type { border-top: none; }
+
+		.comment-top {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			margin-bottom: 8px;
+			flex-wrap: wrap;
+		}
+
+		.comment-avatar {
+			width: 28px;
+			height: 28px;
+			border-radius: 50%;
+			background: linear-gradient(135deg, #667eea, #764ba2);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: 700;
+			color: white;
+			font-size: 12px;
+			flex-shrink: 0;
+			overflow: hidden;
+		}
+
+		.comment-avatar img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			border-radius: 50%;
+		}
+
+		.comment-author-name { font-size: 13.5px; font-weight: 700; color: var(--text-primary); }
+		.comment-time { font-size: 12px; color: var(--text-secondary); }
+		.comment-edited { font-size: 11px; color: var(--text-secondary); font-style: italic; }
+
+		.comment-body {
+			font-size: 14.5px;
+			line-height: 1.65;
+			color: var(--text-primary);
+			word-wrap: break-word;
+			padding-left: 36px;
+		}
+
+		.comment-body img {
+			max-width: 100%;
+			border-radius: 8px;
+			margin: 6px 0;
+			display: block;
+		}
+
+		.comment-body blockquote {
+			border-left: 3px solid rgba(74, 158, 255, 0.3);
+			padding: 6px 12px;
+			margin: 6px 0;
+			color: var(--text-secondary);
+			border-radius: 0 6px 6px 0;
+		}
+
+		.comment-body a { color: #4a9eff; }
+
+		.comment-actions {
+			display: flex;
+			gap: 12px;
+			align-items: center;
+			padding-left: 36px;
+			margin-top: 6px;
+		}
+
+		.comment-act-btn {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+			background: none;
+			border: none;
+			color: var(--text-secondary);
+			font-size: 12px;
+			font-weight: 600;
+			cursor: pointer;
+			padding: 4px 0;
+			font-family: inherit;
+			transition: color 0.2s;
+		}
+
+		.comment-act-btn svg { width: 14px; height: 14px; }
+		.comment-act-btn:hover { color: var(--text-primary); }
+		.comment-act-btn.liked { color: #f44336; }
+		.comment-act-btn.liked svg { fill: #f44336; }
+
+		.comments-empty {
+			text-align: center;
+			padding: 30px 10px;
+			color: var(--text-secondary);
+			font-size: 14px;
+		}
+
+		.comment-login-prompt {
+			text-align: center;
+			padding: 16px;
+			color: var(--text-secondary);
+			font-size: 14px;
+			border-top: 1px solid var(--border-color);
+			margin-top: 8px;
+		}
+
+		/* ── Formatting Toolbar ── */
+
+		.fmt-toolbar {
+			display: flex;
+			gap: 2px;
+			padding: 6px 8px;
+			background: var(--bg-item-hover);
+			border: 2px solid var(--border-color);
+			border-radius: 10px;
+			margin-bottom: 0;
+			flex-wrap: wrap;
+		}
+
+		.fmt-btn {
+			width: 32px;
+			height: 30px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border: none;
+			border-radius: 6px;
+			background: transparent;
+			color: var(--text-secondary);
+			cursor: pointer;
+			font-size: 13px;
+			font-weight: 700;
+			font-family: inherit;
+			transition: all 0.15s;
+		}
+
+		.fmt-btn:hover {
+			background: var(--bg-item);
+			color: var(--text-primary);
+		}
+
+		.fmt-btn svg { width: 16px; height: 16px; }
+
+		.fmt-sep {
+			width: 1px;
+			background: var(--border-color);
+			margin: 4px 4px;
+		}
+
+		/* ── Modal ── */
+
+		.forum-modal {
+			display: none;
+			position: fixed;
+			inset: 0;
+			background: rgba(0, 0, 0, 0.65);
+			backdrop-filter: blur(6px);
+			z-index: 10000;
+			align-items: flex-start;
+			justify-content: center;
+			padding: 40px 16px;
+			overflow-y: auto;
+		}
+
+		.forum-modal.active { display: flex; }
+
+		.forum-modal-body {
+			background: var(--bg-secondary);
+			border: 1px solid var(--border-color);
+			border-radius: 18px;
+			width: 100%;
+			max-width: 640px;
+			padding: 28px;
+			box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+			animation: modalIn 0.25s ease;
+		}
+
+		@keyframes modalIn {
+			from { opacity: 0; transform: translateY(16px) scale(0.97); }
+			to { opacity: 1; transform: translateY(0) scale(1); }
+		}
+
+		.modal-head {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 22px;
+		}
+
+		.modal-head h2 {
+			font-size: 22px;
+			font-weight: 700;
+			color: var(--text-primary);
+		}
+
+		.modal-close-btn {
+			width: 34px;
+			height: 34px;
+			border: none;
+			background: var(--bg-item-hover);
+			border-radius: 10px;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 20px;
+			color: var(--text-secondary);
+			transition: all 0.2s;
+		}
+
+		.modal-close-btn:hover { background: #f44336; color: white; }
+
+		.form-group {
+			margin-bottom: 18px;
+		}
+
+		.form-group label {
+			display: block;
+			margin-bottom: 6px;
+			font-weight: 600;
+			font-size: 13.5px;
+			color: var(--text-primary);
+		}
+
+		.form-group input,
+		.form-group select {
+			width: 100%;
+			padding: 11px 14px;
+			border: 2px solid var(--border-color);
+			border-radius: 10px;
+			background: var(--bg-item);
+			color: var(--text-primary);
+			font-size: 15px;
+			font-family: inherit;
+			transition: border-color 0.2s;
+		}
+
+		.form-group input:focus,
+		.form-group select:focus {
+			outline: none;
+			border-color: #4a9eff;
+		}
+
+		.form-group .fmt-toolbar {
+			border-radius: 10px 10px 0 0;
+			border-bottom: none;
+		}
+
+		.form-group textarea {
+			width: 100%;
+			min-height: 180px;
+			padding: 12px 14px;
+			border: 2px solid var(--border-color);
+			border-top: none;
+			border-radius: 0 0 10px 10px;
+			background: var(--bg-item);
+			color: var(--text-primary);
+			font-size: 15px;
+			font-family: inherit;
+			resize: vertical;
+			transition: border-color 0.2s;
+		}
+
+		.form-group textarea:focus {
+			outline: none;
+			border-color: #4a9eff;
+		}
+
+		.modal-footer {
+			display: flex;
+			gap: 10px;
+			justify-content: flex-end;
+			margin-top: 22px;
+			padding-top: 18px;
+			border-top: 1px solid var(--border-color);
+		}
+
+		/* ── Confirm Dialog ── */
+
+		.confirm-overlay {
+			display: none;
+			position: fixed;
+			inset: 0;
+			background: rgba(0, 0, 0, 0.55);
+			backdrop-filter: blur(4px);
+			z-index: 10001;
+			align-items: center;
+			justify-content: center;
+			padding: 20px;
+		}
+
+		.confirm-overlay.active { display: flex; }
+
+		.confirm-box {
+			background: var(--bg-secondary);
+			border: 1px solid var(--border-color);
+			border-radius: 14px;
+			padding: 24px;
+			max-width: 380px;
+			width: 100%;
+			text-align: center;
+			box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+		}
+
+		.confirm-box h3 { font-size: 18px; margin-bottom: 10px; }
+		.confirm-box p { font-size: 14px; color: var(--text-secondary); margin-bottom: 18px; }
+
+		.confirm-actions { display: flex; gap: 10px; justify-content: center; }
+
+		/* ── Button Variants ── */
+
+		.btn-primary {
+			background: linear-gradient(135deg, #4a9eff, #667eea);
+			color: white;
+			border-color: transparent;
+		}
+
+		.btn-primary:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 6px 20px rgba(74, 158, 255, 0.3);
+		}
+
+		.btn-danger {
+			background: rgba(244, 67, 54, 0.12);
+			color: #f44336;
+			border-color: rgba(244, 67, 54, 0.25);
+		}
+
+		.btn-danger:hover { background: #f44336; color: white; }
+
+		.btn-warn {
+			background: rgba(255, 193, 7, 0.12);
+			color: #ffc107;
+			border-color: rgba(255, 193, 7, 0.25);
+		}
+
+		.btn-warn:hover { background: #ffc107; color: #000; }
+
+		/* ── Toast ── */
+
+		.forum-toast {
+			position: fixed;
+			bottom: 20px;
+			right: 20px;
+			padding: 14px 22px;
+			border-radius: 12px;
+			color: white;
+			font-weight: 600;
+			font-size: 14px;
+			box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+			z-index: 10002;
+			animation: toastIn 0.3s ease;
+			font-family: inherit;
+		}
+
+		.forum-toast.success { background: #4caf50; }
+		.forum-toast.error { background: #f44336; }
+		.forum-toast.info { background: #2196f3; }
+
+		@keyframes toastIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+		@keyframes toastOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.9); } }
+
+		/* ── Mobile Responsive ── */
+
+		@media (max-width: 640px) {
+			.forum-wrap { padding: 16px 12px 40px; }
+
+			.forum-toolbar { flex-direction: column; }
+			.forum-toolbar .search-container { width: 100%; }
+			.forum-actions { width: 100%; }
+			.forum-actions .btn { flex: 1; justify-content: center; }
+
+			.post-card { flex-direction: column; gap: 12px; padding: 14px; }
+			.post-thumb { width: 100%; height: 140px; border-radius: 8px; }
+			.post-title { font-size: 16px; }
+
+			.thread-post { padding: 18px; }
+			.thread-title { font-size: 22px; }
+			.thread-content { font-size: 14.5px; }
+
+			.comments-section { padding: 16px; }
+
+			.forum-modal { padding: 16px 10px; }
+			.forum-modal-body { padding: 20px; }
+
+			.comment-body, .comment-actions { padding-left: 0; }
+		}
+	</style>
 </head>
 
 <body>
@@ -65,27 +1068,43 @@
 		</div>
 	</header>
 
-	<!-- Forum Content -->
-	<main class="hero-section">
+	<!-- Hero -->
+	<section class="hero-section">
 		<div class="hero-content">
-			<h1 class="hero-title"><span class="hero-epic">Community Forum</span></h1>
-			<p class="hero-subtitle">Discuss, share, and connect with the Epic Minigames community</p>
-
-			<!-- Forum Actions -->
-			<div class="forum-actions">
-				<button id="create-post-btn" class="btn btn-primary" style="display: none;">
-					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<line x1="12" y1="5" x2="12" y2="19"></line>
-						<line x1="5" y1="12" x2="19" y2="12"></line>
-					</svg>
-					Create Post
-				</button>
-				<button id="my-posts-btn" class="btn btn-secondary" style="display: none;">My Posts</button>
+			<div class="hero-title">
+				<h1 class="hero-epic">Community Forum</h1>
 			</div>
+			<p class="hero-subtitle">Share ideas, ask questions, and connect with the Epic Minigames community</p>
+		</div>
+	</section>
 
-			<!-- Category Filter -->
-			<div class="category-filter">
-				<button class="category-btn active" data-category="all">All Posts</button>
+	<!-- Forum Body -->
+	<div class="forum-wrap">
+
+		<!-- Toolbar -->
+		<div class="forum-toolbar">
+			<div class="search-container">
+				<input type="text" id="forum-search" placeholder="Search posts..." autocomplete="off">
+				<button class="search-btn" type="button">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+						<circle cx="11" cy="11" r="8"></circle>
+						<path d="m21 21-4.35-4.35"></path>
+					</svg>
+				</button>
+			</div>
+			<div class="forum-actions">
+				<button class="btn btn-primary" id="create-post-btn" style="display:none">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+					New Post
+				</button>
+				<button class="btn" id="my-posts-btn" style="display:none">My Posts</button>
+			</div>
+		</div>
+
+		<!-- Categories -->
+		<div class="category-nav-container" style="display:block">
+			<div class="category-nav">
+				<button class="category-btn active" data-category="all">All</button>
 				<button class="category-btn" data-category="general">General</button>
 				<button class="category-btn" data-category="trading">Trading</button>
 				<button class="category-btn" data-category="updates">Updates</button>
@@ -95,123 +1114,141 @@
 			</div>
 		</div>
 
-		<!-- Forum Posts List View -->
-		<div id="forum-list-view" class="forum-container">
-			<div id="posts-loading" class="loading-spinner">
-				<div class="spinner"></div>
+		<!-- Sort -->
+		<div class="forum-sort-row">
+			<span>Sort by</span>
+			<select id="sort-select">
+				<option value="newest">Newest</option>
+				<option value="oldest">Oldest</option>
+				<option value="most-liked">Most Liked</option>
+				<option value="most-commented">Most Comments</option>
+			</select>
+		</div>
+
+		<!-- Post List View -->
+		<div id="forum-list-view">
+			<div id="posts-loading" class="forum-state">
+				<div class="forum-spinner"></div>
 				<p>Loading posts...</p>
 			</div>
-			<div id="posts-container" class="posts-list" style="display: none;"></div>
-			<div id="posts-empty" class="empty-state" style="display: none;">
-				<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-				</svg>
+			<div id="posts-container" class="forum-posts" style="display:none"></div>
+			<div id="posts-empty" class="forum-state" style="display:none">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
 				<h3>No posts yet</h3>
 				<p>Be the first to start a discussion!</p>
 			</div>
+			<div id="posts-error" class="forum-state" style="display:none">
+				<svg viewBox="0 0 24 24" fill="none" stroke="#f44336" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+				<h3>Failed to load posts</h3>
+				<p id="error-message">Please try again later.</p>
+				<button class="btn btn-primary" onclick="location.reload()">Retry</button>
+			</div>
 		</div>
 
-		<!-- Thread View (Single Post with Comments) -->
-		<div id="thread-view" class="forum-container" style="display: none;">
-			<button id="back-to-list" class="btn btn-secondary">
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<line x1="19" y1="12" x2="5" y2="12"></line>
-					<polyline points="12 19 5 12 12 5"></polyline>
-				</svg>
-				Back to Forum
+		<!-- Thread View -->
+		<div id="thread-view" class="thread-view">
+			<button class="btn thread-back" id="back-to-list">
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+				Back
 			</button>
-
 			<div id="thread-content"></div>
+		</div>
+	</div>
 
-			<div id="comments-section">
-				<h3 class="comments-title">Comments</h3>
-				<div id="comment-form-container" style="display: none;">
-					<form id="comment-form" class="comment-form">
-						<textarea id="comment-content" placeholder="Write a comment..." rows="3" required></textarea>
-						<div class="form-actions">
-							<button type="submit" class="btn btn-primary">Post Comment</button>
-						</div>
-					</form>
+	<!-- Create / Edit Post Modal -->
+	<div id="post-modal" class="forum-modal">
+		<div class="forum-modal-body">
+			<div class="modal-head">
+				<h2 id="post-modal-title">New Post</h2>
+				<button class="modal-close-btn" id="close-post-modal">&times;</button>
+			</div>
+			<form id="post-form">
+				<div class="form-group">
+					<label for="post-category">Category</label>
+					<select id="post-category" required>
+						<option value="general">General Discussion</option>
+						<option value="trading">Trading</option>
+						<option value="updates">Updates &amp; News</option>
+						<option value="guides">Guides &amp; Tips</option>
+						<option value="feedback">Feedback &amp; Suggestions</option>
+						<option value="off-topic">Off-Topic</option>
+					</select>
 				</div>
-				<div id="comments-container" class="comments-list"></div>
-			</div>
+				<div class="form-group">
+					<label for="post-title-input">Title</label>
+					<input type="text" id="post-title-input" maxlength="200" placeholder="Give your post a descriptive title" required>
+				</div>
+				<div class="form-group">
+					<label>Content</label>
+					<div class="fmt-toolbar" id="post-fmt-toolbar">
+						<button type="button" class="fmt-btn" data-fmt="bold" title="Bold"><b>B</b></button>
+						<button type="button" class="fmt-btn" data-fmt="italic" title="Italic"><i>I</i></button>
+						<button type="button" class="fmt-btn" data-fmt="underline" title="Underline"><u>U</u></button>
+						<div class="fmt-sep"></div>
+						<button type="button" class="fmt-btn" data-fmt="h2" title="Heading">H2</button>
+						<button type="button" class="fmt-btn" data-fmt="h3" title="Subheading">H3</button>
+						<div class="fmt-sep"></div>
+						<button type="button" class="fmt-btn" data-fmt="image" title="Image">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+						</button>
+						<button type="button" class="fmt-btn" data-fmt="link" title="Link">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+						</button>
+						<button type="button" class="fmt-btn" data-fmt="quote" title="Quote">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3z"/></svg>
+						</button>
+					</div>
+					<textarea id="post-content-input" maxlength="5000" placeholder="What would you like to discuss? Use the toolbar above for formatting." required></textarea>
+					<div class="char-count"><span id="post-char-count">0</span>/5000</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn" id="cancel-post-modal">Cancel</button>
+					<button type="submit" class="btn btn-primary" id="submit-post-btn">Create Post</button>
+				</div>
+			</form>
 		</div>
-	</main>
+	</div>
 
-	<!-- Create Post Modal -->
-	<div id="create-post-modal" class="modal">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h2>Create New Post</h2>
-				<button class="modal-close">&times;</button>
-			</div>
-			<div class="modal-body">
-				<form id="create-post-form">
-					<div class="form-group">
-						<label for="post-category">Category *</label>
-						<select id="post-category" required>
-							<option value="general">General Discussion</option>
-							<option value="trading">Trading</option>
-							<option value="updates">Updates & News</option>
-							<option value="guides">Guides & Tips</option>
-							<option value="feedback">Feedback & Suggestions</option>
-							<option value="off-topic">Off-Topic</option>
-						</select>
-					</div>
-
-					<div class="form-group">
-						<label for="post-title">Title *</label>
-						<input type="text" id="post-title" maxlength="200" placeholder="Give your post a descriptive title" required>
-					</div>
-
-					<div class="form-group">
-						<label for="post-content">Content *</label>
-						<textarea id="post-content" rows="8" maxlength="5000" placeholder="What would you like to discuss?" required></textarea>
-						<small class="char-count"><span id="content-count">0</span>/5000</small>
-					</div>
-
-					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary modal-close">Cancel</button>
-						<button type="submit" class="btn btn-primary">Create Post</button>
-					</div>
-				</form>
+	<!-- Confirm Dialog -->
+	<div id="confirm-dialog" class="confirm-overlay">
+		<div class="confirm-box">
+			<h3 id="confirm-title">Are you sure?</h3>
+			<p id="confirm-message">This action cannot be undone.</p>
+			<div class="confirm-actions">
+				<button class="btn" id="confirm-cancel">Cancel</button>
+				<button class="btn btn-danger" id="confirm-ok">Confirm</button>
 			</div>
 		</div>
 	</div>
 
-	<!-- Edit Post Modal -->
-	<div id="edit-post-modal" class="modal">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h2>Edit Post</h2>
-				<button class="modal-close">&times;</button>
+	<!-- Footer -->
+	<footer>
+		<div class="footer-content">
+			<div class="footer-section">
+				<h4>Browse</h4>
+				<a href="/catalog">Catalog</a>
+				<a href="/scammers">Scammers List</a>
+				<a href="/admin">Admin Portal</a>
 			</div>
-			<div class="modal-body">
-				<form id="edit-post-form">
-					<input type="hidden" id="edit-post-id">
-
-					<div class="form-group">
-						<label for="edit-post-title">Title *</label>
-						<input type="text" id="edit-post-title" maxlength="200" required>
-					</div>
-
-					<div class="form-group">
-						<label for="edit-post-content">Content *</label>
-						<textarea id="edit-post-content" rows="8" maxlength="5000" required></textarea>
-						<small class="char-count"><span id="edit-content-count">0</span>/5000</small>
-					</div>
-
-					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary modal-close">Cancel</button>
-						<button type="submit" class="btn btn-primary">Save Changes</button>
-					</div>
-				</form>
+			<div class="footer-section">
+				<h4>Community</h4>
+				<a href="/forum">Forum</a>
+				<a href="/trading">Trading</a>
+				<a href="/gallery">Gallery</a>
+				<a href="https://discord.com/invite/tg">Typical Games Discord</a>
+			</div>
+			<div class="footer-section">
+				<h4>Contact</h4>
+				<p>Found a bug? Reach out to <b>@xnite</b> on Discord!</p>
 			</div>
 		</div>
-	</div>
+		<div class="footer-bottom">
+			<p>&copy; 2025 emwiki.com &bull; made with ❤ by xnite</p>
+		</div>
+	</footer>
 
 	<script src="./js/script.js"></script>
-	<script src="./js/forum.js"></script>
+	<script src="./js/forum-v2.js"></script>
 </body>
 
 </html>

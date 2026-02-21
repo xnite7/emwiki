@@ -336,6 +336,27 @@ async function handlePut({ request, env, params }) {
 
   try {
     const data = await request.json();
+
+    // Admin-only: toggle pin/lock without requiring title/content
+    if (isAdmin(user) && (data.is_pinned !== undefined || data.is_locked !== undefined)) {
+      if (data.is_pinned !== undefined) {
+        await env.DBA.prepare('UPDATE forum_posts SET is_pinned = ? WHERE id = ?')
+          .bind(data.is_pinned ? 1 : 0, postId).run();
+      }
+      if (data.is_locked !== undefined) {
+        await env.DBA.prepare('UPDATE forum_posts SET is_locked = ? WHERE id = ?')
+          .bind(data.is_locked ? 1 : 0, postId).run();
+      }
+      if (!data.title && !data.content) {
+        return new Response(JSON.stringify({
+          success: true,
+          message: 'Post updated successfully!'
+        }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
     const { title, content } = data;
 
     if (!title || !content) {
@@ -347,7 +368,6 @@ async function handlePut({ request, env, params }) {
       });
     }
 
-    // Update post
     await env.DBA.prepare(
       `UPDATE forum_posts
        SET title = ?, content = ?, edited_at = ?
