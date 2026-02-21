@@ -136,12 +136,29 @@
 			border-color: #4a9eff;
 		}
 
-		/* ── Post Card Link wrapper ── */
+		/* ── Post Card overlay link (enables right-click → open in new tab) ── */
 
-		a.post-card-link {
-			text-decoration: none;
-			color: inherit;
-			display: flex;
+		.post-card {
+			position: relative;
+		}
+
+		.post-card-overlay {
+			position: absolute;
+			inset: 0;
+			z-index: 0;
+		}
+
+		.post-card .post-body,
+		.post-card .post-thumb {
+			position: relative;
+			z-index: 1;
+			pointer-events: none;
+		}
+
+		.post-card .profile-link {
+			pointer-events: auto;
+			position: relative;
+			z-index: 2;
 		}
 
 		/* ── Post Cards (vertical list) ── */
