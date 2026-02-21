@@ -45,9 +45,12 @@
 		/* ── Forum Layout ── */
 
 		.forum-wrap {
-			max-width: 920px;
+			max-width: 1400px;
 			margin: 0 auto;
-			padding: 24px 16px 60px;
+			padding: 24px 32px 60px;
+
+			box-shadow: 0 4px 20px var(--shadow-color);
+			background: var(--bg-secondary);
 		}
 
 		/* ── Toolbar ── */
@@ -350,6 +353,7 @@
 
 		.forum-state {
 			text-align: center;
+			color: white;
 			padding: 70px 20px;
 		}
 
@@ -615,6 +619,14 @@
 		.comment-textarea:focus {
 			outline: none;
 			border-color: #4a9eff;
+		}
+
+		/* Drag-and-drop highlight for image uploads */
+		textarea.drag-over,
+		.comment-textarea.drag-over {
+			border-color: #4a9eff !important;
+			background: rgba(74, 158, 255, 0.06) !important;
+			box-shadow: inset 0 0 0 2px rgba(74, 158, 255, 0.15);
 		}
 
 		.comment-form-footer {
@@ -954,6 +966,7 @@
 		}
 
 		.btn-primary:hover {
+			background: linear-gradient(135deg, #4a9eff, #667eea);
 			transform: translateY(-2px);
 			box-shadow: 0 6px 20px rgba(74, 158, 255, 0.3);
 		}
@@ -1141,7 +1154,7 @@
 				<svg viewBox="0 0 24 24" fill="none" stroke="#f44336" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
 				<h3>Failed to load posts</h3>
 				<p id="error-message">Please try again later.</p>
-				<button class="btn btn-primary" onclick="location.reload()">Retry</button>
+				<button class="btn btn-primary" onclick="location.reload()" style="margin: auto;">Retry</button>
 			</div>
 		</div>
 
@@ -1188,7 +1201,7 @@
 						<button type="button" class="fmt-btn" data-fmt="h2" title="Heading">H2</button>
 						<button type="button" class="fmt-btn" data-fmt="h3" title="Subheading">H3</button>
 						<div class="fmt-sep"></div>
-						<button type="button" class="fmt-btn" data-fmt="image" title="Image">
+						<button type="button" class="fmt-btn" data-fmt="image" title="Upload image (or drag &amp; drop)">
 							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
 						</button>
 						<button type="button" class="fmt-btn" data-fmt="link" title="Link">
@@ -1198,7 +1211,7 @@
 							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3z"/></svg>
 						</button>
 					</div>
-					<textarea id="post-content-input" maxlength="5000" placeholder="What would you like to discuss? Use the toolbar above for formatting." required></textarea>
+					<textarea id="post-content-input" maxlength="5000" placeholder="What would you like to discuss? Use the toolbar for formatting. Drag &amp; drop or paste images directly." required></textarea>
 					<div class="char-count"><span id="post-char-count">0</span>/5000</div>
 				</div>
 				<div class="modal-footer">

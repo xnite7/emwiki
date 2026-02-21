@@ -107,6 +107,7 @@ class ForumV2 {
         this.setupModal();
         this.setupConfirmDialog();
         this.setupFormattingToolbar('post-fmt-toolbar', 'post-content-input');
+        this.setupImageDrop('post-content-input');
 
         const contentInput = document.getElementById('post-content-input');
         const charCount = document.getElementById('post-char-count');
@@ -224,11 +225,8 @@ class ForumV2 {
             case 'h3': before = '\n### '; after = '\n'; insert = selected || 'Subheading'; break;
             case 'quote': before = '\n> '; after = '\n'; insert = selected || 'quote'; break;
             case 'image': {
-                const url = prompt('Enter image URL:');
-                if (!url) return;
-                before = '!['; after = `](${url})`;
-                insert = selected || 'image';
-                break;
+                this.triggerImagePicker(textarea);
+                return;
             }
             case 'link': {
                 const url = prompt('Enter link URL:');
@@ -246,6 +244,90 @@ class ForumV2 {
         const cursorPos = start + before.length + insert.length;
         textarea.setSelectionRange(cursorPos, cursorPos);
         textarea.dispatchEvent(new Event('input'));
+    }
+
+    // ── Image Upload (drag-and-drop, paste, file picker) ──
+
+    triggerImagePicker(textarea) {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/jpeg,image/png,image/gif,image/webp';
+        input.onchange = () => {
+            if (input.files?.[0]) this.uploadAndInsertImage(input.files[0], textarea);
+        };
+        input.click();
+    }
+
+    setupImageDrop(textareaId) {
+        const textarea = document.getElementById(textareaId);
+        if (!textarea) return;
+
+        textarea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            textarea.classList.add('drag-over');
+        });
+
+        textarea.addEventListener('dragleave', () => {
+            textarea.classList.remove('drag-over');
+        });
+
+        textarea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            textarea.classList.remove('drag-over');
+            const file = [...(e.dataTransfer?.files || [])].find(f => f.type.startsWith('image/'));
+            if (file) this.uploadAndInsertImage(file, textarea);
+        });
+
+        textarea.addEventListener('paste', (e) => {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    e.preventDefault();
+                    const file = item.getAsFile();
+                    if (file) this.uploadAndInsertImage(file, textarea);
+                    return;
+                }
+            }
+        });
+    }
+
+    async uploadAndInsertImage(file, textarea) {
+        if (!this.currentUser) return this.showToast('Log in to upload images', 'error');
+
+        const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!validTypes.includes(file.type)) return this.showToast('Only JPEG, PNG, GIF, WebP allowed', 'error');
+        if (file.size > 5 * 1024 * 1024) return this.showToast('Image must be under 5 MB', 'error');
+
+        const placeholder = `![Uploading ${file.name}...]()`;
+        const pos = textarea.selectionStart;
+        textarea.value = textarea.value.substring(0, pos) + placeholder + textarea.value.substring(pos);
+        textarea.dispatchEvent(new Event('input'));
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await this.fetchWithAuth('/api/forum/posts/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || 'Upload failed');
+            }
+
+            const data = await response.json();
+            const md = `![${file.name}](${data.url})`;
+            textarea.value = textarea.value.replace(placeholder, md);
+            textarea.dispatchEvent(new Event('input'));
+            this.showToast('Image uploaded', 'success');
+        } catch (err) {
+            textarea.value = textarea.value.replace(placeholder, '');
+            textarea.dispatchEvent(new Event('input'));
+            this.showToast(err.message || 'Image upload failed', 'error');
+        }
     }
 
     // ── Rich Text Parsing ──
@@ -634,8 +716,8 @@ class ForumV2 {
     // ── Thread Event Binding ──
 
     bindThreadActions(container) {
-        // Comment formatting toolbar
         this.setupFormattingToolbar('comment-fmt-toolbar', 'comment-input');
+        this.setupImageDrop('comment-input');
 
         const commentInput = document.getElementById('comment-input');
         const commentCharCount = document.getElementById('comment-char-count');

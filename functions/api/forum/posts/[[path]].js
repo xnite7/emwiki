@@ -206,6 +206,65 @@ async function handlePost({ request, env, params }) {
     }
   }
 
+  // POST /api/forum/posts/upload - Upload image for forum content
+  if (path === 'upload') {
+    try {
+      const formData = await request.formData();
+      const file = formData.get('file');
+
+      if (!file) {
+        return new Response(JSON.stringify({ error: 'No file provided' }), {
+          status: 400, headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        return new Response(JSON.stringify({ error: 'Only JPEG, PNG, GIF, and WebP images are allowed' }), {
+          status: 400, headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        return new Response(JSON.stringify({ error: 'Image must be under 5 MB' }), {
+          status: 400, headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      const accountId = env.CLOUDFLARE_ACCOUNT_ID;
+      const apiToken = env.CLOUDFLARE_STREAM_TOKEN;
+
+      if (!accountId || !apiToken) {
+        return new Response(JSON.stringify({ error: 'Image hosting not configured' }), {
+          status: 500, headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      const customId = `forum-${user.user_id}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+      const uploadForm = new FormData();
+      uploadForm.append('file', file, file.name);
+      uploadForm.append('id', customId);
+
+      const uploadRes = await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1`,
+        { method: 'POST', headers: { Authorization: `Bearer ${apiToken}` }, body: uploadForm }
+      );
+
+      if (!uploadRes.ok) throw new Error('Image upload failed');
+
+      const result = await uploadRes.json();
+      if (!result.success) throw new Error(result.errors?.[0]?.message || 'Upload failed');
+
+      return new Response(JSON.stringify({ url: result.result.variants[0] }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: err.message || 'Upload failed' }), {
+        status: 500, headers: { 'Content-Type': 'application/json' }
+      });
+    }
+  }
+
   // POST /api/forum/posts/:id/view - Increment view count
   if (path.endsWith('/view')) {
     const postId = parseInt(path.split('/')[0]);
