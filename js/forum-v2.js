@@ -49,10 +49,14 @@ class ForumV2 {
         if (!roleJson) return '';
         try {
             const roles = JSON.parse(roleJson);
-            if (roles.includes('admin')) return '<span class="role-badge admin">Admin</span>';
-            if (roles.includes('moderator')) return '<span class="role-badge moderator">Mod</span>';
+            if (roles.includes('admin')) return '<span class="role-badge primary admin">Admin</span>';
+            if (roles.includes('moderator')) return '<span class="role-badge primary moderator">Mod</span>';
         } catch { /* ignore */ }
         return '';
+    }
+
+    _profileLink(userId, inner) {
+        return `<a href="/profile/${userId}" class="profile-link">${inner}</a>`;
     }
 
     async fetchWithAuth(url, opts = {}) {
@@ -235,6 +239,10 @@ class ForumV2 {
                 insert = selected || 'link text';
                 break;
             }
+            case 'color': {
+                this.openColorPicker(textarea);
+                return;
+            }
             default: return;
         }
 
@@ -242,6 +250,75 @@ class ForumV2 {
         textarea.value = text.substring(0, start) + replacement + text.substring(end);
         textarea.focus();
         const cursorPos = start + before.length + insert.length;
+        textarea.setSelectionRange(cursorPos, cursorPos);
+        textarea.dispatchEvent(new Event('input'));
+    }
+
+    // ── Color Picker ──
+
+    openColorPicker(textarea) {
+        document.querySelectorAll('.color-popover').forEach(p => p.remove());
+
+        const btn = textarea.closest('.form-group, .comment-form-wrap')?.querySelector('.fmt-color-btn');
+        if (!btn) return;
+
+        const savedStart = textarea.selectionStart;
+        const savedEnd = textarea.selectionEnd;
+
+        const presets = [
+            '#f44336', '#ff9800', '#ffc107', '#4caf50', '#2196f3',
+            '#9c27b0', '#e91e63', '#00bcd4', '#8bc34a', '#ffffff'
+        ];
+
+        const popover = document.createElement('div');
+        popover.className = 'color-popover';
+
+        presets.forEach(color => {
+            const swatch = document.createElement('div');
+            swatch.className = 'color-swatch';
+            swatch.style.background = color;
+            swatch.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.applyColor(textarea, color, savedStart, savedEnd);
+                popover.remove();
+            });
+            popover.appendChild(swatch);
+        });
+
+        const customBtn = document.createElement('div');
+        customBtn.className = 'color-swatch custom';
+        customBtn.textContent = 'Custom...';
+        customBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const input = document.createElement('input');
+            input.type = 'color';
+            input.value = '#4a9eff';
+            input.addEventListener('input', () => {
+                this.applyColor(textarea, input.value, savedStart, savedEnd);
+                popover.remove();
+            });
+            input.click();
+        });
+        popover.appendChild(customBtn);
+
+        btn.appendChild(popover);
+
+        const closePopover = (e) => {
+            if (!popover.contains(e.target) && e.target !== btn) {
+                popover.remove();
+                document.removeEventListener('click', closePopover);
+            }
+        };
+        setTimeout(() => document.addEventListener('click', closePopover), 0);
+    }
+
+    applyColor(textarea, color, start, end) {
+        const text = textarea.value;
+        const selected = text.substring(start, end) || 'colored text';
+        const replacement = `{color:${color}}${selected}{/color}`;
+        textarea.value = text.substring(0, start) + replacement + text.substring(end);
+        textarea.focus();
+        const cursorPos = start + `{color:${color}}`.length + selected.length;
         textarea.setSelectionRange(cursorPos, cursorPos);
         textarea.dispatchEvent(new Event('input'));
     }
@@ -360,6 +437,10 @@ class ForumV2 {
         text = text.replace(/\[([^\]]+?)\]\((https?:\/\/[^)]+?)\)/g,
             '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
 
+        // Colored text (hex-only to prevent XSS)
+        text = text.replace(/\{color:(#[0-9a-fA-F]{3,6})\}(.+?)\{\/color\}/g,
+            '<span style="color:$1">$2</span>');
+
         // Newlines to <br>
         text = text.replace(/\n/g, '<br>');
 
@@ -380,6 +461,7 @@ class ForumV2 {
         t = t.replace(/\*\*(.+?)\*\*/g, '$1');
         t = t.replace(/\*(.+?)\*/g, '$1');
         t = t.replace(/__(.+?)__/g, '$1');
+        t = t.replace(/\{color:#[0-9a-fA-F]{3,6}\}(.+?)\{\/color\}/g, '$1');
         t = t.replace(/^#{2,3}\s*/gm, '');
         t = t.replace(/^>\s*/gm, '');
         return t.trim();
@@ -479,7 +561,10 @@ class ForumV2 {
         container.innerHTML = filtered.map(p => this.createPostCard(p)).join('');
 
         container.querySelectorAll('.post-card').forEach(card => {
-            card.addEventListener('click', () => this.viewThread(parseInt(card.dataset.id)));
+            card.addEventListener('click', (e) => {
+                if (e.target.closest('.profile-link')) return;
+                this.viewThread(parseInt(card.dataset.id));
+            });
         });
     }
 
@@ -522,8 +607,7 @@ class ForumV2 {
                 <p class="post-preview">${this.escapeHtml(preview)}</p>
                 <div class="post-footer">
                     <div class="post-author">
-                        <div class="post-author-avatar">${this.avatarImg(post.avatar_url, post.username)}</div>
-                        <span class="post-author-name">${this.escapeHtml(post.username)}</span>
+                        ${this._profileLink(post.user_id, `<div class="post-author-avatar">${this.avatarImg(post.avatar_url, post.username)}</div><span class="post-author-name">${this.escapeHtml(post.username)}</span>`)}
                         ${this._getRoleBadge(post.role)}
                         <span class="post-time">${this.timeAgo(post.created_at)}</span>
                     </div>
@@ -603,31 +687,35 @@ class ForumV2 {
         const heartFill = post.user_has_liked ? 'fill="currentColor"' : 'fill="none"';
 
         container.innerHTML = `
-            <div class="thread-post">
-                <div class="thread-top-row">
-                    <div class="thread-badges">
-                        <span class="post-category-badge ${this.escapeHtml(post.category)}">${this.capitalizeFirst(post.category)}</span>
-                        ${post.is_pinned ? '<span class="post-badge pin">Pinned</span>' : ''}
-                        ${post.is_locked ? '<span class="post-badge lock">Locked</span>' : ''}
-                    </div>
+            <div class="thread-header">
+                <h1 class="thread-title">${this.escapeHtml(post.title)}</h1>
+                <div class="thread-header-meta">
+                    <span class="post-category-badge ${this.escapeHtml(post.category)}">${this.capitalizeFirst(post.category)}</span>
+                    ${post.is_pinned ? '<span class="post-badge pin">Pinned</span>' : ''}
+                    ${post.is_locked ? '<span class="post-badge lock">Locked</span>' : ''}
                     ${adminBtns ? `<div class="thread-admin-actions">${adminBtns}</div>` : ''}
                 </div>
-                <h1 class="thread-title">${this.escapeHtml(post.title)}</h1>
-                <div class="thread-author-row">
-                    <div class="thread-avatar">${this.avatarImg(post.avatar_url, post.username)}</div>
-                    <div class="thread-author-info">
-                        <span class="thread-author-name">${this.escapeHtml(post.username)} ${this._getRoleBadge(post.role)}</span>
-                        <span class="thread-author-time">${this.timeAgo(post.created_at)} ${editedStr}</span>
+            </div>
+            <div class="thread-daddy">
+                ${this._profileLink(post.user_id, `<div class="thread-avatar">${this.avatarImg(post.avatar_url, post.username)}</div>`)}
+                <div class="thread-post">
+                    <div class="thread-author-bar">
+                        
+                        ${this._profileLink(post.user_id, `<span class="thread-author-name">${this.escapeHtml(post.username)}</span>`)}
+                        
+                        ${this._getRoleBadge(post.role)}
+                        <span class="op-badge" tabindex="0">OP</span>
+                        <span class="thread-post-date">${this.timeAgo(post.created_at)} ${editedStr}</span>
                     </div>
-                </div>
-                <div class="thread-content">${this.parseContent(post.content)}</div>
-                <div class="thread-actions-row">
-                    <button class="thread-action-btn${likedClass}" data-action="like-post">
-                        <svg viewBox="0 0 24 24" ${heartFill} stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                        <span class="like-count">${post.like_count || 0}</span>
-                    </button>
-                    <span class="thread-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>${post.views || 0} views</span>
-                    <span class="thread-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${this.comments.length} comments</span>
+                    <div class="thread-content">${this.parseContent(post.content)}</div>
+                    <div class="thread-actions-row">
+                        <button class="thread-action-btn${likedClass}" data-action="like-post">
+                            <svg viewBox="0 0 24 24" ${heartFill} stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                            <span class="like-count">${post.like_count || 0}</span>
+                        </button>
+                        <span class="thread-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>${post.views || 0} views</span>
+                        <span class="thread-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${this.comments.length} comments</span>
+                    </div>
                 </div>
             </div>
             <div class="comments-section">
@@ -645,6 +733,9 @@ class ForumV2 {
                         </button>
                         <button type="button" class="fmt-btn" data-fmt="link" title="Link">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                        </button>
+                        <button type="button" class="fmt-btn fmt-color-btn" data-fmt="color" title="Text Color">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16"/><path d="m6 16 6-14 6 14"/><path d="M8 12h8"/></svg>
                         </button>
                     </div>
                     <textarea class="comment-textarea" id="comment-input" maxlength="2000" placeholder="Write a comment..."></textarea>
@@ -682,15 +773,17 @@ class ForumV2 {
             actionBtns += `<button class="comment-act-btn" data-action="delete-comment" data-id="${comment.id}">Delete</button>`;
         }
 
+        const isOp = this.currentThread && comment.user_id === this.currentThread.user_id;
+
         return `<div class="comment-item" data-comment-id="${comment.id}">
             <div class="comment-top">
-                <div class="comment-avatar">${this.avatarImg(comment.avatar_url, comment.username)}</div>
-                <span class="comment-author-name">${this.escapeHtml(comment.username)}</span>
+                ${this._profileLink(comment.user_id, `<div class="comment-avatar">${this.avatarImg(comment.avatar_url, comment.username)}</div><span class="comment-author-name">${this.escapeHtml(comment.username)}</span>`)}
+                ${isOp ? '<span class="op-badge" tabindex="0">OP</span>' : ''}
                 ${this._getRoleBadge(comment.role)}
                 <span class="comment-time">${this.timeAgo(comment.created_at)}${editedStr}</span>
+                <div class="comment-actions">${actionBtns}</div>
             </div>
             <div class="comment-body">${this.parseContent(comment.content)}</div>
-            <div class="comment-actions">${actionBtns}</div>
         </div>`;
     }
 
