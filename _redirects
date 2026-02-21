@@ -9,7 +9,7 @@
 /api/embed/*    /api/embed/:splat    200
 
 # Forum post permalinks — serve forum.html for /forum/:id
-/forum/*        /forum.html          200
+/forum/:id      /forum.html          200
 
 # Other API routes fallback (if you want static files or Worker routing)
 # Adjust or remove as needed depending on your setup

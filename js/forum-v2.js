@@ -38,12 +38,15 @@ class ForumV2 {
 
         this.setupEventListeners();
         this.setupPopstate();
+
+        // Capture URL before any async work (in case redirects change it)
+        const initialPostId = this._getPostIdFromUrl();
+
         await this.loadPosts();
 
-        // If URL has a post ID on load, open that thread
-        const postId = this._getPostIdFromUrl();
-        if (postId) {
-            await this.viewThread(postId, true);
+        // If URL had a post ID on load, open that thread
+        if (initialPostId) {
+            await this.viewThread(initialPostId, true);
         }
     }
 
@@ -53,7 +56,12 @@ class ForumV2 {
     }
 
     setupPopstate() {
+        // Guard: some browsers fire popstate on initial load — ignore it
+        this._popstateReady = false;
+        setTimeout(() => { this._popstateReady = true; }, 0);
+
         window.addEventListener('popstate', async (e) => {
+            if (!this._popstateReady) return;
             const postId = this._getPostIdFromUrl();
             if (postId) {
                 await this.viewThread(postId, true);
