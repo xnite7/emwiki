@@ -13,6 +13,11 @@ class ForumV2 {
         this.editingPostId = null;
         this._confirmResolver = null;
         this.showingMyPosts = false;
+        this._allItems = null;
+        this._itemsLoading = false;
+        this._baseApp = null;
+        this.postAttachedItems = [];
+        this.commentAttachedItems = [];
 
         this.init();
     }
@@ -32,7 +37,30 @@ class ForumV2 {
         }
 
         this.setupEventListeners();
+        this.setupPopstate();
         await this.loadPosts();
+
+        // If URL has a post ID on load, open that thread
+        const postId = this._getPostIdFromUrl();
+        if (postId) {
+            await this.viewThread(postId, true);
+        }
+    }
+
+    _getPostIdFromUrl() {
+        const match = window.location.pathname.match(/\/forum\/(\d+)/);
+        return match ? parseInt(match[1]) : null;
+    }
+
+    setupPopstate() {
+        window.addEventListener('popstate', async (e) => {
+            const postId = this._getPostIdFromUrl();
+            if (postId) {
+                await this.viewThread(postId, true);
+            } else {
+                this._showListViewOnly();
+            }
+        });
     }
 
     // ── Auth helpers ──
@@ -162,14 +190,21 @@ class ForumV2 {
             if (titleInput) titleInput.value = editPost.title;
             if (contentInput) contentInput.value = editPost.content;
             if (charCount) charCount.textContent = editPost.content.length;
+            try {
+                const items = editPost.attached_items ? (typeof editPost.attached_items === 'string' ? JSON.parse(editPost.attached_items) : editPost.attached_items) : [];
+                this.postAttachedItems = Array.isArray(items) ? [...items] : [];
+            } catch { this.postAttachedItems = []; }
         } else {
             if (title) title.textContent = 'New Post';
             if (submitBtn) submitBtn.textContent = 'Create Post';
             document.getElementById('post-form')?.reset();
             if (charCount) charCount.textContent = '0';
+            this.postAttachedItems = [];
         }
 
         document.getElementById('post-modal')?.classList.add('active');
+        this.setupItemPicker('post-item-search', 'post-item-picker', this.postAttachedItems);
+        this.ensureItemsLoaded();
         titleInput?.focus();
     }
 
@@ -563,6 +598,7 @@ class ForumV2 {
         container.querySelectorAll('.post-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.profile-link')) return;
+                if (e.target.closest('.post-card-overlay')) return;
                 this.viewThread(parseInt(card.dataset.id));
             });
         });
@@ -597,6 +633,7 @@ class ForumV2 {
         const thumbInner = thumb ? '' : `<div class="post-thumb-fallback" style="color:${catColor}">${this.escapeHtml(initial)}</div>`;
 
         return `<div class="post-card ${post.is_pinned ? 'pinned' : ''}" data-id="${post.id}">
+            <a class="post-card-overlay" href="/forum/${post.id}" aria-label="${this.escapeHtml(post.title)}"></a>
             <div class="post-thumb" style="${thumbStyle}">${thumbInner}</div>
             <div class="post-body">
                 <div class="post-meta-top">
@@ -640,7 +677,7 @@ class ForumV2 {
 
     // ── View Thread ──
 
-    async viewThread(postId) {
+    async viewThread(postId, fromPopstate = false) {
         try {
             const response = await this.fetchWithAuth(`https://emwiki.com/api/forum/posts/${postId}`);
             if (!response.ok) throw new Error('Failed to load post');
@@ -653,10 +690,15 @@ class ForumV2 {
             this.renderThread();
 
             document.getElementById('forum-list-view').style.display = 'none';
+            document.querySelector('.forum-sort-row')?.style.setProperty('display', 'none');
             const tv = document.getElementById('thread-view');
             tv.classList.add('active');
             tv.style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            if (!fromPopstate) {
+                history.pushState({ postId }, '', `/forum/${postId}`);
+            }
         } catch (err) {
             console.error('Error loading thread:', err);
             this.showToast('Failed to load thread', 'error');
@@ -708,6 +750,7 @@ class ForumV2 {
                         <span class="thread-post-date">${this.timeAgo(post.created_at)} ${editedStr}</span>
                     </div>
                     <div class="thread-content">${this.parseContent(post.content)}</div>
+                    ${this.renderAttachedItemsHtml(post.attached_items)}
                     <div class="thread-actions-row">
                         <button class="thread-action-btn${likedClass}" data-action="like-post">
                             <svg viewBox="0 0 24 24" ${heartFill} stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -739,6 +782,10 @@ class ForumV2 {
                         </button>
                     </div>
                     <textarea class="comment-textarea" id="comment-input" maxlength="2000" placeholder="Write a comment..."></textarea>
+                    <div class="item-picker" id="comment-item-picker">
+                        <div class="item-picker-chips"></div>
+                        <input type="text" id="comment-item-search" class="item-picker-input" placeholder="Attach items..." autocomplete="off">
+                    </div>
                     <div class="comment-form-footer">
                         <span class="char-count"><span id="comment-char-count">0</span>/2000</span>
                         <button class="btn btn-primary" id="submit-comment-btn">Post Comment</button>
@@ -783,7 +830,7 @@ class ForumV2 {
                 <span class="comment-time">${this.timeAgo(comment.created_at)}${editedStr}</span>
                 <div class="comment-actions">${actionBtns}</div>
             </div>
-            <div class="comment-body">${this.parseContent(comment.content)}</div>
+            <div class="comment-body">${this.parseContent(comment.content)}${this.renderAttachedItemsHtml(comment.attached_items)}</div>
         </div>`;
     }
 
@@ -801,6 +848,14 @@ class ForumV2 {
                 commentCharCount.parentElement.classList.toggle('over', commentInput.value.length > 2000);
             });
         }
+
+        // Item picker for comments
+        this.commentAttachedItems = [];
+        this.setupItemPicker('comment-item-search', 'comment-item-picker', this.commentAttachedItems);
+        this.ensureItemsLoaded();
+
+        // Bind clickable item chips in post and comments
+        this.bindAttachedItemClicks(container);
 
         document.getElementById('submit-comment-btn')?.addEventListener('click', () => this.handleCreateComment());
 
@@ -848,7 +903,7 @@ class ForumV2 {
             const response = await this.fetchWithAuth(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ category, title, content })
+                body: JSON.stringify({ category, title, content, attached_items: this.postAttachedItems.length > 0 ? this.postAttachedItems : undefined })
             });
 
             if (!response.ok) {
@@ -907,7 +962,7 @@ class ForumV2 {
             const response = await this.fetchWithAuth('https://emwiki.com/api/forum/comments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ post_id: this.currentThread.id, content })
+                body: JSON.stringify({ post_id: this.currentThread.id, content, attached_items: this.commentAttachedItems.length > 0 ? this.commentAttachedItems : undefined })
             });
 
             if (!response.ok) {
@@ -1111,7 +1166,13 @@ class ForumV2 {
     // ── View Management ──
 
     showListView() {
+        history.pushState(null, '', '/forum');
+        this._showListViewOnly();
+    }
+
+    _showListViewOnly() {
         document.getElementById('forum-list-view').style.display = 'block';
+        document.querySelector('.forum-sort-row')?.style.removeProperty('display');
         const tv = document.getElementById('thread-view');
         tv.classList.remove('active');
         tv.style.display = 'none';
@@ -1123,6 +1184,175 @@ class ForumV2 {
     async incrementViewCount(postId) {
         try { await fetch(`https://emwiki.com/api/forum/posts/${postId}/view`, { method: 'POST' }); }
         catch { /* non-critical */ }
+    }
+
+    // ── Item Attachments ──
+
+    async ensureItemsLoaded() {
+        if (this._allItems) return this._allItems;
+        if (this._itemsLoading) {
+            return new Promise(resolve => {
+                const check = setInterval(() => {
+                    if (this._allItems) { clearInterval(check); resolve(this._allItems); }
+                }, 100);
+            });
+        }
+        this._itemsLoading = true;
+        try {
+            const cached = localStorage.getItem('itemsCache');
+            if (cached) {
+                this._allItems = JSON.parse(cached);
+                return this._allItems;
+            }
+            const res = await fetch('https://emwiki.com/api/items?limit=2000');
+            const data = await res.json();
+            this._allItems = data.items || [];
+            return this._allItems;
+        } catch {
+            this._allItems = [];
+            return [];
+        } finally {
+            this._itemsLoading = false;
+        }
+    }
+
+    findItemByName(name) {
+        if (!this._allItems) return null;
+        return this._allItems.find(i => i.name === name) || null;
+    }
+
+    async openItemModal(itemName) {
+        const items = await this.ensureItemsLoaded();
+        const item = items.find(i => i.name === itemName);
+        if (!item) return this.showToast('Item not found', 'error');
+
+        if (!this._baseApp) {
+            if (window.BaseApp) {
+                this._baseApp = new window.BaseApp();
+                await this._baseApp.loadData();
+            } else {
+                window.location.href = `/catalog?item=${encodeURIComponent(itemName)}`;
+                return;
+            }
+        }
+        this._baseApp.modal.displayed = items;
+        this._baseApp.modal.open(item);
+    }
+
+    getItemImgSrc(item) {
+        if (!item) return '';
+        if (item.img) return item.img.replace(/\\/g, '/');
+        return '';
+    }
+
+    renderAttachedItemsHtml(attachedJson) {
+        if (!attachedJson) return '';
+        let names;
+        try { names = typeof attachedJson === 'string' ? JSON.parse(attachedJson) : attachedJson; }
+        catch { return ''; }
+        if (!Array.isArray(names) || names.length === 0) return '';
+
+        const chips = names.map(name => {
+            const item = this.findItemByName(name);
+            const img = item ? this.getItemImgSrc(item) : '';
+            const imgTag = img ? `<img src="${this.escapeHtml(img)}" alt="" loading="lazy">` : '';
+            return `<button class="attached-item-chip" data-item-name="${this.escapeHtml(name)}">${imgTag}<span>${this.escapeHtml(name)}</span></button>`;
+        }).join('');
+
+        return `<div class="attached-items-display">${chips}</div>`;
+    }
+
+    bindAttachedItemClicks(container) {
+        container.querySelectorAll('.attached-item-chip').forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.openItemModal(chip.dataset.itemName);
+            });
+        });
+    }
+
+    setupItemPicker(inputId, containerId, listArray) {
+        const input = document.getElementById(inputId);
+        const container = document.getElementById(containerId);
+        if (!input || !container) return;
+
+        let dropdown = null;
+        let searchTimer = null;
+
+        const renderChips = () => {
+            const chipsEl = container.querySelector('.item-picker-chips');
+            if (!chipsEl) return;
+            chipsEl.innerHTML = listArray.map((name, i) => {
+                const item = this.findItemByName(name);
+                const img = item ? this.getItemImgSrc(item) : '';
+                const imgTag = img ? `<img src="${this.escapeHtml(img)}" alt="">` : '';
+                return `<span class="item-picker-chip">${imgTag}${this.escapeHtml(name)}<button data-idx="${i}">&times;</button></span>`;
+            }).join('');
+
+            chipsEl.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    listArray.splice(parseInt(btn.dataset.idx), 1);
+                    renderChips();
+                });
+            });
+        };
+
+        const showDropdown = (results) => {
+            hideDropdown();
+            if (results.length === 0) return;
+
+            dropdown = document.createElement('div');
+            dropdown.className = 'item-picker-dropdown';
+
+            results.forEach(item => {
+                const opt = document.createElement('div');
+                opt.className = 'item-picker-option';
+                const img = this.getItemImgSrc(item);
+                opt.innerHTML = `${img ? `<img src="${this.escapeHtml(img)}" alt="">` : ''}<span>${this.escapeHtml(item.name)}</span>`;
+                opt.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (listArray.length >= 10) return this.showToast('Max 10 items', 'error');
+                    if (listArray.includes(item.name)) return this.showToast('Already attached', 'error');
+                    listArray.push(item.name);
+                    input.value = '';
+                    hideDropdown();
+                    renderChips();
+                });
+                dropdown.appendChild(opt);
+            });
+
+            input.parentElement.appendChild(dropdown);
+        };
+
+        const hideDropdown = () => {
+            if (dropdown) { dropdown.remove(); dropdown = null; }
+        };
+
+        input.addEventListener('input', () => {
+            clearTimeout(searchTimer);
+            const q = input.value.trim().toLowerCase();
+            if (q.length < 2) { hideDropdown(); return; }
+
+            searchTimer = setTimeout(async () => {
+                const items = await this.ensureItemsLoaded();
+                const results = items.filter(i =>
+                    i.name.toLowerCase().includes(q) ||
+                    (i.alias && i.alias.toLowerCase().includes(q))
+                ).slice(0, 8);
+                showDropdown(results);
+            }, 200);
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') hideDropdown();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!container.contains(e.target)) hideDropdown();
+        });
+
+        renderChips();
     }
 
     // ── Utilities ──

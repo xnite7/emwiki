@@ -287,7 +287,7 @@ async function handlePost({ request, env, params }) {
   // POST /api/forum/posts - Create new post
   try {
     const data = await request.json();
-    const { category, title, content } = data;
+    const { category, title, content, attached_items } = data;
 
     if (!category || !title || !content) {
       return new Response(JSON.stringify({
@@ -326,16 +326,24 @@ async function handlePost({ request, env, params }) {
       });
     }
 
+    // Validate attached_items (optional, max 10 items)
+    let itemsJson = null;
+    if (attached_items && Array.isArray(attached_items)) {
+      const sanitized = attached_items.filter(n => typeof n === 'string').slice(0, 10);
+      if (sanitized.length > 0) itemsJson = JSON.stringify(sanitized);
+    }
+
     // Insert post
     const result = await env.DBA.prepare(
-      `INSERT INTO forum_posts (user_id, username, title, content, category, created_at)
-       VALUES (?, ?, ?, ?, ?, ?)`
+      `INSERT INTO forum_posts (user_id, username, title, content, category, attached_items, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       user.user_id,
       user.display_name || user.username,
       title,
       content,
       category,
+      itemsJson,
       Math.floor(Date.now() / 1000)
     ).run();
 
@@ -422,7 +430,7 @@ async function handlePut({ request, env, params }) {
       }
     }
 
-    const { title, content } = data;
+    const { title, content, attached_items } = data;
 
     if (!title || !content) {
       return new Response(JSON.stringify({
@@ -433,11 +441,17 @@ async function handlePut({ request, env, params }) {
       });
     }
 
+    let itemsJson = null;
+    if (attached_items && Array.isArray(attached_items)) {
+      const sanitized = attached_items.filter(n => typeof n === 'string').slice(0, 10);
+      if (sanitized.length > 0) itemsJson = JSON.stringify(sanitized);
+    }
+
     await env.DBA.prepare(
       `UPDATE forum_posts
-       SET title = ?, content = ?, edited_at = ?
+       SET title = ?, content = ?, attached_items = ?, edited_at = ?
        WHERE id = ?`
-    ).bind(title, content, Math.floor(Date.now() / 1000), postId).run();
+    ).bind(title, content, itemsJson, Math.floor(Date.now() / 1000), postId).run();
 
     return new Response(JSON.stringify({
       success: true,

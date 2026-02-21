@@ -96,7 +96,7 @@ async function handlePost({ request, env, params }) {
   // POST /api/forum/comments - Create new comment
   try {
     const data = await request.json();
-    const { post_id, content, parent_comment_id } = data;
+    const { post_id, content, parent_comment_id, attached_items } = data;
 
     if (!post_id || !content) {
       return new Response(JSON.stringify({
@@ -139,16 +139,24 @@ async function handlePost({ request, env, params }) {
       });
     }
 
+    // Validate attached_items (optional, max 10 items)
+    let itemsJson = null;
+    if (attached_items && Array.isArray(attached_items)) {
+      const sanitized = attached_items.filter(n => typeof n === 'string').slice(0, 10);
+      if (sanitized.length > 0) itemsJson = JSON.stringify(sanitized);
+    }
+
     // Insert comment
     const result = await env.DBA.prepare(
-      `INSERT INTO forum_comments (post_id, user_id, username, content, parent_comment_id, created_at)
-       VALUES (?, ?, ?, ?, ?, ?)`
+      `INSERT INTO forum_comments (post_id, user_id, username, content, parent_comment_id, attached_items, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       post_id,
       user.user_id,
       user.display_name || user.username,
       content,
       parent_comment_id || null,
+      itemsJson,
       Math.floor(Date.now() / 1000)
     ).run();
 

@@ -17,6 +17,7 @@
 	<meta name="mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 	<link rel="stylesheet" href="./css/style.css">
+	<link rel="stylesheet" href="./css/modal.css">
 
 	<!-- Popover compatibility for older browsers -->
 	<script src="./js/popover-loader.js"></script>
@@ -133,6 +134,14 @@
 		.forum-sort-row select:focus {
 			outline: none;
 			border-color: #4a9eff;
+		}
+
+		/* ── Post Card Link wrapper ── */
+
+		a.post-card-link {
+			text-decoration: none;
+			color: inherit;
+			display: flex;
 		}
 
 		/* ── Post Cards (vertical list) ── */
@@ -534,7 +543,6 @@ font-size: 18px;
 			color: inherit;
 			text-decoration: none;
 			display: inline-flex;
-			align-items: center;
 			gap: inherit;
 			transition: opacity 0.15s;
 		}
@@ -1134,6 +1142,160 @@ font-size: 18px;
 
 		/* ── Mobile Responsive ── */
 
+		/* ── Item Picker ── */
+
+		.item-picker {
+			position: relative;
+			border: 2px solid var(--border-color);
+			border-radius: 10px;
+			background: var(--bg-item);
+			padding: 8px;
+			display: flex;
+			flex-wrap: wrap;
+			gap: 6px;
+			align-items: center;
+		}
+
+		.item-picker:focus-within {
+			border-color: #4a9eff;
+		}
+
+		.item-picker-input {
+			flex: 1;
+			min-width: 140px;
+			border: none;
+			background: transparent;
+			color: var(--text-primary);
+			font-size: 14px;
+			font-family: inherit;
+			padding: 4px 6px;
+			outline: none;
+		}
+
+		.item-picker-input::placeholder {
+			color: #868686a8;
+		}
+
+		.item-picker-chips {
+			display: contents;
+		}
+
+		.item-picker-chip {
+			display: inline-flex;
+			align-items: center;
+			gap: 5px;
+			padding: 4px 8px;
+			border-radius: 8px;
+			background: rgba(74, 158, 255, 0.12);
+			color: #4a9eff;
+			font-size: 12px;
+			font-weight: 600;
+			white-space: nowrap;
+		}
+
+		.item-picker-chip img {
+			width: 18px;
+			height: 18px;
+			border-radius: 4px;
+			object-fit: cover;
+		}
+
+		.item-picker-chip button {
+			background: none;
+			border: none;
+			color: rgba(74, 158, 255, 0.6);
+			font-size: 14px;
+			cursor: pointer;
+			padding: 0 2px;
+			line-height: 1;
+			font-family: inherit;
+		}
+
+		.item-picker-chip button:hover {
+			color: #f44336;
+		}
+
+		.item-picker-dropdown {
+			position: absolute;
+			top: 100%;
+			left: 0;
+			right: 0;
+			background: var(--bg-secondary);
+			border: 1px solid var(--border-color);
+			border-radius: 10px;
+			margin-top: 4px;
+			max-height: 240px;
+			overflow-y: auto;
+			z-index: 100;
+			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+		}
+
+		.item-picker-option {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			padding: 10px 14px;
+			cursor: pointer;
+			font-size: 14px;
+			color: var(--text-primary);
+			transition: background 0.12s;
+		}
+
+		.item-picker-option:hover {
+			background: var(--bg-item-hover);
+		}
+
+		.item-picker-option img {
+			width: 30px;
+			height: 30px;
+			border-radius: 6px;
+			object-fit: cover;
+			background: var(--bg-item);
+		}
+
+		/* ── Attached Items Display (in thread/comments) ── */
+
+		.attached-items-display {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 6px;
+			margin: 12px 0 4px;
+		}
+
+		.attached-item-chip {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 6px 12px;
+			border-radius: 10px;
+			background: rgba(74, 158, 255, 0.08);
+			border: 1px solid rgba(74, 158, 255, 0.2);
+			color: #4a9eff;
+			font-size: 13px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.2s;
+			font-family: inherit;
+		}
+
+		.attached-item-chip:hover {
+			background: rgba(74, 158, 255, 0.16);
+			border-color: rgba(74, 158, 255, 0.4);
+			transform: translateY(-1px);
+			box-shadow: 0 4px 12px rgba(74, 158, 255, 0.15);
+		}
+
+		.attached-item-chip img {
+			width: 22px;
+			height: 22px;
+			border-radius: 5px;
+			object-fit: cover;
+		}
+
+		.attached-item-chip span {
+			pointer-events: none;
+		}
+
 		@media (max-width: 640px) {
 			.forum-wrap { padding: 16px 12px 40px; }
 
@@ -1314,6 +1476,13 @@ font-size: 18px;
 				<div class="form-group">
 					<label for="post-title-input">Title</label>
 					<input type="text" id="post-title-input" maxlength="200" placeholder="Give your post a descriptive title" required>
+				</div>
+				<div class="form-group">
+					<label>Attach Items</label>
+					<div class="item-picker" id="post-item-picker">
+						<div class="item-picker-chips"></div>
+						<input type="text" id="post-item-search" class="item-picker-input" placeholder="Search items to attach..." autocomplete="off">
+					</div>
 				</div>
 				<div class="form-group">
 					<label>Content</label>

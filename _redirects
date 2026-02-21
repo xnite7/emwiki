@@ -12,5 +12,8 @@
 # Adjust or remove as needed depending on your setup
 /api/*          /api/:splat          200
 
+# Forum post permalinks — serve forum.html for /forum/:id
+/forum/*        /forum.html          200
+
 # Catch-all SPA fallback for frontend — rewrite to serve index.html
 /*              /index.html          200

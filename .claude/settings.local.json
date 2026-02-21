@@ -8,7 +8,10 @@
       "Bash(git add:*)",
       "Bash(wrangler d1 execute:*)",
       "Bash(curl:*)",
-      "Bash(wrangler d1 list:*)"
+      "Bash(wrangler d1 list:*)",
+      "Bash(grep:*)",
+      "Bash(node -e:*)",
+      "Bash(node -c:*)"
     ],
     "deny": [],
     "ask": []
