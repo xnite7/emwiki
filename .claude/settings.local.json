@@ -11,7 +11,10 @@
       "Bash(wrangler d1 list:*)",
       "Bash(grep:*)",
       "Bash(node -e:*)",
-      "Bash(node -c:*)"
+      "Bash(node -c:*)",
+      "Bash(npx wrangler:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(where:*)"
     ],
     "deny": [],
     "ask": []

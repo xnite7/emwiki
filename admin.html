@@ -1810,7 +1810,7 @@
         // Utility Functions
         // ============================
 
-        const Utils = {
+        Object.assign(Utils, {
             async hash(text) {
                 const data = new TextEncoder().encode(text);
                 const hash = await crypto.subtle.digest('SHA-256', data);
@@ -2053,7 +2053,7 @@
             // Fetch Roblox username from user ID (backward compatibility)
             async getRobloxUsername(credits) {
                 if (!credits || !credits.trim()) return credits;
-                
+
                 // Check if it's a numeric ID (Roblox user IDs are numeric)
                 const userId = credits.trim();
                 if (!/^\d+$/.test(userId)) {
@@ -2064,7 +2064,7 @@
                 const userData = await this.getRobloxUserData(userId);
                 return userData ? '@' + userData.name : credits;
             }
-        };
+        });
 
         // Initialize Roblox cache on load
         Utils.initRobloxCache();

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "emwiki",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["C:\\Users\\ADMIN\\AppData\\Roaming\\npm\\node_modules\\wrangler\\bin\\wrangler.js", "pages", "dev", "--local"],
+      "port": 8788
+    }
+  ]
+}

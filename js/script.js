@@ -4348,15 +4348,14 @@ class PopoverManager {
 
 
 
-// Initialize
-const popoverManager = new PopoverManager();
+// Initialize (deferred until DOM is ready)
+let popoverManager, confetti, auth;
 
-// Initialize confetti system
-const confetti = new Confetti();
-const auth = new Auth();
+function initScript() {
+    popoverManager = new PopoverManager();
+    confetti = new Confetti();
+    auth = new Auth();
 
-// Export for use in both pages
-if (typeof window !== 'undefined') {
     // Render header/footer if placeholders exist
     Layout.init();
 
@@ -4364,11 +4363,26 @@ if (typeof window !== 'undefined') {
     Utils.initRobloxCache();
     Utils.initBadgeCache();
     Utils.initGroupCache();
-    
+
     window.Utils = Utils;
     window.Layout = Layout;
     window.BaseApp = BaseApp;
     window.PriceGraph = PriceGraph;
     window.CountdownManager = CountdownManager;
     window.Auth = auth;
+}
+
+// Export Utils immediately so inline scripts can extend it
+if (typeof window !== 'undefined') {
+    window.Utils = Utils;
+    window.Layout = Layout;
+    window.BaseApp = BaseApp;
+    window.PriceGraph = PriceGraph;
+    window.CountdownManager = CountdownManager;
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initScript);
+} else {
+    initScript();
 }
