@@ -4307,6 +4307,11 @@ function initScript() {
     // Render header/footer first so Auth can find <header>
     Layout.init();
 
+    // Ensure toast container exists for Utils.showToast (used by forum, auth, etc.)
+    if (!document.getElementById('toast-container')) {
+        document.body.insertAdjacentHTML('beforeend', '<div class="toast-container" id="toast-container" popover="manual"></div>');
+    }
+
     popoverManager = new PopoverManager();
     confetti = new Confetti();
     auth = new Auth();
