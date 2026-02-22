@@ -1273,14 +1273,21 @@ class BaseApp {
         const grad2Stops = document.querySelectorAll('#eppp2 stop');
 
         // Update gradient 1
-        grad1Stops[0].setAttribute('style', `stop-color: ${titleColors[0][1]}`);
-        grad1Stops[1].setAttribute('style', `stop-color: ${titleColors[0][0]}`);
+        if (grad1Stops.length >= 2) {
+            grad1Stops[0].setAttribute('style', `stop-color: ${titleColors[0][1]}`);
+            grad1Stops[1].setAttribute('style', `stop-color: ${titleColors[0][0]}`);
+        }
 
         // Update gradient 2
-        grad2Stops[0].setAttribute('style', `stop-color: ${titleColors[0][1]}`);
-        grad2Stops[1].setAttribute('style', `stop-color: ${titleColors[0][0]}`);
+        if (grad2Stops.length >= 2) {
+            grad2Stops[0].setAttribute('style', `stop-color: ${titleColors[0][1]}`);
+            grad2Stops[1].setAttribute('style', `stop-color: ${titleColors[0][0]}`);
+        }
 
-        document.getElementById('epic-image').setAttribute('href', pickRandom(rarities));
+        const epicImage = document.getElementById('epic-image');
+        if (epicImage) {
+            epicImage.setAttribute('href', pickRandom(rarities));
+        }
     }
 
     getItemCategory(item) {
@@ -3766,6 +3773,7 @@ class Auth extends EventTarget {
 
         // Show profile button
         const profileBtn = document.getElementById('user-profile-btn');
+        if (!profileBtn) return;
         profileBtn.style.display = 'flex';
         profileBtn.innerHTML = `
             <img src="${this.user.avatarUrl || 'https://www.roblox.com/headshot-thumbnail/image?userId=' + this.user.userId + '&width=150&height=150&format=png'}" alt="${this.user.username}">
@@ -3972,16 +3980,17 @@ class Auth extends EventTarget {
                         confetti.stop();
                     }, 1500);
 
-                    document.querySelector('.profile-action-btn.donator').classList.remove('locked');
+                    document.querySelector('.profile-action-btn.donator')?.classList.remove('locked');
                 } else if (!data.isDonator && !initial) {
 
                     document.getElementById('total-donated').textContent = data.totalSpent;
                     document.getElementById('progress-percentage').textContent = `${Math.round(data.progress)}%`;
-                    document.getElementById('donation-progress-card').showPopover();
-                    document.querySelector('.progress-bar-fill').style.width = `${data.progress}%`;
+                    document.getElementById('donation-progress-card')?.showPopover();
+                    const progressFill = document.querySelector('.progress-bar-fill');
+                    if (progressFill) progressFill.style.width = `${data.progress}%`;
 
                 } else if (data.isDonator) {
-                    document.querySelector('.profile-action-btn.donator').classList.remove('locked');
+                    document.querySelector('.profile-action-btn.donator')?.classList.remove('locked');
                 }
             }
         } catch (error) {
