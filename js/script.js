@@ -881,64 +881,6 @@ class BaseApp {
                     Epic!</button>
                 </div>
 
-                <div id="auth-modal" popover>
-                    <h2>Link Your <strong>Roblox Account</strong></h2>
-                    <div id="auth-step-1">
-                        <p style="margin-bottom: 20px;">Choose your preferred verification method:</p>
-
-                        <button class="auth-btn oauth-btn" onclick="auth.loginWithOAuth()">
-                            <svg style="rotate: 35deg;width: 20px;margin: 0px 5px -4px 0px;" viewBox="0 0 134 134"><path fill="currentcolor" stroke-linejoin="round" stroke-width="12" d="m 134 106 l -103.9 27.8 l -27.9 -104 l 104 -27.9 z m -50 -30 l -25.1 6.7 l -6.7 -25.1 l 25.1 -6.7 z" fill-rule="evenodd"></path></svg>
-                            <span>Sign in with Roblox</span>
-                            <span class="auth-btn-arrow">
-                                <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z" />
-                                </svg>
-                            </span>
-                        </button>
-                        <p style="font-size: 12px; color: var(--text-secondary); margin: 10px 0;">Faster, easier, and more secure</p>
-
-                        <div style="margin: 25px 0; display: flex; align-items: center; gap: 10px;">
-                            <div style="flex: 1; height: 1px; background: var(--text-secondary); opacity: 0.3;"></div>
-                            <span style="color: var(--text-secondary); font-size: 12px;">OR</span>
-                            <div style="flex: 1; height: 1px; background: var(--text-secondary); opacity: 0.3;"></div>
-                        </div>
-
-                        <button class="auth-btn" onclick="auth.generateCode()">
-                            <span>Use In-Game Code</span>
-                        </button>
-
-                    </div>
-                    <div id="auth-step-2" style="display: none;">
-                        <p>Your code is:</p>
-                        <div class="auth-code-container">
-                            <div class="auth-code" id="auth-code-display" onclick="auth.copyCode()"></div>
-                            <svg class="copy-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
-                            </svg>
-                        </div>
-                        <p class="auth-instructions">
-                            Join the game and enter this code!<br>
-                            Code expires in <span id="code-timer">5:00</span>
-                        </p>
-                        <div class="auth-actions">
-                            <button class="join-game-btn" onclick="auth.joinGame()">
-                                <span>Join Game</span>
-                            </button>
-                        </div>
-                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 15px;">Checking for verification...
-                        </p>
-                    </div>
-                    <div id="auth-step-3" style="display: none;">
-                        <div id="player-model-container"></div>
-                        <div class="celebration-title">Account Linked!</div>
-                        <p>Welcome to Epic Catalogue! Your Roblox account has been successfully linked.
-                        </p>
-                        <p class="loading">Hold on, Setting Stuff Up!</p>
-                        <button style="display:none" class="celebration-close-btn">Epic!</button>
-                    </div>
-                </div>
             
             
             <div id="stats-dashboard" class="stats-dashboard">
@@ -2972,8 +2914,7 @@ class Auth extends EventTarget {
         this.pollInterval = null;
         this.timerInterval = null;
         this.scammersList = [];
-        this.deferredPrompt = null;
-        
+
         // Promise that resolves when session check is complete
         // Other code should await this before making authenticated API calls
         this._sessionReadyPromise = new Promise(resolve => {
@@ -3002,13 +2943,6 @@ class Auth extends EventTarget {
             const header = document.querySelector('header');
             if (!header) return;
             header.insertAdjacentHTML('beforeend', `
-            <button style="display:none" class="btn" id="installBtn">
-				<svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-					<path fill="none" stroke="currentColor" stroke-width="2"
-						d="M12 6v10zm0-5c6.075 0 11 4.925 11 11s-4.925 11-11 11S1 18.075 1 12 5.925 1 12 1Zm5 11-5 5-5-5" />
-				</svg>Install App
-            </button>
-
             <div popover id="profile-dropdown" class="profile-dropdown"></div>
 
             <button	style="display: none;" class="btn" popovertarget="auth-modal" popovertargetaction="show" id="auth-button">
@@ -3023,10 +2957,75 @@ class Auth extends EventTarget {
 
         `);
         };
+        const injectAuthModal = () => {
+            if (document.getElementById('auth-modal')) return; // already injected by BaseApp
+            document.body.insertAdjacentHTML('beforeend', `
+                <div id="auth-modal" popover>
+                    <h2>Link Your <strong>Roblox Account</strong></h2>
+                    <div id="auth-step-1">
+                        <p style="margin-bottom: 20px;">Choose your preferred verification method:</p>
+
+                        <button class="auth-btn oauth-btn" onclick="auth.loginWithOAuth()">
+                            <svg style="rotate: 35deg;width: 20px;margin: 0px 5px -4px 0px;" viewBox="0 0 134 134"><path fill="currentcolor" stroke-linejoin="round" stroke-width="12" d="m 134 106 l -103.9 27.8 l -27.9 -104 l 104 -27.9 z m -50 -30 l -25.1 6.7 l -6.7 -25.1 l 25.1 -6.7 z" fill-rule="evenodd"></path></svg>
+                            <span>Sign in with Roblox</span>
+                            <span class="auth-btn-arrow">
+                                <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z" />
+                                </svg>
+                            </span>
+                        </button>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin: 10px 0;">Faster, easier, and more secure</p>
+
+                        <div style="margin: 25px 0; display: flex; align-items: center; gap: 10px;">
+                            <div style="flex: 1; height: 1px; background: var(--text-secondary); opacity: 0.3;"></div>
+                            <span style="color: var(--text-secondary); font-size: 12px;">OR</span>
+                            <div style="flex: 1; height: 1px; background: var(--text-secondary); opacity: 0.3;"></div>
+                        </div>
+
+                        <button class="auth-btn" onclick="auth.generateCode()">
+                            <span>Use In-Game Code</span>
+                        </button>
+
+                    </div>
+                    <div id="auth-step-2" style="display: none;">
+                        <p>Your code is:</p>
+                        <div class="auth-code-container">
+                            <div class="auth-code" id="auth-code-display" onclick="auth.copyCode()"></div>
+                            <svg class="copy-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
+                            </svg>
+                        </div>
+                        <p class="auth-instructions">
+                            Join the game and enter this code!<br>
+                            Code expires in <span id="code-timer">5:00</span>
+                        </p>
+                        <div class="auth-actions">
+                            <button class="join-game-btn" onclick="auth.joinGame()">
+                                <span>Join Game</span>
+                            </button>
+                        </div>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 15px;">Checking for verification...
+                        </p>
+                    </div>
+                    <div id="auth-step-3" style="display: none;">
+                        <div id="player-model-container"></div>
+                        <div class="celebration-title">Account Linked!</div>
+                        <p>Welcome to Epic Catalogue! Your Roblox account has been successfully linked.
+                        </p>
+                        <p class="loading">Hold on, Setting Stuff Up!</p>
+                        <button style="display:none" class="celebration-close-btn">Epic!</button>
+                    </div>
+                </div>
+            `);
+        };
+
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', injectAuthUI);
+            document.addEventListener('DOMContentLoaded', () => { injectAuthUI(); injectAuthModal(); });
         } else {
             injectAuthUI();
+            injectAuthModal();
         }
 
         await this.loadScammersList();
@@ -3100,8 +3099,6 @@ class Auth extends EventTarget {
             }
         }
 
-        // Setup PWA install functionality
-        this.setupPWAInstall();
 
     }
 
@@ -4065,74 +4062,6 @@ class Auth extends EventTarget {
         document.body.style.paddingTop = '25px';
     }
 
-    setupPWAInstall() {
-        const installBtn = document.getElementById('installBtn');
-        if (!installBtn) return;
-
-        // Check if device is suitable for PWA install
-        const isSuitableDevice = () => {
-            const userAgent = navigator.userAgent.toLowerCase();
-            const isIOS = /iphone|ipad|ipod/.test(userAgent);
-            const isAndroid = /android/.test(userAgent);
-            const isWindows = /windows/.test(userAgent);
-            const isMac = /macintosh|mac os x/.test(userAgent);
-            const isLinux = /linux/.test(userAgent);
-
-            // PWA install is supported on most modern devices except iOS (which requires manual add to home screen)
-            // Show on desktop (Windows, Mac, Linux) and Android
-            return (isAndroid || isWindows || isMac || isLinux) && !isIOS;
-        };
-
-        // Listen for the beforeinstallprompt event
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // Prevent the default browser install prompt
-            e.preventDefault();
-
-            // Store the event for later use
-            this.deferredPrompt = e;
-
-            // Only show button on suitable devices
-            if (isSuitableDevice()) {
-                installBtn.style.display = 'flex';
-            }
-        });
-
-        // Handle install button click
-        installBtn.addEventListener('click', async () => {
-            if (!this.deferredPrompt) {
-                return;
-            }
-
-            // Show the install prompt
-            this.deferredPrompt.prompt();
-
-            // Wait for the user to respond to the prompt
-            const { outcome } = await this.deferredPrompt.userChoice;
-
-            if (outcome === 'accepted') {
-                Utils.showToast('App Installed', 'EM Wiki has been installed successfully!', 'success');
-            }
-
-            // Clear the deferred prompt since it can only be used once
-            this.deferredPrompt = null;
-
-            // Hide the button after install attempt
-            installBtn.style.display = 'none';
-        });
-
-        // Check if app is already installed (running in standalone mode)
-        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-            // App is already installed, don't show the button
-            installBtn.style.display = 'none';
-        }
-
-        // Listen for successful app install
-        window.addEventListener('appinstalled', () => {
-            Utils.showToast('Success', 'EM Wiki has been added to your home screen!', 'success');
-            installBtn.style.display = 'none';
-            this.deferredPrompt = null;
-        });
-    }
 }
 
 
