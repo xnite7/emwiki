@@ -810,7 +810,7 @@ class ForumV2 {
                         <span class="char-count"><span id="comment-char-count">0</span>/2000</span>
                         <button class="btn btn-primary" id="submit-comment-btn">Post Comment</button>
                     </div>
-                </div>` : (!this.currentUser ? '<div class="comment-login-prompt">Log in to join the conversation</div>' : '<div class="comment-login-prompt">This thread is locked</div>')}
+                </div>` : (!this.currentUser ? '<div class="comment-login-prompt"><a popovertarget="auth-modal" popovertargetaction="show">Log in</a> to join the conversation</div>' : '<div class="comment-login-prompt">This thread is locked</div>')}
                 <div id="comments-list">
                     ${this.comments.length === 0 ? '<div class="comments-empty">No comments yet. Be the first!</div>' : this.comments.map(c => this.renderComment(c)).join('')}
                 </div>
