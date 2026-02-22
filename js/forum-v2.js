@@ -868,8 +868,9 @@ class ForumV2 {
         return `<div class="comment-item" data-comment-id="${comment.id}">
             <div class="comment-top">
                 ${this._profileLink(comment.user_id, `<div class="comment-avatar">${this.avatarImg(comment.avatar_url, comment.username)}</div><span class="comment-author-name">${this.escapeHtml(comment.username)}</span>`)}
-                ${isOp ? '<span class="op-badge" tabindex="0">OP</span>' : ''}
                 ${this._getRoleBadge(comment.role)}
+                ${isOp ? '<span class="op-badge" tabindex="0">OP</span>' : ''}
+                
                 <span class="comment-time">${this.timeAgo(comment.created_at)}${editedStr}</span>
                 
             </div>
@@ -1288,6 +1289,7 @@ class ForumV2 {
     getItemImgSrc(item) {
         if (!item) return '';
         if (item.img) return item.img.replace(/\\/g, '/');
+        if (item.svg) return `data:image/svg+xml;base64,${btoa(item.svg)}`;
         return '';
     }
 
