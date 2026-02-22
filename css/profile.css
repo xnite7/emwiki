@@ -328,6 +328,7 @@
 .profile-container {
     max-width: 1400px;
     margin: 0 auto;
+    padding: 10px 30px;
 }
 
 /* Profile Header */
@@ -944,6 +945,10 @@
         width: 100px;
         height: 100px;
     }
+
+        .profile-container {
+            padding: 0px;
+        }
 
     .profile-display-name {
         font-size: 2rem;

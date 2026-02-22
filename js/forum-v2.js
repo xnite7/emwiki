@@ -18,6 +18,8 @@ class ForumV2 {
         this._baseApp = null;
         this.postAttachedItems = [];
         this.commentAttachedItems = [];
+        this._attachTarget = null;
+        this._attachTempList = [];
 
         this.init();
     }
@@ -161,6 +163,7 @@ class ForumV2 {
 
         this.setupModal();
         this.setupConfirmDialog();
+        this.setupItemAttachModal();
         this.setupFormattingToolbar('post-fmt-toolbar', 'post-content-input');
         this.setupImageDrop('post-content-input');
 
@@ -175,6 +178,8 @@ class ForumV2 {
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
+                const itemModal = document.getElementById('item-attach-modal');
+                if (itemModal?.classList.contains('active')) { this.closeItemAttachModal(); return; }
                 const modal = document.getElementById('post-modal');
                 if (modal?.classList.contains('active')) this.closePostModal();
             }
@@ -226,7 +231,7 @@ class ForumV2 {
         }
 
         document.getElementById('post-modal')?.classList.add('active');
-        this.setupItemPicker('post-item-search', 'post-item-picker', this.postAttachedItems);
+        this.renderInlineAttachedItems('post-attached-display', this.postAttachedItems);
         this.ensureItemsLoaded();
         titleInput?.focus();
     }
@@ -299,6 +304,13 @@ class ForumV2 {
             }
             case 'color': {
                 this.openColorPicker(textarea);
+                return;
+            }
+            case 'attach': {
+                const isPost = textarea.id === 'post-content-input';
+                const list = isPost ? this.postAttachedItems : this.commentAttachedItems;
+                const displayId = isPost ? 'post-attached-display' : 'comment-attached-display';
+                this.openItemAttachModal(list, displayId);
                 return;
             }
             default: return;
@@ -810,12 +822,13 @@ class ForumV2 {
                         <button type="button" class="fmt-btn fmt-color-btn" data-fmt="color" title="Text Color">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path  d="M4 20h16"/><path fill="Canvas" d="m6 16 6-14 6 14"/><path d="M8 12h8"/></svg>
                         </button>
+                        <div class="fmt-sep"></div>
+                        <button type="button" class="fmt-btn" data-fmt="attach" title="Attach Item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                        </button>
                     </div>
+                    <div class="fmt-attached-display" id="comment-attached-display"></div>
                     <textarea class="comment-textarea" id="comment-input" maxlength="2000" placeholder="Write a comment..."></textarea>
-                    <div class="item-picker" id="comment-item-picker">
-                        <div class="item-picker-chips"></div>
-                        <input type="text" id="comment-item-search" class="item-picker-input" placeholder="Attach items..." autocomplete="off">
-                    </div>
                     <div class="comment-form-footer">
                         <span class="char-count"><span id="comment-char-count">0</span>/2000</span>
                         <button class="btn btn-primary" id="submit-comment-btn">Post Comment</button>
@@ -882,7 +895,7 @@ class ForumV2 {
 
         // Item picker for comments
         this.commentAttachedItems = [];
-        this.setupItemPicker('comment-item-search', 'comment-item-picker', this.commentAttachedItems);
+        this.renderInlineAttachedItems('comment-attached-display', this.commentAttachedItems);
         this.ensureItemsLoaded();
 
         // Bind clickable item chips in post and comments
@@ -1386,6 +1399,148 @@ class ForumV2 {
         });
 
         renderChips();
+    }
+
+    // ── Item Attach Modal ──
+
+    setupItemAttachModal() {
+        document.getElementById('close-item-attach-modal')?.addEventListener('click', () => this.closeItemAttachModal());
+        document.getElementById('item-attach-cancel')?.addEventListener('click', () => this.closeItemAttachModal());
+        document.getElementById('item-attach-done')?.addEventListener('click', () => this.confirmItemAttach());
+
+        const modal = document.getElementById('item-attach-modal');
+        modal?.addEventListener('click', (e) => { if (e.target === modal) this.closeItemAttachModal(); });
+
+        let searchTimer = null;
+        document.getElementById('item-attach-search')?.addEventListener('input', (e) => {
+            clearTimeout(searchTimer);
+            const q = e.target.value.trim().toLowerCase();
+            searchTimer = setTimeout(() => this._renderAttachModalResults(q), 200);
+        });
+    }
+
+    openItemAttachModal(list, displayId) {
+        this._attachTarget = { list, displayId };
+        this._attachTempList = [...list];
+
+        const search = document.getElementById('item-attach-search');
+        const results = document.getElementById('item-attach-results');
+
+        if (search) search.value = '';
+        this._renderAttachModalSelected();
+        if (results) results.innerHTML = '<div class="item-attach-empty">Type to search items...</div>';
+
+        document.getElementById('item-attach-modal')?.classList.add('active');
+        this.ensureItemsLoaded();
+        setTimeout(() => search?.focus(), 50);
+    }
+
+    closeItemAttachModal() {
+        document.getElementById('item-attach-modal')?.classList.remove('active');
+        this._attachTarget = null;
+        this._attachTempList = [];
+    }
+
+    confirmItemAttach() {
+        if (!this._attachTarget) return;
+        const { list, displayId } = this._attachTarget;
+        list.length = 0;
+        list.push(...this._attachTempList);
+        this.renderInlineAttachedItems(displayId, list);
+        this.closeItemAttachModal();
+    }
+
+    _renderAttachModalSelected() {
+        const el = document.getElementById('item-attach-selected');
+        if (!el) return;
+
+        if (this._attachTempList.length === 0) { el.innerHTML = ''; return; }
+
+        el.innerHTML = this._attachTempList.map((name, i) => {
+            const item = this.findItemByName(name);
+            const img = item ? this.getItemImgSrc(item) : '';
+            const imgTag = img ? `<img src="${this.escapeHtml(img)}" alt="">` : '';
+            return `<span class="item-picker-chip">${imgTag}${this.escapeHtml(name)}<button data-idx="${i}">&times;</button></span>`;
+        }).join('');
+
+        el.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this._attachTempList.splice(parseInt(btn.dataset.idx), 1);
+                this._renderAttachModalSelected();
+                this._renderAttachModalResults(document.getElementById('item-attach-search')?.value.trim().toLowerCase() || '');
+            });
+        });
+    }
+
+    async _renderAttachModalResults(query) {
+        const el = document.getElementById('item-attach-results');
+        if (!el) return;
+
+        if (query.length < 2) {
+            el.innerHTML = '<div class="item-attach-empty">Type to search items...</div>';
+            return;
+        }
+
+        const items = await this.ensureItemsLoaded();
+        const results = items.filter(i =>
+            i.name.toLowerCase().includes(query) ||
+            (i.alias && i.alias.toLowerCase().includes(query))
+        ).slice(0, 24);
+
+        if (results.length === 0) {
+            el.innerHTML = '<div class="item-attach-empty">No items found</div>';
+            return;
+        }
+
+        el.innerHTML = results.map(item => {
+            const img = this.getItemImgSrc(item);
+            const selected = this._attachTempList.includes(item.name);
+            return `<div class="item-attach-card${selected ? ' selected' : ''}" data-name="${this.escapeHtml(item.name)}">
+                ${img ? `<img src="${this.escapeHtml(img)}" alt="" loading="lazy">` : '<div class="item-attach-noimg">?</div>'}
+                <span>${this.escapeHtml(item.name)}</span>
+            </div>`;
+        }).join('');
+
+        el.querySelectorAll('.item-attach-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const name = card.dataset.name;
+                if (this._attachTempList.includes(name)) {
+                    this._attachTempList = this._attachTempList.filter(n => n !== name);
+                } else {
+                    if (this._attachTempList.length >= 10) return this.showToast('Max 10 items', 'error');
+                    this._attachTempList.push(name);
+                }
+                this._renderAttachModalSelected();
+                card.classList.toggle('selected', this._attachTempList.includes(name));
+            });
+        });
+    }
+
+    renderInlineAttachedItems(displayId, list) {
+        const el = document.getElementById(displayId);
+        if (!el) return;
+
+        if (list.length === 0) {
+            el.innerHTML = '';
+            el.classList.remove('has-items');
+            return;
+        }
+
+        el.classList.add('has-items');
+        el.innerHTML = list.map((name, i) => {
+            const item = this.findItemByName(name);
+            const img = item ? this.getItemImgSrc(item) : '';
+            const imgTag = img ? `<img src="${this.escapeHtml(img)}" alt="">` : '';
+            return `<span class="fmt-attached-chip">${imgTag}${this.escapeHtml(name)}<button data-idx="${i}">&times;</button></span>`;
+        }).join('');
+
+        el.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                list.splice(parseInt(btn.dataset.idx), 1);
+                this.renderInlineAttachedItems(displayId, list);
+            });
+        });
     }
 
     // ── Utilities ──
