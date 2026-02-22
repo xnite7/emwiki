@@ -18,7 +18,35 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="https://emwiki.com/css/style.css">
     <link rel="stylesheet" href="https://emwiki.com/css/profile.css">
-
+    <style>
+        body {
+            min-height: 100vh;
+            background-image: none;
+            background-repeat: space;
+            background-position: center;
+            background-attachment: fixed;
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+        }
+    
+        @keyframes fadeIn {
+            99% {
+                background-image: none;
+            }
+    
+            to {
+                opacity: 1;
+                background-image: url(https://emwiki.com/imgs/valentinesbg.png);
+            }
+    
+        }
+    
+        @media screen and (max-width: 2062px) {
+            body {
+                background-repeat: repeat;
+            }
+        }
+    </style>
 </head>
 
 <body data-layout-report-scammer>
