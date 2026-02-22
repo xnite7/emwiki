@@ -1,7 +1,5 @@
 /* Profile Page Styles */
-main {
-    padding: 30px 50px;
-}
+
 
 .hero-epic {
     margin-bottom: 10px;
@@ -330,7 +328,6 @@ main {
 .profile-container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 40px 20px;
 }
 
 /* Profile Header */
@@ -397,37 +394,7 @@ main {
 .profile-roles {
     display: flex;
     gap: 10px;
-    flex-wrap: wrap;
     margin-bottom: 15px;
-}
-
-.role-badge {
-    padding: 5px 12px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.role-admin {
-    background: linear-gradient(135deg, #f44336, #e91e63);
-    color: white;
-}
-
-.role-moderator {
-    background: linear-gradient(135deg, #ff9800, #ff5722);
-    color: white;
-}
-
-.role-vip {
-    background: linear-gradient(135deg, #9c27b0, #673ab7);
-    color: white;
-}
-
-.role-donator {
-    background: linear-gradient(135deg, #4caf50, #8bc34a);
-    color: white;
 }
 
 .profile-meta {
