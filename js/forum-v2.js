@@ -777,7 +777,7 @@ class ForumV2 {
                             <span class="like-count">${post.like_count || 0}</span>
                         </button>
                         <span class="thread-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle fill="Canvas" stroke="Canvas" cx="12" cy="12" r="3"/></svg>${post.views || 0} views</span>
-                        <span class="thread-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${this.comments.length} comments</span>
+                        
                     </div>
                 </div>
             </div>
@@ -810,7 +810,7 @@ class ForumV2 {
                         <span class="char-count"><span id="comment-char-count">0</span>/2000</span>
                         <button class="btn btn-primary" id="submit-comment-btn">Post Comment</button>
                     </div>
-                </div>` : (!this.currentUser ? '<div class="comment-login-prompt"><button popovertarget="auth-modal" popovertargetaction="show">Log in</button> to join the conversation</div>' : '<div class="comment-login-prompt">This thread is locked</div>')}
+                </div>` : (!this.currentUser ? '<div class="comment-login-prompt"><button class="btn" style="padding: 7px 15px;margin-right: 8px;display: unset;" popovertarget="auth-modal" popovertargetaction="show">Log in</button> to join the conversation</div>' : '<div class="comment-login-prompt">This thread is locked</div>')}
                 <div id="comments-list">
                     ${this.comments.length === 0 ? '<div class="comments-empty">No comments yet. Be the first!</div>' : this.comments.map(c => this.renderComment(c)).join('')}
                 </div>
