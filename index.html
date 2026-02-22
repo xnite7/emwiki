@@ -793,6 +793,7 @@
 		const pet2 = document.getElementById('pet');
 		const xniteLink = document.getElementById('xnite-link');
 		const footer = document.querySelector('footer');
+		if (pet && pet2 && xniteLink && footer) {
 
 		let petState = {
 			x: 50,
@@ -923,6 +924,7 @@
 
 		// Main game loop
 		setInterval(movePet, 50);
+		} // end pet system guard
 
 		// Sometimes go to footer randomly
 		setInterval(() => {

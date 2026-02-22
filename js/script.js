@@ -4361,12 +4361,12 @@ class PopoverManager {
 let popoverManager, confetti, auth;
 
 function initScript() {
+    // Render header/footer first so Auth can find <header>
+    Layout.init();
+
     popoverManager = new PopoverManager();
     confetti = new Confetti();
     auth = new Auth();
-
-    // Render header/footer if placeholders exist
-    Layout.init();
 
     // Initialize caches on load
     Utils.initRobloxCache();
