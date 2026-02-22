@@ -17,4 +17,6 @@
 
 
 # Catch-all SPA fallback for frontend — rewrite to serve index.html
+# Explicit /index.html first to avoid infinite loop (/* would match it)
+/index.html     /index.html          200
 /*              /index.html          200
