@@ -91,7 +91,7 @@ class ForumV2 {
     _checkAdmin(user) {
         if (!user || !user.role) return false;
         try {
-            const roles = JSON.parse(user.role);
+            const roles = Array.isArray(user.role) ? user.role : JSON.parse(user.role);
             return roles.includes('admin') || roles.includes('moderator');
         } catch { return false; }
     }

@@ -507,7 +507,7 @@
 
                 specialRoles.forEach(role => {
                     const badge = document.createElement('span');
-                    badge.className = `role-badge role-${role}`;
+                    badge.className = `role-badge ${role}`;
                     badge.textContent = role.toUpperCase();
                     rolesContainer.appendChild(badge);
                 });

@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "emwiki",
-      "runtimeExecutable": "C:\\Program Files\\nodejs\\npx.cmd",
-      "runtimeArgs": ["wrangler", "pages", "dev", "--local"],
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["C:/Program Files/nodejs/node_modules/npm/bin/npx-cli.js", "wrangler", "pages", "dev", ".", "--local"],
       "port": 8788
     }
   ]
