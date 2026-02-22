@@ -91,7 +91,12 @@
                             <span id="profile-joined" class="profile-meta-item"></span>
                             <span id="profile-last-online" class="profile-meta-item"></span>
                         </div>
+                        <a id="profile-roblox-link" class="profile-roblox-link" href="#" target="_blank" rel="noopener noreferrer">
+                            <svg viewBox="0 0 134 134" width="16" height="16"><path fill="currentColor" stroke-linejoin="round" stroke-width="12" d="m 134 106 l -103.9 27.8 l -27.9 -104 l 104 -27.9 z m -50 -30 l -25.1 6.7 l -6.7 -25.1 l 25.1 -6.7 z" fill-rule="evenodd"></path></svg>
+                            View on Roblox
+                        </a>
                     </div>
+                    <div id="profile-3d-model" class="profile-3d-model"></div>
                 </div>
             </section>
 
@@ -494,6 +499,18 @@
 
             document.getElementById('profile-last-online').innerHTML = onlineStatus;
             document.getElementById('profile-avatar').style.outline = profilepicborder;
+
+            // Roblox profile link
+            const robloxLink = document.getElementById('profile-roblox-link');
+            if (robloxLink && user.userId) {
+                robloxLink.href = `https://www.roblox.com/users/${user.userId}/profile`;
+            }
+
+            // 3D player model
+            const modelContainer = document.getElementById('profile-3d-model');
+            if (modelContainer && user.userId && window.Auth) {
+                window.Auth.render3DPlayerModel(user.userId, modelContainer);
+            }
         }
 
         renderStats(stats) {

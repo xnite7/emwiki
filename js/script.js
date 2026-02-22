@@ -1,25 +1,27 @@
 // ==================== SHARED SCRIPTS ====================
-(function loadSharedScripts(done) {
-  var base = (document.currentScript && document.currentScript.src || '').replace(/\/[^/]*$/, '/');
-  var scripts = [
-    base + 'popover-loader.js',
-    'https://cdn.jsdelivr.net/npm/fuse.js@6.6.2',
-    'https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.js',
-    'https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
-    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js',
-    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/MTLLoader.js'
-  ];
-  function loadNext(i) {
-    if (i >= scripts.length) { done(); return; }
-    var s = document.createElement('script');
-    s.src = scripts[i];
-    s.onload = function () { loadNext(i + 1); };
-    s.onerror = function () { loadNext(i + 1); };
-    document.head.appendChild(s);
-  }
-  loadNext(0);
-})
+var _sharedScriptsReady = new Promise(function (resolve) {
+  (function loadSharedScripts(done) {
+    var base = (document.currentScript && document.currentScript.src || '').replace(/\/[^/]*$/, '/');
+    var scripts = [
+      base + 'popover-loader.js',
+      'https://cdn.jsdelivr.net/npm/fuse.js@6.6.2',
+      'https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.js',
+      'https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+      'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js',
+      'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/MTLLoader.js'
+    ];
+    function loadNext(i) {
+      if (i >= scripts.length) { done(); return; }
+      var s = document.createElement('script');
+      s.src = scripts[i];
+      s.onload = function () { loadNext(i + 1); };
+      s.onerror = function () { loadNext(i + 1); };
+      document.head.appendChild(s);
+    }
+    loadNext(0);
+  })(resolve);
+});
 
 // ==================== LAYOUT (Header & Footer) ====================
 const Layout = {
@@ -1756,6 +1758,7 @@ class BaseApp {
 
         // Update wishlist or favorites based on mode
         wishlistDiv.innerHTML = '';
+        document.getElementById('wishlist-value').style.gridTemplateColumns = '';
         let totalValue = 0;
 
         itemsToShow.forEach(itemName => {
@@ -1814,6 +1817,8 @@ class BaseApp {
                 Your ${listType} is empty.<br>
                 <small>Add items from the <a href="/catalog" style="color: var(--text-primary);">catalog</a>!</small>
             </div>`;
+            document.getElementById('wishlist-value').style.gridTemplateColumns = 'unset';
+
         }
 
         document.getElementById('wishlist-value').textContent = totalValue.toLocaleString();
@@ -3549,6 +3554,15 @@ class Auth extends EventTarget {
         if (this._rendering3DModel) return;
         this._rendering3DModel = true;
         container.className = 'loadin';
+
+        // Wait for Three.js to load
+        await _sharedScriptsReady;
+        if (typeof THREE === 'undefined') {
+            console.error('Three.js failed to load');
+            container.style.display = '';
+            this._rendering3DModel = false;
+            return;
+        }
 
         if (!userId || !container) {
             console.error('Invalid userId or container:', userId, container);

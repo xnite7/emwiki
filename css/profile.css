@@ -369,7 +369,7 @@ main {
     border: 4px solid rgb(0 0 0);
     width: 120px;
     height: 120px;
-    background: linear-gradient(128deg, #7cce76, #e0db6c);
+    background: #383838;
     border-radius: 50%;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
     object-fit: cover;
@@ -442,6 +442,53 @@ main {
     display: flex;
     align-items: center;
     gap: 5px;
+}
+
+.profile-roblox-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    margin-top: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.25s;
+    width: fit-content;
+}
+
+.profile-roblox-link:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.profile-3d-model {
+    width: 200px;
+    height: 250px;
+    flex-shrink: 0;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.profile-3d-model canvas {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 16px;
+}
+
+.profile-3d-model.loadin {
+    background: rgba(255, 255, 255, 0.05);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
 }
 
 /* Stats Section */
@@ -913,6 +960,16 @@ main {
         text-align: center;
     }
 
+    .profile-roblox-link {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .profile-3d-model {
+        width: 160px;
+        height: 200px;
+    }
+
     .profile-avatar {
         width: 100px;
         height: 100px;
@@ -1009,6 +1066,17 @@ main {
 .light-theme .no-data-message {
     color: rgba(0, 0, 0, 0.5);
     background: rgba(0, 0, 0, 0.05);
+}
+
+.light-theme .profile-roblox-link {
+    background: rgba(0, 0, 0, 0.06);
+    border-color: rgba(0, 0, 0, 0.12);
+    color: rgba(0, 0, 0, 0.75);
+}
+
+.light-theme .profile-roblox-link:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #000;
 }
 
 /* Review Modal Styles */
