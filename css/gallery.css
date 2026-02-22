@@ -21,11 +21,7 @@ h4 {
     font-size: 1.1rem;
 }
 
-p,
-span {
-    letter-spacing: 0.02em;
-    font-size: 1rem;
-}
+
 
 small {
     letter-spacing: 0.03em;
@@ -229,6 +225,7 @@ small {
     font-weight: 600;
     margin-bottom: 10px;
     overflow: hidden;
+    justify-self: center;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
