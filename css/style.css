@@ -181,7 +181,8 @@ svg:hover #cloud {
 
 
 
-.nav-link:not(:first-child, :nth-child(4), :last-child) {
+.nav-link:not(:first-child, :nth-child(3),
+:nth-child(4), :last-child) {
     pointer-events: none;
     opacity: 0.5;
 }
