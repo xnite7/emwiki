@@ -722,6 +722,8 @@ class ForumV2 {
             const response = await this.fetchWithAuth(`https://emwiki.com/api/forum/posts/${postId}`);
             if (!response.ok) throw new Error('Failed to load post');
 
+            document.getElementById('forum-list-view').style.display = 'none';
+
             const data = await response.json();
             this.currentThread = data.post;
             this.comments = data.comments || [];
@@ -729,7 +731,7 @@ class ForumV2 {
             this.incrementViewCount(postId);
             this.renderThread();
 
-            document.getElementById('forum-list-view').style.display = 'none';
+            
             document.querySelector('.forum-sort-row')?.style.setProperty('display', 'none');
             document.querySelector('.forum-toolbar')?.style.setProperty('display', 'none');
             document.querySelector('.category-nav-container')?.style.setProperty('display', 'none');
