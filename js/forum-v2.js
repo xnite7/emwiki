@@ -848,10 +848,11 @@ class ForumV2 {
                 ${isOp ? '<span class="op-badge" tabindex="0">OP</span>' : ''}
                 ${this._getRoleBadge(comment.role)}
                 <span class="comment-time">${this.timeAgo(comment.created_at)}${editedStr}</span>
-                <div class="comment-actions">${actionBtns}</div>
+                
             </div>
             <div class="comment-body">${this.parseContent(comment.content)}${this.renderAttachedItemsHtml(comment.attached_items)}</div>
-        </div>`;
+        <div class="comment-actions">${actionBtns}</div>
+            </div>`;
     }
 
     // ── Thread Event Binding ──
