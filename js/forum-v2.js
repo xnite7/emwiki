@@ -1203,6 +1203,9 @@ class ForumV2 {
 
     _showListViewOnly() {
         document.getElementById('forum-list-view').style.display = 'block';
+        document.querySelector('.forum-sort-row')?.style.removeProperty('display');
+        document.querySelector('.forum-toolbar')?.style.removeProperty('display');
+        document.querySelector('.category-nav-container')?.style.removeProperty('display');
         const tv = document.getElementById('thread-view');
         tv.classList.remove('active');
         tv.style.display = 'none';
