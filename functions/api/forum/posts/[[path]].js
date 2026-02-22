@@ -160,7 +160,20 @@ async function handleGet({ request, env, params }) {
 async function handlePost({ request, env, params }) {
   const path = params.path ? params.path.join('/') : '';
 
-  // Get auth token
+  // POST /api/forum/posts/:id/view - Increment view count (no auth required)
+  if (path.endsWith('/view')) {
+    const postId = parseInt(path.split('/')[0]);
+    if (postId) {
+      await env.DBA.prepare(
+        'UPDATE forum_posts SET views = views + 1 WHERE id = ?'
+      ).bind(postId).run();
+    }
+    return new Response(JSON.stringify({ success: true }), {
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  // Get auth token (required for all other POST endpoints)
   const authHeader = request.headers.get('Authorization');
   const token = authHeader?.replace('Bearer ', '');
   const user = await getUserFromToken(token, env);
@@ -269,19 +282,6 @@ async function handlePost({ request, env, params }) {
         status: 500, headers: { 'Content-Type': 'application/json' }
       });
     }
-  }
-
-  // POST /api/forum/posts/:id/view - Increment view count
-  if (path.endsWith('/view')) {
-    const postId = parseInt(path.split('/')[0]);
-
-    await env.DBA.prepare(
-      'UPDATE forum_posts SET views = views + 1 WHERE id = ?'
-    ).bind(postId).run();
-
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
   }
 
   // POST /api/forum/posts - Create new post
