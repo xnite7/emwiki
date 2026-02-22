@@ -44,9 +44,18 @@ class ForumV2 {
 
         await this.loadPosts();
 
-        // If URL had a post ID on load, open that thread
-        if (initialPostId) {
-            await this.viewThread(initialPostId, true);
+        // If URL had a post ID on load, open that thread (re-check URL in case of timing)
+        const postId = initialPostId ?? this._getPostIdFromUrl();
+        if (postId) {
+            await this.viewThread(postId, true);
+        } else {
+            // Fallback: URL might not have been ready; check again after paint
+            requestAnimationFrame(() => {
+                const latePostId = this._getPostIdFromUrl();
+                if (latePostId && !this.currentThread) {
+                    this.viewThread(latePostId, true);
+                }
+            });
         }
     }
 

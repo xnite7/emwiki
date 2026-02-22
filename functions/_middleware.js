@@ -7,8 +7,20 @@ export async function onRequest(context) {
   }
 
   // Forum post permalinks: /forum/4, /forum/123 etc — serve forum.html (URL stays as /forum/:id)
+  // Use ASSETS.fetch and follow redirects so we return HTML, not a redirect to /forum
   const forumIdMatch = url.pathname.match(/^\/forum\/(\d+)$/);
   if (forumIdMatch) {
+    if (context.env.ASSETS) {
+      let assetUrl = new URL("/forum.html", url.origin);
+      for (let i = 0; i < 5; i++) {
+        const res = await context.env.ASSETS.fetch(assetUrl);
+        if (res.ok) return res;
+        const loc = res.headers.get("location");
+        if (!loc || res.status < 301 || res.status > 308) break;
+        assetUrl = new URL(loc, assetUrl);
+      }
+    }
+    // Fallback: rewrite request (may return redirect; ASSETS preferred)
     const rewriteUrl = new URL("/forum.html", url.origin);
     return context.next(new Request(rewriteUrl, context.request));
   }
