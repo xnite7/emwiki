@@ -3,19 +3,16 @@
 # Domain-level redirects should be configured in Cloudflare DNS/Page Rules instead
 # https://emwiki.site/* https://emwiki.com/:splat 301!
 
-# Let /api/embed/* be handled by your Worker — no redirect here
-# (Remove the invalid 404 redirect line)
+# Static rewrites (above splats for performance)
+/index.html     /index.html          200
 
+# Let /api/embed/* be handled by your Worker — no redirect here
 /api/embed/*    /api/embed/:splat    200
 
 # Forum post permalinks handled by functions/forum/[id].js (serves forum.html)
 
-# Other API routes fallback (if you want static files or Worker routing)
-# Adjust or remove as needed depending on your setup
+# Other API routes fallback
 /api/*          /api/:splat          200
 
-
-# Catch-all SPA fallback for frontend — rewrite to serve index.html
-# Explicit /index.html first to avoid infinite loop (/* would match it)
-/index.html     /index.html          200
-/*              /index.html          200
+# Note: /* → /index.html causes infinite loop and is ignored by Cloudflare.
+# Unknown routes will 404. Add explicit rules above for any SPA fallback paths.
