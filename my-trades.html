@@ -17,8 +17,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="./css/style.css">
 
-    <!-- Popover compatibility for older browsers -->
-    <script src="./js/popover-loader.js"></script>
     <style>
         .dashboard-container {
             max-width: 1800px;
@@ -337,36 +335,8 @@
         }
     </style>
 </head>
-<body>
-    <header>
-        <a href="https://emwiki.com">
-            <svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="eppp1" y1="1" x2="0">
-                        <stop offset=".2" style="stop-color:#ff0" />
-                        <stop offset="1" style="stop-color:#24ff5a" />
-                    </linearGradient>
-                    <linearGradient id="eppp2" y1="1" x2="0">
-                        <stop offset="0" style="stop-color:#24ff5d" />
-                        <stop offset="1" style="stop-color:#ff0" />
-                    </linearGradient>
-                </defs>
-                <image id="cloud" x="461" y="459" href="https://emwiki.com/imgs/TWOKPhY.png" height="60" width="60" style="filter:opacity(.6)" />
-                <text x="489" y="503" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke" stroke-linejoin="round" fill="url(#eppp1)" style="animation:floatAnim 12s ease-in-out infinite;font:200 46px Slapstick">EM</text>
-                <image id="epic-image" x="464" y="463" href="https://emwiki.com/imgs/epicfaces/kitta.png" height="60" width="60" style="scale:.48;transform:translate(846px,103px);rotate:20deg;transform-origin:center;animation:floatAnim2 15s ease-in-out 1s infinite alternate" />
-                <image id="cloud" x="495" y="477" href="https://emwiki.com/imgs/8UUB0Gt.png" height="60" width="60" style="filter:opacity(.86)" />
-                <text x="516" y="514" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke" stroke-linejoin="round" fill="url(#eppp2)" style="animation:floatAnim 12s ease-in-out infinite;animation-delay:5.5s;font:200 16px Slapstick">wiki</text>
-                <image id="cloud" x="445" y="487" href="https://emwiki.com/imgs/oYKd3nJ.png" height="28" width="42" style="filter:opacity(.8)" />
-            </svg>
-        </a>
-        <div class="nav-links">
-            <a href="/catalog" class="nav-link">Catalog</a>
-            <a href="/trading" class="nav-link">Trading Hub</a>
-            <a href="/forum" class="nav-link">Forum</a>
-            <a href="/gallery" class="nav-link">Gallery</a>
-            <a href="/scammers" class="nav-link">Scammers</a>
-        </div>
-    </header>
+<body data-active-nav="trading">
+    <div id="site-header"></div>
 
     <div class="dashboard-container">
         <div class="dashboard-header">
