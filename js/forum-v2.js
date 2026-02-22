@@ -1210,9 +1210,10 @@ class ForumV2 {
 
     // ── View Management ──
 
-    showListView() {
+    async showListView() {
         history.pushState(null, '', '/forum');
         this._showListViewOnly();
+        await this.loadPosts();
     }
 
     _showListViewOnly() {
