@@ -6,6 +6,13 @@ export async function onRequest(context) {
     return await context.next();
   }
 
+  // Forum post permalinks: /forum/4, /forum/123 etc — serve forum.html (URL stays as /forum/:id)
+  const forumIdMatch = url.pathname.match(/^\/forum\/(\d+)$/);
+  if (forumIdMatch) {
+    const rewriteUrl = new URL("/forum.html", url.origin);
+    return context.next(new Request(rewriteUrl, context.request));
+  }
+
   // Redirect old profile URLs to new format
   // /profile?user=X or /profile.html?user=X -> /profile/X
   if ((url.pathname === "/profile" || url.pathname === "/profile.html") && url.searchParams.has("user")) {
