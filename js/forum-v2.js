@@ -772,8 +772,8 @@ class ForumV2 {
 
         container.innerHTML = `
             <div class="thread-header">
-                <h1 class="thread-title">${this.escapeHtml(post.title)}</h1>
                 <div class="thread-header-meta">
+                    <h1 class="thread-title">${this.escapeHtml(post.title)}</h1>
                     <span class="post-category-badge ${this.escapeHtml(post.category)}">${this.capitalizeFirst(post.category)}</span>
                     ${post.is_pinned ? '<span title="This topic is pinned for you; it will display at the top of its category" class="post-badge pin"><svg width="800" height="800" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 384 512"><path fill="lightgray" d="M32 32C32 14.3 46.3 0 64 0h256c17.7 0 32 14.3 32 32s-14.3 32-32 32h-29.5l11.4 148.2c36.7 19.9 65.7 53.2 79.5 94.7l1 3c3.3 9.8 1.6 20.5-4.4 28.8S362.3 352 352 352H32c-10.3 0-19.9-4.9-26-13.3s-7.7-19.1-4.4-28.8l1-3c13.8-41.5 42.8-74.8 79.5-94.7L93.5 64H64c-17.7 0-32-14.3-32-32m128 352h64v96c0 17.7-14.3 32-32 32s-32-14.3-32-32z"/></svg></span>' : ''}
                     ${post.is_locked ? '<span title="This topic is closed; it no longer accepts new replies" class="post-badge lock"><svg fill="currentColor" width="800px" height="800px" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path fill="lightgray" d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z"></path></svg></span>' : ''}
