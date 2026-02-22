@@ -339,6 +339,8 @@
     padding: 40px;
     margin-bottom: 30px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: visible;
 }
 
 .profile-header-content {
@@ -346,6 +348,8 @@
     align-items: center;
     gap: 30px;
     flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
 }
 
 .profile-avatar-container {
@@ -435,27 +439,24 @@
 }
 
 .profile-3d-model {
-    width: 200px;
-    height: 250px;
-    flex-shrink: 0;
-    border-radius: 16px;
-    overflow: hidden;
+    position: absolute;
+    right: -40px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 350px;
+    height: 400px;
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
 }
 
 .profile-3d-model canvas {
     width: 100% !important;
     height: 100% !important;
-    border-radius: 16px;
 }
 
 .profile-3d-model.loadin {
-    background: rgba(255, 255, 255, 0.05);
-    animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
+    background: none;
 }
 
 /* Stats Section */
@@ -933,8 +934,10 @@
     }
 
     .profile-3d-model {
-        width: 160px;
-        height: 200px;
+        width: 200px;
+        height: 260px;
+        right: -20px;
+        opacity: 0.35;
     }
 
     .profile-avatar {

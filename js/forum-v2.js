@@ -23,12 +23,18 @@ class ForumV2 {
     }
 
     async init() {
+        const onAuthReady = () => {
+            this.currentUser = window.Auth.user;
+            this.isAdminUser = this._checkAdmin(window.Auth.user);
+            this.updateUIForAuth();
+            // Re-render current thread so comment box appears
+            if (this.currentThread) {
+                this.renderThread();
+            }
+        };
+
         if (window.Auth) {
-            window.Auth.addEventListener('sessionReady', () => {
-                this.currentUser = window.Auth.user;
-                this.isAdminUser = this._checkAdmin(window.Auth.user);
-                this.updateUIForAuth();
-            });
+            window.Auth.addEventListener('sessionReady', onAuthReady);
             if (window.Auth.user) {
                 this.currentUser = window.Auth.user;
                 this.isAdminUser = this._checkAdmin(window.Auth.user);
@@ -1415,6 +1421,13 @@ class ForumV2 {
     }
 }
 
-if (!window.forumV2) {
-    window.forumV2 = new ForumV2();
+function _initForum() {
+    if (!window.forumV2) {
+        window.forumV2 = new ForumV2();
+    }
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _initForum);
+} else {
+    _initForum();
 }
