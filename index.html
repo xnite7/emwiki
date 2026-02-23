@@ -529,7 +529,9 @@
 			}
 		}
 
-		window.catalog = new Catalog();
+		document.addEventListener('DOMContentLoaded', () => {
+			window.catalog = new Catalog();
+		});
 
 		// ==================== SNOW PARTICLES (CHRISTMAS) ====================
 		class SnowParticleSystem {

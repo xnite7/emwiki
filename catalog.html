@@ -2492,7 +2492,9 @@
 
         }
 
-        window.catalog = new Catalog();
+        document.addEventListener('DOMContentLoaded', () => {
+            window.catalog = new Catalog();
+        });
     </script>
 
 </body>

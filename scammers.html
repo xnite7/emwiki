@@ -715,7 +715,6 @@
     class Catalog extends BaseApp {
         constructor() {
             super();
-            this.loadTheme();
             this.initPage();
         }
 
@@ -1270,6 +1269,8 @@
         }
     }
 
-    window.catalog = new Catalog();
+    document.addEventListener('DOMContentLoaded', () => {
+        window.catalog = new Catalog();
+    });
 
 </script>

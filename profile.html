@@ -16,8 +16,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="https://emwiki.com/css/style.css">
-    <link rel="stylesheet" href="https://emwiki.com/css/profile.css">
+    <base href="https://emwiki.com/">
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/profile.css">
     <style>
         body {
             min-height: 100vh;
@@ -36,7 +37,7 @@
     
             to {
                 opacity: 1;
-                background-image: url(https://emwiki.com/imgs/valentinesbg.png);
+                background-image: url(./imgs/valentinesbg.png);
             }
     
         }
@@ -261,13 +262,12 @@
 
 <div id="site-footer"></div>
 
-    <script src="https://emwiki.com/js/script.js"></script>
+    <script src="./js/script.js"></script>
     <script>
     // Profile Page Handler
     class Catalog extends BaseApp {
         constructor() {
             super();
-            this.loadTheme();
             this.userId = null;
             this.profileData = null;
             this.apiBase = 'https://emwiki.com/api';
