@@ -911,6 +911,12 @@ class ForumV2 {
             commentInput.addEventListener('input', () => {
                 commentCharCount.textContent = commentInput.value.length;
                 commentCharCount.parentElement.classList.toggle('over', commentInput.value.length > 2000);
+                const content = commentInput?.value.trim();
+                if (content.length > 0) {
+                    document.getElementById('submit-comment-btn').style.display = 'block';
+                } else {
+                    document.getElementById('submit-comment-btn').style.display = 'none';
+                }
             });
         }
 

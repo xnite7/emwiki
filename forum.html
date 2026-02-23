@@ -814,12 +814,15 @@
 
 		/* Comment Form */
 		.comment-form-wrap {
-			margin-bottom: 24px;
 			display: none;
 		}
 
 		.comment-form-wrap.visible {
 			display: block;
+		}
+
+		#comments-list{
+			margin-top: 24px;
 		}
 
 		.comment-form-wrap .fmt-toolbar {
@@ -857,17 +860,18 @@
 		}
 
 		.comment-form-footer {
-			display: flex;
-			justify-content: space-between;
-			align-items: flex-start;
-			margin-top: 10px;
+display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 12px;
 		}
 
 		.char-count {
-			font-size: 12px;
-			color: var(--text-secondary);
-			margin-top: 2px;
-			opacity: 0.7;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: -39px;
+    opacity: 0.4;
+    padding-left: 10px;
 		}
 
 		.char-count.over {
@@ -1051,11 +1055,15 @@
 			color: var(--text-primary);
 		}
 
+		#submit-comment-btn{
+			display: none;
+		}
+
 		.comments-empty {
-			text-align: center;
-			padding: 30px 10px;
-			color: var(--text-secondary);
-			font-size: 14px;
+    text-align: center;
+    padding: 23px 10px;
+    color: var(--text-secondary);
+    font-size: 14px;
 		}
 
 		.comment-login-prompt {
