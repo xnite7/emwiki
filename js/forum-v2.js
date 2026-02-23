@@ -1345,7 +1345,7 @@ class ForumV2 {
                 return;
             }
         }
-        this._baseApp.modal.displayed = items;
+        this._baseApp.modal.displayed = [item];
         this._baseApp.modal.open(item);
     }
 
