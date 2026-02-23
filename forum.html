@@ -532,10 +532,17 @@
 			display: flex;
 			flex-direction: row;
 			border-radius: 14px;
-			padding: 16px 22px;
+
+			box-shadow: inset 0px 0px 6px #0000002b, 0px 0px 8px #0000003b;
+			padding: 14px 20px;
 			background: var(--bg-item);
 			border: 1px solid var(--border-color);
 			margin-bottom: 20px;
+
+			@supports (corner-shape: squircle) {
+				corner-shape: squircle;
+				border-radius: 82px;
+			}
 		}
 
 		.thread-post {
@@ -776,6 +783,10 @@
 			border: 1px solid var(--border-color);
 			border-radius: 16px;
 			padding: 24px;
+			@supports (corner-shape: squircle) {
+				corner-shape: squircle;
+				border-radius: 82px;
+			}
 		}
 
 		.comments-header {
@@ -868,10 +879,13 @@
 			background: #7b7b7b3d;
 			padding: 20px;
 			box-shadow: inset 0px 0px 6px 0px #6d6d6da8, 0px 0px 10px 0px #0000003d;
-			border-radius: 100px;
+			border-radius: 14px;
+
 			@supports (corner-shape: squircle) {
 				corner-shape: squircle;
+				border-radius: 100px;
 			}
+
 			margin-bottom: 14px;
 		}
 

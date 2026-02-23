@@ -22,6 +22,7 @@ class ForumV2 {
         this._attachTempList = [];
         this._itemCache = new Map();
         this.replyingToCommentId = null;
+        this._initListLoadDone = false;
 
         this.init();
     }
@@ -49,21 +50,19 @@ class ForumV2 {
         this.setupEventListeners();
         this.setupPopstate();
 
-        // Capture URL before any async work (in case redirects change it)
-        const initialPostId = this._getPostIdFromUrl();
-
-        await this.loadPosts();
-
-        // If URL had a post ID on load, open that thread (re-check URL in case of timing)
-        const postId = initialPostId ?? this._getPostIdFromUrl();
+        const postId = this._getPostIdFromUrl();
         if (postId) {
             await this.viewThread(postId, true);
         } else {
             // Fallback: URL might not have been ready; check again after paint
             requestAnimationFrame(() => {
+                if (this._initListLoadDone) return;
+                this._initListLoadDone = true;
                 const latePostId = this._getPostIdFromUrl();
                 if (latePostId && !this.currentThread) {
                     this.viewThread(latePostId, true);
+                } else {
+                    this.loadPosts();
                 }
             });
         }
@@ -542,6 +541,7 @@ class ForumV2 {
 
     async loadPosts() {
         if (this.isLoading) return;
+        this.isLoading = true;
 
         document.querySelector('.forum-sort-row')?.style.removeProperty('display');
         document.querySelector('.forum-toolbar')?.style.removeProperty('display');
@@ -553,7 +553,6 @@ class ForumV2 {
         const error = document.getElementById('posts-error');
 
         try {
-            this.isLoading = true;
             if (loading) loading.style.display = 'block';
             if (container) container.style.display = 'none';
             if (empty) empty.style.display = 'none';
@@ -1010,7 +1009,6 @@ class ForumV2 {
             if (!response.ok) throw new Error('Failed to delete');
             this.showToast('Post deleted', 'success');
             this.showListView();
-            await this.loadPosts();
         } catch (err) {
             this.showToast(err.message, 'error');
         }
