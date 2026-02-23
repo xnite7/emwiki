@@ -20,6 +20,8 @@ class ForumV2 {
         this.commentAttachedItems = [];
         this._attachTarget = null;
         this._attachTempList = [];
+        this._itemCache = new Map();
+        this.replyingToCommentId = null;
 
         this.init();
     }
@@ -232,7 +234,6 @@ class ForumV2 {
 
         document.getElementById('post-modal')?.classList.add('active');
         this.renderInlineAttachedItems('post-attached-display', this.postAttachedItems);
-        this.ensureItemsLoaded();
         titleInput?.focus();
     }
 
@@ -593,7 +594,7 @@ class ForumV2 {
         let filtered = [...this.posts];
 
         if (this.showingMyPosts && this.currentUser) {
-            filtered = filtered.filter(p => p.user_id === this.currentUser.user_id);
+            filtered = filtered.filter(p => p.user_id === this.currentUser.userId);
         }
 
         if (this.currentCategory !== 'all') {
@@ -754,7 +755,7 @@ class ForumV2 {
         if (!container || !this.currentThread) return;
         const post = this.currentThread;
 
-        const isOwner = this.currentUser && this.currentUser.user_id === post.user_id;
+        const isOwner = this.currentUser && this.currentUser.userId === post.user_id;
         const canAdmin = this.isAdminUser;
 
         let adminBtns = '';
@@ -830,6 +831,11 @@ class ForumV2 {
                         </button>
                     </div>
                     <div class="fmt-attached-display" id="comment-attached-display"></div>
+                    <div class="comment-reply-indicator" id="comment-reply-indicator" style="display:none">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
+                        Replying to <span id="reply-to-name"></span>
+                        <button type="button" class="reply-cancel-btn" id="cancel-reply-btn">&times;</button>
+                    </div>
                     <textarea class="comment-textarea" id="comment-input" maxlength="2000" placeholder="Write a comment..."></textarea>
                     <div class="comment-form-footer">
                         <span class="char-count"><span id="comment-char-count">0</span>/2000</span>
@@ -846,7 +852,7 @@ class ForumV2 {
     }
 
     renderComment(comment) {
-        const isOwner = this.currentUser && this.currentUser.user_id === comment.user_id;
+        const isOwner = this.currentUser && this.currentUser.userId === comment.user_id;
         const canDelete = isOwner || this.isAdminUser;
 
         const likedClass = comment.user_has_liked ? ' liked' : '';
@@ -858,6 +864,9 @@ class ForumV2 {
             <span>${comment.like_count || 0}</span>
         </button>`;
 
+        if (this.currentUser && !this.currentThread?.is_locked) {
+            actionBtns += `<button class="comment-act-btn" data-action="reply-comment" data-id="${comment.id}">Reply</button>`;
+        }
         if (isOwner) {
             actionBtns += `<button class="comment-act-btn" data-action="edit-comment" data-id="${comment.id}">Edit</button>`;
         }
@@ -866,16 +875,24 @@ class ForumV2 {
         }
 
         const isOp = this.currentThread && comment.user_id === this.currentThread.user_id;
+        const isReply = !!comment.parent_comment_id;
+        let replyLabel = '';
+        if (isReply) {
+            const parent = this.comments.find(c => c.id === comment.parent_comment_id);
+            const parentName = parent ? this.escapeHtml(parent.username) : 'deleted';
+            replyLabel = `<div class="comment-reply-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg> @${parentName}</div>`;
+        }
 
-        return `<div class="comment-item" data-comment-id="${comment.id}">
+        return `<div class="comment-item${isReply ? ' is-reply' : ''}" data-comment-id="${comment.id}">
             <div class="comment-top">
                 ${this._profileLink(comment.user_id, `<div class="comment-avatar">${this.avatarImg(comment.avatar_url, comment.username)}</div><span class="comment-author-name">${this.escapeHtml(comment.username)}</span>`)}
                 ${this._getRoleBadge(comment.role)}
                 ${isOp ? '<span class="op-badge" tabindex="0">OP</span>' : ''}
-                
+
                 <span class="comment-time">${this.timeAgo(comment.created_at)}${editedStr}</span>
-                
+
             </div>
+            ${replyLabel}
             <div class="comment-body">${this.parseContent(comment.content)}${this.renderAttachedItemsHtml(comment.attached_items)}</div>
         <div class="comment-actions">${actionBtns}</div>
             </div>`;
@@ -899,7 +916,9 @@ class ForumV2 {
         // Item picker for comments
         this.commentAttachedItems = [];
         this.renderInlineAttachedItems('comment-attached-display', this.commentAttachedItems);
-        this.ensureItemsLoaded();
+
+        // Batch-fetch items referenced in thread to fill in images
+        this._hydrateAttachedItems(container);
 
         // Bind clickable item chips in post and comments
         this.bindAttachedItemClicks(container);
@@ -920,11 +939,14 @@ class ForumV2 {
                     case 'pin': this.togglePin(); break;
                     case 'lock': this.toggleLock(); break;
                     case 'like-comment': this.toggleLikeComment(id, btn); break;
+                    case 'reply-comment': this.startReply(id); break;
                     case 'edit-comment': this.startEditComment(id); break;
                     case 'delete-comment': this.handleDeleteComment(id); break;
                 }
             });
         });
+
+        document.getElementById('cancel-reply-btn')?.addEventListener('click', () => this.cancelReply());
     }
 
     // ── CRUD: Posts ──
@@ -1009,7 +1031,12 @@ class ForumV2 {
             const response = await this.fetchWithAuth('https://emwiki.com/api/forum/comments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ post_id: this.currentThread.id, content, attached_items: this.commentAttachedItems.length > 0 ? this.commentAttachedItems : undefined })
+                body: JSON.stringify({
+                    post_id: this.currentThread.id,
+                    content,
+                    parent_comment_id: this.replyingToCommentId || undefined,
+                    attached_items: this.commentAttachedItems.length > 0 ? this.commentAttachedItems : undefined
+                })
             });
 
             if (!response.ok) {
@@ -1021,6 +1048,7 @@ class ForumV2 {
             this.comments.push(data.comment);
             if (input) { input.value = ''; input.dispatchEvent(new Event('input')); }
 
+            this.replyingToCommentId = null;
             this.renderThread();
             this.showToast('Comment posted!', 'success');
 
@@ -1077,6 +1105,35 @@ class ForumV2 {
         } catch (err) {
             this.showToast(err.message, 'error');
         }
+    }
+
+    startReply(commentId) {
+        const comment = this.comments.find(c => c.id === commentId);
+        if (!comment) return;
+
+        this.replyingToCommentId = commentId;
+        const indicator = document.getElementById('comment-reply-indicator');
+        const nameSpan = document.getElementById('reply-to-name');
+        if (indicator && nameSpan) {
+            nameSpan.textContent = '@' + comment.username;
+            indicator.style.display = 'flex';
+        }
+
+        const input = document.getElementById('comment-input');
+        if (input) {
+            input.placeholder = `Reply to ${comment.username}...`;
+            input.focus();
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    cancelReply() {
+        this.replyingToCommentId = null;
+        const indicator = document.getElementById('comment-reply-indicator');
+        if (indicator) indicator.style.display = 'none';
+
+        const input = document.getElementById('comment-input');
+        if (input) input.placeholder = 'Write a comment...';
     }
 
     async handleDeleteComment(commentId) {
@@ -1238,42 +1295,45 @@ class ForumV2 {
 
     // ── Item Attachments ──
 
-    async ensureItemsLoaded() {
-        if (this._allItems) return this._allItems;
-        if (this._itemsLoading) {
-            return new Promise(resolve => {
-                const check = setInterval(() => {
-                    if (this._allItems) { clearInterval(check); resolve(this._allItems); }
-                }, 100);
-            });
-        }
-        this._itemsLoading = true;
+    async searchItemsAPI(query) {
         try {
-            const cached = localStorage.getItem('itemsCache');
-            if (cached) {
-                this._allItems = JSON.parse(cached);
-                return this._allItems;
-            }
-            const res = await fetch('https://emwiki.com/api/items?limit=2000');
+            const res = await fetch(`https://emwiki.com/api/items/search?q=${encodeURIComponent(query)}&limit=24`);
+            if (!res.ok) return [];
             const data = await res.json();
-            this._allItems = data.items || [];
-            return this._allItems;
-        } catch {
-            this._allItems = [];
-            return [];
-        } finally {
-            this._itemsLoading = false;
-        }
+            const items = data.items || [];
+            items.forEach(item => this._itemCache.set(item.name, item));
+            return items;
+        } catch { return []; }
+    }
+
+    async fetchItemsByNames(names) {
+        const missing = names.filter(n => !this._itemCache.has(n));
+        if (missing.length === 0) return;
+        try {
+            const res = await fetch('https://emwiki.com/api/items/batch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ names: missing })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                (data.items || []).forEach(item => this._itemCache.set(item.name, item));
+            }
+        } catch { /* non-critical */ }
     }
 
     findItemByName(name) {
-        if (!this._allItems) return null;
-        return this._allItems.find(i => i.name === name) || null;
+        if (this._itemCache.has(name)) return this._itemCache.get(name);
+        if (this._allItems) {
+            const found = this._allItems.find(i => i.name === name);
+            if (found) { this._itemCache.set(name, found); return found; }
+        }
+        return null;
     }
 
     async openItemModal(itemName) {
-        const items = await this.ensureItemsLoaded();
-        const item = items.find(i => i.name === itemName);
+        await this.fetchItemsByNames([itemName]);
+        const item = this.findItemByName(itemName);
         if (!item) return this.showToast('Item not found', 'error');
 
         if (!this._baseApp) {
@@ -1386,12 +1446,8 @@ class ForumV2 {
             if (q.length < 2) { hideDropdown(); return; }
 
             searchTimer = setTimeout(async () => {
-                const items = await this.ensureItemsLoaded();
-                const results = items.filter(i =>
-                    i.name.toLowerCase().includes(q) ||
-                    (i.alias && i.alias.toLowerCase().includes(q))
-                ).slice(0, 8);
-                showDropdown(results);
+                const results = await this.searchItemsAPI(q);
+                showDropdown(results.slice(0, 8));
             }, 200);
         });
 
@@ -1436,7 +1492,8 @@ class ForumV2 {
         if (results) results.innerHTML = '<div class="item-attach-empty">Type to search items...</div>';
 
         document.getElementById('item-attach-modal')?.classList.add('active');
-        this.ensureItemsLoaded();
+        // Pre-fetch any already-attached items so their images show in the selected chips
+        if (list.length > 0) this.fetchItemsByNames(list).then(() => this._renderAttachModalSelected());
         setTimeout(() => search?.focus(), 50);
     }
 
@@ -1486,11 +1543,8 @@ class ForumV2 {
             return;
         }
 
-        const items = await this.ensureItemsLoaded();
-        const results = items.filter(i =>
-            i.name.toLowerCase().includes(query) ||
-            (i.alias && i.alias.toLowerCase().includes(query))
-        ).slice(0, 24);
+        el.innerHTML = '<div class="item-attach-empty">Searching...</div>';
+        const results = await this.searchItemsAPI(query);
 
         if (results.length === 0) {
             el.innerHTML = '<div class="item-attach-empty">No items found</div>';
@@ -1545,6 +1599,25 @@ class ForumV2 {
                 list.splice(parseInt(btn.dataset.idx), 1);
                 this.renderInlineAttachedItems(displayId, list);
             });
+        });
+    }
+
+    async _hydrateAttachedItems(container) {
+        const chips = container.querySelectorAll('.attached-item-chip[data-item-name]');
+        if (chips.length === 0) return;
+        const names = [...new Set([...chips].map(c => c.dataset.itemName))];
+        await this.fetchItemsByNames(names);
+        chips.forEach(chip => {
+            const item = this._itemCache.get(chip.dataset.itemName);
+            if (!item) return;
+            const img = this.getItemImgSrc(item);
+            if (img && !chip.querySelector('img')) {
+                const imgEl = document.createElement('img');
+                imgEl.src = img;
+                imgEl.alt = '';
+                imgEl.loading = 'lazy';
+                chip.insertBefore(imgEl, chip.firstChild);
+            }
         });
     }
 
