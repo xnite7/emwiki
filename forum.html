@@ -5,10 +5,12 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 	<title>Community Forum - EM Wiki</title>
-	<meta name="description" content="Join the Epic Minigames community forum - Discuss, share, and connect with other players!" />
+	<meta name="description"
+		content="Join the Epic Minigames community forum - Discuss, share, and connect with other players!" />
 	<meta property="og:title" content="Community Forum - EM Wiki">
 	<meta property="og:image" content="https://emwiki.com/imgs/QgWIUWf.png">
-	<meta property="og:description" content="Join the Epic Minigames community forum - Discuss, share, and connect with other players!">
+	<meta property="og:description"
+		content="Join the Epic Minigames community forum - Discuss, share, and connect with other players!">
 	<link rel="icon" href="/imgs/favicon.png" type="image/png">
 	<link rel="apple-touch-icon" href="/imgs/app.png">
 	<link rel="manifest" href="/site.webmanifest">
@@ -33,12 +35,20 @@
 		}
 
 		@keyframes bodyFadeIn {
-			99% { background-image: none; }
-			to { opacity: 1; background-image: url(/imgs/valentinesbg.png); }
+			99% {
+				background-image: none;
+			}
+
+			to {
+				opacity: 1;
+				background-image: url(/imgs/valentinesbg.png);
+			}
 		}
 
 		@media screen and (max-width: 2062px) {
-			body { background-repeat: repeat; }
+			body {
+				background-repeat: repeat;
+			}
 		}
 
 		/* ── Forum Layout ── */
@@ -90,7 +100,9 @@
 			border-color: #4a9eff;
 		}
 
-		.forum-toolbar #forum-search::placeholder { color: #868686a8; }
+		.forum-toolbar #forum-search::placeholder {
+			color: #868686a8;
+		}
 
 		.forum-actions {
 			display: flex;
@@ -198,7 +210,9 @@
 			border-color: rgba(74, 158, 255, 0.35);
 		}
 
-		.post-card:hover::after { transform: scaleY(1); }
+		.post-card:hover::after {
+			transform: scaleY(1);
+		}
 
 		.post-card.pinned {
 			border-color: rgba(255, 193, 7, 0.4);
@@ -249,22 +263,45 @@
 		}
 
 		.post-category-badge {
-    padding: 0px 8px 1px;
-    border-radius: 6px;
-    font-size: 11px;
-    outline: 1px solid;
-    font-weight: 700;
-    font-variant: all-small-caps;
-    letter-spacing: 0.4px;
-    line-height: 1.4;
+			padding: 0px 8px 1px;
+			border-radius: 6px;
+			font-size: 11px;
+			outline: 1px solid;
+			font-weight: 700;
+			font-variant: all-small-caps;
+			letter-spacing: 0.4px;
+			line-height: 1.4;
 		}
 
-		.post-category-badge.general { background: rgba(158, 158, 158, 0.18); color: #9e9e9e; }
-		.post-category-badge.trading { background: rgba(33, 150, 243, 0.18); color: #2196f3; }
-		.post-category-badge.updates { background: rgba(255, 152, 0, 0.18); color: #ff9800; }
-		.post-category-badge.guides { background: rgba(156, 39, 176, 0.18); color: #9c27b0; }
-		.post-category-badge.feedback { background: rgba(76, 175, 80, 0.18); color: #4caf50; }
-		.post-category-badge.off-topic { background: rgba(244, 67, 54, 0.18); color: #f44336; }
+		.post-category-badge.general {
+			background: rgba(158, 158, 158, 0.18);
+			color: #9e9e9e;
+		}
+
+		.post-category-badge.trading {
+			background: rgba(33, 150, 243, 0.18);
+			color: #2196f3;
+		}
+
+		.post-category-badge.updates {
+			background: rgba(255, 152, 0, 0.18);
+			color: #ff9800;
+		}
+
+		.post-category-badge.guides {
+			background: rgba(156, 39, 176, 0.18);
+			color: #9c27b0;
+		}
+
+		.post-category-badge.feedback {
+			background: rgba(76, 175, 80, 0.18);
+			color: #4caf50;
+		}
+
+		.post-category-badge.off-topic {
+			background: rgba(244, 67, 54, 0.18);
+			color: #f44336;
+		}
 
 		.post-badge {
 			border-radius: 8px;
@@ -275,9 +312,19 @@
 			gap: 3px;
 		}
 
-		.post-badge svg { width: 14px; height: 14px; flex-shrink: 0; }
-		.post-badge.pin { color: #ffc107; }
-		.post-badge.lock { color: #f44336; }
+		.post-badge svg {
+			width: 14px;
+			height: 14px;
+			flex-shrink: 0;
+		}
+
+		.post-badge.pin {
+			color: #ffc107;
+		}
+
+		.post-badge.lock {
+			color: #f44336;
+		}
 
 		.post-title {
 			font-size: 17px;
@@ -322,18 +369,18 @@
 		}
 
 		.post-author-avatar {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: #5d5d5d;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    color: white;
-    font-size: 11px;
-    flex-shrink: 0;
-    overflow: hidden;
+			width: 24px;
+			height: 24px;
+			border-radius: 50%;
+			background: #5d5d5d;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: 700;
+			color: white;
+			font-size: 11px;
+			flex-shrink: 0;
+			overflow: hidden;
 		}
 
 		.post-author-avatar img {
@@ -379,7 +426,12 @@
 			color: var(--text-secondary);
 		}
 
-		.post-stat svg { width: 13px; height: 13px; flex-shrink: 0; opacity: 0.7; }
+		.post-stat svg {
+			width: 13px;
+			height: 13px;
+			flex-shrink: 0;
+			opacity: 0.7;
+		}
 
 		/* ── Loading / Empty / Error ── */
 
@@ -389,9 +441,24 @@
 			padding: 70px 20px;
 		}
 
-		.forum-state svg { width: 56px; height: 56px; margin-bottom: 16px; opacity: 0.25; }
-		.forum-state h3 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
-		.forum-state p { font-size: 15px; color: var(--text-secondary); margin-bottom: 20px; }
+		.forum-state svg {
+			width: 56px;
+			height: 56px;
+			margin-bottom: 16px;
+			opacity: 0.25;
+		}
+
+		.forum-state h3 {
+			font-size: 22px;
+			font-weight: 700;
+			margin-bottom: 8px;
+		}
+
+		.forum-state p {
+			font-size: 15px;
+			color: var(--text-secondary);
+			margin-bottom: 20px;
+		}
 
 		.forum-spinner {
 			width: 40px;
@@ -403,12 +470,21 @@
 			animation: spin 0.8s linear infinite;
 		}
 
-		@keyframes spin { to { transform: rotate(360deg); } }
+		@keyframes spin {
+			to {
+				transform: rotate(360deg);
+			}
+		}
 
 		/* ── Thread View ── */
 
-		.thread-view { display: none; }
-		.thread-view.active { display: block; }
+		.thread-view {
+			display: none;
+		}
+
+		.thread-view.active {
+			display: block;
+		}
 
 		.thread-back {
 			display: inline-flex;
@@ -445,49 +521,52 @@
 			margin-left: auto;
 		}
 
-		.thread-admin-actions .btn { font-size: 12px; padding: 6px 12px; }
+		.thread-admin-actions .btn {
+			font-size: 12px;
+			padding: 6px 12px;
+		}
 
 		/* Thread post card */
 
 		.thread-daddy {
-    display: flex;
-    flex-direction: row;
-    border-radius: 14px;
-    padding: 16px 22px;
-    background: var(--bg-item);
-    border: 1px solid var(--border-color);
-    margin-bottom: 20px;
-}
+			display: flex;
+			flex-direction: row;
+			border-radius: 14px;
+			padding: 16px 22px;
+			background: var(--bg-item);
+			border: 1px solid var(--border-color);
+			margin-bottom: 20px;
+		}
 
 		.thread-post {
 			flex: 1;
-    padding: 5px 18px;
+			padding: 5px 18px;
 		}
 
 		/* Author bar (Discourse-style flat row) */
 		.thread-author-bar {
-display: flex;
-    align-items: center;
-    gap: 10px;
-    padding-bottom: 13px;
-    margin-bottom: 16px;
-    border-bottom: 1px solid var(--border-color);
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			padding-bottom: 13px;
+			margin-bottom: 16px;
+			border-bottom: 1px solid var(--border-color);
 		}
 
 		.thread-avatar {
-width: 60px;
-    height: 60px;
-    border-radius: 33px;
-    background: #000000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    margin-top: 4px;
-    color: white;
-    font-size: 18px;
-    flex-shrink: 0;
-    overflow: hidden;
+			width: 60px;
+			height: 60px;
+			border-radius: 33px;
+			background: #000000;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: 700;
+			margin-top: 4px;
+			color: white;
+			font-size: 18px;
+			flex-shrink: 0;
+			overflow: hidden;
 		}
 
 		.thread-avatar img {
@@ -498,9 +577,9 @@ width: 60px;
 		}
 
 		.thread-author-name {
-font-size: 18px;
-    color: #e5e5e5;
-    letter-spacing: 1px;
+			font-size: 18px;
+			color: #e5e5e5;
+			letter-spacing: 1px;
 		}
 
 		.thread-post-date {
@@ -512,19 +591,19 @@ font-size: 18px;
 
 		/* OP Badge */
 		.op-badge {
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: #4a9eff;
-    cursor: default;
-    position: relative;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
+			font-size: 16px;
+			font-weight: 700;
+			letter-spacing: 0.5px;
+			color: #4a9eff;
+			cursor: default;
+			position: relative;
+			user-select: none;
+			-webkit-tap-highlight-color: transparent;
 		}
 
-				.op-badge:hover {
-					text-decoration: underline;
-					cursor: pointer;
+		.op-badge:hover {
+			text-decoration: underline;
+			cursor: pointer;
 		}
 
 		.op-badge::after {
@@ -553,7 +632,9 @@ font-size: 18px;
 			opacity: 1;
 		}
 
-		.op-badge:focus { outline: 1px solid rgba(74, 158, 255, 0.35); }
+		.op-badge:focus {
+			outline: 1px solid rgba(74, 158, 255, 0.35);
+		}
 
 		/* Profile links */
 		.profile-link {
@@ -564,7 +645,9 @@ font-size: 18px;
 			transition: opacity 0.15s;
 		}
 
-		.profile-link:hover { opacity: 0.8; }
+		.profile-link:hover {
+			opacity: 0.8;
+		}
 
 		/* Rendered rich content */
 		.thread-content {
@@ -576,15 +659,32 @@ font-size: 18px;
 			margin-bottom: 22px;
 		}
 
-		.thread-content h2 { font-size: 20px; font-weight: 700; margin: 16px 0 8px; }
-		.thread-content h3 { font-size: 17px; font-weight: 700; margin: 12px 0 6px; }
+		.thread-content h2 {
+			font-size: 20px;
+			font-weight: 700;
+			margin: 16px 0 8px;
+		}
 
-		.thread-content strong { font-weight: 700; }
-		.thread-content em { font-style: italic; }
-		.thread-content u { text-decoration: underline; }
+		.thread-content h3 {
+			font-size: 17px;
+			font-weight: 700;
+			margin: 12px 0 6px;
+		}
+
+		.thread-content strong {
+			font-weight: 700;
+		}
+
+		.thread-content em {
+			font-style: italic;
+		}
+
+		.thread-content u {
+			text-decoration: underline;
+		}
 
 		.thread-content img {
-			    max-width: 380px;
+			max-width: 380px;
 			border-radius: 10px;
 			margin: 10px 0;
 			display: block;
@@ -597,7 +697,9 @@ font-size: 18px;
 			transition: text-decoration-color 0.2s;
 		}
 
-		.thread-content a:hover { text-decoration-color: #4a9eff; }
+		.thread-content a:hover {
+			text-decoration-color: #4a9eff;
+		}
 
 		.thread-content blockquote {
 			border-left: 3px solid rgba(74, 158, 255, 0.4);
@@ -633,7 +735,10 @@ font-size: 18px;
 			font-family: inherit;
 		}
 
-		.thread-action-btn svg { width: 16px; height: 16px; }
+		.thread-action-btn svg {
+			width: 16px;
+			height: 16px;
+		}
 
 		.thread-action-btn:hover {
 			background: var(--bg-item-hover);
@@ -646,7 +751,9 @@ font-size: 18px;
 			border-color: rgba(244, 67, 54, 0.3);
 		}
 
-		.thread-action-btn.liked svg { fill: #f44336; }
+		.thread-action-btn.liked svg {
+			fill: #f44336;
+		}
 
 		.thread-stat {
 			font-size: 13px;
@@ -656,7 +763,11 @@ font-size: 18px;
 			gap: 5px;
 		}
 
-		.thread-stat svg { width: 15px; height: 15px; opacity: 0.6; }
+		.thread-stat svg {
+			width: 15px;
+			height: 15px;
+			opacity: 0.6;
+		}
 
 		/* ── Comments ── */
 
@@ -676,7 +787,11 @@ font-size: 18px;
 			gap: 8px;
 		}
 
-		.comments-header svg { width: 20px; height: 20px; opacity: 0.6; }
+		.comments-header svg {
+			width: 20px;
+			height: 20px;
+			opacity: 0.6;
+		}
 
 		.comment-count-num {
 			background: rgba(74, 158, 255, 0.15);
@@ -692,7 +807,9 @@ font-size: 18px;
 			display: none;
 		}
 
-		.comment-form-wrap.visible { display: block; }
+		.comment-form-wrap.visible {
+			display: block;
+		}
 
 		.comment-form-wrap .fmt-toolbar {
 			margin-bottom: 0;
@@ -742,29 +859,35 @@ font-size: 18px;
 			opacity: 0.7;
 		}
 
-		.char-count.over { color: #f44336; }
+		.char-count.over {
+			color: #f44336;
+		}
 
 		/* Comment Item */
 		.comment-item {
-    background: #0000002e;
-    padding: 20px;
-    border-radius: 16px;
-    margin-bottom: 14px;
+			background: #7b7b7b3d;
+			padding: 20px;
+			box-shadow: inset 0px 0px 6px 0px #6d6d6da8, 0px 0px 10px 0px #0000003d;
+			border-radius: 100px;
+			@supports (corner-shape: squircle) {
+				corner-shape: squircle;
+			}
+			margin-bottom: 14px;
 		}
 
 
 		.comment-top {
-    display: flex;
-    gap: 8px;
-    align-items: flex-start;
+			display: flex;
+			gap: 8px;
+			align-items: flex-start;
 		}
 
 		.comment-avatar {
-width: 50px;
-    height: 50px;
-    border-radius: 36px;
-    background: #4f4f4f;
-    overflow: hidden;
+			width: 50px;
+			height: 50px;
+			border-radius: 36px;
+			background: #4f4f4f;
+			overflow: hidden;
 		}
 
 		.comment-avatar img {
@@ -774,24 +897,40 @@ width: 50px;
 			border-radius: 6px;
 		}
 
-		.comment-author-name { font-size: 18px; font-weight: 700; line-height: 1.1; padding-left: 6px; color: rgb(195 195 195);}
-		.comment-time { margin-left: auto;  font-size: 12.5px; color: var(--text-secondary); }
-		.comment-edited { font-size: 11px; color: var(--text-secondary); font-style: italic; }
+		.comment-author-name {
+			font-size: 18px;
+			font-weight: 700;
+			line-height: 1.1;
+			padding-left: 6px;
+			color: rgb(195 195 195);
+		}
+
+		.comment-time {
+			margin-left: auto;
+			font-size: 12.5px;
+			color: var(--text-secondary);
+		}
+
+		.comment-edited {
+			font-size: 11px;
+			color: var(--text-secondary);
+			font-style: italic;
+		}
 
 		.comment-actions {
-    float: right;
-    display: flex;
-    gap: 20px;
-    translate: 0px -21px;
+			float: right;
+			display: flex;
+			gap: 20px;
+			translate: 0px -21px;
 		}
 
 		.comment-body {
-    font-size: 14px;
-    line-height: 1.25;
-    color: var(--text-primary);
-    word-wrap: break-word;
-    padding-left: 64px;
-    margin-top: -23px;
+			font-size: 14px;
+			line-height: 1.25;
+			color: var(--text-primary);
+			word-wrap: break-word;
+			padding-left: 64px;
+			margin-top: -23px;
 		}
 
 		.comment-body img {
@@ -809,7 +948,9 @@ width: 50px;
 			border-radius: 0 6px 6px 0;
 		}
 
-		.comment-body a { color: #4a9eff; }
+		.comment-body a {
+			color: #4a9eff;
+		}
 
 		.comment-act-btn {
 			display: inline-flex;
@@ -826,10 +967,22 @@ width: 50px;
 			transition: color 0.2s;
 		}
 
-		.comment-act-btn svg { width: 14px; height: 14px; }
-		.comment-act-btn:hover { color: var(--text-primary); }
-		.comment-act-btn.liked { color: #f44336; }
-		.comment-act-btn.liked svg { fill: #f44336; }
+		.comment-act-btn svg {
+			width: 14px;
+			height: 14px;
+		}
+
+		.comment-act-btn:hover {
+			color: var(--text-primary);
+		}
+
+		.comment-act-btn.liked {
+			color: #f44336;
+		}
+
+		.comment-act-btn.liked svg {
+			fill: #f44336;
+		}
 
 		/* Reply styles */
 		.comment-item.is-reply {
@@ -847,7 +1000,10 @@ width: 50px;
 			padding: 0 0 4px 42px;
 		}
 
-		.comment-reply-label svg { opacity: 0.5; flex-shrink: 0; }
+		.comment-reply-label svg {
+			opacity: 0.5;
+			flex-shrink: 0;
+		}
 
 		.comment-reply-indicator {
 			display: flex;
@@ -855,14 +1011,16 @@ width: 50px;
 			gap: 6px;
 			padding: 6px 10px;
 			margin-bottom: 6px;
-			background: rgba(74, 158, 255, 0.08);
-			border: 1px solid rgba(74, 158, 255, 0.2);
+			background: rgb(255 154 74 / 8%);
+			border: 1px solid rgb(255 126 74 / 20%);
 			border-radius: 6px;
 			font-size: 13px;
-			color: #4a9eff;
+			color: #f3f3f3;
 		}
 
-		.comment-reply-indicator svg { flex-shrink: 0; }
+		.comment-reply-indicator svg {
+			flex-shrink: 0;
+		}
 
 		.reply-cancel-btn {
 			margin-left: auto;
@@ -875,7 +1033,9 @@ width: 50px;
 			line-height: 1;
 		}
 
-		.reply-cancel-btn:hover { color: var(--text-primary); }
+		.reply-cancel-btn:hover {
+			color: var(--text-primary);
+		}
 
 		.comments-empty {
 			text-align: center;
@@ -928,7 +1088,10 @@ width: 50px;
 			color: var(--text-primary);
 		}
 
-		.fmt-btn svg { width: 16px; height: 16px; }
+		.fmt-btn svg {
+			width: 16px;
+			height: 16px;
+		}
 
 		.fmt-sep {
 			width: 1px;
@@ -937,7 +1100,9 @@ width: 50px;
 		}
 
 		/* Color picker popover */
-		.fmt-color-btn { position: relative; }
+		.fmt-color-btn {
+			position: relative;
+		}
 
 		.color-popover {
 			position: absolute;
@@ -1000,7 +1165,9 @@ width: 50px;
 			overflow-y: auto;
 		}
 
-		.forum-modal.active { display: flex; }
+		.forum-modal.active {
+			display: flex;
+		}
 
 		.forum-modal-body {
 			background: var(--bg-secondary);
@@ -1015,8 +1182,15 @@ width: 50px;
 		}
 
 		@keyframes modalIn {
-			from { opacity: 0; transform: translateY(16px) scale(0.97); }
-			to { opacity: 1; transform: translateY(0) scale(1); }
+			from {
+				opacity: 0;
+				transform: translateY(16px) scale(0.97);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateY(0) scale(1);
+			}
 		}
 
 		.modal-head {
@@ -1047,7 +1221,10 @@ width: 50px;
 			transition: all 0.2s;
 		}
 
-		.modal-close-btn:hover { background: #f44336; color: white; }
+		.modal-close-btn:hover {
+			background: #f44336;
+			color: white;
+		}
 
 		.form-group {
 			margin-bottom: 18px;
@@ -1128,7 +1305,9 @@ width: 50px;
 			padding: 20px;
 		}
 
-		.confirm-overlay.active { display: flex; }
+		.confirm-overlay.active {
+			display: flex;
+		}
 
 		.confirm-box {
 			background: var(--bg-secondary);
@@ -1141,10 +1320,22 @@ width: 50px;
 			box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 		}
 
-		.confirm-box h3 { font-size: 18px; margin-bottom: 10px; }
-		.confirm-box p { font-size: 14px; color: var(--text-secondary); margin-bottom: 18px; }
+		.confirm-box h3 {
+			font-size: 18px;
+			margin-bottom: 10px;
+		}
 
-		.confirm-actions { display: flex; gap: 10px; justify-content: center; }
+		.confirm-box p {
+			font-size: 14px;
+			color: var(--text-secondary);
+			margin-bottom: 18px;
+		}
+
+		.confirm-actions {
+			display: flex;
+			gap: 10px;
+			justify-content: center;
+		}
 
 		/* ── Button Variants ── */
 
@@ -1166,7 +1357,10 @@ width: 50px;
 			border-color: rgba(244, 67, 54, 0.25);
 		}
 
-		.btn-danger:hover { background: #f44336; color: white; }
+		.btn-danger:hover {
+			background: #f44336;
+			color: white;
+		}
 
 		.btn-warn {
 			background: rgba(255, 193, 7, 0.12);
@@ -1174,7 +1368,10 @@ width: 50px;
 			border-color: rgba(255, 193, 7, 0.25);
 		}
 
-		.btn-warn:hover { background: #ffc107; color: #000; }
+		.btn-warn:hover {
+			background: #ffc107;
+			color: #000;
+		}
 
 		/* ── Toast ── */
 
@@ -1193,12 +1390,41 @@ width: 50px;
 			font-family: inherit;
 		}
 
-		.forum-toast.success { background: #4caf50; }
-		.forum-toast.error { background: #f44336; }
-		.forum-toast.info { background: #2196f3; }
+		.forum-toast.success {
+			background: #4caf50;
+		}
 
-		@keyframes toastIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-		@keyframes toastOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.9); } }
+		.forum-toast.error {
+			background: #f44336;
+		}
+
+		.forum-toast.info {
+			background: #2196f3;
+		}
+
+		@keyframes toastIn {
+			from {
+				opacity: 0;
+				transform: scale(0.9);
+			}
+
+			to {
+				opacity: 1;
+				transform: scale(1);
+			}
+		}
+
+		@keyframes toastOut {
+			from {
+				opacity: 1;
+				transform: scale(1);
+			}
+
+			to {
+				opacity: 0;
+				transform: scale(0.9);
+			}
+		}
 
 		/* ── Mobile Responsive ── */
 
@@ -1371,7 +1597,9 @@ width: 50px;
 			align-items: center;
 		}
 
-		.fmt-attached-display.has-items { display: flex; }
+		.fmt-attached-display.has-items {
+			display: flex;
+		}
 
 		.fmt-attached-chip {
 			display: inline-flex;
@@ -1403,7 +1631,9 @@ width: 50px;
 			font-family: inherit;
 		}
 
-		.fmt-attached-chip button:hover { color: #f44336; }
+		.fmt-attached-chip button:hover {
+			color: #f44336;
+		}
 
 		/* ── Item Attach Modal ── */
 
@@ -1420,7 +1650,10 @@ width: 50px;
 			transition: border-color 0.2s;
 		}
 
-		.item-attach-search:focus { outline: none; border-color: #4a9eff; }
+		.item-attach-search:focus {
+			outline: none;
+			border-color: #4a9eff;
+		}
 
 		.item-attach-selected {
 			display: flex;
@@ -1429,7 +1662,9 @@ width: 50px;
 			margin-bottom: 12px;
 		}
 
-		.item-attach-selected:empty { display: none; }
+		.item-attach-selected:empty {
+			display: none;
+		}
 
 		.item-attach-results {
 			display: grid;
@@ -1474,7 +1709,9 @@ width: 50px;
 			font-weight: 700;
 		}
 
-		.item-attach-card { position: relative; }
+		.item-attach-card {
+			position: relative;
+		}
 
 		.item-attach-card img {
 			width: 56px;
@@ -1518,31 +1755,90 @@ width: 50px;
 		}
 
 		@media (max-width: 640px) {
-			.forum-wrap { padding: 16px 12px 40px; }
+			.forum-wrap {
+				padding: 16px 12px 40px;
+			}
 
-			.forum-toolbar { flex-direction: column; }
-			.forum-toolbar .search-container { width: 100%; }
-			.forum-actions { width: 100%; }
-			.forum-actions .btn { flex: 1; justify-content: center; }
+			.forum-toolbar {
+				flex-direction: column;
+			}
 
-			.post-card { flex-direction: column; gap: 10px; padding: 14px; }
-			.post-thumb { width: 100%; height: 120px; border-radius: 8px; }
-			.post-title { font-size: 15.5px; }
+			.forum-toolbar .search-container {
+				width: 100%;
+			}
 
-			.thread-post { padding: 5px 16px; }
-			.thread-title { font-size: 20px; }
-			.thread-avatar { width: 46px; height: 46px; }
-			.thread-content { font-size: 14px; }
+			.forum-actions {
+				width: 100%;
+			}
 
-			.comments-section { padding: 16px; }
-			.comment-avatar { width: 28px; height: 28px; }
+			.forum-actions .btn {
+				flex: 1;
+				justify-content: center;
+			}
 
-			.forum-modal { padding: 16px 10px; }
-			.forum-modal-body { padding: 20px; }
+			.post-card {
+				flex-direction: column;
+				gap: 10px;
+				padding: 14px;
+			}
 
-			.comment-body { padding-left: 42px;    margin-top: 0px; }
-			.comment-item.is-reply { margin-left: 16px; padding-left: 10px; }
-			.comment-reply-label { padding-left: 42px; }
+			.post-thumb {
+				width: 100%;
+				height: 120px;
+				border-radius: 8px;
+			}
+
+			.post-title {
+				font-size: 15.5px;
+			}
+
+			.thread-post {
+				padding: 5px 16px;
+			}
+
+			.thread-title {
+				font-size: 20px;
+			}
+
+			.thread-avatar {
+				width: 46px;
+				height: 46px;
+			}
+
+			.thread-content {
+				font-size: 14px;
+			}
+
+			.comments-section {
+				padding: 16px;
+			}
+
+			.comment-avatar {
+				width: 28px;
+				height: 28px;
+			}
+
+			.forum-modal {
+				padding: 16px 10px;
+			}
+
+			.forum-modal-body {
+				padding: 20px;
+			}
+
+			.comment-body {
+				padding-left: 42px;
+				margin-top: 0px;
+			}
+
+			.comment-item.is-reply {
+				margin-left: 16px;
+				padding-left: 10px;
+			}
+
+			.comment-reply-label {
+				padding-left: 42px;
+			}
 		}
 	</style>
 </head>
@@ -1556,7 +1852,8 @@ width: 50px;
 			<div class="hero-title">
 				<h1 class="hero-epic">Community Forum</h1>
 			</div>
-			<p class="hero-subtitle" style="margin-bottom: 10px;">Share ideas, ask questions, and connect with the Epic Minigames community</p>
+			<p class="hero-subtitle" style="margin-bottom: 10px;">Share ideas, ask questions, and connect with the Epic
+				Minigames community</p>
 		</div>
 	</section>
 
@@ -1576,7 +1873,11 @@ width: 50px;
 			</div>
 			<div class="forum-actions">
 				<button class="btn btn-primary" id="create-post-btn" style="display:none">
-					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+						stroke-width="2.5">
+						<line x1="12" y1="5" x2="12" y2="19" />
+						<line x1="5" y1="12" x2="19" y2="12" />
+					</svg>
 					New Post
 				</button>
 				<button class="btn" id="my-posts-btn" style="display:none">My Posts</button>
@@ -1615,12 +1916,18 @@ width: 50px;
 			</div>
 			<div id="posts-container" class="forum-posts" style="display:none"></div>
 			<div id="posts-empty" class="forum-state" style="display:none">
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+					<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+				</svg>
 				<h3>No posts yet</h3>
 				<p>Be the first to start a discussion!</p>
 			</div>
 			<div id="posts-error" class="forum-state" style="display:none">
-				<svg viewBox="0 0 24 24" fill="none" stroke="#f44336" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+				<svg viewBox="0 0 24 24" fill="none" stroke="#f44336" stroke-width="1.5">
+					<circle cx="12" cy="12" r="10" />
+					<line x1="12" y1="8" x2="12" y2="12" />
+					<line x1="12" y1="16" x2="12.01" y2="16" />
+				</svg>
 				<h3>Failed to load posts</h3>
 				<p id="error-message">Please try again later.</p>
 				<button class="btn btn-primary" onclick="location.reload()" style="margin: auto;">Retry</button>
@@ -1630,7 +1937,10 @@ width: 50px;
 		<!-- Thread View -->
 		<div id="thread-view" class="thread-view">
 			<button class="btn thread-back" id="back-to-list">
-				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<line x1="19" y1="12" x2="5" y2="12" />
+					<polyline points="12 19 5 12 12 5" />
+				</svg>
 				Back
 			</button>
 			<div id="thread-content"></div>
@@ -1658,7 +1968,8 @@ width: 50px;
 				</div>
 				<div class="form-group">
 					<label for="post-title-input">Title</label>
-					<input type="text" id="post-title-input" maxlength="200" placeholder="Give your post a descriptive title" required>
+					<input type="text" id="post-title-input" maxlength="200"
+						placeholder="Give your post a descriptive title" required>
 				</div>
 				<div class="form-group">
 					<label>Content</label>
@@ -1670,26 +1981,49 @@ width: 50px;
 						<button type="button" class="fmt-btn" data-fmt="h2" title="Heading">H2</button>
 						<button type="button" class="fmt-btn" data-fmt="h3" title="Subheading">H3</button>
 						<div class="fmt-sep"></div>
-						<button type="button" class="fmt-btn" data-fmt="image" title="Upload image (or drag &amp; drop)">
-							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle fill="Canvas" stroke="Canvas" cx="8.5" cy="8.5" r="1.5"/><path fill="Canvas" stroke="Canvas" d="m21 15-5-5L5 21"/></svg>
+						<button type="button" class="fmt-btn" data-fmt="image"
+							title="Upload image (or drag &amp; drop)">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<rect x="3" y="3" width="18" height="18" rx="2" />
+								<circle fill="Canvas" stroke="Canvas" cx="8.5" cy="8.5" r="1.5" />
+								<path fill="Canvas" stroke="Canvas" d="m21 15-5-5L5 21" />
+							</svg>
 						</button>
 						<button type="button" class="fmt-btn" data-fmt="link" title="Link">
-							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+								<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+							</svg>
 						</button>
 						<button type="button" class="fmt-btn" data-fmt="quote" title="Quote">
-							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3z"/></svg>
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path
+									d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21z" />
+								<path
+									d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3z" />
+							</svg>
 						</button>
 						<div class="fmt-sep"></div>
 						<button type="button" class="fmt-btn fmt-color-btn" data-fmt="color" title="Text Color">
-							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16"/><path fill="Canvas" d="m6 16 6-14 6 14"/><path d="M8 12h8"/></svg>
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M4 20h16" />
+								<path fill="Canvas" d="m6 16 6-14 6 14" />
+								<path d="M8 12h8" />
+							</svg>
 						</button>
 						<div class="fmt-sep"></div>
 						<button type="button" class="fmt-btn" data-fmt="attach" title="Attach Item">
-							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path
+									d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+								<line x1="7" y1="7" x2="7.01" y2="7" />
+							</svg>
 						</button>
 					</div>
 					<div class="fmt-attached-display" id="post-attached-display"></div>
-					<textarea id="post-content-input" maxlength="5000" placeholder="What would you like to discuss? Use the toolbar for formatting. Drag &amp; drop or paste images directly." required></textarea>
+					<textarea id="post-content-input" maxlength="5000"
+						placeholder="What would you like to discuss? Use the toolbar for formatting. Drag &amp; drop or paste images directly."
+						required></textarea>
 					<div class="char-count"><span id="post-char-count">0</span>/5000</div>
 				</div>
 				<div class="modal-footer">
@@ -1719,7 +2053,8 @@ width: 50px;
 				<h2>Attach Items</h2>
 				<button class="modal-close-btn" id="close-item-attach-modal">&times;</button>
 			</div>
-			<input type="text" class="item-attach-search" id="item-attach-search" placeholder="Search items..." autocomplete="off">
+			<input type="text" class="item-attach-search" id="item-attach-search" placeholder="Search items..."
+				autocomplete="off">
 			<div id="item-attach-selected" class="item-attach-selected"></div>
 			<div id="item-attach-results" class="item-attach-results">
 				<div class="item-attach-empty">Type to search items...</div>

@@ -732,7 +732,7 @@ class ForumV2 {
             this.incrementViewCount(postId);
             this.renderThread();
 
-            
+
             document.querySelector('.forum-sort-row')?.style.setProperty('display', 'none');
             document.querySelector('.forum-toolbar')?.style.setProperty('display', 'none');
             document.querySelector('.category-nav-container')?.style.setProperty('display', 'none');
@@ -832,8 +832,10 @@ class ForumV2 {
                     </div>
                     <div class="fmt-attached-display" id="comment-attached-display"></div>
                     <div class="comment-reply-indicator" id="comment-reply-indicator" style="display:none">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
-                        Replying to <span id="reply-to-name"></span>
+                        <svg fill="currentColor" width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10,19 C10,19.8897227 8.9391917,20.319213 8.3190139,19.7330526 L8.2407434,19.6507914 L2.2407434,12.6507914 C1.94650147,12.3075091 1.92198131,11.814562 2.16718292,11.4463356 L2.2407434,11.3492086 L8.2407434,4.34920863 C8.81976724,3.6736808 9.90470154,4.03795234 9.99410748,4.88660488 L10,5 L10,8 L11.0379967,8.08649972 C17.1341361,8.59451134 21.8458884,13.616576 21.9962945,19.6999759 L22,20 L19.3412157,18.4806947 C16.6386172,16.9363527 13.5975935,16.0874335 10.491017,16.0064025 L10,16 L10,19 Z"></path>
+</svg>
+                        Replying to <span id="reply-to-name" style="color: #ffa73f;"></span>
                         <button type="button" class="reply-cancel-btn" id="cancel-reply-btn">&times;</button>
                     </div>
                     <textarea class="comment-textarea" id="comment-input" maxlength="2000" placeholder="Write a comment..."></textarea>

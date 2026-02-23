@@ -1,5 +1,14 @@
 // Forum Comments API - Handles forum comment operations
 
+// Notification helper
+async function createNotification(env, userId, type, title, message, link = null) {
+  try {
+    await env.DBA.prepare(
+      'INSERT INTO notifications (user_id, type, title, message, link, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(userId, type, title, message, link, Math.floor(Date.now() / 1000)).run();
+  } catch (e) { /* non-blocking */ }
+}
+
 // Helper to get user from session token
 async function getUserFromToken(token, env) {
   if (!token) return null;
@@ -175,6 +184,30 @@ async function handlePost({ request, env, params }) {
     // Add like count
     comment.like_count = 0;
     comment.user_has_liked = false;
+
+    // Send notifications (non-blocking)
+    const authorName = user.display_name || user.username;
+
+    // Notify post owner about new comment
+    if (post.user_id !== user.user_id) {
+      createNotification(env, post.user_id, 'forum_comment',
+        'New comment on your post',
+        `${authorName} commented on "${post.title}"`,
+        `/forum/${post_id}`);
+    }
+
+    // If reply, notify parent comment author
+    if (parent_comment_id) {
+      const parentComment = await env.DBA.prepare(
+        'SELECT user_id FROM forum_comments WHERE id = ?'
+      ).bind(parent_comment_id).first();
+      if (parentComment && parentComment.user_id !== user.user_id && parentComment.user_id !== post.user_id) {
+        createNotification(env, parentComment.user_id, 'forum_reply',
+          'New reply to your comment',
+          `${authorName} replied to your comment`,
+          `/forum/${post_id}`);
+      }
+    }
 
     return new Response(JSON.stringify({
       success: true,
