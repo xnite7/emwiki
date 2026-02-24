@@ -35,22 +35,44 @@ html::before {
 
 :root {
     color-scheme: dark;
-    --bg-secondary: light-dark(#fff, #1a1a1a);
-    --bg-item: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.05));
-    --bg-item-hover: light-dark(rgba(0, 0, 0, 0.16), rgba(255, 255, 255, 0.1));
-    --text-secondary: light-dark(rgba(0, 0, 0, 0.6), rgba(255, 255, 255, 0.7));
-    --border-color: light-dark(rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0.1));
-    --shadow-color: light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.5));
-    --edges-color: light-dark(rgba(255, 255, 255, 0.4), rgba(0, 0, 0, 0.3));
+    /* Safari < 17.5 fallbacks (dark theme defaults) */
+    --bg-secondary: #1a1a1a;
+    --bg-item: rgba(255, 255, 255, 0.05);
+    --bg-item-hover: rgba(255, 255, 255, 0.1);
+    --text-secondary: rgba(255, 255, 255, 0.7);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    --edges-color: rgba(0, 0, 0, 0.3);
     --accent: #4a9eff;
     --accent-christmas: #4a9eff;
 
     &:has(.light-theme) {
         color-scheme: light;
+        /* Light theme fallbacks for Safari < 17.5 */
+        --bg-secondary: #fff;
+        --bg-item: rgba(0, 0, 0, 0.08);
+        --bg-item-hover: rgba(0, 0, 0, 0.16);
+        --text-secondary: rgba(0, 0, 0, 0.6);
+        --border-color: rgba(0, 0, 0, 0.25);
+        --shadow-color: rgba(0, 0, 0, 0.15);
+        --edges-color: rgba(255, 255, 255, 0.4);
     }
 
     &:has(.dark-theme) {
         color-scheme: dark;
+    }
+}
+
+/* Override with light-dark() for browsers that support it (Safari 17.5+) */
+@supports (color: light-dark(red, blue)) {
+    :root {
+        --bg-secondary: light-dark(#fff, #1a1a1a);
+        --bg-item: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.05));
+        --bg-item-hover: light-dark(rgba(0, 0, 0, 0.16), rgba(255, 255, 255, 0.1));
+        --text-secondary: light-dark(rgba(0, 0, 0, 0.6), rgba(255, 255, 255, 0.7));
+        --border-color: light-dark(rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0.1));
+        --shadow-color: light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.5));
+        --edges-color: light-dark(rgba(255, 255, 255, 0.4), rgba(0, 0, 0, 0.3));
     }
 }
 
@@ -223,6 +245,7 @@ svg:hover #cloud {
     font-weight: 600;
     cursor: pointer;
     box-shadow: 0 2px 10px var(--shadow-color), inset -2px -2px 4px var(--edges-color);
+    -webkit-backdrop-filter: blur(15px) saturate(150%);
     backdrop-filter: blur(15px) saturate(150%);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -355,6 +378,11 @@ svg:hover #cloud {
 /* Add to your CSS file */
 [popover] {
     touch-action: manipulation;
+}
+
+/* Prevent popover flash in Safari - explicitly hide closed popovers */
+[popover]:not(:popover-open) {
+    display: none;
 }
 
 [popover]:popover-open {
@@ -1093,6 +1121,7 @@ div#random-items-grid {
     flex: 1 1 322px;
     padding: 25px;
     position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.0), inset -2px -2px 6px #00000066;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.0), inset -2px -2px 6px light-dark(transparent, #00000066);
     display: flex;
     align-items: stretch;
@@ -1103,6 +1132,7 @@ div#random-items-grid {
 
 .info-card:hover {
     transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), inset -2px -2px 6px #00000066;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), inset -2px -2px 6px light-dark(transparent, #00000066);
 
 }
@@ -3076,11 +3106,13 @@ textarea {
 
 /* User (default) styles */
 .role-badge:not(.admin):not(.moderator):not(.vip):not(.donator):not(.scammer) {
+    background: rgba(255, 255, 255, 0.2);
     background: rgb(from CanvasText r g b / 0.2);
     color: var(--text-secondary);
 }
 
 .role-icon:not(.admin):not(.moderator):not(.vip):not(.donator):not(.scammer) {
+    background: rgba(255, 255, 255, 0.2);
     background: rgb(from CanvasText r g b / 0.2);
     color: var(--text-secondary);
 }
@@ -3805,5 +3837,6 @@ header svg * {
     content: "";
     display: block;
     height: 1px;
+    background-color: rgba(255, 255, 255, 0.1);
     background-color: light-dark(rgba(0, 0, 0, 0.2), rgba(255, 255, 255, 0.1));
 }

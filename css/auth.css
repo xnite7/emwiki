@@ -1,23 +1,28 @@
 [popover]::backdrop {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 1));
     background: linear-gradient(rgb(from Canvas r g b / 0.5), rgb(from Canvas r g b / 1));
     opacity: 0;
+    -webkit-backdrop-filter: blur(0px);
     backdrop-filter: blur(0px);
-    transition: all 0.4s allow-discrete;
+    transition: all 0.4s;
 }
 
 [popover]:popover-open::backdrop {
     opacity: 1;
+    -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
 }
 
 @starting-style {
     [popover]:popover-open::backdrop {
+        -webkit-backdrop-filter: blur(0px);
         backdrop-filter: blur(0px);
         opacity: 0;
     }
 }
 
 #auth-modal {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, #3a3a45 100%);
     background: linear-gradient(135deg, var(--bg-secondary) 0%, rgb(from Canvas calc(b + 25) calc(b + 25) calc(b + 35) / 255) 100%);
     border-radius: 20px;
     inset: 0;
@@ -235,7 +240,12 @@
     background: linear-gradient(145deg, var(--bg-item) 0%, var(--bg-secondary) 100%);
     border-radius: 16px;
     letter-spacing: 16px;
+    border: 2px solid #3a3a3a;
     border: 2px solid light-dark(#d0d0d0, #3a3a3a);
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, 0.6),
+        inset -4px -4px 12px rgba(0, 0, 0, 0.7),
+        inset 3px 3px 6px rgba(255, 255, 255, 0.03);
     box-shadow:
         0 10px 40px light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.6)),
         inset -4px -4px 12px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.7)),
@@ -552,6 +562,7 @@
     top: calc(anchor(bottom) + 10px);
     justify-self: anchor-center;
     background: linear-gradient(90deg, var(--bg-secondary) 0%, Canvas 100%);
+    border: 3px solid rgb(71, 71, 71);
     border: 3px solid light-dark(rgb(166 166 166), rgb(71, 71, 71));
     border-radius: 16px;
     padding: 20px;
@@ -663,6 +674,7 @@
 }
 
 .profile-stat {
+    background: linear-gradient(rgba(255, 255, 255, 0.1), transparent);
     background: linear-gradient(rgb(from CanvasText b b b / 0.1), transparent);
     padding: 10px;
     border-radius: 10px;
@@ -713,6 +725,7 @@
 }
 
 .profile-action-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
     background: rgb(from var(--bg-item) r g b / 0.2);
     transform: translateX(4px);
 }
@@ -725,8 +738,11 @@
 }
 
 .profile-action-btn.donator {
+    background: linear-gradient(#ff90182b, #ff741921);
     background: linear-gradient(light-dark(#ffa810c2, #ff90182b), light-dark(#e57525b8, #ff741921));
+    border-color: #ffe03257;
     border-color: light-dark(#ffca00, #ffe03257);
+    color: #ffca00;
     color: light-dark(white, #ffca00);
 }
 
@@ -1555,6 +1571,7 @@
 }
 
 .unlocked-features {
+    background: rgba(255, 215, 0, 0.05);
     background: light-dark(rgb(53 45 7 / 14%), rgba(255, 215, 0, 0.05));
     padding: 17px;
     border-radius: 15px;
@@ -1565,6 +1582,7 @@
 
 .unlocked-features h3 {
     font-size: 20px;
+    color: #ffd700;
     color: light-dark(#000000, #ffd700);
     margin-bottom: 20px;
 }
@@ -1652,11 +1670,13 @@
     content: "";
     display: block;
     height: 1px;
+    background-color: rgba(255, 255, 255, 0.1);
     background-color: light-dark(rgba(0, 0, 0, 0.2), rgba(255, 255, 255, 0.1));
 }
 
 .profile-dropdown-divider {
     height: 1px;
+    background: rgba(255, 255, 255, 0.1);
     background: light-dark(rgba(0, 0, 0, 0.2), rgba(255, 255, 255, 0.1));
     margin: 12px 0;
 }
