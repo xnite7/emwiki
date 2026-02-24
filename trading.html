@@ -18,209 +18,275 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="./css/style.css">
     <link rel="stylesheet" href="./css/trading.css">
-
 </head>
 
 <body data-active-nav="trading">
     <div id="site-header"></div>
 
-    <div class="trading-container">
-        <!-- Browse View (Default) -->
-        <div class="trading-view active" id="browseView">
-            <div class="browse-header">
-                <h1 class="browse-title">Browse Trades</h1>
-                <button class="btn-create-trade" id="createTradeBtn">
-                    <span>Create Trade</span>
-                    <span class="btn-icon">➕</span>
-                </button>
-            </div>
-
-            <div class="browse-filters">
-                <div class="search-box">
-                    <input type="text" class="search-input" id="browseSearchInput" placeholder="Search trades...">
+    <div class="trading-hub">
+        <!-- Hero Stats Bar -->
+        <div class="trading-hero">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">Trading Hub</h1>
+                    <p class="hero-subtitle">Find deals, make offers, trade items with the community</p>
                 </div>
-                <div class="filter-row">
-                    <select class="filter-select" id="filterCategory">
-                        <option value="all">All Categories</option>
-                        <option value="gears">Gears</option>
-                        <option value="deaths">Deaths</option>
-                        <option value="pets">Pets</option>
-                        <option value="effects">Effects</option>
-                        <option value="titles">Titles</option>
-                    </select>
-                    <select class="filter-select" id="filterStatus">
-                        <option value="active">Active</option>
-                        <option value="all">All Status</option>
-                        <option value="completed">Completed</option>
-                    </select>
-                    <select class="filter-select" id="filterSort">
-                        <option value="recent">Most Recent</option>
-                        <option value="views">Most Views</option>
-                    </select>
+                <div class="hero-stats">
+                    <div class="stat-card">
+                        <span class="stat-value" id="statActiveTrades">--</span>
+                        <span class="stat-label">Active Trades</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="statCompleted">--</span>
+                        <span class="stat-label">Completed</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="statTraders">--</span>
+                        <span class="stat-label">Traders</span>
+                    </div>
                 </div>
             </div>
-
-            <div class="trades-grid" id="tradesGrid"></div>
         </div>
 
-        <!-- Create Trade Wizard -->
-        <div class="trading-view" id="createView">
-            <div class="wizard-container">
-                <!-- Progress Indicator -->
-                <div class="wizard-progress">
-                    <div class="progress-step" data-step="1">
-                        <div class="step-number">1</div>
-                        <div class="step-label">Looking For</div>
+        <!-- Tab Navigation -->
+        <div class="trading-tabs">
+            <div class="tabs-inner">
+                <button class="tab-btn active" data-tab="browse">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    <span>Browse</span>
+                </button>
+                <button class="tab-btn" data-tab="my-trades">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    <span>My Trades</span>
+                    <span class="tab-badge" id="myTradesBadge" style="display:none">0</span>
+                </button>
+                <button class="tab-btn tab-create" data-tab="create">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                    <span>Create Trade</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Content Panels -->
+        <div class="trading-content">
+
+            <!-- ============ BROWSE PANEL ============ -->
+            <div class="tab-panel active" id="panelBrowse">
+                <!-- Category Pills -->
+                <div class="category-pills">
+                    <button class="pill active" data-category="all">All</button>
+                    <button class="pill" data-category="gears">Gears</button>
+                    <button class="pill" data-category="deaths">Deaths</button>
+                    <button class="pill" data-category="pets">Pets</button>
+                    <button class="pill" data-category="effects">Effects</button>
+                    <button class="pill" data-category="titles">Titles</button>
+                </div>
+
+                <!-- Search & Filter Bar -->
+                <div class="search-filter-bar">
+                    <div class="search-wrapper">
+                        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        <input type="text" class="search-input" id="searchInput" placeholder="Search trades..." autocomplete="off">
                     </div>
-                    <div class="progress-step" data-step="2">
-                        <div class="step-number">2</div>
-                        <div class="step-label">What I Offer</div>
-                    </div>
-                    <div class="progress-step" data-step="3">
-                        <div class="step-number">3</div>
-                        <div class="step-label">Details</div>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill"></div>
+                    <div class="filter-controls">
+                        <select class="filter-select" id="filterStatus">
+                            <option value="active">Active</option>
+                            <option value="all">All Status</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                        <select class="filter-select" id="filterSort">
+                            <option value="recent">Newest First</option>
+                            <option value="views">Most Viewed</option>
+                        </select>
                     </div>
                 </div>
 
-                <!-- Step 1: Looking For -->
-                <div class="wizard-step active" data-step="1">
-                    <div class="step-header">
-                        <h2>What are you looking for?</h2>
-                        <p class="step-subtitle">Add items, Robux, or other game items you want</p>
+                <!-- Trades Feed -->
+                <div class="trades-feed" id="tradesFeed">
+                    <!-- Skeleton loaders shown during initial load -->
+                    <div class="trade-card skeleton"><div class="skeleton-inner"></div></div>
+                    <div class="trade-card skeleton"><div class="skeleton-inner"></div></div>
+                    <div class="trade-card skeleton"><div class="skeleton-inner"></div></div>
+                </div>
+
+                <div class="load-more-container" id="loadMoreContainer" style="display:none">
+                    <button class="btn-load-more" id="loadMoreBtn">Load More</button>
+                </div>
+            </div>
+
+            <!-- ============ MY TRADES PANEL ============ -->
+            <div class="tab-panel" id="panelMyTrades">
+                <div class="my-trades-header">
+                    <div class="my-trades-tabs">
+                        <button class="my-tab active" data-mytab="listings">My Listings</button>
+                        <button class="my-tab" data-mytab="offers">My Offers</button>
+                    </div>
+                </div>
+                <div class="my-trades-feed" id="myTradesFeed">
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3"/><rect x="10" y="3" width="11" height="11" rx="2"/><path d="m14 7 2 2-2 2"/></svg>
+                        </div>
+                        <h3>No trades yet</h3>
+                        <p>Create your first trade to get started!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ CREATE TRADE PANEL ============ -->
+            <div class="tab-panel" id="panelCreate">
+                <div class="create-container">
+                    <!-- Wizard Progress -->
+                    <div class="wizard-progress">
+                        <div class="progress-track">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-steps">
+                            <div class="progress-step active" data-step="1">
+                                <div class="step-dot">
+                                    <span>1</span>
+                                </div>
+                                <span class="step-text">You Offer</span>
+                            </div>
+                            <div class="progress-step" data-step="2">
+                                <div class="step-dot">
+                                    <span>2</span>
+                                </div>
+                                <span class="step-text">You Want</span>
+                            </div>
+                            <div class="progress-step" data-step="3">
+                                <div class="step-dot">
+                                    <span>3</span>
+                                </div>
+                                <span class="step-text">Finalize</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="step-content">
-                        <div class="items-section">
-                            <div class="section-header-row">
-                                <label class="form-label">They Give</label>
-                                <button class="btn-add-custom" id="addSeekingCustomBtn">
-                                    <span>💰</span>
-                                    <span>Add Robux/Other</span>
+                    <div class="wizard-body">
+                        <!-- Step 1: What you're offering -->
+                        <div class="wizard-step active" data-step="1">
+                            <div class="step-header">
+                                <h2>What are you offering?</h2>
+                                <p>Add items you want to trade away. You must offer at least one item.</p>
+                            </div>
+                            <div class="item-picker">
+                                <div class="picker-toolbar">
+                                    <div class="picker-search">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                                        <input type="text" id="offeringSearchInput" placeholder="Search catalog items..." autocomplete="off">
+                                    </div>
+                                    <button class="btn-custom-item" id="addOfferingCustomBtn">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                                        Robux / Other
+                                    </button>
+                                </div>
+                                <div class="search-dropdown" id="offeringSearchResults"></div>
+                                <div class="selected-items" id="offeringItemsContainer">
+                                    <div class="empty-items">
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                                        <span>No items added yet</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="step-nav">
+                                <button class="btn-cancel" id="cancelWizardBtn">Cancel</button>
+                                <button class="btn-next" id="nextStep1Btn">
+                                    Continue
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                                 </button>
                             </div>
+                        </div>
 
-                            <div class="item-search-container">
-                                <input type="text" class="item-search-input" id="seekingSearchInput" placeholder="Search items...">
-                                <div class="item-search-results" id="seekingSearchResults"></div>
+                        <!-- Step 2: What you're looking for -->
+                        <div class="wizard-step" data-step="2">
+                            <div class="step-header">
+                                <h2>What do you want?</h2>
+                                <p>Add items you're looking for. Leave empty for open offers.</p>
                             </div>
-
-                            <div class="selected-items-container" id="seekingItemsContainer">
-                                <div class="empty-state">
-                                    <span>No items selected</span>
+                            <div class="item-picker">
+                                <div class="picker-toolbar">
+                                    <div class="picker-search">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                                        <input type="text" id="seekingSearchInput" placeholder="Search catalog items..." autocomplete="off">
+                                    </div>
+                                    <button class="btn-custom-item" id="addSeekingCustomBtn">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                                        Robux / Other
+                                    </button>
+                                </div>
+                                <div class="search-dropdown" id="seekingSearchResults"></div>
+                                <div class="selected-items" id="seekingItemsContainer">
+                                    <div class="empty-items">
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                                        <span>No items added yet - leave empty for open offers</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="step-actions">
-                        <button class="btn-secondary" id="cancelWizardBtn">Cancel</button>
-                        <button class="btn-primary" id="nextStep1Btn">Continue</button>
-                    </div>
-                </div>
-
-                <!-- Step 2: What I Offer -->
-                <div class="wizard-step" data-step="2">
-                    <div class="step-header">
-                        <h2>What are you offering?</h2>
-                        <p class="step-subtitle">Add items, Robux, or other game items you're giving</p>
-                    </div>
-
-                    <div class="step-content">
-                        <div class="items-section">
-                            <div class="section-header-row">
-                                <label class="form-label">You Give *</label>
-                                <button class="btn-add-custom" id="addOfferingCustomBtn">
-                                    <span>💰</span>
-                                    <span>Add Robux/Other</span>
+                            <div class="step-nav">
+                                <button class="btn-back" id="backStep2Btn">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                                    Back
+                                </button>
+                                <button class="btn-next" id="nextStep2Btn">
+                                    Continue
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                                 </button>
                             </div>
-
-                            <div class="item-search-container">
-                                <input type="text" class="item-search-input" id="offeringSearchInput" placeholder="Search items...">
-                                <div class="item-search-results" id="offeringSearchResults"></div>
-                            </div>
-
-                            <div class="selected-items-container" id="offeringItemsContainer">
-                                <div class="empty-state">
-                                    <span>No items selected</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="step-actions">
-                        <button class="btn-secondary" id="backStep2Btn">Back</button>
-                        <button class="btn-primary" id="nextStep2Btn">Continue</button>
-                    </div>
-                </div>
-
-                <!-- Step 3: Extra Details -->
-                <div class="wizard-step" data-step="3">
-                    <div class="step-header">
-                        <h2>Extra Details</h2>
-                        <p class="step-subtitle">Add description, category, theme, and preview your trade</p>
-                    </div>
-
-                    <div class="step-content step-3-content">
-                        <div class="details-column">
-                            <div class="form-group">
-                                <label class="form-label" for="tradeDescription">Description (Optional)</label>
-                                <textarea class="form-textarea" id="tradeDescription" placeholder="Add any additional details about your trade..." rows="4" maxlength="500"></textarea>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label" for="tradeCategory">Category (Optional)</label>
-                                <select class="form-select" id="tradeCategory">
-                                    <option value="">Select category...</option>
-                                    <option value="gears">Gears</option>
-                                    <option value="deaths">Deaths</option>
-                                    <option value="pets">Pets</option>
-                                    <option value="effects">Effects</option>
-                                    <option value="titles">Titles</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Theme</label>
-                                <div class="theme-selector" id="themeSelector">
-                                    <button class="theme-option active" data-theme="default">
-                                        <div class="theme-preview theme-default"></div>
-                                        <span>Default</span>
-                                    </button>
-                                    <button class="theme-option" data-theme="ocean">
-                                        <div class="theme-preview theme-ocean"></div>
-                                        <span>Ocean</span>
-                                    </button>
-                                    <button class="theme-option" data-theme="sunset">
-                                        <div class="theme-preview theme-sunset"></div>
-                                        <span>Sunset</span>
-                                    </button>
-                                    <button class="theme-option" data-theme="forest">
-                                        <div class="theme-preview theme-forest"></div>
-                                        <span>Forest</span>
-                                    </button>
-                                </div>
-                            </div>
                         </div>
 
-                        <div class="preview-column">
-                            <div class="preview-container">
-                                <h3 class="preview-title">Preview</h3>
-                                <div class="trade-preview-card" id="tradePreviewCard">
-                                    <div class="preview-loading">Building preview...</div>
+                        <!-- Step 3: Finalize -->
+                        <div class="wizard-step" data-step="3">
+                            <div class="step-header">
+                                <h2>Finalize your trade</h2>
+                                <p>Add details and preview before publishing</p>
+                            </div>
+                            <div class="finalize-layout">
+                                <div class="finalize-form">
+                                    <div class="form-group">
+                                        <label for="tradeDescription">Description <span class="optional-tag">optional</span></label>
+                                        <textarea id="tradeDescription" placeholder="Any additional details about your trade..." rows="3" maxlength="500"></textarea>
+                                        <span class="char-count"><span id="charCount">0</span>/500</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tradeCategory">Category <span class="optional-tag">optional</span></label>
+                                        <select id="tradeCategory">
+                                            <option value="">Select category...</option>
+                                            <option value="gears">Gears</option>
+                                            <option value="deaths">Deaths</option>
+                                            <option value="pets">Pets</option>
+                                            <option value="effects">Effects</option>
+                                            <option value="titles">Titles</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Theme</label>
+                                        <div class="theme-grid" id="themeSelector">
+                                            <button class="theme-btn active" data-theme="default"><span class="theme-swatch swatch-default"></span>Default</button>
+                                            <button class="theme-btn" data-theme="ocean"><span class="theme-swatch swatch-ocean"></span>Ocean</button>
+                                            <button class="theme-btn" data-theme="sunset"><span class="theme-swatch swatch-sunset"></span>Sunset</button>
+                                            <button class="theme-btn" data-theme="forest"><span class="theme-swatch swatch-forest"></span>Forest</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="finalize-preview">
+                                    <h3 class="preview-label">Live Preview</h3>
+                                    <div class="preview-card" id="tradePreviewCard">
+                                        <div class="preview-placeholder">Your trade preview will appear here</div>
+                                    </div>
                                 </div>
                             </div>
+                            <div class="step-nav">
+                                <button class="btn-back" id="backStep3Btn">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                                    Back
+                                </button>
+                                <button class="btn-publish" id="createListingBtn">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+                                    Publish Trade
+                                </button>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="step-actions">
-                        <button class="btn-secondary" id="backStep3Btn">Back</button>
-                        <button class="btn-primary" id="createListingBtn">
-                            <span>Create Listing</span>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -229,44 +295,56 @@
 
     <div id="site-footer"></div>
 
+    <!-- Trade Detail Modal -->
+    <div class="modal-overlay" id="tradeDetailModal">
+        <div class="modal-content modal-large">
+            <button class="modal-close-btn" id="closeDetailModal">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            <div class="modal-body" id="tradeDetailBody">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
     <!-- Custom Item Modal -->
     <div class="modal-overlay" id="customItemModal">
-        <div class="modal-content modal-small">
+        <div class="modal-content modal-compact">
             <div class="modal-header">
-                <h3 class="modal-title">Add Custom Item</h3>
-                <button class="modal-close" id="closeCustomModal">&times;</button>
+                <h3>Add Custom Item</h3>
+                <button class="modal-close-btn" id="closeCustomModal">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Type</label>
-                    <div class="option-group">
-                        <button class="option-btn active" data-type="robux" id="customTypeRobux">
-                            💰 Robux
-                        </button>
-                        <button class="option-btn" data-type="other" id="customTypeOther">
-                            🎮 Other Game
-                        </button>
+            <div class="modal-inner">
+                <div class="type-toggle">
+                    <button class="type-btn active" data-type="robux" id="customTypeRobux">
+                        <span class="type-icon robux-icon">R$</span>
+                        Robux
+                    </button>
+                    <button class="type-btn" data-type="other" id="customTypeOther">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01"/><path d="M17 12h.01"/><path d="M7 12h.01"/></svg>
+                        Other Game
+                    </button>
+                </div>
+                <div class="custom-fields">
+                    <div class="field" id="robuxInputGroup">
+                        <label for="robuxAmount">Amount</label>
+                        <input type="number" id="robuxAmount" placeholder="Enter Robux amount..." min="0" step="1">
+                    </div>
+                    <div class="field hidden" id="otherGameInputGroup">
+                        <label for="gameName">Game Name</label>
+                        <input type="text" id="gameName" placeholder="e.g., Adopt Me">
+                    </div>
+                    <div class="field hidden" id="otherItemInputGroup">
+                        <label for="itemName">Item Name</label>
+                        <input type="text" id="itemName" placeholder="e.g., Legendary Dragon">
                     </div>
                 </div>
-
-                <div class="form-group" id="robuxInputGroup">
-                    <label class="form-label" for="robuxAmount">Amount</label>
-                    <input type="number" class="form-input" id="robuxAmount" placeholder="Enter amount..." min="0" step="1">
+                <div class="modal-footer">
+                    <button class="btn-cancel" id="cancelCustomModal">Cancel</button>
+                    <button class="btn-next" id="addCustomItemBtn">Add Item</button>
                 </div>
-
-                <div class="form-group hidden" id="otherGameInputGroup">
-                    <label class="form-label" for="gameName">Game Name</label>
-                    <input type="text" class="form-input" id="gameName" placeholder="e.g., Adopt Me">
-                </div>
-
-                <div class="form-group hidden" id="otherItemInputGroup">
-                    <label class="form-label" for="itemName">Item Name</label>
-                    <input type="text" class="form-input" id="itemName" placeholder="e.g., Legendary Dragon">
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button class="btn-secondary" id="cancelCustomModal">Cancel</button>
-                <button class="btn-primary" id="addCustomItemBtn">Add Item</button>
             </div>
         </div>
     </div>
