@@ -5,7 +5,6 @@ class TradingHub {
         this.myTrades = [];
         this.allItems = [];
         this.filters = {
-            category: 'all',
             status: 'active',
             sort: 'recent',
             search: ''
@@ -21,7 +20,6 @@ class TradingHub {
             seekingItems: [],
             offeringItems: [],
             description: '',
-            category: '',
             theme: 'default'
         };
 
@@ -99,7 +97,6 @@ class TradingHub {
         try {
             const params = new URLSearchParams({
                 status: this.filters.status,
-                ...(this.filters.category !== 'all' && { category: this.filters.category }),
                 ...(this.filters.search && { search: this.filters.search })
             });
 
@@ -192,16 +189,6 @@ class TradingHub {
             btn.addEventListener('click', () => this.switchTab(btn.dataset.tab));
         });
 
-        // Category pills
-        document.querySelectorAll('.pill').forEach(pill => {
-            pill.addEventListener('click', () => {
-                document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-                pill.classList.add('active');
-                this.filters.category = pill.dataset.category;
-                this.loadTrades().then(() => this.renderTrades());
-            });
-        });
-
         // Search
         const searchInput = document.getElementById('searchInput');
         if (searchInput) {
@@ -281,12 +268,6 @@ class TradingHub {
             });
         }
 
-        // Category select
-        document.getElementById('tradeCategory')?.addEventListener('change', (e) => {
-            this.wizardState.category = e.target.value;
-            this.updatePreview();
-        });
-
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -342,9 +323,6 @@ class TradingHub {
         let filtered = [...this.trades];
 
         // Client-side filtering
-        if (this.filters.category !== 'all') {
-            filtered = filtered.filter(t => t.category === this.filters.category);
-        }
         if (this.filters.status !== 'all') {
             filtered = filtered.filter(t => t.status === this.filters.status);
         }
@@ -604,7 +582,6 @@ class TradingHub {
             this.renderSelectedItems('seekingItems');
         } else if (step === 3) {
             this.wizardState.description = document.getElementById('tradeDescription')?.value || '';
-            this.wizardState.category = document.getElementById('tradeCategory')?.value || '';
             this.updatePreview();
         }
     }
@@ -643,14 +620,11 @@ class TradingHub {
             seekingItems: [],
             offeringItems: [],
             description: '',
-            category: '',
             theme: 'default'
         };
         // Reset form fields
         const desc = document.getElementById('tradeDescription');
         if (desc) desc.value = '';
-        const cat = document.getElementById('tradeCategory');
-        if (cat) cat.value = '';
         const counter = document.getElementById('charCount');
         if (counter) counter.textContent = '0';
         // Reset theme
@@ -675,10 +649,6 @@ class TradingHub {
                     if (desc) desc.value = this.wizardState.description;
                     const counter = document.getElementById('charCount');
                     if (counter) counter.textContent = this.wizardState.description.length;
-                }
-                if (this.wizardState.category) {
-                    const cat = document.getElementById('tradeCategory');
-                    if (cat) cat.value = this.wizardState.category;
                 }
                 if (this.wizardState.theme) {
                     this.selectTheme(this.wizardState.theme);
@@ -977,7 +947,6 @@ class TradingHub {
                 body: JSON.stringify({
                     title: this.generateAutoTitle(),
                     description: this.wizardState.description || null,
-                    category: this.wizardState.category || 'other',
                     offering_items: this.wizardState.offeringItems,
                     seeking_items: this.wizardState.seekingItems.length > 0 ? this.wizardState.seekingItems : null
                 })

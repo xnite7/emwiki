@@ -15,7 +15,8 @@
       "Bash(npx wrangler:*)",
       "mcp__Claude_Preview__preview_start",
       "Bash(where:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

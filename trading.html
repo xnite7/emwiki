@@ -18,19 +18,45 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="./css/style.css">
     <link rel="stylesheet" href="./css/trading.css">
+    <style>
+        body {
+            min-height: 100vh;
+            background-image: none;
+            background-repeat: space;
+            background-position: center;
+            background-attachment: fixed;
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            99% {
+                background-image: none;
+            }
+
+            to {
+                opacity: 1;
+                background-image: url(./imgs/valentinesbg.png);
+            }
+        }
+
+        @media screen and (max-width: 2062px) {
+            body {
+                background-repeat: repeat;
+            }
+        }
+    </style>
 </head>
 
 <body data-active-nav="trading">
     <div id="site-header"></div>
 
     <div class="trading-hub">
-        <!-- Hero Stats Bar -->
-        <div class="trading-hero">
+        <!-- Hero Section -->
+        <section class="hero-section trading-hero-section">
             <div class="hero-content">
-                <div class="hero-text">
-                    <h1 class="hero-title">Trading Hub</h1>
-                    <p class="hero-subtitle">Find deals, make offers, trade items with the community</p>
-                </div>
+                <h1 class="hero-title"><span class="hero-epic">Trading Hub</span></h1>
+                <p class="hero-subtitle">Find deals, make offers, trade items with the community</p>
                 <div class="hero-stats">
                     <div class="stat-card">
                         <span class="stat-value" id="statActiveTrades">--</span>
@@ -46,7 +72,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
 
         <!-- Tab Navigation -->
         <div class="trading-tabs">
@@ -72,17 +98,7 @@
 
             <!-- ============ BROWSE PANEL ============ -->
             <div class="tab-panel active" id="panelBrowse">
-                <!-- Category Pills -->
-                <div class="category-pills">
-                    <button class="pill active" data-category="all">All</button>
-                    <button class="pill" data-category="gears">Gears</button>
-                    <button class="pill" data-category="deaths">Deaths</button>
-                    <button class="pill" data-category="pets">Pets</button>
-                    <button class="pill" data-category="effects">Effects</button>
-                    <button class="pill" data-category="titles">Titles</button>
-                </div>
-
-                <!-- Search & Filter Bar -->
+                    <!-- Search & Filter Bar -->
                 <div class="search-filter-bar">
                     <div class="search-wrapper">
                         <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -247,17 +263,6 @@
                                         <label for="tradeDescription">Description <span class="optional-tag">optional</span></label>
                                         <textarea id="tradeDescription" placeholder="Any additional details about your trade..." rows="3" maxlength="500"></textarea>
                                         <span class="char-count"><span id="charCount">0</span>/500</span>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="tradeCategory">Category <span class="optional-tag">optional</span></label>
-                                        <select id="tradeCategory">
-                                            <option value="">Select category...</option>
-                                            <option value="gears">Gears</option>
-                                            <option value="deaths">Deaths</option>
-                                            <option value="pets">Pets</option>
-                                            <option value="effects">Effects</option>
-                                            <option value="titles">Titles</option>
-                                        </select>
                                     </div>
                                     <div class="form-group">
                                         <label>Theme</label>

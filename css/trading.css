@@ -3,59 +3,40 @@
    ================================================================ */
 
 /* ========== HERO ========== */
-.trading-hero {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(74, 158, 255, 0.08));
-    border-bottom: 1px solid var(--border-color);
-    padding: 1.5rem 1rem;
+.trading-hero-section {
+    padding-bottom: 1.25rem;
 }
 
-.hero-content {
+.trading-hero-section .hero-content {
     max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
 }
 
-.hero-title {
-    font-size: 1.75rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, #667eea, #4a9eff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.hero-subtitle {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-top: 0.25rem;
-}
-
-.hero-stats {
+.trading-hero-section .hero-stats {
     display: flex;
     gap: 0.75rem;
+    justify-content: center;
+    margin-top: 0.5rem;
 }
 
-.stat-card {
-    flex: 1;
+.trading-hero-section .stat-card {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.15rem;
-    padding: 0.625rem 0.5rem;
+    padding: 0.625rem 1.25rem;
     background: var(--bg-item);
     border: 1px solid var(--border-color);
     border-radius: 10px;
+    backdrop-filter: blur(8px);
 }
 
-.stat-value {
+.trading-hero-section .stat-value {
     font-size: 1.15rem;
     font-weight: 800;
-    color: #4a9eff;
+    color: var(--accent);
 }
 
-.stat-label {
+.trading-hero-section .stat-label {
     font-size: 0.65rem;
     font-weight: 600;
     color: var(--text-secondary);
@@ -163,46 +144,6 @@
 @keyframes panelIn {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
-}
-
-/* ========== CATEGORY PILLS ========== */
-.category-pills {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-    overflow-x: auto;
-    padding-bottom: 0.25rem;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
-
-.category-pills::-webkit-scrollbar {
-    display: none;
-}
-
-.pill {
-    padding: 0.4rem 1rem;
-    background: var(--bg-item);
-    border: 1px solid var(--border-color);
-    border-radius: 100px;
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-    font-family: inherit;
-}
-
-.pill:hover {
-    background: var(--bg-item-hover);
-    color: CanvasText;
-}
-
-.pill.active {
-    background: linear-gradient(135deg, #667eea, #4a9eff);
-    border-color: transparent;
-    color: white;
 }
 
 /* ========== SEARCH & FILTER BAR ========== */
@@ -1529,20 +1470,6 @@
 
 /* ========== RESPONSIVE ========== */
 @media (min-width: 640px) {
-    .hero-content {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .hero-stats {
-        flex-shrink: 0;
-    }
-
-    .stat-card {
-        padding: 0.625rem 1rem;
-    }
-
     .search-filter-bar {
         flex-direction: row;
         align-items: center;
