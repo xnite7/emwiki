@@ -260,8 +260,10 @@ async function handlePost(request, env, path, user) {
 export async function onRequest(context) {
     const { request, env } = context;
     const url = new URL(request.url);
-    const pathParts = url.pathname.split('/api/trades/messages/').filter(Boolean);
-    const path = pathParts[0] || '';
+    const prefix = '/api/trades/messages';
+    const path = url.pathname.startsWith(prefix)
+        ? url.pathname.slice(prefix.length).replace(/^\//, '')
+        : '';
 
     // CORS headers
     const corsHeaders = {

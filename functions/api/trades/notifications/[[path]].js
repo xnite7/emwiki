@@ -145,8 +145,10 @@ async function handleDelete(request, env, path, user) {
 export async function onRequest(context) {
     const { request, env } = context;
     const url = new URL(request.url);
-    const pathParts = url.pathname.split('/api/trades/notifications/').filter(Boolean);
-    const path = pathParts[0] || '';
+    const prefix = '/api/trades/notifications';
+    const path = url.pathname.startsWith(prefix)
+        ? url.pathname.slice(prefix.length).replace(/^\//, '')
+        : '';
 
     // CORS headers
     const corsHeaders = {
