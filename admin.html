@@ -482,6 +482,13 @@
                     <button id="add-credits-btn">Credits</button><button id="add-lore-btn">Lore</button><button id="add-alias-btn">Alias</button><button id="add-quantity-btn">Quantity</button>
                 </div>
             </div>
+            <hr style="border-color: #3a1111;">
+            <div style="padding: 0 8px 8px;">
+                <button id="delete-item-btn" class="small-btn danger" style="width: 100%; padding: 8px; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <span class="icon" style="mask-image: url(&quot;data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4V4zm2 2h6V4H9v2zM6.074 8l.857 12H17.07l.857-12H6.074zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1zm4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1z'/%3E%3C/svg%3E&quot;); width: 16px; height: 16px; background: white;"></span>
+                    Delete Item
+                </button>
+            </div>
         </div>
     </div>
 
@@ -2441,9 +2448,9 @@
                 let errorCount = 0;
                 const errors = [];
                 
-                // If no items to save, return early
-                if (allItemsToSave.length === 0) {
-                    console.warn('No items to save');
+                // If no items to save or delete, return early
+                if (allItemsToSave.length === 0 && itemsToDelete.length === 0) {
+                    console.warn('No items to save or delete');
                     return {
                         ok: true,
                         status: 200,
@@ -3911,6 +3918,69 @@
 
 
 
+            deleteItem() {
+                const item = state.currentEditingItem;
+                if (!item) return;
+
+                const deleteBtn = DOM.get('delete-item-btn');
+                if (!deleteBtn) return;
+
+                if (!deleteBtn.dataset.confirming) {
+                    deleteBtn.dataset.confirming = 'true';
+                    deleteBtn.innerHTML = `<span style="font-weight:600;">Confirm Delete "${item.name}"?</span>`;
+                    deleteBtn.style.background = 'linear-gradient(180deg, #ff2020, #890000)';
+
+                    setTimeout(() => {
+                        if (deleteBtn.dataset.confirming) {
+                            delete deleteBtn.dataset.confirming;
+                            deleteBtn.innerHTML = `<span class="icon" style="mask-image: url('${CONFIG.ICONS.delete}'); width: 16px; height: 16px; background: white;"></span> Delete Item`;
+                            deleteBtn.style.background = '';
+                        }
+                    }, 4000);
+                    return;
+                }
+
+                delete deleteBtn.dataset.confirming;
+
+                const category = Object.entries(state.jsData).find(([cat, items]) =>
+                    Array.isArray(items) && items.some(i => i === item)
+                );
+
+                if (!category) {
+                    ErrorHandler.showToast('Could not find item category', 'error');
+                    return;
+                }
+
+                const [categoryName, categoryItems] = category;
+                const itemIndex = categoryItems.indexOf(item);
+                const previousState = JSON.parse(JSON.stringify(item));
+                const wasNew = ChangeTracker.isNewItem(item.name);
+
+                categoryItems.splice(itemIndex, 1);
+                state.allItems = Object.values(state.jsData).flat();
+
+                if (wasNew) {
+                    ChangeTracker.newItems.delete(item.name);
+                } else {
+                    ChangeTracker.markAsDeleted(item.name, JSON.stringify(previousState));
+                }
+
+                if (!UndoRedoManager.isApplyingChange) {
+                    UndoRedoManager.recordChange({
+                        type: 'delete',
+                        itemName: previousState.name,
+                        category: categoryName,
+                        previousState: previousState
+                    });
+                }
+
+                this.close();
+                UI.renderItems(true);
+                UI.renderShops();
+                ChangeTracker.updateHighlights();
+                ErrorHandler.showToast(`Deleted: ${previousState.name}`, 'success');
+            },
+
             close() {
                 const modal = DOM.get('quick-editor-modal');
                 modal.classList.remove('show');
@@ -3950,6 +4020,14 @@
                 const quantityBtn = DOM.get('add-quantity-btn');
                 if (aliasBtn) aliasBtn.onclick = () => this.startEditingAlias();
                 if (quantityBtn) quantityBtn.onclick = () => this.startEditingQuantity();
+
+                const deleteBtn = DOM.get('delete-item-btn');
+                if (deleteBtn) {
+                    delete deleteBtn.dataset.confirming;
+                    deleteBtn.innerHTML = `<span class="icon" style="mask-image: url('${CONFIG.ICONS.delete}'); width: 16px; height: 16px; background: white;"></span> Delete Item`;
+                    deleteBtn.style.background = '';
+                    deleteBtn.onclick = () => this.deleteItem();
+                }
             },
 
             setupCreditsAndLore(item) {
