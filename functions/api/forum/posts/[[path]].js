@@ -118,40 +118,79 @@ async function handleGet({ request, env, params }) {
     });
   }
 
-  // GET /api/forum/posts - List all posts
+  // GET /api/forum/posts - List posts with pagination
   const category = url.searchParams.get('category');
-  const limit = parseInt(url.searchParams.get('limit')) || 100;
+  const search = url.searchParams.get('search')?.trim() || '';
+  const sort = url.searchParams.get('sort') || 'newest';
+  const userId = url.searchParams.get('user_id');
+  const limit = Math.min(parseInt(url.searchParams.get('limit')) || 15, 50);
   const offset = parseInt(url.searchParams.get('offset')) || 0;
 
-  let query = `
-    SELECT p.*, u.role, u.avatar_url,
-           COALESCE(u.display_name, u.username, p.username) as username,
-           CAST(p.user_id AS INTEGER) as user_id
-    FROM forum_posts p
-    LEFT JOIN users u ON p.user_id = u.user_id
-    WHERE p.status = 'active'
-  `;
-
-  const params_list = [];
+  let whereClause = `WHERE p.status = 'active'`;
+  const filterParams = [];
 
   if (category && category !== 'all') {
-    query += ' AND p.category = ?';
-    params_list.push(category);
+    whereClause += ' AND p.category = ?';
+    filterParams.push(category);
   }
 
-  query += ' ORDER BY p.is_pinned DESC, p.created_at DESC LIMIT ? OFFSET ?';
-  params_list.push(limit, offset);
-
-  const posts = await env.DBA.prepare(query).bind(...params_list).all();
-
-  // Add comment counts and like counts to each post
-  for (const post of posts.results || []) {
-    post.comment_count = await getCommentCount(post.id, env);
-    post.like_count = await getLikeCount(post.id, env);
-    post.user_has_liked = await hasUserLiked(post.id, user?.user_id, env);
+  if (search) {
+    whereClause += ' AND (p.title LIKE ? OR p.content LIKE ? OR p.username LIKE ?)';
+    const searchPattern = `%${search}%`;
+    filterParams.push(searchPattern, searchPattern, searchPattern);
   }
 
-  return new Response(JSON.stringify({ posts: posts.results || [] }), {
+  if (userId) {
+    whereClause += ' AND p.user_id = ?';
+    filterParams.push(parseInt(userId));
+  }
+
+  const sortOrders = {
+    newest: 'p.created_at DESC',
+    oldest: 'p.created_at ASC',
+    'most-liked': 'like_count DESC, p.created_at DESC',
+    'most-commented': 'comment_count DESC, p.created_at DESC',
+  };
+  const orderBy = sortOrders[sort] || sortOrders.newest;
+
+  const countQuery = `
+    SELECT COUNT(*) as total
+    FROM forum_posts p
+    ${whereClause}
+  `;
+
+  const postsQuery = `
+    SELECT p.*, u.role, u.avatar_url,
+           COALESCE(u.display_name, u.username, p.username) as username,
+           CAST(p.user_id AS INTEGER) as user_id,
+           (SELECT COUNT(*) FROM forum_comments fc WHERE fc.post_id = p.id AND fc.status = 'active') as comment_count,
+           (SELECT COUNT(*) FROM forum_likes fl WHERE fl.post_id = p.id) as like_count
+    FROM forum_posts p
+    LEFT JOIN users u ON p.user_id = u.user_id
+    ${whereClause}
+    ORDER BY p.is_pinned DESC, ${orderBy}
+    LIMIT ? OFFSET ?
+  `;
+
+  const [countResult, posts] = await Promise.all([
+    env.DBA.prepare(countQuery).bind(...filterParams).first(),
+    env.DBA.prepare(postsQuery).bind(...filterParams, limit, offset).all(),
+  ]);
+
+  const total = countResult?.total || 0;
+
+  if (user) {
+    for (const post of posts.results || []) {
+      post.user_has_liked = await hasUserLiked(post.id, user.user_id, env);
+    }
+  }
+
+  return new Response(JSON.stringify({
+    posts: posts.results || [],
+    total,
+    limit,
+    offset,
+  }), {
     headers: { 'Content-Type': 'application/json' }
   });
 }

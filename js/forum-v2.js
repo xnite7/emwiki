@@ -23,6 +23,9 @@ class ForumV2 {
         this._itemCache = new Map();
         this.replyingToCommentId = null;
         this._initListLoadDone = false;
+        this.currentPage = 1;
+        this.postsPerPage = 15;
+        this.totalPosts = 0;
 
         this.init();
     }
@@ -148,7 +151,8 @@ class ForumV2 {
 
         document.getElementById('sort-select')?.addEventListener('change', (e) => {
             this.currentSort = e.target.value;
-            this.renderPosts();
+            this.currentPage = 1;
+            this.loadPosts();
         });
 
         const searchInput = document.getElementById('forum-search');
@@ -156,8 +160,9 @@ class ForumV2 {
             searchInput.addEventListener('input', () => {
                 clearTimeout(this.searchTimeout);
                 this.searchTimeout = setTimeout(() => {
-                    this.currentSearch = searchInput.value.toLowerCase().trim();
-                    this.renderPosts();
+                    this.currentSearch = searchInput.value.trim();
+                    this.currentPage = 1;
+                    this.loadPosts();
                 }, 300);
             });
         }
@@ -551,27 +556,43 @@ class ForumV2 {
         const container = document.getElementById('posts-container');
         const empty = document.getElementById('posts-empty');
         const error = document.getElementById('posts-error');
+        const pagination = document.getElementById('posts-pagination');
 
         try {
             if (loading) loading.style.display = 'block';
             if (container) container.style.display = 'none';
             if (empty) empty.style.display = 'none';
             if (error) error.style.display = 'none';
+            if (pagination) pagination.style.display = 'none';
 
-            const response = await fetch('https://emwiki.com/api/forum/posts');
+            const params = new URLSearchParams();
+            params.set('limit', this.postsPerPage);
+            params.set('offset', (this.currentPage - 1) * this.postsPerPage);
+            if (this.currentCategory !== 'all') params.set('category', this.currentCategory);
+            if (this.currentSort !== 'newest') params.set('sort', this.currentSort);
+            if (this.currentSearch) params.set('search', this.currentSearch);
+            if (this.showingMyPosts && this.currentUser) params.set('user_id', this.currentUser.userId);
+
+            const response = await fetch(`https://emwiki.com/api/forum/posts?${params}`);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
             const data = await response.json();
             this.posts = data.posts || [];
+            this.totalPosts = data.total || 0;
             this.isLoading = false;
 
             if (loading) loading.style.display = 'none';
 
             if (this.posts.length === 0) {
-                if (empty) empty.style.display = 'block';
+                if (empty) {
+                    empty.querySelector('h3').textContent = this.currentSearch ? 'No posts found' : (this.totalPosts === 0 ? 'No posts yet' : 'No posts in this category');
+                    empty.querySelector('p').textContent = this.currentSearch ? 'Try a different search term' : 'Be the first to start a discussion!';
+                    empty.style.display = 'block';
+                }
             } else {
                 if (container) container.style.display = 'flex';
                 this.renderPosts();
+                this.renderPagination();
             }
         } catch (err) {
             console.error('Error loading posts:', err);
@@ -587,58 +608,70 @@ class ForumV2 {
 
     renderPosts() {
         const container = document.getElementById('posts-container');
-        const empty = document.getElementById('posts-empty');
         if (!container) return;
 
-        let filtered = [...this.posts];
-
-        if (this.showingMyPosts && this.currentUser) {
-            filtered = filtered.filter(p => p.user_id === this.currentUser.userId);
-        }
-
-        if (this.currentCategory !== 'all') {
-            filtered = filtered.filter(p => p.category === this.currentCategory);
-        }
-
-        if (this.currentSearch) {
-            filtered = filtered.filter(p =>
-                p.title.toLowerCase().includes(this.currentSearch) ||
-                p.content.toLowerCase().includes(this.currentSearch) ||
-                p.username.toLowerCase().includes(this.currentSearch)
-            );
-        }
-
-        filtered.sort((a, b) => {
-            if (a.is_pinned && !b.is_pinned) return -1;
-            if (!a.is_pinned && b.is_pinned) return 1;
-            switch (this.currentSort) {
-                case 'oldest': return a.created_at - b.created_at;
-                case 'most-liked': return (b.like_count || 0) - (a.like_count || 0);
-                case 'most-commented': return (b.comment_count || 0) - (a.comment_count || 0);
-                default: return b.created_at - a.created_at;
-            }
-        });
-
-        if (filtered.length === 0) {
-            container.innerHTML = '';
-            container.style.display = 'none';
-            if (empty) {
-                empty.querySelector('h3').textContent = this.currentSearch ? 'No posts found' : 'No posts in this category';
-                empty.querySelector('p').textContent = this.currentSearch ? 'Try a different search term' : 'Be the first to start a discussion!';
-                empty.style.display = 'block';
-            }
-            return;
-        }
-
-        if (empty) empty.style.display = 'none';
-        container.style.display = 'flex';
-        container.innerHTML = filtered.map(p => this.createPostCard(p)).join('');
+        container.innerHTML = this.posts.map(p => this.createPostCard(p)).join('');
 
         container.querySelectorAll('.post-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.profile-link')) return;
                 if (e.target.closest('.post-card-overlay')) return;
                 this.viewThread(parseInt(card.dataset.id));
+            });
+        });
+    }
+
+    renderPagination() {
+        const container = document.getElementById('posts-pagination');
+        if (!container) return;
+
+        const totalPages = Math.ceil(this.totalPosts / this.postsPerPage);
+
+        if (totalPages <= 1) {
+            container.style.display = 'none';
+            container.innerHTML = '';
+            return;
+        }
+
+        const page = this.currentPage;
+        let pages = [];
+
+        pages.push(1);
+        let start = Math.max(2, page - 2);
+        let end = Math.min(totalPages - 1, page + 2);
+        if (start > 2) pages.push('...');
+        for (let i = start; i <= end; i++) pages.push(i);
+        if (end < totalPages - 1) pages.push('...');
+        if (totalPages > 1) pages.push(totalPages);
+
+        const prevDisabled = page <= 1 ? ' disabled' : '';
+        const nextDisabled = page >= totalPages ? ' disabled' : '';
+
+        container.innerHTML = `
+            <button class="pagination-btn pagination-prev${prevDisabled}" data-page="${page - 1}"${prevDisabled ? ' disabled' : ''}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            ${pages.map(p => {
+                if (p === '...') return '<span class="pagination-ellipsis">&hellip;</span>';
+                const active = p === page ? ' active' : '';
+                return `<button class="pagination-btn pagination-num${active}" data-page="${p}">${p}</button>`;
+            }).join('')}
+            <button class="pagination-btn pagination-next${nextDisabled}" data-page="${page + 1}"${nextDisabled ? ' disabled' : ''}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <span class="pagination-info">${this.totalPosts} post${this.totalPosts !== 1 ? 's' : ''}</span>
+        `;
+
+        container.style.display = 'flex';
+
+        container.querySelectorAll('.pagination-btn:not([disabled])').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = parseInt(btn.dataset.page);
+                if (target >= 1 && target <= totalPages && target !== this.currentPage) {
+                    this.currentPage = target;
+                    this.loadPosts();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
             });
         });
     }
@@ -702,17 +735,19 @@ class ForumV2 {
 
     filterByCategory(category) {
         this.currentCategory = category;
+        this.currentPage = 1;
         document.querySelectorAll('.category-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.category === category);
         });
-        this.renderPosts();
+        this.loadPosts();
     }
 
     toggleMyPosts() {
         const btn = document.getElementById('my-posts-btn');
         this.showingMyPosts = !this.showingMyPosts;
+        this.currentPage = 1;
         if (btn) btn.textContent = this.showingMyPosts ? 'All Posts' : 'My Posts';
-        this.renderPosts();
+        this.loadPosts();
     }
 
     // ── View Thread ──
@@ -735,6 +770,8 @@ class ForumV2 {
             document.querySelector('.forum-sort-row')?.style.setProperty('display', 'none');
             document.querySelector('.forum-toolbar')?.style.setProperty('display', 'none');
             document.querySelector('.category-nav-container')?.style.setProperty('display', 'none');
+            const pag = document.getElementById('posts-pagination');
+            if (pag) pag.style.display = 'none';
             const tv = document.getElementById('thread-view');
             tv.classList.add('active');
             tv.style.display = 'block';
@@ -1291,7 +1328,6 @@ class ForumV2 {
         tv.style.display = 'none';
         this.currentThread = null;
         this.comments = [];
-        this.renderPosts();
     }
 
     async incrementViewCount(postId) {

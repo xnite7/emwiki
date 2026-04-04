@@ -907,7 +907,7 @@ display: flex;
 			width: 50px;
 			height: 50px;
 			border-radius: 36px;
-			background: #4f4f4f;
+			background: #262626;
 			overflow: hidden;
 		}
 
@@ -927,6 +927,7 @@ display: flex;
 		}
 
 		.comment-time {
+			padding-right: 10px;
 			margin-left: auto;
 			font-size: 12.5px;
 			color: var(--text-secondary);
@@ -942,6 +943,7 @@ display: flex;
 			float: right;
 			display: flex;
 			gap: 20px;
+			    padding-right: 14px;
 			translate: 0px -21px;
 		}
 
@@ -955,7 +957,7 @@ display: flex;
 		}
 
 		.comment-body img {
-			max-width: 100%;
+			max-width: 132px;
 			border-radius: 8px;
 			margin: 6px 0;
 			display: block;
@@ -1451,6 +1453,72 @@ display: flex;
 			}
 		}
 
+		/* ── Pagination ── */
+
+		.forum-pagination {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 6px;
+			margin-top: 24px;
+			flex-wrap: wrap;
+		}
+
+		.pagination-btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-width: 38px;
+			height: 38px;
+			padding: 0 10px;
+			border: 1px solid var(--border-color);
+			border-radius: 10px;
+			background: var(--bg-item);
+			color: var(--text-secondary);
+			font-size: 14px;
+			font-weight: 600;
+			font-family: inherit;
+			cursor: pointer;
+			transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+
+		.pagination-btn:hover:not([disabled]) {
+			background: var(--bg-item-hover);
+			color: var(--text-primary);
+			border-color: rgba(74, 158, 255, 0.35);
+			transform: translateY(-1px);
+		}
+
+		.pagination-btn.active {
+			background: linear-gradient(135deg, #4a9eff, #667eea);
+			color: white;
+			border-color: transparent;
+			box-shadow: 0 4px 14px rgba(74, 158, 255, 0.3);
+		}
+
+		.pagination-btn[disabled] {
+			opacity: 0.35;
+			cursor: not-allowed;
+		}
+
+		.pagination-ellipsis {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 32px;
+			height: 38px;
+			color: var(--text-secondary);
+			font-size: 16px;
+			letter-spacing: 2px;
+			user-select: none;
+		}
+
+		.pagination-info {
+			margin-left: 10px;
+			font-size: 13px;
+			color: var(--text-secondary);
+		}
+
 		/* ── Mobile Responsive ── */
 
 		/* ── Item Picker ── */
@@ -1839,8 +1907,8 @@ display: flex;
 			}
 
 			.comment-avatar {
-				width: 28px;
-				height: 28px;
+				width: 32px;
+				height: 32px;
 			}
 
 			.forum-modal {
@@ -1853,6 +1921,7 @@ display: flex;
 
 			.comment-body {
 				padding-left: 42px;
+				padding-right: 10px;
 				margin-top: 0px;
 			}
 
@@ -1940,6 +2009,7 @@ display: flex;
 				<p>Loading posts...</p>
 			</div>
 			<div id="posts-container" class="forum-posts" style="display:none"></div>
+			<div id="posts-pagination" class="forum-pagination" style="display:none"></div>
 			<div id="posts-empty" class="forum-state" style="display:none">
 				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
 					<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />

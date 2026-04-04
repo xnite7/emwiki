@@ -386,6 +386,46 @@ function extractRobloxUserId(content) {
  */
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+const SCAMMER_PROFILE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+/**
+ * Batch-refresh stale scammer profiles from Roblox APIs.
+ * Mirrors the pattern from workers/avatar-refresh-scheduler/worker.js.
+ * @param {string[]} userIds - Roblox user IDs to refresh (max 100)
+ * @returns {{ avatarMap: Record<string, string>, userInfoMap: Record<string, {username: string, displayName: string}> }}
+ */
+async function batchRefreshScammerProfiles(userIds) {
+  const avatarMap = {};
+  const userInfoMap = {};
+
+  const ids = userIds.slice(0, 100);
+
+  const [avatarResult, userInfoResult] = await Promise.allSettled([
+    fetch(
+      `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${ids.join(',')}&size=150x150&format=Png&isCircular=true`
+    ).then(r => r.ok ? r.json() : null),
+    fetch('https://users.roblox.com/v1/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userIds: ids.map(id => parseInt(id)) })
+    }).then(r => r.ok ? r.json() : null)
+  ]);
+
+  if (avatarResult.status === 'fulfilled' && avatarResult.value) {
+    for (const item of avatarResult.value.data || []) {
+      if (item.imageUrl) avatarMap[item.targetId] = item.imageUrl;
+    }
+  }
+
+  if (userInfoResult.status === 'fulfilled' && userInfoResult.value) {
+    for (const user of userInfoResult.value.data || []) {
+      userInfoMap[user.id] = { username: user.name, displayName: user.displayName };
+    }
+  }
+
+  return { avatarMap, userInfoMap };
+}
+
 /**
  * Log job activity to database
  */
@@ -660,14 +700,15 @@ async function storeScammerData(data, env) {
     _pending_fetch: true
   }) : null;
   
+  const now = Date.now();
   await env.DB.prepare(`
     INSERT INTO scammer_profile_cache (
       user_id, roblox_name, roblox_display_name, roblox_avatar,
       discord_id, discord_display_name,
       victims, items_scammed, roblox_alts,
-      thread_evidence, last_message_id
+      thread_evidence, last_message_id, updated_at
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(user_id) DO UPDATE SET
       roblox_name = excluded.roblox_name,
       roblox_display_name = excluded.roblox_display_name,
@@ -681,7 +722,8 @@ async function storeScammerData(data, env) {
         WHEN excluded.thread_evidence IS NOT NULL THEN excluded.thread_evidence 
         ELSE thread_evidence 
       END,
-      last_message_id = excluded.last_message_id
+      last_message_id = excluded.last_message_id,
+      updated_at = excluded.updated_at
   `).bind(
     data.userId,
     data.robloxUsername,
@@ -693,7 +735,8 @@ async function storeScammerData(data, env) {
     data.itemsScammed,
     JSON.stringify(data.altProfiles),
     threadEvidence,
-    data.messageId
+    data.messageId,
+    now
   ).run();
   
   console.log(`[STORED] User ${data.userId} - ${data.robloxUsername || 'unknown'}`);
@@ -1580,24 +1623,82 @@ export async function onRequestGet(context) {
           victims,
           items_scammed,
           roblox_alts,
-          thread_evidence
+          thread_evidence,
+          updated_at
         FROM scammer_profile_cache
         WHERE user_id IS NOT NULL 
         ORDER BY updated_at DESC
       `).all();
 
-      const scammers = results.map(row => ({
+      // Identify stale profiles (updated_at is NULL or older than TTL)
+      const now = Date.now();
+      const staleUserIds = results
+        .filter(row => !row.updated_at || (now - row.updated_at) > SCAMMER_PROFILE_TTL)
+        .map(row => row.user_id)
+        .slice(0, 100);
+
+      let avatarMap = {};
+      let userInfoMap = {};
+
+      if (staleUserIds.length > 0) {
+        try {
+          const refreshed = await batchRefreshScammerProfiles(staleUserIds);
+          avatarMap = refreshed.avatarMap;
+          userInfoMap = refreshed.userInfoMap;
+        } catch (err) {
+          console.warn('Batch refresh failed, using cached data:', err.message);
+        }
+      }
+
+      const scammers = results.map(row => {
+        const freshAvatar = avatarMap[row.user_id];
+        const freshInfo = userInfoMap[row.user_id];
+
+        return {
           user_id: row.user_id,
-        robloxDisplay: row.roblox_display_name || null,
-        robloxUser: row.roblox_name || null,
-        avatar: row.roblox_avatar || "https://emwiki.com/imgs/plr.jpg",
+          robloxDisplay: freshInfo?.displayName || row.roblox_display_name || null,
+          robloxUser: freshInfo?.username || row.roblox_name || null,
+          avatar: freshAvatar || row.roblox_avatar || "https://emwiki.com/imgs/plr.jpg",
           discordDisplay: row.discord_display_name || null,
-        discordId: row.discord_id || null,
+          discordId: row.discord_id || null,
           victims: row.victims || null,
           itemsScammed: row.items_scammed || null,
           robloxAlts: row.roblox_alts ? JSON.parse(row.roblox_alts) : [],
           hasThreadEvidence: !!row.thread_evidence
-      }));
+        };
+      });
+
+      // Async-update the DB cache with fresh data so subsequent requests are fast
+      if (staleUserIds.length > 0 && (Object.keys(avatarMap).length > 0 || Object.keys(userInfoMap).length > 0)) {
+        context.waitUntil((async () => {
+          const updateNow = Date.now();
+          for (const uid of staleUserIds) {
+            const freshAvatar = avatarMap[uid] || null;
+            const freshInfo = userInfoMap[uid] || null;
+            if (!freshAvatar && !freshInfo) continue;
+
+            try {
+              await env.DB.prepare(`
+                UPDATE scammer_profile_cache SET
+                  roblox_avatar = COALESCE(?, roblox_avatar),
+                  roblox_name = COALESCE(?, roblox_name),
+                  roblox_display_name = COALESCE(?, roblox_display_name),
+                  updated_at = ?
+                WHERE user_id = ?
+              `).bind(
+                freshAvatar,
+                freshInfo?.username || null,
+                freshInfo?.displayName || null,
+                updateNow,
+                uid
+              ).run();
+            } catch (err) {
+              console.warn(`Failed to update cache for ${uid}:`, err.message);
+            }
+          }
+          console.log(`Refreshed ${staleUserIds.length} stale scammer profiles in DB`);
+        })());
+      }
 
       return new Response(JSON.stringify({ 
         scammers

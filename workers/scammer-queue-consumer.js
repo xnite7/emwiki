@@ -385,13 +385,14 @@ async function storeScammerData(data, db) {
   const altsJson = data.altProfiles.length > 0 ? JSON.stringify(data.altProfiles) : null;
   // Thread evidence is pre-fetched and bundled - store it directly
   const threadEvidenceJson = data.threadEvidence ? JSON.stringify(data.threadEvidence) : null;
+  const now = Date.now();
 
   await db.prepare(`
 INSERT INTO scammer_profile_cache (
   user_id, roblox_name, roblox_display_name, roblox_avatar,
   discord_id, discord_display_name, victims, items_scammed,
-  roblox_alts, thread_id, thread_evidence, message_id
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  roblox_alts, thread_id, thread_evidence, message_id, updated_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(user_id) DO UPDATE SET
   roblox_name = COALESCE(excluded.roblox_name, roblox_name),
   roblox_display_name = COALESCE(excluded.roblox_display_name, roblox_display_name),
@@ -403,7 +404,8 @@ ON CONFLICT(user_id) DO UPDATE SET
   roblox_alts = CASE WHEN excluded.roblox_alts IS NOT NULL THEN excluded.roblox_alts ELSE roblox_alts END,
   thread_id = COALESCE(excluded.thread_id, thread_id),
   thread_evidence = CASE WHEN excluded.thread_evidence IS NOT NULL THEN excluded.thread_evidence ELSE thread_evidence END,
-  message_id = COALESCE(excluded.message_id, message_id)
+  message_id = COALESCE(excluded.message_id, message_id),
+  updated_at = excluded.updated_at
 `).bind(
     data.userId,
     data.robloxUsername,
@@ -416,7 +418,8 @@ ON CONFLICT(user_id) DO UPDATE SET
     altsJson,
     data.threadId,
     threadEvidenceJson,
-    data.messageId
+    data.messageId,
+    now
   ).run();
 }
 
