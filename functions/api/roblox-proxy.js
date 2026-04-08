@@ -25,18 +25,26 @@ async function fetchRobloxProfile(userId, env, writeToScammerCache = true) {
   const now = Date.now();
 
   // Check cache first (only if writeToScammerCache is true, otherwise don't use scammer cache)
+  // Cache TTL: 7 days — Roblox CDN avatar URLs (tr.rbxcdn.com) expire after ~30 days,
+  // and usernames can change, so we re-fetch periodically to keep data fresh.
+  const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
   let cached = null;
   if (writeToScammerCache) {
     cached = await env.DB.prepare(
-      "SELECT roblox_name, roblox_display_name, roblox_avatar FROM scammer_profile_cache WHERE user_id = ?"
+      "SELECT roblox_name, roblox_display_name, roblox_avatar, profile_refreshed_at FROM scammer_profile_cache WHERE user_id = ?"
     ).bind(userId).first();
 
     if (cached && cached.roblox_name && cached.roblox_display_name && cached.roblox_avatar) {
-      return {
-        name: cached.roblox_name,
-        displayName: cached.roblox_display_name,
-        avatar: cached.roblox_avatar
-      };
+      const refreshedAt = cached.profile_refreshed_at || 0;
+      if (now - refreshedAt < CACHE_TTL_MS) {
+        // Cache is still fresh — return without hitting the API
+        return {
+          name: cached.roblox_name,
+          displayName: cached.roblox_display_name,
+          avatar: cached.roblox_avatar
+        };
+      }
+      // Cache is stale — fall through to re-fetch from Roblox API
     }
   }
 
@@ -77,13 +85,14 @@ async function fetchRobloxProfile(userId, env, writeToScammerCache = true) {
   // Update cache ONLY if writeToScammerCache is true (for scammer processing)
   if (writeToScammerCache) {
     await env.DB.prepare(`
-      INSERT INTO scammer_profile_cache (user_id, roblox_name, roblox_display_name, roblox_avatar)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO scammer_profile_cache (user_id, roblox_name, roblox_display_name, roblox_avatar, profile_refreshed_at)
+      VALUES (?, ?, ?, ?, ?)
       ON CONFLICT(user_id) DO UPDATE SET
         roblox_name = excluded.roblox_name,
         roblox_display_name = excluded.roblox_display_name,
-        roblox_avatar = excluded.roblox_avatar
-    `).bind(userId, data.name || null, data.displayName || null, data.avatar || null).run();
+        roblox_avatar = excluded.roblox_avatar,
+        profile_refreshed_at = excluded.profile_refreshed_at
+    `).bind(userId, data.name || null, data.displayName || null, data.avatar || null, now).run();
   }
 
   return data;
@@ -1611,6 +1620,50 @@ export async function onRequestGet(context) {
         });
       }
       
+      // Action: refresh-profiles - Re-fetch stale Roblox avatar URLs and usernames
+      // Roblox CDN URLs expire after ~30 days; call this periodically to keep data fresh.
+      if (action === 'refresh-profiles') {
+        const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+        const staleProfiles = await env.DB.prepare(`
+          SELECT user_id FROM scammer_profile_cache
+          WHERE user_id IS NOT NULL
+            AND (profile_refreshed_at IS NULL OR profile_refreshed_at < ?)
+          ORDER BY profile_refreshed_at ASC
+        `).bind(sevenDaysAgo).all();
+
+        const userIds = (staleProfiles.results || []).map(r => r.user_id);
+        let refreshed = 0;
+        let failed = 0;
+
+        for (const userId of userIds) {
+          try {
+            const profile = await fetchRobloxProfile(userId, env, true);
+            if (profile) {
+              refreshed++;
+            } else {
+              failed++;
+            }
+          } catch (err) {
+            console.warn(`refresh-profiles: failed for ${userId}:`, err.message);
+            failed++;
+          }
+          // Small delay to avoid hitting Roblox rate limits
+          await new Promise(r => setTimeout(r, 250));
+        }
+
+        return new Response(JSON.stringify({
+          total: userIds.length,
+          refreshed,
+          failed,
+          message: `Refreshed ${refreshed}/${userIds.length} profiles. ${failed} failed.`
+        }), {
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
+          },
+        });
+      }
+
       // No action or default: Return results from D1
       const { results } = await env.DB.prepare(`
         SELECT 
