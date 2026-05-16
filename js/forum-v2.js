@@ -460,7 +460,7 @@ class ForumV2 {
             const formData = new FormData();
             formData.append('file', file);
 
-            const response = await this.fetchWithAuth('https://emwiki.com/api/forum/posts/upload', {
+            const response = await this.fetchWithAuth('/api/forum/posts/upload', {
                 method: 'POST',
                 body: formData
             });
@@ -573,7 +573,7 @@ class ForumV2 {
             if (this.currentSearch) params.set('search', this.currentSearch);
             if (this.showingMyPosts && this.currentUser) params.set('user_id', this.currentUser.userId);
 
-            const response = await fetch(`https://emwiki.com/api/forum/posts?${params}`);
+            const response = await fetch(`/api/forum/posts?${params}`);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
             const data = await response.json();
@@ -754,7 +754,7 @@ class ForumV2 {
 
     async viewThread(postId, fromPopstate = false) {
         try {
-            const response = await this.fetchWithAuth(`https://emwiki.com/api/forum/posts/${postId}`);
+            const response = await this.fetchWithAuth(`/api/forum/posts/${postId}`);
             if (!response.ok) throw new Error('Failed to load post');
 
             document.getElementById('forum-list-view').style.display = 'none';
@@ -1010,7 +1010,7 @@ class ForumV2 {
         if (submitBtn) submitBtn.disabled = true;
 
         try {
-            const url = this.editingPostId ? `https://emwiki.com/api/forum/posts/${this.editingPostId}` : 'https://emwiki.com/api/forum/posts';
+            const url = this.editingPostId ? `/api/forum/posts/${this.editingPostId}` : '/api/forum/posts';
             const method = this.editingPostId ? 'PUT' : 'POST';
 
             const response = await this.fetchWithAuth(url, {
@@ -1048,7 +1048,7 @@ class ForumV2 {
         if (!ok) return;
 
         try {
-            const response = await this.fetchWithAuth(`https://emwiki.com/api/forum/posts/${this.currentThread.id}`, { method: 'DELETE' });
+            const response = await this.fetchWithAuth(`/api/forum/posts/${this.currentThread.id}`, { method: 'DELETE' });
             if (!response.ok) throw new Error('Failed to delete');
             this.showToast('Post deleted', 'success');
             this.showListView();
@@ -1071,7 +1071,7 @@ class ForumV2 {
         if (btn) btn.disabled = true;
 
         try {
-            const response = await this.fetchWithAuth('https://emwiki.com/api/forum/comments', {
+            const response = await this.fetchWithAuth('/api/forum/comments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1130,7 +1130,7 @@ class ForumV2 {
         if (!content) return this.showToast('Comment cannot be empty', 'error');
 
         try {
-            const response = await this.fetchWithAuth(`https://emwiki.com/api/forum/comments/${commentId}`, {
+            const response = await this.fetchWithAuth(`/api/forum/comments/${commentId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content })
@@ -1184,7 +1184,7 @@ class ForumV2 {
         if (!ok) return;
 
         try {
-            const response = await this.fetchWithAuth(`https://emwiki.com/api/forum/comments/${commentId}`, { method: 'DELETE' });
+            const response = await this.fetchWithAuth(`/api/forum/comments/${commentId}`, { method: 'DELETE' });
             if (!response.ok) throw new Error('Failed to delete');
             this.comments = this.comments.filter(c => c.id !== commentId);
             this.renderThread();
@@ -1217,7 +1217,7 @@ class ForumV2 {
         if (countEl) countEl.textContent = this.currentThread.like_count;
 
         try {
-            const response = await this.fetchWithAuth(`https://emwiki.com/api/forum/posts/${this.currentThread.id}/like`, { method: 'POST' });
+            const response = await this.fetchWithAuth(`/api/forum/posts/${this.currentThread.id}/like`, { method: 'POST' });
             if (!response.ok) throw new Error();
             const data = await response.json();
             this.currentThread.like_count = data.like_count;
@@ -1253,7 +1253,7 @@ class ForumV2 {
         if (countEl) countEl.textContent = comment.like_count;
 
         try {
-            const response = await this.fetchWithAuth(`https://emwiki.com/api/forum/comments/${commentId}/like`, { method: 'POST' });
+            const response = await this.fetchWithAuth(`/api/forum/comments/${commentId}/like`, { method: 'POST' });
             if (!response.ok) throw new Error();
             const data = await response.json();
             comment.like_count = data.like_count;
@@ -1274,7 +1274,7 @@ class ForumV2 {
         if (!this.currentThread || !this.isAdminUser) return;
         const newVal = !this.currentThread.is_pinned;
         try {
-            const response = await this.fetchWithAuth(`https://emwiki.com/api/forum/posts/${this.currentThread.id}`, {
+            const response = await this.fetchWithAuth(`/api/forum/posts/${this.currentThread.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ is_pinned: newVal })
@@ -1294,7 +1294,7 @@ class ForumV2 {
         if (!this.currentThread || !this.isAdminUser) return;
         const newVal = !this.currentThread.is_locked;
         try {
-            const response = await this.fetchWithAuth(`https://emwiki.com/api/forum/posts/${this.currentThread.id}`, {
+            const response = await this.fetchWithAuth(`/api/forum/posts/${this.currentThread.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ is_locked: newVal })
@@ -1331,7 +1331,7 @@ class ForumV2 {
     }
 
     async incrementViewCount(postId) {
-        try { await fetch(`https://emwiki.com/api/forum/posts/${postId}/view`, { method: 'POST' }); }
+        try { await fetch(`/api/forum/posts/${postId}/view`, { method: 'POST' }); }
         catch { /* non-critical */ }
     }
 
@@ -1339,7 +1339,7 @@ class ForumV2 {
 
     async searchItemsAPI(query) {
         try {
-            const res = await fetch(`https://emwiki.com/api/items/search?q=${encodeURIComponent(query)}&limit=24`);
+            const res = await fetch(`/api/items/search?q=${encodeURIComponent(query)}&limit=24`);
             if (!res.ok) return [];
             const data = await res.json();
             const items = data.items || [];
@@ -1352,7 +1352,7 @@ class ForumV2 {
         const missing = names.filter(n => !this._itemCache.has(n));
         if (missing.length === 0) return;
         try {
-            const res = await fetch('https://emwiki.com/api/items/batch', {
+            const res = await fetch('/api/items/batch', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ names: missing })

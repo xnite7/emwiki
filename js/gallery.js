@@ -35,7 +35,7 @@ class Gallery {
 
     async openPostById(postId) {
         try {
-            const response = await fetch(`https://emwiki.com/api/gallery/${postId}`);
+            const response = await fetch(`/api/gallery/${postId}`);
             if (response.ok) {
                 const { item } = await response.json();
                 this.openViewer(item);
@@ -245,7 +245,7 @@ class Gallery {
                     const thumbFormData = new FormData();
                     thumbFormData.append('file', thumbnailBlob, 'thumbnail.jpg');
 
-                    const thumbResponse = await fetch('https://emwiki.com/api/gallery/upload', {
+                    const thumbResponse = await fetch('/api/gallery/upload', {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`
@@ -270,7 +270,7 @@ class Gallery {
             const formData = new FormData();
             formData.append('file', file);
 
-            const uploadResponse = await fetch('https://emwiki.com/api/gallery/upload', {
+            const uploadResponse = await fetch('/api/gallery/upload', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -290,7 +290,7 @@ class Gallery {
 
             // Submit gallery item
             const mediaType = type.startsWith('image/') ? 'image' : 'video';
-            const submitResponse = await fetch('https://emwiki.com/api/gallery/submit', {
+            const submitResponse = await fetch('/api/gallery/submit', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -342,7 +342,7 @@ class Gallery {
         try {
             const token = localStorage.getItem('auth_token');
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-            const response = await fetch(`https://emwiki.com/api/gallery?limit=${this.itemsPerPage}&offset=${offset}&sort=${this.currentSort}`, {
+            const response = await fetch(`/api/gallery?limit=${this.itemsPerPage}&offset=${offset}&sort=${this.currentSort}`, {
                 headers
             });
             const { items, total } = await response.json();
@@ -420,16 +420,17 @@ class Gallery {
         div.className = 'gallery-item';
         div.dataset.id = item.id;
 
+        const safeTitle = this.escapeHtml(item.title);
         const mediaElement = item.media_type === 'video'
             ? `<div class="gallery-item-media-wrapper">
-                   <img class="gallery-item-media" data-src="${item.thumbnail_url || item.media_url}" alt="${item.title}" loading="lazy" oncontextmenu="return false;">
+                   <img class="gallery-item-media" data-src="${item.thumbnail_url || item.media_url}" alt="${safeTitle}" loading="lazy" oncontextmenu="return false;">
                    <div class="gallery-item-play-icon">
                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                            <path d="M8 5v14l11-7z"/>
                        </svg>
                    </div>
                </div>`
-            : `<img class="gallery-item-media" data-src="${item.media_url}" alt="${item.title}" loading="lazy" oncontextmenu="return false;">`;
+            : `<img class="gallery-item-media" data-src="${item.media_url}" alt="${safeTitle}" loading="lazy" oncontextmenu="return false;">`;
 
         const likesCount = item.likes_count || 0;
         const profilePill = this.createProfilePill(item.username, item.avatar_url, item.role, item.user_id);
@@ -528,7 +529,7 @@ class Gallery {
 
             this.setupCustomVideoPlayer(mediaContainer);
         } else {
-            mediaContainer.innerHTML = `<img src="${item.media_url}" alt="${item.title}" oncontextmenu="return false;">`;
+            mediaContainer.innerHTML = `<img src="${item.media_url}" alt="${this.escapeHtml(item.title)}" oncontextmenu="return false;">`;
         }
         // Set info
         title.textContent = item.title;
@@ -544,7 +545,7 @@ class Gallery {
         try {
             const token = localStorage.getItem('auth_token');
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-            const response = await fetch(`https://emwiki.com/api/gallery/${item.id}`, { headers });
+            const response = await fetch(`/api/gallery/${item.id}`, { headers });
 
             if (response.ok) {
                 const data = await response.json();
@@ -609,7 +610,7 @@ class Gallery {
 
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await fetch('https://emwiki.com/api/gallery/my-submissions', {
+            const response = await fetch('/api/gallery/my-submissions', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -649,7 +650,7 @@ class Gallery {
                        </svg>
                    </div>
                </div>`
-            : `<img class="submission-thumbnail" src="${item.media_url}" alt="${item.title}">`;
+            : `<img class="submission-thumbnail" src="${item.media_url}" alt="${this.escapeHtml(item.title)}">`;
 
         const statusClass = item.status;
         const statusText = item.status.charAt(0).toUpperCase() + item.status.slice(1);
@@ -681,7 +682,7 @@ class Gallery {
 
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await fetch(`https://emwiki.com/api/gallery/${id}`, {
+            const response = await fetch(`/api/gallery/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -868,7 +869,7 @@ class Gallery {
 
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await fetch(`https://emwiki.com/api/gallery/like/${itemId}`, {
+            const response = await fetch(`/api/gallery/like/${itemId}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -914,7 +915,7 @@ class Gallery {
 
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await fetch(`https://emwiki.com/api/gallery/${itemId}`, {
+            const response = await fetch(`/api/gallery/${itemId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`

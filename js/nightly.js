@@ -12,7 +12,7 @@ async function loadItems() {
       const categoryItems = [];
       
       while (hasMore) {
-        const url = new URL('https://emwiki.com/api/items');
+        const url = new URL('/api/items', window.location.origin);
         url.searchParams.set('category', category);
         url.searchParams.set('limit', limit.toString());
         url.searchParams.set('offset', offset.toString());

@@ -27,6 +27,7 @@
     <link rel="manifest" href="/dev.webmanifest">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/interactjs@1.10.27/dist/interact.min.js"></script>
 
 </head>
 
@@ -510,9 +511,9 @@
                 NOTES_BOARD: 'wss://notes-board.xnite7.workers.dev'
             },
             API_URLS: {
-                LATEST_VERSION: 'https://emwiki.com/api/latest-version',
-                ITEMS_API: 'https://emwiki.com/api/items',
-                HISTORY: 'https://emwiki.com/api/history'
+                LATEST_VERSION: '/api/latest-version',
+                ITEMS_API: '/api/items',
+                HISTORY: '/api/history'
             },
             UI: {
                 SNAP_MARGIN: 12,
@@ -2035,7 +2036,7 @@
 
                 // Fetch from API
                 try {
-                    const response = await fetch(`https://emwiki.com/api/roblox-proxy?userId=${userId}`);
+                    const response = await fetch(`/api/roblox-proxy?userId=${userId}`);
                     if (response.ok) {
                         const data = await response.json();
                         const cacheEntry = {
@@ -2298,7 +2299,7 @@
                         const categoryItems = [];
                         
                         while (hasMore) {
-                            const url = new URL('https://emwiki.com/api/items');
+                            const url = new URL('/api/items', window.location.origin);
                             url.searchParams.set('category', category);
                             url.searchParams.set('limit', limit.toString());
                             url.searchParams.set('offset', offset.toString());
@@ -2435,6 +2436,7 @@
                         ? JSON.parse(originalStateJson)
                         : originalStateJson;
                     itemsToDelete.push({
+                        id: originalItem.id || null,
                         name: itemName,
                         category: originalItem.category
                     });
@@ -2462,86 +2464,88 @@
                     };
                 }
 
+                const authToken = Auth.authToken || localStorage.getItem('auth_token');
+                const authHeaders = authToken
+                    ? { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }
+                    : { 'Content-Type': 'application/json' };
+
+                const buildItemPayload = (item, { includeUpdatedAt }) => {
+                    const payload = {
+                        name: item.name,
+                        category: item.category,
+                        img: item.img || null,
+                        svg: item.svg || null,
+                        price: item.price || null,
+                        from: item.from || null,
+                        price_code_rarity: item.price_code_rarity,
+                        tradable: item.tradable !== false,
+                        new: item.new === true,
+                        weekly: item.weekly === true,
+                        weeklystar: item.weeklystar === true,
+                        retired: item.retired === true,
+                        premium: item.premium === true,
+                        removed: item.removed === true,
+                        price_history: item.priceHistory || null,
+                        demand: item.demand || 0,
+                        credits: item.credits || null,
+                        lore: item.lore || null,
+                        alias: item.alias || null,
+                        quantity: item.quantity || null
+                    };
+                    if (includeUpdatedAt) {
+                        payload.updated_at = item.updated_at || null;
+                    }
+                    return payload;
+                };
+
                 for (let i = 0; i < allItemsToSave.length; i += batchSize) {
                     const batch = allItemsToSave.slice(i, i + batchSize);
-                    
-                    // Save each item in the batch
+
                     const batchPromises = batch.map(async (item) => {
                         try {
-                            // Check if item exists (by category and name)
-                            const checkUrl = new URL(`https://emwiki.com/api/items/${item.category}/${encodeURIComponent(item.name)}`);
-                            const checkRes = await fetch(checkUrl.toString());
-                            
-                            if (checkRes.ok) {
-                                // Item exists, update it
-                                const itemData = await checkRes.json();
-                                const itemId = itemData.item?.id;
-                                const serverUpdatedAt = itemData.item?.updated_at;
-                                
-                                if (!itemId) {
-                                    throw new Error(`Item found but missing ID: ${item.name}`);
+                            const isNew = ChangeTracker.newItems.has(item.name) || !item.id;
+
+                            if (isNew) {
+                                const createRes = await fetch('/api/items', {
+                                    method: 'POST',
+                                    headers: authHeaders,
+                                    body: JSON.stringify(buildItemPayload(item, { includeUpdatedAt: false }))
+                                });
+
+                                if (!createRes.ok) {
+                                    const errorText = await createRes.text();
+                                    throw new Error(`Failed to create ${item.name}: ${errorText}`);
                                 }
-                                
-                                // Use server's updated_at if available (most recent), otherwise use client's
-                                // For new items, don't send updated_at (it will be null)
-                                // For modified items, use the server's current updated_at to avoid conflicts
-                                const updatedAtToSend = ChangeTracker.newItems.has(item.name) 
-                                    ? null 
-                                    : (serverUpdatedAt || item.updated_at || null);
-                                
-                                // Check if demand_updated_at was manually updated (for "Keep Demand" button)
-                                // Compare with original item to see if demand_updated_at changed
+                            } else {
+                                // Detect manual demand_updated_at edit (Keep Demand button) so the server
+                                // refreshes the timestamp even if demand value didn't change.
                                 let forceUpdateDemandTimestamp = false;
-                                if (!ChangeTracker.newItems.has(item.name)) {
-                                    const originalJson = ChangeTracker.originalItems.get(item.name);
-                                    if (originalJson) {
-                                        try {
-                                            const originalItem = JSON.parse(originalJson);
-                                            // If demand_updated_at was manually set (different from original)
-                                            // and demand itself didn't change, we need to force update the timestamp
-                                            const demandChanged = (item.demand || 0) !== (originalItem.demand || 0);
-                                            const demandUpdatedAtChanged = item.demand_updated_at !== originalItem.demand_updated_at;
-                                            
-                                            if (demandUpdatedAtChanged && !demandChanged) {
-                                                forceUpdateDemandTimestamp = true;
-                                            }
-                                        } catch (e) {
-                                            console.error('Error parsing original item:', e);
+                                const originalJson = ChangeTracker.originalItems.get(item.name);
+                                if (originalJson) {
+                                    try {
+                                        const originalItem = JSON.parse(originalJson);
+                                        const demandChanged = (item.demand || 0) !== (originalItem.demand || 0);
+                                        const demandUpdatedAtChanged = item.demand_updated_at !== originalItem.demand_updated_at;
+                                        if (demandUpdatedAtChanged && !demandChanged) {
+                                            forceUpdateDemandTimestamp = true;
                                         }
+                                    } catch (e) {
+                                        console.error('Error parsing original item:', e);
                                     }
                                 }
-                                
-                                const updateRes = await fetch(`https://emwiki.com/api/items/${itemId}`, {
+
+                                const payload = buildItemPayload(item, { includeUpdatedAt: true });
+                                if (forceUpdateDemandTimestamp) {
+                                    payload.force_update_demand_timestamp = true;
+                                }
+
+                                const updateRes = await fetch(`/api/items/${item.id}`, {
                                     method: 'PUT',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        name: item.name,
-                                        category: item.category,
-                                        img: item.img || null,
-                                        svg: item.svg || null,
-                                        price: item.price || null,
-                                        from: item.from || null,
-                                        price_code_rarity: item.price_code_rarity,
-                                        tradable: item.tradable !== false,
-                                        new: item.new === true,
-                                        weekly: item.weekly === true,
-                                        weeklystar: item.weeklystar === true,
-                                        retired: item.retired === true,
-                                        premium: item.premium === true,
-                                        removed: item.removed === true,
-                                        price_history: item.priceHistory || null,
-                                        demand: item.demand || 0,
-                                        credits: item.credits || null,
-                                        lore: item.lore || null,
-                                        alias: item.alias || null,
-                                        quantity: item.quantity || null,
-                                        updated_at: updatedAtToSend, // Use server's updated_at for optimistic locking
-                                        force_update_demand_timestamp: forceUpdateDemandTimestamp || undefined
-                                    })
+                                    headers: authHeaders,
+                                    body: JSON.stringify(payload)
                                 });
-                                
+
                                 if (updateRes.status === 409) {
-                                    // Conflict detected - item was modified by another admin
                                     const conflictData = await updateRes.json();
                                     errors.push({
                                         item: item.name,
@@ -2550,49 +2554,19 @@
                                         currentItem: conflictData.currentItem
                                     });
                                     errorCount++;
-                                    return; // Skip this item
-                                } else if (!updateRes.ok) {
+                                    return;
+                                }
+
+                                if (updateRes.status === 404) {
+                                    throw new Error(`Item id ${item.id} not found on server (${item.name})`);
+                                }
+
+                                if (!updateRes.ok) {
                                     const errorText = await updateRes.text();
                                     throw new Error(`Failed to update ${item.name}: ${errorText}`);
                                 }
-                            } else if (checkRes.status === 404) {
-                                // Item doesn't exist, create it
-                                const createRes = await fetch('https://emwiki.com/api/items', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        name: item.name,
-                                        category: item.category,
-                                        img: item.img || null,
-                                        svg: item.svg || null,
-                                        price: item.price || null,
-                                        from: item.from || null,
-                                        price_code_rarity: item.price_code_rarity,
-                                        tradable: item.tradable !== false,
-                                        new: item.new === true,
-                                        weekly: item.weekly === true,
-                                        weeklystar: item.weeklystar === true,
-                                        retired: item.retired === true,
-                                        premium: item.premium === true,
-                                        removed: item.removed === true,
-                                        price_history: item.priceHistory || null,
-                                        demand: item.demand || 0,
-                                        credits: item.credits || null,
-                                        lore: item.lore || null,
-                                        alias: item.alias || null,
-                                        quantity: item.quantity || null
-                                    })
-                                });
-                                
-                                if (!createRes.ok) {
-                                    const errorText = await createRes.text();
-                                    throw new Error(`Failed to create ${item.name}: ${errorText}`);
-                                }
-                            } else {
-                                // Unexpected response status
-                                throw new Error(`Unexpected response when checking item ${item.name}: ${checkRes.status}`);
                             }
-                            
+
                             successCount++;
                         } catch (error) {
                             errorCount++;
@@ -2600,39 +2574,36 @@
                             console.error(`Error saving item ${item.name}:`, error);
                         }
                     });
-                    
+
                     await Promise.all(batchPromises);
                 }
 
                 // Handle deleted items
                 for (const deletedItem of itemsToDelete) {
                     try {
-                        // Find the item ID first
-                        const checkUrl = new URL(`https://emwiki.com/api/items/${deletedItem.category}/${encodeURIComponent(deletedItem.name)}`);
-                        const checkRes = await fetch(checkUrl.toString());
-                        
-                        if (checkRes.ok) {
-                            const itemData = await checkRes.json();
-                            const itemId = itemData.item?.id;
-                            
-                            if (itemId) {
-                                // Delete the item
-                                const deleteRes = await fetch(`https://emwiki.com/api/items/${itemId}`, {
-                                    method: 'DELETE',
-                                    headers: { 'Content-Type': 'application/json' }
-                                });
-                                
-                                if (!deleteRes.ok) {
-                                    const errorText = await deleteRes.text();
-                                    throw new Error(`Failed to delete ${deletedItem.name}: ${errorText}`);
-                                }
-                                successCount++;
-                            }
-                        } else if (checkRes.status !== 404) {
-                            // Item not found is OK (might have been deleted already)
-                            const errorText = await checkRes.text();
-                            throw new Error(`Failed to check item ${deletedItem.name}: ${errorText}`);
+                        if (!deletedItem.id) {
+                            // No id captured at load time — nothing to delete server-side.
+                            // (Happens if a brand-new local item was added and removed in the same session.)
+                            successCount++;
+                            continue;
                         }
+
+                        const deleteRes = await fetch(`/api/items/${deletedItem.id}`, {
+                            method: 'DELETE',
+                            headers: authHeaders
+                        });
+
+                        if (deleteRes.status === 404) {
+                            // Already gone server-side — treat as success.
+                            successCount++;
+                            continue;
+                        }
+
+                        if (!deleteRes.ok) {
+                            const errorText = await deleteRes.text();
+                            throw new Error(`Failed to delete ${deletedItem.name}: ${errorText}`);
+                        }
+                        successCount++;
                     } catch (error) {
                         errorCount++;
                         errors.push({ item: deletedItem.name, error: error.message });
@@ -8353,661 +8324,225 @@
         };
 
         // ============================
-        // Enhanced Draggable Panel Manager
+        // Draggable Panel Manager
         // ============================
+        // Replaces a 650-line hand-rolled sticky+drag state machine with:
+        //   - native CSS `position: sticky` for sidebar mode (see #quick-editor-content.mode-sidebar in admin.css)
+        //   - interact.js for the free-floating modal drag
+        //   - a CSS media-query rule for mobile full-screen
+        // Public API (init, show, hide, refreshOverflow, state.isInitialized,
+        // state.isMobile) is preserved so existing call sites keep working.
         const DraggablePanelManager = {
-            // Configuration
             config: {
                 WIDTH_THRESHOLD: 1300,
-                MOBILE_THRESHOLD: 768, // Add mobile detection threshold
+                MOBILE_THRESHOLD: 768,
                 SNAP_MARGIN: 12,
-                STORAGE_KEY: 'quickEditorPosV1',
-                SIDEBAR_TOP: 96,
-                EXCLUDED_TAGS: ['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT', 'SPAN', 'LI']
+                SIDEBAR_TOP: 96
             },
 
-            // State
             state: {
-                dragging: false,
-                startX: 0,
-                startY: 0,
-                startLeft: 0,
-                startTop: 0,
-                observer: null,
-                contentObserver: null,
                 isInitialized: false,
-                currentMode: null, // Track current mode: 'sidebar', 'modal', or 'mobile'
-                isMobile: false
+                currentMode: null,
+                isMobile: false,
+                interactable: null,
+                modalObserver: null
             },
 
-            // DOM elements (cached)
             elements: {
                 modal: null,
                 panel: null,
-                handle: null,
                 closeBtn: null,
                 mainEl: null,
-                spacer: null,
-                originalParent: null
+                spacer: null
             },
 
-            // Initialize the draggable panel system
             init() {
-                if (this.state.isInitialized) return;
-
-                try {
-                    this.cacheElements();
-                    if (!this.elements.modal || !this.elements.panel) {
-                        console.warn('Draggable panel elements not found');
-                        return false;
-                    }
-
-                    // Check if mobile
-                    this.checkMobile();
-
-                    this.setupEventListeners();
-                    this.setupObserver();
-                    this.handleResize();
-
-                    this.state.isInitialized = true;
-                    return true;
-                } catch (error) {
-                    console.error('Failed to initialize draggable panel:', error);
+                if (this.state.isInitialized) return true;
+                this.cacheElements();
+                if (!this.elements.modal || !this.elements.panel) {
+                    console.warn('Draggable panel elements not found');
                     return false;
                 }
+                this.setupEventListeners();
+                this.handleResize();
+                this.state.isInitialized = true;
+                return true;
             },
 
-            // Add mobile detection
-            checkMobile() {
-                this.state.isMobile = window.innerWidth <= this.config.MOBILE_THRESHOLD &&
-                    ('ontouchstart' in window && navigator.maxTouchPoints > 0);
-            },
-
-            // Add mobile mode handler
-            switchToMobileMode() {
-                const { panel, modal, closeBtn, spacer } = this.elements;
-                // Set current mode
-                this.state.currentMode = 'mobile';
-
-                // Stop observing content changes in mobile mode
-                this.stopContentObserver();
-
-                // Move panel back to modal if needed
-                if (!modal.contains(panel)) {
-                    modal.appendChild(panel);
-                }
-
-                // Apply mobile full-screen styles
-                Object.assign(modal.style, {
-                    position: 'fixed',
-                    top: '0',
-                    left: '0',
-                    width: '100%',
-                    height: '100%',
-                    zIndex: '9999',
-                    background: 'var(--bg-color, #1f2937)',
-                    display: 'flex',
-                    flexDirection: 'column'
-                });
-
-                Object.assign(panel.style, {
-                    position: 'relative',
-                    width: '100%',
-                    height: '100%',
-                    maxWidth: '-webkit-fill-available',
-                    maxHeight: '100%',
-                    top: 'unset',
-                    left: 'unset',
-                    transform: 'none',
-                    boxShadow: 'none',
-                    border: 'none',
-                    background: 'transparent',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    alignItems: 'space-between',
-                    alignContent: 'center'
-
-                });
-
-                // Style the close button for mobile
-                if (closeBtn) {
-                    Object.assign(closeBtn.style, {
-                        position: 'fixed',
-                        top: '72px',
-                        right: '10px',
-                        zIndex: '10000',
-                        width: '40px',
-                        height: '40px',
-                        fontSize: '34px',
-                        background: 'rgba(0, 0, 0, 0.5)',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    });
-                }
-
-                // Hide spacer
-                if (spacer) {
-                    spacer.style.display = 'none';
-                }
-
-                // Adjust quick editor content for mobile
-                this.adjustMobileContent();
-            },
-
-            adjustMobileContent() {
-                const { panel } = this.elements;
-                if (!panel) return;
-
-                // Find and adjust inner content
-                const title = panel.querySelector('#quick-editor-title');
-                const img = panel.querySelector('#quick-editor-img');
-                const body = panel.querySelector('.quick-editor-body');
-                const lists = panel.querySelector('#quick-editor-lists');
-
-                if (title) {
-                    Object.assign(title.style, {
-                        fontSize: '27px',
-                        padding: '14px 15px 0px 15px',
-                        marginTop: '7px',
-                        textAlign: 'center',
-                        height: '54px'
-                    });
-                }
-
-                if (body) {
-                    Object.assign(body.style, {
-                        paddingTop: '6px'
-                    });
-                }
-
-                if (lists) {
-                    Object.assign(lists.style, {
-                        padding: '13px',
-                        flex: '1 1 0%',
-                        overflowY: 'auto'
-                    });
-                }
-
-                // Ensure the content is scrollable
-                panel.style.paddingBottom = '50px'; // Space for controls at bottom
-            },
-
-            // Cache DOM elements
             cacheElements() {
                 this.elements.modal = DOM.get('quick-editor-modal');
                 this.elements.panel = DOM.get('quick-editor-content');
-                this.elements.handle = DOM.get('quick-editor-title');
                 this.elements.closeBtn = DOM.get('quick-editor-close');
                 this.elements.mainEl = DOM.query('main');
                 this.elements.spacer = DOM.get('quick-editor-spacer');
-                this.elements.historySection = DOM.get('history-section');
-                this.elements.notesSection = DOM.get('notes-section');
-                this.elements.umSection = DOM.get('user-management-section');
-                this.elements.gmSection = DOM.get('gallery-moderation-section');
-
-                if (this.elements.panel) {
-                    this.elements.originalParent = this.elements.panel.parentNode;
-                }
             },
 
-            // Utility functions
-            utils: {
-                vw: () => window.innerWidth,
-                vh: () => window.innerHeight,
-                clamp: (v, a, b) => Math.max(a, Math.min(b, v))
-            },
-
-            // Position management
-            setPanelPos(left, top) {
-                const { panel } = this.elements;
-                if (!panel) return;
-
-                const W = panel.offsetWidth;
-                const H = panel.offsetHeight;
-                const maxLeft = this.utils.vw() - W - this.config.SNAP_MARGIN;
-                const maxTop = this.utils.vh() - H - this.config.SNAP_MARGIN;
-
-                left = this.utils.clamp(Math.round(left), this.config.SNAP_MARGIN, Math.max(this.config.SNAP_MARGIN, maxLeft));
-                top = this.utils.clamp(Math.round(top), this.config.SNAP_MARGIN, Math.max(this.config.SNAP_MARGIN, maxTop));
-
-                panel.style.left = `${left}px`;
-                panel.style.top = `${top}px`;
-                panel.style.transform = 'none';
-            },
-
-            centerPanel() {
-                const { panel } = this.elements;
-                if (!panel) return;
-
-                const w = panel.offsetWidth;
-                this.setPanelPos(
-                    Math.round((this.utils.vw() - w) / 2),
-                    Math.round(this.utils.vh() * 0.1)
-                );
-            },
-
-
-
-            // Event handlers
-            onPointerDown(e) {
-                if (this.state.isMobile) return;
-
-                const { panel, mainEl } = this.elements;
-                if (!panel) return;
-
-                // Don't drag if panel is in sidebar mode
-                if (panel.parentNode === mainEl) return;
-
-                // Don't drag if clicking on interactive elements
-                if (this.config.EXCLUDED_TAGS.includes(e.target.tagName)) return;
-
-                // Only handle left mouse button
-                if (e.pointerType === 'mouse' && e.button !== 0) return;
-
-                this.state.dragging = true;
-                panel.classList.add('dragging');
-
-                try {
-                    panel.setPointerCapture(e.pointerId);
-                } catch (error) {
-                    console.warn('Pointer capture failed:', error);
-                }
-
-                const rect = panel.getBoundingClientRect();
-                this.state.startX = e.clientX;
-                this.state.startY = e.clientY;
-                this.state.startLeft = rect.left;
-                this.state.startTop = rect.top;
-
-                document.body.style.userSelect = 'none';
-                e.preventDefault();
-            },
-
-            onPointerMove(e) {
-                if (!this.state.dragging) return;
-
-                const dx = e.clientX - this.state.startX;
-                const dy = e.clientY - this.state.startY;
-
-                this.setPanelPos(this.state.startLeft + dx, this.state.startTop + dy);
-            },
-
-            onPointerUp(e) {
-                if (!this.state.dragging) return;
-
-                const { panel } = this.elements;
-                if (!panel) return;
-
-                this.state.dragging = false;
-                panel.classList.remove('dragging');
-
-                // Smart snapping to corners
-                const rect = panel.getBoundingClientRect();
-                const leftDist = rect.left;
-                const rightDist = this.utils.vw() - (rect.left + rect.width);
-                const topDist = rect.top;
-                const bottomDist = this.utils.vh() - (rect.top + rect.height);
-
-                const finalLeft = leftDist < rightDist ?
-                    this.config.SNAP_MARGIN :
-                    this.utils.vw() - rect.width - this.config.SNAP_MARGIN;
-
-                const finalTop = topDist < bottomDist ?
-                    this.config.SNAP_MARGIN :
-                    this.utils.vh() - rect.height - this.config.SNAP_MARGIN;
-
-                this.setPanelPos(finalLeft, finalTop);
-
-                document.body.style.userSelect = '';
-
-                try {
-                    panel.releasePointerCapture(e.pointerId);
-                } catch (error) {
-                    // Pointer capture release failed, not critical
-                }
-            },
-
-            onScroll() {
-                this.checkAndUpdateOverflow();
-            },
-
-            switchToSidebarMode() {
-                const { panel, modal, closeBtn, spacer, mainEl } = this.elements;
-
-                // Move panel to main content area
-                if (!mainEl.contains(panel)) {
-                    mainEl.insertBefore(panel, mainEl.firstChild);
-                }
-
-                // Apply sidebar styles
-                Object.assign(panel.style, {
-                    position: 'fixed',
-                    left: `${spacer.offsetLeft}px`,
-                    top: `${this.config.SIDEBAR_TOP}px`,
-                    transform: 'none',
-                    boxShadow: '0 6px 24px var(--shade)',
-                    border: '1px solid var(--shade)',
-                    background: 'linear-gradient(137deg, #4a57613d, #4a515e5e, #42546221)',
-                    zIndex: 2
-                });
-
-                // Update UI elements
-                closeBtn.style.display = 'none';
-                spacer.style.display = 'unset';
-                spacer.style.width = `${panel.offsetWidth}px`;
-
-                // Set current mode
-                this.state.currentMode = 'sidebar';
-
-                // Check initial overflow state
-                this.checkAndUpdateOverflow();
-
-                // Start observing content changes
-                this.startContentObserver();
-            },
-
-            switchToModalMode() {
-                const { panel, modal, closeBtn, spacer } = this.elements;
-
-                // Set current mode first
-                this.state.currentMode = 'modal';
-
-                // Stop observing content changes in modal mode
-                this.stopContentObserver();
-
-                // Move panel back to modal
-                if (!modal.contains(panel)) {
-                    modal.appendChild(panel);
-                }
-
-                // Apply modal styles
-                Object.assign(panel.style, {
-                    position: 'fixed',
-                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.45)',
-                    border: '',
-                    background: ''
-                });
-
-                // Update UI elements
-                closeBtn.style.display = 'unset';
-                spacer.style.display = 'none';
-                spacer.style.height = '0px'; // Reset spacer height
-
-                // Keep panel within viewport bounds
-                const rect = panel.getBoundingClientRect();
-                const finalLeft = this.utils.clamp(
-                    rect.left,
-                    this.config.SNAP_MARGIN,
-                    Math.max(this.config.SNAP_MARGIN, this.utils.vw() - rect.width - this.config.SNAP_MARGIN)
-                );
-                const finalTop = this.utils.clamp(
-                    rect.top,
-                    this.config.SNAP_MARGIN,
-                    Math.max(this.config.SNAP_MARGIN, this.utils.vh() - rect.height - this.config.SNAP_MARGIN)
-                );
-
-                this.setPanelPos(finalLeft, finalTop);
-            },
-
-            // Event listener setup
             setupEventListeners() {
-                const { panel, closeBtn, modal } = this.elements;
+                this.elements.closeBtn?.addEventListener('click', () => this.hide());
 
-                if (panel) {
-                    panel.addEventListener('pointerdown', (e) => this.onPointerDown(e));
-                }
-
-                if (closeBtn) {
-                    closeBtn.addEventListener('click', () => {
-                        modal?.classList.add('hidden');
-                    });
-                }
-
-                // Global pointer events
-                window.addEventListener('pointermove', (e) => this.onPointerMove(e));
-                window.addEventListener('pointerup', (e) => this.onPointerUp(e));
-
-                // ADD THIS: Scroll event listener for continuous checking
-                window.addEventListener('scroll', () => {
-                    if (this.state.currentMode === 'sidebar') {
-                        this.checkAndUpdateOverflow();
-                    }
-                });
-
-                // Debounced resize handler
-                const debouncedResize = Utils.debounce(() => this.handleResize(), 150);
+                const debouncedResize = (typeof Utils !== 'undefined' && Utils.debounce)
+                    ? Utils.debounce(() => this.handleResize(), 150)
+                    : (() => {
+                        let t;
+                        return () => { clearTimeout(t); t = setTimeout(() => this.handleResize(), 150); };
+                    })();
                 window.addEventListener('resize', debouncedResize);
 
-                // Keyboard shortcuts
                 document.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape' && !modal?.classList.contains('hidden')) {
-                        modal.classList.add('hidden');
-                    }
-                });
-            },
-
-            // Updated checkAndUpdateOverflow method
-            checkAndUpdateOverflow() {
-                const { panel, spacer } = this.elements;
-                if (!panel || !spacer || this.state.currentMode !== 'sidebar') return;
-
-                const panelHeight = panel.offsetHeight;
-                const sidebarTop = this.config.SIDEBAR_TOP;
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
-                // Get panel's horizontal boundaries from spacer
-                const spacerRect = spacer.getBoundingClientRect();
-                const panelLeft = spacerRect.left;
-                const panelRight = spacerRect.right;
-
-                // Get all sections that could be below
-                const sections = [
-                    this.elements.historySection,
-                    this.elements.notesSection,
-                    this.elements.umSection,
-                    this.elements.gmSection
-                ].filter(Boolean);
-
-                // Find the section that's actually below the panel (horizontally overlapping)
-                let targetSection = null;
-                let minDistance = Infinity;
-
-                for (const section of sections) {
-                    const sectionRect = section.getBoundingClientRect();
-                    const sectionLeft = sectionRect.left;
-                    const sectionRight = sectionRect.right;
-
-                    // Check if section overlaps horizontally with panel
-                    const overlaps = !(sectionRight < panelLeft || sectionLeft > panelRight);
-
-                    if (overlaps) {
-                        const sectionTopAbs = scrollTop + sectionRect.top;
-
-                        // Find the closest section below the spacer
-                        if (sectionTopAbs < minDistance) {
-                            minDistance = sectionTopAbs;
-                            targetSection = section;
-                        }
-                    }
-                }
-
-                if (targetSection) {
-                    const targetRect = targetSection.getBoundingClientRect();
-                    const sectionTopAbs = scrollTop + targetRect.top;
-                    const gap = 40;
-
-                    // Define gutter boundaries (absolute positions in document)
-                    const gutterTop = spacerRect.top + scrollTop; // Where spacer starts in document
-                    const gutterBottom = sectionTopAbs - gap; // Where section starts minus gap
-
-                    // Where panel would be if fixed at viewport top
-                    const desiredTop = scrollTop + sidebarTop;
-                    const desiredBottom = desiredTop + panelHeight;
-
-                    // Check if panel fits in gutter at desired position
-                    if (desiredBottom <= gutterBottom) {
-                        // Panel fits - use fixed positioning (follows scroll)
-                        panel.style.position = 'fixed';
-                        panel.style.top = `${sidebarTop}px`;
-                        spacer.style.height = '0px';
-                        delete panel.dataset.scrollMode;
-                    } else {
-                        // Panel would overflow gutter - pin to bottom of gutter
-                        panel.style.position = 'absolute';
-                        panel.style.top = `${gutterBottom - panelHeight}px`;
-                        spacer.style.height = `${panelHeight}px`;
-                        panel.dataset.scrollMode = 'stuck';
-                    }
-                } else {
-                    // No section below, stay fixed
-                    panel.style.position = 'fixed';
-                    panel.style.top = `${sidebarTop}px`;
-                    spacer.style.height = '0px';
-                    delete panel.dataset.scrollMode;
-                }
-
-                // Update horizontal position and constraints
-                panel.style.left = `${spacerRect.left}px`;
-                panel.style.maxHeight = `calc(100vh - ${sidebarTop + 20}px)`;
-                panel.style.overflowY = 'auto';
-            },
-
-
-            // Observer for modal visibility changes
-            setupObserver() {
-                const { modal } = this.elements;
-                if (!modal) return;
-
-                this.state.observer = new MutationObserver(() => {
-                    if (!modal.classList.contains('hidden')) {
-                        requestAnimationFrame(() => this.handleResize());
-                    }
+                    if (e.key === 'Escape' && this.isVisible()) this.hide();
                 });
 
-                this.state.observer.observe(modal, {
+                // Re-apply mode whenever the host modal toggles visibility.
+                this.state.modalObserver = new MutationObserver(() => {
+                    if (this.isVisible()) requestAnimationFrame(() => this.handleResize());
+                });
+                this.state.modalObserver.observe(this.elements.modal, {
                     attributes: true,
                     attributeFilter: ['class']
                 });
             },
 
-            // Public API methods
+            handleResize() {
+                this.state.isMobile = window.innerWidth <= this.config.MOBILE_THRESHOLD
+                    && 'ontouchstart' in window
+                    && navigator.maxTouchPoints > 0;
+
+                if (this.state.isMobile) return this.applyMode('mobile');
+                if (window.innerWidth > this.config.WIDTH_THRESHOLD) return this.applyMode('sidebar');
+                return this.applyMode('modal');
+            },
+
+            applyMode(mode) {
+                if (this.state.currentMode === mode) return;
+                const { panel, modal, mainEl, spacer, closeBtn } = this.elements;
+                if (!panel || !modal || !mainEl || !spacer) return;
+
+                // Clear previous mode's inline styles + class.
+                panel.classList.remove('mode-sidebar', 'mode-modal', 'mode-mobile');
+                panel.style.cssText = '';
+
+                // Tear down drag if leaving modal mode.
+                if (this.state.currentMode === 'modal' && this.state.interactable) {
+                    this.state.interactable.unset();
+                    this.state.interactable = null;
+                }
+
+                if (mode === 'sidebar') {
+                    if (!mainEl.contains(panel)) {
+                        mainEl.insertBefore(panel, mainEl.firstChild);
+                    }
+                    spacer.style.display = 'none';
+                    if (closeBtn) closeBtn.style.display = 'none';
+                    panel.classList.add('mode-sidebar');
+                } else if (mode === 'modal') {
+                    if (!modal.contains(panel)) modal.appendChild(panel);
+                    spacer.style.display = 'none';
+                    if (closeBtn) closeBtn.style.display = '';
+                    panel.classList.add('mode-modal');
+                    this.centerPanel();
+                    this.enableDrag();
+                } else if (mode === 'mobile') {
+                    if (!modal.contains(panel)) modal.appendChild(panel);
+                    spacer.style.display = 'none';
+                    if (closeBtn) closeBtn.style.display = '';
+                    panel.classList.add('mode-mobile');
+                }
+
+                this.state.currentMode = mode;
+            },
+
+            centerPanel() {
+                const { panel } = this.elements;
+                if (!panel) return;
+                // Defer to next frame so offsetWidth/Height reflect mode-modal styles.
+                requestAnimationFrame(() => {
+                    const w = panel.offsetWidth;
+                    panel.style.left = Math.max(this.config.SNAP_MARGIN, Math.round((window.innerWidth - w) / 2)) + 'px';
+                    panel.style.top = Math.max(this.config.SNAP_MARGIN, Math.round(window.innerHeight * 0.1)) + 'px';
+                });
+            },
+
+            enableDrag() {
+                if (typeof interact === 'undefined') {
+                    console.warn('interact.js not loaded - draggable mode disabled');
+                    return;
+                }
+                const { panel } = this.elements;
+                const margin = this.config.SNAP_MARGIN;
+
+                this.state.interactable = interact(panel).draggable({
+                    inertia: true,
+                    modifiers: [
+                        interact.modifiers.restrictRect({
+                            restriction: () => ({
+                                left: margin,
+                                top: margin,
+                                right: window.innerWidth - margin,
+                                bottom: window.innerHeight - margin
+                            }),
+                            endOnly: false
+                        })
+                    ],
+                    allowFrom: '#quick-editor-title, #quick-editor-img, #tutorial',
+                    ignoreFrom: 'input, textarea, button, select, [contenteditable]',
+                    listeners: {
+                        start: () => panel.classList.add('dragging'),
+                        move: (event) => {
+                            const left = parseFloat(panel.style.left) || 0;
+                            const top = parseFloat(panel.style.top) || 0;
+                            panel.style.left = (left + event.dx) + 'px';
+                            panel.style.top = (top + event.dy) + 'px';
+                        },
+                        end: () => {
+                            panel.classList.remove('dragging');
+                            // Edge snap to nearest horizontal edge.
+                            const rect = panel.getBoundingClientRect();
+                            const leftDist = rect.left;
+                            const rightDist = window.innerWidth - rect.right;
+                            const snapLeft = leftDist < rightDist
+                                ? margin
+                                : window.innerWidth - rect.width - margin;
+                            panel.style.left = snapLeft + 'px';
+                        }
+                    }
+                });
+            },
+
             show() {
                 const { modal } = this.elements;
-                if (modal) {
-                    modal.classList.remove('hidden');
-                    modal.classList.add('show');
-                }
+                if (!modal) return;
+                modal.classList.remove('hidden');
+                modal.classList.add('show');
+                requestAnimationFrame(() => this.handleResize());
             },
 
             hide() {
                 const { modal } = this.elements;
-                if (modal) {
-                    modal.classList.add('hidden');
-                    modal.classList.remove('show');
-                }
+                if (!modal) return;
+                modal.classList.add('hidden');
+                modal.classList.remove('show');
             },
 
             isVisible() {
-                const { modal } = this.elements;
-                return modal && !modal.classList.contains('hidden');
+                return this.elements.modal && !this.elements.modal.classList.contains('hidden');
             },
 
-            // Start observing content changes for dynamic overflow
-            startContentObserver() {
-                if (this.state.contentObserver) return; // Already observing
+            // Kept as a no-op for backward compatibility with existing call sites.
+            // Native `position: sticky` handles what this used to compute.
+            refreshOverflow() {},
 
-                const { panel } = this.elements;
-                if (!panel) return;
-
-                // Use ResizeObserver to detect when panel content changes size
-                this.state.contentObserver = new ResizeObserver(() => {
-                    // Debounce the overflow check to avoid excessive calls
-                    clearTimeout(this.overflowCheckTimeout);
-                    this.overflowCheckTimeout = setTimeout(() => {
-                        this.checkAndUpdateOverflow();
-                    }, 100);
-                });
-
-                this.state.contentObserver.observe(panel);
-
-                // Also observe for DOM mutations (adding/removing elements)
-                this.state.mutationObserver = new MutationObserver(() => {
-                    clearTimeout(this.overflowCheckTimeout);
-                    this.overflowCheckTimeout = setTimeout(() => {
-                        this.checkAndUpdateOverflow();
-                    }, 100);
-                });
-
-                this.state.mutationObserver.observe(panel, {
-                    childList: true,
-                    subtree: true,
-                    attributes: false
-                });
-            },
-
-            // Stop observing content changes
-            stopContentObserver() {
-                if (this.state.contentObserver) {
-                    this.state.contentObserver.disconnect();
-                    this.state.contentObserver = null;
-                }
-
-                if (this.state.mutationObserver) {
-                    this.state.mutationObserver.disconnect();
-                    this.state.mutationObserver = null;
-                }
-
-                if (this.overflowCheckTimeout) {
-                    clearTimeout(this.overflowCheckTimeout);
-                    this.overflowCheckTimeout = null;
-                }
-            },
-
-            // Enhanced handleResize with mode tracking
-            handleResize() {
-                const { panel, modal, closeBtn, spacer, mainEl } = this.elements;
-                if (!panel || !modal || !spacer || !mainEl) return;
-
-                // Check if mobile
-                this.checkMobile();
-
-                if (this.state.isMobile) {
-                    this.switchToMobileMode();
-                } else {
-                    const isWideScreen = this.utils.vw() > this.config.WIDTH_THRESHOLD;
-
-                    if (isWideScreen) {
-                        this.switchToSidebarMode();
-                    } else {
-                        this.switchToModalMode();
-                    }
-                }
-            },
-
-            // Enhanced cleanup
             destroy() {
-                this.stopContentObserver();
-
-                if (this.state.observer) {
-                    this.state.observer.disconnect();
-                    this.state.observer = null;
+                if (this.state.interactable) {
+                    this.state.interactable.unset();
+                    this.state.interactable = null;
                 }
-
+                if (this.state.modalObserver) {
+                    this.state.modalObserver.disconnect();
+                    this.state.modalObserver = null;
+                }
                 this.state.isInitialized = false;
                 this.state.currentMode = null;
-            },
-
-            // Public method to manually trigger overflow check (useful for external calls)
-            refreshOverflow() {
-                if (this.state.currentMode === 'sidebar') {
-                    this.checkAndUpdateOverflow();
-                }
             }
-
         };
 
         // ============================
@@ -9254,7 +8789,7 @@
                 if (!container) return;
 
                 try {
-                    const response = await fetch('https://emwiki.com/api/gallery/pending', {
+                    const response = await fetch('/api/gallery/pending', {
                         headers: {
                             'Authorization': `Bearer ${Auth.session}`
                         }
@@ -9478,7 +9013,7 @@
 
                 try {
                     // Search in local database first
-                    const response = await fetch(`https://emwiki.com/api/auth/user/search?q=${encodeURIComponent(query)}`, {
+                    const response = await fetch(`/api/auth/user/search?q=${encodeURIComponent(query)}`, {
                         headers: {
                             'Authorization': `Bearer ${Auth.session}`
                         }

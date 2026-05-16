@@ -1,7 +1,7 @@
 // My Trades Dashboard
 class TradeDashboard {
     constructor() {
-        this.apiBase = 'https://emwiki.com/api/trades';
+        this.apiBase = '/api/trades';
         this.currentUser = null;
         this.myListings = [];
         this.receivedOffers = [];
@@ -113,23 +113,25 @@ class TradeDashboard {
 
         const timeAgo = this.getTimeAgo(new Date(listing.created_at));
 
+        const esc = Utils.escapeHtml;
+        const statusClass = ['active', 'cancelled', 'completed'].includes(listing.status) ? listing.status : 'active';
         card.innerHTML = `
             <div class="listing-header">
                 <div>
-                    <div class="listing-title">${listing.title}</div>
-                    <div class="listing-meta">Posted ${timeAgo} • ${listing.views || 0} views</div>
+                    <div class="listing-title">${esc(listing.title)}</div>
+                    <div class="listing-meta">Posted ${esc(timeAgo)} • ${listing.views || 0} views</div>
                 </div>
-                <span class="listing-status ${listing.status}">${listing.status}</span>
+                <span class="listing-status ${statusClass}">${esc(listing.status)}</span>
             </div>
 
-            ${listing.description ? `<p style="color: var(--text-secondary); margin-bottom: 15px;">${listing.description}</p>` : ''}
+            ${listing.description ? `<p style="color: var(--text-secondary); margin-bottom: 15px;">${esc(listing.description)}</p>` : ''}
 
             <div class="listing-items">
                 <div>
                     <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px; font-weight: 700;">OFFERING</div>
                     <div class="items-list">
                         ${listing.offering_items.map(item => `
-                            <span class="item-tag">${item.item_name}</span>
+                            <span class="item-tag">${esc(item.item_name)}</span>
                         `).join('')}
                     </div>
                 </div>
@@ -140,7 +142,7 @@ class TradeDashboard {
                     <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px; font-weight: 700;">SEEKING</div>
                     <div class="items-list">
                         ${listing.seeking_items && listing.seeking_items.length > 0 ?
-                            listing.seeking_items.map(item => `<span class="item-tag">${item.item_name}</span>`).join('') :
+                            listing.seeking_items.map(item => `<span class="item-tag">${esc(item.item_name)}</span>`).join('') :
                             '<span class="item-tag" style="opacity: 0.6;">Any offers</span>'}
                     </div>
                 </div>

@@ -24,51 +24,69 @@ async function handleGet(request, env, path) {
         const status = params.get('status') || 'active';
         const search = params.get('search');
 
-        let query = 'SELECT * FROM trade_listings WHERE 1=1';
+        let query = `
+            SELECT
+                tl.*,
+                u.user_id AS u_user_id,
+                u.username AS u_username,
+                u.display_name AS u_display_name,
+                u.avatar_url AS u_avatar_url,
+                uts.average_rating AS u_average_rating,
+                uts.total_trades AS u_total_trades
+            FROM trade_listings tl
+            LEFT JOIN users u ON u.user_id = tl.user_id
+            LEFT JOIN user_trade_stats uts ON uts.user_id = tl.user_id
+            WHERE 1=1
+        `;
         const bindings = [];
 
         if (status) {
-            query += ' AND status = ?';
+            query += ' AND tl.status = ?';
             bindings.push(status);
         }
 
         if (category && category !== 'all') {
-            query += ' AND category = ?';
+            query += ' AND tl.category = ?';
             bindings.push(category);
         }
 
         if (userId) {
-            query += ' AND user_id = ?';
+            query += ' AND tl.user_id = ?';
             bindings.push(userId);
         }
 
         if (search) {
-            query += ' AND (title LIKE ? OR description LIKE ?)';
+            query += ' AND (tl.title LIKE ? OR tl.description LIKE ?)';
             bindings.push(`%${search}%`, `%${search}%`);
         }
 
-        query += ` ORDER BY ${sortBy} ${sortOrder} LIMIT ? OFFSET ?`;
+        query += ` ORDER BY tl.${sortBy} ${sortOrder} LIMIT ? OFFSET ?`;
         bindings.push(limit, offset);
 
         const { results } = await env.DBA.prepare(query).bind(...bindings).all();
 
-        // Get user info for each listing
-        const listings = await Promise.all(results.map(async (listing) => {
-            const user = await getUserWithStats(env, listing.user_id);
+        const listings = (results || []).map((row) => {
+            const {
+                u_user_id, u_username, u_display_name, u_avatar_url,
+                u_average_rating, u_total_trades,
+                offering_items, seeking_items,
+                ...listing
+            } = row;
+
             return {
                 ...listing,
-                offering_items: JSON.parse(listing.offering_items),
-                seeking_items: listing.seeking_items ? JSON.parse(listing.seeking_items) : null,
+                offering_items: JSON.parse(offering_items),
+                seeking_items: seeking_items ? JSON.parse(seeking_items) : null,
                 user: {
-                    user_id: user.user_id,
-                    username: user.username,
-                    display_name: user.display_name,
-                    avatar_url: user.avatar_url,
-                    average_rating: user.average_rating || 0,
-                    total_trades: user.total_trades || 0
+                    user_id: u_user_id,
+                    username: u_username,
+                    display_name: u_display_name,
+                    avatar_url: u_avatar_url,
+                    average_rating: u_average_rating || 0,
+                    total_trades: u_total_trades || 0
                 }
             };
-        }));
+        });
 
         return successResponse({ listings, limit, offset });
     }

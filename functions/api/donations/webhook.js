@@ -99,6 +99,16 @@ async function processGameWebhookTransactions(kv, transactions) {
   return processed;
 }
 
+function timingSafeEqual(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
+}
+
 export async function onRequest(context) {
   const { request, env } = context;
   const kv = env.DONATIONS_KV;
@@ -106,7 +116,7 @@ export async function onRequest(context) {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Webhook-Secret',
   };
 
   if (request.method === 'OPTIONS') {
@@ -116,6 +126,23 @@ export async function onRequest(context) {
   if (request.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  const expectedSecret = env.DONATION_WEBHOOK_SECRET;
+  if (!expectedSecret) {
+    console.error('DONATION_WEBHOOK_SECRET not configured — refusing all webhook requests');
+    return new Response(JSON.stringify({ error: 'Webhook not configured' }), {
+      status: 503,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  const providedSecret = request.headers.get('X-Webhook-Secret') || '';
+  if (!timingSafeEqual(providedSecret, expectedSecret)) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }

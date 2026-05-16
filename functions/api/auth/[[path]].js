@@ -1,22 +1,5 @@
-// Rate limiting helper
-const rateLimits = new Map();
+import { checkRateLimit } from '../_utils/rateLimit.js';
 
-function checkRateLimit(ip, limit = 10, window = 60000) {
-    const now = Date.now();
-    const key = `${ip}`;
-    const requests = rateLimits.get(key) || [];
-
-    // Clean old requests
-    const recent = requests.filter(time => now - time < window);
-
-    if (recent.length >= limit) {
-        return false;
-    }
-
-    recent.push(now);
-    rateLimits.set(key, recent);
-    return true;
-}
 function cleanUserRole(roles) {
     // If user has other roles besides 'user', remove 'user'
     if (!roles || roles.length === 0) return ['user'];
@@ -51,8 +34,8 @@ function generateCode() {
 }
 
 async function handleGenerateCode(request, env) {
-    const ip = request.headers.get('CF-Connecting-IP');
-    if (!checkRateLimit(ip, 5, 60000)) {
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    if (!(await checkRateLimit(env, `gen:${ip}`, 5, 60))) {
         return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), {
             status: 429,
             headers: { 'Content-Type': 'application/json' }

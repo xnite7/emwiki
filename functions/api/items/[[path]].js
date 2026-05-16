@@ -1,4 +1,26 @@
 // API endpoints for items
+import { getRequestUser, isAdmin } from '../_utils/users.js';
+
+function unauthorized(corsHeaders) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+}
+
+function forbidden(corsHeaders) {
+    return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+}
+
+async function requireAdmin(request, env, corsHeaders) {
+    const user = await getRequestUser(request, env);
+    if (!user) return { error: unauthorized(corsHeaders) };
+    if (!isAdmin(user)) return { error: forbidden(corsHeaders) };
+    return { user };
+}
 
 /**
  * Normalize image URL to use Cloudflare Images
@@ -110,7 +132,7 @@ export async function onRequest(context) {
             const idMatch = path.match(/^(\d+)$/);
             if (idMatch) {
                 const [, id] = idMatch;
-                return await deleteItem(id, env, corsHeaders);
+                return await deleteItem(id, request, env, corsHeaders);
             }
         }
 
@@ -544,7 +566,9 @@ async function listItems(request, env, corsHeaders) {
 
 // Create new item (admin only)
 async function createItem(request, env, corsHeaders) {
-    // TODO: Add admin authentication check
+    const auth = await requireAdmin(request, env, corsHeaders);
+    if (auth.error) return auth.error;
+
     const data = await request.json();
     
     const {
@@ -601,7 +625,9 @@ async function createItem(request, env, corsHeaders) {
 
 // Update item (admin only)
 async function updateItem(id, request, env, corsHeaders) {
-    // TODO: Add admin authentication check
+    const auth = await requireAdmin(request, env, corsHeaders);
+    if (auth.error) return auth.error;
+
     const data = await request.json();
     
     const {
@@ -781,8 +807,10 @@ async function updateItem(id, request, env, corsHeaders) {
 }
 
 // Delete item (admin only)
-async function deleteItem(id, env, corsHeaders) {
-    // TODO: Add admin authentication check
+async function deleteItem(id, request, env, corsHeaders) {
+    const auth = await requireAdmin(request, env, corsHeaders);
+    if (auth.error) return auth.error;
+
     const result = await env.DBA.prepare(`
         DELETE FROM items WHERE id = ?
     `).bind(id).run();

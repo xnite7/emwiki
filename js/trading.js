@@ -9,8 +9,8 @@ class TradingHub {
             sort: 'recent',
             search: ''
         };
-        this.apiBase = 'https://emwiki.com/api/trades';
-        this.itemsApiBase = 'https://emwiki.com/api/items';
+        this.apiBase = '/api/trades';
+        this.itemsApiBase = '/api/items';
         this.currentUser = null;
         this.categories = ['gears', 'deaths', 'pets', 'effects', 'titles'];
 
@@ -22,6 +22,15 @@ class TradingHub {
             description: '',
             theme: 'default'
         };
+
+        // Offer modal state
+        this.offerState = {
+            listingId: null,
+            listingTitle: '',
+            offeredItems: [],
+            submitting: false
+        };
+        this.offerSearchTimeout = null;
 
         // UI state
         this.activeTab = 'browse';
@@ -67,7 +76,7 @@ class TradingHub {
                 let hasMore = true;
 
                 while (hasMore) {
-                    const url = new URL(this.itemsApiBase);
+                    const url = new URL(this.itemsApiBase, window.location.origin);
                     url.searchParams.set('category', category);
                     url.searchParams.set('limit', limit.toString());
                     url.searchParams.set('offset', offset.toString());
@@ -251,6 +260,9 @@ class TradingHub {
             if (e.target.id === 'tradeDetailModal') this.closeDetailModal();
         });
         document.getElementById('closeDetailModal')?.addEventListener('click', () => this.closeDetailModal());
+
+        // Offer modal
+        this.setupOfferModal();
 
         // Theme selector
         document.querySelectorAll('.theme-btn').forEach(btn => {
@@ -547,8 +559,249 @@ class TradingHub {
             this.showToast('Please login to make an offer', 'warning');
             return;
         }
-        // For now, show a toast; full offer flow is a future enhancement
-        this.showToast('Offer system coming soon!', 'info');
+
+        const listing = this.trades.find(t => t.id === id) || this.myTrades.find(t => t.id === id);
+        if (!listing) {
+            this.showToast('Listing not found', 'error');
+            return;
+        }
+        if (listing.user_id === this.currentUser.userId) {
+            this.showToast("You can't make an offer on your own listing", 'warning');
+            return;
+        }
+        if (listing.status !== 'active') {
+            this.showToast('This listing is no longer active', 'warning');
+            return;
+        }
+
+        this.offerState = {
+            listingId: id,
+            listingTitle: listing.title || `Listing #${id}`,
+            offeredItems: [],
+            submitting: false
+        };
+
+        const header = document.querySelector('#makeOfferModal .modal-header h3');
+        if (header) header.textContent = `Make an Offer — ${this.offerState.listingTitle}`;
+
+        const messageInput = document.getElementById('offerMessage');
+        if (messageInput) messageInput.value = '';
+        const searchInput = document.getElementById('offerItemSearch');
+        if (searchInput) searchInput.value = '';
+        const results = document.getElementById('offerSearchResults');
+        if (results) {
+            results.innerHTML = '';
+            results.classList.remove('active');
+        }
+
+        this.renderOfferItems();
+        document.getElementById('makeOfferModal')?.classList.add('active');
+        searchInput?.focus();
+    }
+
+    closeOfferModal() {
+        document.getElementById('makeOfferModal')?.classList.remove('active');
+        this.offerState.submitting = false;
+    }
+
+    setupOfferModal() {
+        const modal = document.getElementById('makeOfferModal');
+        if (!modal) return;
+
+        document.getElementById('closeMakeOfferModal')?.addEventListener('click', () => this.closeOfferModal());
+        document.getElementById('cancelOfferBtn')?.addEventListener('click', () => this.closeOfferModal());
+        document.getElementById('submitOfferBtn')?.addEventListener('click', () => this.submitOffer());
+
+        // Click outside content closes
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) this.closeOfferModal();
+        });
+
+        // Item search
+        const searchInput = document.getElementById('offerItemSearch');
+        const results = document.getElementById('offerSearchResults');
+        if (searchInput && results) {
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim().toLowerCase();
+                clearTimeout(this.offerSearchTimeout);
+                if (query.length < 2) {
+                    results.classList.remove('active');
+                    results.innerHTML = '';
+                    return;
+                }
+                this.offerSearchTimeout = setTimeout(() => {
+                    this.performOfferItemSearch(query, results, searchInput);
+                }, 200);
+            });
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !results.contains(e.target)) {
+                    results.classList.remove('active');
+                }
+            });
+        }
+
+        document.getElementById('offerAddCustomBtn')?.addEventListener('click', () => this.openCustomItemForOffer());
+    }
+
+    performOfferItemSearch(query, resultsEl, inputEl) {
+        const matches = (this.allItems || [])
+            .filter(item => item.name.toLowerCase().includes(query))
+            .slice(0, 20);
+
+        if (matches.length === 0) {
+            resultsEl.innerHTML = '<div class="search-result-empty">No items found</div>';
+            resultsEl.classList.add('active');
+            return;
+        }
+
+        resultsEl.innerHTML = '';
+        matches.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'search-result';
+            el.innerHTML = `
+                <img src="${item.img || './imgs/placeholder.png'}" alt="${this.esc(item.name)}" onerror="this.src='./imgs/placeholder.png'">
+                <div>
+                    <div class="search-result-name">${this.esc(item.name)}</div>
+                    <div class="search-result-category">${this.esc(item.category || '')}</div>
+                </div>
+            `;
+            el.addEventListener('click', () => {
+                this.addOfferItem(item);
+                resultsEl.classList.remove('active');
+                inputEl.value = '';
+            });
+            resultsEl.appendChild(el);
+        });
+        resultsEl.classList.add('active');
+    }
+
+    addOfferItem(item) {
+        if (this.offerState.offeredItems.some(i => i.type === 'game-item' && i.item_name === item.name)) {
+            this.showToast('Item already added', 'info');
+            return;
+        }
+        this.offerState.offeredItems.push({
+            type: 'game-item',
+            item_name: item.name,
+            item_image: item.img || null,
+            category: item.category
+        });
+        this.renderOfferItems();
+    }
+
+    addOfferCustomItem(item) {
+        this.offerState.offeredItems.push(item);
+        this.renderOfferItems();
+    }
+
+    removeOfferItem(index) {
+        this.offerState.offeredItems.splice(index, 1);
+        this.renderOfferItems();
+    }
+
+    renderOfferItems() {
+        const container = document.getElementById('offerSelectedItems');
+        if (!container) return;
+        const items = this.offerState.offeredItems;
+
+        if (items.length === 0) {
+            container.innerHTML = `
+                <div class="empty-items">
+                    <span>No items added yet — search above or add a custom item.</span>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = '';
+        items.forEach((item, index) => {
+            const el = document.createElement('div');
+            el.className = 'selected-item';
+
+            if (item.type === 'robux') {
+                el.innerHTML = `
+                    <span class="selected-item-robux">R$ ${Number(item.amount) || 0}</span>
+                    <button class="selected-item-remove" type="button" title="Remove">&times;</button>
+                `;
+            } else if (item.type === 'other-game') {
+                el.innerHTML = `
+                    <span class="selected-item-other">${this.esc(item.game_name)}: ${this.esc(item.item_name)}</span>
+                    <button class="selected-item-remove" type="button" title="Remove">&times;</button>
+                `;
+            } else {
+                el.innerHTML = `
+                    <img src="${item.item_image || './imgs/placeholder.png'}" alt="${this.esc(item.item_name)}" onerror="this.src='./imgs/placeholder.png'">
+                    <span class="selected-item-name">${this.esc(item.item_name)}</span>
+                    <button class="selected-item-remove" type="button" title="Remove">&times;</button>
+                `;
+            }
+
+            el.querySelector('.selected-item-remove')?.addEventListener('click', () => this.removeOfferItem(index));
+            container.appendChild(el);
+        });
+    }
+
+    openCustomItemForOffer() {
+        // Re-use the existing custom item modal but route its result into the offer state.
+        // The wizard's custom modal flow uses `this.currentCustomItemsKey` to know where to push.
+        // We set a sentinel value the existing handler honors via addOfferCustomItem().
+        this.currentCustomItemsKey = '__offer__';
+        const modal = document.getElementById('customItemModal');
+        if (modal) modal.classList.add('active');
+    }
+
+    async submitOffer() {
+        if (this.offerState.submitting) return;
+        if (this.offerState.offeredItems.length === 0) {
+            this.showToast('Add at least one item to your offer', 'warning');
+            return;
+        }
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+            this.showToast('Please log in to make an offer', 'warning');
+            return;
+        }
+
+        this.offerState.submitting = true;
+        const submitBtn = document.getElementById('submitOfferBtn');
+        const originalText = submitBtn?.textContent;
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+        }
+
+        try {
+            const message = document.getElementById('offerMessage')?.value?.trim() || null;
+            const response = await fetch(`${this.apiBase}/offers`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    listing_id: this.offerState.listingId,
+                    offered_items: this.offerState.offeredItems,
+                    message
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.error || `Failed to send offer (${response.status})`);
+            }
+
+            this.showToast('Offer sent!', 'success');
+            this.closeOfferModal();
+        } catch (error) {
+            console.error('Submit offer failed:', error);
+            this.showToast(error.message || 'Failed to send offer', 'error');
+        } finally {
+            this.offerState.submitting = false;
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                if (originalText) submitBtn.textContent = originalText;
+            }
+        }
     }
 
     // ==================== WIZARD ====================
@@ -837,7 +1090,6 @@ class TradingHub {
     addCustomItem() {
         if (!this.currentCustomItemsKey) return;
 
-        const items = this.wizardState[this.currentCustomItemsKey];
         let newItem;
 
         if (this.currentCustomType === 'robux') {
@@ -857,6 +1109,14 @@ class TradingHub {
             newItem = { type: 'other-game', game_name: gameName, item_name: itemName };
         }
 
+        if (this.currentCustomItemsKey === '__offer__') {
+            this.addOfferCustomItem(newItem);
+            this.closeCustomModal();
+            return;
+        }
+
+        const items = this.wizardState[this.currentCustomItemsKey];
+        if (!items) return;
         items.push(newItem);
         this.renderSelectedItems(this.currentCustomItemsKey);
         this.updatePreview();

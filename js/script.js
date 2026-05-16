@@ -137,6 +137,15 @@ const Utils = {
         canvas.style.webkitUserSelect = 'none';
     },
 
+    // Escape a value for safe interpolation inside an innerHTML template literal.
+    // Use this for ANY user-supplied data being inserted via innerHTML.
+    escapeHtml(value) {
+        if (value === null || value === undefined) return '';
+        const el = document.createElement('div');
+        el.textContent = String(value);
+        return el.innerHTML;
+    },
+
     loadFromStorage(key, defaultValue) {
         try {
             const stored = localStorage.getItem(key);
@@ -168,7 +177,7 @@ const Utils = {
         if (!currentToken) return false;
 
         try {
-            const response = await fetch('https://emwiki.com/api/auth/user/preferences', {
+            const response = await fetch('/api/auth/user/preferences', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${currentToken}`,
@@ -197,7 +206,7 @@ const Utils = {
         if (!currentToken) return defaultValue;
 
         try {
-            const response = await fetch(`https://emwiki.com/api/auth/user/preferences?key=${key}`, {
+            const response = await fetch(`/api/auth/user/preferences?key=${key}`, {
                 headers: { 'Authorization': `Bearer ${currentToken}` }
             });
 
@@ -227,7 +236,7 @@ const Utils = {
         if (!currentToken) return defaults;
 
         try {
-            const response = await fetch('https://emwiki.com/api/auth/user/preferences', {
+            const response = await fetch('/api/auth/user/preferences', {
                 headers: { 'Authorization': `Bearer ${currentToken}` }
             });
 
@@ -270,7 +279,7 @@ const Utils = {
             onlineData.wishlist.length > 0;
         if (hasData2) return;
         try {
-            const response = await fetch('https://emwiki.com/api/auth/user/preferences/migrate', {
+            const response = await fetch('/api/auth/user/preferences/migrate', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${currentToken}`,
@@ -357,7 +366,7 @@ const Utils = {
 
         // Fetch from API
         try {
-            const response = await fetch(`https://emwiki.com/api/roblox-proxy?userId=${userId}`);
+            const response = await fetch(`/api/roblox-proxy?userId=${userId}`);
             if (response.ok) {
                 const data = await response.json();
                 const cacheEntry = {
@@ -660,7 +669,7 @@ const Utils = {
             } else if (!apiPath.startsWith('items/')) {
                 apiPath = `items/${apiPath}`;
             }
-            apiPath = `https://emwiki.com/api/images/${apiPath}`;
+            apiPath = `/api/images/${apiPath}`;
         }
         
         // Add query parameters
@@ -1037,7 +1046,7 @@ class BaseApp {
             }
 
             // Fetch all items at once (no category filter) - single API call
-            const url = new URL('https://emwiki.com/api/items');
+            const url = new URL('/api/items', window.location.origin);
             url.searchParams.set('limit', '2000');
 
             const res = await fetch(url.toString());
@@ -1524,7 +1533,7 @@ class BaseApp {
             this.searchTimeout = setTimeout(async () => {
                 // Use API search endpoint for better performance
                 try {
-                    const url = new URL('https://emwiki.com/api/items/search');
+                    const url = new URL('/api/items/search', window.location.origin);
                     url.searchParams.set('q', query);
                     url.searchParams.set('limit', '6');
                     
@@ -2368,7 +2377,7 @@ class ItemModal {
             // If not found locally, fetch from API
             if (!item) {
                 try {
-                    const searchUrl = new URL('https://emwiki.com/api/items/search');
+                    const searchUrl = new URL('/api/items/search', window.location.origin);
                     searchUrl.searchParams.set('q', itemName);
                     searchUrl.searchParams.set('limit', '10');
                     
@@ -2833,7 +2842,7 @@ class ItemModal {
     async updateFavoriteCount(zeed = true) {
         if (!this.currentItem || !this.elements.favoriteCount) return;
         try {
-            const response = await fetch(`https://emwiki.com/api/auth/user/preferences/stats?item=${encodeURIComponent(this.currentItem.name)}`);
+            const response = await fetch(`/api/auth/user/preferences/stats?item=${encodeURIComponent(this.currentItem.name)}`);
             if (response.ok) {
                 const data = await response.json();
                 const totalCount = (data.favorites_count || 0) + (data.wishlist_count || 0);
@@ -3109,13 +3118,13 @@ class Auth extends EventTarget {
 
     loginWithOAuth() {
         // Redirect to OAuth authorization endpoint
-        window.location.href = 'https://emwiki.com/api/auth/oauth/authorize';
+        window.location.href = '/api/auth/oauth/authorize';
     }
 
 
     async loadScammersList() {
         try {
-            const response = await fetch('https://emwiki.com/api/roblox-proxy?mode=discord-scammers');
+            const response = await fetch('/api/roblox-proxy?mode=discord-scammers');
             if (response.ok) {
                 const data = await response.json();
                 this.scammersList = data.scammers || [];
@@ -3350,7 +3359,7 @@ class Auth extends EventTarget {
         }
 
         try {
-            const response = await fetch('https://emwiki.com/api/auth/session', {
+            const response = await fetch('/api/auth/session', {
                 headers: {
                     'Authorization': `Bearer ${this.token}`
                 }
@@ -3405,7 +3414,7 @@ class Auth extends EventTarget {
 
     async generateCode() {
         try {
-            const response = await fetch('https://emwiki.com/api/auth/generate-code', {
+            const response = await fetch('/api/auth/generate-code', {
                 method: 'POST'
             });
 
@@ -3487,7 +3496,7 @@ class Auth extends EventTarget {
     startPolling(code) {
         this.pollInterval = setInterval(async () => {
             try {
-                const response = await fetch('https://emwiki.com/api/auth/check-code', {
+                const response = await fetch('/api/auth/check-code', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ code })
@@ -3547,7 +3556,7 @@ class Auth extends EventTarget {
     }
 
     getCdnUrl(hash) {
-        return `https://emwiki.com/api/roblox-proxy?mode=cdn-asset&hash=${hash}`;
+        return `/api/roblox-proxy?mode=cdn-asset&hash=${hash}`;
     }
 
     async render3DPlayerModel(userId, container) {
@@ -3571,7 +3580,7 @@ class Auth extends EventTarget {
         }
 
         try {
-            const response = await fetch(`https://emwiki.com/api/roblox-proxy?mode=avatar-3d&userId=${userId}`);
+            const response = await fetch(`/api/roblox-proxy?mode=avatar-3d&userId=${userId}`);
             if (!response.ok) {
                 console.error('Failed to load 3D model:', response.status);
                 container.style.display = '';
@@ -3957,7 +3966,7 @@ class Auth extends EventTarget {
         if (!this.token) return;
 
         try {
-            const response = await fetch('https://emwiki.com/api/auth/donation-status', {
+            const response = await fetch('/api/auth/donation-status', {
                 headers: {
                     'Authorization': `Bearer ${this.token}`
                 }
@@ -4018,7 +4027,7 @@ class Auth extends EventTarget {
 
     async logout() {
         if (this.token && this.token !== 'dev_mode_token') {
-            await fetch('https://emwiki.com/api/auth/logout', {
+            await fetch('/api/auth/logout', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${this.token}` }
             });
@@ -4031,7 +4040,9 @@ class Auth extends EventTarget {
     }
 
     isDevelopmentMode() {
-        return window.location.href.startsWith('file:///C:/Users/ADMIN/Desktop/EpicCatalogue/emwiki/');
+        const isLocalFile = window.location.href.startsWith('file:///C:/Users/ADMIN/Desktop/EpicCatalogue/emwiki/');
+        const optedIn = localStorage.getItem('emwiki_dev_user') === '1';
+        return isLocalFile && optedIn;
     }
 
     getDevUser() {

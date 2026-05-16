@@ -345,9 +345,9 @@
 				this.countdownManager.add('countdown-shop');
 				this.countdownManager.add('countdown-rotation');
 				//this.countdownManager.start();
-				document.querySelector('.patch-link').addEventListener('click', () => {
-					Utils.showToast(':3', 'poop update coming soon', 'info');
-				});
+				// TODO: wire `.patch-link` to a real changelog destination
+				// (e.g. <a href="changelog.html"> or a GitHub commits URL once the repo has a public remote).
+				// Until then the link is non-interactive rather than showing a placeholder toast.
 
 				this.loadDonators();
 				this.populateGrids();
@@ -357,7 +357,7 @@
 
 			async loadHomepageData() {
 				try {
-					const res = await fetch('https://emwiki.com/api/items/homepage');
+					const res = await fetch('/api/items/homepage');
 					if (!res.ok) throw new Error('Failed to fetch homepage items');
 					
 					const data = await res.json();
@@ -485,7 +485,7 @@
 
 			async loadDonators() {
 				try {
-					const res = await fetch('https://emwiki.com/api/donations');
+					const res = await fetch('/api/donations');
 					const data = await res.json();
 
 					const donatorsList = document.getElementById('donators-list');
