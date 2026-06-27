@@ -94,6 +94,8 @@ const Layout = {
 				<a href="/catalog">Catalog</a>
 				<a href="/scammers">Scammers List</a>
 				<a href="/admin">Admin Portal</a>
+				<a href="/privacy-policy">Privacy Policy</a>
+
 			</div>
 			<div class="footer-section">
 				<h4>Community</h4>
