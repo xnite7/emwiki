@@ -73,9 +73,10 @@ async function handleGet(request, env, path, user) {
                 .map(m => m.id);
 
             if (messageIds.length > 0) {
+                const placeholders = messageIds.map(() => '?').join(',');
                 await env.DBA.prepare(
-                    `UPDATE trade_messages SET read = 1 WHERE id IN (${messageIds.join(',')})`
-                ).run();
+                    `UPDATE trade_messages SET read = 1 WHERE id IN (${placeholders})`
+                ).bind(...messageIds).run();
             }
         }
 

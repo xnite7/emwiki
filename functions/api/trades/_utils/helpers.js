@@ -46,6 +46,18 @@ export function successResponse(data, status = 200) {
     });
 }
 
+// Safely parse a JSON column from the database. Returns `fallback` instead of
+// throwing if the stored value is missing or malformed, so a single bad row
+// can't turn a list endpoint into a 500.
+export function safeJsonParse(value, fallback = []) {
+    if (value == null) return fallback;
+    try {
+        return JSON.parse(value);
+    } catch {
+        return fallback;
+    }
+}
+
 // Validate required fields
 export function validateFields(data, requiredFields) {
     const missing = requiredFields.filter(field => !data[field]);

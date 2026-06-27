@@ -44,7 +44,9 @@ The system uses 7 main tables:
 6. **user_trade_stats** - Aggregate statistics
 7. **trade_notifications** - In-app notifications
 
-See `schema/trading_schema.sql` for complete schema.
+See `migrations/023_create_trading_tables.sql` for the complete schema. The
+migration is idempotent (`CREATE TABLE IF NOT EXISTS`), so it is safe to run
+even if some tables were created previously.
 
 ## Database Setup
 
@@ -54,21 +56,16 @@ See `schema/trading_schema.sql` for complete schema.
 2. Navigate to Workers & Pages > D1 databases
 3. Select your `DBA` database
 4. Go to Console tab
-5. Run the SQL from `schema/trading_schema.sql`
+5. Run the SQL from `migrations/023_create_trading_tables.sql`
 
 ### Option 2: Wrangler CLI
 
 ```bash
-wrangler d1 execute DBA --file=./schema/trading_schema.sql
-```
+# Local
+wrangler d1 execute DBA --local --file=migrations/023_create_trading_tables.sql
 
-### Option 3: Migration Script
-
-Deploy the migration worker and call it:
-
-```bash
-curl -X POST https://your-worker.workers.dev/migrate \
-  -H "Authorization: Bearer YOUR_MIGRATION_SECRET"
+# Production
+wrangler d1 execute DBA --file=migrations/023_create_trading_tables.sql
 ```
 
 ## API Endpoints
@@ -343,6 +340,42 @@ Send a message
   "offer_id": 456
 }
 ```
+
+### Completed Trades
+
+#### GET /api/trades/completed
+List the authenticated user's completed trades (where they were the seller or
+buyer). Used by the "History" tab to drive the review flow — each entry carries
+the `id` needed as `trade_id` when leaving a review.
+
+**Authentication Required:** Yes
+
+**Query Parameters:**
+- `limit` - Page size (default 20, max 100)
+- `offset` - Pagination offset (default 0)
+
+**Response:**
+```json
+{
+  "trades": [
+    {
+      "id": 12,
+      "listing_id": 123,
+      "offer_id": 456,
+      "completed_at": 1730000000000,
+      "role": "seller",
+      "my_items": [ ... ],
+      "their_items": [ ... ],
+      "reviewed_by_me": false,
+      "other_user": { "user_id": "789012", "username": "trader2", "average_rating": 4.5, "total_trades": 8 }
+    }
+  ],
+  "limit": 20,
+  "offset": 0
+}
+```
+
+`GET /api/trades/completed/:id` returns a single completed trade (participants only).
 
 ### Trade Reviews
 

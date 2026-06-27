@@ -39,6 +39,17 @@ class TradingHub {
         this.currentCustomItemsKey = null;
         this.currentCustomType = 'robux';
 
+        // Offers / history / messages / notifications state
+        this.receivedOffers = [];
+        this.sentOffers = [];
+        this.completedTrades = [];
+        this.conversations = [];
+        this.activeThread = null;      // { userId, listingId, offerId }
+        this.notifications = [];
+        this.unreadNotifications = 0;
+        this.notifPollTimer = null;
+        this.reviewState = { tradeId: null, rating: 0 };
+
         // Wait for Auth
         if (window.Auth) {
             window.Auth.addEventListener('sessionReady', () => {
@@ -63,6 +74,18 @@ class TradingHub {
         ]);
         this.renderTrades();
         this.updateStats();
+
+        // Authenticated-only background data
+        if (this.currentUser) {
+            this.refreshBadges();
+            this.startNotificationPolling();
+        }
+    }
+
+    // Authorization header for authenticated requests (empty if logged out).
+    authHeaders(extra = {}) {
+        const token = localStorage.getItem('auth_token');
+        return token ? { ...extra, 'Authorization': `Bearer ${token}` } : { ...extra };
     }
 
     // ==================== DATA LOADING ====================
@@ -136,12 +159,21 @@ class TradingHub {
 
     async loadMyTrades() {
         if (!this.currentUser) return;
-        try {
-            const token = localStorage.getItem('auth_token');
-            if (!token) return;
+        const token = localStorage.getItem('auth_token');
+        if (!token) return;
 
+        await Promise.all([
+            this.loadMyListings(),
+            this.loadMyOffers(),
+            this.loadCompletedTrades()
+        ]);
+        this.updateMyTradesBadge();
+    }
+
+    async loadMyListings() {
+        try {
             const response = await fetch(`${this.apiBase}/listings?user_id=${this.currentUser.userId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: this.authHeaders()
             });
             if (!response.ok) return;
 
@@ -160,19 +192,48 @@ class TradingHub {
                 views: listing.views || 0,
                 user: listing.user
             }));
-
-            const badge = document.getElementById('myTradesBadge');
-            if (badge) {
-                const activeCount = this.myTrades.filter(t => t.status === 'active').length;
-                if (activeCount > 0) {
-                    badge.textContent = activeCount;
-                    badge.style.display = '';
-                } else {
-                    badge.style.display = 'none';
-                }
-            }
         } catch (error) {
-            console.error('Error loading my trades:', error);
+            console.error('Error loading my listings:', error);
+        }
+    }
+
+    async loadMyOffers() {
+        try {
+            const response = await fetch(`${this.apiBase}/offers`, { headers: this.authHeaders() });
+            if (!response.ok) return;
+            const data = await response.json();
+            const offers = data.offers || [];
+            const me = String(this.currentUser.userId);
+            this.receivedOffers = offers.filter(o => String(o.to_user_id) === me);
+            this.sentOffers = offers.filter(o => String(o.from_user_id) === me);
+        } catch (error) {
+            console.error('Error loading offers:', error);
+        }
+    }
+
+    async loadCompletedTrades() {
+        try {
+            const response = await fetch(`${this.apiBase}/completed`, { headers: this.authHeaders() });
+            if (!response.ok) return;
+            const data = await response.json();
+            this.completedTrades = data.trades || [];
+        } catch (error) {
+            console.error('Error loading completed trades:', error);
+        }
+    }
+
+    updateMyTradesBadge() {
+        const badge = document.getElementById('myTradesBadge');
+        if (!badge) return;
+        // Surface actionable items: active listings + pending received offers.
+        const activeListings = this.myTrades.filter(t => t.status === 'active').length;
+        const pendingReceived = this.receivedOffers.filter(o => o.status === 'pending').length;
+        const count = activeListings + pendingReceived;
+        if (count > 0) {
+            badge.textContent = count;
+            badge.style.display = '';
+        } else {
+            badge.style.display = 'none';
         }
     }
 
@@ -280,12 +341,54 @@ class TradingHub {
             });
         }
 
+        // Messages, notifications, and reviews wiring
+        this.setupTradingExtras();
+
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 this.closeCustomModal();
                 this.closeDetailModal();
+                this.closeOfferModal();
+                this.closeReviewModal();
+                this.closeNotifDropdown();
             }
+        });
+    }
+
+    setupTradingExtras() {
+        // Notifications bell
+        document.getElementById('notifBellBtn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!this.currentUser) {
+                this.showToast('Please login to view notifications', 'warning');
+                return;
+            }
+            this.toggleNotifDropdown();
+        });
+        document.getElementById('notifMarkAllBtn')?.addEventListener('click', () => this.markAllNotificationsRead());
+
+        // Close notifications dropdown on outside click
+        document.addEventListener('click', (e) => {
+            const wrapper = document.getElementById('notifWrapper');
+            if (wrapper && !wrapper.contains(e.target)) this.closeNotifDropdown();
+        });
+
+        // Messages composer
+        document.getElementById('threadComposer')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.sendThreadMessage();
+        });
+
+        // Review modal
+        document.getElementById('closeReviewModal')?.addEventListener('click', () => this.closeReviewModal());
+        document.getElementById('cancelReviewBtn')?.addEventListener('click', () => this.closeReviewModal());
+        document.getElementById('submitReviewBtn')?.addEventListener('click', () => this.submitReview());
+        document.getElementById('reviewModal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'reviewModal') this.closeReviewModal();
+        });
+        document.querySelectorAll('#starInput .star-btn').forEach(btn => {
+            btn.addEventListener('click', () => this.setReviewRating(parseInt(btn.dataset.value)));
         });
     }
 
@@ -313,7 +416,16 @@ class TradingHub {
                 this.switchTab('browse');
                 return;
             }
+            this.renderMyTrades(true); // show loading state, then refresh
             this.loadMyTrades().then(() => this.renderMyTrades());
+        } else if (tab === 'messages') {
+            document.getElementById('panelMessages')?.classList.add('active');
+            if (!this.currentUser) {
+                this.showToast('Please login to view your messages', 'warning');
+                this.switchTab('browse');
+                return;
+            }
+            this.loadConversations();
         } else if (tab === 'create') {
             document.getElementById('panelCreate')?.classList.add('active');
             if (!this.currentUser) {
@@ -450,29 +562,244 @@ class TradingHub {
 
     // ==================== MY TRADES ====================
 
-    renderMyTrades() {
+    renderMyTrades(loading = false) {
         const feed = document.getElementById('myTradesFeed');
         if (!feed) return;
 
-        const trades = this.activeMyTab === 'listings' ? this.myTrades : [];
-
-        if (trades.length === 0) {
+        if (loading) {
             feed.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-icon">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3"/><rect x="10" y="3" width="11" height="11" rx="2"/><path d="m14 7 2 2-2 2"/></svg>
-                    </div>
-                    <h3>${this.activeMyTab === 'listings' ? 'No listings yet' : 'No offers yet'}</h3>
-                    <p>${this.activeMyTab === 'listings' ? 'Create your first trade to get started!' : 'Make an offer on a trade to see it here.'}</p>
-                </div>
+                <div class="trade-card skeleton"><div class="skeleton-inner"></div></div>
+                <div class="trade-card skeleton"><div class="skeleton-inner"></div></div>
             `;
             return;
         }
 
+        if (this.activeMyTab === 'listings') {
+            this.renderMyListingsList(feed);
+        } else if (this.activeMyTab === 'received') {
+            this.renderOffersList(feed, this.receivedOffers, true);
+        } else if (this.activeMyTab === 'sent') {
+            this.renderOffersList(feed, this.sentOffers, false);
+        } else if (this.activeMyTab === 'history') {
+            this.renderHistoryList(feed);
+        }
+    }
+
+    emptyState(title, message) {
+        return `
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3"/><rect x="10" y="3" width="11" height="11" rx="2"/><path d="m14 7 2 2-2 2"/></svg>
+                </div>
+                <h3>${this.esc(title)}</h3>
+                <p>${this.esc(message)}</p>
+            </div>
+        `;
+    }
+
+    renderMyListingsList(feed) {
+        if (this.myTrades.length === 0) {
+            feed.innerHTML = this.emptyState('No listings yet', 'Create your first trade to get started!');
+            return;
+        }
         feed.innerHTML = '';
-        trades.forEach(trade => {
-            feed.appendChild(this.createTradeCard(trade));
+        this.myTrades.forEach(trade => {
+            const card = this.createTradeCard(trade);
+            // Owners can cancel their own active listings.
+            if (trade.status === 'active') {
+                const actions = card.querySelector('.trade-card-actions');
+                if (actions) {
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.className = 'btn-danger';
+                    cancelBtn.textContent = 'Cancel Listing';
+                    cancelBtn.addEventListener('click', () => this.cancelListing(trade.id));
+                    actions.appendChild(cancelBtn);
+                }
+            }
+            feed.appendChild(card);
         });
+    }
+
+    renderOffersList(feed, offers, isReceived) {
+        if (!offers || offers.length === 0) {
+            feed.innerHTML = isReceived
+                ? this.emptyState('No offers received', 'When someone makes an offer on your listings, it appears here.')
+                : this.emptyState('No offers sent', 'Browse trades and make an offer to see it here.');
+            return;
+        }
+        feed.innerHTML = '';
+        offers.forEach(offer => feed.appendChild(this.createOfferCard(offer, isReceived)));
+    }
+
+    createOfferCard(offer, isReceived) {
+        const card = document.createElement('div');
+        card.className = 'offer-card';
+
+        const party = isReceived ? offer.from_user : offer.to_user;
+        const partyName = party?.username || 'Unknown';
+        const timeAgo = this.getTimeAgo(offer.created_at);
+        const items = Array.isArray(offer.offered_items) ? offer.offered_items : [];
+
+        card.innerHTML = `
+            <div class="offer-card-header">
+                <div class="offer-card-info">
+                    <div class="offer-card-title">${this.esc(offer.listing_title || `Listing #${offer.listing_id}`)}</div>
+                    <div class="offer-card-sub">${isReceived ? 'From' : 'To'}: ${this.esc(partyName)} &middot; ${timeAgo}</div>
+                </div>
+                <span class="offer-status ${this.esc(offer.status)}">${this.esc(offer.status)}</span>
+            </div>
+            ${offer.message ? `<div class="offer-card-message">${this.esc(offer.message)}</div>` : ''}
+            <div class="offer-card-items">
+                <div class="offer-items-label">Offered items</div>
+                <div class="trade-items-list">
+                    ${items.map(i => this.renderTradeItem(i)).join('') || '<span class="trade-open-offers">No items</span>'}
+                </div>
+            </div>
+            <div class="offer-card-actions"></div>
+        `;
+
+        const actions = card.querySelector('.offer-card-actions');
+
+        if (isReceived && offer.status === 'pending') {
+            const rejectBtn = document.createElement('button');
+            rejectBtn.className = 'btn-danger';
+            rejectBtn.textContent = 'Reject';
+            rejectBtn.addEventListener('click', () => this.respondToOffer(offer.id, 'reject'));
+
+            const acceptBtn = document.createElement('button');
+            acceptBtn.className = 'btn-success';
+            acceptBtn.textContent = 'Accept';
+            acceptBtn.addEventListener('click', () => this.respondToOffer(offer.id, 'accept'));
+
+            actions.append(rejectBtn, acceptBtn);
+        } else if (!isReceived && offer.status === 'pending') {
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'btn-danger';
+            cancelBtn.textContent = 'Cancel Offer';
+            cancelBtn.addEventListener('click', () => this.respondToOffer(offer.id, 'cancel'));
+            actions.appendChild(cancelBtn);
+        }
+
+        // Message the other party in context of this offer.
+        if (party?.user_id) {
+            const msgBtn = document.createElement('button');
+            msgBtn.className = 'btn-secondary';
+            msgBtn.textContent = 'Message';
+            msgBtn.addEventListener('click', () => this.openThreadWith(party.user_id, partyName, offer.listing_id, offer.id));
+            actions.appendChild(msgBtn);
+        }
+
+        if (actions.children.length === 0) actions.remove();
+        return card;
+    }
+
+    renderHistoryList(feed) {
+        if (!this.completedTrades || this.completedTrades.length === 0) {
+            feed.innerHTML = this.emptyState('No completed trades', 'Accepted trades show up here, ready to review.');
+            return;
+        }
+        feed.innerHTML = '';
+        this.completedTrades.forEach(trade => feed.appendChild(this.createHistoryCard(trade)));
+    }
+
+    createHistoryCard(trade) {
+        const card = document.createElement('div');
+        card.className = 'offer-card history-card';
+
+        const other = trade.other_user;
+        const otherName = other?.username || 'Unknown';
+        const timeAgo = this.getTimeAgo(trade.completed_at);
+        const mine = Array.isArray(trade.my_items) ? trade.my_items : [];
+        const theirs = Array.isArray(trade.their_items) ? trade.their_items : [];
+
+        card.innerHTML = `
+            <div class="offer-card-header">
+                <div class="offer-card-info">
+                    <div class="offer-card-title">Trade with ${this.esc(otherName)}</div>
+                    <div class="offer-card-sub">You were the ${this.esc(trade.role)} &middot; ${timeAgo}</div>
+                </div>
+                <span class="offer-status accepted">completed</span>
+            </div>
+            <div class="history-exchange">
+                <div class="trade-side">
+                    <div class="trade-side-label">You gave</div>
+                    <div class="trade-items-list">${mine.map(i => this.renderTradeItem(i)).join('') || '<span class="trade-open-offers">—</span>'}</div>
+                </div>
+                <div class="trade-side">
+                    <div class="trade-side-label">You received</div>
+                    <div class="trade-items-list">${theirs.map(i => this.renderTradeItem(i)).join('') || '<span class="trade-open-offers">—</span>'}</div>
+                </div>
+            </div>
+            <div class="offer-card-actions"></div>
+        `;
+
+        const actions = card.querySelector('.offer-card-actions');
+        if (trade.reviewed_by_me) {
+            const done = document.createElement('span');
+            done.className = 'review-done';
+            done.textContent = '✓ Reviewed';
+            actions.appendChild(done);
+        } else {
+            const reviewBtn = document.createElement('button');
+            reviewBtn.className = 'btn-success';
+            reviewBtn.textContent = 'Leave Review';
+            reviewBtn.addEventListener('click', () => this.openReviewModal(trade.id, otherName));
+            actions.appendChild(reviewBtn);
+        }
+        if (other?.user_id) {
+            const msgBtn = document.createElement('button');
+            msgBtn.className = 'btn-secondary';
+            msgBtn.textContent = 'Message';
+            msgBtn.addEventListener('click', () => this.openThreadWith(other.user_id, otherName, trade.listing_id, trade.offer_id));
+            actions.appendChild(msgBtn);
+        }
+
+        return card;
+    }
+
+    // ==================== OFFER ACTIONS ====================
+
+    async respondToOffer(offerId, action) {
+        const labels = { accept: 'accept this offer? This completes the trade.', reject: 'reject this offer?', cancel: 'cancel this offer?' };
+        if (!confirm(`Are you sure you want to ${labels[action]}`)) return;
+
+        try {
+            const response = await fetch(`${this.apiBase}/offers/${offerId}/${action}`, {
+                method: 'POST',
+                headers: this.authHeaders({ 'Content-Type': 'application/json' })
+            });
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || `Failed to ${action} offer (${response.status})`);
+            }
+            const successMsg = { accept: 'Offer accepted — trade completed!', reject: 'Offer rejected', cancel: 'Offer cancelled' };
+            this.showToast(successMsg[action], 'success');
+            await this.loadMyTrades();
+            this.renderMyTrades();
+        } catch (error) {
+            console.error(`Failed to ${action} offer:`, error);
+            this.showToast(error.message || `Failed to ${action} offer`, 'error');
+        }
+    }
+
+    async cancelListing(listingId) {
+        if (!confirm('Cancel this listing? It will no longer accept offers.')) return;
+        try {
+            const response = await fetch(`${this.apiBase}/listings/${listingId}`, {
+                method: 'DELETE',
+                headers: this.authHeaders({ 'Content-Type': 'application/json' })
+            });
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || `Failed to cancel listing (${response.status})`);
+            }
+            this.showToast('Listing cancelled', 'success');
+            await this.loadMyTrades();
+            this.renderMyTrades();
+        } catch (error) {
+            console.error('Failed to cancel listing:', error);
+            this.showToast(error.message || 'Failed to cancel listing', 'error');
+        }
     }
 
     // ==================== TRADE DETAIL MODAL ====================
@@ -521,10 +848,12 @@ class TradingHub {
                     <span>${trade.views || 0} views</span>
                     <span class="trade-status-badge ${trade.status}">${trade.status}</span>
                 </div>
+                <div class="detail-reviews" id="detailReviews"></div>
             </div>
-            ${this.currentUser && trade.user_id !== this.currentUser.userId && trade.status === 'active' ? `
+            ${this.currentUser && trade.user_id !== this.currentUser.userId ? `
             <div class="detail-actions">
-                <button class="btn-make-offer" style="flex:1" data-id="${trade.id}">Make Offer</button>
+                ${trade.status === 'active' ? `<button class="btn-make-offer" style="flex:1" data-id="${trade.id}">Make Offer</button>` : ''}
+                <button class="btn-secondary btn-message-trader">Message Trader</button>
             </div>` : ''}
         `;
 
@@ -532,8 +861,15 @@ class TradingHub {
             this.closeDetailModal();
             this.makeOffer(trade.id);
         });
+        body.querySelector('.btn-message-trader')?.addEventListener('click', () => {
+            this.closeDetailModal();
+            this.openThreadWith(trade.user_id, trade.user?.username || 'Trader', trade.id, null);
+        });
 
         modal.classList.add('active');
+
+        // Load trader reputation asynchronously
+        this.loadTraderReviews(trade.user_id);
     }
 
     renderDetailItem(item) {
@@ -1262,6 +1598,392 @@ class TradingHub {
         }
 
         return `Trading ${offerText} for ${seekText}`;
+    }
+
+    // ==================== MESSAGES ====================
+
+    async loadConversations() {
+        const list = document.getElementById('conversationsList');
+        if (!list) return;
+        try {
+            const response = await fetch(`${this.apiBase}/messages/conversations`, { headers: this.authHeaders() });
+            if (!response.ok) throw new Error('Failed to load conversations');
+            const data = await response.json();
+            this.conversations = data.conversations || [];
+            this.renderConversations();
+        } catch (error) {
+            console.error('Failed to load conversations:', error);
+            list.innerHTML = this.emptyState('Could not load messages', 'Please try again later.');
+        }
+    }
+
+    renderConversations() {
+        const list = document.getElementById('conversationsList');
+        if (!list) return;
+
+        if (this.conversations.length === 0) {
+            list.innerHTML = `<div class="conversations-empty">No conversations yet.<br>Message a trader from an offer to start.</div>`;
+            return;
+        }
+
+        list.innerHTML = '';
+        this.conversations.forEach(conv => {
+            const el = document.createElement('button');
+            el.className = 'conversation-item';
+            const name = conv.other_user?.username || 'Unknown';
+            const unread = conv.unread_count > 0 ? `<span class="conv-unread">${conv.unread_count}</span>` : '';
+            el.innerHTML = `
+                <img class="conv-avatar" src="${conv.other_user?.avatar_url || './imgs/placeholder.png'}" alt="${this.esc(name)}" onerror="this.src='./imgs/placeholder.png'">
+                <div class="conv-info">
+                    <div class="conv-name">${this.esc(name)} ${unread}</div>
+                    <div class="conv-sub">${this.esc(conv.listing_title || 'Direct message')}</div>
+                </div>
+                <div class="conv-time">${this.getTimeAgo(conv.last_message_at)}</div>
+            `;
+            el.addEventListener('click', () => {
+                this.activeThread = {
+                    userId: String(conv.other_user?.user_id),
+                    name,
+                    listingId: conv.listing_id || null,
+                    offerId: conv.offer_id || null
+                };
+                this.loadThread();
+            });
+            list.appendChild(el);
+        });
+    }
+
+    openThreadWith(userId, name, listingId, offerId) {
+        this.switchTab('messages');
+        this.activeThread = {
+            userId: String(userId),
+            name: name || 'Trader',
+            listingId: listingId || null,
+            offerId: offerId || null
+        };
+        this.loadThread();
+    }
+
+    async loadThread() {
+        if (!this.activeThread) return;
+        const empty = document.getElementById('threadEmpty');
+        const active = document.getElementById('threadActive');
+        const header = document.getElementById('threadHeader');
+        const messagesEl = document.getElementById('threadMessages');
+        if (!active || !messagesEl) return;
+
+        if (empty) empty.style.display = 'none';
+        active.style.display = '';
+        if (header) header.textContent = this.activeThread.name;
+        messagesEl.innerHTML = '<div class="thread-loading">Loading…</div>';
+
+        try {
+            const params = new URLSearchParams({ with_user_id: this.activeThread.userId });
+            if (this.activeThread.listingId) params.set('listing_id', this.activeThread.listingId);
+            const response = await fetch(`${this.apiBase}/messages?${params}`, { headers: this.authHeaders() });
+            if (!response.ok) throw new Error('Failed to load messages');
+            const data = await response.json();
+            this.renderThread(data.messages || []);
+            // Server marks incoming messages read on fetch — refresh unread badges.
+            this.refreshBadges();
+        } catch (error) {
+            console.error('Failed to load thread:', error);
+            messagesEl.innerHTML = '<div class="thread-loading">Could not load messages.</div>';
+        }
+    }
+
+    renderThread(messages) {
+        const messagesEl = document.getElementById('threadMessages');
+        if (!messagesEl) return;
+        const me = String(this.currentUser?.userId);
+
+        if (messages.length === 0) {
+            messagesEl.innerHTML = '<div class="thread-loading">No messages yet. Say hello!</div>';
+            return;
+        }
+
+        messagesEl.innerHTML = '';
+        messages.forEach(msg => {
+            const mine = String(msg.from_user_id) === me;
+            const bubble = document.createElement('div');
+            bubble.className = `msg-bubble ${mine ? 'mine' : 'theirs'}`;
+            bubble.innerHTML = `
+                <div class="msg-text">${this.esc(msg.message)}</div>
+                <div class="msg-time">${this.getTimeAgo(msg.created_at)}</div>
+            `;
+            messagesEl.appendChild(bubble);
+        });
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    async sendThreadMessage() {
+        if (!this.activeThread) return;
+        const input = document.getElementById('threadInput');
+        const text = input?.value.trim();
+        if (!text) return;
+
+        const sendBtn = document.getElementById('threadSendBtn');
+        if (sendBtn) sendBtn.disabled = true;
+
+        try {
+            const response = await fetch(`${this.apiBase}/messages`, {
+                method: 'POST',
+                headers: this.authHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({
+                    to_user_id: this.activeThread.userId,
+                    message: text,
+                    listing_id: this.activeThread.listingId,
+                    offer_id: this.activeThread.offerId
+                })
+            });
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || `Failed to send (${response.status})`);
+            }
+            if (input) input.value = '';
+            await this.loadThread();
+        } catch (error) {
+            console.error('Failed to send message:', error);
+            this.showToast(error.message || 'Failed to send message', 'error');
+        } finally {
+            if (sendBtn) sendBtn.disabled = false;
+        }
+    }
+
+    // ==================== NOTIFICATIONS ====================
+
+    async loadNotifications() {
+        try {
+            const response = await fetch(`${this.apiBase}/notifications?limit=30`, { headers: this.authHeaders() });
+            if (!response.ok) return;
+            const data = await response.json();
+            this.notifications = data.notifications || [];
+            this.renderNotifications();
+        } catch (error) {
+            console.error('Failed to load notifications:', error);
+        }
+    }
+
+    renderNotifications() {
+        const list = document.getElementById('notifList');
+        if (!list) return;
+
+        if (this.notifications.length === 0) {
+            list.innerHTML = `<div class="notif-empty">You're all caught up.</div>`;
+            return;
+        }
+
+        list.innerHTML = '';
+        this.notifications.forEach(notif => {
+            const el = document.createElement('div');
+            el.className = `notif-item${notif.read ? '' : ' unread'}`;
+            el.innerHTML = `
+                <div class="notif-item-body">
+                    <div class="notif-item-title">${this.esc(notif.title)}</div>
+                    <div class="notif-item-msg">${this.esc(notif.message)}</div>
+                    <div class="notif-item-time">${this.getTimeAgo(notif.created_at)}</div>
+                </div>
+                <button class="notif-item-del" title="Dismiss" aria-label="Dismiss">&times;</button>
+            `;
+            el.querySelector('.notif-item-body').addEventListener('click', () => this.onNotificationClick(notif));
+            el.querySelector('.notif-item-del').addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.deleteNotification(notif.id);
+            });
+            list.appendChild(el);
+        });
+    }
+
+    async onNotificationClick(notif) {
+        if (!notif.read) await this.markNotificationRead(notif.id);
+        this.closeNotifDropdown();
+
+        // Route by notification type rather than navigating to non-page routes.
+        if (notif.type === 'new_message') {
+            this.switchTab('messages');
+        } else if (['new_offer', 'offer_accepted', 'offer_rejected'].includes(notif.type)) {
+            this.switchTab('my-trades');
+        } else if (notif.type === 'review_received' && notif.link) {
+            window.location.href = notif.link;
+        }
+    }
+
+    async markNotificationRead(id) {
+        try {
+            await fetch(`${this.apiBase}/notifications/${id}/read`, {
+                method: 'POST',
+                headers: this.authHeaders({ 'Content-Type': 'application/json' })
+            });
+            const n = this.notifications.find(x => x.id === id);
+            if (n) n.read = 1;
+            this.renderNotifications();
+            this.refreshBadges();
+        } catch (error) {
+            console.error('Failed to mark notification read:', error);
+        }
+    }
+
+    async markAllNotificationsRead() {
+        try {
+            await fetch(`${this.apiBase}/notifications/read-all`, {
+                method: 'POST',
+                headers: this.authHeaders({ 'Content-Type': 'application/json' })
+            });
+            this.notifications.forEach(n => { n.read = 1; });
+            this.renderNotifications();
+            this.refreshBadges();
+        } catch (error) {
+            console.error('Failed to mark all read:', error);
+        }
+    }
+
+    async deleteNotification(id) {
+        try {
+            await fetch(`${this.apiBase}/notifications/${id}`, {
+                method: 'DELETE',
+                headers: this.authHeaders({ 'Content-Type': 'application/json' })
+            });
+            this.notifications = this.notifications.filter(n => n.id !== id);
+            this.renderNotifications();
+            this.refreshBadges();
+        } catch (error) {
+            console.error('Failed to delete notification:', error);
+        }
+    }
+
+    toggleNotifDropdown() {
+        const dropdown = document.getElementById('notifDropdown');
+        if (!dropdown) return;
+        const isOpen = dropdown.classList.toggle('open');
+        if (isOpen) this.loadNotifications();
+    }
+
+    closeNotifDropdown() {
+        document.getElementById('notifDropdown')?.classList.remove('open');
+    }
+
+    async refreshBadges() {
+        if (!this.currentUser) return;
+        try {
+            const [notifRes, msgRes] = await Promise.all([
+                fetch(`${this.apiBase}/notifications/unread-count`, { headers: this.authHeaders() }),
+                fetch(`${this.apiBase}/messages/unread`, { headers: this.authHeaders() })
+            ]);
+
+            if (notifRes.ok) {
+                const { unread_count } = await notifRes.json();
+                this.setBadge('notifCount', unread_count);
+            }
+            if (msgRes.ok) {
+                const { unread_count } = await msgRes.json();
+                this.setBadge('messagesBadge', unread_count);
+            }
+        } catch (error) {
+            console.error('Failed to refresh badges:', error);
+        }
+    }
+
+    setBadge(elementId, count) {
+        const el = document.getElementById(elementId);
+        if (!el) return;
+        if (count > 0) {
+            el.textContent = count > 99 ? '99+' : count;
+            el.style.display = '';
+        } else {
+            el.style.display = 'none';
+        }
+    }
+
+    startNotificationPolling() {
+        if (this.notifPollTimer) clearInterval(this.notifPollTimer);
+        this.notifPollTimer = setInterval(() => this.refreshBadges(), 60000);
+    }
+
+    // ==================== REVIEWS ====================
+
+    openReviewModal(tradeId, otherName) {
+        this.reviewState = { tradeId, rating: 0 };
+        const subtitle = document.getElementById('reviewSubtitle');
+        if (subtitle) subtitle.textContent = `How was your trade with ${otherName}?`;
+        const comment = document.getElementById('reviewComment');
+        if (comment) comment.value = '';
+        this.setReviewRating(0);
+        document.getElementById('reviewModal')?.classList.add('active');
+    }
+
+    closeReviewModal() {
+        document.getElementById('reviewModal')?.classList.remove('active');
+    }
+
+    setReviewRating(rating) {
+        this.reviewState.rating = rating;
+        document.querySelectorAll('#starInput .star-btn').forEach(btn => {
+            btn.classList.toggle('active', parseInt(btn.dataset.value) <= rating);
+        });
+    }
+
+    async submitReview() {
+        if (!this.reviewState.tradeId) return;
+        if (this.reviewState.rating < 1) {
+            this.showToast('Please select a star rating', 'warning');
+            return;
+        }
+
+        const submitBtn = document.getElementById('submitReviewBtn');
+        if (submitBtn) submitBtn.disabled = true;
+
+        try {
+            const comment = document.getElementById('reviewComment')?.value.trim() || null;
+            const response = await fetch(`${this.apiBase}/reviews`, {
+                method: 'POST',
+                headers: this.authHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({
+                    trade_id: this.reviewState.tradeId,
+                    rating: this.reviewState.rating,
+                    comment
+                })
+            });
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || `Failed to submit review (${response.status})`);
+            }
+            this.showToast('Review submitted — thanks!', 'success');
+            this.closeReviewModal();
+            await this.loadCompletedTrades();
+            if (this.activeMyTab === 'history') this.renderMyTrades();
+        } catch (error) {
+            console.error('Failed to submit review:', error);
+            this.showToast(error.message || 'Failed to submit review', 'error');
+        } finally {
+            if (submitBtn) submitBtn.disabled = false;
+        }
+    }
+
+    async loadTraderReviews(userId) {
+        const container = document.getElementById('detailReviews');
+        if (!container || !userId) return;
+        try {
+            const response = await fetch(`${this.apiBase}/reviews?user_id=${encodeURIComponent(userId)}`);
+            if (!response.ok) return;
+            const data = await response.json();
+            const reviews = data.reviews || [];
+            if (reviews.length === 0) {
+                container.innerHTML = `<div class="detail-reviews-label">Reviews</div><div class="no-reviews">No reviews yet.</div>`;
+                return;
+            }
+            const items = reviews.slice(0, 5).map(r => `
+                <div class="review-item">
+                    <div class="review-item-head">
+                        <span class="review-author">${this.esc(r.reviewer_username || 'Trader')}</span>
+                        <span class="review-stars">${'★'.repeat(Math.max(0, Math.min(5, r.rating)))}${'☆'.repeat(5 - Math.max(0, Math.min(5, r.rating)))}</span>
+                    </div>
+                    ${r.comment ? `<div class="review-comment">${this.esc(r.comment)}</div>` : ''}
+                </div>
+            `).join('');
+            container.innerHTML = `<div class="detail-reviews-label">Reviews</div>${items}`;
+        } catch (error) {
+            console.error('Failed to load reviews:', error);
+        }
     }
 
     // ==================== UTILITIES ====================

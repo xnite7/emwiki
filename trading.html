@@ -95,10 +95,30 @@
                     <span>My Trades</span>
                     <span class="tab-badge" id="myTradesBadge" style="display:none">0</span>
                 </button>
+                <button class="tab-btn" data-tab="messages">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span>Messages</span>
+                    <span class="tab-badge" id="messagesBadge" style="display:none">0</span>
+                </button>
                 <button class="tab-btn tab-create" data-tab="create">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
                     <span>Create Trade</span>
                 </button>
+
+                <!-- Notifications bell -->
+                <div class="notif-wrapper" id="notifWrapper">
+                    <button class="notif-bell" id="notifBellBtn" aria-label="Notifications">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                        <span class="notif-count" id="notifCount" style="display:none">0</span>
+                    </button>
+                    <div class="notif-dropdown" id="notifDropdown">
+                        <div class="notif-dropdown-header">
+                            <span>Notifications</span>
+                            <button class="notif-mark-all" id="notifMarkAllBtn">Mark all read</button>
+                        </div>
+                        <div class="notif-list" id="notifList"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -144,7 +164,9 @@
                 <div class="my-trades-header">
                     <div class="my-trades-tabs">
                         <button class="my-tab active" data-mytab="listings">My Listings</button>
-                        <button class="my-tab" data-mytab="offers">My Offers</button>
+                        <button class="my-tab" data-mytab="received">Received Offers</button>
+                        <button class="my-tab" data-mytab="sent">Sent Offers</button>
+                        <button class="my-tab" data-mytab="history">History</button>
                     </div>
                 </div>
                 <div class="my-trades-feed" id="myTradesFeed">
@@ -154,6 +176,33 @@
                         </div>
                         <h3>No trades yet</h3>
                         <p>Create your first trade to get started!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ MESSAGES PANEL ============ -->
+            <div class="tab-panel" id="panelMessages">
+                <div class="messages-layout">
+                    <div class="conversations-pane" id="conversationsPane">
+                        <div class="conversations-header">Conversations</div>
+                        <div class="conversations-list" id="conversationsList"></div>
+                    </div>
+                    <div class="thread-pane" id="threadPane">
+                        <div class="thread-empty" id="threadEmpty">
+                            <div class="empty-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            </div>
+                            <h3>Select a conversation</h3>
+                            <p>Your messages with other traders appear here.</p>
+                        </div>
+                        <div class="thread-active" id="threadActive" style="display:none">
+                            <div class="thread-header" id="threadHeader"></div>
+                            <div class="thread-messages" id="threadMessages"></div>
+                            <form class="thread-composer" id="threadComposer">
+                                <input type="text" id="threadInput" placeholder="Type a message..." autocomplete="off" maxlength="1000">
+                                <button type="submit" class="btn-send-message" id="threadSendBtn">Send</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -389,6 +438,39 @@
                 <div class="modal-footer">
                     <button class="btn-cancel" id="cancelCustomModal">Cancel</button>
                     <button class="btn-next" id="addCustomItemBtn">Add Item</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Modal -->
+    <div class="modal-overlay" id="reviewModal">
+        <div class="modal-content modal-compact">
+            <div class="modal-header">
+                <h3>Leave a Review</h3>
+                <button class="modal-close-btn" id="closeReviewModal" type="button">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-inner">
+                <p class="review-subtitle" id="reviewSubtitle">How was your trade?</p>
+                <div class="field">
+                    <label>Rating</label>
+                    <div class="star-input" id="starInput">
+                        <button type="button" class="star-btn" data-value="1">&#9733;</button>
+                        <button type="button" class="star-btn" data-value="2">&#9733;</button>
+                        <button type="button" class="star-btn" data-value="3">&#9733;</button>
+                        <button type="button" class="star-btn" data-value="4">&#9733;</button>
+                        <button type="button" class="star-btn" data-value="5">&#9733;</button>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="reviewComment">Comment (optional)</label>
+                    <textarea id="reviewComment" placeholder="Share details of your experience..." maxlength="500" rows="3" style="width:100%;resize:vertical"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-cancel" id="cancelReviewBtn" type="button">Cancel</button>
+                    <button class="btn-next" id="submitReviewBtn" type="button">Submit Review</button>
                 </div>
             </div>
         </div>

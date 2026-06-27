@@ -6,7 +6,8 @@ import {
     validateFields,
     parsePagination,
     parseSort,
-    getUserWithStats
+    getUserWithStats,
+    safeJsonParse
 } from '../_utils/helpers.js';
 
 // Handle GET requests
@@ -75,8 +76,8 @@ async function handleGet(request, env, path) {
 
             return {
                 ...listing,
-                offering_items: JSON.parse(offering_items),
-                seeking_items: seeking_items ? JSON.parse(seeking_items) : null,
+                offering_items: safeJsonParse(offering_items),
+                seeking_items: seeking_items ? safeJsonParse(seeking_items, null) : null,
                 user: {
                     user_id: u_user_id,
                     username: u_username,
@@ -117,8 +118,8 @@ async function handleGet(request, env, path) {
 
         return successResponse({
             ...listing,
-            offering_items: JSON.parse(listing.offering_items),
-            seeking_items: listing.seeking_items ? JSON.parse(listing.seeking_items) : null,
+            offering_items: safeJsonParse(listing.offering_items),
+            seeking_items: listing.seeking_items ? safeJsonParse(listing.seeking_items, null) : null,
             views: listing.views + 1,
             offer_count: offerCount.count,
             user: {

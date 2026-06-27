@@ -6,7 +6,8 @@ import {
     validateFields,
     createNotification,
     updateUserStats,
-    getUserWithStats
+    getUserWithStats,
+    safeJsonParse
 } from '../_utils/helpers.js';
 
 // Handle GET requests
@@ -52,7 +53,7 @@ async function handleGet(request, env, path, user) {
 
             return {
                 ...offer,
-                offered_items: JSON.parse(offer.offered_items),
+                offered_items: safeJsonParse(offer.offered_items),
                 from_user: {
                     user_id: fromUser.user_id,
                     username: fromUser.username,
@@ -94,8 +95,8 @@ async function handleGet(request, env, path, user) {
 
         return successResponse({
             ...offer,
-            offered_items: JSON.parse(offer.offered_items),
-            listing_items: JSON.parse(offer.listing_items),
+            offered_items: safeJsonParse(offer.offered_items),
+            listing_items: safeJsonParse(offer.listing_items),
             from_user: {
                 user_id: fromUser.user_id,
                 username: fromUser.username,
@@ -212,10 +213,16 @@ async function handlePost(request, env, path, user) {
 
         const now = Date.now();
 
-        // Update offer status
-        await env.DBA.prepare(
-            'UPDATE trade_offers SET status = ?, updated_at = ? WHERE id = ?'
-        ).bind('accepted', now, offerId).run();
+        // Atomically claim the offer: only transition if it is still pending.
+        // This guards against a race where the same offer is accepted twice
+        // (which would otherwise create duplicate completed_trades records).
+        const claim = await env.DBA.prepare(
+            "UPDATE trade_offers SET status = 'accepted', updated_at = ? WHERE id = ? AND status = 'pending'"
+        ).bind(now, offerId).run();
+
+        if (!claim.meta || claim.meta.changes !== 1) {
+            return errorResponse('Offer is no longer pending', 409);
+        }
 
         // Update listing status
         await env.DBA.prepare(
