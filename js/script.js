@@ -1300,11 +1300,9 @@ class BaseApp {
             const img = document.createElement('img');
             img.loading = 'lazy';
             img.decoding = 'async';
-            img.width = 128;
-            img.height = 128;
             img.alt = item.name || '';
             // Use optimized image for catalog items (thumbnail size)
-            img.src = Utils.getOptimizedImage(item.img, { width: 128, height: 128, format: 'webp', fit: 'scale-down' }) || item.img;
+            img.src = Utils.getOptimizedImage(item.img, { width: 70, height: 70, format: 'webp', fit: 'scale-down' }) || item.img;
             Utils.protectImage(img);
             div.appendChild(img);
         } else if (item.svg) {

@@ -840,9 +840,9 @@ main {
     border-radius: 10px;
 
     /* Skip layout/paint for off-screen cards while scrolling a large grid.
-       Cards are a fixed 110x110, so the placeholder size is exact (no jumps). */
+       Cards are a fixed 110x110, so the placeholder size is exact (no jumps). 
     content-visibility: auto;
-    contain-intrinsic-size: 110px 110px;
+    contain-intrinsic-size: 110px 110px;*/
 
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
