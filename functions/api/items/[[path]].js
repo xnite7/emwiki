@@ -181,7 +181,7 @@ async function getHomepageItems(env, corsHeaders) {
         // Get all featured items (new, weekly, or weeklystar)
         env.DBA.prepare(`
             SELECT id, name, category, img, svg, price, "from", price_code_rarity,
-                   tradable, "new", weekly, weeklystar, retired, premium, removed, typicalgroup, demand,
+                   tradable, "new", weekly, weeklystar, retired, premium, removed, typicalgroup, unstable, demand,
                    credits, lore, alias, quantity, color, demand_updated_at, updated_at
             FROM items
             WHERE "new" = 1 OR weekly = 1 OR weeklystar = 1
@@ -199,7 +199,7 @@ async function getHomepageItems(env, corsHeaders) {
         // Get 1 random item
         env.DBA.prepare(`
             SELECT id, name, category, img, svg, price, "from", price_code_rarity,
-                   tradable, "new", weekly, weeklystar, retired, premium, removed, typicalgroup, demand,
+                   tradable, "new", weekly, weeklystar, retired, premium, removed, typicalgroup, unstable, demand,
                    credits, lore, alias, quantity, color, demand_updated_at, updated_at
             FROM items
             ORDER BY RANDOM()
@@ -221,7 +221,8 @@ async function getHomepageItems(env, corsHeaders) {
         premium: item.premium === 1,
         removed: item.removed === 1,
         'price/code/rarity': item.price_code_rarity,
-        typicalgroup: item.typicalgroup === 1
+        typicalgroup: item.typicalgroup === 1,
+        unstable: item.unstable === 1
     });
 
     // Separate items into categories
@@ -252,7 +253,7 @@ async function getHomepageItems(env, corsHeaders) {
 async function getRandomItem(env, corsHeaders) {
     const item = await env.DBA.prepare(`
         SELECT id, name, category, img, svg, price, "from", price_code_rarity,
-               tradable, "new", weekly, weeklystar, retired, premium, removed, demand,
+               tradable, "new", weekly, weeklystar, retired, premium, removed, unstable, demand,
                credits, lore, alias, quantity, color, demand_updated_at, updated_at
         FROM items
         ORDER BY RANDOM()
@@ -277,7 +278,8 @@ async function getRandomItem(env, corsHeaders) {
         premium: item.premium === 1,
         removed: item.removed === 1,
         'price/code/rarity': item.price_code_rarity,
-        typicalgroup: item.typicalgroup === 1
+        typicalgroup: item.typicalgroup === 1,
+        unstable: item.unstable === 1
     };
 
     return new Response(JSON.stringify({ item: result }), {
@@ -304,7 +306,7 @@ async function searchItems(request, env, corsHeaders) {
 
     let sql = `
         SELECT id, name, category, img, svg, price, "from", price_code_rarity,
-               tradable, "new", weekly, weeklystar, retired, premium, removed, demand,
+               tradable, "new", weekly, weeklystar, retired, premium, removed, unstable, demand,
                credits, lore, alias, quantity, color, demand_updated_at, updated_at
         FROM items
         WHERE name LIKE ?
@@ -332,7 +334,8 @@ async function searchItems(request, env, corsHeaders) {
         premium: item.premium === 1,
         removed: item.removed === 1,
         'price/code/rarity': item.price_code_rarity,
-        typicalgroup: item.typicalgroup === 1
+        typicalgroup: item.typicalgroup === 1,
+        unstable: item.unstable === 1
     }));
 
     return new Response(JSON.stringify({ items }), {
@@ -368,7 +371,7 @@ async function batchGetItems(request, env, corsHeaders) {
     const sql = `
         SELECT id, name, category, img, svg, price, "from", price_code_rarity,
                tradable, "new", weekly, weeklystar, retired, premium, removed, demand,
-               credits, lore, alias, quantity, color, demand_updated_at, updated_at, typicalgroup
+               credits, lore, alias, quantity, color, demand_updated_at, updated_at, typicalgroup, unstable
         FROM items
         WHERE name IN (${placeholders})
         ORDER BY name
@@ -387,6 +390,7 @@ async function batchGetItems(request, env, corsHeaders) {
         premium: item.premium === 1,
         removed: item.removed === 1,
         typicalgroup: item.typicalgroup === 1,
+        unstable: item.unstable === 1,
         'price/code/rarity': item.price_code_rarity,
         color: item.color ? JSON.parse(item.color) : null
     }));
@@ -400,7 +404,7 @@ async function batchGetItems(request, env, corsHeaders) {
 async function getItem(category, name, env, corsHeaders) {
     const item = await env.DBA.prepare(`
         SELECT id, name, category, img, svg, price, "from", price_code_rarity,
-               tradable, "new", weekly, weeklystar, retired, premium, removed, typicalgroup,
+               tradable, "new", weekly, weeklystar, retired, premium, removed, typicalgroup, unstable,
                price_history, demand, credits, lore, alias, quantity, color, demand_updated_at, created_at, updated_at
         FROM items
         WHERE category = ? AND name = ?
@@ -425,6 +429,7 @@ async function getItem(category, name, env, corsHeaders) {
         removed: item.removed === 1,
         'price/code/rarity': item.price_code_rarity,
         typicalgroup: item.typicalgroup === 1,
+        unstable: item.unstable === 1,
         priceHistory: item.price_history ? JSON.parse(item.price_history) : null,
         color: item.color ? JSON.parse(item.color) : null
     };
@@ -513,7 +518,7 @@ async function listItems(request, env, corsHeaders) {
     // Get items (include updated_at for optimistic locking, target_flikes for sorting)
     const { results } = await env.DBA.prepare(`
         SELECT id, name, category, img, svg, price, "from", price_code_rarity,
-               tradable, "new", weekly, weeklystar, retired, premium, removed, typicalgroup, demand, 
+               tradable, "new", weekly, weeklystar, retired, premium, removed, typicalgroup, unstable, demand,
                credits, lore, alias, quantity, color, demand_updated_at, updated_at, price_history,
                target_flikes, created_at
         FROM items
@@ -544,6 +549,7 @@ async function listItems(request, env, corsHeaders) {
         removed: item.removed === 1,
         'price/code/rarity': item.price_code_rarity,
         typicalgroup: item.typicalgroup === 1,
+        unstable: item.unstable === 1,
         priceHistory: item.price_history ? JSON.parse(item.price_history) : null,
         color: item.color ? JSON.parse(item.color) : null,
         // Include calculated flikes for sorting (gradual ramp based on item age)
@@ -573,7 +579,7 @@ async function createItem(request, env, corsHeaders) {
     
     const {
         name, category, img, svg, price, from, price_code_rarity,
-        tradable, new: newItem, weekly, weeklystar, retired, premium, removed, typicalgroup,
+        tradable, new: newItem, weekly, weeklystar, retired, premium, removed, typicalgroup, unstable,
         price_history, demand, credits, lore, alias, quantity, color
     } = data;
 
@@ -587,10 +593,10 @@ async function createItem(request, env, corsHeaders) {
     const result = await env.DBA.prepare(`
         INSERT INTO items (
             name, category, img, svg, price, "from", price_code_rarity,
-            tradable, "new", weekly, weeklystar, retired, premium, removed, typicalgroup,
+            tradable, "new", weekly, weeklystar, retired, premium, removed, typicalgroup, unstable,
             price_history, demand, credits, lore, alias, quantity, color, demand_updated_at, created_at, updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
                 CASE WHEN ? > 0 THEN strftime('%s', 'now') ELSE NULL END,
                 strftime('%s', 'now'), strftime('%s', 'now'))
     `).bind(
@@ -604,6 +610,7 @@ async function createItem(request, env, corsHeaders) {
         premium === true ? 1 : 0,
         removed === true ? 1 : 0,
         typicalgroup === true ? 1 : 0,
+        unstable === true ? 1 : 0,
         price_history ? JSON.stringify(price_history.slice(-15)) : null,
         demand || 0,
         credits || null,
@@ -632,8 +639,8 @@ async function updateItem(id, request, env, corsHeaders) {
     
     const {
         name, category, img, svg, price, from, price_code_rarity,
-        tradable, new: newItem, weekly, weeklystar, retired, premium, removed, typicalgroup,
-        price_history, demand, credits, lore, alias, quantity, color, updated_at: clientUpdatedAt,
+        tradable, new: newItem, weekly, weeklystar, retired, premium, removed, typicalgroup, unstable,
+        price_history, replace_price_history, demand, credits, lore, alias, quantity, color, updated_at: clientUpdatedAt,
         force_update_demand_timestamp
     } = data;
 
@@ -655,7 +662,7 @@ async function updateItem(id, request, env, corsHeaders) {
             // Get current item data to show what changed
             const currentItemData = await env.DBA.prepare(`
                 SELECT id, name, category, img, svg, price, "from", price_code_rarity,
-                       tradable, "new", weekly, weeklystar, retired, premium, removed, typicalgroup,
+                       tradable, "new", weekly, weeklystar, retired, premium, removed, typicalgroup, unstable,
                        price_history, demand, credits, lore, demand_updated_at, updated_at
                 FROM items WHERE id = ?
             `).bind(id).first();
@@ -673,6 +680,7 @@ async function updateItem(id, request, env, corsHeaders) {
                     premium: currentItemData.premium === 1,
                     removed: currentItemData.removed === 1,
                     typicalgroup: currentItemData.typicalgroup === 1,
+                    unstable: currentItemData.unstable === 1,
                     'price/code/rarity': currentItemData.price_code_rarity,
                     priceHistory: currentItemData.price_history ? JSON.parse(currentItemData.price_history) : null
                 },
@@ -700,46 +708,61 @@ async function updateItem(id, request, env, corsHeaders) {
         demandChanged = true;
     }
 
-    // Merge price_history: get existing history and merge with incoming history
+    // Merge price_history: get existing history and merge with incoming history.
+    // When replace_price_history === true (admin used the Price History editor),
+    // bypass the merge entirely and store exactly the curated array instead — this
+    // is the only way deletions/edits of existing points can actually stick.
     let mergedPriceHistory = null;
     if (price_history !== undefined) {
-        // Get current price_history from database
-        const currentItem = await env.DBA.prepare(`
-            SELECT price_history FROM items WHERE id = ?
-        `).bind(id).first();
-        
-        let existingHistory = [];
-        if (currentItem && currentItem.price_history) {
-            try {
-                existingHistory = JSON.parse(currentItem.price_history);
-                if (!Array.isArray(existingHistory)) {
+        let incomingHistory = Array.isArray(price_history) ? price_history : [];
+
+        if (replace_price_history === true) {
+            // Replace mode: trust the incoming array as the complete history.
+            // Sanitize each entry, sort by timestamp, cap to last 50.
+            const cleaned = incomingHistory
+                .map(entry => ({
+                    price: Number(entry.price),
+                    timestamp: Number(entry.timestamp),
+                    admin: entry.admin || null
+                }))
+                .filter(entry => Number.isFinite(entry.price) && Number.isFinite(entry.timestamp));
+            cleaned.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+            mergedPriceHistory = cleaned.slice(-50);
+        } else {
+            // Merge mode (default): combine existing DB history with incoming entries.
+            const currentItem = await env.DBA.prepare(`
+                SELECT price_history FROM items WHERE id = ?
+            `).bind(id).first();
+
+            let existingHistory = [];
+            if (currentItem && currentItem.price_history) {
+                try {
+                    existingHistory = JSON.parse(currentItem.price_history);
+                    if (!Array.isArray(existingHistory)) {
+                        existingHistory = [];
+                    }
+                } catch (e) {
                     existingHistory = [];
                 }
-            } catch (e) {
-                existingHistory = [];
             }
+
+            // Combine histories and remove duplicates (same price and timestamp)
+            const combinedHistory = [...existingHistory];
+            incomingHistory.forEach(newEntry => {
+                // Check if this entry already exists (same price and timestamp)
+                const exists = combinedHistory.some(existing =>
+                    existing.price === newEntry.price &&
+                    existing.timestamp === newEntry.timestamp
+                );
+                if (!exists) {
+                    combinedHistory.push(newEntry);
+                }
+            });
+
+            // Sort by timestamp and keep only last 15 entries
+            combinedHistory.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+            mergedPriceHistory = combinedHistory.slice(-15);
         }
-        
-        // Merge: combine existing history with incoming history
-        // Incoming history should be an array of new entries
-        let incomingHistory = Array.isArray(price_history) ? price_history : [];
-        
-        // Combine histories and remove duplicates (same price and timestamp)
-        const combinedHistory = [...existingHistory];
-        incomingHistory.forEach(newEntry => {
-            // Check if this entry already exists (same price and timestamp)
-            const exists = combinedHistory.some(existing => 
-                existing.price === newEntry.price && 
-                existing.timestamp === newEntry.timestamp
-            );
-            if (!exists) {
-                combinedHistory.push(newEntry);
-            }
-        });
-        
-        // Sort by timestamp and keep only last 15 entries
-        combinedHistory.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-        mergedPriceHistory = combinedHistory.slice(-15);
     }
 
     const result = await env.DBA.prepare(`
@@ -759,6 +782,7 @@ async function updateItem(id, request, env, corsHeaders) {
             premium = COALESCE(?, premium),
             removed = COALESCE(?, removed),
             typicalgroup = COALESCE(?, typicalgroup),
+            unstable = COALESCE(?, unstable),
             price_history = CASE WHEN ? IS NOT NULL THEN ? ELSE price_history END,
             demand = COALESCE(?, demand),
             credits = ?,
@@ -779,6 +803,7 @@ async function updateItem(id, request, env, corsHeaders) {
         premium !== undefined ? (premium ? 1 : 0) : null,
         removed !== undefined ? (removed ? 1 : 0) : null,
         typicalgroup !== undefined ? (typicalgroup ? 1 : 0) : null,
+        unstable !== undefined ? (unstable ? 1 : 0) : null,
         mergedPriceHistory ? JSON.stringify(mergedPriceHistory) : null,
         mergedPriceHistory ? JSON.stringify(mergedPriceHistory) : null,
         demand,

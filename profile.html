@@ -224,13 +224,13 @@
 
     <!-- Review Modal -->
     <div id="review-modal" class="modal" style="display: none;">
-        <div class="modal-overlay"></div>
+        <div class="review-modal-overlay"></div>
         <div class="review-modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Write a Review</h3>
-                <button class="modal-close" aria-label="Close modal">&times;</button>
+            <div class="review-modal-header">
+                <h3 class="review-modal-title">Write a Review</h3>
+                <button class="review-modal-close" aria-label="Close modal">&times;</button>
             </div>
-            <div class="modal-body">
+            <div class="review-modal-body">
                 <form id="review-form">
                     <div class="form-group">
                         <label for="review-rating" class="form-label">Rating</label>
@@ -968,7 +968,7 @@
             const reviewModal = document.getElementById('review-modal');
             const reviewForm = document.getElementById('review-form');
             const cancelBtn = document.getElementById('cancel-review-btn');
-            const modalClose = document.querySelector('.modal-close');
+            const modalClose = document.querySelector('.review-modal-close');
             const commentTextarea = document.getElementById('review-comment');
             const charCount = document.getElementById('comment-char-count');
 
@@ -1009,7 +1009,7 @@
             modalClose.addEventListener('click', closeModal);
 
             // Close on overlay click
-            reviewModal.querySelector('.modal-overlay').addEventListener('click', closeModal);
+            reviewModal.querySelector('.review-modal-overlay').addEventListener('click', closeModal);
 
             // Handle form submission
             reviewForm.addEventListener('submit', async (e) => {

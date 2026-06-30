@@ -102,7 +102,7 @@ const Layout = {
 				<a href="/forum">Forum</a>
 				<a href="/trading">Trading</a>
 				<a href="/gallery">Gallery</a>
-				<a href="https://discord.com/invite/tg">Typical Games Discord</a>
+				<a href="/profile">Profiles</a>
 			</div>
 			<div class="footer-section">
 				<h4>Contact</h4>
@@ -137,6 +137,16 @@ const Utils = {
         canvas.addEventListener('contextmenu', (e) => e.preventDefault());
         canvas.style.userSelect = 'none';
         canvas.style.webkitUserSelect = 'none';
+    },
+
+    // Same right-click/drag protection as protectCanvas, for <img> elements.
+    // Lets us use native lazy-loading instead of drawing every image to a canvas.
+    protectImage(img) {
+        if (!img) return;
+        img.draggable = false;
+        img.addEventListener('contextmenu', (e) => e.preventDefault());
+        img.style.userSelect = 'none';
+        img.style.webkitUserSelect = 'none';
     },
 
     // Escape a value for safe interpolation inside an innerHTML template literal.
@@ -970,13 +980,17 @@ class BaseApp {
         // Back to top button
         const backToTop = document.getElementById('backToTop');
 
+        // Throttle to one update per animation frame (passive) so the scroll
+        // thread isn't blocked and we don't toggle the class on every pixel.
+        let backToTopTicking = false;
         window.addEventListener('scroll', () => {
-            if (window.pageYOffset > 300) {
-                backToTop.classList.add('show');
-            } else {
-                backToTop.classList.remove('show');
-            }
-        });
+            if (backToTopTicking) return;
+            backToTopTicking = true;
+            requestAnimationFrame(() => {
+                backToTop.classList.toggle('show', window.pageYOffset > 300);
+                backToTopTicking = false;
+            });
+        }, { passive: true });
 
         backToTop.addEventListener('click', () => {
             window.scrollTo({
@@ -1280,18 +1294,19 @@ class BaseApp {
 
         // Image/SVG
         if (item.img) {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const img = new Image();
-            img.onload = function () {
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
-            };
+            // Native lazy-loaded <img> with fixed dimensions: avoids the per-item
+            // canvas paint and the post-load reflow that caused scroll jank, and
+            // only fetches images as they approach the viewport.
+            const img = document.createElement('img');
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            img.width = 128;
+            img.height = 128;
+            img.alt = item.name || '';
             // Use optimized image for catalog items (thumbnail size)
-            img.src = Utils.getOptimizedImage(item.img, { width: 128, height: 128,format: 'webp', fit: 'scale-down' }) || item.img;
-            Utils.protectCanvas(canvas);
-            div.appendChild(canvas);
+            img.src = Utils.getOptimizedImage(item.img, { width: 128, height: 128, format: 'webp', fit: 'scale-down' }) || item.img;
+            Utils.protectImage(img);
+            div.appendChild(img);
         } else if (item.svg) {
             div.insertAdjacentHTML('beforeend', item.svg);
         }
@@ -1302,6 +1317,15 @@ class BaseApp {
         const price = document.createElement('div');
         price.className = 'item-price';
         price.textContent = this.convertPrice(Utils.formatPrice(item.price));
+
+        if (item.unstable) {
+            price.classList.add('unstable');
+            price.title = 'Unstable value — recently added or returned to Gamenight, so its price is volatile.';
+            const mark = document.createElement('span');
+            mark.className = 'unstable-mark';
+            mark.textContent = '!';
+            price.appendChild(mark);
+        }
 
         div.appendChild(price);
 
@@ -1783,24 +1807,21 @@ class BaseApp {
                 `;
 
                 if (item.img) {
-                    const canvas = document.createElement('canvas');
-
-                    const ctx = canvas.getContext('2d');
-                    const img = new Image();
-                    img.onload = function () {
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        ctx.drawImage(img, 0, 0);
-                    };
+                    const img = document.createElement('img');
+                    img.loading = 'lazy';
+                    img.decoding = 'async';
+                    img.width = 128;
+                    img.height = 128;
+                    img.alt = item.name || '';
                     // Use optimized image for wishlist items (thumbnail size)
                     img.src = Utils.getOptimizedImage(item.img, { width: 128, height: 128, format: 'webp', fit: 'scale-down' }) || item.img;
-                    Utils.protectCanvas(canvas);
-                    div.appendChild(canvas);
+                    Utils.protectImage(img);
+                    div.appendChild(img);
                 } else if (item.svg) {
                     div.insertAdjacentHTML('beforeend', item.svg);
                 }
 
-                div.insertAdjacentHTML('beforeend', `${item.price != '' ? `<div class="item-price" style="${item.price == '0' ? 'opacity: 0; height: 16px;' : ''}">${this.convertPrice(Utils.formatPrice(item.price))}</div>` : ''}`);
+                div.insertAdjacentHTML('beforeend', `${item.price != '' ? `<div class="item-price${item.unstable ? ' unstable' : ''}"${item.unstable ? ' title="Unstable value — recently added or returned to Gamenight, so its price is volatile."' : ''} style="${item.price == '0' ? 'opacity: 0; height: 16px;' : ''}">${this.convertPrice(Utils.formatPrice(item.price))}${item.unstable ? '<span class="unstable-mark">!</span>' : ''}</div>` : ''}`);
 
                 div.querySelector('.remove-wishlist').onclick = (e) => {
                     e.stopPropagation();
@@ -1845,26 +1866,21 @@ class BaseApp {
                 div.className = 'item';
                 div.innerHTML = `<small class="item-name" style="z-index:2;font-size:10px;margin-top:5px;">${item.name}</small>`;
                 if (item.img) {
-                    const canvas = document.createElement('canvas');
-
-                    const ctx = canvas.getContext('2d');
-                    const img = new Image();
-                    img.onload = function () {
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        ctx.drawImage(img, 0, 0);
-                    };
-
+                    const img = document.createElement('img');
+                    img.loading = 'lazy';
+                    img.decoding = 'async';
+                    img.width = 128;
+                    img.height = 128;
+                    img.alt = item.name || '';
                     // Use optimized image for favorites list (thumbnail size)
                     img.src = Utils.getOptimizedImage(item.img, { width: 128, height: 128, format: 'webp', fit: 'scale-down' }) || item.img;
-                    Utils.protectCanvas(canvas);
-
-                    div.appendChild(canvas);
+                    Utils.protectImage(img);
+                    div.appendChild(img);
                 } else if (item.svg) {
                     div.insertAdjacentHTML('beforeend', item.svg);
                 }
 
-                div.insertAdjacentHTML('beforeend', `${item.price != '' ? `<div class="item-price" style="${item.price == '0' ? 'opacity: 0; height: 16px;' : ''}">${this.convertPrice(Utils.formatPrice(item.price))}</div>` : ''}`);
+                div.insertAdjacentHTML('beforeend', `${item.price != '' ? `<div class="item-price${item.unstable ? ' unstable' : ''}"${item.unstable ? ' title="Unstable value — recently added or returned to Gamenight, so its price is volatile."' : ''} style="${item.price == '0' ? 'opacity: 0; height: 16px;' : ''}">${this.convertPrice(Utils.formatPrice(item.price))}${item.unstable ? '<span class="unstable-mark">!</span>' : ''}</div>` : ''}`);
 
 
                 div.onclick = () => {
@@ -2100,8 +2116,8 @@ const PriceGraph = {
                                 label: (context) => {
                                     const item = priceHistory[context.dataIndex];
                                     return [
-                                        `Price: ${Utils.formatPrice(item.price)}`,
-                                        item.admin ? `Changed by: ${item.admin}` : ''
+                                        `Price: ${Utils.formatPrice(item.price)}`, 
+                                        ''//item.admin ? `Changed by: ${item.admin}` : ''
                                     ].filter(Boolean);
                                 }
                             }
@@ -2903,8 +2919,8 @@ class ItemModal {
         }
 
         this.elements.price.innerHTML = `
-            <h2>${convertedPrice}</h2>
-            
+            <h2${item.unstable ? ' class="unstable" title="Unstable value — recently added or returned to Gamenight, so its price is volatile."' : ''}>${convertedPrice}${item.unstable ? '<span class="unstable-mark">!</span>' : ''}</h2>
+
             ${this.catalog.taxMode !== 'nt' ? `
                 <span class="modal-tax-indicator" onclick="event.stopPropagation(); this.classList.toggle('show-tooltip')">
                     ${currentTax.short}

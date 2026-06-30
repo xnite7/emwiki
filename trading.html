@@ -100,6 +100,10 @@
                     <span>Messages</span>
                     <span class="tab-badge" id="messagesBadge" style="display:none">0</span>
                 </button>
+                <button class="tab-btn" data-tab="calculator">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M3 7.5 8 6l3 3"/><path d="M16 9l3-3 5 1.5"/><circle cx="5.5" cy="13" r="3"/><circle cx="18.5" cy="13" r="3"/></svg>
+                    <span>Calculator</span>
+                </button>
                 <button class="tab-btn tab-create" data-tab="create">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
                     <span>Create Trade</span>
@@ -351,6 +355,63 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- ============ CALCULATOR PANEL ============ -->
+            <div class="tab-panel" id="panelCalculator">
+                <div class="calc-container">
+                    <div class="calc-header">
+                        <h2>Trade Value Calculator</h2>
+                        <p>Add items to each side to see who comes out ahead. Values are community estimates, weighted by demand.</p>
+                    </div>
+
+                    <div class="calc-board">
+                        <!-- Your side -->
+                        <div class="calc-side" data-side="your">
+                            <div class="calc-side-head">
+                                <h3>Your Offer <span class="calc-side-sub">you give</span></h3>
+                                <span class="calc-side-total" data-side-total="your">0</span>
+                            </div>
+                            <div class="calc-search-wrapper">
+                                <input type="text" class="calc-search-input" data-side-search="your" placeholder="Search items to add..." autocomplete="off">
+                                <div class="calc-search-results" data-side-results="your"></div>
+                            </div>
+                            <div class="calc-items" data-side-items="your"></div>
+                        </div>
+
+                        <!-- Verdict -->
+                        <div class="calc-center">
+                            <div class="calc-verdict empty" data-verdict>
+                                <span class="calc-verdict-label">—</span>
+                                <span class="calc-verdict-gap">Add items to compare</span>
+                            </div>
+                            <div class="calc-balance">
+                                <div class="calc-balance-marker" data-balance-marker></div>
+                            </div>
+                            <div class="calc-balance-labels">
+                                <span>You lose</span>
+                                <span>Fair</span>
+                                <span>You win</span>
+                            </div>
+                            <button class="calc-reset" type="button" id="calcResetBtn">Reset</button>
+                        </div>
+
+                        <!-- Their side -->
+                        <div class="calc-side" data-side="their">
+                            <div class="calc-side-head">
+                                <h3>Their Offer <span class="calc-side-sub">you receive</span></h3>
+                                <span class="calc-side-total" data-side-total="their">0</span>
+                            </div>
+                            <div class="calc-search-wrapper">
+                                <input type="text" class="calc-search-input" data-side-search="their" placeholder="Search items to add..." autocomplete="off">
+                                <div class="calc-search-results" data-side-results="their"></div>
+                            </div>
+                            <div class="calc-items" data-side-items="their"></div>
+                        </div>
+                    </div>
+
+                    <p class="calc-disclaimer">Values are community-estimated and weighted by item demand. Items marked &ldquo;no value&rdquo; (N/A) aren&rsquo;t counted. Use this as a guide, not a guarantee.</p>
                 </div>
             </div>
         </div>

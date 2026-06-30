@@ -348,19 +348,19 @@ body:has(.item-modal.active) {
 }
 
 .modal-demand.okay-demand::before {
-    content: 'Okay Demand';
+    content: 'Low Demand';
 }
 
 .modal-demand.good-demand::before {
-    content: 'Good Demand';
+    content: 'Average Demand';
 }
 
 .modal-demand.great-demand::before {
-    content: 'Great Demand';
+    content: 'Good Demand';
 }
 
 .modal-demand.amazing-demand::before {
-    content: 'Amazing Demand';
+    content: 'High Demand';
 }
 
 /* Demand info on back side */

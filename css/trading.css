@@ -126,10 +126,11 @@
 
 /* ========== CONTENT PANELS ========== */
 .trading-content {
+    background: Canvas;
+    border-radius: 20px;
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 20px auto 20px;
     padding: 1rem;
-    min-height: calc(100vh - 300px);
 }
 
 .tab-panel {
@@ -1493,7 +1494,7 @@
 
 @media (min-width: 900px) {
     .trading-content {
-        padding: 1.25rem 1.5rem;
+        padding: 2.25rem 1.5rem 3.25rem;
     }
 
     .trades-feed {
@@ -1932,4 +1933,278 @@
 .review-item-head { display: flex; justify-content: space-between; align-items: center; }
 .review-author { font-weight: 700; font-size: 0.85rem; color: var(--text-primary); }
 .review-stars { color: #ffd34d; font-size: 0.85rem; }
+
+/* ========================================================================
+   TRADE VALUE CALCULATOR
+   ======================================================================== */
+.calc-container { max-width: 1000px; margin: 0 auto; }
+
+.calc-header { text-align: center; margin-bottom: 1.25rem; }
+.calc-header h2 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 0.35rem;
+}
+.calc-header p { color: var(--text-secondary); font-size: 0.9rem; margin: 0; }
+
+.calc-board {
+    display: grid;
+    grid-template-columns: 1fr minmax(180px, 0.7fr) 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+
+/* ---- Sides ---- */
+.calc-side {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 1rem;
+}
+.calc-side-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+.calc-side-head h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+.calc-side-sub { font-size: 0.7rem; font-weight: 500; color: var(--text-secondary); margin-left: 0.25rem; }
+.calc-side-total {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #667eea;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---- Search ---- */
+.calc-search-wrapper { position: relative; margin-bottom: 0.75rem; }
+.calc-search-input {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    background: var(--bg-item);
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    color: CanvasText;
+    font-size: 0.85rem;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+.calc-search-input:focus { outline: none; border-color: #667eea; }
+.calc-search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    max-height: 280px;
+    overflow-y: auto;
+    z-index: 50;
+    display: none;
+    box-shadow: 0 8px 24px var(--shadow-color);
+}
+.calc-search-results.active { display: block; }
+
+/* ---- Item chips ---- */
+.calc-items { display: flex; flex-direction: column; gap: 0.5rem; min-height: 80px; }
+.calc-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 80px;
+    padding: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.825rem;
+    border: 1px dashed var(--border-color);
+    border-radius: 10px;
+}
+.calc-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem;
+    background: var(--bg-item);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    animation: itemIn 0.2s ease-out;
+}
+.calc-item-novalue { opacity: 0.7; }
+.calc-item > img {
+    width: 38px;
+    height: 38px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+.calc-item-info { flex: 1; min-width: 0; }
+.calc-item-name {
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: CanvasText;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.calc-item-val {
+    font-size: 0.75rem;
+    color: #667eea;
+    font-weight: 700;
+    margin-top: 0.1rem;
+    font-variant-numeric: tabular-nums;
+}
+.calc-item-novalue .calc-item-val { color: var(--text-secondary); font-weight: 500; }
+
+.calc-item-qty { display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0; }
+.calc-item-qty button {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-item-hover);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: CanvasText;
+    font-size: 0.95rem;
+    line-height: 1;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+}
+.calc-item-qty button:hover { border-color: #667eea; color: #667eea; }
+.calc-item-qty span {
+    min-width: 18px;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: CanvasText;
+    font-variant-numeric: tabular-nums;
+}
+.calc-item-remove {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.calc-item-remove:hover { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+/* ---- Center verdict ---- */
+.calc-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.85rem;
+    padding-top: 1.5rem;
+}
+.calc-verdict {
+    width: 100%;
+    text-align: center;
+    padding: 1rem 0.75rem;
+    border-radius: 14px;
+    border: 2px solid var(--border-color);
+    background: var(--bg-secondary);
+    transition: all 0.25s;
+}
+.calc-verdict-label {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    color: var(--text-secondary);
+}
+.calc-verdict-gap {
+    display: block;
+    margin-top: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+.calc-verdict.win { border-color: #22c55e; background: rgba(34, 197, 94, 0.1); }
+.calc-verdict.win .calc-verdict-label { color: #22c55e; }
+.calc-verdict.fair { border-color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+.calc-verdict.fair .calc-verdict-label { color: #f59e0b; }
+.calc-verdict.lose { border-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+.calc-verdict.lose .calc-verdict-label { color: #ef4444; }
+
+/* ---- Balance meter ---- */
+.calc-balance {
+    position: relative;
+    width: 100%;
+    height: 8px;
+    border-radius: 6px;
+    background: linear-gradient(to right, #ef4444 0%, #f59e0b 50%, #22c55e 100%);
+}
+.calc-balance-marker {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6px;
+    height: 16px;
+    border-radius: 3px;
+    background: var(--text-primary, #fff);
+    border: 2px solid var(--bg-secondary);
+    transform: translate(-50%, -50%);
+    transition: left 0.3s ease;
+    box-shadow: 0 1px 4px var(--shadow-color);
+}
+.calc-balance-labels {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.calc-reset {
+    padding: 0.5rem 1.1rem;
+    background: var(--bg-item);
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    color: CanvasText;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+}
+.calc-reset:hover { border-color: #ef4444; color: #ef4444; }
+
+.calc-disclaimer {
+    margin: 1.25rem auto 0;
+    max-width: 640px;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* ---- Responsive: stack the board on narrow screens ---- */
+@media (max-width: 760px) {
+    .calc-board { grid-template-columns: 1fr; }
+    .calc-side[data-side="your"] { order: 1; }
+    .calc-center { order: 2; padding-top: 0; }
+    .calc-side[data-side="their"] { order: 3; }
+}
 .review-comment { font-size: 0.83rem; color: var(--text-secondary); margin-top: 0.25rem; word-break: break-word; }

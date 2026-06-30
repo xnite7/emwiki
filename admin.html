@@ -28,6 +28,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/interactjs@1.10.27/dist/interact.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 
 </head>
 
@@ -412,13 +414,18 @@
                     <div id="quick-editor-demand-buttons" style="display: flex; gap: 6px;">
                         <button class="demand-rating-btn" data-demand="0" title="Terrible">0</button>
                         <button class="demand-rating-btn" data-demand="1" title="Bad">1</button>
-                        <button class="demand-rating-btn" data-demand="2" title="Okay">2</button>
-                        <button class="demand-rating-btn" data-demand="3" title="Good">3</button>
-                        <button class="demand-rating-btn" data-demand="4" title="Great">4</button>
-                        <button class="demand-rating-btn" data-demand="5" title="Amazing">5</button>
+                        <button class="demand-rating-btn" data-demand="2" title="Low">2</button>
+                        <button class="demand-rating-btn" data-demand="3" title="Average">3</button>
+                        <button class="demand-rating-btn" data-demand="4" title="Good">4</button>
+                        <button class="demand-rating-btn" data-demand="5" title="High">5</button>
                     </div>
                     <small id="demand-label" style="color: #666; font-size: 11px; margin-top: 4px; display: block;"></small>
                 </div>
+
+                <!-- Price History editor launcher -->
+                <button id="open-price-history-btn" type="button" style="margin-top: 12px;">
+                    📈 Price History
+                </button>
             </div>
             <hr>
             <div id="quick-editor-lists">
@@ -489,6 +496,34 @@
                     <span class="icon" style="mask-image: url(&quot;data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2h4a1 1 0 1 1 0 2h-1.069l-.867 12.142A2 2 0 0 1 17.069 22H6.93a2 2 0 0 1-1.995-1.858L4.07 8H3a1 1 0 0 1 0-2h4V4zm2 2h6V4H9v2zM6.074 8l.857 12H17.07l.857-12H6.074zM10 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1zm4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1z'/%3E%3C/svg%3E&quot;); width: 16px; height: 16px; background: white;"></span>
                     Delete Item
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Price History Editor -->
+    <div id="price-history-editor" class="hidden">
+        <div class="ph-editor-backdrop"></div>
+        <div class="ph-editor-panel">
+            <div class="ph-editor-header">
+                <h2>Price History — <span id="ph-editor-item-name"></span></h2>
+                <button id="ph-editor-close" type="button" title="Close">&times;</button>
+            </div>
+            <div class="ph-editor-chart-wrap">
+                <canvas id="ph-editor-chart"></canvas>
+                <p id="ph-editor-empty" class="ph-editor-empty">No price points yet. Add one below.</p>
+            </div>
+            <div class="ph-editor-list-head">
+                <span>Date</span>
+                <span>Price</span>
+                <span></span>
+            </div>
+            <ul id="ph-list"></ul>
+            <button id="ph-add-point-btn" type="button" class="small-btn">+ Add point</button>
+            <div class="ph-editor-actions">
+                <button id="ph-clear-btn" type="button" class="small-btn danger">Clear all</button>
+                <div style="flex:1;"></div>
+                <button id="ph-cancel-btn" type="button" class="small-btn ghost">Cancel</button>
+                <button id="ph-apply-btn" type="button" class="small-btn primary">Apply</button>
             </div>
         </div>
     </div>
@@ -768,6 +803,19 @@
                     if (val1 !== val2) {
                         return true; // Has changes
                     }
+                }
+
+                // Compare price history (edited via the Price History editor). Without this,
+                // a history-only edit isn't seen as a change and checkModifications would
+                // drop the item from the save set.
+                const phStr = (arr) => JSON.stringify(
+                    (Array.isArray(arr) ? arr : []).map(p => ({
+                        price: Number(p.price) || 0,
+                        timestamp: Number(p.timestamp) || 0
+                    }))
+                );
+                if (phStr(original.priceHistory) !== phStr(current.priceHistory)) {
+                    return true;
                 }
 
                 return false; // No changes
@@ -1130,7 +1178,7 @@
                             if (action.previousState.from !== action.newState.from) changes.push('description');
                             if (action.previousState['price/code/rarity'] !== action.newState['price/code/rarity']) changes.push('codes');
                             if (action.previousState.demand !== action.newState.demand) {
-                                const labels = ['Terrible', 'Bad', 'Okay', 'Good', 'Great', 'Amazing'];
+                                const labels = ['Terrible', 'Bad', 'Low', 'Average', 'Good', 'High'];
                                 const oldLabel = labels[action.previousState.demand || 0];
                                 const newLabel = labels[action.newState.demand || 0];
                                 changes.push(`demand (${oldLabel}→${newLabel})`);
@@ -2485,6 +2533,7 @@
                         retired: item.retired === true,
                         premium: item.premium === true,
                         removed: item.removed === true,
+                        unstable: item.unstable === true,
                         price_history: item.priceHistory || null,
                         demand: item.demand || 0,
                         credits: item.credits || null,
@@ -2494,6 +2543,11 @@
                     };
                     if (includeUpdatedAt) {
                         payload.updated_at = item.updated_at || null;
+                    }
+                    // When the Price History editor was used, tell the API to replace the
+                    // stored history outright instead of merging (so deletions/edits stick).
+                    if (item._replacePriceHistory) {
+                        payload.replace_price_history = true;
                     }
                     return payload;
                 };
@@ -2565,6 +2619,12 @@
                                     const errorText = await updateRes.text();
                                     throw new Error(`Failed to update ${item.name}: ${errorText}`);
                                 }
+                            }
+
+                            // History edit persisted — clear the replace flag so future
+                            // plain price changes resume normal auto-append behavior.
+                            if (item._replacePriceHistory) {
+                                delete item._replacePriceHistory;
                             }
 
                             successCount++;
@@ -2715,6 +2775,12 @@
                 state.allItems.forEach(item => {
                     if (!item.priceHistory) {
                         item.priceHistory = [];
+                    }
+
+                    // The Price History editor already set an exact, curated history for
+                    // this item — don't auto-append on top of it.
+                    if (item._replacePriceHistory) {
+                        return;
                     }
 
                     const isModified = ChangeTracker.isModifiedItem(item.name);
@@ -3370,6 +3436,244 @@
         };
 
         // ============================
+        // Price History Editor
+        // ============================
+        // Lets an admin add / edit / delete / clear the individual points behind an
+        // item's price graph. Edits are staged on state.currentEditingItem and persisted
+        // through the normal global Save flow (with replace_price_history so deletions
+        // actually stick — the API merges history otherwise).
+        const PriceHistoryEditor = {
+            item: null,        // the item being edited (reference into state.allItems)
+            working: [],       // working copy of price history points
+            chart: null,       // Chart.js instance
+
+            open(item) {
+                if (!item) return;
+                this.item = item;
+                // Deep clone existing history so Cancel discards cleanly.
+                this.working = (item.priceHistory || []).map(p => ({
+                    price: Number(p.price) || 0,
+                    timestamp: Number(p.timestamp) || Date.now(),
+                    admin: p.admin || null
+                }));
+
+                const nameEl = DOM.get('ph-editor-item-name');
+                if (nameEl) nameEl.textContent = item.name || '';
+
+                this.renderList();
+                this.renderChart();
+
+                const modal = DOM.get('price-history-editor');
+                if (modal) modal.classList.remove('hidden');
+                this.bindControls();
+            },
+
+            close() {
+                const modal = DOM.get('price-history-editor');
+                if (modal) modal.classList.add('hidden');
+                if (this.chart) { this.chart.destroy(); this.chart = null; }
+                this.item = null;
+                this.working = [];
+            },
+
+            bindControls() {
+                if (this._bound) return;
+                this._bound = true;
+                const closeBtn = DOM.get('ph-editor-close');
+                const cancelBtn = DOM.get('ph-cancel-btn');
+                const applyBtn = DOM.get('ph-apply-btn');
+                const addBtn = DOM.get('ph-add-point-btn');
+                const clearBtn = DOM.get('ph-clear-btn');
+                const backdrop = DOM.query('.ph-editor-backdrop');
+
+                if (closeBtn) closeBtn.onclick = () => this.close();
+                if (cancelBtn) cancelBtn.onclick = () => this.close();
+                if (backdrop) backdrop.onclick = () => this.close();
+                if (applyBtn) applyBtn.onclick = () => this.apply();
+                if (addBtn) addBtn.onclick = () => this.addPoint();
+                if (clearBtn) clearBtn.onclick = () => this.clearAll();
+            },
+
+            // Convert a ms timestamp to a yyyy-mm-dd string for <input type="date">.
+            toDateInput(ts) {
+                const d = new Date(Number(ts) || Date.now());
+                if (isNaN(d.getTime())) return '';
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${d.getFullYear()}-${m}-${day}`;
+            },
+
+            renderList() {
+                const list = DOM.get('ph-list');
+                if (!list) return;
+                list.innerHTML = '';
+
+                this.working
+                    .map((p, i) => ({ p, i }))
+                    .sort((a, b) => (a.p.timestamp || 0) - (b.p.timestamp || 0))
+                    .forEach(({ p, i }) => {
+                        const li = document.createElement('li');
+
+                        const dateInput = document.createElement('input');
+                        dateInput.type = 'date';
+                        dateInput.value = this.toDateInput(p.timestamp);
+                        dateInput.oninput = () => {
+                            const parsed = Date.parse(dateInput.value);
+                            if (!isNaN(parsed)) {
+                                this.working[i].timestamp = parsed;
+                                this.renderChart();
+                            }
+                        };
+
+                        const priceInput = document.createElement('input');
+                        priceInput.type = 'number';
+                        priceInput.min = '0';
+                        priceInput.placeholder = 'Price';
+                        priceInput.value = p.price;
+                        priceInput.oninput = () => {
+                            this.working[i].price = Number(priceInput.value) || 0;
+                            this.renderChart();
+                        };
+
+                        const del = document.createElement('button');
+                        del.type = 'button';
+                        del.className = 'ph-row-delete';
+                        del.title = 'Delete point';
+                        del.textContent = '✕';
+                        del.onclick = () => {
+                            this.working.splice(i, 1);
+                            this.renderList();
+                            this.renderChart();
+                        };
+
+                        li.appendChild(dateInput);
+                        li.appendChild(priceInput);
+                        li.appendChild(del);
+                        list.appendChild(li);
+                    });
+            },
+
+            renderChart() {
+                const canvas = DOM.get('ph-editor-chart');
+                const empty = DOM.get('ph-editor-empty');
+                if (!canvas) return;
+
+                const points = [...this.working]
+                    .filter(p => p.price !== 0 && p.price !== '0')
+                    .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+                if (this.chart) { this.chart.destroy(); this.chart = null; }
+
+                if (typeof Chart === 'undefined' || points.length < 2) {
+                    canvas.style.display = 'none';
+                    if (empty) {
+                        empty.style.display = 'flex';
+                        empty.textContent = (typeof Chart === 'undefined')
+                            ? 'Chart library failed to load.'
+                            : 'Add at least 2 non-zero points to preview the graph.';
+                    }
+                    return;
+                }
+
+                canvas.style.display = 'block';
+                if (empty) empty.style.display = 'none';
+
+                this.chart = new Chart(canvas.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: points.map(p => new Date(p.timestamp)),
+                        datasets: [{
+                            label: 'Price',
+                            data: points.map(p => p.price),
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            pointBackgroundColor: '#3b82f6',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: (ctx) => `Price: ${Number(ctx.parsed.y).toLocaleString()}`
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: { unit: 'day', displayFormats: { day: 'MMM d' } },
+                                grid: { color: 'rgba(255, 255, 255, 0.15)' },
+                                ticks: { color: 'rgba(255, 255, 255, 0.7)' }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(255, 255, 255, 0.15)' },
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.7)',
+                                    callback: (v) => Number(v).toLocaleString()
+                                }
+                            }
+                        }
+                    }
+                });
+            },
+
+            addPoint() {
+                this.working.push({
+                    price: 0,
+                    timestamp: Date.now(),
+                    admin: state.adminName || null
+                });
+                this.renderList();
+                this.renderChart();
+            },
+
+            clearAll() {
+                if (!this.working.length) return;
+                this.working = [];
+                this.renderList();
+                this.renderChart();
+            },
+
+            apply() {
+                if (!this.item) return;
+
+                // Normalize: drop NaN prices, sort by timestamp.
+                const cleaned = this.working
+                    .map(p => ({
+                        price: Math.round(Number(p.price)) || 0,
+                        timestamp: Number(p.timestamp) || Date.now(),
+                        admin: p.admin || state.adminName || null
+                    }))
+                    .filter(p => Number.isFinite(p.price) && Number.isFinite(p.timestamp))
+                    .sort((a, b) => a.timestamp - b.timestamp);
+
+                this.item.priceHistory = cleaned;
+                // Signal the save flow to REPLACE (not merge) the stored history so that
+                // deletions and edits actually take effect server-side.
+                this.item._replacePriceHistory = true;
+
+                ChangeTracker.modifiedItems.add(this.item.name);
+                if (ChangeTracker.updateHighlights) ChangeTracker.updateHighlights();
+                if (typeof ErrorHandler !== 'undefined' && ErrorHandler.showToast) {
+                    ErrorHandler.showToast('Price history updated — click Save to apply', 'success');
+                }
+
+                this.close();
+            }
+        };
+
+        // ============================
         // Quick Editor
         // ============================
         const QuickEditor = {
@@ -3380,7 +3684,8 @@
                 Retired: "#9b59b6",
                 Premium: "#e67e22",
                 Untradable: "#e74c3c",
-                Removed: "#95a5a6"
+                Removed: "#95a5a6",
+                Unstable: "#d9534f"
             },
 
             TAG_TO_PROP: {
@@ -3390,7 +3695,8 @@
                 Retired: "retired",
                 Premium: "premium",
                 Untradable: "tradable",
-                Removed: "removed"
+                Removed: "removed",
+                Unstable: "unstable"
             },
 
             ICON_MAP: {
@@ -3992,6 +4298,9 @@
                 if (aliasBtn) aliasBtn.onclick = () => this.startEditingAlias();
                 if (quantityBtn) quantityBtn.onclick = () => this.startEditingQuantity();
 
+                const priceHistoryBtn = DOM.get('open-price-history-btn');
+                if (priceHistoryBtn) priceHistoryBtn.onclick = () => PriceHistoryEditor.open(state.currentEditingItem);
+
                 const deleteBtn = DOM.get('delete-item-btn');
                 if (deleteBtn) {
                     delete deleteBtn.dataset.confirming;
@@ -4515,10 +4824,10 @@
                 const demandLabel = document.getElementById('demand-label');
 
                 const demandLabels = {
-                    5: 'Amazing',
-                    4: 'Great',
-                    3: 'Good',
-                    2: 'Okay',
+                    5: 'High',
+                    4: 'Good',
+                    3: 'Average',
+                    2: 'Low',
                     1: 'Bad',
                     0: 'Terrible'
                 };
@@ -4601,7 +4910,8 @@
                     Retired: item.retired,
                     Premium: item.premium,
                     Untradable: !item.tradable,
-                    Removed: item.removed
+                    Removed: item.removed,
+                    Unstable: item.unstable
                 }).filter(([k, v]) => v).map(([k]) => k);
 
                 // Store tags in closure for tag management
@@ -5512,7 +5822,7 @@
             },
 
             formatDemandItem(item) {
-                const labels = ['Terrible', 'Bad', 'Okay', 'Good', 'Great', 'Amazing'];
+                const labels = ['Terrible', 'Bad', 'Low', 'Average', 'Good', 'High'];
                 const oldDemand = item.oldDemand || 0;
                 const newDemand = item.newDemand || 0;
                 const oldLabel = labels[oldDemand];
@@ -7030,7 +7340,7 @@
                     'tradable': (old, val) => !val ? '✓ Marked as Untradable' : '✗ Marked as Tradable',
                     'name': (old, val) => `Name: "${old}" → "${val}"`,
                     'demand': (old, val) => {
-                        const labels = ['Terrible', 'Bad', 'Okay', 'Good', 'Great', 'Amazing'];
+                        const labels = ['Terrible', 'Bad', 'Low', 'Average', 'Good', 'High'];
                         const oldLabel = labels[old || 0];
                         const newLabel = labels[val || 0];
                         return `Demand: ${oldLabel} (${old || 0}★) → ${newLabel} (${val || 0}★)`;
@@ -9576,10 +9886,10 @@
 
             renderItemCard(item) {
                 const demandLabels = {
-                    5: 'Amazing',
-                    4: 'Great',
-                    3: 'Good',
-                    2: 'Okay',
+                    5: 'High',
+                    4: 'Good',
+                    3: 'Average',
+                    2: 'Low',
                     1: 'Bad',
                     0: 'Not Set'
                 };

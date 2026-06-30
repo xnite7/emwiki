@@ -1,6 +1,8 @@
-import { verifySession } from '../../_utils/auth.js';
-
-// Authenticate user from request
+// Authenticate user from request.
+// Validates the opaque session token against the `sessions` table, matching the
+// scheme used by the rest of the site (see api/auth). The single JOIN to `users`
+// avoids a second round-trip. `role` is aliased to `roles` so downstream helpers
+// (isAuthorized, etc.) keep working.
 export async function authenticateUser(request, env) {
     const authHeader = request.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -8,18 +10,15 @@ export async function authenticateUser(request, env) {
     }
 
     const token = authHeader.substring(7);
-    const session = await verifySession(token, env.SESSION_SECRET);
 
-    if (!session) {
-        return null;
-    }
+    const user = await env.DBA.prepare(`
+        SELECT u.user_id, u.username, u.display_name, u.avatar_url, u.role AS roles
+        FROM sessions s
+        JOIN users u ON u.user_id = s.user_id
+        WHERE s.token = ? AND s.expires_at > ?
+    `).bind(token, Date.now()).first();
 
-    // Get user from database
-    const user = await env.DBA.prepare(
-        'SELECT user_id, username, display_name, avatar_url, roles FROM users WHERE user_id = ?'
-    ).bind(session.name).first();
-
-    return user;
+    return user || null;
 }
 
 // Check if user is authorized (authenticated and not banned)
@@ -119,7 +118,7 @@ export async function getUserWithStats(env, userId) {
             u.username,
             u.display_name,
             u.avatar_url,
-            u.roles,
+            u.role AS roles,
             uts.total_trades,
             uts.successful_trades,
             uts.average_rating,

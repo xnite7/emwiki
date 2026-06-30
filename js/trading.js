@@ -32,6 +32,10 @@ class TradingHub {
         };
         this.offerSearchTimeout = null;
 
+        // Trade value calculator state (each entry: { item, qty })
+        this.calcState = { your: [], their: [] };
+        this.calcSearchTimeouts = {};
+
         // UI state
         this.activeTab = 'browse';
         this.activeMyTab = 'listings';
@@ -259,6 +263,9 @@ class TradingHub {
             btn.addEventListener('click', () => this.switchTab(btn.dataset.tab));
         });
 
+        // Trade value calculator
+        this.setupCalculator();
+
         // Search
         const searchInput = document.getElementById('searchInput');
         if (searchInput) {
@@ -409,6 +416,14 @@ class TradingHub {
 
         if (tab === 'browse') {
             document.getElementById('panelBrowse')?.classList.add('active');
+        } else if (tab === 'calculator') {
+            // Public tool — no login required.
+            document.getElementById('panelCalculator')?.classList.add('active');
+            if (!this.allItems || this.allItems.length === 0) {
+                this.loadItems().then(() => this.renderCalculator());
+            } else {
+                this.renderCalculator();
+            }
         } else if (tab === 'my-trades') {
             document.getElementById('panelMyTrades')?.classList.add('active');
             if (!this.currentUser) {
@@ -435,6 +450,257 @@ class TradingHub {
             }
             this.setStep(1);
             this.loadWizardState();
+        }
+    }
+
+    // ==================== TRADE VALUE CALCULATOR ====================
+
+    // Per-demand-point value adjustment around "Good" (3) as neutral.
+    static CALC_DEMAND_STEP = 0.12;
+
+    setupCalculator() {
+        ['your', 'their'].forEach(side => {
+            const input = document.querySelector(`.calc-search-input[data-side-search="${side}"]`);
+            const results = document.querySelector(`.calc-search-results[data-side-results="${side}"]`);
+            if (input && results) {
+                input.addEventListener('input', (e) => {
+                    const query = e.target.value.trim().toLowerCase();
+                    clearTimeout(this.calcSearchTimeouts[side]);
+                    if (query.length < 2) {
+                        results.classList.remove('active');
+                        results.innerHTML = '';
+                        return;
+                    }
+                    this.calcSearchTimeouts[side] = setTimeout(() => {
+                        this.performCalcSearch(side, query, results, input);
+                    }, 200);
+                });
+                document.addEventListener('click', (e) => {
+                    if (!input.contains(e.target) && !results.contains(e.target)) {
+                        results.classList.remove('active');
+                    }
+                });
+            }
+
+            // Delegated controls for the item chips (qty steppers + remove).
+            const itemsEl = document.querySelector(`.calc-items[data-side-items="${side}"]`);
+            if (itemsEl) {
+                itemsEl.addEventListener('click', (e) => {
+                    const chip = e.target.closest('[data-idx]');
+                    if (!chip) return;
+                    const idx = parseInt(chip.dataset.idx, 10);
+                    const entry = this.calcState[side][idx];
+                    if (!entry) return;
+                    if (e.target.closest('[data-remove]')) {
+                        this.removeCalcItem(side, idx);
+                    } else if (e.target.closest('[data-qty-inc]')) {
+                        this.setCalcQty(side, idx, entry.qty + 1);
+                    } else if (e.target.closest('[data-qty-dec]')) {
+                        this.setCalcQty(side, idx, entry.qty - 1);
+                    }
+                });
+            }
+        });
+
+        document.getElementById('calcResetBtn')?.addEventListener('click', () => this.resetCalculator());
+    }
+
+    performCalcSearch(side, query, resultsEl, inputEl) {
+        const matches = (this.allItems || [])
+            .filter(item => item.name.toLowerCase().includes(query))
+            .slice(0, 20);
+
+        if (matches.length === 0) {
+            resultsEl.innerHTML = '<div class="search-result-empty">No items found</div>';
+            resultsEl.classList.add('active');
+            return;
+        }
+
+        resultsEl.innerHTML = '';
+        matches.forEach(item => {
+            const base = this.parsePrice(item.price);
+            const valLabel = base === null
+                ? 'no value'
+                : this.formatValue(base * this.demandMultiplier(item.demand));
+            const el = document.createElement('div');
+            el.className = 'search-result';
+            el.innerHTML = `
+                <img src="${item.img || './imgs/placeholder.png'}" alt="${this.esc(item.name)}" onerror="this.src='./imgs/placeholder.png'">
+                <div>
+                    <div class="search-result-name">${this.esc(item.name)}</div>
+                    <div class="search-result-category">${this.esc(item.category || '')} · ${valLabel}</div>
+                </div>
+            `;
+            el.addEventListener('click', () => {
+                this.addCalcItem(side, item);
+                resultsEl.classList.remove('active');
+                inputEl.value = '';
+            });
+            resultsEl.appendChild(el);
+        });
+        resultsEl.classList.add('active');
+    }
+
+    addCalcItem(side, item) {
+        const list = this.calcState[side];
+        const existing = list.find(e => e.item.name === item.name && e.item.category === item.category);
+        if (existing) {
+            existing.qty = Math.min(existing.qty + 1, 999);
+        } else {
+            list.push({ item, qty: 1 });
+        }
+        this.renderCalculator();
+    }
+
+    removeCalcItem(side, idx) {
+        this.calcState[side].splice(idx, 1);
+        this.renderCalculator();
+    }
+
+    setCalcQty(side, idx, qty) {
+        if (qty < 1) {
+            this.removeCalcItem(side, idx);
+            return;
+        }
+        this.calcState[side][idx].qty = Math.min(qty, 999);
+        this.renderCalculator();
+    }
+
+    resetCalculator() {
+        this.calcState = { your: [], their: [] };
+        this.renderCalculator();
+    }
+
+    // --- Value math ---
+
+    // Parse a stored price string into a numeric value, or null if unvalued.
+    // Handles plain numbers, ranges ("5-20" -> midpoint), open-ended ("30000+"),
+    // and sentinels (N/A, O/C, blank).
+    parsePrice(price) {
+        if (price === null || price === undefined) return null;
+        let s = String(price).trim();
+        if (!s) return null;
+        const upper = s.toUpperCase();
+        if (upper === 'N/A' || upper === 'O/C') return null;
+        s = s.replace(/\+/g, '').replace(/,/g, '').trim();
+        const range = s.match(/^(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)$/);
+        if (range) {
+            const lo = parseFloat(range[1]);
+            const hi = parseFloat(range[2]);
+            if (Number.isFinite(lo) && Number.isFinite(hi)) return (lo + hi) / 2;
+        }
+        const num = parseFloat(s);
+        return Number.isFinite(num) ? num : null;
+    }
+
+    // Demand (0-5) -> value multiplier. 0 means unrated/default, so treat as
+    // neutral (1.0) rather than penalizing. 1-5 scales around Good (3) = neutral.
+    demandMultiplier(demand) {
+        const d = Number(demand);
+        if (!Number.isFinite(d) || d <= 0) return 1;
+        return 1 + (Math.min(d, 5) - 3) * TradingHub.CALC_DEMAND_STEP;
+    }
+
+    // Demand-weighted value of an item line, or null if the item has no value.
+    itemValue(item, qty) {
+        const base = this.parsePrice(item.price);
+        if (base === null) return null;
+        return base * this.demandMultiplier(item.demand) * (qty || 1);
+    }
+
+    formatValue(n) {
+        return Math.round(n).toLocaleString('en-US');
+    }
+
+    calcSideTotal(side) {
+        let total = 0, valued = 0, unvalued = 0;
+        this.calcState[side].forEach(({ item, qty }) => {
+            const v = this.itemValue(item, qty);
+            if (v === null) unvalued += qty;
+            else { total += v; valued += qty; }
+        });
+        return { total, valued, unvalued };
+    }
+
+    // --- Rendering ---
+
+    renderCalculator() {
+        this.renderCalcSide('your');
+        this.renderCalcSide('their');
+        this.renderCalcVerdict();
+    }
+
+    renderCalcSide(side) {
+        const itemsEl = document.querySelector(`.calc-items[data-side-items="${side}"]`);
+        const totalEl = document.querySelector(`.calc-side-total[data-side-total="${side}"]`);
+        if (!itemsEl) return;
+
+        const list = this.calcState[side];
+        if (list.length === 0) {
+            itemsEl.innerHTML = '<div class="calc-empty">No items yet — search above to add.</div>';
+        } else {
+            itemsEl.innerHTML = list.map((entry, idx) => {
+                const { item, qty } = entry;
+                const v = this.itemValue(item, qty);
+                const noValue = v === null;
+                const valLabel = noValue ? 'no value' : this.formatValue(v);
+                return `
+                <div class="calc-item${noValue ? ' calc-item-novalue' : ''}" data-idx="${idx}">
+                    <img src="${item.img || './imgs/placeholder.png'}" alt="${this.esc(item.name)}" onerror="this.src='./imgs/placeholder.png'">
+                    <div class="calc-item-info">
+                        <div class="calc-item-name">${this.esc(item.name)}</div>
+                        <div class="calc-item-val">${valLabel}</div>
+                    </div>
+                    <div class="calc-item-qty">
+                        <button type="button" data-qty-dec aria-label="Decrease quantity">−</button>
+                        <span>${qty}</span>
+                        <button type="button" data-qty-inc aria-label="Increase quantity">+</button>
+                    </div>
+                    <button type="button" class="calc-item-remove" data-remove aria-label="Remove item">✕</button>
+                </div>`;
+            }).join('');
+        }
+
+        const { total } = this.calcSideTotal(side);
+        if (totalEl) totalEl.textContent = this.formatValue(total);
+    }
+
+    renderCalcVerdict() {
+        const you = this.calcSideTotal('your').total;
+        const them = this.calcSideTotal('their').total;
+        const verdictEl = document.querySelector('[data-verdict]');
+        const labelEl = verdictEl?.querySelector('.calc-verdict-label');
+        const gapEl = verdictEl?.querySelector('.calc-verdict-gap');
+        const markerEl = document.querySelector('[data-balance-marker]');
+
+        verdictEl?.classList.remove('win', 'fair', 'lose', 'empty');
+
+        if (you === 0 && them === 0) {
+            verdictEl?.classList.add('empty');
+            if (labelEl) labelEl.textContent = '—';
+            if (gapEl) gapEl.textContent = 'Add items to compare';
+            if (markerEl) markerEl.style.left = '50%';
+            return;
+        }
+
+        const larger = Math.max(you, them, 1);
+        const diff = them - you; // positive => you receive more => win
+        const pct = Math.abs(diff) / larger;
+        let verdict;
+        if (pct <= 0.05) verdict = 'fair';
+        else if (diff > 0) verdict = 'win';
+        else verdict = 'lose';
+
+        verdictEl?.classList.add(verdict);
+        if (labelEl) labelEl.textContent = verdict.toUpperCase();
+        if (gapEl) {
+            if (verdict === 'fair') gapEl.textContent = 'Even trade';
+            else if (verdict === 'win') gapEl.textContent = `+${this.formatValue(Math.abs(diff))} in your favor`;
+            else gapEl.textContent = `−${this.formatValue(Math.abs(diff))} against you`;
+        }
+        if (markerEl) {
+            const share = them / (you + them); // 0 (lose) .. 1 (win)
+            markerEl.style.left = `${Math.round(share * 100)}%`;
         }
     }
 

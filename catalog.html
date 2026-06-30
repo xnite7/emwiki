@@ -1638,11 +1638,18 @@
                     this.loadBatch();
                 });
 
-                window.addEventListener('scroll', () => {
-                    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
-                        this.loadBatch();
-                    }
-                });
+                // Infinite scroll via IntersectionObserver on the load-more sentinel.
+                // Avoids the forced layout from reading document.body.offsetHeight on
+                // every scroll frame (a major source of scroll jank, esp. on mobile).
+                const loadMoreSentinel = document.querySelector('.load-more');
+                if (loadMoreSentinel) {
+                    this.loadMoreObserver = new IntersectionObserver((entries) => {
+                        if (entries[0].isIntersecting) {
+                            this.loadBatch();
+                        }
+                    }, { rootMargin: '300px' });
+                    this.loadMoreObserver.observe(loadMoreSentinel);
+                }
                 window.addEventListener('popstate', () => {
                     // Restore filters from URL
                     this.handleURLParams(true);
@@ -2495,8 +2502,21 @@
                     } else {
                         document.getElementById('loadMore').textContent = 'Load More Items';
                         document.getElementById('loadMore').disabled = false;
+                        // The observer only fires on intersection *changes*. If the sentinel is
+                        // still within view after this batch (e.g. a tall viewport), keep filling
+                        // until it's pushed below the fold. One cheap rect read per batch, not per
+                        // scroll frame.
+                        if (this.isSentinelNear()) {
+                            this.loadBatch();
+                        }
                     }
                 }, 300);
+            }
+
+            isSentinelNear() {
+                const el = document.querySelector('.load-more');
+                if (!el) return false;
+                return el.getBoundingClientRect().top <= window.innerHeight + 300;
             }
 
         }
