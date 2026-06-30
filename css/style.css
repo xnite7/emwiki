@@ -956,7 +956,7 @@ main {
 }
 
 .item canvas,
-.item img {
+.item .itemimg {
     max-width: 70%;
     max-height: 70%;
     transform: translate(0, 12px);

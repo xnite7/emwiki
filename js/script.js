@@ -1300,6 +1300,7 @@ class BaseApp {
             const img = document.createElement('img');
             img.loading = 'lazy';
             img.decoding = 'async';
+            img.className = 'itemimg';
             img.alt = item.name || '';
             // Use optimized image for catalog items (thumbnail size)
             img.src = Utils.getOptimizedImage(item.img, { width: 70, height: 70, format: 'webp', fit: 'scale-down' }) || item.img;
