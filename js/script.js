@@ -4332,6 +4332,11 @@ class PopoverManager {
             if (this.openPopovers.size === 0) return;
 
             this.openPopovers.forEach(popover => {
+                // Manual popovers (e.g. the toast container) are script-controlled and
+                // must never be light-dismissed by an outside click — doing so drops them
+                // out of the top layer and they render behind the page.
+                if (popover.getAttribute('popover') === 'manual') return;
+
                 // Check if click/touch was outside the popover
                 const isClickInside = popover.contains(e.target);
 

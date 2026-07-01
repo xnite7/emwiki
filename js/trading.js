@@ -72,6 +72,7 @@ class TradingHub {
 
     async init() {
         this.setupEventListeners();
+        this.applyAuthState();
         await Promise.all([
             this.loadItems(),
             this.loadTrades()
@@ -260,7 +261,14 @@ class TradingHub {
     setupEventListeners() {
         // Tab navigation
         document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => this.switchTab(btn.dataset.tab));
+            btn.addEventListener('click', () => {
+                // Logged-out visitors can browse but the account-gated tabs are greyed out.
+                if (btn.classList.contains('tab-disabled')) {
+                    this.showToast('Please sign in to use this', 'warning');
+                    return;
+                }
+                this.switchTab(btn.dataset.tab);
+            });
         });
 
         // Trade value calculator
@@ -347,6 +355,7 @@ class TradingHub {
                 this.closeOfferModal();
                 this.closeReviewModal();
                 this.closeNotifDropdown();
+                this.closeMessagesModal();
             }
         });
     }
@@ -367,6 +376,19 @@ class TradingHub {
         document.addEventListener('click', (e) => {
             const wrapper = document.getElementById('notifWrapper');
             if (wrapper && !wrapper.contains(e.target)) this.closeNotifDropdown();
+        });
+
+        // Messages button opens the messages modal (like the notifications bell).
+        document.getElementById('msgBtn')?.addEventListener('click', () => {
+            if (!this.currentUser) {
+                this.showToast('Please sign in to view your messages', 'warning');
+                return;
+            }
+            this.openMessagesModal();
+        });
+        document.getElementById('closeMessagesModal')?.addEventListener('click', () => this.closeMessagesModal());
+        document.getElementById('messagesModal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'messagesModal') this.closeMessagesModal();
         });
 
         // Messages composer
@@ -413,14 +435,6 @@ class TradingHub {
             }
             this.renderMyTrades(true); // show loading state, then refresh
             this.loadMyTrades().then(() => this.renderMyTrades());
-        } else if (tab === 'messages') {
-            document.getElementById('panelMessages')?.classList.add('active');
-            if (!this.currentUser) {
-                this.showToast('Please login to view your messages', 'warning');
-                this.switchTab('browse');
-                return;
-            }
-            this.loadConversations();
         } else if (tab === 'create') {
             document.getElementById('panelCreate')?.classList.add('active');
             if (!this.currentUser) {
@@ -435,6 +449,19 @@ class TradingHub {
                 this.renderCalculator();
             }
         }
+    }
+
+    // Grey out the account-gated controls for logged-out visitors.
+    // Browse stays open to everyone; My Trades, Create, Messages and
+    // Notifications require signing in.
+    applyAuthState() {
+        const authed = !!this.currentUser;
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            if (btn.dataset.tab === 'browse') return;
+            btn.classList.toggle('tab-disabled', !authed);
+        });
+        document.getElementById('msgBtn')?.classList.toggle('icon-btn-disabled', !authed);
+        document.getElementById('notifBellBtn')?.classList.toggle('icon-btn-disabled', !authed);
     }
 
     // ==================== TRADE VALUE CALCULATOR ====================
@@ -1610,6 +1637,15 @@ class TradingHub {
 
     // ==================== MESSAGES ====================
 
+    openMessagesModal() {
+        document.getElementById('messagesModal')?.classList.add('active');
+        this.loadConversations();
+    }
+
+    closeMessagesModal() {
+        document.getElementById('messagesModal')?.classList.remove('active');
+    }
+
     async loadConversations() {
         const list = document.getElementById('conversationsList');
         if (!list) return;
@@ -1662,7 +1698,7 @@ class TradingHub {
     }
 
     openThreadWith(userId, name, listingId, offerId) {
-        this.switchTab('messages');
+        this.openMessagesModal();
         this.activeThread = {
             userId: String(userId),
             name: name || 'Trader',
@@ -1808,7 +1844,7 @@ class TradingHub {
 
         // Route by notification type rather than navigating to non-page routes.
         if (notif.type === 'new_message') {
-            this.switchTab('messages');
+            this.openMessagesModal();
         } else if (['new_offer', 'offer_accepted', 'offer_rejected'].includes(notif.type)) {
             this.switchTab('my-trades');
         } else if (notif.type === 'review_received' && notif.link) {

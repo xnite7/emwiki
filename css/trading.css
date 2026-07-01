@@ -112,6 +112,28 @@
     border-bottom-color: #667eea;
 }
 
+/* Account-gated controls, greyed out for logged-out visitors. */
+.tab-btn.tab-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    color: var(--text-secondary);
+}
+
+.tab-btn.tab-disabled:hover {
+    background: none;
+    color: var(--text-secondary);
+}
+
+.notif-bell.icon-btn-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.notif-bell.icon-btn-disabled:hover {
+    color: var(--text-secondary);
+    background: none;
+}
+
 .tab-badge {
     font-size: 0.65rem;
     font-weight: 700;
@@ -1839,6 +1861,23 @@
     .messages-layout { grid-template-columns: 320px 1fr; }
 }
 
+/* Messages modal: bound the layout height so each pane scrolls internally. */
+.modal-messages { max-width: 920px; }
+.modal-messages .messages-layout { padding: 1rem; margin: 0; }
+
+@media (min-width: 760px) {
+    .modal-messages {
+        height: min(82vh, 660px);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .modal-messages .modal-header { flex-shrink: 0; }
+    .modal-messages .messages-layout { flex: 1; min-height: 0; }
+    .modal-messages .conversations-pane,
+    .modal-messages .thread-pane { min-height: 0; }
+}
+
 .conversations-pane,
 .thread-pane {
     background: var(--bg-item);
@@ -2273,13 +2312,61 @@
 }
 .calc-reset:hover { border-color: #ef4444; color: #ef4444; }
 
+
 .calc-disclaimer {
-    margin: 1.25rem auto 0;
-    max-width: 640px;
+    color: #ffffff7a;
+    position: absolute;
+    font-weight: 900;
+    right: 17px;
+    top: 0px;
+    margin-top: 7PX;
+    font-size: 14px;
+    text-align: center;
+    font-family: 'BuilderSans';
+    border: 3px solid;
+    float: right;
+    border-radius: 100%;
+    width: 18px;
+    height: 18px;
+    font-variant: normal;
+    display: block;
+    transition: color 0.2s ease;
+}
+
+.calc-disclaimer:hover {
+    color: #ffffffc4;
+}
+
+.calc-center p {
+    display: none;
     text-align: center;
     font-size: 0.75rem;
     color: var(--text-secondary);
     line-height: 1.5;
+    position: absolute;
+    background: linear-gradient(179deg, #43474f8f, #3b3b3bc9);
+    backdrop-filter: blur(14px);
+    font: 400 15px 'Source Sans Pro';
+    color: #858585;
+    font-family: 'BuilderSans';
+    padding: 11px;
+    border-radius: 10px;
+    margin-top: -118px;
+    margin-left: 21px;
+    filter: drop-shadow(2px 4px 3px black) drop-shadow(2px 4px 3px #333);
+    border: 1px solid #555555;
+    font-variant-caps: all-petite-caps;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+
+    @starting-style {
+        opacity: 0;
+    }
+}
+
+.calc-disclaimer:hover~p {
+    position: absolute;
+    display: inline-block;
 }
 
 /* ---- Responsive: stack the board on narrow screens ---- */
