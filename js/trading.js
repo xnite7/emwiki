@@ -14,11 +14,8 @@ class TradingHub {
         this.currentUser = null;
         this.categories = ['gears', 'deaths', 'pets', 'effects', 'titles'];
 
-        // Wizard state
-        this.wizardState = {
-            currentStep: 1,
-            seekingItems: [],
-            offeringItems: [],
+        // Create-trade metadata (items live in boardState below).
+        this.createMeta = {
             description: '',
             theme: 'default'
         };
@@ -32,7 +29,10 @@ class TradingHub {
         };
         this.offerSearchTimeout = null;
 
-        // Trade value calculator state (each entry: { item, qty })
+        // Trade board state powering the Create panel (and its live value calc).
+        // `your` = items you give (offering), `their` = items you want (seeking).
+        // Each entry: { item, qty }. Custom (Robux/other-game) items are stored as
+        // a pseudo item carrying `__custom` so they render but count as "no value".
         this.calcState = { your: [], their: [] };
         this.calcSearchTimeouts = {};
 
@@ -299,21 +299,10 @@ class TradingHub {
             });
         });
 
-        // Wizard navigation
-        document.getElementById('cancelWizardBtn')?.addEventListener('click', () => this.cancelWizard());
-        document.getElementById('nextStep1Btn')?.addEventListener('click', () => this.nextStep());
-        document.getElementById('backStep2Btn')?.addEventListener('click', () => this.previousStep());
-        document.getElementById('nextStep2Btn')?.addEventListener('click', () => this.nextStep());
-        document.getElementById('backStep3Btn')?.addEventListener('click', () => this.previousStep());
+        // Publish the trade built on the board
         document.getElementById('createListingBtn')?.addEventListener('click', () => this.createListing());
 
-        // Item search
-        this.setupItemSearch('offeringSearchInput', 'offeringSearchResults', 'offeringItemsContainer', 'offeringItems');
-        this.setupItemSearch('seekingSearchInput', 'seekingSearchResults', 'seekingItemsContainer', 'seekingItems');
-
-        // Custom item modal
-        document.getElementById('addOfferingCustomBtn')?.addEventListener('click', () => this.openCustomModal('offeringItems'));
-        document.getElementById('addSeekingCustomBtn')?.addEventListener('click', () => this.openCustomModal('seekingItems'));
+        // Custom item modal (the per-side "Robux / Other" buttons are wired in setupCalculator)
         document.getElementById('closeCustomModal')?.addEventListener('click', () => this.closeCustomModal());
         document.getElementById('cancelCustomModal')?.addEventListener('click', () => this.closeCustomModal());
         document.getElementById('addCustomItemBtn')?.addEventListener('click', () => this.addCustomItem());
@@ -341,10 +330,9 @@ class TradingHub {
         const descInput = document.getElementById('tradeDescription');
         if (descInput) {
             descInput.addEventListener('input', (e) => {
-                this.wizardState.description = e.target.value;
+                this.createMeta.description = e.target.value;
                 const counter = document.getElementById('charCount');
                 if (counter) counter.textContent = e.target.value.length;
-                this.updatePreview();
             });
         }
 
@@ -416,14 +404,6 @@ class TradingHub {
 
         if (tab === 'browse') {
             document.getElementById('panelBrowse')?.classList.add('active');
-        } else if (tab === 'calculator') {
-            // Public tool — no login required.
-            document.getElementById('panelCalculator')?.classList.add('active');
-            if (!this.allItems || this.allItems.length === 0) {
-                this.loadItems().then(() => this.renderCalculator());
-            } else {
-                this.renderCalculator();
-            }
         } else if (tab === 'my-trades') {
             document.getElementById('panelMyTrades')?.classList.add('active');
             if (!this.currentUser) {
@@ -448,8 +428,12 @@ class TradingHub {
                 this.switchTab('browse');
                 return;
             }
-            this.setStep(1);
-            this.loadWizardState();
+            // Board (calcState) persists in memory across tab switches.
+            if (!this.allItems || this.allItems.length === 0) {
+                this.loadItems().then(() => this.renderCalculator());
+            } else {
+                this.renderCalculator();
+            }
         }
     }
 
@@ -502,6 +486,12 @@ class TradingHub {
             }
         });
 
+        // Per-side "Robux / Other" buttons open the shared custom-item modal,
+        // routing the result to that board side.
+        document.querySelectorAll('[data-side-custom]').forEach(btn => {
+            btn.addEventListener('click', () => this.openCustomModal(btn.dataset.sideCustom));
+        });
+
         document.getElementById('calcResetBtn')?.addEventListener('click', () => this.resetCalculator());
     }
 
@@ -552,6 +542,17 @@ class TradingHub {
         this.renderCalculator();
     }
 
+    // Add a custom (Robux / other-game) item, produced by the shared modal, to a
+    // board side. Wrapped in a pseudo item so it renders like any other chip; its
+    // null price means the value calc treats it as "no value".
+    addCalcCustomItem(side, custom) {
+        const pseudo = custom.type === 'robux'
+            ? { name: `${custom.amount} Robux`, img: null, category: 'Robux', price: null, demand: 0, __custom: custom }
+            : { name: `${custom.game_name}: ${custom.item_name}`, img: null, category: custom.game_name, price: null, demand: 0, __custom: custom };
+        this.calcState[side].push({ item: pseudo, qty: 1 });
+        this.renderCalculator();
+    }
+
     removeCalcItem(side, idx) {
         this.calcState[side].splice(idx, 1);
         this.renderCalculator();
@@ -567,7 +568,20 @@ class TradingHub {
     }
 
     resetCalculator() {
+        const hasItems = this.calcState.your.length > 0 || this.calcState.their.length > 0;
+        if (hasItems && !confirm('Clear this trade and start over?')) return;
+
         this.calcState = { your: [], their: [] };
+        this.createMeta = { description: '', theme: 'default' };
+
+        const desc = document.getElementById('tradeDescription');
+        if (desc) desc.value = '';
+        const counter = document.getElementById('charCount');
+        if (counter) counter.textContent = '0';
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.theme === 'default');
+        });
+
         this.renderCalculator();
     }
 
@@ -811,16 +825,21 @@ class TradingHub {
         return card;
     }
 
+    // Small "×N" badge for stacked items (only shown when qty > 1).
+    qtyBadge(item) {
+        return item.qty && item.qty > 1 ? `<span class="item-qty-badge">×${item.qty}</span>` : '';
+    }
+
     renderTradeItem(item) {
         if (item.type === 'robux') {
-            return `<div class="trade-item-robux">R$ ${item.amount}</div>`;
+            return `<div class="trade-item-robux">R$ ${item.amount}${this.qtyBadge(item)}</div>`;
         } else if (item.type === 'other-game') {
-            return `<div class="trade-item-other">${this.esc(item.game_name)}: ${this.esc(item.item_name)}</div>`;
+            return `<div class="trade-item-other">${this.esc(item.game_name)}: ${this.esc(item.item_name)}${this.qtyBadge(item)}</div>`;
         } else {
             return `
                 <div class="trade-item">
                     <img class="trade-item-img" src="${item.item_image || './imgs/placeholder.png'}" alt="${this.esc(item.item_name)}" onerror="this.src='./imgs/placeholder.png'">
-                    <span class="trade-item-name">${this.esc(item.item_name)}</span>
+                    <span class="trade-item-name">${this.esc(item.item_name)}${this.qtyBadge(item)}</span>
                 </div>
             `;
         }
@@ -1140,14 +1159,14 @@ class TradingHub {
 
     renderDetailItem(item) {
         if (item.type === 'robux') {
-            return `<div class="trade-item-robux">R$ ${item.amount}</div>`;
+            return `<div class="trade-item-robux">R$ ${item.amount}${this.qtyBadge(item)}</div>`;
         } else if (item.type === 'other-game') {
-            return `<div class="trade-item-other">${this.esc(item.game_name)}: ${this.esc(item.item_name)}</div>`;
+            return `<div class="trade-item-other">${this.esc(item.game_name)}: ${this.esc(item.item_name)}${this.qtyBadge(item)}</div>`;
         }
         return `
             <div class="detail-item">
                 <img src="${item.item_image || './imgs/placeholder.png'}" alt="${this.esc(item.item_name)}" onerror="this.src='./imgs/placeholder.png'">
-                <span>${this.esc(item.item_name)}</span>
+                <span>${this.esc(item.item_name)}${this.qtyBadge(item)}</span>
             </div>
         `;
     }
@@ -1406,250 +1425,6 @@ class TradingHub {
         }
     }
 
-    // ==================== WIZARD ====================
-
-    setStep(step) {
-        this.wizardState.currentStep = step;
-
-        // Update progress indicators
-        document.querySelectorAll('.progress-step').forEach(el => {
-            const s = parseInt(el.dataset.step);
-            el.classList.toggle('active', s === step);
-            el.classList.toggle('completed', s < step);
-        });
-
-        // Progress bar
-        const fill = document.getElementById('progressFill');
-        if (fill) {
-            fill.style.width = `${((step - 1) / 2) * 100}%`;
-        }
-
-        // Show/hide steps
-        document.querySelectorAll('.wizard-step').forEach(el => {
-            const s = parseInt(el.dataset.step);
-            el.classList.toggle('active', s === step);
-        });
-
-        // Render items for the current step
-        if (step === 1) {
-            this.renderSelectedItems('offeringItems');
-        } else if (step === 2) {
-            this.renderSelectedItems('seekingItems');
-        } else if (step === 3) {
-            this.wizardState.description = document.getElementById('tradeDescription')?.value || '';
-            this.updatePreview();
-        }
-    }
-
-    nextStep() {
-        const current = this.wizardState.currentStep;
-        if (current === 1) {
-            if (this.wizardState.offeringItems.length === 0) {
-                this.showToast('Please add at least one item to offer', 'error');
-                return;
-            }
-            this.setStep(2);
-        } else if (current === 2) {
-            this.setStep(3);
-        }
-    }
-
-    previousStep() {
-        if (this.wizardState.currentStep > 1) {
-            this.setStep(this.wizardState.currentStep - 1);
-        }
-    }
-
-    cancelWizard() {
-        if (this.wizardState.offeringItems.length > 0 || this.wizardState.seekingItems.length > 0) {
-            if (!confirm('Are you sure you want to cancel? Your draft will be saved.')) return;
-            this.saveWizardState();
-        }
-        this.resetWizard();
-        this.switchTab('browse');
-    }
-
-    resetWizard() {
-        this.wizardState = {
-            currentStep: 1,
-            seekingItems: [],
-            offeringItems: [],
-            description: '',
-            theme: 'default'
-        };
-        // Reset form fields
-        const desc = document.getElementById('tradeDescription');
-        if (desc) desc.value = '';
-        const counter = document.getElementById('charCount');
-        if (counter) counter.textContent = '0';
-        // Reset theme
-        document.querySelectorAll('.theme-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.theme === 'default');
-        });
-    }
-
-    saveWizardState() {
-        localStorage.setItem('trading_wizard_draft', JSON.stringify(this.wizardState));
-    }
-
-    loadWizardState() {
-        const saved = localStorage.getItem('trading_wizard_draft');
-        if (saved) {
-            try {
-                const state = JSON.parse(saved);
-                this.wizardState = { ...this.wizardState, ...state };
-
-                if (this.wizardState.description) {
-                    const desc = document.getElementById('tradeDescription');
-                    if (desc) desc.value = this.wizardState.description;
-                    const counter = document.getElementById('charCount');
-                    if (counter) counter.textContent = this.wizardState.description.length;
-                }
-                if (this.wizardState.theme) {
-                    this.selectTheme(this.wizardState.theme);
-                }
-
-                this.renderSelectedItems('offeringItems');
-                this.renderSelectedItems('seekingItems');
-            } catch (error) {
-                console.error('Failed to load wizard state:', error);
-            }
-        }
-    }
-
-    // ==================== ITEM SEARCH ====================
-
-    setupItemSearch(inputId, resultsId, containerId, itemsKey) {
-        const input = document.getElementById(inputId);
-        const results = document.getElementById(resultsId);
-        if (!input || !results) return;
-
-        let timeout;
-        input.addEventListener('input', (e) => {
-            const query = e.target.value.trim().toLowerCase();
-            clearTimeout(timeout);
-            if (!query) {
-                results.classList.remove('active');
-                results.innerHTML = '';
-                return;
-            }
-            timeout = setTimeout(() => {
-                this.performItemSearch(query, results, itemsKey, input);
-            }, 200);
-        });
-
-        // Close on outside click
-        document.addEventListener('click', (e) => {
-            if (!input.contains(e.target) && !results.contains(e.target)) {
-                results.classList.remove('active');
-            }
-        });
-    }
-
-    performItemSearch(query, resultsEl, itemsKey, inputEl) {
-        const matches = this.allItems
-            .filter(item => item.name.toLowerCase().includes(query))
-            .slice(0, 20);
-
-        if (matches.length === 0) {
-            resultsEl.innerHTML = '<div class="search-result-empty">No items found</div>';
-            resultsEl.classList.add('active');
-            return;
-        }
-
-        resultsEl.innerHTML = '';
-        matches.forEach(item => {
-            const el = document.createElement('div');
-            el.className = 'search-result';
-            el.innerHTML = `
-                <img src="${item.img || './imgs/placeholder.png'}" alt="${this.esc(item.name)}" onerror="this.src='./imgs/placeholder.png'">
-                <div>
-                    <div class="search-result-name">${this.esc(item.name)}</div>
-                    <div class="search-result-category">${item.category}</div>
-                </div>
-            `;
-            el.addEventListener('click', () => {
-                this.addItem(item, itemsKey);
-                resultsEl.classList.remove('active');
-                inputEl.value = '';
-            });
-            resultsEl.appendChild(el);
-        });
-        resultsEl.classList.add('active');
-    }
-
-    // ==================== ITEM MANAGEMENT ====================
-
-    addItem(item, itemsKey) {
-        const items = this.wizardState[itemsKey];
-        if (items.some(i => i.type === 'game-item' && i.item_name === item.name)) {
-            this.showToast('Item already added', 'info');
-            return;
-        }
-        items.push({
-            type: 'game-item',
-            item_name: item.name,
-            item_image: item.img || null,
-            category: item.category
-        });
-        this.renderSelectedItems(itemsKey);
-        this.updatePreview();
-    }
-
-    removeItem(itemsKey, index) {
-        this.wizardState[itemsKey].splice(index, 1);
-        this.renderSelectedItems(itemsKey);
-        this.updatePreview();
-    }
-
-    renderSelectedItems(itemsKey) {
-        const containerId = itemsKey === 'offeringItems' ? 'offeringItemsContainer' : 'seekingItemsContainer';
-        const container = document.getElementById(containerId);
-        if (!container) return;
-
-        const items = this.wizardState[itemsKey];
-
-        if (items.length === 0) {
-            const label = itemsKey === 'seekingItems' ? 'No items added yet - leave empty for open offers' : 'No items added yet';
-            container.innerHTML = `
-                <div class="empty-items">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                    <span>${label}</span>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = '';
-        items.forEach((item, index) => {
-            const el = document.createElement('div');
-            el.className = 'selected-item';
-
-            if (item.type === 'robux') {
-                el.innerHTML = `
-                    <span class="selected-item-robux">R$ ${item.amount}</span>
-                    <button class="selected-item-remove" title="Remove">&times;</button>
-                `;
-            } else if (item.type === 'other-game') {
-                el.innerHTML = `
-                    <span class="selected-item-other">${this.esc(item.game_name)}: ${this.esc(item.item_name)}</span>
-                    <button class="selected-item-remove" title="Remove">&times;</button>
-                `;
-            } else {
-                el.innerHTML = `
-                    <img src="${item.item_image || './imgs/placeholder.png'}" alt="${this.esc(item.item_name)}" onerror="this.src='./imgs/placeholder.png'">
-                    <span class="selected-item-name">${this.esc(item.item_name)}</span>
-                    <button class="selected-item-remove" title="Remove">&times;</button>
-                `;
-            }
-
-            el.querySelector('.selected-item-remove').addEventListener('click', () => {
-                this.removeItem(itemsKey, index);
-            });
-            container.appendChild(el);
-        });
-    }
-
     // ==================== CUSTOM ITEMS ====================
 
     openCustomModal(itemsKey) {
@@ -1717,68 +1492,36 @@ class TradingHub {
             return;
         }
 
-        const items = this.wizardState[this.currentCustomItemsKey];
-        if (!items) return;
-        items.push(newItem);
-        this.renderSelectedItems(this.currentCustomItemsKey);
-        this.updatePreview();
+        // Otherwise the key is a board side ('your' | 'their') on the Create panel.
+        if (this.currentCustomItemsKey === 'your' || this.currentCustomItemsKey === 'their') {
+            this.addCalcCustomItem(this.currentCustomItemsKey, newItem);
+        }
         this.closeCustomModal();
     }
 
     // ==================== THEME ====================
 
     selectTheme(theme) {
-        this.wizardState.theme = theme;
+        this.createMeta.theme = theme;
         document.querySelectorAll('.theme-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.theme === theme);
         });
-        this.updatePreview();
-    }
-
-    // ==================== PREVIEW ====================
-
-    updatePreview() {
-        const previewCard = document.getElementById('tradePreviewCard');
-        if (!previewCard || this.wizardState.currentStep !== 3) return;
-
-        const { description, offeringItems, seekingItems, theme } = this.wizardState;
-
-        // Apply theme
-        previewCard.className = `preview-card${theme && theme !== 'default' ? ' theme-' + theme : ''}`;
-
-        previewCard.innerHTML = `
-            <div class="trade-card-top" style="padding:0; margin-bottom:0.75rem">
-                <div style="width:32px;height:32px;border-radius:50%;background:var(--bg-item-hover);border:2px solid var(--border-color)"></div>
-                <div class="trader-info">
-                    <div class="trader-name">${this.esc(this.currentUser?.displayName || this.currentUser?.username || 'You')}</div>
-                    <div class="trader-meta"><span>Just now</span></div>
-                </div>
-                <span class="trade-status-badge active">Active</span>
-            </div>
-            ${description ? `<div class="trade-card-description" style="padding:0; margin-bottom:0.75rem">${this.esc(description)}</div>` : ''}
-            <div class="trade-exchange" style="padding:0">
-                <div class="trade-side offering">
-                    <div class="trade-side-label">Offering</div>
-                    <div class="trade-items-list">
-                        ${offeringItems.map(i => this.renderTradeItem(i)).join('')}
-                        ${offeringItems.length === 0 ? '<span class="trade-open-offers">No items</span>' : ''}
-                    </div>
-                </div>
-                <div class="trade-swap-icon">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 16 4 4 4-4"/><path d="M11 20V4"/><path d="m17 8-4-4-4 4"/><path d="M13 4v16"/></svg>
-                </div>
-                <div class="trade-side seeking">
-                    <div class="trade-side-label">Looking For</div>
-                    <div class="trade-items-list">
-                        ${seekingItems.map(i => this.renderTradeItem(i)).join('')}
-                        ${seekingItems.length === 0 ? '<span class="trade-open-offers">Open to offers</span>' : ''}
-                    </div>
-                </div>
-            </div>
-        `;
     }
 
     // ==================== CREATE LISTING ====================
+
+    // Convert a board side's entries into the listing item shape the API expects.
+    // Catalog items become game-items; custom entries unwrap back to robux/other-game.
+    // Quantity is preserved (only emitted when > 1 to keep stored data tidy).
+    calcToListingItems(side) {
+        return this.calcState[side].map(({ item, qty }) => {
+            const base = item.__custom
+                ? { ...item.__custom }
+                : { type: 'game-item', item_name: item.name, item_image: item.img || null, category: item.category };
+            if (qty && qty > 1) base.qty = qty;
+            return base;
+        });
+    }
 
     async createListing() {
         if (!this.currentUser) {
@@ -1786,8 +1529,11 @@ class TradingHub {
             return;
         }
 
-        if (this.wizardState.offeringItems.length === 0) {
-            this.showToast('Please add at least one item to offer', 'error');
+        const offeringItems = this.calcToListingItems('your');
+        const seekingItems = this.calcToListingItems('their');
+
+        if (offeringItems.length === 0) {
+            this.showToast('Add at least one item to "You Give"', 'error');
             return;
         }
 
@@ -1807,10 +1553,11 @@ class TradingHub {
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    title: this.generateAutoTitle(),
-                    description: this.wizardState.description || null,
-                    offering_items: this.wizardState.offeringItems,
-                    seeking_items: this.wizardState.seekingItems.length > 0 ? this.wizardState.seekingItems : null
+                    title: this.generateAutoTitle(offeringItems, seekingItems),
+                    description: this.createMeta.description || null,
+                    theme: this.createMeta.theme || 'default',
+                    offering_items: offeringItems,
+                    seeking_items: seekingItems.length > 0 ? seekingItems : null
                 })
             });
 
@@ -1821,11 +1568,15 @@ class TradingHub {
 
             this.showToast('Trade published successfully!', 'success');
 
-            // Clean up
-            localStorage.removeItem('trading_wizard_draft');
-            this.resetWizard();
+            // Clear the board (skip the reset confirm) and refresh the feed.
+            this.calcState = { your: [], their: [] };
+            this.createMeta = { description: '', theme: 'default' };
+            const desc = document.getElementById('tradeDescription');
+            if (desc) desc.value = '';
+            const counter = document.getElementById('charCount');
+            if (counter) counter.textContent = '0';
+            document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.theme === 'default'));
 
-            // Go to browse and reload
             this.switchTab('browse');
             await this.loadTrades();
             this.renderTrades();
@@ -1838,30 +1589,21 @@ class TradingHub {
         }
     }
 
-    generateAutoTitle() {
-        const { offeringItems, seekingItems } = this.wizardState;
+    // Build a readable title from the (listing-shape) item arrays.
+    generateAutoTitle(offeringItems, seekingItems) {
+        const label = (i) => i.type === 'robux' ? `${i.amount} R$`
+            : i.type === 'other-game' ? `${i.game_name} ${i.item_name}`
+            : i.item_name;
 
         if (offeringItems.length === 0) return 'Trade Offer';
 
-        const first = offeringItems[0];
-        let offerText = first.type === 'robux' ? `${first.amount} R$`
-            : first.type === 'other-game' ? `${first.game_name} ${first.item_name}`
-            : first.item_name;
+        let offerText = label(offeringItems[0]);
+        if (offeringItems.length > 1) offerText += ` + ${offeringItems.length - 1} more`;
 
-        if (offeringItems.length > 1) {
-            offerText += ` + ${offeringItems.length - 1} more`;
-        }
+        if (!seekingItems || seekingItems.length === 0) return `Trading ${offerText}`;
 
-        if (seekingItems.length === 0) return `Trading ${offerText}`;
-
-        const firstSeek = seekingItems[0];
-        let seekText = firstSeek.type === 'robux' ? `${firstSeek.amount} R$`
-            : firstSeek.type === 'other-game' ? `${firstSeek.game_name} ${firstSeek.item_name}`
-            : firstSeek.item_name;
-
-        if (seekingItems.length > 1) {
-            seekText += ` + ${seekingItems.length - 1} more`;
-        }
+        let seekText = label(seekingItems[0]);
+        if (seekingItems.length > 1) seekText += ` + ${seekingItems.length - 1} more`;
 
         return `Trading ${offerText} for ${seekText}`;
     }

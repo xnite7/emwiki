@@ -228,12 +228,11 @@
         <div class="review-modal-content">
             <div class="review-modal-header">
                 <h3 class="review-modal-title">Write a Review</h3>
-                <button class="review-modal-close" aria-label="Close modal">&times;</button>
+                <button class="modal-close" aria-label="Close modal">&times;</button>
             </div>
             <div class="review-modal-body">
                 <form id="review-form">
                     <div class="form-group">
-                        <label for="review-rating" class="form-label">Rating</label>
                         <div class="star-rating-input">
                             <input type="radio" id="star5" name="rating" value="5" required>
                             <label for="star5" title="5 stars">★</label>
@@ -765,12 +764,23 @@
 
         renderWishlistPage() {
             const container = document.getElementById('wishlist-container');
-            const startIndex = 0;
-            const endIndex = (this.wishlistCurrentPage + 1) * this.wishlistPageSize;
-            const itemsToShow = this.wishlistItems.slice(startIndex, endIndex);
+            const pageSize = this.wishlistPageSize;
+            const prevEnd = this.wishlistCurrentPage * pageSize;
+            const endIndex = (this.wishlistCurrentPage + 1) * pageSize;
+            // Only the new page's slice — earlier pages stay in the DOM instead of being rebuilt.
+            const itemsToShow = this.wishlistItems.slice(prevEnd, endIndex);
             const hasMore = endIndex < this.wishlistItems.length;
 
-            container.innerHTML = '';
+            if (this.wishlistCurrentPage === 0) {
+                // First page: clear the "Loading…" message.
+                container.innerHTML = '';
+            } else {
+                // Later pages: drop the old Load More button, then append below the existing cards.
+                const oldBtn = container.querySelector('.wishlist-load-more');
+                if (oldBtn) oldBtn.remove();
+            }
+
+            const fragment = document.createDocumentFragment();
 
             itemsToShow.forEach(item => {
                 const div = document.createElement('div');
@@ -778,25 +788,25 @@
                 div.innerHTML = `<small class="item-name">${this.escapeHtml(item.name)}</small>`;
 
                 if (item.img) {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    const img = new Image();
-                    img.onload = function () {
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        ctx.drawImage(img, 0, 0);
-                    };
+                    // Lazy, async-decoded <img> instead of a canvas drawImage — the canvas path forced
+                    // a synchronous main-thread image decode per item, which is the wishlist-load spike.
+                    const img = document.createElement('img');
+                    img.loading = 'lazy';
+                    img.decoding = 'async';
+                    img.className = 'itemimg';
+                    img.alt = item.name || '';
                     // Use optimized image with smaller size for thumbnails
                     img.src = Utils.getOptimizedImage(item.img, { width: 128, height: 128, format: 'webp', fit: 'scale-down' }) || item.img;
-                    img.onerror = function() {
-                        // If image fails, try to show SVG or placeholder
+                    img.onerror = () => {
+                        // If image fails, fall back to SVG or placeholder
+                        img.remove();
                         if (item.svg) {
                             div.insertAdjacentHTML('beforeend', item.svg);
                         }
                     };
                     // Prevent right-click and drag
-                    Utils.protectCanvas(canvas);
-                    div.appendChild(canvas);
+                    Utils.protectImage(img);
+                    div.appendChild(img);
                 } else if (item.svg) {
                     div.insertAdjacentHTML('beforeend', item.svg);
                 }
@@ -820,8 +830,10 @@
                     this.modal.open(item);
                 });
 
-                container.appendChild(div);
+                fragment.appendChild(div);
             });
+
+            container.appendChild(fragment);
 
             // Add "Load More" button if there are more items
             if (hasMore) {
@@ -968,7 +980,7 @@
             const reviewModal = document.getElementById('review-modal');
             const reviewForm = document.getElementById('review-form');
             const cancelBtn = document.getElementById('cancel-review-btn');
-            const modalClose = document.querySelector('.review-modal-close');
+            const modalClose = document.querySelector('.modal-close');
             const commentTextarea = document.getElementById('review-comment');
             const charCount = document.getElementById('comment-char-count');
 

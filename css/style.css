@@ -999,7 +999,6 @@ main {
     color: #ffffff;
     background: linear-gradient(to top, #000000, #00000040);
     padding: 3px 7px;
-    backdrop-filter: blur(6px);
     transition: filter 0.1s ease-out;
     filter: drop-shadow(0px 0px 0px #00000000);
     align-items: center;
@@ -1795,6 +1794,8 @@ footer {
     top: -5px;
     right: -5px;
     font-size: 23px;
+    opacity: 0;
+    transition: opacity 0.1s ease;
     background: linear-gradient(180deg, #ff4444, #b70000);
     border: 1px solid darkred;
     color: white;
@@ -1812,6 +1813,7 @@ footer {
 .remove-wishlist:hover {
     background: linear-gradient(180deg, #ff4444, #e72626);
     border: 1px solid rgb(0, 0, 0);
+    opacity: 1;
 }
 
 .icon {
@@ -3540,7 +3542,9 @@ header svg * {
 }
 
 @media (hover: none) {
-
+    .remove-wishlist {
+        opacity:1;
+    }
     .heart-button,
     .wishlist-button {
         pointer-events: none;

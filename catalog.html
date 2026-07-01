@@ -309,7 +309,9 @@
                 this.populateEventFilter();
                 this.populateChests();
                 this.populateCreditsFilter();
-                this.extractAllColors();
+                // Color extraction is deferred: it decodes every item image to a canvas, which is a
+                // heavy main-thread cost. It now runs on demand the first time the user picks the
+                // "Color (Rainbow)" sort (see selectSort), not on every page load.
                 this.setupEventListeners();
 
                 this.handleURLParams();
@@ -761,6 +763,10 @@
             }
 
             async extractAllColors() {
+                // Runs at most once (deferred until the color sort is picked). Guard against a second
+                // call re-decoding every image.
+                if (this._colorsExtracted) return;
+
                 // Skip color extraction if running on file:// protocol (local file system)
                 // Color extraction requires http/https due to CORS restrictions
                 if (window.location.protocol === 'file:') {
@@ -771,30 +777,21 @@
                             item.color = [128, 128, 128];
                         }
                     });
+                    this._colorsExtracted = true;
                     return;
                 }
-                
-                // Extract colors for all items in batches to avoid blocking UI
+
+                // Extract colors for all items in batches, yielding to the event loop between batches
+                // so scrolling stays responsive. Awaits full completion so callers can sort afterward.
                 const batchSize = 20;
-                let index = 0;
-                
-                const processBatch = async () => {
-                    const endIndex = Math.min(index + batchSize, this.allItems.length);
-                    const batch = this.allItems.slice(index, endIndex);
-                    
+                for (let index = 0; index < this.allItems.length; index += batchSize) {
+                    const batch = this.allItems.slice(index, index + batchSize);
                     await Promise.all(batch.map(item => this.getDominantColor(item)));
-                    
-                    index = endIndex;
-                    
-                    if (index < this.allItems.length) {
-                        // Process next batch after a short delay
-                        setTimeout(processBatch, 0);
-                    }
-                };
-                
-                if (this.allItems.length > 0) {
-                    processBatch();
+                    // Give the main thread a breather between batches.
+                    await new Promise(resolve => setTimeout(resolve, 0));
                 }
+
+                this._colorsExtracted = true;
             }
 
             populateSeasonFilter() {
@@ -1538,7 +1535,7 @@
                 menu.classList.toggle('show');
             }
 
-            selectSort(sortType) {
+            async selectSort(sortType) {
                 this.sortBy = sortType;
                 const labels = {
                     'default': 'Category',
@@ -1560,6 +1557,14 @@
                 });
 
                 document.getElementById('sort-menu').classList.toggle('show');
+
+                // The color sort needs each item's dominant color. Extract on demand the first time
+                // it's selected (guarded so it runs at most once) instead of decoding every image on
+                // page load. Items that already carry a stored `color` from the API are skipped.
+                if (sortType === 'color-asc' && !this._colorsExtracted) {
+                    await this.extractAllColors();
+                }
+
                 this.applyFilters();
             }
 
@@ -2479,18 +2484,33 @@
                 document.getElementById('loadMore').disabled = true;
                 document.getElementById('loadMore').innerHTML = '<div class="loading-spinner"></div>';
 
-                setTimeout(() => {
-                    // Check if this request is still current
+                // Render the batch a few cards at a time across animation frames instead of building
+                // all 50 in one blocking task. Each chunk fills a DocumentFragment and appends it once
+                // (one layout per chunk, not per card), keeping every frame short and scroll smooth.
+                const catalog = document.getElementById('catalog');
+                const chunkSize = 12;
+                let i = 0;
+
+                const renderChunk = () => {
+                    // A newer filter/sort was applied mid-batch — abandon this chain. The newer
+                    // loadBatch already owns `this.loading`, so leave the flag untouched here.
                     if (requestId !== this.filterRequestId) {
-                        this.loading = false;
-                        return; // Ignore this batch, a newer filter was applied
+                        return;
                     }
 
-                    batch.forEach(item => {
-                        document.getElementById('catalog').appendChild(this.createItemElement(item));
-                    });
+                    const fragment = document.createDocumentFragment();
+                    const chunkEnd = Math.min(i + chunkSize, batch.length);
+                    for (; i < chunkEnd; i++) {
+                        fragment.appendChild(this.createItemElement(batch[i]));
+                    }
+                    catalog.appendChild(fragment);
 
+                    if (i < batch.length) {
+                        requestAnimationFrame(renderChunk);
+                        return;
+                    }
 
+                    // Batch fully rendered — finalize counts and load-more state.
                     this.currentBatch++;
                     this.loading = false;
 
@@ -2510,7 +2530,9 @@
                             this.loadBatch();
                         }
                     }
-                }, 300);
+                };
+
+                requestAnimationFrame(renderChunk);
             }
 
             isSentinelNear() {

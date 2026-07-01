@@ -100,10 +100,6 @@
                     <span>Messages</span>
                     <span class="tab-badge" id="messagesBadge" style="display:none">0</span>
                 </button>
-                <button class="tab-btn" data-tab="calculator">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M3 7.5 8 6l3 3"/><path d="M16 9l3-3 5 1.5"/><circle cx="5.5" cy="13" r="3"/><circle cx="18.5" cy="13" r="3"/></svg>
-                    <span>Calculator</span>
-                </button>
                 <button class="tab-btn tab-create" data-tab="create">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
                     <span>Create Trade</span>
@@ -212,171 +208,30 @@
             </div>
 
             <!-- ============ CREATE TRADE PANEL ============ -->
+            <!-- Uses the trade-value board: left = what you give (offering),
+                 right = what you want (seeking), center = live fairness verdict. -->
             <div class="tab-panel" id="panelCreate">
                 <div class="create-container">
-                    <!-- Wizard Progress -->
-                    <div class="wizard-progress">
-                        <div class="progress-track">
-                            <div class="progress-fill" id="progressFill"></div>
-                        </div>
-                        <div class="progress-steps">
-                            <div class="progress-step active" data-step="1">
-                                <div class="step-dot">
-                                    <span>1</span>
-                                </div>
-                                <span class="step-text">You Offer</span>
-                            </div>
-                            <div class="progress-step" data-step="2">
-                                <div class="step-dot">
-                                    <span>2</span>
-                                </div>
-                                <span class="step-text">You Want</span>
-                            </div>
-                            <div class="progress-step" data-step="3">
-                                <div class="step-dot">
-                                    <span>3</span>
-                                </div>
-                                <span class="step-text">Finalize</span>
-                            </div>
-                        </div>
+                    <div class="create-header">
+                        <h2>Create a Trade</h2>
+                        <p>Add what you're offering and what you want. Live values show how fair the trade is before you publish.</p>
                     </div>
 
-                    <div class="wizard-body">
-                        <!-- Step 1: What you're offering -->
-                        <div class="wizard-step active" data-step="1">
-                            <div class="step-header">
-                                <h2>What are you offering?</h2>
-                                <p>Add items you want to trade away. You must offer at least one item.</p>
-                            </div>
-                            <div class="item-picker">
-                                <div class="picker-toolbar">
-                                    <div class="picker-search">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                                        <input type="text" id="offeringSearchInput" placeholder="Search catalog items..." autocomplete="off">
-                                    </div>
-                                    <button class="btn-custom-item" id="addOfferingCustomBtn">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                                        Robux / Other
-                                    </button>
-                                </div>
-                                <div class="search-dropdown" id="offeringSearchResults"></div>
-                                <div class="selected-items" id="offeringItemsContainer">
-                                    <div class="empty-items">
-                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                                        <span>No items added yet</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="step-nav">
-                                <button class="btn-cancel" id="cancelWizardBtn">Cancel</button>
-                                <button class="btn-next" id="nextStep1Btn">
-                                    Continue
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Step 2: What you're looking for -->
-                        <div class="wizard-step" data-step="2">
-                            <div class="step-header">
-                                <h2>What do you want?</h2>
-                                <p>Add items you're looking for. Leave empty for open offers.</p>
-                            </div>
-                            <div class="item-picker">
-                                <div class="picker-toolbar">
-                                    <div class="picker-search">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                                        <input type="text" id="seekingSearchInput" placeholder="Search catalog items..." autocomplete="off">
-                                    </div>
-                                    <button class="btn-custom-item" id="addSeekingCustomBtn">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                                        Robux / Other
-                                    </button>
-                                </div>
-                                <div class="search-dropdown" id="seekingSearchResults"></div>
-                                <div class="selected-items" id="seekingItemsContainer">
-                                    <div class="empty-items">
-                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                                        <span>No items added yet - leave empty for open offers</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="step-nav">
-                                <button class="btn-back" id="backStep2Btn">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                                    Back
-                                </button>
-                                <button class="btn-next" id="nextStep2Btn">
-                                    Continue
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Step 3: Finalize -->
-                        <div class="wizard-step" data-step="3">
-                            <div class="step-header">
-                                <h2>Finalize your trade</h2>
-                                <p>Add details and preview before publishing</p>
-                            </div>
-                            <div class="finalize-layout">
-                                <div class="finalize-form">
-                                    <div class="form-group">
-                                        <label for="tradeDescription">Description <span class="optional-tag">optional</span></label>
-                                        <textarea id="tradeDescription" placeholder="Any additional details about your trade..." rows="3" maxlength="500"></textarea>
-                                        <span class="char-count"><span id="charCount">0</span>/500</span>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Theme</label>
-                                        <div class="theme-grid" id="themeSelector">
-                                            <button class="theme-btn active" data-theme="default"><span class="theme-swatch swatch-default"></span>Default</button>
-                                            <button class="theme-btn" data-theme="ocean"><span class="theme-swatch swatch-ocean"></span>Ocean</button>
-                                            <button class="theme-btn" data-theme="sunset"><span class="theme-swatch swatch-sunset"></span>Sunset</button>
-                                            <button class="theme-btn" data-theme="forest"><span class="theme-swatch swatch-forest"></span>Forest</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="finalize-preview">
-                                    <h3 class="preview-label">Live Preview</h3>
-                                    <div class="preview-card" id="tradePreviewCard">
-                                        <div class="preview-placeholder">Your trade preview will appear here</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="step-nav">
-                                <button class="btn-back" id="backStep3Btn">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                                    Back
-                                </button>
-                                <button class="btn-publish" id="createListingBtn">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
-                                    Publish Trade
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ============ CALCULATOR PANEL ============ -->
-            <div class="tab-panel" id="panelCalculator">
-                <div class="calc-container">
-                    <div class="calc-header">
-                        <h2>Trade Value Calculator</h2>
-                        <p>Add items to each side to see who comes out ahead. Values are community estimates, weighted by demand.</p>
-                    </div>
-
-                    <div class="calc-board">
-                        <!-- Your side -->
+                    <div class="calc-board create-board">
+                        <!-- You give (offering) -->
                         <div class="calc-side" data-side="your">
                             <div class="calc-side-head">
-                                <h3>Your Offer <span class="calc-side-sub">you give</span></h3>
+                                <h3>You Give <span class="calc-side-sub">your offer</span></h3>
                                 <span class="calc-side-total" data-side-total="your">0</span>
                             </div>
                             <div class="calc-search-wrapper">
                                 <input type="text" class="calc-search-input" data-side-search="your" placeholder="Search items to add..." autocomplete="off">
                                 <div class="calc-search-results" data-side-results="your"></div>
                             </div>
+                            <button type="button" class="calc-custom-btn" data-side-custom="your">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                                Robux / Other
+                            </button>
                             <div class="calc-items" data-side-items="your"></div>
                         </div>
 
@@ -390,25 +245,54 @@
                                 <div class="calc-balance-marker" data-balance-marker></div>
                             </div>
                             <div class="calc-balance-labels">
-                                <span>You lose</span>
+                                <span>They win</span>
                                 <span>Fair</span>
                                 <span>You win</span>
                             </div>
-                            <button class="calc-reset" type="button" id="calcResetBtn">Reset</button>
                         </div>
 
-                        <!-- Their side -->
+                        <!-- You want (seeking) -->
                         <div class="calc-side" data-side="their">
                             <div class="calc-side-head">
-                                <h3>Their Offer <span class="calc-side-sub">you receive</span></h3>
+                                <h3>You Want <span class="calc-side-sub">leave empty for open offers</span></h3>
                                 <span class="calc-side-total" data-side-total="their">0</span>
                             </div>
                             <div class="calc-search-wrapper">
                                 <input type="text" class="calc-search-input" data-side-search="their" placeholder="Search items to add..." autocomplete="off">
                                 <div class="calc-search-results" data-side-results="their"></div>
                             </div>
+                            <button type="button" class="calc-custom-btn" data-side-custom="their">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                                Robux / Other
+                            </button>
                             <div class="calc-items" data-side-items="their"></div>
                         </div>
+                    </div>
+
+                    <!-- Finalize: description + theme -->
+                    <div class="create-finalize">
+                        <div class="form-group">
+                            <label for="tradeDescription">Description <span class="optional-tag">optional</span></label>
+                            <textarea id="tradeDescription" placeholder="Any extra details about your trade..." rows="3" maxlength="500"></textarea>
+                            <span class="char-count"><span id="charCount">0</span>/500</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Card theme</label>
+                            <div class="theme-grid" id="themeSelector">
+                                <button class="theme-btn active" data-theme="default" type="button"><span class="theme-swatch swatch-default"></span>Default</button>
+                                <button class="theme-btn" data-theme="ocean" type="button"><span class="theme-swatch swatch-ocean"></span>Ocean</button>
+                                <button class="theme-btn" data-theme="sunset" type="button"><span class="theme-swatch swatch-sunset"></span>Sunset</button>
+                                <button class="theme-btn" data-theme="forest" type="button"><span class="theme-swatch swatch-forest"></span>Forest</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="create-actions">
+                        <button class="calc-reset" type="button" id="calcResetBtn">Reset</button>
+                        <button class="btn-publish" id="createListingBtn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+                            Publish Trade
+                        </button>
                     </div>
 
                     <p class="calc-disclaimer">Values are community-estimated and weighted by item demand. Items marked &ldquo;no value&rdquo; (N/A) aren&rsquo;t counted. Use this as a guide, not a guarantee.</p>

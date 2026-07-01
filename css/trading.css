@@ -594,10 +594,71 @@
     gap: 0.875rem;
 }
 
-/* ========== CREATE TRADE WIZARD ========== */
+/* ========== CREATE TRADE (board-based) ========== */
 .create-container {
-    max-width: 800px;
+    max-width: 1040px;
     margin: 0 auto;
+}
+
+.create-header { text-align: center; margin-bottom: 1.25rem; }
+.create-header h2 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 0.35rem;
+}
+.create-header p { color: var(--text-secondary); font-size: 0.9rem; margin: 0; }
+
+/* Per-side "Robux / Other" button, sits under the search box */
+.calc-custom-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0 0 0.75rem;
+    padding: 0.45rem 0.7rem;
+    background: var(--bg-item);
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+}
+.calc-custom-btn:hover { border-color: #6366f1; color: #6366f1; }
+.calc-custom-btn svg { width: 14px; height: 14px; }
+
+/* Finalize row: description + theme picker */
+.create-finalize {
+    display: grid;
+    grid-template-columns: 1fr minmax(240px, 320px);
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.create-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+}
+.create-actions .calc-reset { margin: 0; }
+.create-actions .btn-publish { flex: 0 0 auto; }
+
+/* "×N" quantity badge on trade-card items */
+.item-qty-badge {
+    margin-left: 0.3rem;
+    padding: 0 0.28rem;
+    border-radius: 5px;
+    background: var(--bg-item-hover);
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
 }
 
 /* Progress bar */
@@ -1100,36 +1161,43 @@
     gap: 0.5rem;
     padding: 0.55rem 0.75rem;
     background: var(--bg-item);
-    border: 2px solid var(--border-color);
-    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
     color: CanvasText;
     font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: border-color 0.15s, background 0.15s;
     font-family: inherit;
 }
 
 .theme-btn:hover {
-    border-color: rgba(102, 126, 234, 0.4);
+    border-color: var(--text-secondary);
+    background: var(--bg-item-hover);
 }
 
+/* Selected: neutral emphasis + a ring around the swatch. No neon glow. */
 .theme-btn.active {
-    border-color: #667eea;
-    background: rgba(102, 126, 234, 0.08);
+    border-color: var(--text-primary);
+    background: var(--bg-item-hover);
+}
+.theme-btn.active .theme-swatch {
+    box-shadow: 0 0 0 2px var(--bg-secondary), 0 0 0 3px var(--text-primary);
 }
 
 .theme-swatch {
     width: 20px;
     height: 20px;
-    border-radius: 5px;
+    border-radius: 6px;
     flex-shrink: 0;
+    transition: box-shadow 0.15s;
 }
 
-.swatch-default { background: linear-gradient(135deg, #667eea, #4a9eff); }
-.swatch-ocean { background: linear-gradient(135deg, #00c9ff, #92fe9d); }
-.swatch-sunset { background: linear-gradient(135deg, #ff6b6b, #ffa500); }
-.swatch-forest { background: linear-gradient(135deg, #11998e, #38ef7d); }
+/* Muted, tasteful palettes rather than saturated neon gradients. */
+.swatch-default { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+.swatch-ocean { background: linear-gradient(135deg, #0ea5e9, #0f766e); }
+.swatch-sunset { background: linear-gradient(135deg, #fb923c, #db2777); }
+.swatch-forest { background: linear-gradient(135deg, #22a06b, #15803d); }
 
 /* Preview */
 .finalize-preview {
@@ -1177,10 +1245,24 @@
     background: linear-gradient(135deg, rgba(17, 153, 142, 0.06), rgba(56, 239, 125, 0.04));
 }
 
-/* Theme on trade cards */
-.trade-card.theme-ocean { border-color: rgba(0, 201, 255, 0.25); }
-.trade-card.theme-sunset { border-color: rgba(255, 107, 107, 0.25); }
-.trade-card.theme-forest { border-color: rgba(17, 153, 142, 0.25); }
+/* Theme on trade cards: a soft corner wash + accent left edge (no neon borders). */
+.trade-card.theme-ocean,
+.trade-card.theme-sunset,
+.trade-card.theme-forest {
+    border-left-width: 3px;
+}
+.trade-card.theme-ocean {
+    border-left-color: #0ea5e9;
+    background: linear-gradient(150deg, rgba(14, 165, 233, 0.07), transparent 55%);
+}
+.trade-card.theme-sunset {
+    border-left-color: #f97316;
+    background: linear-gradient(150deg, rgba(249, 115, 22, 0.07), transparent 55%);
+}
+.trade-card.theme-forest {
+    border-left-color: #22a06b;
+    background: linear-gradient(150deg, rgba(34, 160, 107, 0.07), transparent 55%);
+}
 
 /* ========== MODALS ========== */
 .modal-overlay {
@@ -2206,5 +2288,11 @@
     .calc-side[data-side="your"] { order: 1; }
     .calc-center { order: 2; padding-top: 0; }
     .calc-side[data-side="their"] { order: 3; }
+    .create-finalize { grid-template-columns: 1fr; }
+    .create-actions { flex-direction: column-reverse; align-items: stretch; }
 }
+
+/* Keep the theme picker at 2 columns inside the narrow finalize column,
+   overriding the global 4-column layout used elsewhere. */
+.create-finalize .theme-grid { grid-template-columns: repeat(2, 1fr); }
 .review-comment { font-size: 0.83rem; color: var(--text-secondary); margin-top: 0.25rem; word-break: break-word; }

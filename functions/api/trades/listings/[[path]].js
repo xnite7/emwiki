@@ -161,6 +161,10 @@ async function handlePost(request, env, path, user) {
             expires_in_days = 30
         } = data;
 
+        // Only allow known themes; anything else falls back to 'default'.
+        const allowedThemes = ['default', 'ocean', 'sunset', 'forest'];
+        const theme = allowedThemes.includes(data.theme) ? data.theme : 'default';
+
         // Validate offering_items is an array
         if (!Array.isArray(offering_items) || offering_items.length === 0) {
             return errorResponse('offering_items must be a non-empty array');
@@ -239,8 +243,8 @@ async function handlePost(request, env, path, user) {
 
         const result = await env.DBA.prepare(
             `INSERT INTO trade_listings
-            (user_id, title, description, category, status, offering_items, seeking_items, created_at, updated_at, expires_at)
-            VALUES (?, ?, ?, ?, 'active', ?, ?, ?, ?, ?)`
+            (user_id, title, description, category, status, offering_items, seeking_items, theme, created_at, updated_at, expires_at)
+            VALUES (?, ?, ?, ?, 'active', ?, ?, ?, ?, ?, ?)`
         ).bind(
             user.user_id,
             finalTitle,
@@ -248,6 +252,7 @@ async function handlePost(request, env, path, user) {
             category,
             JSON.stringify(offering_items),
             seeking_items ? JSON.stringify(seeking_items) : null,
+            theme,
             now,
             now,
             expiresAt

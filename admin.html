@@ -755,10 +755,10 @@
 
                 // List of fields to check
                 const fields = ['name', 'img', 'svg', 'price', 'from', 'price/code/rarity',
-                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed', 'demand', 'demand_updated_at', 'credits', 'lore', 'alias', 'quantity'];
+                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed', 'unstable', 'demand', 'demand_updated_at', 'credits', 'lore', 'alias', 'quantity'];
 
                 // Boolean fields that need normalization
-                const booleanFields = ['weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed'];
+                const booleanFields = ['weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed', 'unstable'];
 
                 // Check each field for changes
                 for (const field of fields) {
@@ -7279,7 +7279,7 @@
             compareItems(original, current) {
                 const changes = [];
                 const fields = ['name', 'img', 'svg', 'price', 'from', 'price/code/rarity',
-                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed', 'demand', 'demand_updated_at', 'credits', 'lore', 'alias', 'quantity'];
+                    'weekly', 'weeklystar', 'new', 'retired', 'premium', 'tradable', 'removed', 'unstable', 'demand', 'demand_updated_at', 'credits', 'lore', 'alias', 'quantity'];
 
                 fields.forEach(field => {
                     // Use hasOwnProperty to check if field exists, or get undefined
@@ -7295,6 +7295,26 @@
                         });
                     }
                 });
+
+                // Price history (edited via the Price History editor) isn't a scalar field, so
+                // compare it separately. Without this a history-only edit yields an empty diff and
+                // the item silently drops out of the publish summary ("No changes to publish").
+                const phStr = (arr) => JSON.stringify(
+                    (Array.isArray(arr) ? arr : []).map(p => ({
+                        price: Number(p.price) || 0,
+                        timestamp: Number(p.timestamp) || 0
+                    }))
+                );
+                if (phStr(original.priceHistory) !== phStr(current.priceHistory)) {
+                    const oldCount = Array.isArray(original.priceHistory) ? original.priceHistory.length : 0;
+                    const newCount = Array.isArray(current.priceHistory) ? current.priceHistory.length : 0;
+                    changes.push({
+                        field: 'priceHistory',
+                        oldValue: oldCount,
+                        newValue: newCount,
+                        display: `Price history updated (${oldCount} → ${newCount} point${newCount !== 1 ? 's' : ''})`
+                    });
+                }
 
                 return changes;
             },
@@ -7338,6 +7358,7 @@
                     'removed': (old, val) => val ? '✓ Marked as Removed' : '✗ Unmarked as Removed',
                     'premium': (old, val) => val ? '✓ Marked as Premium' : '✗ Unmarked as Premium',
                     'tradable': (old, val) => !val ? '✓ Marked as Untradable' : '✗ Marked as Tradable',
+                    'unstable': (old, val) => val ? '✓ Marked as Unstable' : '✗ Unmarked as Unstable',
                     'name': (old, val) => `Name: "${old}" → "${val}"`,
                     'demand': (old, val) => {
                         const labels = ['Terrible', 'Bad', 'Low', 'Average', 'Good', 'High'];

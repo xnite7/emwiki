@@ -696,9 +696,11 @@
     pointer-events: none;
 }
 
-.wishlist-grid .item canvas {
+.wishlist-grid .item canvas,
+.wishlist-grid .item img {
     max-width: 70%;
     max-height: 70%;
+    width: auto;
     object-fit: contain;
     position: absolute;
     pointer-events: none;
@@ -1071,7 +1073,8 @@
 
 .review-modal-content {
     position: relative;
-    background: rgba(20, 20, 30, 0.95);
+    padding: 25px 22px;
+    background: var(--bg-item);
     backdrop-filter: blur(20px);
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1111,7 +1114,7 @@
     font-family: 'BuilderSans', sans-serif;
 }
 
-.review-modal-close {
+.modal-close {
     background: none;
     border: none;
     color: rgba(255, 255, 255, 0.6);
@@ -1137,14 +1140,14 @@
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .form-label {
     display: block;
     color: white;
     font-weight: 700;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
     font-size: 0.95rem;
 }
 

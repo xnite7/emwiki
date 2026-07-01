@@ -79,12 +79,8 @@ const Layout = {
   renderFooter(opts = {}) {
     const { showPet = false, showReportScammer = false } = opts;
     const isHome = !document.body?.dataset?.activeNav && (window.location.pathname || '/').replace(/\/$/, '').match(/^(\/|\/index\.html?)$/);
-    const contactExtra = showReportScammer
-      ? '<a href="https://discord.gg/YsKW6UDWZ6">Report a Scammer</a>'
-      : '<a id="kypsus" href="https://docs.google.com/spreadsheets/d/11qKj8UTf2-x0Z7bNMuguEFKALCWI1v7QtkDbNlBzy9M"><strong>@Kypsus</strong>\'s Google Sheet</a>';
-    const footerBottom = isHome
-      ? '<p>© 2025 emwiki.com • made with ❤ by <span id="xnite-link" style="cursor: pointer; text-decoration: underline;">xnite</span></p>'
-      : '<p>© 2025 emwiki.com • made with ❤ by xnite</p>';
+    const contactExtra = '<a id="kypsus" href="https://docs.google.com/spreadsheets/d/11qKj8UTf2-x0Z7bNMuguEFKALCWI1v7QtkDbNlBzy9M"><strong>@Kypsus</strong>\'s Google Sheet</a>';
+    const footerBottom = '<p>© 2025 emwiki.com • made with ❤ by <span id="xnite-link" style="cursor: pointer; text-decoration: underline;">xnite</span></p>';
     const petHtml = showPet ? '\n\t\t<!-- Pet -->\n\t\t<div id="petContainer"><div id="pet"></div></div>' : '';
 
     return `<footer>
@@ -782,6 +778,19 @@ const Utils = {
     }
 };
 
+// Wishlist ⭐ and heart ❤ button SVGs, parsed once here and cloned per card (cloneNode) instead of
+// re-parsing the same markup ~100×/batch via insertAdjacentHTML — a measurable batch-render cost.
+const _wishlistBtnTemplate = (() => {
+    const t = document.createElement('template');
+    t.innerHTML = '<svg class="wishlist-button" stroke="#000" stroke-width="3" viewBox="-1 0 39 37" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="wishlistact" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="yellow"/><stop offset="50%" stop-color="gold"/><stop offset="100%" stop-color="orange"/></linearGradient></defs><path d="M19.5 2.5c.466.226.843.596 1.073 1.054l3.977 7.898 8.874 1.276c1.294.186 2.19 1.368 2 2.64a2.3 2.3 0 0 1-.688 1.327l-6.416 6.157 1.507 8.687c.22 1.267-.647 2.47-1.936 2.685a2.4 2.4 0 0 1-1.499-.233l-7.942-4.093-7.942 4.093c-1.159.597-2.59.159-3.198-.98a2.3 2.3 0 0 1-.238-1.472l1.508-8.687-6.416-6.157a2.3 2.3 0 0 1-.04-3.29 2.4 2.4 0 0 1 1.352-.677l8.874-1.276 3.977-7.898c.58-1.152 2-1.624 3.173-1.054"/></svg>';
+    return t.content.firstElementChild;
+})();
+const _heartBtnTemplate = (() => {
+    const t = document.createElement('template');
+    t.innerHTML = '<svg class="heart-button" stroke="#000" paint-order="stroke" stroke-width="3" viewBox="-1 0.5 18 16" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="favred" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="red"/><stop offset="100%" stop-color="maroon"/></linearGradient></defs><path d="M12 2S9 2 8 5C7 2 4 2 4 2 1.8 2 0 3.8 0 6c0 4.1 8 9 8 9s8-5 8-9c0-2.2-1.8-4-4-4"/></svg>';
+    return t.content.firstElementChild;
+})();
+
 // ==================== BASE APP CLASS ====================
 class BaseApp {
     constructor() {
@@ -814,6 +823,7 @@ class BaseApp {
         this.loadTheme();
         this.particleSystem = new ParticleSystem(this.particleCanvas);
         this.initializeSearch();
+        this.setupItemDelegation();
 
 
         document.body.insertAdjacentHTML('beforeend', `
@@ -1337,80 +1347,96 @@ class BaseApp {
         // Badges
         this.addBadges(div, item);
 
-        div.insertAdjacentHTML('beforeend', '<svg class="wishlist-button" stroke="#000" stroke-width="3" viewBox="-1 0 39 37" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="wishlistact" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="yellow"/><stop offset="50%" stop-color="gold"/><stop offset="100%" stop-color="orange"/></linearGradient></defs><path d="M19.5 2.5c.466.226.843.596 1.073 1.054l3.977 7.898 8.874 1.276c1.294.186 2.19 1.368 2 2.64a2.3 2.3 0 0 1-.688 1.327l-6.416 6.157 1.507 8.687c.22 1.267-.647 2.47-1.936 2.685a2.4 2.4 0 0 1-1.499-.233l-7.942-4.093-7.942 4.093c-1.159.597-2.59.159-3.198-.98a2.3 2.3 0 0 1-.238-1.472l1.508-8.687-6.416-6.157a2.3 2.3 0 0 1-.04-3.29 2.4 2.4 0 0 1 1.352-.677l8.874-1.276 3.977-7.898c.58-1.152 2-1.624 3.173-1.054"/></svg>');
-        const wishlistBtn = div.querySelector('.wishlist-button');
-
+        // Wishlist + heart buttons: clone the shared templates (cheap) instead of parsing SVG per card.
+        const wishlistBtn = _wishlistBtnTemplate.cloneNode(true);
         if (this.wishlist.includes(item.name)) {
             wishlistBtn.classList.add('active');
         }
-        wishlistBtn.onclick = (e) => {
-            e.stopPropagation();
-            this.toggleWishlist(item.name);
-        };
         wishlistBtn.title = 'Add to Wishlist';
         div.appendChild(wishlistBtn);
 
-
-        div.insertAdjacentHTML('beforeend', '<svg class="heart-button" stroke="#000" paint-order="stroke" stroke-width="3" viewBox="-1 0.5 18 16" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="favred" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="red"/><stop offset="100%" stop-color="maroon"/></linearGradient></defs><path d="M12 2S9 2 8 5C7 2 4 2 4 2 1.8 2 0 3.8 0 6c0 4.1 8 9 8 9s8-5 8-9c0-2.2-1.8-4-4-4"/></svg>');
-        const heart = div.querySelector('.heart-button');
-        const isFavorite = this.favorites.includes(item.name);
-        if (isFavorite) heart.classList.add('red');
-        heart.onclick = (e) => {
-            e.stopPropagation();
-            const rect = heart.getBoundingClientRect();
-            const wasFavorite = heart.classList.contains('red');
-            this.toggleFavorite(item.name);
-            if (!wasFavorite && this.particleSystem) {
-                this.particleSystem.createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2);
-            }
-        };
+        const heart = _heartBtnTemplate.cloneNode(true);
+        if (this.favorites.includes(item.name)) heart.classList.add('red');
         heart.title = 'Add to Favorites';
         div.appendChild(heart);
 
-        div.onclick = () => this.modal.open(item);
-
-        // Long-press menu for mobile
-        this.addLongPressMenu(div, item);
+        // No per-card listeners: stash the item and let the one-time document-level delegation
+        // (setupItemDelegation) handle card clicks, the ⭐/❤ buttons, and the mobile long-press menu.
+        div._item = item;
 
         return div;
     }
 
-    addLongPressMenu(div, item) {
-        let pressTimer = null;
-        let startX = 0;
-        let startY = 0;
-        let hasMoved = false;
+    setupItemDelegation() {
+        // One set of document-level listeners for every card built by createItemElement, instead of
+        // ~6 listeners per card (300+ per catalog batch). Cards set `el._item`; profile's read-only
+        // cards don't, so they're ignored here and keep their own click handler.
+        document.addEventListener('click', (e) => {
+            const card = e.target.closest('.item');
+            if (!card || !card._item) return;
+            const item = card._item;
 
-        const handleTouchStart = (e) => {
+            // Wishlist ⭐ button
+            if (e.target.closest('.wishlist-button')) {
+                this.toggleWishlist(item.name);
+                return;
+            }
+
+            // Favorite ❤ button (with particle burst on add)
+            const heartBtn = e.target.closest('.heart-button');
+            if (heartBtn) {
+                const rect = heartBtn.getBoundingClientRect();
+                const wasFavorite = heartBtn.classList.contains('red');
+                this.toggleFavorite(item.name);
+                if (!wasFavorite && this.particleSystem) {
+                    this.particleSystem.createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                }
+                return;
+            }
+
+            // Anywhere else on the card opens the modal
+            this.modal.open(item);
+        });
+
+        // Mobile long-press → context menu, delegated once (mirrors the old per-card 500 ms timer).
+        let pressTimer = null;
+        let startX = 0, startY = 0, hasMoved = false, pressItem = null;
+
+        const endPress = () => {
+            if (pressTimer !== null) {
+                clearTimeout(pressTimer);
+                pressTimer = null;
+            }
+        };
+
+        document.addEventListener('touchstart', (e) => {
+            const card = e.target.closest('.item');
+            if (!card || !card._item) return;
+            pressItem = card._item;
             startX = e.touches[0].clientX;
             startY = e.touches[0].clientY;
             hasMoved = false;
-
+            endPress();
             pressTimer = setTimeout(() => {
+                pressTimer = null;
                 if (!hasMoved) {
-                    e.preventDefault();
-                    this.showContextMenu(e.touches[0].clientX, e.touches[0].clientY, item);
+                    this.showContextMenu(startX, startY, pressItem);
                 }
-            }, 500); // 500ms long press
-        };
+            }, 500);
+        }, { passive: true });
 
-        const handleTouchMove = (e) => {
+        document.addEventListener('touchmove', (e) => {
+            if (pressTimer === null) return;
             const moveX = Math.abs(e.touches[0].clientX - startX);
             const moveY = Math.abs(e.touches[0].clientY - startY);
             if (moveX > 10 || moveY > 10) {
                 hasMoved = true;
-                clearTimeout(pressTimer);
+                endPress();
             }
-        };
+        }, { passive: true });
 
-        const handleTouchEnd = () => {
-            clearTimeout(pressTimer);
-        };
-
-        div.addEventListener('touchstart', handleTouchStart);
-        div.addEventListener('touchmove', handleTouchMove);
-        div.addEventListener('touchend', handleTouchEnd);
-        div.addEventListener('touchcancel', handleTouchEnd);
+        document.addEventListener('touchend', endPress);
+        document.addEventListener('touchcancel', endPress);
     }
 
     showContextMenu(x, y, item) {
@@ -1809,11 +1835,11 @@ class BaseApp {
                     const img = document.createElement('img');
                     img.loading = 'lazy';
                     img.decoding = 'async';
-                    img.width = 128;
-                    img.height = 128;
+                    img.className = 'itemimg';
+
                     img.alt = item.name || '';
                     // Use optimized image for wishlist items (thumbnail size)
-                    img.src = Utils.getOptimizedImage(item.img, { width: 128, height: 128, format: 'webp', fit: 'scale-down' }) || item.img;
+                    img.src = Utils.getOptimizedImage(item.img, { width: 70, height: 70, format: 'webp', fit: 'scale-down' }) || item.img;
                     Utils.protectImage(img);
                     div.appendChild(img);
                 } else if (item.svg) {
@@ -1868,11 +1894,11 @@ class BaseApp {
                     const img = document.createElement('img');
                     img.loading = 'lazy';
                     img.decoding = 'async';
-                    img.width = 128;
-                    img.height = 128;
+                    img.className = 'itemimg';
+
                     img.alt = item.name || '';
                     // Use optimized image for favorites list (thumbnail size)
-                    img.src = Utils.getOptimizedImage(item.img, { width: 128, height: 128, format: 'webp', fit: 'scale-down' }) || item.img;
+                    img.src = Utils.getOptimizedImage(item.img, { width: 70, height: 70, format: 'webp', fit: 'scale-down' }) || item.img;
                     Utils.protectImage(img);
                     div.appendChild(img);
                 } else if (item.svg) {
@@ -2503,8 +2529,9 @@ class ItemModal {
             // Show last admin
             const lastChange = item.priceHistory[item.priceHistory.length - 1];
             if (lastChange.admin) {
-                this.elements.lastAdmin.textContent = `Last updated by ${lastChange.admin}`;
-                this.elements.lastAdmin.style.display = 'block';
+                //this.elements.lastAdmin.textContent = `Last updated by ${lastChange.admin}`;
+                //this.elements.lastAdmin.style.display = 'block';
+                this.elements.lastAdmin.style.display = 'none';
             } else {
                 this.elements.lastAdmin.style.display = 'none';
             }
