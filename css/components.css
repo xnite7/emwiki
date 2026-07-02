@@ -265,3 +265,122 @@
     font-size: var(--text-sm);
     color: var(--text-2);
 }
+
+
+/* ============================ SURFACES ===================================== */
+/* openSurface() (js/components/surface.js): desktop modal / mobile sheet.   */
+
+dialog.surface {
+    border: 1px solid var(--border-1);
+    padding: 0;
+    background: var(--bg-1);
+    color: var(--text-1);
+    box-shadow: var(--shadow-3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+dialog.surface::backdrop {
+    background: rgb(0 0 0 / .5);
+}
+
+/* Modal (desktop) */
+.surface--modal {
+    margin: auto;
+    border-radius: var(--radius-lg);
+    width: min(560px, calc(100vw - 32px));
+    max-height: min(85vh, 85dvh);
+    animation: surface-modal-in var(--dur-3) var(--ease-out-expo);
+}
+
+.surface--modal.surface--sm { width: min(400px, calc(100vw - 32px)); }
+.surface--modal.surface--lg { width: min(760px, calc(100vw - 32px)); }
+
+@keyframes surface-modal-in {
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+}
+
+.surface--modal.surface--closing {
+    animation: surface-modal-out var(--dur-2) var(--ease-out-quart) forwards;
+}
+
+@keyframes surface-modal-out {
+    to { opacity: 0; transform: scale(0.97) translateY(6px); }
+}
+
+/* Sheet (mobile) */
+.surface--sheet {
+    margin: auto 0 0;
+    width: 100vw;
+    max-width: 100vw;
+    max-height: min(88vh, 88dvh);
+    border-bottom: none;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    animation: surface-sheet-in var(--dur-3) var(--ease-out-expo);
+    touch-action: none;
+}
+
+.surface--sheet .surface-body {
+    touch-action: pan-y;
+}
+
+@keyframes surface-sheet-in {
+    from { transform: translateY(100%); }
+}
+
+.surface--sheet.surface--closing {
+    animation: surface-sheet-out var(--dur-3) var(--ease-out-quart) forwards;
+}
+
+@keyframes surface-sheet-out {
+    to { transform: translateY(105%); }
+}
+
+.surface-grabber {
+    flex-shrink: 0;
+    width: 36px;
+    height: 5px;
+    border-radius: var(--radius-pill);
+    background: var(--border-2);
+    margin: 8px auto 0;
+}
+
+.surface-header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-4) var(--space-2);
+}
+
+.surface-title {
+    font-size: var(--text-lg);
+    font-weight: 650;
+    margin: 0;
+}
+
+.surface-body {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: var(--space-2) var(--space-4) var(--space-4);
+}
+
+.surface-actions {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid var(--border-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    dialog.surface,
+    dialog.surface.surface--closing {
+        animation: none;
+    }
+}

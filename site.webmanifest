@@ -1,21 +1,22 @@
 {
   "name": "EM Wiki",
   "short_name": "EM Wiki",
-  "description": "A Epic Minigames wiki and item list. by @xnite",
-  "start_url": "/index",
+  "description": "The Epic Minigames wiki, item catalog and trading hub. by @xnite",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "background_color": "#0e1116",
+  "theme_color": "#0e1116",
   "icons": [
     {
-      "src": "./imgs/app.png",
+      "src": "/imgs/app.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "./imgs/app.png",
+      "src": "/imgs/app.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }

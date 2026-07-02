@@ -1,12 +1,215 @@
 /* =============================================================================
    layout.css — app shell: header, footer, mobile dock, page container.
-   Loaded into @layer layout. The header/footer markup is injected by
-   Layout.renderHeader/renderFooter (js/core/layout.js).
+   Loaded into @layer layout. The header/footer/dock markup is injected by
+   Layout (js/core/layout.js).
    ========================================================================== */
 
-/* Page content never hides behind the mobile dock */
+/* ── Desktop header ── */
+header {
+    z-index: 1;
+    text-align: center;
+    background: var(--bg-1);
+    position: relative;
+    border-bottom: 1px solid var(--border-1);
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    box-shadow: var(--shadow-1);
+    flex-direction: column;
+}
+
+header svg * {
+    pointer-events: none;
+}
+
+header a svg {
+    max-width: 300px;
+    width: 30%;
+    min-width: 210px;
+    height: auto;
+    overflow: visible;
+    transition: transform var(--dur-3) var(--ease-spring);
+}
+
+header a svg:hover {
+    transform: scale(1.06) rotate(2deg);
+}
+
+svg #cloud {
+    transition: all 0.2s ease-in-out;
+}
+
+svg #cloud:last-of-type {
+    transition: all 0.4s ease-in-out;
+}
+
+svg #cloud:first-of-type {
+    transition: all 0.6s ease-in-out;
+}
+
+svg:hover #cloud {
+    opacity: 0;
+    transform: scale(.98);
+    transform-origin: center;
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.nav-link {
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    transition: background var(--dur-2) var(--ease-out-quart), color var(--dur-2) var(--ease-out-quart);
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    color: var(--text-2);
+}
+
+/* Links not yet launched stay visible but inert (intentional) */
+.nav-link:not(:first-child, :nth-child(3),
+:nth-child(4), :last-child) {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.nav-link:hover {
+    background: var(--bg-2);
+    color: var(--text-1);
+}
+
+.nav-link.active {
+    background: var(--bg-3);
+    color: var(--text-1);
+    box-shadow: inset 0 0 0 1px var(--border-2);
+}
+
+#user-profile-btn {
+    top: 20px;
+    right: 20px;
+    position: absolute;
+}
+
+/* ── Mobile dock (tab bar) ── */
+.dock {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--z-dock);
+    display: none;
+    background: light-dark(rgb(255 255 255 / .88), rgb(21 26 33 / .88));
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border-1);
+    padding: var(--space-1) var(--space-2) calc(var(--space-1) + env(safe-area-inset-bottom, 0px));
+    view-transition-name: dock;
+}
+
+.dock-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: 52px;
+    padding: var(--space-1) 0;
+    border: none;
+    background: none;
+    border-radius: var(--radius-md);
+    color: var(--text-3);
+    text-decoration: none;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    -webkit-tap-highlight-color: transparent;
+    transition: color var(--dur-2) var(--ease-out-quart), transform var(--dur-1) var(--ease-out-quart);
+}
+
+.dock-item svg {
+    width: 24px;
+    height: 24px;
+    pointer-events: none;
+}
+
+.dock-item:active {
+    transform: scale(0.92);
+}
+
+.dock-item.active {
+    color: var(--accent);
+}
+
+/* ── Mobile: slim header, dock takes over navigation ── */
 @media (max-width: 767.98px) {
+    .dock {
+        display: flex;
+    }
+
     body {
         padding-bottom: calc(var(--dock-height) + env(safe-area-inset-bottom, 0px));
     }
+
+    /* Dock replaces the header nav */
+    header .nav-links {
+        display: none;
+    }
+
+    header {
+        flex-direction: row;
+        justify-content: center;
+        padding: var(--space-2) var(--space-4);
+        padding-top: calc(var(--space-2) + env(safe-area-inset-top, 0px));
+        gap: var(--space-3);
+    }
+
+    header a svg {
+        min-width: 140px;
+        width: 140px;
+        /* the logo's clouds render above its viewBox — give them headroom */
+        margin-top: 14px;
+    }
+}
+
+/* ── Keep header pinned through cross-document view transitions ── */
+header {
+    view-transition-name: site-header;
+}
+
+/* ── More sheet ── */
+.more-sheet-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding-bottom: var(--space-2);
+}
+
+.more-sheet-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-3);
+    border-radius: var(--radius-md);
+    color: var(--text-1);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: var(--text-base);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.more-sheet-link:active {
+    background: var(--bg-2);
+}
+
+.more-sheet-link svg {
+    width: 22px;
+    height: 22px;
+    color: var(--text-2);
 }
