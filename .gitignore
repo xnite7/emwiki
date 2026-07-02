@@ -14,3 +14,6 @@ NUL
 
 # Wrangler local state
 .wrangler/
+
+# Local visual regression baselines
+tests/visual-baseline.spec.js-snapshots/

@@ -1,0 +1,113 @@
+/* =============================================================================
+   base.css — element defaults, typography, motion policy, app-feel primitives.
+   Loaded into @layer base (loses to legacy unlayered CSS by design; legacy
+   rules are deleted per-page as each page migrates).
+   ========================================================================== */
+
+html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    background: var(--bg-0);
+    color: var(--text-1);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: 1.5;
+    /* Prevent rubber-band scroll chaining behind sheets/modals */
+    overscroll-behavior-y: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-1);
+    line-height: 1.2;
+    text-wrap: balance;
+}
+
+p {
+    line-height: 1.6;
+}
+
+a {
+    color: var(--accent);
+}
+
+button, input, select, textarea {
+    font: inherit;
+    color: inherit;
+}
+
+button {
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+a, [role="button"], label {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+::selection {
+    background: var(--accent-soft);
+}
+
+/* Numbers that should line up (prices, values, stats) */
+.tabular, .item-price, .stat-value {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── Cross-document page transitions (progressive enhancement) ──
+   Chrome/Edge/Safari 18.2+; Firefox simply navigates instantly. */
+@view-transition {
+    navigation: auto;
+}
+
+::view-transition-old(root) {
+    animation: vt-fade-out var(--dur-2) var(--ease-out-quart) both;
+}
+
+::view-transition-new(root) {
+    animation: vt-fade-in var(--dur-2) var(--ease-out-quart) both;
+}
+
+@keyframes vt-fade-out {
+    to { opacity: 0; transform: translateY(-4px); }
+}
+
+@keyframes vt-fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+}
+
+/* ── Touch feel: mobile gets active-state feedback instead of hover ── */
+@media (hover: none) {
+    .item:active,
+    .btn:active,
+    button:active:not(:disabled) {
+        transform: scale(0.97);
+        transition: transform var(--dur-1) var(--ease-out-quart);
+    }
+}
+
+/* ── Reduced motion: kill transitions, animations and smooth scroll ── */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    @view-transition {
+        navigation: none;
+    }
+}

@@ -1,0 +1,12 @@
+/* =============================================================================
+   layout.css — app shell: header, footer, mobile dock, page container.
+   Loaded into @layer layout. The header/footer markup is injected by
+   Layout.renderHeader/renderFooter (js/core/layout.js).
+   ========================================================================== */
+
+/* Page content never hides behind the mobile dock */
+@media (max-width: 767.98px) {
+    body {
+        padding-bottom: calc(var(--dock-height) + env(safe-area-inset-bottom, 0px));
+    }
+}

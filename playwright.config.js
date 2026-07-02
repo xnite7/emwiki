@@ -71,11 +71,13 @@ export default defineConfig({
     // },
   ],
 
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
+  /* Run the local dev server before starting the tests (local runs only —
+     CI has no wrangler/D1 environment; server-dependent specs skip on CI) */
+  webServer: process.env.CI ? undefined : {
+    command: 'npx wrangler pages dev . --local --port 8788',
+    url: 'http://localhost:8788',
+    reuseExistingServer: true,
+    timeout: 120000,
+  },
 });
 

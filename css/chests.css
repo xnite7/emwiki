@@ -234,7 +234,7 @@
 }
 
 .chest-price {
-    color: #FFD700;
+    color: var(--gold);
     font-weight: 600;
 }
 

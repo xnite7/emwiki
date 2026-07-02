@@ -1,9 +1,26 @@
-/* Epic Catalogue Index - VIBRANT & FUN */
+/* =============================================================================
+   style.css — import manifest + (shrinking) legacy global styles.
+
+   Cascade layers: layered rules LOSE to unlayered legacy rules, so the new
+   design system applies everywhere except where a legacy rule still overrides
+   it. Each page phase rewrites its legacy CSS into @layer pages and deletes
+   the dead rules. New shared styles belong in tokens/base/layout/components —
+   NOT in this file.
+   ========================================================================== */
+@layer reset, tokens, base, layout, components, pages, utilities;
+
 @import url("../css/fonts.css");
+@import url("../css/tokens.css") layer(tokens);
+@import url("../css/base.css") layer(base);
+@import url("../css/layout.css") layer(layout);
+/* components.css stays unlayered on purpose: it must beat legacy page CSS
+   (also unlayered) via specificity until those files are migrated. */
+@import url("../css/components.css");
+
+/* Legacy (unlayered — wins over the layers above until migrated) */
 @import url("../css/auth.css?v=1.4");
 @import url("../css/modal.css");
 @import url("../css/chests.css");
-@import url("../css/components.css");
 
 * {
     margin: 0;
@@ -34,63 +51,7 @@ html::before {
     will-change: transform;
 }
 
-:root {
-    color-scheme: dark;
-    --bg-secondary: light-dark(#fff, #1a1a1a);
-    --bg-item: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.05));
-    --bg-item-hover: light-dark(rgba(0, 0, 0, 0.16), rgba(255, 255, 255, 0.1));
-    --text-secondary: light-dark(rgba(0, 0, 0, 0.6), rgba(255, 255, 255, 0.7));
-    --border-color: light-dark(rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0.1));
-    --shadow-color: light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.5));
-    --edges-color: light-dark(rgba(255, 255, 255, 0.4), rgba(0, 0, 0, 0.3));
-
-    /* Primary text + hover aliases (were referenced across files but never defined) */
-    --text-primary: CanvasText;
-    --bg-hover: var(--bg-item-hover);
-
-    /* ── Unified design tokens (single source of truth for the whole site) ── */
-    /* Accent — canonical site blue (unified from the two previous blues) */
-    --accent: #37a6ff;
-    --accent-christmas: #37a6ff;
-    --accent-hover: #5ab4ff;
-    --accent-soft: #37a6ff22;
-    --accent-transparent: #37a6ff66;
-    --accent-gradient: linear-gradient(180deg, var(--accent), var(--accent-transparent));
-
-    /* Semantic status colors */
-    --success: #6cd13a;
-    --success-soft: rgba(108, 209, 58, 0.15);
-    --success-gradient: linear-gradient(180deg, var(--success), #005700);
-    --danger: #e14b4b;
-    --danger-soft: rgba(225, 75, 75, 0.15);
-    --danger-gradient: linear-gradient(180deg, var(--danger), #890000);
-    --warning: #ffb900;
-    --warning-soft: rgba(255, 185, 0, 0.15);
-
-    /* Radius scale */
-    --radius-sm: 6px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --radius-pill: 999px;
-
-    /* Shadow scale */
-    --shadow-sm: 0 1px 3px var(--shadow-color);
-    --shadow-md: 0 6px 24px var(--shadow-color);
-    --shadow-lg: 0 16px 48px var(--shadow-color);
-
-    /* Z-index scale (replaces ad-hoc 9999 / 9999999) */
-    --z-overlay: 1000;
-    --z-modal: 1001;
-    --z-toast: 1100;
-
-    &:has(.light-theme) {
-        color-scheme: light;
-    }
-
-    &:has(.dark-theme) {
-        color-scheme: dark;
-    }
-}
+/* Design tokens live in css/tokens.css (@layer tokens) — the ONLY :root. */
 
 #sort-select option {
     background-color: var(--bg-secondary);
@@ -101,16 +62,12 @@ html::before {
 }
 
 body {
-    background: linear-gradient(#00000033, transparent);
-    color: CanvasText;
-    font-family: 'Source Sans Pro', sans-serif, Twemoji;
+    background: var(--bg-0);
+    color: var(--text-1);
+    font-family: var(--font-body);
     overflow-x: hidden;
     max-width: 100%;
     transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.light-theme body {
-    background: #eaf0f3;
 }
 
 /* Progressive Letter Spacing - Larger text = tighter spacing */
@@ -232,15 +189,14 @@ svg:hover #cloud {
 }
 
 .nav-link:hover {
-    background: var(--border-color);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    background: var(--bg-2);
+    color: var(--text-1);
 }
 
 .nav-link.active {
-    background: var(--bg-item);
-    color: var(--accent-christmas);
-    box-shadow: rgb(0 0 0 / 40%) 0px 0px 10px 0px;
+    background: var(--bg-3);
+    color: var(--text-1);
+    box-shadow: inset 0 0 0 1px var(--border-2);
 }
 
 #user-profile-btn {
@@ -250,25 +206,26 @@ svg:hover #cloud {
 }
 
 .btn {
-
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 10px 15px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
+    background: var(--bg-2);
+    border: 1px solid var(--border-1);
+    border-radius: var(--radius-md);
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 2px 10px var(--shadow-color), inset -2px -2px 4px var(--edges-color);
-    backdrop-filter: blur(15px) saturate(150%);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-1);
+    transition: background var(--dur-2) var(--ease-out-quart), border-color var(--dur-2) var(--ease-out-quart), transform var(--dur-1) var(--ease-out-quart);
 }
 
 .btn:hover {
-    background: rgba(255, 255, 255, 0.12);
-    transform: translateY(-2px);
-    box-shadow: 0 3px 4px 2px rgb(0 0 0 / 10%), inset -2px -2px 2px var(--shadow-color);
+    background: var(--bg-3);
+    border-color: var(--border-2);
+}
+
+.btn:active {
+    transform: scale(0.98);
 }
 
 .theme-toggle {
@@ -328,20 +285,6 @@ svg:hover #cloud {
         inset: 0;
         background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.4'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         background-size: 150px;
-        animation: moveHammers 30s linear infinite;
-}
-
-
-
-
-@keyframes moveHammers {
-    0% {
-        background-position: 0 0;
-    }
-
-    100% {
-        background-position: 1000px 1000px;
-    }
 }
 
 .hero-content {
@@ -371,23 +314,12 @@ svg:hover #cloud {
 .hero-epic {
     font-size: 64px;
     -webkit-text-stroke: 2px #000;
-    font-family: 'Slapstick';
+    font-family: var(--font-display);
     background: linear-gradient(360deg, #ffe84a 10%, #24ff5a 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     display: inline-block;
-    animation: colorShift 3s ease-in-out infinite alternate;
-}
-
-@keyframes colorShift {
-    0% {
-        filter: hue-rotate(0deg) brightness(1);
-    }
-
-    100% {
-        filter: hue-rotate(25deg) brightness(1.1);
-    }
 }
 
 /* Add to your CSS file */
@@ -596,7 +528,7 @@ svg:hover #cloud {
 }
 
 .stat-card:nth-child(2) .stat-value {
-    background: linear-gradient(to bottom, #ff6b6b, #ee0979);
+    background: var(--danger);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -787,7 +719,7 @@ main {
     font-family: 'BuilderSans', monospace;
     font-weight: bold;
     display: none;
-    color: #ffd700;
+    color: var(--gold);
 }
 
 #count-weekly {
@@ -1046,13 +978,13 @@ main {
    signalling a volatile value (new items / items returning to Gamenight). */
 .item-price.unstable,
 .modal-price h2.unstable {
-    color: #ff6b6b;
+    color: var(--danger);
 }
 
 .unstable-mark {
     margin-left: 2px;
     font-weight: bold;
-    color: #ff6b6b;
+    color: var(--danger);
     cursor: help;
 }
 
@@ -1235,7 +1167,7 @@ div#random-items-grid {
     width: 50px;
     height: 50px;
     border-radius: 10px;
-    border: 2px solid #ffd700;
+    border: 2px solid var(--gold);
     box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
     transition: box-shadow 0.2s ease;
 }
@@ -1255,7 +1187,7 @@ div#random-items-grid {
 }
 
 .donator-amount {
-    color: #ffd700;
+    color: var(--gold);
     font-weight: bold;
     background: #00000096;
     padding: 2px 5px 3px;
@@ -1276,8 +1208,8 @@ div#random-items-grid {
 .donate-btn {
     width: 100%;
     padding: 14px;
-    background: linear-gradient(180deg, #ffd700 0%, #ffb900 100%);
-    border: 2px solid #ffd700;
+    background: var(--gold);
+    border: 2px solid var(--gold);
     border-radius: 10px;
     color: #000;
     font-weight: 800;
@@ -1838,7 +1770,7 @@ footer {
     font-size: 23px;
     opacity: 0;
     transition: opacity 0.1s ease;
-    background: linear-gradient(180deg, #ff4444, #b70000);
+    background: var(--danger);
     border: 1px solid darkred;
     color: white;
     border-radius: 50%;
@@ -1853,7 +1785,7 @@ footer {
 }
 
 .remove-wishlist:hover {
-    background: linear-gradient(180deg, #ff4444, #e72626);
+    background: var(--danger);
     border: 1px solid rgb(0, 0, 0);
     opacity: 1;
 }
@@ -2526,7 +2458,7 @@ textarea {
     padding: 10px 16px;
     cursor: pointer;
     font-weight: 600;
-    color: #ff6b6b;
+    color: var(--danger);
     font-size: 14px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     transition: background-color 0.2s;
@@ -3090,7 +3022,7 @@ textarea {
 
 .role-badge.vip,
 .role-icon.vip {
-    background: linear-gradient(135deg, #ffd700, #ffb700);
+    background: var(--gold);
     color: #a36d18;
     border-radius: 4px;
 
