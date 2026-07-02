@@ -67,7 +67,7 @@
     left: 20%;
     right: 20%;
     height: 3px;
-    background: linear-gradient(90deg, transparent, #4a9eff, transparent);
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
     ;
     border-radius: 0 0 3px 3px;
 }
@@ -335,7 +335,7 @@
 
 .auth-code:hover {
     transform: scale(1.02);
-    border-color: #4a9eff;
+    border-color: var(--accent);
 }
 
 
@@ -358,7 +358,7 @@
 
 .copied~.copy-icon {
     opacity: 1;
-    fill: #4a9eff !important;
+    fill: var(--accent) !important;
     animation: pulse-indicator 0.3s ease;
 }
 
@@ -378,7 +378,7 @@
     font-family: 'BuilderSans';
     min-width: 180px;
     padding: 16px 30px;
-    background: linear-gradient(180deg, #4a9eff 0%, #3a7ed6 100%);
+    background: linear-gradient(180deg, var(--accent) 0%, #3a7ed6 100%);
     border: 2px solid #5aa7ff;
     border-radius: 12px;
     color: white;
@@ -417,7 +417,7 @@
 
 .join-game-btn:hover {
     letter-spacing: 4px;
-    background: linear-gradient(180deg, #5aa7ff 0%, #4a9eff 100%);
+    background: linear-gradient(180deg, #5aa7ff 0%, var(--accent) 100%);
     box-shadow:
         0 12px 40px rgba(74, 158, 255, 0.4),
         inset 0 1px 0 rgba(255, 255, 255, 0.4),
@@ -433,7 +433,7 @@
 
 #code-timer {
     display: inline-block;
-    color: #4a9eff;
+    color: var(--accent);
     font-weight: 800;
     font-size: 17px;
     padding: 2px 8px;
@@ -1145,32 +1145,11 @@
     border-radius: 0 0 3px 3px;
 }
 
+/* Box/appearance unified in components.css (.btn-close group); position only. */
 .close-modal {
     position: absolute;
     top: 12px;
     right: 12px;
-    width: 36px;
-    height: 36px;
-    font-size: 28px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    color: rgba(255, 255, 255, 0.5);
-    cursor: pointer;
-    transition: all 0.18s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 300;
-    line-height: 0;
-    box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.4);
-}
-
-.close-modal:hover {
-    background: rgba(255, 50, 50, 0.15);
-    color: #ff5555;
-    border-color: rgba(255, 50, 50, 0.3);
-    transform: scale(1.05);
 }
 
 .close-modal:active {

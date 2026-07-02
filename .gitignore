@@ -11,3 +11,6 @@ NUL
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Wrangler local state
+.wrangler/

@@ -42,9 +42,9 @@
 }
 
 .filter-chip.active {
-    background: #667eea;
+    background: var(--accent);
     color: white;
-    border-color: #667eea;
+    border-color: var(--accent);
     box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
 }
 

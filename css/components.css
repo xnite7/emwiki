@@ -1,0 +1,186 @@
+/* =============================================================================
+   components.css — Shared, reusable UI components for the whole site.
+
+   Imported globally from style.css (which is loaded on every page), so these
+   rules are available everywhere. The goal is ONE design per element, driven by
+   the design tokens defined in style.css :root (--accent, --radius-*, --shadow-*,
+   --success/--danger, etc.).
+
+   Cascade notes:
+   - This file loads BEFORE the page-specific stylesheets (trading.css, admin.css…),
+     so where a page file re-declares the same single-class selector it still wins.
+     For those we either (a) use a higher-specificity compound selector here so the
+     shared rule wins anyway, or (b) trim the now-redundant declaration in the page
+     file. Layout/position/unique-color declarations are always left in the page file.
+   ========================================================================== */
+
+
+/* ============================ BUTTONS ====================================== */
+/* The shared button "chassis" is the existing global `.btn` (see style.css).
+   Buttons written as `class="btn btn-primary"` (forum/profile/gallery) inherit
+   that chassis; here we only give them a consistent, token-driven COLOR language.
+   Compound `.btn.btn-*` selectors (specificity 0,2,0) win over both the base
+   `.btn` and any single-class page override, regardless of load order.
+   Trading's standalone `.btn-next` / `.btn-publish` / etc. are converged to the
+   same tokens directly in trading.css. */
+
+.btn.btn-primary {
+    background: var(--accent-gradient);
+    color: #fff;
+    border-color: transparent;
+}
+
+.btn.btn-primary:hover {
+    background: var(--accent-gradient);
+    filter: brightness(1.08) saturate(1.05);
+    color: #fff;
+}
+
+.btn.btn-success {
+    background: var(--success-gradient);
+    color: #eafff0;
+    border-color: #004600;
+}
+
+.btn.btn-success:hover {
+    filter: brightness(1.08) saturate(1.05);
+}
+
+.btn.btn-danger {
+    background: var(--danger-gradient);
+    color: #fff;
+    border-color: #810000;
+}
+
+.btn.btn-danger:hover {
+    filter: brightness(1.08) saturate(1.05);
+}
+
+.btn.btn-secondary {
+    background: var(--bg-item);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.btn.btn-secondary:hover {
+    background: var(--bg-item-hover);
+    border-color: var(--accent);
+}
+
+.btn:disabled,
+.btn.disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    filter: none;
+    transform: none;
+}
+
+
+/* ========================= CLOSE / X BUTTONS =============================== */
+/* One consistent close affordance for every modal/panel. Appearance only —
+   each source rule keeps its own position (absolute top/right, float, etc.).
+   Page/ID rules that previously set the box appearance are trimmed to match. */
+
+.modal-close-btn,
+.modal-close,
+.close-modal,
+#quick-editor-close,
+.section-close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: var(--bg-item);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 0;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.modal-close-btn:hover,
+.modal-close:hover,
+.close-modal:hover,
+#quick-editor-close:hover,
+.section-close-btn:hover {
+    background: var(--danger-soft);
+    color: #ff6b6b;
+    border-color: rgba(225, 75, 75, 0.4);
+    transform: scale(1.05);
+}
+
+
+/* ========================= SEARCH & TEXT INPUTS =========================== */
+/* Shared look for search fields and form controls. Padding/width (and the
+   left-icon offset on search fields) stay in the page files; only the surface,
+   border, radius and focus ring are unified here. */
+
+.search-input,
+#search,
+.calc-search-input,
+.item-search-input,
+.user-search-input,
+.form-group input,
+.form-group select,
+.form-group textarea,
+.filter-select,
+.inputs-row input,
+.inputs-row select {
+    background: var(--bg-item);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-family: inherit;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.search-input:focus,
+#search:focus,
+.calc-search-input:focus,
+.item-search-input:focus,
+.user-search-input:focus,
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus,
+.filter-select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+    background: var(--bg-item-hover);
+}
+
+
+/* =============================== BADGES =================================== */
+/* One pill shape / sizing for every role & status badge. Colors stay in the
+   page files (`.role-badge.admin`, `.offer-status.pending`, …). */
+
+.badge,
+.tag,
+.tag-pill,
+.role-badge,
+.post-badge,
+.post-category,
+.profile-pill-role,
+.profile-dropdown-role,
+.user-card-role-badge,
+.trade-status-badge,
+.offer-status,
+.tab-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    line-height: 1.4;
+    white-space: nowrap;
+}

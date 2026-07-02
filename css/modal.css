@@ -82,20 +82,12 @@ body:has(.item-modal.active) {
     opacity: 0.8;
 }
 
+/* Box/appearance unified in components.css (.btn-close group); position only. */
 .modal-close {
     position: absolute;
     top: 15px;
     right: 15px;
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-}
-
-.modal-close:hover {
-    opacity: 1;
+    z-index: 3;
 }
 
 
@@ -478,8 +470,8 @@ body:has(.item-modal.active) {
     align-items: center;
     gap: 8px;
     padding: 10px 18px;
-    background: linear-gradient(180deg, #4a9eff 0%, #667eea 100%);
-    border: 2px solid #4a9eff;
+    background: linear-gradient(180deg, var(--accent) 0%, var(--accent) 100%);
+    border: 2px solid var(--accent);
     border-radius: 10px;
     color: white;
     font-weight: 700;

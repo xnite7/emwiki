@@ -1870,7 +1870,7 @@ class BaseApp {
         // Show empty state if no items
         if (itemsToShow.length === 0) {
             const listType = this.currentListMode === 'wishlist' ? 'wishlist' : 'favorites';
-            wishlistDiv.innerHTML = `<div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+            wishlistDiv.innerHTML = `<div class="empty" style="text-align: center; padding: 20px; color: var(--text-secondary);">
                 Your ${listType} is empty.<br>
                 <small>Add items from the <a href="/catalog" style="color: var(--text-primary);">catalog</a>!</small>
             </div>`;

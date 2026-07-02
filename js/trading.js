@@ -815,7 +815,7 @@ class TradingHub {
                 </div>
                 <span class="trade-status-badge ${trade.status}">${trade.status}</span>
             </div>
-            ${trade.description ? `<div class="trade-card-description">${this.esc(trade.description)}</div>` : ''}
+            
             <div class="trade-exchange">
                 <div class="trade-side offering">
                     <div class="trade-side-label">Offering</div>
@@ -824,7 +824,7 @@ class TradingHub {
                     </div>
                 </div>
                 <div class="trade-swap-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 16 4 4 4-4"/><path d="M11 20V4"/><path d="m17 8-4-4-4 4"/><path d="M13 4v16"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M0,11h11.2l-2.6,2.6L10,15l6-6H0V11z M4.8,5l2.6-2.6L6,1L0,7h16V5H4.8z"></path></svg>
                 </div>
                 <div class="trade-side seeking">
                     <div class="trade-side-label">Looking For</div>
@@ -836,6 +836,7 @@ class TradingHub {
                     </div>
                 </div>
             </div>
+            ${trade.description ? `<div class="trade-card-description">${this.esc(trade.description)}</div>` : ''}
             <div class="trade-card-actions">
                 <button class="btn-view-trade" data-id="${trade.id}">View Details</button>
                 ${this.currentUser && trade.user_id !== this.currentUser.userId

@@ -385,20 +385,9 @@ small {
     font-size: 1.5rem;
 }
 
+/* Box/appearance unified in components.css (.btn-close group). */
 .modal-close {
     position: unset;
-    position: unset;
-    position: unset;
-    background: none;
-    border: none;
-    font-size: 2rem;
-    cursor: pointer;
-    color: var(--text-secondary);
-    line-height: 1;
-}
-
-.modal-close:hover {
-    color: CanvasText;
 }
 
 .modal-body {
@@ -920,7 +909,7 @@ small {
 .share-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-    border-color: #667eea;
+    border-color: var(--accent);
 }
 
 .share-btn:active {

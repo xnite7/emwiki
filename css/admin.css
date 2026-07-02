@@ -228,19 +228,10 @@ select::-webkit-scrollbar {
     background: #ef4444;
 }
 
+/* Box/appearance unified in components.css (.btn-close group); position only. */
 .section-close-btn {
     float: right;
-    cursor: pointer;
-    padding: 4px 8px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    font-size: 16px;
     margin-top: -4px;
-    transition: all 0.2s;
-}
-
-.section-close-btn:hover {
-    background: rgba(255, 0, 0, 0.3);
 }
 
 select {
@@ -440,12 +431,7 @@ main {
     position: absolute;
     top: 8px;
     right: 12px;
-    background: transparent;
-    border: none;
-    font-size: 28px;
-    color: var(--muted);
     cursor: pointer;
-    font-weight: 700;
 }
 
 #quick-editor-content label {
@@ -672,10 +658,6 @@ main {
 .inputs-row select {
     flex: 1;
     padding: 6px;
-    border-radius: 6px;
-    border: 1px solid var(--ghost);
-    background: transparent;
-    color: var(--muted)
 }
 
 #history-section {
@@ -841,10 +823,6 @@ input#search:focus-visible {
     width: 200px;
     height: 30px;
     flex: 1 1 0%;
-    border-radius: 8px;
-    border: 1px solid var(--ghost);
-    background: transparent;
-    color: var(--muted);
 }
 
 
@@ -1030,23 +1008,13 @@ input#search:focus-visible {
 }
 
 /* Close button sits on top-right of the content */
+/* Box/appearance unified in components.css (.btn-close group); position only. */
 #quick-editor-close {
     position: absolute;
     right: 17px;
     top: 12px;
-    background: transparent;
-    border: none;
-    color: #ffffff91;
-    font-size: 36px;
-    cursor: pointer;
-    transition: color 220ms cubic-bezier(.2, .9, .2, 1);
     user-select: none;
-}
-
-#quick-editor-close:hover {
-
-    color: #ffffffe0;
-
+    z-index: 2;
 }
 
 /* Keep inprgba(255, 255, 255, 0.555)e */

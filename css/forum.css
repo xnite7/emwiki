@@ -114,12 +114,7 @@
 }
 
 .post-category {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    /* Pill shape/sizing unified in components.css (.badge group) */
 }
 
 .post-category.general {
@@ -153,13 +148,7 @@
 }
 
 .post-badge {
-    padding: 4px 8px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
+    /* Pill shape/sizing unified in components.css (.badge group) */
 }
 
 .post-badge.pinned {
@@ -540,11 +529,7 @@
 
 /* Role Badges */
 .role-badge {
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
+    /* Pill shape/sizing unified in components.css (.badge group) */
 }
 
 .role-badge.admin {

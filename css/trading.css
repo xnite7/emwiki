@@ -99,17 +99,17 @@
 }
 
 .tab-btn.active {
-    color: #4a9eff;
-    border-bottom-color: #4a9eff;
+    color: var(--accent);
+    border-bottom-color: var(--accent);
 }
 
 .tab-btn.tab-create {
-    color: #667eea;
+    color: var(--accent);
 }
 
 .tab-btn.tab-create.active {
-    color: #667eea;
-    border-bottom-color: #667eea;
+    color: var(--accent);
+    border-bottom-color: var(--accent);
 }
 
 /* Account-gated controls, greyed out for logged-out visitors. */
@@ -194,21 +194,10 @@
 .search-input {
     width: 100%;
     padding: 0.65rem 1rem 0.65rem 2.75rem;
-    background: var(--bg-item);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     color: CanvasText;
     font-size: 0.9rem;
-    font-family: inherit;
-    transition: all 0.2s;
     min-height: 44px;
-}
-
-.search-input:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
-    background: var(--bg-item-hover);
 }
 
 .filter-controls {
@@ -238,8 +227,8 @@
 
 .filter-select:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 /* ========== TRADES FEED ========== */
@@ -266,7 +255,7 @@
 
 .trade-card-top {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.625rem;
     padding: 0.875rem 1rem 0;
 }
@@ -318,25 +307,22 @@
 }
 
 .trade-status-badge.active {
-    background: rgba(34, 197, 94, 0.15);
-    color: #22c55e;
-    border: 1px solid rgba(34, 197, 94, 0.3);
+    background: #22c55e;
+    box-shadow: 0px 0px 14px rgb(34 197 94);
 }
 
 .trade-status-badge.completed {
-    background: rgba(102, 126, 234, 0.15);
-    color: #667eea;
-    border: 1px solid rgba(102, 126, 234, 0.3);
+    background: var(--accent);
+    box-shadow: 0px 0px 14px var(--accent);
 }
 
 .trade-status-badge.cancelled {
-    background: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: #ef4444;
+    box-shadow: 0px 0px 14px #ef4444;
 }
 
 .trade-card-description {
-    padding: 0.5rem 1rem 0;
+    padding: 0 1rem 0.5rem;
     font-size: 0.8rem;
     color: var(--text-secondary);
     line-height: 1.4;
@@ -350,7 +336,7 @@
 .trade-exchange {
     display: flex;
     align-items: stretch;
-    gap: 0;
+    gap: 7px;
     padding: 0.75rem 1rem;
 }
 
@@ -387,26 +373,33 @@
     align-items: center;
     gap: 0.375rem;
     padding: 0.3rem 0.5rem;
-    background: var(--bg-item-hover);
-    border-radius: 6px;
     font-size: 0.775rem;
     max-width: 100%;
 }
 
 .trade-item-img {
-    width: 24px;
-    height: 24px;
+height: 62px;
     object-fit: cover;
-    border-radius: 4px;
     flex-shrink: 0;
 }
 
 .trade-item-name {
+    opacity: 0;
+    position: absolute;
+    background: linear-gradient(180deg, #5f5f5f, #97979763);
+    border-radius: 8px;
+    padding: 2px 4px;
     font-weight: 600;
-    color: CanvasText;
+    transform: translate(0px, 39px);
+    color: var(--text-secondary);
     overflow: hidden;
     text-overflow: ellipsis;
+    pointer-events: none;
     white-space: nowrap;
+}
+
+.trade-item:hover .trade-item-name {
+    opacity: 1;
 }
 
 .trade-item-robux {
@@ -442,10 +435,10 @@
 }
 
 .trade-swap-icon {
-    display: flex;
+display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 0.5rem;
+    padding: 1rem 0.5rem 0;
     color: var(--text-secondary);
     flex-shrink: 0;
 }
@@ -478,18 +471,18 @@
 }
 
 .btn-view-trade:hover {
-    border-color: #667eea;
-    color: #667eea;
+    border-color: var(--accent);
+    color: var(--accent);
 }
 
 .btn-make-offer {
-    background: linear-gradient(135deg, #667eea, #4a9eff);
+    background: var(--accent-gradient);
     color: white;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.25);
+    box-shadow: var(--shadow-sm);
 }
 
 .btn-make-offer:hover {
-    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+    box-shadow: var(--shadow-md);
     transform: translateY(-1px);
 }
 
@@ -514,7 +507,7 @@
 
 .btn-load-more:hover {
     background: var(--bg-item-hover);
-    border-color: #667eea;
+    border-color: var(--accent);
 }
 
 /* Skeleton loader */
@@ -703,7 +696,7 @@
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #667eea, #4a9eff);
+    background: linear-gradient(90deg, var(--accent), var(--accent));
     border-radius: 2px;
     transition: width 0.4s ease;
     width: 0%;
@@ -739,8 +732,8 @@
 }
 
 .progress-step.active .step-dot {
-    background: linear-gradient(135deg, #667eea, #4a9eff);
-    border-color: #667eea;
+    background: linear-gradient(135deg, var(--accent), var(--accent));
+    border-color: var(--accent);
     color: white;
     box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
 }
@@ -758,7 +751,7 @@
 }
 
 .progress-step.active .step-text {
-    color: #4a9eff;
+    color: var(--accent);
 }
 
 .progress-step.completed .step-text {
@@ -833,8 +826,8 @@
 
 .picker-search input:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .btn-custom-item {
@@ -856,7 +849,7 @@
 
 .btn-custom-item:hover {
     background: var(--bg-item-hover);
-    border-color: #667eea;
+    border-color: var(--accent);
 }
 
 /* Search dropdown */
@@ -1063,16 +1056,16 @@
     justify-content: center;
     gap: 0.375rem;
     padding: 0.65rem 1.25rem;
-    background: linear-gradient(135deg, #667eea, #4a9eff);
+    background: var(--accent-gradient);
     border: none;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     color: white;
     font-size: 0.875rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
     min-height: 44px;
-    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+    box-shadow: var(--shadow-sm);
     font-family: inherit;
 }
 
@@ -1094,8 +1087,8 @@
 }
 
 .btn-publish {
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-    box-shadow: 0 2px 10px rgba(34, 197, 94, 0.3);
+    background: var(--success-gradient);
+    box-shadow: var(--shadow-sm);
 }
 
 .btn-publish:hover {
@@ -1158,8 +1151,8 @@
 .form-group select:focus,
 .form-group input:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .char-count {
@@ -1515,9 +1508,9 @@
 }
 
 .type-btn.active {
-    border-color: #667eea;
+    border-color: var(--accent);
     background: rgba(102, 126, 234, 0.08);
-    color: #667eea;
+    color: var(--accent);
 }
 
 .type-icon {
@@ -1561,8 +1554,8 @@
 
 .custom-fields .field input:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .modal-footer {
@@ -1655,12 +1648,12 @@
     transition: all 0.2s;
 }
 
-.btn-success { background: #11f54a; color: #04210d; }
-.btn-success:hover { background: #0ed941; transform: translateY(-1px); }
-.btn-danger { background: rgba(255, 71, 87, 0.15); color: #ff6b78; }
-.btn-danger:hover { background: rgba(255, 71, 87, 0.25); transform: translateY(-1px); }
+.btn-success { background: var(--success-gradient); color: #eafff0; border: 1px solid #004600; }
+.btn-success:hover { filter: brightness(1.08) saturate(1.05); transform: translateY(-1px); }
+.btn-danger { background: var(--danger-gradient); color: #fff; border: 1px solid #810000; }
+.btn-danger:hover { filter: brightness(1.08) saturate(1.05); transform: translateY(-1px); }
 .btn-secondary { background: var(--bg-item-hover); color: var(--text-primary); border: 1px solid var(--border-color); }
-.btn-secondary:hover { background: var(--bg-item); transform: translateY(-1px); }
+.btn-secondary:hover { background: var(--bg-item); border-color: var(--accent); transform: translateY(-1px); }
 .btn-success:disabled,
 .btn-danger:disabled,
 .btn-secondary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
@@ -1687,7 +1680,7 @@
     transition: all 0.2s;
 }
 
-.notif-bell:hover { color: #4a9eff; background: var(--bg-item); }
+.notif-bell:hover { color: var(--accent); background: var(--bg-item); }
 
 .notif-count {
     position: absolute;
@@ -1735,7 +1728,7 @@
 .notif-mark-all {
     background: none;
     border: none;
-    color: #4a9eff;
+    color: var(--accent);
     font-size: 0.75rem;
     font-weight: 600;
     cursor: pointer;
@@ -1814,7 +1807,7 @@
 .offer-card-message {
     padding: 0.6rem 0.8rem;
     background: var(--bg-secondary);
-    border-left: 3px solid #667eea;
+    border-left: 3px solid var(--accent);
     border-radius: 8px;
     font-size: 0.85rem;
     color: var(--text-primary);
@@ -2003,11 +1996,11 @@
     font-family: inherit;
     font-size: 0.9rem;
 }
-.thread-composer input:focus { outline: none; border-color: #667eea; }
+.thread-composer input:focus { outline: none; border-color: var(--accent); }
 
 .btn-send-message {
     padding: 0.6rem 1.2rem;
-    background: linear-gradient(135deg, #667eea, #4a9eff);
+    background: linear-gradient(135deg, var(--accent), var(--accent));
     color: white;
     border: none;
     border-radius: 10px;
@@ -2100,7 +2093,7 @@
 .calc-side-total {
     font-size: 1.15rem;
     font-weight: 800;
-    color: #667eea;
+    color: var(--accent);
     font-variant-numeric: tabular-nums;
 }
 
@@ -2117,7 +2110,7 @@
     font-family: inherit;
     box-sizing: border-box;
 }
-.calc-search-input:focus { outline: none; border-color: #667eea; }
+.calc-search-input:focus { outline: none; border-color: var(--accent); }
 .calc-search-results {
     position: absolute;
     top: 100%;
@@ -2178,7 +2171,7 @@
 }
 .calc-item-val {
     font-size: 0.75rem;
-    color: #667eea;
+    color: var(--accent);
     font-weight: 700;
     margin-top: 0.1rem;
     font-variant-numeric: tabular-nums;
@@ -2202,7 +2195,7 @@
     font-family: inherit;
     transition: all 0.15s;
 }
-.calc-item-qty button:hover { border-color: #667eea; color: #667eea; }
+.calc-item-qty button:hover { border-color: var(--accent); color: var(--accent); }
 .calc-item-qty span {
     min-width: 18px;
     text-align: center;

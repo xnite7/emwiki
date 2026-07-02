@@ -3,6 +3,7 @@
 @import url("../css/auth.css?v=1.4");
 @import url("../css/modal.css");
 @import url("../css/chests.css");
+@import url("../css/components.css");
 
 * {
     margin: 0;
@@ -42,8 +43,45 @@ html::before {
     --border-color: light-dark(rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0.1));
     --shadow-color: light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.5));
     --edges-color: light-dark(rgba(255, 255, 255, 0.4), rgba(0, 0, 0, 0.3));
-    --accent: #4a9eff;
-    --accent-christmas: #4a9eff;
+
+    /* Primary text + hover aliases (were referenced across files but never defined) */
+    --text-primary: CanvasText;
+    --bg-hover: var(--bg-item-hover);
+
+    /* ── Unified design tokens (single source of truth for the whole site) ── */
+    /* Accent — canonical site blue (unified from the two previous blues) */
+    --accent: #37a6ff;
+    --accent-christmas: #37a6ff;
+    --accent-hover: #5ab4ff;
+    --accent-soft: #37a6ff22;
+    --accent-transparent: #37a6ff66;
+    --accent-gradient: linear-gradient(180deg, var(--accent), var(--accent-transparent));
+
+    /* Semantic status colors */
+    --success: #6cd13a;
+    --success-soft: rgba(108, 209, 58, 0.15);
+    --success-gradient: linear-gradient(180deg, var(--success), #005700);
+    --danger: #e14b4b;
+    --danger-soft: rgba(225, 75, 75, 0.15);
+    --danger-gradient: linear-gradient(180deg, var(--danger), #890000);
+    --warning: #ffb900;
+    --warning-soft: rgba(255, 185, 0, 0.15);
+
+    /* Radius scale */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-pill: 999px;
+
+    /* Shadow scale */
+    --shadow-sm: 0 1px 3px var(--shadow-color);
+    --shadow-md: 0 6px 24px var(--shadow-color);
+    --shadow-lg: 0 16px 48px var(--shadow-color);
+
+    /* Z-index scale (replaces ad-hoc 9999 / 9999999) */
+    --z-overlay: 1000;
+    --z-modal: 1001;
+    --z-toast: 1100;
 
     &:has(.light-theme) {
         color-scheme: light;
@@ -427,7 +465,7 @@ svg:hover #cloud {
     right: 8px;
     top: 50%;
     transform: translateY(-50%);
-    background: linear-gradient(135deg, #4a9eff, #667eea);
+    background: linear-gradient(135deg, var(--accent), var(--accent));
     border: none;
     border-radius: 50%;
     width: 40px;
@@ -550,7 +588,7 @@ svg:hover #cloud {
     line-height: 0.9;
     letter-spacing: 1.1px;
     font-family: 'BuilderSans';
-    background: linear-gradient(to bottom, #4a9eff, #667eea);
+    background: linear-gradient(to bottom, var(--accent), var(--accent));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -632,8 +670,8 @@ svg:hover #cloud {
 }
 
 .category-btn.active {
-    background: linear-gradient(135deg, #4a9eff, #667eea);
-    border-color: #4a9eff;
+    background: linear-gradient(135deg, var(--accent), var(--accent));
+    border-color: var(--accent);
     color: white;
     box-shadow: 0 4px 15px rgba(74, 158, 255, 0.3);
 }
@@ -728,7 +766,7 @@ main {
 }
 
 .see-all-btn {
-    color: #4a9eff;
+    color: var(--accent);
     text-decoration: none;
     font-weight: 600;
     transition: all 0.2s;
@@ -813,7 +851,7 @@ main {
 }
 
 .items-grid::-webkit-scrollbar-thumb {
-    background: linear-gradient(to bottom, #4a9eff, #255cf1);
+    background: linear-gradient(to bottom, var(--accent), #255cf1);
     border-radius: 10px;
 }
 
@@ -1594,6 +1632,10 @@ footer {
     color: var(--text-secondary);
     text-align: center;
     grid-column: 1 / -1;
+}
+
+#wishlist-items:has( .empty){
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
 
 .chest-expand-toggle {
@@ -2455,8 +2497,8 @@ textarea {
 }
 
 .dropdown-item.selected .tag-checkbox {
-    background: #667eea;
-    border-color: #667eea;
+    background: var(--accent);
+    border-color: var(--accent);
 }
 
 
@@ -2506,7 +2548,7 @@ textarea {
 }
 
 .dropdown-item.active {
-    background: #667eea;
+    background: var(--accent);
     color: white;
 }
 
@@ -2611,7 +2653,7 @@ textarea {
 .scroll-indicator svg {
     width: 20px;
     height: 20px;
-    fill: #667eea;
+    fill: var(--accent);
     transition: transform 0.2s ease;
 }
 
@@ -2798,7 +2840,7 @@ textarea {
     margin-left: 16px;
     font-size: 18px;
     font-weight: 600;
-    color: #667eea;
+    color: var(--accent);
 }
 
 .page-content {
@@ -2806,7 +2848,7 @@ textarea {
 }
 
 .filters-dropdown .dropdown-btn .filter-count {
-    background: #667eea;
+    background: var(--accent);
     color: white;
     padding: 2px 6px;
     border-radius: 12px;
