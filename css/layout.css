@@ -4,19 +4,20 @@
    Layout (js/core/layout.js).
    ========================================================================== */
 
-/* ── Desktop header ── */
+/* ── Header: one-row app bar ── */
 header {
     z-index: 1;
-    text-align: center;
     background: var(--bg-1);
     position: relative;
     border-bottom: 1px solid var(--border-1);
-    padding: 15px 20px;
+    padding: var(--space-2) var(--space-5);
     display: flex;
+    flex-direction: row;
     align-items: center;
-    gap: 30px;
+    justify-content: flex-start;
+    gap: var(--space-6);
     box-shadow: var(--shadow-1);
-    flex-direction: column;
+    min-height: 72px;
 }
 
 header svg * {
@@ -24,11 +25,12 @@ header svg * {
 }
 
 header a svg {
-    max-width: 300px;
-    width: 30%;
-    min-width: 210px;
+    width: 140px;
+    min-width: 140px;
     height: auto;
     overflow: visible;
+    /* the logo's clouds render above its viewBox — give them headroom */
+    margin-top: 12px;
     transition: transform var(--dur-3) var(--ease-spring);
 }
 
@@ -56,9 +58,11 @@ svg:hover #cloud {
 
 .nav-links {
     display: flex;
-    gap: 20px;
+    gap: var(--space-1);
     flex-wrap: wrap;
     justify-content: center;
+    /* keep the nav clear of the absolutely-positioned account button */
+    margin-right: 170px;
 }
 
 .nav-link {
@@ -91,9 +95,10 @@ svg:hover #cloud {
 }
 
 #user-profile-btn {
-    top: 20px;
-    right: 20px;
     position: absolute;
+    top: 50%;
+    right: var(--space-5);
+    transform: translateY(-50%);
 }
 
 /* ── Mobile dock (tab bar) ── */

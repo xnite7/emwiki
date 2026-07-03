@@ -114,3 +114,8 @@ a, [role="button"], label {
         navigation: none;
     }
 }
+
+/* ── Scrollbars: slim, tokened (inherits everywhere) ── */
+html {
+    scrollbar-color: var(--border-2) transparent;
+}

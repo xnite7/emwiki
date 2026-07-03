@@ -1354,6 +1354,10 @@ footer {
 .footer-section h4 {
     margin-bottom: 12px;
     font-weight: 700;
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-3);
 }
 
 .footer-section p {
@@ -1376,7 +1380,7 @@ footer {
 
 .footer-bottom {
     font: small-caption;
-    background: linear-gradient(180deg, #00000048, #000000b7);
+    background: light-dark(rgb(26 31 38 / .04), rgb(0 0 0 / .35));
     text-align: center;
     padding-top: 18px;
     padding-bottom: 18px;
