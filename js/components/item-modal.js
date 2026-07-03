@@ -501,7 +501,15 @@ class ItemModal {
     updateContent(item) {
         // Basic info
         this.elements.title.textContent = item.name;
-        
+
+        // Scale the title down for long names so it wraps to fit the header
+        // instead of squeezing the price/robux badge beside it.
+        const nameLen = (item.name || '').length;
+        const titleSize = nameLen <= 14
+            ? 1.9
+            : Math.max(1.15, 1.9 - (nameLen - 14) * 0.055);
+        this.elements.title.style.fontSize = titleSize.toFixed(3) + 'rem';
+
         // Alias (displayed under title with AKA prefix)
         const aliasEl = document.getElementById('modal-alias-front');
         if (item.alias && item.alias.trim() && aliasEl) {

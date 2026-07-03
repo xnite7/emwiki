@@ -18,7 +18,8 @@ const DOCK_ICONS = {
 const Layout = {
   navItems: [
     { href: '/catalog', label: 'Catalog', key: 'catalog' },
-    { href: '/trading', label: 'Trading Hub', key: 'trading' },
+    // Trading Hub isn't launched yet — shown but inert (see .nav-link-soon)
+    { href: '/trading', label: 'Trading Hub', key: 'trading', soon: true },
     { href: '/forum', label: 'Forum', key: 'forum' },
     { href: '/gallery', label: 'Gallery', key: 'gallery' },
     { href: '/scammers', label: 'Scammers', key: 'scammers' }
@@ -80,13 +81,13 @@ const Layout = {
 
   renderHeader() {
     const active = this.getActiveNav();
-    const navHtml = this.navItems.map(({ href, label, key }) =>
-      `<a href="${href}" class="nav-link${active === key ? ' active' : ''}">${label}</a>`
+    const navHtml = this.navItems.map(({ href, label, key, soon }) =>
+      `<a href="${href}" class="nav-link${active === key ? ' active' : ''}${soon ? ' nav-link-soon' : ''}">${label}</a>`
     ).join('\n\t\t\t');
 
     return `<header>
 		<div id="christmaslights" style="display:none;position: absolute;left: 0;top: -45px;background: url(/imgs/titles/7a889a5ce371c6aa3a59862815826ee7.png);background-position: center;width: 100%;height: 40%;z-index: -1;"></div>
-		<a href="https://emwiki.com">
+		<a class="site-logo" href="https://emwiki.com">
 			<svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
 				<defs>
 					<linearGradient id="eppp1" y1="1" x2="0">
@@ -106,9 +107,9 @@ const Layout = {
 				<image id="cloud" x="445" y="487" href="https://emwiki.com/imgs/oYKd3nJ.png" height="28" width="42" style="filter:opacity(.8)" />
 			</svg>
 		</a>
-		<div class="nav-links">
+		<nav class="nav-links" aria-label="Primary">
 			${navHtml}
-		</div>
+		</nav>
 	</header>`;
   },
 

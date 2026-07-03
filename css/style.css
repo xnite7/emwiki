@@ -12,7 +12,7 @@
 @import url("../css/fonts.css");
 @import url("../css/tokens.css") layer(tokens);
 @import url("../css/base.css") layer(base);
-@import url("../css/layout.css") layer(layout);
+@import url("../css/layout.css?v=2") layer(layout);
 /* components.css stays unlayered on purpose: it must beat legacy page CSS
    (also unlayered) via specificity until those files are migrated. */
 @import url("../css/components.css");
@@ -770,23 +770,23 @@ main {
 }
 
 .item#gear {
-    background: #57ab7e;
+    background: #5bfe6a;
 }
 
 .item#death {
-    background: #c96a56;
+    background: #ff7a5e;
 }
 
 .item#effect {
-    background: #d9a55c;
+    background: #ffb135;
 }
 
 .item#title {
-    background: #a06cc9;
+    background: #c960fe;
 }
 
 .item#pet {
-    background: #5c96d6;
+    background: #377afa;
 }
 
 .lists-grid {
@@ -2751,7 +2751,7 @@ textarea {
 
 .dropdown-content {
     position: fixed;
-    top: calc(200%);
+    top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     background: var(--bg-secondary);
@@ -3417,9 +3417,11 @@ header svg * {
 
 #auth-button {
     position: absolute;
-    top: 20px;
-    right: 10px;
+    top: 50%;
+    /* aligns with #user-profile-btn, which swaps into this same slot on login */
+    right: 12px;
     left: unset;
+    transform: translateY(-50%);
 }
 
 @media screen and (max-width: 768px) {

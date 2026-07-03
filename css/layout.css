@@ -8,7 +8,7 @@
 
 
 
-/* ── Header: one-row app bar ── */
+/* ── Header: centered logo with the nav row stacked beneath it ── */
 header {
     z-index: 1;
     background: var(--bg-1);
@@ -16,10 +16,10 @@ header {
     border-bottom: 1px solid var(--border-1);
     padding: var(--space-2) var(--space-5);
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    gap: var(--space-6);
+    justify-content: center;
+    gap: var(--space-1);
     box-shadow: var(--shadow-1);
     min-height: 72px;
 }
@@ -62,11 +62,14 @@ svg:hover #cloud {
 
 .nav-links {
     display: flex;
-    gap: var(--space-1);
+    gap: var(--space-3);
     flex-wrap: wrap;
+    align-items: center;
     justify-content: center;
-    /* keep the nav clear of the absolutely-positioned account button */
-    margin-right: 170px;
+}
+
+.site-logo {
+    display: inline-flex;
 }
 
 .nav-link {
@@ -81,8 +84,7 @@ svg:hover #cloud {
 }
 
 /* Links not yet launched stay visible but inert (intentional) */
-.nav-link:not(:first-child, :nth-child(3),
-:nth-child(4), :last-child) {
+.nav-link-soon {
     pointer-events: none;
     opacity: 0.5;
 }
@@ -172,6 +174,7 @@ svg:hover #cloud {
     }
 
     header {
+        display: flex;
         flex-direction: row;
         justify-content: center;
         padding: var(--space-2) var(--space-4);

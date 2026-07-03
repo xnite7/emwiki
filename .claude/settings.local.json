@@ -16,7 +16,11 @@
       "mcp__Claude_Preview__preview_start",
       "Bash(where:*)",
       "Bash(python3:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(git log *)",
+      "Bash(awk '/@keyframes slideDown/,/^}/' css/style.css)",
+      "Bash(curl -s -o /dev/null -w \"catalog.html -> %{http_code}\\\\n\" http://localhost:53888/catalog.html)",
+      "Bash(curl -s -o /dev/null -w \"root -> %{http_code}\\\\n\" http://localhost:53888/)"
     ],
     "deny": [],
     "ask": []
