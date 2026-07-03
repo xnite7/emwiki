@@ -35,7 +35,7 @@ const Layout = {
 
   moreItems: [
     { href: '/gallery', label: 'Gallery', icon: 'gallery' },
-    { href: '/gamenights', label: 'Game Nights', icon: 'calendar' },
+    //{ href: '/gamenights', label: 'Game Nights', icon: 'calendar' },
     { href: '/scammers', label: 'Scammers List', icon: 'shield' },
   ],
 
