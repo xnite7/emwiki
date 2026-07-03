@@ -152,8 +152,9 @@ const Layout = {
     const headerEl = document.getElementById('site-header');
     const footerEl = document.getElementById('site-footer');
     const opts = {
-      showPet: !!document.body?.dataset?.layoutPet,
-      showReportScammer: !!document.body?.dataset?.layoutReportScammer
+      // boolean data attributes are present-but-empty, so test presence
+      showPet: 'layoutPet' in (document.body?.dataset || {}),
+      showReportScammer: 'layoutReportScammer' in (document.body?.dataset || {})
     };
     if (headerEl) headerEl.outerHTML = this.renderHeader();
     if (footerEl) footerEl.outerHTML = this.renderFooter(opts);

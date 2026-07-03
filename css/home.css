@@ -1,0 +1,94 @@
+/* =============================================================================
+   home.css — homepage-specific styles (@layer pages).
+   Extracted from index.html's inline <style>.
+   ========================================================================== */
+@layer pages {
+		body {
+			min-height: 100vh;
+		}
+
+		/* Pet Styles */
+		#petContainer {
+			position: absolute;
+			bottom: 20px;
+			left: 50px;
+			width: 32px;
+			height: 32px;
+			z-index: 100;
+			cursor: pointer;
+			overflow: visible;
+		}
+
+		#pet {
+			width: 32px;
+			height: 32px;
+			image-rendering: pixelated;
+			image-rendering: -moz-crisp-edges;
+			image-rendering: crisp-edges;
+			background: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/49.gif') no-repeat center;
+			background-size: contain;
+		}
+
+		#petContainer.walking {
+			animation: bounce 0.5s ease-in-out infinite;
+		}
+
+		#petContainer.idle {
+			animation: idle 2s ease-in-out infinite;
+		}
+
+		#pet.flipped {
+			transform: scaleX(-1);
+		}
+
+		@keyframes bounce {
+
+			0%,
+			100% {
+				transform: translateY(0);
+			}
+
+			50% {
+				transform: translateY(-3px);
+			}
+		}
+
+		@keyframes idle {
+
+			0%,
+			100% {
+				transform: translateY(0) scale(1);
+			}
+
+			50% {
+				transform: translateY(-1px) scale(1.05);
+			}
+		}
+
+		.heart {
+			position: absolute;
+			bottom: 35px;
+			left: 50%;
+			transform: translateX(-50%);
+			font-size: 20px;
+			animation: floatHeart 1s ease-out forwards;
+			pointer-events: none;
+			z-index: 200;
+		}
+
+		@keyframes floatHeart {
+			0% {
+				opacity: 1;
+				transform: translateX(-50%) translateY(0) scale(0.5);
+			}
+
+			50% {
+				transform: translateX(-50%) translateY(-20px) scale(1);
+			}
+
+			100% {
+				opacity: 0;
+				transform: translateX(-50%) translateY(-40px) scale(0.8);
+			}
+		}
+}

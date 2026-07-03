@@ -1,0 +1,2307 @@
+/* Catalog page app. Extracted from catalog.html's inline module.
+   Globals (BaseApp, Utils, CountdownManager, auth) come from js/core/bridge.js. */
+        class Catalog extends BaseApp {
+            constructor() {
+                super();
+                this.filtered = [];
+                this.batchSize = 50;
+                this.currentBatch = 0;
+                this.loading = false;
+                this.currentCategoryIndex = 0;
+                this.sortBy = 'default';
+                this.favoriteCountsCache = new Map(); // Cache for favorite/wishlist counts
+                this.seasonFilter = 'all';
+                this.chestFilter = 'all';
+                this.creditsFilter = 'all';
+                this.seasons = new Set();
+                this.events = new Set();
+                this.eventFilter = 'all';
+                this.filterRequestId = 0;
+
+                this.categories = [
+                    { id: 'all', name: 'All', img: './imgs/XwkWVJJ.png', color: '#6b77b8' },
+                    { id: 'gears', name: 'Gears', img: './imgs/AYUbTJv.png', color: '#57ab7e' },
+                    { id: 'deaths', name: 'Deaths', img: './imgs/fADZwOh.png', color: '#c96a56' },
+                    { id: 'pets', name: 'Pets', img: './imgs/GHXB0nC.png', color: '#5c96d6' },
+                    { id: 'effects', name: 'Effects', img: './imgs/l90cgxf.png', color: '#d9a55c' },
+                    { id: 'titles', name: 'Titles', img: './imgs/ZOP8l9g.png', color: '#a06cc9' }
+                ];
+
+                this.filters = {
+                    category: 'all',
+                    tags: new Set(),
+                    search: ''
+                };
+
+                // Tag counts for display
+                this.tagCounts = {
+                    new: 0,
+                    untradable: 0,
+                    premium: 0,
+                    typicalgroup: 0,
+                    retired: 0,
+                    removed: 0,
+                    weekly: 0,
+                    weeklystar: 0,
+                    tokenshop: 0,
+                    favorites: 0,
+                    gamenight: 0,
+                    coinshop: 0,
+                    unreleased: 0,
+                    code: 0
+                };
+
+
+
+                this.chestMappings = {};
+                this.chestsData = [];
+
+                this.init();
+            }
+
+            async init() {
+                this.renderCategoryCarousel();
+                await Promise.all([this.loadData(), this.loadChestsData()]);
+                await this.loadPreferences();
+                this.renderChestMenu();
+                this.populateSeasonFilter();
+                this.populateEventFilter();
+                this.populateChests();
+                this.populateCreditsFilter();
+                // Color extraction is deferred: it decodes every item image to a canvas, which is a
+                // heavy main-thread cost. It now runs on demand the first time the user picks the
+                // "Color (Rainbow)" sort (see selectSort), not on every page load.
+                this.setupEventListeners();
+
+                this.handleURLParams();
+                await this.modal.handleURLParams();
+
+                this.applyFilters();
+                this.loadBatch();
+                document.querySelector('.bn').style.display = 'none';
+                this.updateTagCounts();
+            }
+
+            handleURLParams(reset = false) {
+                const url = new URL(window.location);
+                const filterParam = url.searchParams.get('filter');
+                const tagsParam = url.searchParams.get('tags');
+                const seasonParam = url.searchParams.get('season');
+                const eventParam = url.searchParams.get('event');
+                const chestParam = url.searchParams.get('chest');
+                const creditsParam = url.searchParams.get('credits');
+                const categoryParam = url.searchParams.get('category');
+                const itemParam = url.searchParams.get('item');
+
+                // Reset all filters first if requested (for popstate)
+                if (reset) {
+                    this.filters.tags.clear();
+                    this.seasonFilter = 'all';
+                    this.eventFilter = 'all';
+                    this.chestFilter = 'all';
+                    this.creditsFilter = 'all';
+                    this.filters.category = 'all';
+                    
+                    // Reset UI
+                    document.querySelectorAll('#filters-menu .dropdown-item').forEach(item => {
+                        item.classList.remove('selected');
+                    });
+                    document.querySelectorAll('.chest-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    document.getElementById('season-label').textContent = '';
+                    
+                    // Hide subfilters
+                    const retiredItem = document.querySelector('.dropdown-item[data-filter="retired"]');
+                    if (retiredItem) retiredItem.classList.remove('show-retired');
+                    const weeklyItem = document.querySelector('.dropdown-item[data-filter="weekly"]');
+                    if (weeklyItem) weeklyItem.classList.remove('show-weekly');
+                }
+
+                // Handle ?tags=tag1,tag2
+                if (tagsParam) {
+                    tagsParam.split(',').forEach(tag => {
+                        this.filters.tags.add(tag);
+                        const tagElement = document.querySelector(`.dropdown-item[data-filter="${tag}"]`);
+                        if (tagElement) {
+                            tagElement.classList.add('selected');
+                        }
+                    });
+                }
+
+                // Handle legacy ?filter= param (new, wishlist, favorites)
+                if (filterParam === 'new') {
+                    this.filters.tags.add('new');
+                    const newFilterElement = document.querySelector('.dropdown-item[data-filter="new"]');
+                    if (newFilterElement) {
+                        newFilterElement.classList.add('selected');
+                    }
+                } else if (filterParam === 'wishlist' || filterParam === 'favorites') {
+                    this.filters.tags.add(filterParam);
+                    if (filterParam === 'wishlist') {
+                        document.getElementById('season-label').textContent = "★ Wishlist";
+                    } else {
+                        document.getElementById('season-label').textContent = "♥ Favorites";
+                    }
+                    const checkbox = document.querySelector(`input[data-filter="${filterParam}"]`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                    }
+                }
+
+                // Handle ?season=
+                if (seasonParam) {
+                    this.seasonFilter = seasonParam;
+                    document.getElementById('season-label').textContent = `Season ${seasonParam}`;
+                    document.querySelectorAll('#season-menu .dropdown-item').forEach(item => {
+                        item.classList.toggle('active', item.dataset.data == seasonParam);
+                    });
+                }
+
+                // Handle ?event=
+                if (eventParam) {
+                    this.eventFilter = eventParam;
+                    document.getElementById('season-label').textContent = eventParam;
+                    document.querySelectorAll('#event-menu .dropdown-item').forEach(item => {
+                        item.classList.toggle('active', item.dataset.data == eventParam);
+                    });
+                }
+
+                // Handle ?chest=
+                if (chestParam) {
+                    this.chestFilter = chestParam;
+                    const chestItem = document.querySelector(`.chest-item[data-data="${chestParam}"]`);
+                    if (chestItem) {
+                        chestItem.classList.add('active');
+                        const chestName = chestItem.querySelector('.chest-name');
+                        if (chestName) {
+                            document.getElementById('season-label').textContent = chestName.textContent;
+                        }
+                    }
+                }
+
+                // Handle ?credits=
+                if (creditsParam) {
+                    this.creditsFilter = creditsParam;
+                    if (creditsParam === 'any') {
+                        document.getElementById('season-label').textContent = 'By Any Creator';
+                    } else {
+                        document.getElementById('season-label').textContent = `Credits: ${creditsParam}`;
+                    }
+                    document.querySelectorAll('#credits-menu .dropdown-item').forEach(item => {
+                        item.classList.toggle('active', item.dataset.data == creditsParam);
+                    });
+                }
+
+                // Handle ?category=
+                if (categoryParam) {
+                    this.filters.category = categoryParam;
+                    const categoryIndex = this.categories.findIndex(c => c.id === categoryParam);
+                    if (categoryIndex !== -1 && categoryIndex !== this.currentCategoryIndex) {
+                        this.selectCategory(categoryIndex, true); // skipURL=true to avoid loops
+                    }
+                }
+
+                // Show/hide retired filter based on gamenight
+                const retiredItem = document.querySelector('.dropdown-item[data-filter="retired"]');
+                if (this.filters.tags.has('gamenight') && retiredItem) {
+                    retiredItem.classList.add('show-retired');
+                }
+
+                // Show/hide weekly filter based on coinshop
+                const weeklyItem = document.querySelector('.dropdown-item[data-filter="weekly"]');
+                if (this.filters.tags.has('coinshop') && weeklyItem) {
+                    weeklyItem.classList.add('show-weekly');
+                }
+
+                // Enable/disable date sorting based on code/gamenight filters
+                const hasDateFilters = this.filters.tags.has('code') || this.filters.tags.has('gamenight');
+                const dateOptions = document.querySelectorAll('[data-sort="date-desc"], [data-sort="date-asc"]');
+                dateOptions.forEach(option => {
+                    if (hasDateFilters) {
+                        option.classList.remove('disabled');
+                    } else {
+                        option.classList.add('disabled');
+                    }
+                });
+
+                // Update tags label if any filters were set
+                if (reset || tagsParam || filterParam || seasonParam || eventParam || chestParam || creditsParam) {
+                    this.updateTagsLabel();
+                    if (reset) {
+                        this.applyFilters();
+                    }
+                }
+
+                // Handle ?item=slug - will open after data loads
+                if (itemParam) {
+                    const itemName = itemParam.replace(/-/g, ' ');
+                    setTimeout(() => {
+                        const item = this.allItems.find(i =>
+                            i.name.toLowerCase() === itemName.toLowerCase()
+                        );
+                        if (item) {
+                            this.modal.open(item);
+                        }
+                    }, 500);
+                }
+            }
+
+            // Build filter state object for URL
+            getFilterState() {
+                return {
+                    tags: Array.from(this.filters.tags),
+                    season: this.seasonFilter,
+                    event: this.eventFilter,
+                    chest: this.chestFilter,
+                    credits: this.creditsFilter,
+                    category: this.filters.category
+                };
+            }
+
+            // Push current filter state to URL
+            updateFilterURL() {
+                const url = new URL(window.location);
+                const state = this.getFilterState();
+                
+                // Clear existing filter params
+                url.searchParams.delete('filter');
+                url.searchParams.delete('tags');
+                url.searchParams.delete('season');
+                url.searchParams.delete('event');
+                url.searchParams.delete('chest');
+                url.searchParams.delete('credits');
+                url.searchParams.delete('category');
+                
+                // Only add params if they have values
+                if (state.tags.length > 0) {
+                    url.searchParams.set('tags', state.tags.join(','));
+                }
+                if (state.season !== 'all') {
+                    url.searchParams.set('season', state.season);
+                }
+                if (state.event !== 'all') {
+                    url.searchParams.set('event', state.event);
+                }
+                if (state.chest !== 'all') {
+                    url.searchParams.set('chest', state.chest);
+                }
+                if (state.credits !== 'all') {
+                    url.searchParams.set('credits', state.credits);
+                }
+                if (state.category !== 'all') {
+                    url.searchParams.set('category', state.category);
+                }
+                
+                history.pushState(state, '', url);
+            }
+
+
+            toggleChestMenu() {
+                const menu = document.getElementById('chest-menu');
+                menu.classList.toggle('show');
+                document.getElementById('season-menu').classList.remove('show');
+                document.getElementById('event-menu').classList.remove('show');
+                document.getElementById('credits-menu').classList.remove('show');
+            }
+
+
+
+
+
+            renderCategoryCarousel() {
+                const carousel = document.getElementById('categoryCarousel');
+
+                // Create items only once
+                if (!carousel.dataset.initialized) {
+                    this.categories.forEach((cat, index) => {
+                        const item = document.createElement('div');
+                        item.className = 'category-item';
+                        item.dataset.category = cat.id;
+
+                        if (cat.img) {
+                            const img = document.createElement('img');
+                            img.src = cat.img;
+                            img.alt = cat.name;
+                            item.appendChild(img);
+                        }
+
+                        const label = document.createElement('small');
+                        label.textContent = cat.name;
+                        item.appendChild(label);
+
+                        item.onclick = () => this.selectCategory(index);
+
+                        carousel.appendChild(item);
+                    });
+
+                    carousel.dataset.initialized = "true";
+                }
+
+                // Update positions & active state
+                const items = carousel.querySelectorAll('.category-item');
+                const total = this.categories.length;
+
+                items.forEach((item, index) => {
+                    let relativePos = index - this.currentCategoryIndex;
+
+                    // Wrap relativePos to shortest path (-N/2 .. N/2)
+                    if (relativePos > total / 2) {
+                        relativePos -= total;
+                    } else if (relativePos < -total / 2) {
+                        relativePos += total;
+                    }
+
+                    item.dataset.pos = relativePos;
+
+                    if (index === this.currentCategoryIndex) {
+                        item.classList.add('active');
+                        item.style.borderColor = this.categories[index].color;
+                        item.style.background = `radial-gradient(${this.categories[index].color + '66'}, transparent)`;
+                    } else {
+                        item.classList.remove('active');
+                        item.style.borderColor = '';
+                        item.style.background = '';
+                    }
+                });
+
+                return carousel;
+            }
+
+            selectCategory(index, skipURL = false) {
+                this.currentCategoryIndex = index;
+                this.filters.category = this.categories[index].id;
+                this.renderCategoryCarousel();
+                this.applyFilters();
+                if (!skipURL) {
+                    this.updateFilterURL();
+                }
+            }
+
+            prevCategory() {
+                if (this.currentCategoryIndex > 0) {
+                    this.selectCategory(this.currentCategoryIndex - 1);
+                } else {
+                    this.selectCategory(this.categories.length - 1);
+                }
+            }
+
+            nextCategory() {
+                if (this.currentCategoryIndex < this.categories.length - 1) {
+                    this.selectCategory(this.currentCategoryIndex + 1);
+                } else {
+                    this.selectCategory(0);
+                }
+            }
+
+            async loadData() {
+                try {
+                    this.allItems = [];
+                    const categories = ['gears', 'deaths', 'titles', 'pets', 'effects'];
+
+                    // Load all categories in parallel
+                    const categoryPromises = categories.map(async (cat) => {
+                        let offset = 0;
+                        const limit = 500;
+                        let hasMore = true;
+                        
+                        while (hasMore) {
+                            const url = new URL('/api/items', window.location.origin);
+                            url.searchParams.set('category', cat);
+                            url.searchParams.set('limit', limit.toString());
+                            url.searchParams.set('offset', offset.toString());
+                            
+                            const response = await fetch(url.toString());
+                            if (!response.ok) throw new Error(`Failed to fetch ${cat} items`);
+                            
+                            const data = await response.json();
+                            const items = data.items || [];
+                            
+                            items.forEach(item => {
+                                // Extract ALL seasons from description
+                                const seasons = [];
+                                const eventNames = [];
+                                if (item.from) {
+                                    // Use matchAll with global flag to find all season mentions
+                                    const seasonMatches = [...item.from.matchAll(/Season (\d+)/gi)];
+
+                                    seasonMatches.forEach(match => {
+                                        const seasonNum = parseInt(match[1]);
+                                        if (!seasons.includes(seasonNum)) {
+                                            seasons.push(seasonNum);
+                                            this.seasons.add(seasonNum);
+                                        }
+                                    });
+                                    // Extract event names with priority handling
+                                    const eventPatterns = [
+                                        /Art Contest\s*(?:\d{4})?/gi,  // Check Art Contest FIRST
+                                        /Summer\s*(?:\d{4})?/gi,
+                                        /Leaderboard\s*(?:\d{4})?/gi,
+                                        /\bEaster\s*(?:\d{4})?/gi,
+                                        /Valentine(?:'s)?\s*(?:\d{4})?/gi,
+                                        /Halloween\s*(?:\d{4})?/gi,
+                                        /Christmas\s*(?:\d{4})?/gi,
+                                        /4th of July\s*(?:\d{4})?/gi,
+                                        /10th Anniversary\s*(?:\d{4})?/gi,
+                                        /1B Update\s*(?:\d{4})?/gi,
+                                        /2B Update\s*(?:\d{4})?/gi,
+                                        /Squid Game\s*(?:\d{4})?/gi,
+                                    ];
+
+                                    const fieldsToMatch = [item.name, item.from, item['price/code/rarity']];
+
+                                    // Check if it's an Art Contest item first
+                                    let isArtContest = false;
+                                    fieldsToMatch.forEach(field => {
+                                        if (field && /Art Contest/i.test(field)) {
+                                            isArtContest = true;
+                                        }
+                                    });
+
+                                    // If it's Art Contest, ONLY add Art Contest
+                                    if (isArtContest) {
+                                        if (!eventNames.includes('Art Contest')) {
+                                            eventNames.push('Art Contest');
+                                            this.events.add('Art Contest');
+                                        }
+                                    } else {
+                                        // Otherwise, check all other patterns normally
+                                        eventPatterns.forEach(pattern => {
+                                            fieldsToMatch.forEach(field => {
+                                                if (field) {
+                                                    const matches = [...field.matchAll(pattern)];
+
+                                                    matches.forEach(match => {
+                                                        let eventName = match[0].replace(/\s*\d{4}/, '').trim();
+
+                                                        const normalizeEvent = (name) => {
+                                                            const normalizations = {
+                                                                "valentine": "Valentine's",
+                                                                "Valentine": "Valentine's",
+                                                                "valentine's": "Valentine's",
+                                                                "christmas": "Christmas"
+                                                            };
+
+                                                            const lower = name.toLowerCase();
+                                                            return normalizations[lower] || name;
+                                                        };
+
+                                                        eventName = normalizeEvent(eventName);
+
+                                                        if (!eventNames.includes(eventName)) {
+                                                            eventNames.push(eventName);
+                                                            this.events.add(eventName);
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        });
+                                    }
+                                }
+
+                                this.allItems.push({
+                                    ...item,
+                                    category: cat,
+                                    seasons: seasons,
+                                    events: eventNames
+                                });
+                            });
+                            
+                            hasMore = items.length === limit;
+                            offset += limit;
+                        }
+                    });
+                    
+                    await Promise.all(categoryPromises);
+
+                    document.getElementById('total').textContent = this.allItems.length;
+
+                } catch (error) {
+                    console.error('Failed to load data:', error);
+                }
+            }
+
+            async extractAllColors() {
+                // Runs at most once (deferred until the color sort is picked). Guard against a second
+                // call re-decoding every image.
+                if (this._colorsExtracted) return;
+
+                // Skip color extraction if running on file:// protocol (local file system)
+                // Color extraction requires http/https due to CORS restrictions
+                if (window.location.protocol === 'file:') {
+                    console.warn('Color extraction skipped: Please use a web server (e.g., wrangler pages dev) instead of opening the file directly.');
+                    // Set default gray color for all items
+                    this.allItems.forEach(item => {
+                        if (!item.color) {
+                            item.color = [128, 128, 128];
+                        }
+                    });
+                    this._colorsExtracted = true;
+                    return;
+                }
+
+                // Extract colors for all items in batches, yielding to the event loop between batches
+                // so scrolling stays responsive. Awaits full completion so callers can sort afterward.
+                const batchSize = 20;
+                for (let index = 0; index < this.allItems.length; index += batchSize) {
+                    const batch = this.allItems.slice(index, index + batchSize);
+                    await Promise.all(batch.map(item => this.getDominantColor(item)));
+                    // Give the main thread a breather between batches.
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
+
+                this._colorsExtracted = true;
+            }
+
+            populateSeasonFilter() {
+                const seasonMenu = document.getElementById('season-menu');
+                const seasons = Array.from(this.seasons).sort((a, b) => b - a);
+                seasons.forEach(season => {
+                    const item = document.createElement('small');
+                    item.className = 'dropdown-item';
+                    item.dataset.data = season;
+                    item.textContent = `Season ${season}`;
+                    item.onclick = () => this.selectSeason(season);
+                    seasonMenu.appendChild(item);
+                });
+            }
+
+            populateEventFilter() {
+                const eventMenu = document.getElementById('event-menu');
+                const events = Array.from(this.events).sort((a, b) => {
+                    const order = [
+                        'Leaderboard', 'Art Contest',
+                        'Summer', 'Valentine', 'Easter',
+                        'Halloween', 'Christmas', '4th of July',
+                        '1B Update', '2B Update', '10th Anniversary', 'Squid Game'
+                    ];
+
+                    const indexA = order.findIndex(event => a.toLowerCase().includes(event.toLowerCase()));
+                    const indexB = order.findIndex(event => b.toLowerCase().includes(event.toLowerCase()));
+
+                    // Both in priority list - sort by their order
+                    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+                    // Only A in list - A comes first
+                    if (indexA !== -1) return -1;
+                    // Only B in list - B comes first
+                    if (indexB !== -1) return 1;
+                    // Neither in list - sort alphabetically
+                    return a.localeCompare(b);
+                });
+                events.forEach(event => {
+                    const item = document.createElement('small');
+                    item.className = 'dropdown-item';
+                    item.dataset.data = event;
+                    item.textContent = event;
+                    item.onclick = () => this.selectEvent(event);
+                    eventMenu.appendChild(item);
+                });
+            }
+
+            populateCreditsFilter() {
+                const creditsMenu = document.getElementById('credits-menu');
+                if (!creditsMenu) return;
+
+                // Get all unique credits from items and count items per creator
+                const creditsSet = new Set();
+                const creditsCount = new Map();
+                let anyCreatorCount = 0;
+                
+                this.allItems.forEach(item => {
+                    if (item.credits && item.credits.trim()) {
+                        const credit = item.credits.trim();
+                        creditsSet.add(credit);
+                        creditsCount.set(credit, (creditsCount.get(credit) || 0) + 1);
+                        anyCreatorCount++;
+                    }
+                });
+
+                // Clear existing items
+                creditsMenu.innerHTML = '';
+
+
+
+                // Add "By Any Creator" option
+                const anyCreatorItem = document.createElement('small');
+                anyCreatorItem.className = 'dropdown-item';
+                anyCreatorItem.dataset.data = 'any';
+                anyCreatorItem.style.display = 'flex';
+                anyCreatorItem.style.alignItems = 'center';
+                anyCreatorItem.style.justifyContent = 'space-between';
+                anyCreatorItem.innerHTML = `<span>By Any Creator</span><small class="tag-count">${anyCreatorCount}</small>`;
+                anyCreatorItem.onclick = () => this.selectCredits('any');
+                creditsMenu.appendChild(anyCreatorItem);
+
+                // Sort credits by count (descending), then alphabetically for ties
+                const sortedCredits = Array.from(creditsSet).sort((a, b) => {
+                    const countA = creditsCount.get(a) || 0;
+                    const countB = creditsCount.get(b) || 0;
+                    
+                    // First sort by count (descending)
+                    if (countA !== countB) {
+                        return countB - countA;
+                    }
+                    
+                    // If counts are equal, sort alphabetically
+                    // Check if they're numeric IDs
+                    const aIsNumeric = /^\d+$/.test(a);
+                    const bIsNumeric = /^\d+$/.test(b);
+                    
+                    if (aIsNumeric && !bIsNumeric) return 1;
+                    if (!aIsNumeric && bIsNumeric) return -1;
+                    
+                    return a.localeCompare(b);
+                });
+
+                // Create menu items for each credit
+                sortedCredits.forEach(credit => {
+                    const item = document.createElement('small');
+                    item.className = 'dropdown-item';
+                    item.dataset.data = credit;
+                    item.style.display = 'flex';
+                    item.style.alignItems = 'center';
+                    item.style.justifyContent = 'space-between';
+                    item.style.gap = '8px';
+                    
+                    // Create container for avatar and label
+                    const contentContainer = document.createElement('div');
+                    contentContainer.style.display = 'flex';
+                    contentContainer.style.alignItems = 'center';
+                    contentContainer.style.gap = '8px';
+                    contentContainer.style.flex = '1';
+                    
+                    // Get count for this creator
+                    const count = creditsCount.get(credit) || 0;
+                    
+                    // Check if credit is a Roblox user ID
+                    const isRobloxId = /^\d+$/.test(credit);
+
+                    if (isRobloxId) {
+                        // Create avatar placeholder
+                        const avatarImg = document.createElement('img');
+                        avatarImg.style.width = '20px';
+                        avatarImg.style.height = '20px';
+                        avatarImg.style.borderRadius = '50%';
+                        avatarImg.style.objectFit = 'cover';
+                        avatarImg.style.backgroundColor = 'var(--bg-secondary)';
+                        avatarImg.style.border = '1px solid var(--border-color)';
+                        avatarImg.style.flexShrink = '0';
+                        avatarImg.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiBmaWxsPSIjMzMzIi8+CjxwYXRoIGQ9Ik0xMCA2QzExLjM4IDYgMTIuNSA1LjM4IDEyLjUgNC41QzEyLjUgMy42MiAxMS4zOCAzIDEwIDNDOC42MiAzIDcuNSAzLjYyIDcuNSA0LjVDNy41IDUuMzggOC42MiA2IDEwIDZaTTEwIDguMzNDOC41MyA3LjUgNiA3LjUgNiAxMFYxMS42N0gxNFYxMEMxNCA3LjUgMTEuNDcgNy41IDEwIDguMzNaIiBmaWxsPSIjOTk5OTk5Ii8+Cjwvc3ZnPgo=';
+                        avatarImg.alt = '';
+                        contentContainer.appendChild(avatarImg);
+                        
+                        // Create label placeholder
+                        const label = document.createElement('span');
+                        label.textContent = credit;
+                        contentContainer.appendChild(label);
+                        
+                        // Fetch Roblox user data asynchronously using cached function
+                        Utils.getRobloxUserData(credit)
+                            .then(userData => {
+                                if (userData) {
+                                    if (userData.avatar) {
+                                        avatarImg.src = userData.avatar;
+                                    }
+                                    // Update label with username
+                                    label.textContent = userData.name || credit;
+                                    if (credit == '792651524') {
+                                        label.textContent = 'Nooby_Dev';
+                                    }
+                                }
+                            })
+                            .catch(error => {
+                                // Keep original credit text on error
+                                console.error('Failed to fetch Roblox user:', error);
+                            });
+                    } else {
+                        // Not a Roblox ID, just display the text
+                        const label = document.createElement('span');
+                        label.textContent = credit;
+                        contentContainer.appendChild(label);
+                    }
+                    
+                    // Add count element
+                    const countElement = document.createElement('small');
+                    countElement.className = 'tag-count';
+                    countElement.textContent = count;
+                    countElement.style.marginLeft = 'auto';
+                    
+                    item.appendChild(contentContainer);
+                    item.appendChild(countElement);
+                    item.onclick = () => this.selectCredits(credit);
+                    creditsMenu.appendChild(item);
+                });
+            }
+
+            toggleChestExpand() {
+                const sortDropdown = document.querySelector('.filters');
+                const expandToggle = document.querySelector('.chest-expand-toggle .icon-down');
+
+                sortDropdown.classList.toggle('collapsed');
+                expandToggle.classList.toggle('flipped');
+            }
+
+            async loadChestsData() {
+                try {
+                    const res = await fetch('/api/chests');
+                    const data = await res.json();
+                    this.chestsData = data.chests || [];
+                } catch (e) {
+                    console.error('Failed to load chests:', e);
+                    this.chestsData = [];
+                }
+                this.chestMappings = {};
+                this.chestsData.forEach(c => { this.chestMappings[c.id] = []; });
+            }
+
+            renderChestMenu() {
+                const menu = document.getElementById('chest-menu');
+                if (!menu || this.chestsData.length === 0) return;
+
+                const timerSvg = `<svg fill="#87ceeb" style="margin-right:1px;margin-left:3px;width:12px;transform:translateY(2px)" viewBox="0 0 22.5 22.5" xmlns="http://www.w3.org/2000/svg"><path d="M11.188 22.5C5 22.5 0 17.5 0 11.312S5 .093 11.188.093s11.219 5.031 11.219 11.219S17.376 22.5 11.188 22.5m0-19.625c-4.625 0-8.375 3.813-8.375 8.438s3.75 8.375 8.375 8.375 8.438-3.75 8.438-8.375-3.813-8.438-8.438-8.438m3.031 12.718-3.969-2.906c-.281-.219-.563-.688-.563-1.063V5.28c0-.344.313-.625.688-.625h1.313c.344 0 .625.281.625.625v5c0 .375.281.844.563 1.063l2.906 2.094a.687.687 0 0 1 .125.938l-.781 1.063a.684.684 0 0 1-.906.156z"/></svg>`;
+                const gemSvg = `<svg style="margin-right:3px;margin-left:3px;width:12px;transform:translateY(4px)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.6 18"><path d="M6.251 6.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213 2.507-1.154 4.484.034l3.37 2.027c.648.43 1.255.949 1.157 2.077v4.444c.009 1.578-.127 2.032-1.065 2.656l-3.492 2.052c-2.118 1.195-2.219 1.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874 1.242-2.405Zm.395 1.298c1.287-.804 1.855-1.088 3.612.034l2.777 1.641c.568.423.954.838.96 1.652v3.952c-.007.705-.271 1.405-.9 1.77l-2.813 1.684c-1.786.942-1.799 1.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331 8.871-.345 11.011.985l4.062 2.444c.646.363 1.512 1.515 1.528 2.588v5.847c.003 1.055-.645 2.014-1.424 2.63l-4.178 2.501c-1.843 1.087-3.052 1.56-5.486.002l-3.928-2.348C.71 14.043-.006 13.267 0 11.695V6.272c.033-1.551.668-2.233 1.498-2.899Z" fill="#FFD700" fill-rule="evenodd"/></svg>`;
+
+                menu.innerHTML = this.chestsData.map(c => {
+                    let metaHtml = '';
+                    const val = this.escHtml(c.meta_value || '');
+                    switch (c.meta_type) {
+                        case 'timer':
+                            metaHtml = `<span class="chest-timer">${timerSvg} ${val}</span>`;
+                            break;
+                        case 'coins':
+                            metaHtml = `<span class="chest-price"><img src="./imgs/Coin.webp" style="transform:translateY(2px);margin-right:2px;margin-left:3px;width:12px;height:12px"> ${val}</span>`;
+                            break;
+                        case 'robux':
+                            metaHtml = `<span class="chest-price">${gemSvg} ${val}</span>`;
+                            break;
+                        case 'custom':
+                            const icon = c.meta_icon ? `<img src="${this.escHtml(c.meta_icon)}" style="transform:translateY(2px);margin-right:3px;margin-left:3px;width:12px;height:12px">` : '';
+                            const style = c.meta_style ? ` style="${this.escHtml(c.meta_style)}"` : '';
+                            metaHtml = `<span class="chest-price"${style}>${icon}${val}</span>`;
+                            break;
+                        default:
+                            metaHtml = val;
+                    }
+
+                    const rainbowStyle = c.rainbow_effect ? ' style="animation:2s rainbow-chest infinite linear"' : '';
+
+                    return `<div class="chest-item" data-data="${this.escHtml(c.id)}" onclick="catalog.selectChest('${this.escHtml(c.id)}')">
+                        <img src="${this.escHtml(c.image_url)}" alt="${this.escHtml(c.name)}"${rainbowStyle}>
+                        <div class="chest-item-info">
+                            <div class="chest-name">${this.escHtml(c.name)}</div>
+                            <div class="chest-meta">${metaHtml}</div>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+
+            escHtml(str) {
+                if (!str) return '';
+                const d = document.createElement('div');
+                d.textContent = str;
+                return d.innerHTML;
+            }
+
+            populateChests() {
+                for (let chest in this.chestMappings) {
+                    this.chestMappings[chest] = [];
+                }
+
+                this.allItems.forEach(item => {
+                    const from = (item.from || '').toLowerCase();
+                    let assignedChest = null;
+
+                    for (const chest of this.chestsData) {
+                        const keywords = chest.from_keywords.split(',').map(k => k.trim());
+                        if (keywords.some(kw => kw && from.includes(kw))) {
+                            assignedChest = chest.id;
+                            break;
+                        }
+                    }
+
+                    if (assignedChest) {
+                        this.chestMappings[assignedChest].push(item.name);
+                        item.chest = assignedChest;
+                    } else {
+                        item.chest = 'all';
+                    }
+                });
+            }
+
+
+
+            toggleEvent() {
+                const menu = document.getElementById('event-menu');
+                const trigger = document.querySelector('.submenu[onclick*="toggleEvent"]');
+
+                menu.classList.toggle('show');
+
+                document.getElementById('season-menu').classList.remove('show');
+                document.getElementById('chest-menu').classList.remove('show');
+                document.getElementById('credits-menu').classList.remove('show');
+            }
+
+            toggleSeason() {
+                const menu = document.getElementById('season-menu');
+                const trigger = document.querySelector('.submenu[onclick*="toggleSeason"]');
+
+                menu.classList.toggle('show');
+
+                document.getElementById('chest-menu').classList.remove('show');
+                document.getElementById('event-menu').classList.remove('show');
+                document.getElementById('credits-menu').classList.remove('show');
+
+            }
+
+            toggleCredits() {
+                const menu = document.getElementById('credits-menu');
+                menu.classList.toggle('show');
+
+                document.getElementById('season-menu').classList.remove('show');
+                document.getElementById('event-menu').classList.remove('show');
+                document.getElementById('chest-menu').classList.remove('show');
+            }
+
+            selectChest(chest) {
+                // Clear other filters except untradable and new
+                const untradableActive = this.filters.tags.has('untradable');
+                const newActive = this.filters.tags.has('new');
+                this.filters.tags.clear();
+                if (untradableActive) {
+                    this.filters.tags.add('untradable');
+                }
+                if (newActive) {
+                    this.filters.tags.add('new');
+                }
+
+                // Hide retired filter since gamenight is being cleared
+                const retiredItem = document.querySelector('.dropdown-item[data-filter="retired"]');
+                retiredItem.classList.remove('show-retired');
+                retiredItem.classList.remove('selected');
+
+                // Clear season, event, and credits filters
+                this.seasonFilter = 'all';
+                this.eventFilter = 'all';
+                this.creditsFilter = 'all';
+                this.chestFilter = chest;
+
+                // Update visual states
+                document.querySelectorAll('#filters-menu .dropdown-item').forEach(item => {
+                    if (item.dataset.filter !== 'untradable' && item.dataset.filter !== 'new') {
+                        item.classList.remove('selected');
+                    }
+                });
+
+                document.querySelectorAll('.chest-item').forEach(item => {
+                    item.classList.toggle('active', item.dataset.data == chest);
+                });
+
+                const selectedChest = document.querySelector(`.chest-item[data-data="${chest}"] .chest-name`);
+                document.getElementById('season-label').textContent = selectedChest.textContent === 'None' ? '' : `${selectedChest.textContent}`;
+                document.getElementById('chest-menu').classList.remove('show');
+
+                // Check if chest has items with different rarities
+                const chestItems = this.allItems.filter(item => {
+                    const chestItemsList = this.chestMappings[chest] || [];
+                    return chestItemsList.includes(item.name) || item.chest === chest;
+                });
+
+                const hasDifferentRarities = this.hasDifferentRarities(chestItems);
+                const raritySortOption = document.getElementById('rarity-sort-option');
+                
+                if (hasDifferentRarities) {
+                    // Show rarity sort option
+                    raritySortOption.style.display = 'block';
+                    raritySortOption.classList.remove('disabled');
+                    
+                    // Auto-select rarity sort (less rare to most rare)
+                    this.selectSort('rarity-desc');
+                    
+                    // Auto-open sort menu
+                    setTimeout(() => {
+                        document.getElementById('sort-menu').classList.add('show');
+                    }, 100);
+                } else {
+                    // Hide rarity sort option
+                    raritySortOption.style.display = 'none';
+                    raritySortOption.classList.add('disabled');
+                    
+                    // If currently using rarity sort, switch to default
+                    if (this.sortBy === 'rarity-desc') {
+                        this.selectSort('default');
+                    }
+                }
+
+                this.updateTagsLabel();
+                this.applyFilters();
+                this.updateFilterURL();
+            }
+
+            selectSeason(season) {
+                // Clear other filters except untradable and new
+                const untradableActive = this.filters.tags.has('untradable');
+                const newActive = this.filters.tags.has('new');
+                this.filters.tags.clear();
+                if (untradableActive) {
+                    this.filters.tags.add('untradable');
+                }
+                if (newActive) {
+                    this.filters.tags.add('new');
+                }
+
+                // Hide retired filter since gamenight is being cleared
+                const retiredItem = document.querySelector('.dropdown-item[data-filter="retired"]');
+                retiredItem.classList.remove('show-retired');
+                retiredItem.classList.remove('selected');
+
+                // Clear event, chest, and credits filters
+                this.chestFilter = 'all';
+                this.eventFilter = 'all';
+                this.creditsFilter = 'all';
+                this.seasonFilter = season;
+
+                document.getElementById('season-label').textContent = season === 'all' ? '' : `Season ${season}`;
+
+                // Update visual states
+                document.querySelectorAll('#filters-menu .dropdown-item').forEach(item => {
+                    if (item.dataset.filter !== 'untradable' && item.dataset.filter !== 'new') {
+                        item.classList.remove('selected');
+                    }
+                });
+
+                document.querySelectorAll('.dropdown-item').forEach(item => {
+                    item.classList.toggle('active', item.dataset.data == season);
+                });
+
+                this.updateTagsLabel();
+                this.applyFilters();
+                this.updateFilterURL();
+            }
+
+            selectEvent(event) {
+                // Clear other filters except untradable and new
+                const untradableActive = this.filters.tags.has('untradable');
+                const newActive = this.filters.tags.has('new');
+                this.filters.tags.clear();
+                if (untradableActive) {
+                    this.filters.tags.add('untradable');
+                }
+                if (newActive) {
+                    this.filters.tags.add('new');
+                }
+
+                // Hide retired filter since gamenight is being cleared
+                const retiredItem = document.querySelector('.dropdown-item[data-filter="retired"]');
+                retiredItem.classList.remove('show-retired');
+                retiredItem.classList.remove('selected');
+
+                // Clear season, chest, and credits filters
+                this.seasonFilter = 'all';
+                this.chestFilter = 'all';
+                this.creditsFilter = 'all';
+                this.eventFilter = event;
+
+                document.getElementById('season-label').textContent = event === 'all' ? '' : `${event}`;
+
+                // Update visual states
+                document.querySelectorAll('#filters-menu .dropdown-item').forEach(item => {
+                    if (item.dataset.filter !== 'untradable' && item.dataset.filter !== 'new') {
+                        item.classList.remove('selected');
+                    }
+                });
+
+                document.querySelectorAll('.dropdown-item').forEach(item => {
+                    item.classList.toggle('active', item.dataset.data == event);
+                });
+
+                this.updateTagsLabel();
+                this.applyFilters();
+                this.updateFilterURL();
+            }
+
+            selectCredits(credit) {
+                // Clear other filters except untradable and new
+                const untradableActive = this.filters.tags.has('untradable');
+                const newActive = this.filters.tags.has('new');
+                this.filters.tags.clear();
+                if (untradableActive) {
+                    this.filters.tags.add('untradable');
+                }
+                if (newActive) {
+                    this.filters.tags.add('new');
+                }
+
+                // Hide retired filter since gamenight is being cleared
+                const retiredItem = document.querySelector('.dropdown-item[data-filter="retired"]');
+                retiredItem.classList.remove('show-retired');
+                retiredItem.classList.remove('selected');
+
+                // Clear season, event, and chest filters
+                this.seasonFilter = 'all';
+                this.eventFilter = 'all';
+                this.chestFilter = 'all';
+                this.creditsFilter = credit;
+
+                // Update label
+                if (credit === 'all') {
+                    document.getElementById('season-label').textContent = '';
+                } else if (credit === 'any') {
+                    document.getElementById('season-label').textContent = 'By Any Creator';
+                } else {
+                    // Fetch username if it's a Roblox ID
+                    const isRobloxId = /^\d+$/.test(credit);
+                    if (isRobloxId) {
+                        Utils.getRobloxUserData(credit).then(userData => {
+                            if (userData) {
+                                if (credit == '792651524') {
+                                    userData.name = 'Nooby_Dev';
+                                }
+                                document.getElementById('season-label').textContent = `Credits: ${userData.name || credit}`;
+                            } else {
+                                document.getElementById('season-label').textContent = `Credits: ${credit}`;
+                            }
+                        });
+                    } else {
+                        document.getElementById('season-label').textContent = `Credits: ${credit}`;
+                    }
+                }
+
+                // Update visual states
+                document.querySelectorAll('#filters-menu .dropdown-item').forEach(item => {
+                    if (item.dataset.filter !== 'untradable' && item.dataset.filter !== 'new') {
+                        item.classList.remove('selected');
+                    }
+                });
+
+                document.querySelectorAll('#credits-menu .dropdown-item').forEach(item => {
+                    item.classList.toggle('active', item.dataset.data == credit);
+                });
+
+                document.getElementById('credits-menu').classList.remove('show');
+
+                this.updateTagsLabel();
+                this.applyFilters();
+                this.updateFilterURL();
+            }
+
+            selectTag(tagElement, tagName) {
+                // Special handling for untradable and new - they can be multi-selected
+                if (tagName === 'untradable' || tagName === 'new') {
+                    tagElement.classList.toggle('selected');
+                    if (this.filters.tags.has(tagName)) {
+                        this.filters.tags.delete(tagName);
+                    } else {
+                        this.filters.tags.add(tagName);
+                    }
+                } else if (tagName === 'retired') {
+                    // Retired can only be toggled if gamenight is active
+                    if (this.filters.tags.has('gamenight')) {
+                        tagElement.classList.toggle('selected');
+                        if (this.filters.tags.has(tagName)) {
+                            this.filters.tags.delete(tagName);
+                        } else {
+                            this.filters.tags.add(tagName);
+                        }
+                    }
+                } else if (tagName === 'weekly') {
+                    // Weekly Rotation can only be toggled if coinshop is active
+                    if (this.filters.tags.has('coinshop')) {
+                        tagElement.classList.toggle('selected');
+                        if (this.filters.tags.has(tagName)) {
+                            this.filters.tags.delete(tagName);
+                        } else {
+                            this.filters.tags.add(tagName);
+                        }
+                    }
+                } else {
+                    // For all other tags - single select only
+                    const wasSelected = this.filters.tags.has(tagName);
+
+                    // Clear all filters except untradable and new
+                    const untradableActive = this.filters.tags.has('untradable');
+                    const newActive = this.filters.tags.has('new');
+                    this.filters.tags.clear();
+                    if (untradableActive) {
+                        this.filters.tags.add('untradable');
+                    }
+                    if (newActive) {
+                        this.filters.tags.add('new');
+                    }
+
+                // Clear season, event, chest, and credits filters
+                this.seasonFilter = 'all';
+                this.eventFilter = 'all';
+                this.chestFilter = 'all';
+                this.creditsFilter = 'all';
+                document.getElementById('season-label').textContent = '';
+
+                    // Remove all selected classes except for multi-selectable filters
+                    document.querySelectorAll('#filters-menu .dropdown-item').forEach(item => {
+                        if (item.dataset.filter !== 'untradable' && item.dataset.filter !== 'new') {
+                            item.classList.remove('selected');
+                        }
+                    });
+
+                    // Toggle the clicked tag
+                    if (!wasSelected) {
+                        tagElement.classList.add('selected');
+                        this.filters.tags.add(tagName);
+                    }
+
+                    // Show/hide retired when gamenight is selected
+                    const retiredItem = document.querySelector('.dropdown-item[data-filter="retired"]');
+                    if (tagName === 'gamenight' && this.filters.tags.has('gamenight')) {
+                        retiredItem.classList.add('show-retired');
+                    } else if (!this.filters.tags.has('gamenight')) {
+                        retiredItem.classList.remove('show-retired');
+                        this.filters.tags.delete('retired');
+                        retiredItem.classList.remove('selected');
+                    }
+
+                    // Show/hide weekly rotation when coinshop is selected
+                    const weeklyItem = document.querySelector('.dropdown-item[data-filter="weekly"]');
+                    if (tagName === 'coinshop' && this.filters.tags.has('coinshop')) {
+                        weeklyItem.classList.add('show-weekly');
+                    } else if (!this.filters.tags.has('coinshop')) {
+                        weeklyItem.classList.remove('show-weekly');
+                        this.filters.tags.delete('weekly');
+                        weeklyItem.classList.remove('selected');
+                    }
+                }
+
+                // Update dropdown items visual state
+                document.querySelectorAll('.dropdown-item').forEach(item => {
+                    if (item.dataset.filter === tagName) {
+                        item.classList.toggle('selected', this.filters.tags.has(tagName));
+                    } else if (item.dataset.data && (item.dataset.data !== this.seasonFilter && item.dataset.data !== this.eventFilter && item.dataset.data !== this.chestFilter)) {
+                        item.classList.remove('active');
+                    }
+                });
+
+                // Enable/disable date sorting based on code/gamenight filters
+                const hasDateFilters = this.filters.tags.has('code') || this.filters.tags.has('gamenight');
+                const dateOptions = document.querySelectorAll('[data-sort="date-desc"], [data-sort="date-asc"]');
+
+                dateOptions.forEach(option => {
+                    if (hasDateFilters) {
+                        option.classList.remove('disabled');
+                    } else {
+                        option.classList.add('disabled');
+                        if (this.sortBy === 'date-desc' || this.sortBy === 'date-asc') {
+                            this.selectSort('default');
+                        }
+                    }
+                });
+
+                if ((tagName === 'code' || tagName === 'gamenight') &&
+                    this.filters.tags.has(tagName) &&
+                    this.sortBy === 'default') {
+                    this.selectSort('date-desc');
+                }
+
+                this.updateTagsLabel();
+                this.applyFilters();
+                this.updateFilterURL();
+            }
+
+            clearAllFilters() {
+                // Clear all tag filters
+                this.filters.tags.clear();
+
+                // Clear season, event, chest, and credits filters
+                this.seasonFilter = 'all';
+                this.eventFilter = 'all';
+                this.chestFilter = 'all';
+                this.creditsFilter = 'all';
+
+                // Clear season label
+                document.getElementById('season-label').textContent = '';
+
+                // Remove all selected/active classes from filter items
+                document.querySelectorAll('#filters-menu .dropdown-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+
+                document.querySelectorAll('.chest-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+
+                // Hide retired filter
+                const retiredItem = document.querySelector('.dropdown-item[data-filter="retired"]');
+                if (retiredItem) {
+                    retiredItem.classList.remove('show-retired');
+                    retiredItem.classList.remove('selected');
+                }
+
+                // Hide weekly rotation filter
+                const weeklyItem = document.querySelector('.dropdown-item[data-filter="weekly"]');
+                if (weeklyItem) {
+                    weeklyItem.classList.remove('show-weekly');
+                    weeklyItem.classList.remove('selected');
+                }
+
+                // Reset date sorting options to disabled
+                const dateOptions = document.querySelectorAll('[data-sort="date-desc"], [data-sort="date-asc"]');
+                dateOptions.forEach(option => {
+                    option.classList.add('disabled');
+                });
+
+                // Reset to default sort if using date sort
+                if (this.sortBy === 'date-desc' || this.sortBy === 'date-asc') {
+                    this.selectSort('default');
+                }
+
+                // Close the dropdown
+                document.getElementById('filters-menu').classList.remove('show');
+
+                // Clear URL filter params
+                const url = new URL(window.location);
+                url.searchParams.delete('filter');
+                url.searchParams.delete('tags');
+                url.searchParams.delete('season');
+                url.searchParams.delete('event');
+                url.searchParams.delete('chest');
+                url.searchParams.delete('credits');
+                url.searchParams.delete('category');
+                history.pushState({}, '', url);
+
+                // Update UI and reapply filters
+                this.updateTagsLabel();
+                this.applyFilters();
+            }
+
+            toggleSort() {
+                const menu = document.getElementById('sort-menu');
+                const btn = document.querySelector('.sort-dropdown');
+
+                document.querySelectorAll('.dropdown-content').forEach(d => {
+                    if (d !== menu) d.classList.remove('show');
+                });
+
+                menu.classList.toggle('show');
+            }
+
+
+
+            toggleFilters() {
+                const menu = document.getElementById('filters-menu');
+                const btn = document.querySelector('.filters-dropdown');
+
+                document.querySelectorAll('.dropdown-content').forEach(d => {
+                    if (d !== menu) d.classList.remove('show');
+                });
+
+                menu.classList.toggle('show');
+            }
+
+            async selectSort(sortType) {
+                this.sortBy = sortType;
+                const labels = {
+                    'default': 'Category',
+                    'favorites-desc': 'Most Favorited',
+                    'demand-desc': 'Most Demanded',
+                    'updated-desc': 'Recently Updated',
+                    'price-asc': 'Price (Low to High)',
+                    'price-desc': 'Price (High to Low)',
+                    'price-updated-desc': 'Price (Recently Updated)',
+                    'date-desc': 'Newest First',
+                    'date-asc': 'Oldest First',
+                    'rarity-desc': 'Rarity (Rarest First)',
+                    'color-asc': 'Color (Rainbow)'
+                };
+                document.getElementById('sort-label').textContent = labels[sortType] || labels['default'];
+
+                document.querySelectorAll('#sort-menu .dropdown-item').forEach(item => {
+                    item.classList.toggle('active', item.dataset.sort === sortType);
+                });
+
+                document.getElementById('sort-menu').classList.toggle('show');
+
+                // The color sort needs each item's dominant color. Extract on demand the first time
+                // it's selected (guarded so it runs at most once) instead of decoding every image on
+                // page load. Items that already carry a stored `color` from the API are skipped.
+                if (sortType === 'color-asc' && !this._colorsExtracted) {
+                    await this.extractAllColors();
+                }
+
+                this.applyFilters();
+            }
+
+
+
+            setupEventListeners() {
+
+
+                // Tag menu items
+                document.querySelectorAll('#filters-menu .dropdown-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.selectTag(item, item.dataset.filter);
+                    });
+                });
+
+                window.addEventListener('resize', () => {
+                    document.querySelectorAll('.dropdown-content.show').forEach(dropdown => {
+                        dropdown.classList.remove('show');
+                    });
+                });
+
+                // Close menus when clicking outside
+                document.addEventListener('click', (e) => {
+
+                    if (!e.target.closest('.sort-dropdown')) {
+                        document.getElementById('sort-menu').classList.remove('show');
+                    }
+                    if (!e.target.closest('.filters-dropdown')) {
+                        document.getElementById('filters-menu').classList.remove('show');
+                        document.getElementById('season-menu').classList.remove('show');
+                        document.getElementById('event-menu').classList.remove('show');
+                        document.getElementById('chest-menu').classList.remove('show');
+                        document.getElementById('credits-menu').classList.remove('show');
+                    }
+                    if (!e.target.closest('.submenu')) {
+                        document.getElementById('season-menu').classList.remove('show');
+                        document.getElementById('chest-menu').classList.remove('show');
+                        document.getElementById('event-menu').classList.remove('show');
+                        document.getElementById('credits-menu').classList.remove('show');
+                    }
+                });
+
+                // Sort dropdown items
+                document.querySelectorAll('#sort-menu .dropdown-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        this.selectSort(item.dataset.sort);
+                    });
+                });
+
+
+
+                // Search with recent items
+                const searchBar = document.getElementById('search-bar');
+                let searchTimeout;
+
+                searchBar.addEventListener('focus', () => {
+                    //this.showRecentItems();
+                });
+
+                searchBar.addEventListener('blur', () => {
+                    setTimeout(() => {
+                        document.getElementById('recent-items').classList.remove('show');
+                    }, 200);
+                });
+
+                searchBar.addEventListener('input', (e) => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        this.filters.search = e.target.value.toLowerCase();
+                        this.applyFilters();
+                    }, 300);
+                });
+
+                document.getElementById('loadMore').addEventListener('click', () => {
+                    this.loadBatch();
+                });
+
+                // Infinite scroll via IntersectionObserver on the load-more sentinel.
+                // Avoids the forced layout from reading document.body.offsetHeight on
+                // every scroll frame (a major source of scroll jank, esp. on mobile).
+                const loadMoreSentinel = document.querySelector('.load-more');
+                if (loadMoreSentinel) {
+                    this.loadMoreObserver = new IntersectionObserver((entries) => {
+                        if (entries[0].isIntersecting) {
+                            this.loadBatch();
+                        }
+                    }, { rootMargin: '300px' });
+                    this.loadMoreObserver.observe(loadMoreSentinel);
+                }
+                window.addEventListener('popstate', () => {
+                    // Restore filters from URL
+                    this.handleURLParams(true);
+                });
+            }
+
+            updateTagCounts() {
+                // Reset counts
+                Object.keys(this.tagCounts).forEach(key => this.tagCounts[key] = 0);
+                // Count items for each tag
+                this.allItems.forEach(item => {
+                    if (item.new) this.tagCounts.new++;
+                    if (item.tradable === false) this.tagCounts.untradable++;
+                    if (item.premium) this.tagCounts.premium++;
+                    if (item.typicalgroup) this.tagCounts.typicalgroup++;
+                    if (item.retired) this.tagCounts.retired++;
+                    if (item.removed) this.tagCounts.removed++;
+                    if (this.favorites.includes(item.name)) this.tagCounts.favorites++;
+
+                    const from = (item.from || '').toLowerCase();
+                    if (from.includes('gamenight') || from.includes('rodis')) this.tagCounts.gamenight++;
+                    if (from.includes('coin shop')) this.tagCounts.coinshop++;
+                    if (from.includes('token shop')) this.tagCounts.tokenshop++;
+                    if (from.includes('unreleased') || from.includes('@zarabelle') || from.includes('@typicaltype')) {
+                        this.tagCounts.unreleased++;
+                    }
+
+                    if (from.includes('code')) this.tagCounts.code++;
+                    if (from.includes('weekly rotation')) this.tagCounts.weekly++;
+                    if (from.includes('star shop')) this.tagCounts.weeklystar++;
+                });
+
+                // Update UI counts
+                Object.keys(this.tagCounts).forEach(tag => {
+                    const countEl = document.getElementById(`count-${tag}`);
+                    if (countEl) {
+                        countEl.textContent = this.tagCounts[tag];
+                    }
+                });
+            }
+
+
+
+            updateTagsLabel() {
+
+                const selectedCount = this.filters.tags.size + (this.seasonFilter !== 'all' ? 1 : 0) + (this.eventFilter !== 'all' ? 1 : 0) + (this.chestFilter !== 'all' ? 1 : 0) + (this.creditsFilter !== 'all' ? 1 : 0);
+                const tagLabel = document.getElementById('filters-label');
+                const tagCount = document.getElementById('filter-count');
+
+                if (selectedCount === 0) {
+                    tagLabel.textContent = 'None';
+                    tagCount.style.display = 'none';
+                } else {
+                    const tagNames = Array.from(this.filters.tags);
+                    tagLabel.textContent = '';
+                    tagCount.textContent = selectedCount;
+                    tagCount.style.display = 'inline-block';
+                }
+            }
+
+            applyFilters() {
+                // Increment request ID to cancel any pending batch loads
+                
+                this.filterRequestId++;
+                const currentRequestId = this.filterRequestId;
+
+                this.filtered = this.allItems.filter(item => {
+                    
+                    // Chest filter
+                    if (this.chestFilter !== 'all') {
+                        const chestItems = this.chestMappings[this.chestFilter] || [];
+                        if (!chestItems.includes(item.name) && item.chest !== this.chestFilter) {
+                            return false;
+                        }
+                    }
+
+                    // Category filter
+                    if (this.filters.category !== 'all' && item.category !== this.filters.category) {
+                        return false;
+                    }
+
+                    // Season filter
+                    if (this.seasonFilter !== 'all' && item.seasons && !item.seasons.includes(this.seasonFilter)) {
+                        return false;
+                    }
+
+                    // Event filter
+                    if (this.eventFilter !== 'all' && item.events && !item.events.includes(this.eventFilter)) {
+                        return false;
+                    }
+
+                    // Credits filter
+                    if (this.creditsFilter !== 'all') {
+                        if (this.creditsFilter === 'any') {
+                            // Show items that have any credits (non-empty credits field)
+                            if (!item.credits || !item.credits.trim()) return false;
+                        } else {
+                            // Show items matching specific creator
+                            if (!item.credits) return false;
+                            // Normalize comparison - handle both IDs and usernames
+                            const itemCredits = item.credits.trim().toLowerCase();
+                            const filterCredits = this.creditsFilter.toLowerCase();
+                            if (itemCredits !== filterCredits) return false;
+                        }
+                    }
+
+                    // Search filter (by name or alias)
+                    if (this.filters.search) {
+                        const nameMatches = item.name.toLowerCase().includes(this.filters.search.toLowerCase());
+                        const aliasMatches = item.alias && typeof item.alias === 'string' && item.alias.trim() 
+                            ? item.alias.toLowerCase().includes(this.filters.search.toLowerCase())
+                            : false;
+                        
+                        if (!nameMatches && !aliasMatches) {
+                            return false;
+                        }
+                    }
+
+                    // Tag filters
+                    for (let tag of this.filters.tags) {
+                        switch (tag) {
+                            case 'new':
+                                if (!item.new) return false;
+                                break;
+                            case 'untradable':
+                                if (item.tradable !== false) return false;
+                                break;
+                            case 'premium':
+                                if (!item.premium) return false;
+                                break;
+                            case 'typicalgroup':
+                                if (!item.typicalgroup) return false;
+                                break;
+                            case 'gamenight':
+                                if (!item.from.toLowerCase().includes('gamenight') && !item.from.toLowerCase().includes('rodis')) return false;
+                                break;
+                            case 'coinshop':
+                                if (!item.from.toLowerCase().includes('coin shop')) return false;
+                                break;
+                            case 'tokenshop':
+                                if (!item.from.toLowerCase().includes('token shop')) return false;
+                                break;
+                            case 'weekly':
+                                if (!item.from.toLowerCase().includes('weekly rotation')) return false;
+                                break;
+                            case 'weeklystar':
+                                if (!item.from.toLowerCase().includes('star shop')) return false;
+                                break;
+                            case 'code':
+                                if (!item.from.toLowerCase().includes('code')) return false;
+                                break;
+                            case 'unreleased':
+                                if (!item.from.toLowerCase().includes('unreleased')) return false;
+                                break;
+                            case 'retired':
+                                if (!item.retired) return false;
+                                break;
+                            case 'favorites':
+                                if (!this.favorites.includes(item.name)) return false;
+                                break;
+                            case 'wishlist':
+                                if (!this.wishlist.includes(item.name)) return false;
+                                break;
+                            case 'removed':
+                                if (!item.removed) return false;
+                                break;
+                        }
+                    }
+                    return true;
+                });
+
+                document.getElementById('total').textContent = this.filtered.length;
+
+                // Update rarity sort option visibility based on filtered items
+                const raritySortOption = document.getElementById('rarity-sort-option');
+                if (this.chestFilter !== 'all' && this.filtered.length > 0) {
+                    const hasDifferentRarities = this.hasDifferentRarities(this.filtered);
+                    if (hasDifferentRarities) {
+                        raritySortOption.style.display = 'block';
+                        raritySortOption.classList.remove('disabled');
+                    } else {
+                        raritySortOption.style.display = 'none';
+                        raritySortOption.classList.add('disabled');
+                        // If currently using rarity sort and no different rarities, switch to default
+                        if (this.sortBy === 'rarity-desc') {
+                            this.selectSort('default');
+                        }
+                    }
+                } else {
+                    raritySortOption.style.display = 'none';
+                    raritySortOption.classList.add('disabled');
+                    // If currently using rarity sort and no chest selected, switch to default
+                    if (this.sortBy === 'rarity-desc') {
+                        this.selectSort('default');
+                    }
+                }
+
+                // Sort items (flikes now comes with items from API, no async needed)
+                this.sortItems();
+
+                // Reset display
+                this.currentBatch = 0;
+                this.loading = false;
+                this.modal.displayed = [];
+                document.getElementById('catalog').innerHTML = '';
+
+                // Load first batch
+                this.loadBatch(currentRequestId);
+
+                // Update chest label with item count
+                if (this.chestFilter !== 'all') {
+                    const chestCount = this.filtered.length;
+                    const selectedChest = document.querySelector(`.chest-item[data-data="${this.chestFilter}"] .chest-name`);
+                }
+            }
+
+            parsePrice(price) {
+
+
+                if (!price || price.toLowerCase() === 'o/c') return Number.MAX_SAFE_INTEGER;
+                const str = String(price).replace('+', '').toLowerCase();
+
+                // Handle ranges like "5-10"
+                if (str.includes('-')) {
+                    const parts = str.split('-').map(p => {
+                        p = p.trim();
+                        if (p.endsWith('k')) return parseFloat(p) * 1000;
+                        if (p.endsWith('m')) return parseFloat(p) * 1_000_000;
+                        return parseFloat(p);
+                    });
+                    // Return average of range
+                    return parts.reduce((a, b) => a + b, 0) / parts.length;
+                }
+
+                // Handle k/m suffixes
+                if (str.endsWith('k')) return parseFloat(str) * 1000;
+                if (str.endsWith('m')) return parseFloat(str) * 1_000_000;
+
+                return parseFloat(str) || 0;
+            }
+
+            parseRarity(rarityString) {
+                if (!rarityString) return null;
+                
+                // Split by <br> to handle multiple lines
+                const parts = rarityString.split('<br>').map(p => p.trim()).filter(Boolean);
+                
+                // Look for percentage pattern (e.g., "3.85%", "1.429%")
+                for (const part of parts) {
+                    const match = part.match(/(\d+\.?\d*)\s*%/);
+                    if (match) {
+                        return parseFloat(match[1]);
+                    }
+                }
+                
+                return null;
+            }
+
+            rgbToHue(rgb) {
+                if (!rgb || rgb.length !== 3) return 0;
+                const [r, g, b] = rgb.map(v => v / 255);
+                
+                const max = Math.max(r, g, b);
+                const min = Math.min(r, g, b);
+                const delta = max - min;
+                
+                if (delta === 0) return 0; // Grayscale
+                
+                let hue = 0;
+                if (max === r) {
+                    hue = ((g - b) / delta) % 6;
+                } else if (max === g) {
+                    hue = (b - r) / delta + 2;
+                } else {
+                    hue = (r - g) / delta + 4;
+                }
+                
+                hue = hue * 60;
+                if (hue < 0) hue += 360;
+                
+                return hue;
+            }
+
+            async extractColorFromImage(item) {
+                return new Promise((resolve) => {
+                    if (!item.img) {
+                        resolve(null);
+                        return;
+                    }
+                    
+                    // Use optimized image for color extraction (smaller size for faster processing)
+                    let imageUrl = Utils.getOptimizedImage(item.img, { width: 100, quality: 85 }) || item.img;
+                    
+                    // Convert relative URLs to absolute URLs if needed
+                    if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://') && !imageUrl.startsWith('data:')) {
+                        // If relative URL and we're on http/https, convert to absolute
+                        if (window.location.protocol !== 'file:') {
+                            const baseUrl = window.location.origin;
+                            imageUrl = imageUrl.startsWith('/') ? baseUrl + imageUrl : baseUrl + '/' + imageUrl.replace(/^\.\//, '');
+                        } else {
+                            // Skip on file:// protocol
+                            resolve(null);
+                            return;
+                        }
+                    }
+                    
+                    // Only set crossOrigin for same-origin images
+                    // Cross-origin images (like cdn.emwiki.com) may not have CORS headers
+                    const img = new Image();
+                    try {
+                        const imageUrlObj = new URL(imageUrl, window.location.href);
+                        const currentOrigin = window.location.origin;
+                        // Only set crossOrigin if same origin (allows reading canvas pixels)
+                        if (imageUrlObj.origin === currentOrigin) {
+                            img.crossOrigin = 'anonymous';
+                        }
+                        // For cross-origin images, don't set crossOrigin - canvas will be tainted
+                        // but we'll catch the error and fall back to SVG/default
+                    } catch (e) {
+                        // Invalid URL, skip crossOrigin
+                    }
+                    
+                    img.onload = () => {
+                        try {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = Math.min(img.width, 100); // Limit size for performance
+                            canvas.height = Math.min(img.height, 100);
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            
+                            // Sample pixels (every 5th pixel for performance)
+                            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                            const data = imageData.data;
+                            const colorCounts = new Map();
+                            
+                            for (let i = 0; i < data.length; i += 20) { // Every 5th pixel (RGBA = 4 bytes)
+                                const r = data[i];
+                                const g = data[i + 1];
+                                const b = data[i + 2];
+                                const a = data[i + 3];
+                                
+                                // Skip transparent pixels
+                                if (a < 128) continue;
+                                
+                                // Quantize colors to reduce noise
+                                const qr = Math.floor(r / 32) * 32;
+                                const qg = Math.floor(g / 32) * 32;
+                                const qb = Math.floor(b / 32) * 32;
+                                const key = `${qr},${qg},${qb}`;
+                                
+                                colorCounts.set(key, (colorCounts.get(key) || 0) + 1);
+                            }
+                            
+                            // Find dominant color
+                            let maxCount = 0;
+                            let dominantColor = null;
+                            for (const [key, count] of colorCounts.entries()) {
+                                if (count > maxCount) {
+                                    maxCount = count;
+                                    dominantColor = key.split(',').map(Number);
+                                }
+                            }
+                            
+                            resolve(dominantColor);
+                        } catch (e) {
+                            // Canvas might be tainted (cross-origin without CORS)
+                            // Silently fail and fall back to SVG or default color
+                            resolve(null);
+                        }
+                    };
+                    img.onerror = () => {
+                        // Image failed to load - silently fail
+                        resolve(null);
+                    };
+                    img.src = imageUrl;
+                });
+            }
+
+            async extractColorFromSVG(item) {
+                return new Promise((resolve) => {
+                    if (!item.svg) {
+                        resolve(null);
+                        return;
+                    }
+                    
+                    try {
+                        // Create a temporary container to render SVG
+                        const tempDiv = document.createElement('div');
+                        tempDiv.style.position = 'absolute';
+                        tempDiv.style.left = '-9999px';
+                        tempDiv.style.width = '200px';
+                        tempDiv.style.height = '200px';
+                        document.body.appendChild(tempDiv);
+                        
+                        // Insert SVG into DOM
+                        tempDiv.innerHTML = item.svg;
+                        const svgElement = tempDiv.querySelector('svg');
+                        
+                        if (!svgElement) {
+                            document.body.removeChild(tempDiv);
+                            resolve(null);
+                            return;
+                        }
+                        
+                        // Get SVG dimensions or use defaults
+                        const svgWidth = svgElement.width?.baseVal?.value || svgElement.viewBox?.baseVal?.width || 200;
+                        const svgHeight = svgElement.height?.baseVal?.value || svgElement.viewBox?.baseVal?.height || 200;
+                        
+                        // Create canvas to render SVG
+                        const canvas = document.createElement('canvas');
+                        canvas.width = Math.min(svgWidth, 200);
+                        canvas.height = Math.min(svgHeight, 200);
+                        const ctx = canvas.getContext('2d');
+                        
+                        // Create image from SVG
+                        const svgData = new XMLSerializer().serializeToString(svgElement);
+                        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                        const url = URL.createObjectURL(svgBlob);
+                        
+                        const img = new Image();
+                        img.onload = () => {
+                            try {
+                                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                
+                                // Sample pixels to find dominant color
+                                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                                const data = imageData.data;
+                                const colorCounts = new Map();
+                                
+                                for (let i = 0; i < data.length; i += 16) { // Sample every 4th pixel
+                                    const r = data[i];
+                                    const g = data[i + 1];
+                                    const b = data[i + 2];
+                                    const a = data[i + 3];
+                                    
+                                    // Skip transparent pixels
+                                    if (a < 128) continue;
+                                    
+                                    // Quantize colors to reduce noise
+                                    const qr = Math.floor(r / 32) * 32;
+                                    const qg = Math.floor(g / 32) * 32;
+                                    const qb = Math.floor(b / 32) * 32;
+                                    const key = `${qr},${qg},${qb}`;
+                                    
+                                    colorCounts.set(key, (colorCounts.get(key) || 0) + 1);
+                                }
+                                
+                                // Find dominant color
+                                let maxCount = 0;
+                                let dominantColor = null;
+                                for (const [key, count] of colorCounts.entries()) {
+                                    if (count > maxCount) {
+                                        maxCount = count;
+                                        dominantColor = key.split(',').map(Number);
+                                    }
+                                }
+                                
+                                // Cleanup
+                                URL.revokeObjectURL(url);
+                                document.body.removeChild(tempDiv);
+                                resolve(dominantColor);
+                            } catch (e) {
+                                console.error('Error extracting color from rendered SVG:', e);
+                                URL.revokeObjectURL(url);
+                                document.body.removeChild(tempDiv);
+                                resolve(null);
+                            }
+                        };
+                        img.onerror = () => {
+                            URL.revokeObjectURL(url);
+                            document.body.removeChild(tempDiv);
+                            resolve(null);
+                        };
+                        img.src = url;
+                    } catch (e) {
+                        console.error('Error setting up SVG color extraction:', e);
+                        resolve(null);
+                    }
+                });
+            }
+
+            async getDominantColor(item) {
+                // Check if already extracted
+                if (item.color) {
+                    return item.color;
+                }
+                
+                // Try image first
+                let rgb = await this.extractColorFromImage(item);
+                
+                // If no image color, try SVG
+                if (!rgb) {
+                    rgb = await this.extractColorFromSVG(item);
+                }
+                
+                // Store RGB in item.color for sorting
+                if (rgb) {
+                    item.color = rgb;
+                } else {
+                    item.color = [128, 128, 128]; // Default to gray for unknown
+                }
+                
+                return item.color;
+            }
+
+            async saveColorsToDatabase() {
+                console.log('Starting color extraction and database update...');
+                
+                // First, ensure all colors are extracted
+                await this.extractAllColors();
+                
+                // Wait a bit for extraction to complete
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Get all items with their IDs from the API
+                const itemsWithIds = [];
+                const categories = ['gears', 'deaths', 'titles', 'pets', 'effects'];
+                
+                for (const cat of categories) {
+                    let offset = 0;
+                    const limit = 500;
+                    let hasMore = true;
+                    
+                    while (hasMore) {
+                        const url = new URL('/api/items', window.location.origin);
+                        url.searchParams.set('category', cat);
+                        url.searchParams.set('limit', limit.toString());
+                        url.searchParams.set('offset', offset.toString());
+                        
+                        const response = await fetch(url.toString());
+                        if (!response.ok) {
+                            console.error(`Failed to fetch ${cat} items`);
+                            break;
+                        }
+                        
+                        const data = await response.json();
+                        const items = data.items || [];
+                        
+                        items.forEach(item => {
+                            // Find matching item in allItems by name and category
+                            const localItem = this.allItems.find(i => 
+                                i.name === item.name && i.category === item.category
+                            );
+                            
+                            if (localItem && localItem.color) {
+                                itemsWithIds.push({
+                                    id: item.id,
+                                    name: item.name,
+                                    category: item.category,
+                                    color: localItem.color,
+                                    updated_at: item.updated_at
+                                });
+                            }
+                        });
+                        
+                        hasMore = items.length === limit;
+                        offset += limit;
+                    }
+                }
+                
+                console.log(`Found ${itemsWithIds.length} items with colors to update`);
+                
+                // Update items in batches
+                const batchSize = 10;
+                let updated = 0;
+                let failed = 0;
+                
+                for (let i = 0; i < itemsWithIds.length; i += batchSize) {
+                    const batch = itemsWithIds.slice(i, i + batchSize);
+                    
+                    await Promise.all(batch.map(async (item) => {
+                        try {
+                            const response = await fetch(`/api/items/${item.id}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    color: item.color,
+                                    updated_at: item.updated_at
+                                })
+                            });
+                            
+                            if (response.ok) {
+                                updated++;
+                                if (updated % 50 === 0) {
+                                    console.log(`Updated ${updated}/${itemsWithIds.length} items...`);
+                                }
+                            } else {
+                                failed++;
+                                const error = await response.json();
+                                console.error(`Failed to update ${item.name}:`, error);
+                            }
+                        } catch (error) {
+                            failed++;
+                            console.error(`Error updating ${item.name}:`, error);
+                        }
+                    }));
+                    
+                    // Small delay between batches to avoid rate limiting
+                    if (i + batchSize < itemsWithIds.length) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                }
+                
+                console.log(`\n✅ Color update complete!`);
+                console.log(`   Updated: ${updated}`);
+                console.log(`   Failed: ${failed}`);
+                console.log(`   Total: ${itemsWithIds.length}`);
+                
+                return { updated, failed, total: itemsWithIds.length };
+            }
+
+            hasDifferentRarities(items) {
+                const rarities = new Set();
+                for (const item of items) {
+                    const rarity = this.parseRarity(item['price/code/rarity']);
+                    if (rarity !== null) {
+                        rarities.add(rarity);
+                    }
+                }
+                // Return true if we have at least 2 different rarity values
+                return rarities.size >= 2;
+            }
+
+            sortItems() {
+                switch (this.sortBy) {
+                    case 'date-desc': // Newer first
+                        this.filtered.sort((a, b) => {
+                            const parseDate = (from) => {
+                                if (!from) return 0;
+
+                                let pattern = this.filters.tags.has('code') ? /\b(?:code|Code)\s*(?:\()?([A-Za-z]+)\.?\s*(\d{4})\)?/gi : /\b(?:gamenight|Gamenight)\s*(?:\()?([A-Za-z]+)\.?\s*(\d{4})\)?/gi;
+                                if (this.filters.tags.has('code') && this.filters.tags.has('gamenight')) {
+                                    // If both tags are selected, match either
+                                    pattern = /\b(?:code|Code|gamenight|Gamenight)\s*(?:\()?([A-Za-z]+)\.?\s*(\d{4})\)?/gi;
+                                }
+                                const matches = [...from.matchAll(pattern)];
+
+                                if (matches.length === 0) return 0;
+
+                                const months = {
+                                    'jan': 0, 'feb': 1, 'mar': 2, 'apr': 3, 'may': 4, 'jun': 5,
+                                    'jul': 6, 'aug': 7, 'sep': 8, 'sept': 8, 'oct': 9, 'nov': 10, 'dec': 11
+                                };
+
+                                const timestamps = matches.map(match => {
+                                    const monthStr = match[1].toLowerCase();
+                                    const month = months[monthStr];
+                                    const year = parseInt(match[2]);
+
+                                    if (month === undefined) return 0;
+                                    return new Date(year, month).getTime();
+                                });
+
+                                return Math.max(...timestamps);
+                            };
+
+                            return parseDate(b.from) - parseDate(a.from);
+                        });
+                        break;
+
+                    case 'date-asc': // Older first
+                        this.filtered.sort((a, b) => {
+                            const parseDate = (from) => {
+                                if (!from) return 0;
+
+                                const pattern = /\b(?:code|Code|gamenight|Gamenight)\s*(?:\()?([A-Za-z]+)\.?\s*(\d{4})\)?/gi;
+                                const matches = [...from.matchAll(pattern)];
+
+                                if (matches.length === 0) return 0;
+
+                                const months = {
+                                    'jan': 0, 'feb': 1, 'mar': 2, 'apr': 3, 'may': 4, 'jun': 5,
+                                    'jul': 6, 'aug': 7, 'sep': 8, 'sept': 8, 'oct': 9, 'nov': 10, 'dec': 11
+                                };
+
+                                const timestamps = matches.map(match => {
+                                    const monthStr = match[1].toLowerCase();
+                                    const month = months[monthStr];
+                                    const year = parseInt(match[2]);
+
+                                    if (month === undefined) return 0;
+                                    return new Date(year, month).getTime();
+                                });
+
+                                return Math.max(...timestamps);
+                            };
+
+                            return parseDate(a.from) - parseDate(b.from);
+                        });
+                        break;
+
+                    case 'price-asc':
+                        this.filtered.sort((a, b) => {
+                            const priceA = this.parsePrice(a.price);
+                            const priceB = this.parsePrice(b.price);
+                            const valA = priceA === 0 ? Number.MAX_SAFE_INTEGER : priceA;
+                            const valB = priceB === 0 ? Number.MAX_SAFE_INTEGER : priceB;
+                            return valA - valB;
+                        });
+                        break;
+                    case 'price-desc':
+                        this.filtered.sort((a, b) => {
+                            const priceA = this.parsePrice(a.price);
+                            const priceB = this.parsePrice(b.price);
+                            return priceB - priceA;
+                        });
+                        break;
+                    case 'name-asc':
+                        this.filtered.sort((a, b) => a.name.localeCompare(b.name));
+                        break;
+                    case 'name-desc':
+                        this.filtered.sort((a, b) => b.name.localeCompare(a.name));
+                        break;
+                    case 'demand-desc':
+                        this.filtered.sort((a, b) => {
+                            const demandA = a.demand || 0;
+                            const demandB = b.demand || 0;
+                            return demandB - demandA;
+                        });
+                        break;
+                    case 'price-updated-desc':
+                        // Sort by most recent price update timestamp, most recent first
+                        this.filtered.sort((a, b) => {
+                            const getLastPriceUpdate = (item) => {
+                                if (!item.priceHistory || !Array.isArray(item.priceHistory) || item.priceHistory.length === 0) {
+                                    return 0;
+                                }
+                                // Get the most recent price update timestamp
+                                const lastEntry = item.priceHistory[item.priceHistory.length - 1];
+                                return lastEntry && lastEntry.timestamp ? lastEntry.timestamp : 0;
+                            };
+                            return getLastPriceUpdate(b) - getLastPriceUpdate(a);
+                        });
+                        break;
+
+                    case 'updated-desc':
+                        // Sort by updated_at from D1 database, most recent first
+                        this.filtered.sort((a, b) => {
+                            const updatedA = a.updated_at || 0;
+                            const updatedB = b.updated_at || 0;
+                            return updatedB - updatedA;
+                        });
+                        break;
+
+                    case 'favorites-desc':
+                        // Sort by most favorited/wishlisted items first (using flikes from API)
+                        this.filtered.sort((a, b) => {
+                            const flikesA = a.flikes || 0;
+                            const flikesB = b.flikes || 0;
+                            return flikesB - flikesA;
+                        });
+                        break;
+                        
+
+                    case 'rarity-desc':
+                        // Sort by rarity percentage: less rare (higher %) to most rare (lower %)
+                        this.filtered.sort((a, b) => {
+                            const rarityA = this.parseRarity(a['price/code/rarity']);
+                            const rarityB = this.parseRarity(b['price/code/rarity']);
+                            
+                            // Items without rarity go to the end
+                            if (rarityA === null && rarityB === null) return 0;
+                            if (rarityA === null) return 1;
+                            if (rarityB === null) return -1;
+                            
+                            // Higher percentage = less rare, so we sort descending
+                            return rarityA - rarityB;
+                        });
+                        break;
+
+                    case 'color-asc':
+                        // Sort by color hue (rainbow order: red -> orange -> yellow -> green -> cyan -> blue -> purple -> pink)
+                        this.filtered.sort((a, b) => {
+                            // Ensure colors are extracted
+                            const colorA = a.color || [128, 128, 128];
+                            const colorB = b.color || [128, 128, 128];
+                            
+                            const hueA = this.rgbToHue(colorA);
+                            const hueB = this.rgbToHue(colorB);
+                            
+                            // Sort by hue (0-360)
+                            return hueA - hueB;
+                        });
+                        break;
+
+                    default:
+                        // Categorical sort: gears first, deaths last
+                        const categoryOrder = {
+                            'gears': 1,
+                            'pets': 2,
+                            'effects': 3,
+                            'titles': 4,
+                            'deaths': 5
+                        };
+                        this.filtered.sort((a, b) => {
+                            const orderA = categoryOrder[a.category] || 999;
+                            const orderB = categoryOrder[b.category] || 999;
+                            if (orderA !== orderB) {
+                                return orderA - orderB;
+                            }
+                            // Within same category, sort by name
+                            return a.name.localeCompare(b.name);
+                        });
+                        break;
+                }
+            }
+
+            loadBatch(requestId) {
+                if (this.loading) return;
+
+                // If no requestId provided, use current one (for manual "Load More" clicks)
+                if (requestId === undefined) {
+                    requestId = this.filterRequestId;
+                }
+
+                const start = this.currentBatch * this.batchSize;
+                const end = start + this.batchSize;
+                const batch = this.filtered.slice(start, end);
+
+                if (batch.length === 0) {
+                    document.getElementById('loadMore').disabled = true;
+                    document.getElementById('loadMore').textContent = 'No more items';
+                    return;
+                }
+
+                this.loading = true;
+                document.getElementById('loadMore').disabled = true;
+                document.getElementById('loadMore').innerHTML = '<div class="loading-spinner"></div>';
+
+                // Render the batch a few cards at a time across animation frames instead of building
+                // all 50 in one blocking task. Each chunk fills a DocumentFragment and appends it once
+                // (one layout per chunk, not per card), keeping every frame short and scroll smooth.
+                const catalog = document.getElementById('catalog');
+                const chunkSize = 12;
+                let i = 0;
+
+                const renderChunk = () => {
+                    // A newer filter/sort was applied mid-batch — abandon this chain. The newer
+                    // loadBatch already owns `this.loading`, so leave the flag untouched here.
+                    if (requestId !== this.filterRequestId) {
+                        return;
+                    }
+
+                    const fragment = document.createDocumentFragment();
+                    const chunkEnd = Math.min(i + chunkSize, batch.length);
+                    for (; i < chunkEnd; i++) {
+                        fragment.appendChild(this.createItemElement(batch[i]));
+                    }
+                    catalog.appendChild(fragment);
+
+                    if (i < batch.length) {
+                        requestAnimationFrame(renderChunk);
+                        return;
+                    }
+
+                    // Batch fully rendered — finalize counts and load-more state.
+                    this.currentBatch++;
+                    this.loading = false;
+
+                    document.getElementById('showing').textContent = this.modal.displayed.length;
+
+                    if (this.modal.displayed.length >= this.filtered.length) {
+                        document.getElementById('loadMore').textContent = 'All items loaded';
+                        document.getElementById('loadMore').disabled = true;
+                    } else {
+                        document.getElementById('loadMore').textContent = 'Load More Items';
+                        document.getElementById('loadMore').disabled = false;
+                        // The observer only fires on intersection *changes*. If the sentinel is
+                        // still within view after this batch (e.g. a tall viewport), keep filling
+                        // until it's pushed below the fold. One cheap rect read per batch, not per
+                        // scroll frame.
+                        if (this.isSentinelNear()) {
+                            this.loadBatch();
+                        }
+                    }
+                };
+
+                requestAnimationFrame(renderChunk);
+            }
+
+            isSentinelNear() {
+                const el = document.querySelector('.load-more');
+                if (!el) return false;
+                return el.getBoundingClientRect().top <= window.innerHeight + 300;
+            }
+
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.catalog = new Catalog();
+        });

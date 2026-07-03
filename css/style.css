@@ -514,10 +514,10 @@ img {
 }
 
 .category-btn.active {
-    background: linear-gradient(135deg, var(--accent), var(--accent));
-    border-color: var(--accent);
-    color: white;
-    box-shadow: 0 4px 15px rgba(74, 158, 255, 0.3);
+    background: var(--bg-3);
+    border-color: var(--border-2);
+    color: var(--text-1);
+    box-shadow: inset 0 0 0 1px var(--border-2);
 }
 
 /* Main Content */
@@ -1989,8 +1989,7 @@ textarea {
     }
 
     50% {
-        box-shadow: 0 25px 50px var(--shadow-color),
-            0 0 30px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 25px 50px var(--shadow-color);
     }
 }
 
@@ -2312,11 +2311,12 @@ textarea {
 }
 
 .dropdown-item.selected {
-    background: #2d70c3ba;
+    background: var(--bg-3);
+    box-shadow: inset 0 0 0 1px var(--border-2);
 }
 
 .dropdown-item.selected:hover {
-    background: #1e5faaa8
+    background: var(--bg-3);
 }
 
 .dropdown-item.disabled {

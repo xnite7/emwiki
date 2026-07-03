@@ -158,35 +158,8 @@
     position: relative;
 }
 
-.chest-item[data-data=halloweenchest]>img:first-child,
-.chest-item[data-data=premiumchest]>img:first-child {
-    animation: 2s rainbow-chest infinite linear;
-}
-
-@keyframes rainbow-chest {
-    from {
-        filter: hue-rotate(0deg);
-    }
-
-    to {
-        filter: hue-rotate(360deg);
-    }
-}
-
 #kypsus strong {
-    animation: 4s rainbow infinite ease;
-    color: rgb(202, 202, 0);
-}
-
-@keyframes rainbow {
-    0%, 100% {
-        filter: hue-rotate(260deg);
-    }
-
-    50% {
-        filter: hue-rotate(150deg);
-    }
-
+    color: var(--gold);
 }
 
 .chest-item:hover {
@@ -203,7 +176,7 @@
     position: absolute;
     right: 10px;
     bottom: 10px;
-    color: #24ff5a;
+    color: var(--success);
     font-weight: bold;
 }
 
