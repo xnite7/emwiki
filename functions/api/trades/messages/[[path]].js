@@ -186,13 +186,17 @@ async function handlePost(request, env, path, user) {
                 return errorResponse('Listing not found', 404);
             }
 
-            // Check if user is listing owner or has made an offer
+            // A listing conversation is between the owner and an interested trader.
+            // Valid if: the sender owns the listing (replying to an interested party),
+            // the sender is messaging the owner (asking about the listing before
+            // offering), or either side already has an offer on it.
             const isListingOwner = listing.user_id === user.user_id;
+            const messagingOwner = to_user_id === listing.user_id;
             const hasOffer = await env.DBA.prepare(
                 'SELECT id FROM trade_offers WHERE listing_id = ? AND (from_user_id = ? OR to_user_id = ?)'
             ).bind(listing_id, user.user_id, user.user_id).first();
 
-            if (!isListingOwner && !hasOffer) {
+            if (!isListingOwner && !messagingOwner && !hasOffer) {
                 return errorResponse('You are not involved in this listing', 403);
             }
         }

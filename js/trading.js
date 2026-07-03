@@ -1140,11 +1140,13 @@ class TradingHub {
 
         body.innerHTML = `
             <div class="detail-header">
-                <img class="detail-avatar" src="${trade.user?.avatar_url || './imgs/placeholder.png'}" alt="${this.esc(trade.user?.username || 'Unknown')}" onerror="this.src='./imgs/placeholder.png'">
-                <div>
-                    <div class="detail-trader-name">${this.esc(trade.user?.username || 'Unknown')}</div>
-                    <div class="detail-trader-stats">${stars} - ${trade.user?.total_trades || 0} trades</div>
-                </div>
+                <a class="detail-trader-link" href="/profile/${trade.user_id}" title="View ${this.esc(trade.user?.username || 'trader')}'s profile">
+                    <img class="detail-avatar" src="${trade.user?.avatar_url || './imgs/placeholder.png'}" alt="${this.esc(trade.user?.username || 'Unknown')}" onerror="this.src='./imgs/placeholder.png'">
+                    <div>
+                        <div class="detail-trader-name">${this.esc(trade.user?.username || 'Unknown')}</div>
+                        <div class="detail-trader-stats">${stars} - ${trade.user?.total_trades || 0} trades</div>
+                    </div>
+                </a>
             </div>
             <div class="detail-body">
                 ${trade.description ? `<div class="detail-description">${this.esc(trade.description)}</div>` : ''}

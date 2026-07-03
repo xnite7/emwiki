@@ -236,6 +236,9 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 0.875rem;
+    /* each card sizes to its own content — a long trade no longer stretches
+       every other card in its row to match */
+    align-items: start;
 }
 
 /* ---------- Trade Card ---------- */
@@ -681,6 +684,7 @@ content: '';
     display: grid;
     grid-template-columns: 1fr;
     gap: 0.875rem;
+    align-items: start;
 }
 
 /* ========== CREATE TRADE (board-based) ========== */
@@ -1447,6 +1451,36 @@ content: '';
     padding: 1.25rem;
     padding-right: 3.5rem;
     border-bottom: 1px solid var(--border-color);
+}
+
+/* Avatar + name link through to the trader's profile page */
+.detail-trader-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    color: inherit;
+    text-decoration: none;
+    margin: -0.35rem -0.5rem;
+    padding: 0.35rem 0.5rem;
+    border-radius: 10px;
+    transition: background 0.15s;
+}
+
+.detail-trader-link:hover {
+    background: var(--bg-item-hover);
+}
+
+.detail-trader-link:hover .detail-trader-name {
+    text-decoration: underline;
+}
+
+.detail-trader-link:hover .detail-avatar {
+    border-color: var(--text-secondary);
+}
+
+.detail-avatar {
+    transition: border-color 0.15s;
 }
 
 .detail-avatar {
