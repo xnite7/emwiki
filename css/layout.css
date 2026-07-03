@@ -6,7 +6,14 @@
 /* Header */
 
 
-
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
 
 /* ── Header: centered logo with the nav row stacked beneath it ── */
 header {
@@ -19,7 +26,7 @@ header {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: var(--space-1);
+    gap: var(--space-3);
     box-shadow: var(--shadow-1);
     min-height: 72px;
 }
@@ -73,8 +80,9 @@ svg:hover #cloud {
 }
 
 .nav-link {
-    font-weight: 600;
-    padding: 8px 16px;
+    font-family: 'BuilderSans';
+    font-weight: 500;
+    padding: 8px 16px 7px;
     border-radius: var(--radius-md);
     transition: background var(--dur-2) var(--ease-out-quart), color var(--dur-2) var(--ease-out-quart);
     text-decoration: none;
@@ -110,9 +118,10 @@ svg:hover #cloud {
 /* ── Mobile dock (tab bar) ── */
 .dock {
     position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    left: 7px;
+        right: 7px;
+            border-radius: 20px;
+        bottom: 9px;
     z-index: var(--z-dock);
     display: none;
     background: light-dark(rgb(255 255 255 / .88), rgb(21 26 33 / .88));

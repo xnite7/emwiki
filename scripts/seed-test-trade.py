@@ -132,6 +132,7 @@ offering = [
 seeking = [
     {"type": "game-item", "item_name": "8-Bit Fairy", "item_image": CDN + "747eca04-18ef-4ff9-0ae7-98662116bc00/public", "category": "pets"},
     {"type": "robux", "amount": 500},
+    {"type":"game-item","item_name":"Ethereal","item_image":null,"category":"titles"},
 ]
 
 cur.execute("DELETE FROM trade_listings WHERE user_id = ? AND title LIKE '[TEST]%'", (USER_ID,))

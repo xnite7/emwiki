@@ -18,18 +18,16 @@ const DOCK_ICONS = {
 const Layout = {
   navItems: [
     { href: '/catalog', label: 'Catalog', key: 'catalog' },
-    // Trading Hub isn't launched yet — shown but inert (see .nav-link-soon)
-    { href: '/trading', label: 'Trading Hub', key: 'trading', soon: true },
+    { href: '/trading', label: 'Trade', key: 'trading', new: true},
     { href: '/forum', label: 'Forum', key: 'forum' },
     { href: '/gallery', label: 'Gallery', key: 'gallery' },
     { href: '/scammers', label: 'Scammers', key: 'scammers' }
   ],
 
-  // Mobile dock: 5 tabs + More (Gallery/Scammers/Game Nights live in the sheet)
   dockItems: [
     { href: '/', label: 'Home', key: 'home', icon: 'home' },
     { href: '/catalog', label: 'Catalog', key: 'catalog', icon: 'catalog' },
-    { href: '/trading', label: 'Trading', key: 'trading', icon: 'trading' },
+    { href: '/trading', label: 'Trade', key: 'trading', icon: 'trading' },
     { href: '/forum', label: 'Forum', key: 'forum', icon: 'forum' },
     { href: '/profile', label: 'Profile', key: 'profile', icon: 'profile' },
   ],

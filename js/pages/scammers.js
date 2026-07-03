@@ -408,7 +408,7 @@
         let html = `
             <div class="thread-header">
                 <h2>⁕⁖ Evidence of Scamming</h2>
-                <button class="thread-close" onclick="closeThreadModal()">×</button>
+                <button class="close-btn" onclick="closeThreadModal()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
             </div>
             <div class="thread-info">
                 <p><strong>Evidence Against:</strong> <a href="/scammers?userId=${userId}" target="_blank">${robloxUser}</a></p>

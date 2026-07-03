@@ -175,34 +175,52 @@ export function addItemBadges(element, item) {
 }
 
 /**
+ * Visual for a trade/offer item: its image when it has one, otherwise the
+ * catalog SVG (titles are pure SVG text — without this they'd all show the
+ * placeholder), and the placeholder only as a last resort.
+ * Returns an HTML string; `className` mirrors whatever the <img> in that
+ * context would carry so existing sizing rules apply.
+ */
+export function itemVisualHTML(imgSrc, svg, name, className = '') {
+    const esc = Utils.escapeHtml;
+    if (imgSrc) {
+        return `<img class="${className}" src="${imgSrc}" alt="${esc(name)}" onerror="this.src='./imgs/placeholder.png'">`;
+    }
+    if (svg) {
+        return `<span class="${className} item-svg-thumb" role="img" aria-label="${esc(name)}">${svg}</span>`;
+    }
+    return `<img class="${className}" src="./imgs/placeholder.png" alt="${esc(name)}">`;
+}
+
+/**
  * Compact line-item markup for trade/offer cards (returns an HTML string —
  * trading.js composes cards from template literals). Handles the three trade
  * item shapes: catalog item, Robux amount, other-game item.
  * variant 'card' (default) → .trade-item in card lists;
  * variant 'detail'         → .detail-item in the trade detail modal.
+ * opts.svg — catalog SVG markup for imageless items (titles).
  */
-export function tradeItemHTML(item, { variant = 'card' } = {}) {
+export function tradeItemHTML(item, { variant = 'card', svg = null } = {}) {
     const esc = Utils.escapeHtml;
     const qty = item.qty && item.qty > 1 ? `<span class="item-qty-badge">×${item.qty}</span>` : '';
 
     if (item.type === 'robux') {
-        return `<div class="trade-item-robux">R$ ${item.amount}${qty}</div>`;
+        return `<div class="trade-item-robux">${item.amount}${qty}</div>`;
     }
     if (item.type === 'other-game') {
         return `<div class="trade-item-other">${esc(item.game_name)}: ${esc(item.item_name)}${qty}</div>`;
     }
-    const img = item.item_image || './imgs/placeholder.png';
     if (variant === 'detail') {
         return `
             <div class="detail-item">
-                <img src="${img}" alt="${esc(item.item_name)}" onerror="this.src='./imgs/placeholder.png'">
+                ${itemVisualHTML(item.item_image, svg, item.item_name)}
                 <span>${esc(item.item_name)}${qty}</span>
             </div>
         `;
     }
     return `
         <div class="trade-item">
-            <img class="trade-item-img" src="${img}" alt="${esc(item.item_name)}" onerror="this.src='./imgs/placeholder.png'">
+            ${itemVisualHTML(item.item_image, svg, item.item_name, 'trade-item-img')}
             <span class="trade-item-name">${esc(item.item_name)}${qty}</span>
         </div>
     `;

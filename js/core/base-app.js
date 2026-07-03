@@ -132,10 +132,10 @@ class BaseApp {
                 <div class="stats-content">
                     <div class="stats-header">
                         <h1>My Lists</h1>
-                        <h2 class="close-stats" onclick="catalog.closeStats()">×</h2>
+                        <btn class="close-btn" onclick="catalog.closeStats()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></btn>
                     </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 0px 10px 7px;">
-                            <h3 style="margin: 0; font-size: 23px; font-variant: all-petite-caps; cursor: pointer;"
+                            <h3
                                 id="wishlist-tab" class="active" onclick="catalog.switchListMode('wishlist')">
                                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
                                     style="width:26px;margin-bottom:-7px;">
@@ -145,7 +145,7 @@ class BaseApp {
                                         d="M19 3H5c-.6 0-1 .4-1 1s.4 1 1 1v14.1c0 .7.4 1.4 1.1 1.8.3.2.6.2.9.2.4 0 .8-.1 1.1-.3l3.9-2.6 3.9 2.6c.6.4 1.4.5 2.1.1.7-.3 1.1-1 1.1-1.8V5c.6 0 1-.4 1-1s-.5-1-1.1-1m-2 16.1-3.9-2.6c-.3-.2-.7-.3-1.1-.3s-.8.1-1.1.3L7 19.1V5h10z" />
                                 </svg> Wishlist
                             </h3>
-                            <h3 style="margin: 0; font-size: 23px; font-variant: all-petite-caps; cursor: pointer; opacity: 0.5;"
+                            <h3
                                 id="favorites-tab" onclick="catalog.switchListMode('favorites')">
                                 <svg viewBox="0 0 16 16" style="width:21px;margin-bottom:-4px;"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -173,7 +173,7 @@ class BaseApp {
                             <svg fill="currentColor" width="17px" height="17px"  viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg"><path d="M8.293 2.293a1 1 0 0 1 1.414 0l4.5 4.5a1 1 0 0 1 0 1.414l-4.5 4.5a1 1 0 0 1-1.414-1.414L11 8.5H1.5a1 1 0 0 1 0-2H11L8.293 3.707a1 1 0 0 1 0-1.414"/></svg> View All</button>
 
                     <div class="recent-section">
-                        <h3 style="margin-bottom: 15px;font-size: 23px;font-variant: all-petite-caps;"><svg stroke="#fff"
+                        <h3><svg stroke="#fff"
                                 viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="width:23px;margin-bottom:-6px;">
                                 <path d="M20.59 22 15 16.41V7h2v8.58l5 5.01z"></path>
                                 <path d="M16 2A13.94 13.94 0 0 0 6 6.23V2H4v8h8V8H7.08A12 12 0 1 1 4 16H2A14 14 0 1 0 16 2">

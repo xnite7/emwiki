@@ -12,7 +12,7 @@
 @import url("../css/fonts.css");
 @import url("../css/tokens.css") layer(tokens);
 @import url("../css/base.css") layer(base);
-@import url("../css/layout.css?v=2") layer(layout);
+@import url("../css/layout.css?v=3") layer(layout);
 /* components.css stays unlayered on purpose: it must beat legacy page CSS
    (also unlayered) via specificity until those files are migrated. */
 @import url("../css/components.css");
@@ -22,14 +22,7 @@
 @import url("../css/modal.css");
 @import url("../css/chests.css");
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    user-select: none;
-}
+
 
 /* Smooth scroll behavior */
 html {
@@ -189,7 +182,7 @@ img {
 
 /* Hero Section - MORE VIBRANT */
 .hero-section, footer {
-    background: var(--bg-secondary);
+    background: var(--bg-0);
         padding: 34px 20px;
         text-align: center;
         position: relative;
@@ -455,18 +448,20 @@ img {
 
 /* Stats Dashboard Button */
 .stats-btn {
-    padding: 10px 20px;
-    background: linear-gradient(180deg, #66b3ea, #487aa5);
-    border: 1px solid var(--border-color);
-    border-radius: 25px;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-weight: 600;
+    font: 100 16px pacifico;
+        padding: 10px 20px;
+        background: linear-gradient(180deg, #b6d9f1, #39a0e9, #3373ab);
+        border: 1px solid var(--border-color);
+        border-radius: 25px;
+        color: white;
+        cursor: pointer;
+        line-height: 1;
+        transition: all 0.3s;
 }
 
 .stats-btn:hover {
     transform: translateY(-2px);
+    background: linear-gradient(180deg, #b6d9f1, #48a7eb, #4788c2);
     box-shadow: 0 0px 15px rgb(102 126 234);
 }
 
@@ -480,7 +475,6 @@ img {
 /* Category Nav - COMPACT */
 .category-nav-container {
     padding: 15px 20px;
-    background: var(--bg-secondary);
     border-bottom: 1px solid var(--border-color);
     position: sticky;
     top: 0;
@@ -533,7 +527,7 @@ main {
     max-width: 1400px;
     box-shadow: 0 4px 20px var(--shadow-color);
     border-bottom: 2px solid var(--border-color);
-    background: var(--bg-secondary);
+    background: var(--bg-1);
     margin: 0 auto;
 }
 
@@ -557,7 +551,8 @@ main {
 }
 
 .section-title {
-    font-weight: 800;
+    font-family: 'Slapstick';
+    font-weight: 500;
 }
 
 .content-section:nth-of-type(3) .section-header .section-title::before {
@@ -588,9 +583,8 @@ main {
     width: 32px;
     height: 32px;
     position: relative;
-    translate: 0 6px;
+    translate: 0 9px;
     display: inline-block;
-    background-size: contain;
 }
 
 .patch-notes-card .card-title::before {
@@ -979,9 +973,10 @@ main {
 }
 
 div#random-items-grid {
-    zoom: 1.5;
+zoom: 1.3;
     margin: auto;
     overflow: inherit;
+    padding: 0px 10px 13px;
 }
 
 
@@ -996,7 +991,7 @@ div#random-items-grid {
 }
 
 .info-card {
-    background: var(--bg-secondary);
+    background: var(--bg-0);
     border: 2px solid var(--border-color);
     border-radius: 15px;
     flex: 1 1 322px;
@@ -1032,8 +1027,9 @@ div#random-items-grid {
 }
 
 .card-title {
-    font-weight: 800;
-    margin-bottom: 18px;
+line-height: 2;
+    font-size: 21px;
+    font-family: 'Slapstick';
     text-box-trim: trim-start;
 }
 
@@ -1916,7 +1912,6 @@ input,
 select,
 textarea {
     -webkit-tap-highlight-color: transparent;
-    color: CanvasText;
 }
 
 .carousel-nav {
@@ -2211,7 +2206,7 @@ textarea {
     z-index: 100;
     /* Opaque background, so no backdrop-filter needed. Dropping the blur avoids a
        full-bar repaint on every scroll frame (a key mobile jank source). */
-    background: var(--bg-secondary);
+    background: var(--bg-1);
     padding: 20px;
     border-bottom: 1px solid var(--border-color);
 }
@@ -2754,7 +2749,7 @@ textarea {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: var(--bg-secondary);
+    background: var(--bg-0);
     border: 2px solid var(--border-color);
     border-radius: 10px;
     overflow-y: auto;
@@ -3051,7 +3046,7 @@ textarea {
 }
 
 .stats-content {
-    background: var(--bg-secondary);
+    background: var(--bg-1);
     border-radius: 20px;
     padding: 20px 30px;
     border: 1px solid var(--border-color);
@@ -3101,9 +3096,31 @@ textarea {
 }
 
 .stats-header h1 {
-    letter-spacing: 2px;
+letter-spacing: 2px;
     font-family: pacifico;
     margin: 0;
+    text-shadow: 0px 0px 2px #858585;
+    color: var(--accent-soft);
+}
+
+.close-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--bg-item);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.close-btn:hover {
+    background: var(--bg-item-hover);
+    color: CanvasText;
 }
 
 .close-stats {
@@ -3125,6 +3142,10 @@ textarea {
 #favorites-tab {
     transition: opacity 0.3s ease, letter-spacing 0.37s cubic-bezier(.47, 1.64, .41, .8);
     opacity: 0.5;
+        font-size: 22px;
+            font-family: 'Slapstick';
+            margin: 0;
+                cursor: pointer;
 }
 
 #wishlist-tab:hover,
@@ -3148,6 +3169,8 @@ textarea {
 
 
 .wishlist-section {
+    margin-top: 6px;
+    background: var(--bg-0);
     border: 3px solid var(--border-color);
     border-radius: 8px;
     padding: 10px 0px 0px;
@@ -3217,10 +3240,17 @@ textarea {
     display: none;
 }
 
+.recent-section h3{
+        margin-bottom: 15px;
+            font-size: 21px;
+            color: #cdcdcd;
+            font-family: 'Slapstick';
+}
+
 .wishlist-total {
     font-variant: all-petite-caps;
     color: var(--text-secondary);
-    background: linear-gradient(transparent, var(--bg-secondary) 16px, Canvas);
+    background: linear-gradient(transparent, var(--bg-0) 16px, Canvas);
     padding: 26px 15px 14px 15px;
     text-align: center;
     position: sticky;
@@ -3432,11 +3462,18 @@ header svg * {
         position: unset;
     }
 
+    /* keep the account button pinned top-right (out of flow) so it can't shove
+       the centered logo; icon-only here to stay clear of the logo on phones */
     #auth-button {
-        position: unset;
-        top: unset;
-        right: unset;
-        left: unset;
+        position: absolute;
+        top: 50%;
+        right: var(--space-4);
+        left: auto;
+        transform: translateY(-50%);
+    }
+
+    #auth-button span {
+        display: none;
     }
 }
 

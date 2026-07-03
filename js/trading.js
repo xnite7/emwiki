@@ -125,9 +125,19 @@ class TradingHub {
             });
 
             await Promise.all(categoryPromises);
+
+            // Name → catalog item lookup, used to recover the SVG artwork for
+            // imageless items (titles) stored in trades as just a name + null image.
+            this.itemsByName = new Map(this.allItems.map(i => [i.name.toLowerCase(), i]));
         } catch (error) {
             console.error('Failed to load items:', error);
         }
+    }
+
+    // Catalog SVG for an item name (titles have no image, only SVG text art).
+    svgFor(name) {
+        if (!name || !this.itemsByName) return null;
+        return this.itemsByName.get(String(name).toLowerCase())?.svg || null;
     }
 
     async loadTrades() {
@@ -469,6 +479,9 @@ class TradingHub {
     // Per-demand-point value adjustment around "Good" (3) as neutral.
     static CALC_DEMAND_STEP = 0.12;
 
+    // Max item chips shown per side on a feed card before collapsing to "+N".
+    static CARD_MAX_ITEMS = 8;
+
     setupCalculator() {
         ['your', 'their'].forEach(side => {
             const input = document.querySelector(`.calc-search-input[data-side-search="${side}"]`);
@@ -542,7 +555,7 @@ class TradingHub {
             const el = document.createElement('div');
             el.className = 'search-result';
             el.innerHTML = `
-                <img src="${item.img || './imgs/placeholder.png'}" alt="${this.esc(item.name)}" onerror="this.src='./imgs/placeholder.png'">
+                ${window.ItemCard.itemVisualHTML(item.img, item.svg, item.name)}
                 <div>
                     <div class="search-result-name">${this.esc(item.name)}</div>
                     <div class="search-result-category">${this.esc(item.category || '')} · ${valLabel}</div>
@@ -687,7 +700,7 @@ class TradingHub {
                 const valLabel = noValue ? 'no value' : this.formatValue(v);
                 return `
                 <div class="calc-item${noValue ? ' calc-item-novalue' : ''}" data-idx="${idx}">
-                    <img src="${item.img || './imgs/placeholder.png'}" alt="${this.esc(item.name)}" onerror="this.src='./imgs/placeholder.png'">
+                    ${window.ItemCard.itemVisualHTML(item.img, item.svg || this.svgFor(item.name), item.name)}
                     <div class="calc-item-info">
                         <div class="calc-item-name">${this.esc(item.name)}</div>
                         <div class="calc-item-val">${valLabel}</div>
@@ -820,17 +833,17 @@ class TradingHub {
                 <div class="trade-side offering">
                     <div class="trade-side-label">Offering</div>
                     <div class="trade-items-list">
-                        ${trade.offering_items.map(i => this.renderTradeItem(i)).join('')}
+                        ${this.renderTradeItems(trade.offering_items)}
                     </div>
                 </div>
-                <div class="trade-swap-icon">
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M0,11h11.2l-2.6,2.6L10,15l6-6H0V11z M4.8,5l2.6-2.6L6,1L0,7h16V5H4.8z"></path></svg>
+                <div class="trade-swap-divider">
+                    <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M0,11h11.2l-2.6,2.6L10,15l6-6H0V11z M4.8,5l2.6-2.6L6,1L0,7h16V5H4.8z"></path></svg>
                 </div>
                 <div class="trade-side seeking">
                     <div class="trade-side-label">Looking For</div>
                     <div class="trade-items-list">
                         ${trade.seeking_items && trade.seeking_items.length > 0
-                            ? trade.seeking_items.map(i => this.renderTradeItem(i)).join('')
+                            ? this.renderTradeItems(trade.seeking_items)
                             : '<span class="trade-open-offers">Open to offers</span>'
                         }
                     </div>
@@ -855,7 +868,18 @@ class TradingHub {
 
     // Small "×N" badge for stacked items (only shown when qty > 1).
     renderTradeItem(item) {
-        return window.ItemCard.tradeItemHTML(item);
+        return window.ItemCard.tradeItemHTML(item, { svg: this.svgFor(item.item_name) });
+    }
+
+    // Item chips for a trade card side, capped so one huge trade can't stretch
+    // every card in the row; the remainder collapses into a "+N" chip
+    // (View Details shows the full list).
+    renderTradeItems(items, max = TradingHub.CARD_MAX_ITEMS) {
+        if (!items || items.length === 0) return '';
+        const shown = items.slice(0, max);
+        const hidden = items.length - shown.length;
+        return shown.map(i => this.renderTradeItem(i)).join('')
+            + (hidden > 0 ? `<div class="trade-item-more" title="${hidden} more item${hidden !== 1 ? 's' : ''}">+${hidden}</div>` : '');
     }
 
     // ==================== MY TRADES ====================
@@ -1171,7 +1195,7 @@ class TradingHub {
     }
 
     renderDetailItem(item) {
-        return window.ItemCard.tradeItemHTML(item, { variant: 'detail' });
+        return window.ItemCard.tradeItemHTML(item, { variant: 'detail', svg: this.svgFor(item.item_name) });
     }
 
     closeDetailModal() {
@@ -1283,7 +1307,7 @@ class TradingHub {
             const el = document.createElement('div');
             el.className = 'search-result';
             el.innerHTML = `
-                <img src="${item.img || './imgs/placeholder.png'}" alt="${this.esc(item.name)}" onerror="this.src='./imgs/placeholder.png'">
+                ${window.ItemCard.itemVisualHTML(item.img, item.svg, item.name)}
                 <div>
                     <div class="search-result-name">${this.esc(item.name)}</div>
                     <div class="search-result-category">${this.esc(item.category || '')}</div>
@@ -1354,7 +1378,7 @@ class TradingHub {
                 `;
             } else {
                 el.innerHTML = `
-                    <img src="${item.item_image || './imgs/placeholder.png'}" alt="${this.esc(item.item_name)}" onerror="this.src='./imgs/placeholder.png'">
+                    ${window.ItemCard.itemVisualHTML(item.item_image, this.svgFor(item.item_name), item.item_name)}
                     <span class="selected-item-name">${this.esc(item.item_name)}</span>
                     <button class="selected-item-remove" type="button" title="Remove">&times;</button>
                 `;

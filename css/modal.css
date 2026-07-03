@@ -526,6 +526,13 @@ body:has(.item-modal.active) {
     height: auto;
     overflow: visible;
 }
+.close-btn svg {
+    display: unset;
+    filter: drop-shadow(0px 4px 11px #00000040);
+    width: 85%;
+    height: auto;
+    overflow: visible;
+}
 
 .demand-stars {
     display: flex;

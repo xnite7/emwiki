@@ -15,9 +15,9 @@
     color-scheme: dark;
 
     /* ── Surfaces ── */
-    --bg-0: light-dark(#f4f5f7, #0e1116);
-    --bg-1: light-dark(#ffffff, #151a21);
-    --bg-2: light-dark(#eef0f3, #1c222c);
+    --bg-0: light-dark(#f4f5f7, #171717);
+    --bg-1: light-dark(#ffffff, #212121);
+    --bg-2: light-dark(#eef0f3, #3a3a3a);
     --bg-3: light-dark(#e4e7ec, #242b37);
 
     /* ── Text ── */
@@ -101,7 +101,7 @@
     /* ================= LEGACY ALIASES (do not use in new code) ============
        Old token names re-pointed at the new palette so unmigrated CSS picks
        up the redesign automatically. Removed once all pages are migrated. */
-    --bg-secondary: var(--bg-1);
+    --bg-secondary: var(--bg-2);
     --bg-item: light-dark(rgb(26 31 38 / .06), rgb(255 255 255 / .05));
     --bg-item-hover: light-dark(rgb(26 31 38 / .11), rgb(255 255 255 / .09));
     --bg-hover: var(--bg-item-hover);

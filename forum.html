@@ -18,8 +18,8 @@
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-		<link rel="stylesheet" href="/css/style.css?v=2.0.0">
-	<link rel="stylesheet" href="/css/modal.css?v=2.0.0">
+	<link rel="stylesheet" href="/css/style.css?v=2.2.2">
+	<link rel="stylesheet" href="/css/modal.css?v=2.2.2">
 
 
 	<style>
@@ -35,7 +35,7 @@
 			padding: 24px 32px 60px;
 
 			box-shadow: 0 4px 20px var(--shadow-color);
-			background: var(--bg-secondary);
+			background: var(--bg-1);
 		}
 
 		/* ── Toolbar ── */
@@ -1209,25 +1209,7 @@ display: flex;
 			color: var(--text-primary);
 		}
 
-		.modal-close-btn {
-			width: 34px;
-			height: 34px;
-			border: none;
-			background: var(--bg-item-hover);
-			border-radius: 10px;
-			cursor: pointer;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			font-size: 20px;
-			color: var(--text-secondary);
-			transition: all 0.2s;
-		}
 
-		.modal-close-btn:hover {
-			background: #f44336;
-			color: white;
-		}
 
 		.form-group {
 			margin-bottom: 18px;
@@ -2023,7 +2005,7 @@ display: flex;
 		<div class="forum-modal-body">
 			<div class="modal-head">
 				<h2 id="post-modal-title">New Post</h2>
-				<button class="modal-close-btn" id="close-post-modal">&times;</button>
+				<button class="close-btn" id="close-post-modal">&times;</button>
 			</div>
 			<form id="post-form">
 				<div class="form-group">
@@ -2122,7 +2104,7 @@ display: flex;
 		<div class="forum-modal-body" style="max-width:520px">
 			<div class="modal-head">
 				<h2>Attach Items</h2>
-				<button class="modal-close-btn" id="close-item-attach-modal">&times;</button>
+				<button class="close-btn" id="close-item-attach-modal">&times;</button>
 			</div>
 			<input type="text" class="item-attach-search" id="item-attach-search" placeholder="Search items..."
 				autocomplete="off">
