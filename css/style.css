@@ -227,7 +227,7 @@ img {
     font-size: 64px;
     -webkit-text-stroke: 2px #000;
     font-family: var(--font-display);
-    background: linear-gradient(360deg, #ffe84a 10%, #24ff5a 100%);
+    background: linear-gradient(360deg, #d9c766 10%, #74bd8e 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
