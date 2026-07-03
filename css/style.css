@@ -256,11 +256,12 @@ img {
 }
 
 .hero-catalogue {
-    font-family: 'Merriweather';
+    font-family: var(--font-display);
     color: #ffffff;
     margin-bottom: 17px;
     font-weight: 200;
-    font-size: 33px;
+    font-size: 30px;
+    letter-spacing: 1px;
     text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, -2px 0px 0px #000, 2px 0px 0px #000, 0px -2px 0px #000, 0px 2px 0px #000;
 }
 
@@ -763,23 +764,23 @@ main {
 }
 
 .item#gear {
-    background: #5bfe6a;
+    background: #57ab7e;
 }
 
 .item#death {
-    background: #ff7a5e;
+    background: #c96a56;
 }
 
 .item#effect {
-    background: #ffb135;
+    background: #d9a55c;
 }
 
 .item#title {
-    background: #c960fe;
+    background: #a06cc9;
 }
 
 .item#pet {
-    background: #377afa;
+    background: #5c96d6;
 }
 
 .lists-grid {
