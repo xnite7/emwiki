@@ -193,6 +193,7 @@ body:has(.item-modal.active) {
 }
 
 .modal-price {
+    flex-wrap: wrap;
     display: flex;
     align-items: center;
     white-space: nowrap;
