@@ -4063,3 +4063,46 @@ body.dragging-panel {
     color: var(--font);
     font-weight: 600;
 }
+
+/* ── Admin form utilities (replacing repeated inline styles) ── */
+.af-label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.af-input {
+    width: 100%;
+    padding: 9px;
+    border: 1px solid var(--ghost);
+    border-radius: var(--radius-sm);
+    background: var(--shade);
+    color: var(--font);
+    box-sizing: border-box;
+}
+
+.af-flex1 { flex: 1; }
+
+.af-row {
+    display: flex;
+    gap: 12px;
+}
+
+.af-btn-xs {
+    padding: 4px 8px;
+    font-size: 11px;
+}
+
+.af-hint {
+    font-size: 12px;
+    color: var(--text-2);
+}
+
+.af-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--muted);
+}

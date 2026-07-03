@@ -109,11 +109,11 @@
 
             <!-- Import/Export section -->
             <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                <button id="import-json" class="small-btn ghost" style="flex: 1;">
+                <button id="import-json" class="small-btn ghost af-flex1" >
                     <span class="icon upload-icon"></span>
                     Import JSON
                 </button>
-                <button id="download-json" class="small-btn ghost" style="flex: 1;">
+                <button id="download-json" class="small-btn ghost af-flex1" >
                     <span class="icon download-icon"></span>
                     Export JSON
                 </button>
@@ -216,7 +216,7 @@
                                 type="text"
                                 id="demand-search-input"
                                 placeholder="Search items by name..."
-                                style="flex: 1; padding: 10px; border: 1px solid #6363637d; border-radius: 6px; background: #63636347; color: white;">
+                                class="af-input af-flex1">
                             <select
                                 id="demand-category-filter"
                                 style="padding: 10px; border: 1px solid #6363637d; border-radius: 6px; background: #63636347; color: white; cursor: pointer;">
@@ -232,11 +232,11 @@
                         <!-- Review Filters -->
                         <div style="background: #2a2a2a; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
                             <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #999;">
+                                <label class="af-check">
                                     <input type="checkbox" id="show-no-rating" checked style="cursor: pointer;">
                                     No Rating (0)
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #999;">
+                                <label class="af-check">
                                     <input type="checkbox" id="show-old-rating" checked style="cursor: pointer;">
                                     Old Ratings (30+ days)
                                 </label>
@@ -296,31 +296,31 @@
                 <div style="background:#1e1e2e;border:1px solid #6363637d;border-radius:12px;width:min(520px,95vw);max-height:90vh;overflow-y:auto;padding:28px">
                     <h2 id="chest-editor-title" style="margin:0 0 20px;font-size:18px">Add Chest</h2>
                     <div style="display:flex;flex-direction:column;gap:14px">
-                        <div style="display:flex;gap:12px">
-                            <div style="flex:1">
-                                <label style="display:block;margin-bottom:4px;font-size:12px;color:#999">ID (slug)</label>
-                                <input id="chest-ed-id" type="text" placeholder="e.g. luckychest" style="width:100%;padding:9px;border:1px solid #6363637d;border-radius:6px;background:#63636347;color:white;box-sizing:border-box">
+                        <div class="af-row">
+                            <div class="af-flex1">
+                                <label class="af-label">ID (slug)</label>
+                                <input id="chest-ed-id" type="text" placeholder="e.g. luckychest" class="af-input">
                             </div>
-                            <div style="flex:1">
-                                <label style="display:block;margin-bottom:4px;font-size:12px;color:#999">Display Name</label>
-                                <input id="chest-ed-name" type="text" placeholder="e.g. Lucky Chest" style="width:100%;padding:9px;border:1px solid #6363637d;border-radius:6px;background:#63636347;color:white;box-sizing:border-box">
+                            <div class="af-flex1">
+                                <label class="af-label">Display Name</label>
+                                <input id="chest-ed-name" type="text" placeholder="e.g. Lucky Chest" class="af-input">
                             </div>
                         </div>
                         <div>
-                            <label style="display:block;margin-bottom:4px;font-size:12px;color:#999">Image URL</label>
+                            <label class="af-label">Image URL</label>
                             <div style="display:flex;gap:8px;align-items:center">
                                 <input id="chest-ed-img" type="text" placeholder="https://emwiki.com/imgs/..." style="flex:1;padding:9px;border:1px solid #6363637d;border-radius:6px;background:#63636347;color:white">
                                 <img id="chest-ed-img-preview" src="" alt="" style="width:40px;height:40px;border-radius:6px;object-fit:contain;background:#63636347;display:none">
                             </div>
                         </div>
                         <div>
-                            <label style="display:block;margin-bottom:4px;font-size:12px;color:#999">From Keywords <span style="color:#666">(comma-separated, matched against item "from" field)</span></label>
-                            <input id="chest-ed-keywords" type="text" placeholder="e.g. lucky chest" style="width:100%;padding:9px;border:1px solid #6363637d;border-radius:6px;background:#63636347;color:white;box-sizing:border-box">
+                            <label class="af-label">From Keywords <span style="color:#666">(comma-separated, matched against item "from" field)</span></label>
+                            <input id="chest-ed-keywords" type="text" placeholder="e.g. lucky chest" class="af-input">
                         </div>
-                        <div style="display:flex;gap:12px">
-                            <div style="flex:1">
-                                <label style="display:block;margin-bottom:4px;font-size:12px;color:#999">Meta Type</label>
-                                <select id="chest-ed-metatype" style="width:100%;padding:9px;border:1px solid #6363637d;border-radius:6px;background:#63636347;color:white;box-sizing:border-box">
+                        <div class="af-row">
+                            <div class="af-flex1">
+                                <label class="af-label">Meta Type</label>
+                                <select id="chest-ed-metatype" class="af-input">
                                     <option value="text">Text</option>
                                     <option value="timer">Timer</option>
                                     <option value="coins">Coins</option>
@@ -328,25 +328,25 @@
                                     <option value="custom">Custom Icon</option>
                                 </select>
                             </div>
-                            <div style="flex:1">
-                                <label style="display:block;margin-bottom:4px;font-size:12px;color:#999">Meta Value</label>
-                                <input id="chest-ed-metaval" type="text" placeholder="e.g. 30:00 or 99" style="width:100%;padding:9px;border:1px solid #6363637d;border-radius:6px;background:#63636347;color:white;box-sizing:border-box">
+                            <div class="af-flex1">
+                                <label class="af-label">Meta Value</label>
+                                <input id="chest-ed-metaval" type="text" placeholder="e.g. 30:00 or 99" class="af-input">
                             </div>
                         </div>
                         <div id="chest-ed-custom-fields" style="display:none;flex-direction:column;gap:14px">
                             <div>
-                                <label style="display:block;margin-bottom:4px;font-size:12px;color:#999">Custom Icon URL</label>
-                                <input id="chest-ed-metaicon" type="text" placeholder="https://..." style="width:100%;padding:9px;border:1px solid #6363637d;border-radius:6px;background:#63636347;color:white;box-sizing:border-box">
+                                <label class="af-label">Custom Icon URL</label>
+                                <input id="chest-ed-metaicon" type="text" placeholder="https://..." class="af-input">
                             </div>
                             <div>
-                                <label style="display:block;margin-bottom:4px;font-size:12px;color:#999">Custom CSS Style</label>
-                                <input id="chest-ed-metastyle" type="text" placeholder="color:#fff;text-shadow:..." style="width:100%;padding:9px;border:1px solid #6363637d;border-radius:6px;background:#63636347;color:white;box-sizing:border-box">
+                                <label class="af-label">Custom CSS Style</label>
+                                <input id="chest-ed-metastyle" type="text" placeholder="color:#fff;text-shadow:..." class="af-input">
                             </div>
                         </div>
-                        <div style="display:flex;gap:12px">
-                            <div style="flex:1">
-                                <label style="display:block;margin-bottom:4px;font-size:12px;color:#999">Sort Order</label>
-                                <input id="chest-ed-sort" type="number" value="0" style="width:100%;padding:9px;border:1px solid #6363637d;border-radius:6px;background:#63636347;color:white;box-sizing:border-box">
+                        <div class="af-row">
+                            <div class="af-flex1">
+                                <label class="af-label">Sort Order</label>
+                                <input id="chest-ed-sort" type="number" value="0" class="af-input">
                             </div>
                             <div style="flex:1;display:flex;align-items:end;padding-bottom:4px">
                                 <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#ccc">
@@ -371,7 +371,7 @@
                         <label style="display: block; margin-bottom: 8px; font-weight: 600;">Search User</label>
                         <div style="display: flex; gap: 8px;">
                             <input type="text" id="user-search-input" placeholder="Enter Roblox username or user ID"
-                                style="flex: 1; padding: 10px; border: 1px solid #6363637d; border-radius: 6px; background: #63636347; color: white;">
+                                class="af-input af-flex1">
                             <button id="user-search-btn" class="small-btn" style="padding: 10px 20px;">Search</button>
                         </div>
                     </div>
@@ -453,37 +453,37 @@
                     <label>Extras↴</label>
                     <div id="credits-container" style="display: none; margin-top: 4px; margin-bottom: 4px;">
                         <div style="display: flex; align-items: center; gap: 8px; background: var(--bg-item); border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 8px;">
-                            <strong style="font-size: 12px; color: var(--text-secondary);">Credits:</strong>
+                            <strong class="af-hint">Credits:</strong>
                             <span id="credits-display" style="flex: 1; color: white; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
-                            <button class="small-btn ghost" id="credits-edit-btn" style="padding: 4px 8px; font-size: 11px;">Edit</button>
-                            <button class="small-btn danger" id="credits-delete-btn" style="padding: 4px 8px; font-size: 11px;">✕</button>
+                            <button class="small-btn ghost af-btn-xs" id="credits-edit-btn" >Edit</button>
+                            <button class="small-btn danger af-btn-xs" id="credits-delete-btn" >✕</button>
                         </div>
                         <input id="quick-editor-credits" autocomplete="off" type="text" placeholder="Item author/creator (accepts roblox id's)" style="display: none; width: -webkit-fill-available; padding: 8px; margin-top: 4px; background: var(--bg-item); border: 1px solid var(--border-color); border-radius: 4px; color: white;" />
                     </div>
                     <div id="lore-container" style="display: none; margin-top: 4px; margin-bottom: 4px;">
                         <div style="display: flex; align-items: center; gap: 8px; background: var(--bg-item); border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 8px;">
-                            <strong style="font-size: 12px; color: var(--text-secondary);">Lore:</strong>
+                            <strong class="af-hint">Lore:</strong>
                             <span id="lore-display" style="flex: 1; color: white; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
-                            <button class="small-btn ghost" id="lore-edit-btn" style="padding: 4px 8px; font-size: 11px;">Edit</button>
-                            <button class="small-btn danger" id="lore-delete-btn" style="padding: 4px 8px; font-size: 11px;">✕</button>
+                            <button class="small-btn ghost af-btn-xs" id="lore-edit-btn" >Edit</button>
+                            <button class="small-btn danger af-btn-xs" id="lore-delete-btn" >✕</button>
                         </div>
                         <textarea id="quick-editor-lore" placeholder="Item lore/story (shown on back of card)" rows="4" style="display: none; width: -webkit-fill-available; padding: 8px; margin-top: 4px; background: var(--bg-item); border: 1px solid var(--border-color); border-radius: 4px; color: white; resize: vertical; font-family: inherit;"></textarea>
                     </div>
                     <div id="alias-container" style="display: none; margin-top: 8px;">
                         <div style="display: flex; align-items: center; gap: 8px; padding: 4px 8px;">
-                            <strong style="font-size: 12px; color: var(--text-secondary);">Alias:</strong>
+                            <strong class="af-hint">Alias:</strong>
                             <span id="alias-display" style="flex: 1; font-size: 12px;"></span>
-                            <button class="small-btn ghost" id="alias-edit-btn" style="padding: 4px 8px; font-size: 11px;">Edit</button>
-                            <button class="small-btn danger" id="alias-delete-btn" style="padding: 4px 8px; font-size: 11px;">✕</button>
+                            <button class="small-btn ghost af-btn-xs" id="alias-edit-btn" >Edit</button>
+                            <button class="small-btn danger af-btn-xs" id="alias-delete-btn" >✕</button>
                         </div>
                         <input id="quick-editor-alias" autocomplete="off" type="text" placeholder="Item alias (shown under item name)" style="display: none; width: -webkit-fill-available; padding: 8px; margin-top: 4px; background: var(--bg-item); border: 1px solid var(--border-color); border-radius: 4px; color: white;" />
                     </div>
                     <div id="quantity-container" style="display: none; margin-top: 8px;">
                         <div style="display: flex; align-items: center; gap: 8px; padding: 4px 8px;">
-                            <strong style="font-size: 12px; color: var(--text-secondary);">Quantity:</strong>
+                            <strong class="af-hint">Quantity:</strong>
                             <span id="quantity-display" style="flex: 1; font-size: 12px;"></span>
-                            <button class="small-btn ghost" id="quantity-edit-btn" style="padding: 4px 8px; font-size: 11px;">Edit</button>
-                            <button class="small-btn danger" id="quantity-delete-btn" style="padding: 4px 8px; font-size: 11px;">✕</button>
+                            <button class="small-btn ghost af-btn-xs" id="quantity-edit-btn" >Edit</button>
+                            <button class="small-btn danger af-btn-xs" id="quantity-delete-btn" >✕</button>
                         </div>
                         <input id="quick-editor-quantity" autocomplete="off" type="text" placeholder="Quantity given (accepts badge id's or 'group')" style="display: none; width: -webkit-fill-available; padding: 8px; margin-top: 4px; background: var(--bg-item); border: 1px solid var(--border-color); border-radius: 4px; color: white;" />
                     </div>
