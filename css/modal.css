@@ -928,6 +928,11 @@ background: linear-gradient(135deg, #feffa0 0%, #fff2a0 100%);
         text-align: center;
 }
 
+@media (max-width: 388px) {
+    .item-modal{
+        zoom: 0.8;}
+}
+
 @media (max-width: 768px) {
     .modal-nav {
         display: none;
