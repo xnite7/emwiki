@@ -310,7 +310,7 @@
 }
 
 .error-message h2 {
-    color: #ff4444;
+    color: var(--danger);
     margin-bottom: 15px;
     font-size: 2rem;
 }
@@ -488,7 +488,7 @@
 
 .stat-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 8px 25px rgba(107, 119, 184, 0.3);
 }
 
 .stat-icon {
@@ -541,7 +541,7 @@
 
 .trade-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 6px 20px rgba(107, 119, 184, 0.3);
 }
 
 .trade-icon {
@@ -592,7 +592,7 @@
 
 .review-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 6px 20px rgba(107, 119, 184, 0.3);
 }
 
 .review-header {
@@ -614,7 +614,7 @@
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    border: 2px solid rgba(102, 126, 234, 0.5);
+    border: 2px solid rgba(107, 119, 184, 0.5);
     object-fit: cover;
 }
 
@@ -631,7 +631,7 @@
 
 .review-rating {
     font-size: 1.1rem;
-    color: #ffd700;
+    color: var(--gold);
 }
 
 .review-comment {
@@ -748,8 +748,8 @@
 }
 
 .gallery-arrow:hover:not(:disabled) {
-    background: rgba(102, 126, 234, 0.2);
-    border-color: rgba(102, 126, 234, 0.5);
+    background: rgba(107, 119, 184, 0.2);
+    border-color: rgba(107, 119, 184, 0.5);
     transform: scale(1.1);
 }
 
@@ -1200,12 +1200,12 @@
 
 .star-rating-input label:hover,
 .star-rating-input label:hover~label {
-    color: #ffd700;
+    color: var(--gold);
     transform: scale(1.1);
 }
 
 .star-rating-input input[type="radio"]:checked~label {
-    color: #ffd700;
+    color: var(--gold);
 }
 
 .form-actions {

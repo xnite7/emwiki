@@ -1,0 +1,821 @@
+/* Profile page app. Extracted from profile.html's inline module.
+   Globals (BaseApp, Utils, auth) come from js/core/bridge.js. */
+    // Profile Page Handler
+    class Catalog extends BaseApp {
+        constructor() {
+            super();
+            this.userId = null;
+            this.profileData = null;
+            this.apiBase = '/api';
+
+            this.init();
+        }
+
+        async init() {
+            // Get user ID from URL path (e.g., /profile/1527377658)
+            const pathParts = window.location.pathname.split('/').filter(Boolean);
+
+            if (pathParts.length >= 2 && pathParts[0] === 'profile') {
+                this.userId = pathParts[1];
+            }
+
+            // If no user ID, show directory view
+            if (!this.userId) {
+                this.showDirectoryView();
+                return;
+            }
+
+            // Clean up userId - remove .0 suffix if present
+            this.userId = this.userId.replace(/\.0$/, '');
+
+            await this.loadProfile();
+        }
+
+        async showDirectoryView() {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('directory-view').style.display = 'block';
+            document.title = 'Player Directory - EMwiki';
+
+            // Setup search
+            this.setupUserSearch();
+
+            // Load initial users
+            await this.loadUsers();
+        }
+
+        setupUserSearch() {
+            const searchInput = document.getElementById('user-search-input');
+            let searchTimeout;
+
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                const query = e.target.value.trim();
+
+                searchTimeout = setTimeout(async () => {
+                    if (query.length >= 2) {
+                        await this.searchUsers(query);
+                    } else if (query.length === 0) {
+                        await this.loadUsers();
+                    }
+                }, 300); // Debounce
+            });
+        }
+
+        async loadUsers(limit = 50) {
+            const container = document.getElementById('users-grid-container');
+            container.innerHTML = '<div class="loading-spinner"></div><p style="text-align: center; color: rgba(255, 255, 255, 0.7);">Loading users...</p>';
+
+            try {
+                // Use the search API with empty query to get all users
+                const response = await fetch(`${this.apiBase}/auth/user/search?q=&limit=${limit}`);
+
+                if (!response.ok) {
+                    throw new Error('Failed to load users');
+                }
+
+                const data = await response.json();
+                this.renderUsersGrid(data.users || []);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                container.innerHTML = '<p class="no-users-message">Failed to load users. Please try again.</p>';
+            }
+        }
+
+        async searchUsers(query) {
+            const container = document.getElementById('users-grid-container');
+            container.innerHTML = '<div class="loading-spinner"></div><p style="text-align: center; color: rgba(255, 255, 255, 0.7);">Searching...</p>';
+
+            try {
+                const response = await fetch(`${this.apiBase}/auth/user/search?q=${encodeURIComponent(query)}`);
+
+                if (!response.ok) {
+                    throw new Error('Search failed');
+                }
+
+                const data = await response.json();
+                this.renderUsersGrid(data.users || []);
+
+            } catch (error) {
+                console.error('Error searching users:', error);
+                container.innerHTML = '<p class="no-users-message">Search failed. Please try again.</p>';
+            }
+        }
+
+        renderUsersGrid(users) {
+            const container = document.getElementById('users-grid-container');
+
+            if (!users || users.length === 0) {
+                container.innerHTML = '<p class="no-users-message">No users found</p>';
+                return;
+            }
+
+            const grid = document.createElement('div');
+            grid.className = 'users-grid';
+
+            users.forEach(user => {
+                const userCard = this.createUserCard(user);
+                grid.appendChild(userCard);
+            });
+
+            container.innerHTML = '';
+            container.appendChild(grid);
+        }
+
+        createUserCard(user) {
+            const card = document.createElement('a');
+            card.className = 'user-card';
+            card.href = `/profile/${user.user_id}`;
+
+            // Parse roles
+            let roles = [];
+            try {
+                roles = user.role ? JSON.parse(user.role) : [];
+            } catch (e) {
+                roles = [];
+            }
+
+            // Filter out 'user' role and get special roles
+            const specialRoles = roles.filter(r => r !== 'user');
+
+            // Get stats (if available)
+            const totalTrades = user.total_trades || 0;
+            const avgRating = user.average_rating || 0;
+
+            card.innerHTML = `
+                <img src="${user.avatar_url || 'https://emwiki.com/imgs/placeholder.png'}"
+                     alt="${this.escapeHtml(user.display_name)}"
+                     class="user-card-avatar"><div style="flex: 1 1;max-width: 145px;">
+                <h3 class="user-card-name">${this.escapeHtml(user.display_name)}</h3>
+                <p class="user-card-username">@${this.escapeHtml(user.username)}</p></div>
+
+                ${specialRoles.length > 0 ? `
+                    <div class="user-card-roles">
+                        ${specialRoles.map(role => `
+                            <span class="role-badge ${role}">${role.toUpperCase()}</span>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
+
+            `;
+
+            return card;
+        }
+
+        async loadProfile() {
+            try {
+                const response = await fetch(`${this.apiBase}/profile/${this.userId}`);
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        this.showError('User not found');
+                    } else {
+                        this.showError('Failed to load profile');
+                    }
+                    return;
+                }
+
+                this.profileData = await response.json();
+                this.renderProfile();
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                this.showError('Failed to load profile');
+            }
+        }
+
+        showError(message) {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('error-state').style.display = 'flex';
+            document.getElementById('profile-content').style.display = 'none';
+        }
+
+        renderProfile() {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('error-state').style.display = 'none';
+            document.getElementById('profile-content').style.display = 'block';
+
+            const { user, stats, reviews, recentTrades, donationData, galleryPosts, wishlist } = this.profileData;
+
+            // Update page title
+            document.title = `${user.displayName} - EMwiki`;
+
+            // Render profile header
+            this.renderProfileHeader(user, donationData);
+
+            // Render stats
+            this.renderStats(stats);
+
+            // Render recent trades
+            this.renderRecentTrades(recentTrades);
+
+            // Render gallery posts
+            this.renderGalleryPosts(galleryPosts);
+
+            // Render wishlist
+            this.renderWishlist(wishlist || []);
+
+            // Render reviews
+            this.renderReviews(reviews);
+
+            // Setup review functionality
+            this.setupReviewModal();
+        }
+
+        renderProfileHeader(user, donationData) {
+            // Avatar
+            const avatarImg = document.getElementById('profile-avatar');
+            avatarImg.src = user.avatarUrl || 'https://emwiki.com/imgs/placeholder.png';
+            avatarImg.alt = `${user.displayName}'s Avatar`;
+
+            // Display name
+            document.getElementById('profile-display-name').textContent = user.displayName;
+
+            // Username
+            document.getElementById('profile-username').textContent = `@${user.username}`;
+
+            // Roles
+            const rolesContainer = document.getElementById('profile-roles');
+            rolesContainer.innerHTML = '';
+
+            if (user.roles && Array.isArray(user.roles)) {
+                // Filter out 'user' role and show special roles
+                const specialRoles = user.roles.filter(role => role !== 'user');
+
+                specialRoles.forEach(role => {
+                    const badge = document.createElement('span');
+                    badge.className = `role-badge ${role}`;
+                    badge.textContent = role.toUpperCase();
+                    rolesContainer.appendChild(badge);
+                });
+            }
+
+            // Joined date
+            const joinedDate = new Date(user.createdAt);
+            document.getElementById('profile-joined').innerHTML = `
+            <strong>Joined:</strong> ${this.formatDate(joinedDate)}
+        `;
+
+            // Last online
+            const lastOnline = new Date(user.lastOnline);
+            const isOnline = Date.now() - user.lastOnline < 5 * 60 * 1000; // 5 minutes
+            const onlineStatus = isOnline ? `<strong class="online-status">Online</strong>` : `<strong class="offline-status">Last seen: ${this.formatRelativeTime(lastOnline)}</strong>`;
+            const profilepicborder = isOnline ? `4px solid #35df3c` : ``;
+
+            document.getElementById('profile-last-online').innerHTML = onlineStatus;
+            document.getElementById('profile-avatar').style.outline = profilepicborder;
+
+            // Roblox profile link
+            const robloxLink = document.getElementById('profile-roblox-link');
+            if (robloxLink && user.userId) {
+                robloxLink.href = `https://www.roblox.com/users/${user.userId}/profile`;
+            }
+
+            // 3D player model
+            const modelContainer = document.getElementById('profile-3d-model');
+            if (modelContainer && user.userId && window.Auth) {
+                window.Auth.render3DPlayerModel(user.userId, modelContainer);
+            }
+        }
+
+        renderStats(stats) {
+            document.getElementById('stat-total-trades').textContent = stats.total_trades || 0;
+            document.getElementById('stat-successful-trades').textContent = stats.successful_trades || 0;
+
+            const rating = stats.average_rating || 0;
+            document.getElementById('stat-rating').textContent = rating.toFixed(1);
+
+            document.getElementById('stat-reviews').textContent = stats.total_reviews || 0;
+        }
+
+        renderRecentTrades(trades) {
+            const container = document.getElementById('recent-trades-container');
+
+            if (!trades || trades.length === 0) {
+                container.innerHTML = '<p class="no-data-message">No recent trades</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+
+            trades.forEach(trade => {
+                const tradeCard = document.createElement('div');
+                tradeCard.className = 'trade-card';
+
+                const roleIcon = trade.role === 'seller' ? '📤' : '📥';
+                const roleText = trade.role === 'seller' ? 'Sold' : 'Bought';
+
+                tradeCard.innerHTML = `
+                <div class="trade-icon">${roleIcon}</div>
+                <div class="trade-info">
+                    <div class="trade-item-name">${this.escapeHtml(trade.item_name)}</div>
+                    <div class="trade-meta">${roleText} • ${this.formatRelativeTime(new Date(trade.completed_at))}</div>
+                </div>
+            `;
+
+                container.appendChild(tradeCard);
+            });
+        }
+
+        renderGalleryPosts(posts) {
+            const container = document.getElementById('gallery-posts-container');
+
+            if (!posts || posts.length === 0) {
+                container.innerHTML = '<p class="no-data-message">No gallery posts yet</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+
+            posts.forEach(post => {
+                const postCard = document.createElement('div');
+                postCard.className = 'gallery-post-card';
+                postCard.dataset.id = post.id;
+
+                const mediaElement = post.thumbnail_url !== null
+                    ? `<div class="gallery-post-media-wrapper">
+                           <img class="gallery-post-media" src="${post.thumbnail_url}" alt="${this.escapeHtml(post.title)}" loading="lazy">
+                           <div class="gallery-post-play-icon">
+                               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                   <path d="M8 5v14l11-7z"/>
+                               </svg>
+                           </div>
+                       </div>`
+                    : `<img class="gallery-post-media" src="${post.media_url}" alt="${this.escapeHtml(post.title)}" loading="lazy">`;
+
+                const likesCount = post.likes_count || 0;
+                const views = post.views || 0;
+
+                postCard.innerHTML = `
+                    ${mediaElement}
+                    <div class="gallery-post-info">
+                        <h4 class="gallery-post-title">${this.escapeHtml(post.title)}</h4>
+                        <p class="gallery-post-stats">
+                            <span class="gallery-post-stat">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                </svg>
+                                ${likesCount}
+                            </span>
+                            <span class="gallery-post-stat">
+                                <svg viewBox="0 -3 42 42" width="16" height="16" fill="currentColor">
+                                    <path d="M15.3 20.1c0 3.1 2.6 5.7 5.7 5.7s5.7-2.6 5.7-5.7-2.6-5.7-5.7-5.7-5.7 2.6-5.7 5.7m8.1 12.3C30.1 30.9 40.5 22 40.5 22s-7.7-12-18-13.3c-.6-.1-2.6-.1-3-.1-10 1-18 13.7-18 13.7s8.7 8.6 17 9.9c.9.4 3.9.4 4.9.2M11.1 20.7c0-5.2 4.4-9.4 9.9-9.4s9.9 4.2 9.9 9.4S26.5 30 21 30s-9.9-4.2-9.9-9.3"></path>
+                                </svg>
+                                ${views}
+                            </span>
+                        </p>
+                    </div>
+                `;
+
+                // Make clickable to open in gallery with direct link to post
+                postCard.addEventListener('click', () => {
+                    window.location.href = `/gallery#post-${post.id}`;
+                });
+
+                container.appendChild(postCard);
+            });
+
+            // Setup carousel navigation after posts are rendered
+            this.setupGalleryCarousel();
+        }
+
+        setupGalleryCarousel() {
+            const carousel = document.getElementById('gallery-posts-container');
+            const leftArrow = document.querySelector('.gallery-arrow-left');
+            const rightArrow = document.querySelector('.gallery-arrow-right');
+
+            if (!carousel || !leftArrow || !rightArrow) return;
+
+            // Only setup if there are actual posts
+            if (carousel.children.length === 0 || carousel.querySelector('.no-data-message')) {
+                leftArrow.disabled = true;
+                rightArrow.disabled = true;
+                return;
+            }
+
+            // Calculate scroll amount based on viewport width
+            const getScrollAmount = () => {
+                const vw = window.innerWidth;
+                if (vw <= 768) {
+                    return 200; // 180px card + 20px gap (mobile)
+                }
+                return  vw / 3; // 220px card + 20px gap (desktop)
+            };
+
+            // Update arrow states based on scroll position
+            const updateArrowStates = () => {
+                const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+                leftArrow.disabled = carousel.scrollLeft <= 0;
+                rightArrow.disabled = carousel.scrollLeft >= maxScroll - 1; // -1 for rounding
+            };
+
+            // Initial state
+            updateArrowStates();
+
+            // Scroll left
+            leftArrow.addEventListener('click', () => {
+                carousel.scrollBy({
+                    left: -getScrollAmount(),
+                    behavior: 'smooth'
+                });
+            });
+
+            // Scroll right
+            rightArrow.addEventListener('click', () => {
+                carousel.scrollBy({
+                    left: getScrollAmount(),
+                    behavior: 'smooth'
+                });
+            });
+
+            // Update arrow states on scroll
+            carousel.addEventListener('scroll', updateArrowStates);
+        }
+
+        // Batch fetch items by name using the new batch endpoint
+        async fetchItemsByNames(itemNames) {
+            if (!itemNames || itemNames.length === 0) return [];
+            
+            try {
+                const response = await fetch(`${this.apiBase}/items/batch`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ names: itemNames })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.items || [];
+                }
+            } catch (error) {
+                console.error('Error fetching items batch:', error);
+            }
+            
+            return [];
+        }
+
+        async renderWishlist(wishlistItemNames) {
+            const container = document.getElementById('wishlist-container');
+
+            if (!wishlistItemNames || wishlistItemNames.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            // Store all wishlist names and pagination state
+            this.wishlistItemNames = wishlistItemNames;
+            this.wishlistPageSize = 12;
+            this.wishlistCurrentPage = 0;
+            this.wishlistItems = null; // Cache fetched items
+
+            // Show loading state
+            container.innerHTML = '<p class="no-data-message">Loading wishlist items...</p>';
+
+            // Fetch all item details in one batch request
+            this.wishlistItems = await this.fetchItemsByNames(wishlistItemNames);
+
+            // Create a map for quick lookup and preserve wishlist order
+            const itemMap = new Map(this.wishlistItems.map(item => [item.name, item]));
+            
+            // Reorder items to match wishlist order
+            this.wishlistItems = wishlistItemNames
+                .map(name => itemMap.get(name))
+                .filter(item => item !== null && item !== undefined);
+
+            if (this.wishlistItems.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            // Render first page
+            this.renderWishlistPage();
+        }
+
+        renderWishlistPage() {
+            const container = document.getElementById('wishlist-container');
+            const pageSize = this.wishlistPageSize;
+            const prevEnd = this.wishlistCurrentPage * pageSize;
+            const endIndex = (this.wishlistCurrentPage + 1) * pageSize;
+            // Only the new page's slice — earlier pages stay in the DOM instead of being rebuilt.
+            const itemsToShow = this.wishlistItems.slice(prevEnd, endIndex);
+            const hasMore = endIndex < this.wishlistItems.length;
+
+            if (this.wishlistCurrentPage === 0) {
+                // First page: clear the "Loading…" message.
+                container.innerHTML = '';
+            } else {
+                // Later pages: drop the old Load More button, then append below the existing cards.
+                const oldBtn = container.querySelector('.wishlist-load-more');
+                if (oldBtn) oldBtn.remove();
+            }
+
+            const fragment = document.createDocumentFragment();
+
+            itemsToShow.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.innerHTML = `<small class="item-name">${this.escapeHtml(item.name)}</small>`;
+
+                if (item.img) {
+                    // Lazy, async-decoded <img> instead of a canvas drawImage — the canvas path forced
+                    // a synchronous main-thread image decode per item, which is the wishlist-load spike.
+                    const img = document.createElement('img');
+                    img.loading = 'lazy';
+                    img.decoding = 'async';
+                    img.className = 'itemimg';
+                    img.alt = item.name || '';
+                    // Use optimized image with smaller size for thumbnails
+                    img.src = Utils.getOptimizedImage(item.img, { width: 128, height: 128, format: 'webp', fit: 'scale-down' }) || item.img;
+                    img.onerror = () => {
+                        // If image fails, fall back to SVG or placeholder
+                        img.remove();
+                        if (item.svg) {
+                            div.insertAdjacentHTML('beforeend', item.svg);
+                        }
+                    };
+                    // Prevent right-click and drag
+                    Utils.protectImage(img);
+                    div.appendChild(img);
+                } else if (item.svg) {
+                    div.insertAdjacentHTML('beforeend', item.svg);
+                }
+
+                // Add price if available
+                if (item.price && item.price !== 'N/A' && item.price !== '0') {
+                    const priceDiv = document.createElement('div');
+                    priceDiv.className = 'item-price';
+                    priceDiv.textContent = this.convertPrice ? this.convertPrice(this.formatPrice(item.price)) : item.price;
+                    div.appendChild(priceDiv);
+                } else if (item.price === '0') {
+                    const priceDiv = document.createElement('div');
+                    priceDiv.className = 'item-price';
+                    priceDiv.style.opacity = '0';
+                    priceDiv.style.height = '16px';
+                    div.appendChild(priceDiv);
+                }
+
+                // Make clickable - open item modal
+                div.addEventListener('click', () => {
+                    this.modal.open(item);
+                });
+
+                fragment.appendChild(div);
+            });
+
+            container.appendChild(fragment);
+
+            // Add "Load More" button if there are more items
+            if (hasMore) {
+                const loadMoreBtn = document.createElement('button');
+                loadMoreBtn.className = 'btn btn-secondary wishlist-load-more';
+                loadMoreBtn.textContent = `Load More (${this.wishlistItems.length - endIndex} remaining)`;
+                loadMoreBtn.addEventListener('click', () => {
+                    this.wishlistCurrentPage++;
+                    this.renderWishlistPage();
+                });
+                container.appendChild(loadMoreBtn);
+            }
+        }
+
+        formatPrice(price) {
+            if (!price || price === 'N/A') return 'N/A';
+            return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        convertPrice(price) {
+            if (!price || price === 'N/A') return 'N/A';
+            // Convert to abbreviated format if needed (e.g., 1000 -> 1K)
+            const num = parseFloat(price.replace(/,/g, ''));
+            if (isNaN(num)) return price;
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
+        }
+
+        renderReviews(reviews) {
+            const container = document.getElementById('reviews-container');
+
+            if (!reviews || reviews.length === 0) {
+                container.innerHTML = '<p class="no-data-message">No reviews yet</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+
+            reviews.forEach(review => {
+                const reviewCard = document.createElement('div');
+                reviewCard.className = 'review-card';
+
+                const stars = this.renderStars(review.rating);
+
+                reviewCard.innerHTML = `
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <img src="${review.reviewer_avatar || '/imgs/placeholder.png'}"
+                             alt="${this.escapeHtml(review.reviewer_display_name)}"
+                             class="reviewer-avatar">
+                        <div>
+                            <div class="reviewer-name">${this.escapeHtml(review.reviewer_display_name)}</div>
+                            <div class="review-date">${this.formatRelativeTime(new Date(review.created_at))}</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">${stars}</div>
+                </div>
+                ${review.comment ? `<div class="review-comment">${this.escapeHtml(review.comment)}</div>` : ''}
+            `;
+
+                container.appendChild(reviewCard);
+            });
+        }
+
+        renderStars(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+            let stars = '';
+            for (let i = 0; i < fullStars; i++) {
+                stars += '⭐';
+            }
+            if (hasHalfStar) {
+                stars += '⭐';
+            }
+            for (let i = 0; i < emptyStars; i++) {
+                stars += '☆';
+            }
+
+            return `${stars} (${rating}/5)`;
+        }
+
+        formatDate(date) {
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        formatRelativeTime(date) {
+            const now = Date.now();
+            const diff = now - date.getTime();
+
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            const months = Math.floor(days / 30);
+            const years = Math.floor(days / 365);
+
+            if (seconds < 60) return 'just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            if (days < 30) return `${days}d ago`;
+            if (months < 12) return `${months}mo ago`;
+            return `${years}y ago`;
+        }
+
+        escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async getCurrentUserId() {
+            // If Auth is already ready with user data, return it immediately
+            if (window.Auth && window.Auth.user && window.Auth.user.userId) {
+                return window.Auth.user.userId;
+            }
+
+            // Otherwise, wait for sessionReady event
+            return new Promise((resolve) => {
+                if (!window.Auth) {
+                    resolve(null);
+                    return;
+                }
+
+                const timeout = setTimeout(() => {
+                    resolve(null);
+                }, 5000); // 5 second timeout
+
+                window.Auth.addEventListener('sessionReady', () => {
+                    clearTimeout(timeout);
+                    resolve(window.Auth.user ? window.Auth.user.userId : null);
+                }, { once: true });
+            });
+        }
+
+        async setupReviewModal() {
+            const writeReviewBtn = document.getElementById('write-review-btn');
+            const reviewModal = document.getElementById('review-modal');
+            const reviewForm = document.getElementById('review-form');
+            const cancelBtn = document.getElementById('cancel-review-btn');
+            const modalClose = document.querySelector('.modal-close');
+            const commentTextarea = document.getElementById('review-comment');
+            const charCount = document.getElementById('comment-char-count');
+
+            // Check if user is logged in
+            const authToken = localStorage.getItem('auth_token');
+
+            // Get current user ID to prevent self-review
+            let currentUserId = null;
+
+            if (authToken && window.Auth) {
+                // Wait for Auth to be ready
+                currentUserId = await this.getCurrentUserId();
+            }
+
+            // Show write review button if user is logged in and not viewing their own profile
+            if (authToken && currentUserId && currentUserId !== Number(this.userId)) {
+                writeReviewBtn.style.display = 'inline-block';
+            }
+
+            // Character counter
+            commentTextarea.addEventListener('input', () => {
+                charCount.textContent = commentTextarea.value.length;
+            });
+
+            // Open modal
+            writeReviewBtn.addEventListener('click', () => {
+                reviewModal.style.display = 'flex';
+                reviewForm.reset();
+                charCount.textContent = '0';
+            });
+
+            // Close modal
+            const closeModal = () => {
+                reviewModal.style.display = 'none';
+            };
+
+            cancelBtn.addEventListener('click', closeModal);
+            modalClose.addEventListener('click', closeModal);
+
+            // Close on overlay click
+            reviewModal.querySelector('.review-modal-overlay').addEventListener('click', closeModal);
+
+            // Handle form submission
+            reviewForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.submitReview();
+            });
+        }
+
+        async submitReview() {
+            const authToken = localStorage.getItem('auth_token');
+            if (!authToken) {
+                alert('You must be logged in to write a review');
+                return;
+            }
+
+            const rating = document.querySelector('input[name="rating"]:checked');
+            if (!rating) {
+                alert('Please select a rating');
+                return;
+            }
+
+            const comment = document.getElementById('review-comment').value.trim();
+            const submitBtn = document.getElementById('submit-review-btn');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            try {
+                const response = await fetch(`${this.apiBase}/profile/${this.userId}/review`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        rating: parseInt(rating.value),
+                        comment: comment || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to submit review');
+                }
+
+                // Success - close modal and reload profile to show new review
+                document.getElementById('review-modal').style.display = 'none';
+                alert('Review submitted successfully!');
+
+                // Reload the profile to show the new review
+                await this.loadProfile();
+
+            } catch (error) {
+                console.error('Error submitting review:', error);
+                alert(error.message || 'Failed to submit review. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Review';
+            }
+        }
+    }
+
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+        window.catalog = new Catalog();
+    });
+
+
