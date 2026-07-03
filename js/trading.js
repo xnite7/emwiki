@@ -854,23 +854,8 @@ class TradingHub {
     }
 
     // Small "×N" badge for stacked items (only shown when qty > 1).
-    qtyBadge(item) {
-        return item.qty && item.qty > 1 ? `<span class="item-qty-badge">×${item.qty}</span>` : '';
-    }
-
     renderTradeItem(item) {
-        if (item.type === 'robux') {
-            return `<div class="trade-item-robux">R$ ${item.amount}${this.qtyBadge(item)}</div>`;
-        } else if (item.type === 'other-game') {
-            return `<div class="trade-item-other">${this.esc(item.game_name)}: ${this.esc(item.item_name)}${this.qtyBadge(item)}</div>`;
-        } else {
-            return `
-                <div class="trade-item">
-                    <img class="trade-item-img" src="${item.item_image || './imgs/placeholder.png'}" alt="${this.esc(item.item_name)}" onerror="this.src='./imgs/placeholder.png'">
-                    <span class="trade-item-name">${this.esc(item.item_name)}${this.qtyBadge(item)}</span>
-                </div>
-            `;
-        }
+        return window.ItemCard.tradeItemHTML(item);
     }
 
     // ==================== MY TRADES ====================
@@ -1186,17 +1171,7 @@ class TradingHub {
     }
 
     renderDetailItem(item) {
-        if (item.type === 'robux') {
-            return `<div class="trade-item-robux">R$ ${item.amount}${this.qtyBadge(item)}</div>`;
-        } else if (item.type === 'other-game') {
-            return `<div class="trade-item-other">${this.esc(item.game_name)}: ${this.esc(item.item_name)}${this.qtyBadge(item)}</div>`;
-        }
-        return `
-            <div class="detail-item">
-                <img src="${item.item_image || './imgs/placeholder.png'}" alt="${this.esc(item.item_name)}" onerror="this.src='./imgs/placeholder.png'">
-                <span>${this.esc(item.item_name)}${this.qtyBadge(item)}</span>
-            </div>
-        `;
+        return window.ItemCard.tradeItemHTML(item, { variant: 'detail' });
     }
 
     closeDetailModal() {
