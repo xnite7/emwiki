@@ -1,5 +1,6 @@
 // Sparkles.js with Persistent Toggle
-let sparklesEnabled = true; // Single global declaration
+// Respect reduced-motion: no cursor particles for users who opted out.
+let sparklesEnabled = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let sparkleInterval = null;
 let animateInterval = null;
 const sparkles = 50;
