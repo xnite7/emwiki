@@ -34,13 +34,14 @@
 
 /* Directory View Styles */
 .directory-container {
-    max-width: 1400px;
+    max-width: 1080px;
     margin: 0 auto;
+    padding: 0 20px;
 }
 
 .directory-header {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 28px;
 }
 
 .directory-title {
@@ -62,7 +63,7 @@
 }
 
 .search-section {
-    margin-bottom: 40px;
+    margin-bottom: 26px;
 }
 
 .search-bar-container {
@@ -116,100 +117,151 @@
     justify-content: space-evenly;
 }
 
+/* ── Player directory: trader roster ──────────────────────────────────────
+   Each card is a compact "trader card" that leads with reputation (rating +
+   trades) — the thing you check before dealing. A per-role accent (`--tier`)
+   colours the top bar, avatar ring and hover so status reads at a glance. */
 .users-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 42px 28px;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 16px;
 }
 
 .user-card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 15px 20px;
+    --tier: rgba(150, 234, 102, 0.55);   /* default: brand green */
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
-    transition: all 0.3s;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    gap: 10px;
+    padding: 24px 16px 16px;
+    border-radius: 18px;
+    background:
+        radial-gradient(130% 80% at 50% -20%, rgba(255, 255, 255, 0.07), transparent 62%),
+        rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.28);
     text-decoration: none;
     color: inherit;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+    overflow: hidden;
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
+/* tier accent bar across the top */
+.user-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--tier), transparent);
+}
+
+.user-card.tier-admin { --tier: #e0a94a; }
+.user-card.tier-moderator,
+.user-card.tier-mod { --tier: #6aa8f5; }
+.user-card.tier-vip { --tier: var(--gold, #ffd24a); }
+.user-card.tier-donator { --tier: #e480ad; }
+
 .user-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(150, 234, 102, 0.3);
-    border-color: rgba(113, 234, 102, 0.5);
+    transform: translateY(-4px);
+    border-color: color-mix(in srgb, var(--tier) 60%, transparent);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4);
+}
+
+.user-card-avatar-wrap {
+    padding: 3px;
+    border-radius: 50%;
+    background: var(--tier);
+    line-height: 0;
 }
 
 .user-card-avatar {
-    width: 80px;
-    height: 80px;
+    display: block;
+    width: 74px;
+    height: 74px;
     border-radius: 50%;
-    border: 1px solid rgb(147 147 147 / 30%);
     object-fit: cover;
-    background: linear-gradient(128deg, #21253957, #00000066);
+    background: #21253a;
+    border: 3px solid #12151b;
+}
+
+.user-card-role {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 9px;
+    padding: 2px 7px;
+    letter-spacing: 0.4px;
+}
+
+.user-card-identity {
+    width: 100%;
 }
 
 .user-card-name {
-    font-size: 1.2rem;
+    font-size: 1.02rem;
     font-weight: 800;
     color: white;
-    margin: 0 0 5px 0;
+    margin: 0;
     font-family: 'BuilderSans', sans-serif;
-        text-overflow: ellipsis;
-            overflow: hidden;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .user-card-username {
-    font-size: 0.95rem;
-    color: rgba(255, 255, 255, 0.6);
-        text-overflow: ellipsis;
-            overflow: hidden;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 2px 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .user-card-stats {
     display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    margin-top: 2px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .user-card-stat {
-    text-align: center;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.user-card-stat + .user-card-stat {
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .user-card-stat-value {
-    font-size: 1.3rem;
+    font-size: 1.02rem;
     font-weight: 800;
     color: white;
-    display: block;
     font-family: 'BuilderSans', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+}
+
+.user-card-rating svg {
+    width: 13px;
+    height: 13px;
+    color: #fbbf24;
+    transform: translateY(-1px);
 }
 
 .user-card-stat-label {
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.66rem;
+    color: rgba(255, 255, 255, 0.42);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.user-card-roles {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-top: 12px;
-}
-
-.user-card-role-badge {
-    /* Pill shape/sizing unified in components.css (.badge group) */
+    letter-spacing: 0.6px;
 }
 
 .no-users-message {
@@ -322,19 +374,21 @@
 
 /* Profile Container */
 .profile-container {
-    max-width: 1400px;
+    /* The 1400px width made everything sprawl on desktop; a tighter column
+       reads as a proper profile page rather than a full-bleed dashboard. */
+    max-width: 860px;
     margin: 0 auto;
-    padding: 10px 30px;
+    padding: 10px 20px;
 }
 
 /* Profile Header */
 .profile-header {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
-    border-radius: 20px;
+    border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 40px;
-    margin-bottom: 30px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     position: relative;
     overflow: visible;
@@ -343,7 +397,7 @@
 .profile-header-content {
     display: flex;
     align-items: center;
-    gap: 30px;
+    gap: 22px;
     flex-wrap: wrap;
     position: relative;
     z-index: 1;
@@ -365,8 +419,9 @@
 
 .profile-avatar {
     border: 4px solid rgb(0 0 0);
-    width: 120px;
-    height: 120px;
+    width: 96px;
+    height: 96px;
+    flex-shrink: 0;
     background: #383838;
     border-radius: 50%;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
@@ -379,17 +434,17 @@
 }
 
 .profile-display-name {
-    font-size: 2.5rem;
+    font-size: 1.9rem;
     font-weight: 800;
     color: white;
-    margin: 0 0 5px 0;
+    margin: 0 0 3px 0;
     font-family: 'BuilderSans', sans-serif;
 }
 
 .profile-username {
-    font-size: 1.2rem;
+    font-size: 1.05rem;
     color: rgba(255, 255, 255, 0.6);
-    margin: 0 0 15px 0;
+    margin: 0 0 12px 0;
 }
 
 .profile-roles {
@@ -437,11 +492,11 @@
 
 .profile-3d-model {
     position: absolute;
-    right: -40px;
+    right: -20px;
     top: 50%;
     transform: translateY(-50%);
-    width: 350px;
-    height: 400px;
+    width: 260px;
+    height: 300px;
     opacity: 0.5;
     pointer-events: none;
     z-index: 0;
@@ -458,29 +513,29 @@
 
 /* Stats Section */
 .profile-stats {
-    margin-bottom: 30px;
+    margin-bottom: 22px;
 }
 
 .section-title {
-    font-size: 1.8rem;
+    font-size: 1.35rem;
     font-weight: 800;
     color: white;
-    margin-bottom: 20px;
+    margin-bottom: 14px;
     font-family: 'BuilderSans', sans-serif;
 }
 
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
 }
 
 .stat-card {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
-    border-radius: 16px;
+    border-radius: 14px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 30px;
+    padding: 18px;
     text-align: center;
     transition: transform 0.3s, box-shadow 0.3s;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -492,15 +547,15 @@
 }
 
 .stat-icon {
-    font-size: 2.5rem;
-    margin-bottom: 10px;
+    font-size: 2rem;
+    margin-bottom: 6px;
 }
 
 .stat-value {
-    font-size: 3rem;
+    font-size: 2.1rem;
     font-weight: 800;
     color: white;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
     font-family: 'BuilderSans', sans-serif;
     background: linear-gradient(135deg, var(--accent), var(--accent));
     -webkit-background-clip: text;
@@ -516,7 +571,7 @@
 
 /* Profile Sections */
 .profile-section {
-    margin-bottom: 30px;
+    margin-bottom: 22px;
 }
 
 /* Recent Trades */
@@ -908,13 +963,24 @@
         font-size: 1rem;
     }
 
+    /* Two-up roster on phones so you can scan more traders at once */
     .users-grid {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 15px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
     }
 
     .user-card {
-        padding: 20px;
+        padding: 18px 10px 12px;
+        gap: 8px;
+    }
+
+    .user-card-avatar {
+        width: 62px;
+        height: 62px;
+    }
+
+    .user-card-name {
+        font-size: 0.92rem;
     }
 
     .user-card-avatar {

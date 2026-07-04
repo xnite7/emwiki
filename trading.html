@@ -111,10 +111,7 @@
                             <option value="all">All Status</option>
                             <option value="completed">Completed</option>
                         </select>
-                        <select class="filter-select" id="filterSort">
-                            <option value="recent">Newest First</option>
-                            <option value="views">Most Viewed</option>
-                        </select>
+                        <div class="sort-dropdown" id="sortDropdown"><!-- built by TradingHub.renderSortDropdown() --></div>
                     </div>
                 </div>
 
@@ -226,6 +223,7 @@
                         </div>
                         <div class="form-group">
                             <label>Card theme</label>
+                            <span class="theme-lock-hint" id="themeLockHint" hidden>🔒 Card themes are a donator perk</span>
                             <div class="theme-grid" id="themeSelector">
                                 <button class="theme-btn active" data-theme="default" type="button"><span class="theme-swatch swatch-default"></span>Default</button>
                                 <button class="theme-btn" data-theme="ocean" type="button"><span class="theme-swatch swatch-ocean"></span>Ocean</button>

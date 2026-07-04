@@ -10,6 +10,21 @@ import {
     safeJsonParse
 } from '../_utils/helpers.js';
 
+// Roles that unlock card themes (mirrors TradingHub.THEME_ROLES on the client).
+const THEME_ROLES = ['donator', 'vip', 'moderator', 'mod', 'admin'];
+
+// Whether an authenticated user (from authenticateUser, `user.roles` = raw
+// `role` column, a JSON string or array) is allowed to use non-default themes.
+function userHasThemeRole(user) {
+    let roles = user?.roles;
+    if (!roles) return false;
+    if (typeof roles === 'string') {
+        try { roles = JSON.parse(roles); } catch { roles = [roles]; }
+    }
+    if (!Array.isArray(roles)) return false;
+    return roles.some(r => THEME_ROLES.includes(String(r).toLowerCase()));
+}
+
 // Handle GET requests
 async function handleGet(request, env, path) {
     const url = new URL(request.url);
@@ -41,7 +56,9 @@ async function handleGet(request, env, path) {
         `;
         const bindings = [];
 
-        if (status) {
+        // 'all' (or empty) means no status filter — otherwise the query would
+        // literally match `status = 'all'` and return nothing.
+        if (status && status !== 'all') {
             query += ' AND tl.status = ?';
             bindings.push(status);
         }
@@ -163,7 +180,12 @@ async function handlePost(request, env, path, user) {
 
         // Only allow known themes; anything else falls back to 'default'.
         const allowedThemes = ['default', 'ocean', 'sunset', 'forest'];
-        const theme = allowedThemes.includes(data.theme) ? data.theme : 'default';
+        let theme = allowedThemes.includes(data.theme) ? data.theme : 'default';
+        // Non-default themes are a donator perk — enforce server-side so the
+        // client-side lock can't just be bypassed.
+        if (theme !== 'default' && !userHasThemeRole(user)) {
+            theme = 'default';
+        }
 
         // Validate offering_items is an array
         if (!Array.isArray(offering_items) || offering_items.length === 0) {

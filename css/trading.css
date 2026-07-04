@@ -231,6 +231,128 @@
     box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
+/* ---- Custom sort dropdown (icon + label per option) ---- */
+.sort-dropdown {
+    position: relative;
+    flex: 1;
+}
+
+.sort-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    min-height: 44px;
+    padding: 0.65rem 0.75rem;
+    background: var(--bg-item);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    color: CanvasText;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.sort-trigger:hover {
+    border-color: var(--text-secondary);
+}
+
+.sort-dropdown.open .sort-trigger {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.sort-trigger-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sort-trigger-label svg,
+.sort-option svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: var(--accent);
+}
+
+.sort-caret {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: var(--text-secondary);
+    transition: transform 0.2s;
+}
+
+.sort-dropdown.open .sort-caret {
+    transform: rotate(180deg);
+}
+
+.sort-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 0.3rem;
+    list-style: none;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+    z-index: 50;
+    display: none;
+}
+
+.sort-dropdown.open .sort-menu {
+    display: block;
+    animation: sortMenuIn 0.14s ease-out;
+}
+
+@keyframes sortMenuIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.sort-option {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 0.6rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: CanvasText;
+    cursor: pointer;
+    transition: background 0.12s;
+}
+
+.sort-option:hover {
+    background: var(--bg-item-hover);
+}
+
+.sort-option.active {
+    background: var(--bg-item);
+    box-shadow: inset 0 0 0 1px var(--border-color);
+}
+
+.sort-option.active::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    margin-left: auto;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+}
+
 /* ========== TRADES FEED ========== */
 .trades-feed {
     display: grid;
@@ -695,8 +817,9 @@ content: '';
 
 .create-header { text-align: center; margin-bottom: 1.25rem; }
 .create-header h2 {
-    font-size: 1.4rem;
-    font-weight: 800;
+    font-family: 'Slapstick';
+    font-size: 1.6rem;
+    font-weight: 400;
     color: var(--text-primary);
     margin: 0 0 0.35rem;
 }
@@ -1286,6 +1409,42 @@ content: '';
 }
 .theme-btn.active .theme-swatch {
     box-shadow: 0 0 0 2px var(--bg-secondary), 0 0 0 3px var(--text-primary);
+}
+
+/* Locked (non-donator): dim the label, keep the swatch as a teaser, add a lock */
+.theme-btn.locked {
+    cursor: not-allowed;
+    color: var(--text-secondary);
+    opacity: 0.75;
+}
+
+.theme-btn.locked .theme-swatch {
+    filter: saturate(0.55) brightness(0.8);
+}
+
+.theme-btn.locked::after {
+    content: '🔒';
+    margin-left: auto;
+    font-size: 0.8rem;
+    line-height: 1;
+    filter: grayscale(1);
+}
+
+.theme-btn.locked:hover {
+    border-color: var(--border-color);
+    background: var(--bg-item);
+}
+
+.theme-lock-hint {
+    display: block;
+    margin: -0.15rem 0 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* the display:block above would otherwise defeat the [hidden] attribute */
+.theme-lock-hint[hidden] {
+    display: none;
 }
 
 .theme-swatch {

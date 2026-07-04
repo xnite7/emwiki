@@ -4,6 +4,8 @@ class TradingHub {
         this.trades = [];
         this.myTrades = [];
         this.allItems = [];
+        this.wishlist = [];          // item names on the signed-in user's wishlist
+        this._wishlistSet = new Set(); // lowercased, for fast lookup while sorting
         this.filters = {
             status: 'active',
             sort: 'recent',
@@ -53,6 +55,9 @@ class TradingHub {
         this.unreadNotifications = 0;
         this.notifPollTimer = null;
         this.reviewState = { tradeId: null, rating: 0 };
+        // Last seen unread counts, for firing an OS notification only on an
+        // increase. null = not polled yet (so we never notify on first load).
+        this._lastUnread = { notif: null, msg: null };
 
         // Wait for Auth
         if (window.Auth) {
@@ -73,9 +78,11 @@ class TradingHub {
     async init() {
         this.setupEventListeners();
         this.applyAuthState();
+        this.renderSortDropdown();
         await Promise.all([
             this.loadItems(),
-            this.loadTrades()
+            this.loadTrades(),
+            this.loadWishlist()
         ]);
         this.renderTrades();
         this.updateStats();
@@ -147,7 +154,7 @@ class TradingHub {
                 ...(this.filters.search && { search: this.filters.search })
             });
 
-            const response = await fetch(`${this.apiBase}/listings?${params}`);
+            const response = await fetch(`${this.apiBase}/listings?${params}`, { cache: 'no-store' });
             if (!response.ok) throw new Error('Failed to load trades');
 
             const data = await response.json();
@@ -187,8 +194,11 @@ class TradingHub {
 
     async loadMyListings() {
         try {
-            const response = await fetch(`${this.apiBase}/listings?user_id=${this.currentUser.userId}`, {
-                headers: this.authHeaders()
+            // Show ALL of the user's listings here (active, cancelled, completed)
+            // so their trades never silently vanish once they leave 'active'.
+            const response = await fetch(`${this.apiBase}/listings?user_id=${this.currentUser.userId}&status=all`, {
+                headers: this.authHeaders(),
+                cache: 'no-store'
             });
             if (!response.ok) return;
 
@@ -214,7 +224,7 @@ class TradingHub {
 
     async loadMyOffers() {
         try {
-            const response = await fetch(`${this.apiBase}/offers`, { headers: this.authHeaders() });
+            const response = await fetch(`${this.apiBase}/offers`, { headers: this.authHeaders(), cache: 'no-store' });
             if (!response.ok) return;
             const data = await response.json();
             const offers = data.offers || [];
@@ -228,7 +238,7 @@ class TradingHub {
 
     async loadCompletedTrades() {
         try {
-            const response = await fetch(`${this.apiBase}/completed`, { headers: this.authHeaders() });
+            const response = await fetch(`${this.apiBase}/completed`, { headers: this.authHeaders(), cache: 'no-store' });
             if (!response.ok) return;
             const data = await response.json();
             this.completedTrades = data.trades || [];
@@ -302,9 +312,13 @@ class TradingHub {
             this.loadTrades().then(() => this.renderTrades());
         });
 
-        document.getElementById('filterSort')?.addEventListener('change', (e) => {
-            this.filters.sort = e.target.value;
-            this.renderTrades();
+        // Close the custom sort dropdown on any outside click.
+        document.addEventListener('click', (e) => {
+            const wrap = document.getElementById('sortDropdown');
+            if (wrap && !wrap.contains(e.target)) {
+                wrap.classList.remove('open');
+                wrap.querySelector('#sortTrigger')?.setAttribute('aria-expanded', 'false');
+            }
         });
 
         // My trades sub-tabs
@@ -378,6 +392,7 @@ class TradingHub {
                 this.showToast('Please login to view notifications', 'warning');
                 return;
             }
+            this.requestNotificationPermission();
             this.toggleNotifDropdown();
         });
         document.getElementById('notifMarkAllBtn')?.addEventListener('click', () => this.markAllNotificationsRead());
@@ -394,6 +409,7 @@ class TradingHub {
                 this.showToast('Please sign in to view your messages', 'warning');
                 return;
             }
+            this.requestNotificationPermission();
             this.openMessagesModal();
         });
         document.getElementById('closeMessagesModal')?.addEventListener('click', () => this.closeMessagesModal());
@@ -472,6 +488,7 @@ class TradingHub {
         });
         document.getElementById('msgBtn')?.classList.toggle('icon-btn-disabled', !authed);
         document.getElementById('notifBellBtn')?.classList.toggle('icon-btn-disabled', !authed);
+        this.applyThemeLock();
     }
 
     // ==================== TRADE VALUE CALCULATOR ====================
@@ -758,6 +775,94 @@ class TradingHub {
         }
     }
 
+    // ==================== SORT ====================
+
+    // Browse sort options. Each carries an inline SVG shown in the custom
+    // dropdown (native <option> can't render icons).
+    static SORT_OPTIONS = [
+        {
+            value: 'wishlist',
+            label: 'Wishlisted First',
+            // star
+            svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.6 5.27 5.82.85-4.21 4.1.99 5.79L12 17.77l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85z"/></svg>'
+        },
+        {
+            value: 'recent',
+            label: 'Newest First',
+            // clock
+            svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>'
+        },
+        {
+            value: 'biggest',
+            label: 'Biggest Trade',
+            // descending bars
+            svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h5"/></svg>'
+        }
+    ];
+
+    async loadWishlist() {
+        try {
+            if (this.currentUser && localStorage.getItem('auth_token')) {
+                const prefs = await Utils.loadAllFromAccount({ wishlist: [] });
+                this.wishlist = prefs.wishlist || [];
+            } else {
+                this.wishlist = Utils.loadFromStorage('wishlist', []);
+            }
+        } catch (e) {
+            this.wishlist = Utils.loadFromStorage('wishlist', []);
+        }
+        this._wishlistSet = new Set((this.wishlist || []).map(n => String(n).toLowerCase()));
+    }
+
+    // Total item count across both sides (respecting quantities) — the "size" of a trade.
+    tradeSize(trade) {
+        const count = (arr) => (arr || []).reduce((sum, i) => sum + (i.qty && i.qty > 1 ? i.qty : 1), 0);
+        return count(trade.offering_items) + count(trade.seeking_items);
+    }
+
+    // Does this trade offer anything on the user's wishlist?
+    tradeHasWishlistedItem(trade) {
+        if (this._wishlistSet.size === 0) return false;
+        return (trade.offering_items || []).some(i =>
+            i.item_name && this._wishlistSet.has(String(i.item_name).toLowerCase())
+        );
+    }
+
+    // Build the custom sort dropdown (icon + label per option) and wire it up.
+    renderSortDropdown() {
+        const wrap = document.getElementById('sortDropdown');
+        if (!wrap) return;
+        const opts = TradingHub.SORT_OPTIONS;
+        const current = opts.find(o => o.value === this.filters.sort) || opts[0];
+
+        wrap.innerHTML = `
+            <button type="button" class="sort-trigger" id="sortTrigger" aria-haspopup="listbox" aria-expanded="false">
+                <span class="sort-trigger-label">${current.svg}<span>${current.label}</span></span>
+                <svg class="sort-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <ul class="sort-menu" id="sortMenu" role="listbox">
+                ${opts.map(o => `
+                    <li class="sort-option${o.value === this.filters.sort ? ' active' : ''}" role="option" data-sort="${o.value}" aria-selected="${o.value === this.filters.sort}">
+                        ${o.svg}<span>${o.label}</span>
+                    </li>`).join('')}
+            </ul>`;
+
+        const trigger = wrap.querySelector('#sortTrigger');
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const open = wrap.classList.toggle('open');
+            trigger.setAttribute('aria-expanded', String(open));
+        });
+        wrap.querySelectorAll('.sort-option').forEach(li => {
+            li.addEventListener('click', () => {
+                this.filters.sort = li.dataset.sort;
+                wrap.classList.remove('open');
+                this.renderSortDropdown();
+                this.renderTrades();
+            });
+        });
+    }
+
     // ==================== BROWSE RENDERING ====================
 
     renderTrades() {
@@ -779,10 +884,21 @@ class TradingHub {
         }
 
         // Sort
-        if (this.filters.sort === 'recent') {
+        if (this.filters.sort === 'wishlist') {
+            // Trades offering a wishlisted item float to the top; ties broken by newest.
+            filtered.sort((a, b) =>
+                (this.tradeHasWishlistedItem(b) - this.tradeHasWishlistedItem(a)) ||
+                (b.created_at - a.created_at)
+            );
+        } else if (this.filters.sort === 'biggest') {
+            // Most items first, then newest.
+            filtered.sort((a, b) =>
+                (this.tradeSize(b) - this.tradeSize(a)) ||
+                (b.created_at - a.created_at)
+            );
+        } else {
+            // 'recent' (default): newest first.
             filtered.sort((a, b) => b.created_at - a.created_at);
-        } else if (this.filters.sort === 'views') {
-            filtered.sort((a, b) => (b.views || 0) - (a.views || 0));
         }
 
         if (filtered.length === 0) {
@@ -852,16 +968,11 @@ class TradingHub {
             ${trade.description ? `<div class="trade-card-description">${this.esc(trade.description)}</div>` : ''}
             <div class="trade-card-actions">
                 <button class="btn-view-trade" data-id="${trade.id}">View Details</button>
-                ${this.currentUser && trade.user_id !== this.currentUser.userId
-                    ? `<button class="btn-make-offer" data-id="${trade.id}">Make Offer</button>`
-                    : ''
-                }
             </div>
         `;
 
-        // Event listeners
+        // Event listeners — Make Offer lives inside the detail view now.
         card.querySelector('.btn-view-trade')?.addEventListener('click', () => this.viewTrade(trade.id));
-        card.querySelector('.btn-make-offer')?.addEventListener('click', () => this.makeOffer(trade.id));
 
         return card;
     }
@@ -1530,7 +1641,45 @@ class TradingHub {
 
     // ==================== THEME ====================
 
+    // Roles that unlock card themes. Everyone else gets 'default' only.
+    static THEME_ROLES = ['donator', 'vip', 'moderator', 'mod', 'admin'];
+
+    // Does the signed-in user have a role that unlocks card themes?
+    canUseThemes() {
+        const raw = this.currentUser?.role ?? this.currentUser?.roles;
+        if (!raw) return false;
+        let roles = raw;
+        if (typeof roles === 'string') {
+            try { roles = JSON.parse(roles); } catch { roles = [roles]; }
+        }
+        if (!Array.isArray(roles)) return false;
+        return roles.some(r => TradingHub.THEME_ROLES.includes(String(r).toLowerCase()));
+    }
+
+    // Lock the non-default theme buttons for users without a donator role, and
+    // show the "donator perk" hint. Called whenever auth state may have changed.
+    applyThemeLock() {
+        const unlocked = this.canUseThemes();
+        document.querySelectorAll('#themeSelector .theme-btn').forEach(btn => {
+            const locked = !unlocked && btn.dataset.theme !== 'default';
+            btn.classList.toggle('locked', locked);
+            btn.setAttribute('aria-disabled', locked ? 'true' : 'false');
+        });
+        const hint = document.getElementById('themeLockHint');
+        if (hint) hint.hidden = unlocked;
+
+        // If a locked user somehow had a non-default theme selected, reset it.
+        if (!unlocked && this.createMeta.theme && this.createMeta.theme !== 'default') {
+            this.selectTheme('default');
+        }
+    }
+
     selectTheme(theme) {
+        // Gate non-default themes behind a donator role.
+        if (theme !== 'default' && !this.canUseThemes()) {
+            this.showToast('Card themes are a donator perk — unlock them by supporting the wiki.', 'warning');
+            return;
+        }
         this.createMeta.theme = theme;
         document.querySelectorAll('.theme-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.theme === theme);
@@ -1919,14 +2068,60 @@ class TradingHub {
             if (notifRes.ok) {
                 const { unread_count } = await notifRes.json();
                 this.setBadge('notifCount', unread_count);
+                this.maybeOsNotify('notif', unread_count);
             }
             if (msgRes.ok) {
                 const { unread_count } = await msgRes.json();
                 this.setBadge('messagesBadge', unread_count);
+                this.maybeOsNotify('msg', unread_count);
             }
         } catch (error) {
             console.error('Failed to refresh badges:', error);
         }
+    }
+
+    // ---- Desktop / mobile (OS) notifications ----
+    // Foreground Web Notifications: fired when an unread count grows while the
+    // tab is backgrounded. (True push while the site is closed would need a
+    // service worker + Push API + VAPID backend — out of scope here.)
+
+    // Ask for OS-notification permission. Must be called from a user gesture.
+    // Silent if unsupported, already decided, or the user opted out.
+    requestNotificationPermission() {
+        if (!('Notification' in window)) return;
+        if (localStorage.getItem('trade_os_notifs') === 'off') return;
+        if (Notification.permission === 'default') {
+            Notification.requestPermission().then(perm => {
+                if (perm === 'granted') this.showToast('Desktop notifications enabled', 'success');
+            }).catch(() => {});
+        }
+    }
+
+    // Fire an OS notification when a count increased since the last poll.
+    maybeOsNotify(kind, count) {
+        const prev = this._lastUnread[kind];
+        this._lastUnread[kind] = count;
+        if (prev === null || count <= prev) return;              // first poll or not an increase
+        if (localStorage.getItem('trade_os_notifs') === 'off') return;
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
+        // Don't nag while they're actively looking at the page.
+        if (document.visibilityState === 'visible' && document.hasFocus()) return;
+
+        const delta = count - prev;
+        const cfg = kind === 'msg'
+            ? { title: 'New trade message', body: delta > 1 ? `You have ${count} unread messages` : 'You have a new message on Trading Hub', open: () => this.openMessagesModal() }
+            : { title: 'New trade notification', body: delta > 1 ? `You have ${count} new notifications` : 'You have a new trade notification', open: () => this.toggleNotifDropdown() };
+
+        try {
+            const n = new Notification(cfg.title, {
+                body: cfg.body,
+                icon: '/imgs/favicon.png',
+                badge: '/imgs/favicon.png',
+                tag: `emwiki-trade-${kind}`,   // collapse repeats into one
+                renotify: true
+            });
+            n.onclick = () => { window.focus(); n.close(); cfg.open?.(); };
+        } catch (e) { /* Notification constructor can throw on some mobile browsers */ }
     }
 
     setBadge(elementId, count) {

@@ -78,13 +78,17 @@ async function handleGetProfile(request, env) {
         reviews = [];
     }
 
-    // Get recent completed trades (limited info for privacy)
+    // Get recent completed trades (limited info for privacy).
+    // completed_trades stores the traded items as JSON in seller_items/buyer_items
+    // (there is no `item_name` column — selecting it used to throw and silently
+    // leave this empty). We derive a short display name from the seller's items.
     let recentTrades = [];
     try {
         const tradesResult = await env.DBA.prepare(`
             SELECT
                 ct.id,
-                ct.item_name,
+                ct.seller_items,
+                ct.buyer_items,
                 ct.completed_at,
                 CASE
                     WHEN ct.seller_id = ? THEN 'seller'
@@ -95,7 +99,28 @@ async function handleGetProfile(request, env) {
             ORDER BY ct.completed_at DESC
             LIMIT 5
         `).bind(actualUserId, actualUserId, actualUserId).all();
-        recentTrades = tradesResult.results || [];
+
+        const summarize = (json) => {
+            let items;
+            try { items = JSON.parse(json || '[]'); } catch (e) { return 'Trade'; }
+            if (!Array.isArray(items) || items.length === 0) return 'Trade';
+            const first = items[0];
+            let name;
+            if (first.type === 'robux') name = `${first.amount} R$`;
+            else if (first.type === 'other-game') name = `${first.game_name}: ${first.item_name}`;
+            else name = first.item_name || 'Item';
+            if (items.length > 1) name += ` +${items.length - 1} more`;
+            return name;
+        };
+
+        recentTrades = (tradesResult.results || []).map(t => ({
+            id: t.id,
+            role: t.role,
+            completed_at: t.completed_at,
+            // The subject of the trade is the seller's items in both directions
+            // ("Sold X" for the seller, "Bought X" for the buyer).
+            item_name: summarize(t.seller_items)
+        }));
     } catch (e) {
         console.error('Failed to fetch completed_trades (table might not exist):', e);
         recentTrades = [];

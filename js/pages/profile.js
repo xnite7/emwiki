@@ -126,37 +126,48 @@
             card.className = 'user-card';
             card.href = `/profile/${user.user_id}`;
 
-            // Parse roles
+            // Parse roles, pick the single highest tier to colour-code the card.
             let roles = [];
             try {
                 roles = user.role ? JSON.parse(user.role) : [];
             } catch (e) {
                 roles = [];
             }
+            const roleOrder = ['admin', 'moderator', 'mod', 'vip', 'donator'];
+            const topRole = roleOrder.find(r => roles.includes(r)) || null;
+            if (topRole) card.classList.add(`tier-${topRole}`);
 
-            // Filter out 'user' role and get special roles
-            const specialRoles = roles.filter(r => r !== 'user');
-
-            // Get stats (if available)
-            const totalTrades = user.total_trades || 0;
-            const avgRating = user.average_rating || 0;
+            // Reputation — the thing a trader actually wants before dealing.
+            const rating = Number(user.average_rating) || 0;
+            const trades = Number(user.total_trades) || 0;
+            const ratingLabel = rating > 0 ? rating.toFixed(1) : '—';
+            const avatar = (user.avatar_url && user.avatar_url !== 'x')
+                ? user.avatar_url
+                : 'https://emwiki.com/imgs/placeholder.png';
+            const star = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.5l2.6 5.27 5.82.85-4.21 4.1.99 5.79L12 17.77l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85z"/></svg>';
 
             card.innerHTML = `
-                <img src="${user.avatar_url || 'https://emwiki.com/imgs/placeholder.png'}"
-                     alt="${this.escapeHtml(user.display_name)}"
-                     class="user-card-avatar"><div style="flex: 1 1;max-width: 145px;">
-                <h3 class="user-card-name">${this.escapeHtml(user.display_name)}</h3>
-                <p class="user-card-username">@${this.escapeHtml(user.username)}</p></div>
-
-                ${specialRoles.length > 0 ? `
-                    <div class="user-card-roles">
-                        ${specialRoles.map(role => `
-                            <span class="role-badge ${role}">${role.toUpperCase()}</span>
-                        `).join('')}
+                ${topRole ? `<span class="user-card-role role-badge ${topRole}">${topRole.toUpperCase()}</span>` : ''}
+                <div class="user-card-avatar-wrap">
+                    <img class="user-card-avatar"
+                         src="${avatar}"
+                         alt="${this.escapeHtml(user.display_name)}"
+                         onerror="this.src='https://emwiki.com/imgs/placeholder.png'">
+                </div>
+                <div class="user-card-identity">
+                    <h3 class="user-card-name">${this.escapeHtml(user.display_name)}</h3>
+                    <p class="user-card-username">@${this.escapeHtml(user.username)}</p>
+                </div>
+                <div class="user-card-stats">
+                    <div class="user-card-stat">
+                        <span class="user-card-stat-value user-card-rating">${star}${ratingLabel}</span>
+                        <span class="user-card-stat-label">Rating</span>
                     </div>
-                ` : ''}
-
-
+                    <div class="user-card-stat">
+                        <span class="user-card-stat-value">${trades.toLocaleString()}</span>
+                        <span class="user-card-stat-label">${trades === 1 ? 'Trade' : 'Trades'}</span>
+                    </div>
+                </div>
             `;
 
             return card;
