@@ -35,6 +35,22 @@ const CATEGORY_IDS = {
     titles: 'title'
 };
 
+// Category → background class for trade/offer thumbnails, so trade items carry
+// the same colour coding as catalog cards. Accepts both the plural catalog
+// category ("gears") and the singular id ("gear").
+const CATEGORY_BG_CLASS = {
+    gears: 'cat-gear', gear: 'cat-gear',
+    deaths: 'cat-death', death: 'cat-death',
+    pets: 'cat-pet', pet: 'cat-pet',
+    effects: 'cat-effect', effect: 'cat-effect',
+    titles: 'cat-title', title: 'cat-title'
+};
+
+function categoryBgClass(category) {
+    if (!category) return '';
+    return CATEGORY_BG_CLASS[String(category).toLowerCase()] || '';
+}
+
 /**
  * Build a catalog item card.
  * @param {object} item
@@ -200,7 +216,7 @@ export function itemVisualHTML(imgSrc, svg, name, className = '') {
  * variant 'detail'         → .detail-item in the trade detail modal.
  * opts.svg — catalog SVG markup for imageless items (titles).
  */
-export function tradeItemHTML(item, { variant = 'card', svg = null } = {}) {
+export function tradeItemHTML(item, { variant = 'card', svg = null, category = null } = {}) {
     const esc = Utils.escapeHtml;
     const qty = item.qty && item.qty > 1 ? `<span class="item-qty-badge">×${item.qty}</span>` : '';
 
@@ -210,17 +226,19 @@ export function tradeItemHTML(item, { variant = 'card', svg = null } = {}) {
     if (item.type === 'other-game') {
         return `<div class="trade-item-other">${esc(item.game_name)}: ${esc(item.item_name)}${qty}</div>`;
     }
+    const catClass = categoryBgClass(category ?? item.category);
     if (variant === 'detail') {
         return `
             <div class="detail-item">
-                ${itemVisualHTML(item.item_image, svg, item.item_name)}
+                ${itemVisualHTML(item.item_image, svg, item.item_name, catClass)}
                 <span>${esc(item.item_name)}${qty}</span>
             </div>
         `;
     }
+    const imgClass = catClass ? `trade-item-img ${catClass}` : 'trade-item-img';
     return `
         <div class="trade-item">
-            ${itemVisualHTML(item.item_image, svg, item.item_name, 'trade-item-img')}
+            ${itemVisualHTML(item.item_image, svg, item.item_name, imgClass)}
             <span class="trade-item-name">${esc(item.item_name)}${qty}</span>
         </div>
     `;

@@ -203,6 +203,13 @@ class TradingHub {
         return this.itemsByName.get(String(name).toLowerCase())?.svg || null;
     }
 
+    // Catalog category for an item name, so trade thumbnails can carry the same
+    // colour coding as catalog cards.
+    categoryFor(name) {
+        if (!name || !this.itemsByName) return null;
+        return this.itemsByName.get(String(name).toLowerCase())?.category || null;
+    }
+
     // API listing row → the trade shape the UI renders.
     mapListing(listing) {
         return {
@@ -1119,7 +1126,10 @@ class TradingHub {
 
     // Small "×N" badge for stacked items (only shown when qty > 1).
     renderTradeItem(item) {
-        return window.ItemCard.tradeItemHTML(item, { svg: this.svgFor(item.item_name) });
+        return window.ItemCard.tradeItemHTML(item, {
+            svg: this.svgFor(item.item_name),
+            category: item.category || this.categoryFor(item.item_name)
+        });
     }
 
     // Item chips for a trade card side, capped so one huge trade can't stretch
@@ -1448,7 +1458,11 @@ class TradingHub {
     }
 
     renderDetailItem(item) {
-        return window.ItemCard.tradeItemHTML(item, { variant: 'detail', svg: this.svgFor(item.item_name) });
+        return window.ItemCard.tradeItemHTML(item, {
+            variant: 'detail',
+            svg: this.svgFor(item.item_name),
+            category: item.category || this.categoryFor(item.item_name)
+        });
     }
 
     closeDetailModal() {

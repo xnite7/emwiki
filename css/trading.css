@@ -521,6 +521,29 @@
     flex-shrink: 0;
 }
 
+/* Category-coloured tiles behind trade/offer thumbnails — mirrors the catalog
+   card backgrounds so items read the same in both places. */
+.trade-item-img.cat-gear,
+.trade-item-img.cat-death,
+.trade-item-img.cat-effect,
+.trade-item-img.cat-title,
+.trade-item-img.cat-pet,
+.detail-item .cat-gear,
+.detail-item .cat-death,
+.detail-item .cat-effect,
+.detail-item .cat-title,
+.detail-item .cat-pet {
+    box-sizing: border-box;
+    padding: 3px;
+    border-radius: 8px;
+}
+
+.cat-gear { background: #5bfe6a; }
+.cat-death { background: #ff7a5e; }
+.cat-effect { background: #ffb135; }
+.cat-title { background: #c960fe; }
+.cat-pet { background: #377afa; }
+
 /* SVG artwork thumb (titles) — sized like the <img> it replaces, wider box
    because titles are horizontal text art */
 .item-svg-thumb {
