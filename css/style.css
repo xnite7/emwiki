@@ -712,10 +712,10 @@ main {
     cursor: pointer;
     transition: all 0.3s var(--ease-spring);
     position: relative;
-    min-height: 110px;
-    min-width: 110px;
-    max-height: 110px;
-    max-width: 110px;
+    min-height: var(--item-size, 110px);
+    min-width: var(--item-size, 110px);
+    max-height: var(--item-size, 110px);
+    max-width: var(--item-size, 110px);
     box-shadow: 0 0px 0px var(--shadow-color), inset -2px -2px 4px var(--edges-color);
     display: flex;
     border: 1px solid var(--border-color);
@@ -750,8 +750,8 @@ main {
 }
 
 .item:hover::before {
-    width: 90px;
-    height: 90px;
+    width: calc(var(--item-size, 110px) * 0.82);
+    height: calc(var(--item-size, 110px) * 0.82);
 }
 
 .item:hover {
@@ -1507,7 +1507,7 @@ footer {
 
 .catalog-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(var(--item-size, 110px), 1fr));
     /* even, roomier spacing so the grid reads as tidy rows, not a dense wall */
     gap: 22px 20px;
     animation: fadeIn 0.5s;
@@ -2291,6 +2291,75 @@ textarea {
 
 .dropdown-btn:hover {
     background: var(--border-color);
+}
+
+/* Item size slider — lets users scale catalog cards bigger/smaller. */
+.item-size-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--bg-item);
+    border: 2px solid var(--border-color);
+    border-radius: 25px;
+    transition: all 0.3s;
+}
+
+.item-size-control:hover {
+    background: var(--border-color);
+}
+
+.item-size-control .size-icon {
+    color: var(--text-secondary);
+    display: inline-flex;
+    flex-shrink: 0;
+    pointer-events: none;
+}
+
+.item-size-control .size-icon.small svg {
+    width: 12px;
+    height: 12px;
+}
+
+.item-size-control .size-icon.large svg {
+    width: 18px;
+    height: 18px;
+}
+
+.item-size-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 110px;
+    height: 6px;
+    border-radius: 6px;
+    background: var(--border-color);
+    outline: none;
+    cursor: pointer;
+}
+
+.item-size-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent, #4a9eff);
+    border: 2px solid var(--bg-1);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.item-size-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+}
+
+.item-size-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent, #4a9eff);
+    border: 2px solid var(--bg-1);
+    cursor: pointer;
 }
 
 .tag-count {

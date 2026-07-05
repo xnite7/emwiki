@@ -1418,6 +1418,31 @@
                     // Restore filters from URL
                     this.handleURLParams(true);
                 });
+
+                this.initItemSize();
+            }
+
+            // Item size slider: scales catalog cards via the --item-size CSS
+            // variable on the grid, and remembers the choice across visits.
+            initItemSize() {
+                const slider = document.getElementById('item-size-slider');
+                if (!slider) return;
+
+                const saved = parseInt(Utils.loadFromStorage('catalogItemSize', slider.value), 10);
+                const size = Number.isFinite(saved) ? saved : parseInt(slider.value, 10);
+                slider.value = size;
+                this.applyItemSize(size);
+
+                slider.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value, 10);
+                    this.applyItemSize(value);
+                    Utils.saveToStorage('catalogItemSize', value);
+                });
+            }
+
+            applyItemSize(px) {
+                const grid = document.getElementById('catalog');
+                if (grid) grid.style.setProperty('--item-size', `${px}px`);
             }
 
             updateTagCounts() {

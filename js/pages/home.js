@@ -120,7 +120,12 @@
 						Object.entries(outlineColors).forEach(([num, color]) => {
 							if (priceCodeRarity.toLowerCase().includes(num)) {
 								div.style.outline = `4px solid ${color}`;
-								div.style.background = 'unset';
+								// In the "New Items" section, keep the item's category
+								// background instead of clearing it — star-shop items that
+								// are also new shouldn't read as transparent tiles there.
+								if (gridId !== 'new-items-grid') {
+									div.style.background = 'unset';
+								}
 							}
 						});
 
