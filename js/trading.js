@@ -4,6 +4,9 @@ class TradingHub {
         this.trades = [];
         this.myTrades = [];
         this.allItems = [];
+        // Browse-feed pagination (the API caps one request at 100 rows).
+        this.browseOffset = 0;
+        this.browseHasMore = false;
         this.wishlist = [];          // item names on the signed-in user's wishlist
         this._wishlistSet = new Set(); // lowercased, for fast lookup while sorting
         this.filters = {
@@ -147,10 +150,36 @@ class TradingHub {
         return this.itemsByName.get(String(name).toLowerCase())?.svg || null;
     }
 
-    async loadTrades() {
+    // API listing row → the trade shape the UI renders.
+    mapListing(listing) {
+        return {
+            id: listing.id,
+            user_id: listing.user_id,
+            title: listing.title,
+            description: listing.description,
+            category: listing.category,
+            status: listing.status,
+            theme: listing.theme || 'default',
+            offering_items: listing.offering_items || [],
+            seeking_items: listing.seeking_items || [],
+            created_at: listing.created_at,
+            updated_at: listing.updated_at,
+            views: listing.views || 0,
+            user: listing.user
+        };
+    }
+
+    // Load a page of the browse feed. reset=true (default) starts over — used by
+    // init, tab switches and filter/search changes; reset=false appends the next
+    // page ("Load More"). The API caps a single request at 100 rows, so paging
+    // is the only way to see everything.
+    async loadTrades(reset = true) {
+        if (reset) this.browseOffset = 0;
         try {
             const params = new URLSearchParams({
                 status: this.filters.status,
+                limit: String(TradingHub.BROWSE_PAGE_SIZE),
+                offset: String(this.browseOffset),
                 ...(this.filters.search && { search: this.filters.search })
             });
 
@@ -158,25 +187,24 @@ class TradingHub {
             if (!response.ok) throw new Error('Failed to load trades');
 
             const data = await response.json();
-            this.trades = (data.listings || []).map(listing => ({
-                id: listing.id,
-                user_id: listing.user_id,
-                title: listing.title,
-                description: listing.description,
-                category: listing.category,
-                status: listing.status,
-                theme: listing.theme || 'default',
-                offering_items: listing.offering_items || [],
-                seeking_items: listing.seeking_items || [],
-                created_at: listing.created_at,
-                updated_at: listing.updated_at,
-                views: listing.views || 0,
-                user: listing.user
-            }));
+            const batch = (data.listings || []).map(l => this.mapListing(l));
+            this.trades = reset ? batch : [...this.trades, ...batch];
+            this.browseOffset += batch.length;
+            // A full page means there are probably more rows behind it.
+            this.browseHasMore = batch.length === TradingHub.BROWSE_PAGE_SIZE;
         } catch (error) {
             console.error('Error loading trades:', error);
             this.showToast('Failed to load trades', 'error');
         }
+    }
+
+    async loadMoreTrades() {
+        const btn = document.getElementById('loadMoreBtn');
+        if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+        await this.loadTrades(false);
+        if (btn) { btn.disabled = false; btn.textContent = 'Load More'; }
+        this.renderTrades();
+        this.updateStats();
     }
 
     async loadMyTrades() {
@@ -196,7 +224,9 @@ class TradingHub {
         try {
             // Show ALL of the user's listings here (active, cancelled, completed)
             // so their trades never silently vanish once they leave 'active'.
-            const response = await fetch(`${this.apiBase}/listings?user_id=${this.currentUser.userId}&status=all`, {
+            // limit=100 (server max) — the default of 20 silently hid listings
+            // for anyone with more than a page of trades.
+            const response = await fetch(`${this.apiBase}/listings?user_id=${this.currentUser.userId}&status=all&limit=100`, {
                 headers: this.authHeaders(),
                 cache: 'no-store'
             });
@@ -305,6 +335,9 @@ class TradingHub {
                 }, 300);
             });
         }
+
+        // Browse feed pagination
+        document.getElementById('loadMoreBtn')?.addEventListener('click', () => this.loadMoreTrades());
 
         // Filters
         document.getElementById('filterStatus')?.addEventListener('change', (e) => {
@@ -452,6 +485,8 @@ class TradingHub {
 
         if (tab === 'browse') {
             document.getElementById('panelBrowse')?.classList.add('active');
+            // Refetch so the feed isn't frozen at whatever loaded on page-open.
+            this.loadTrades().then(() => this.renderTrades());
         } else if (tab === 'my-trades') {
             document.getElementById('panelMyTrades')?.classList.add('active');
             if (!this.currentUser) {
@@ -498,6 +533,9 @@ class TradingHub {
 
     // Max item chips shown per side on a feed card before collapsing to "+N".
     static CARD_MAX_ITEMS = 8;
+
+    // Browse feed page size (server caps a single request at 100).
+    static BROWSE_PAGE_SIZE = 24;
 
     setupCalculator() {
         ['your', 'their'].forEach(side => {
@@ -900,6 +938,12 @@ class TradingHub {
             // 'recent' (default): newest first.
             filtered.sort((a, b) => b.created_at - a.created_at);
         }
+
+        // "Load More" is visible whenever the server may have another page —
+        // even alongside the empty state (client-side filters can hide a whole
+        // page while more rows exist behind it).
+        const loadMore = document.getElementById('loadMoreContainer');
+        if (loadMore) loadMore.style.display = this.browseHasMore ? '' : 'none';
 
         if (filtered.length === 0) {
             feed.innerHTML = `

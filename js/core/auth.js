@@ -1041,6 +1041,9 @@ class Auth extends EventTarget {
             </div>
         `;
 
+        // Sync the tax buttons / price toggle to the user's saved prefs (the
+        // markup above defaults to Flat + prices-on).
+        window.appSettings?.reflectUI?.();
     }
 
 

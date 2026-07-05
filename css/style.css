@@ -524,7 +524,9 @@ img {
 /* Main Content */
 main {
     padding: 30px 20px;
-    max-width: 1400px;
+    /* Consistent, calmer content column across pages (was 1400px — too wide,
+       content sprawled edge-to-edge on desktop). Matches the catalog width. */
+    max-width: 1120px;
     box-shadow: 0 4px 20px var(--shadow-color);
     border-bottom: 2px solid var(--border-color);
     background: var(--bg-1);
@@ -1506,10 +1508,21 @@ footer {
 .catalog-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-    gap: 23px 15px;
+    /* even, roomier spacing so the grid reads as tidy rows, not a dense wall */
+    gap: 22px 20px;
     animation: fadeIn 0.5s;
     justify-items: center;
     padding-bottom: 20px;
+}
+
+/* Keep the catalog content in a calm, centered column instead of stretching to
+   ~11 tiny columns edge-to-edge on wide screens (the "too clustered" feel). */
+.filters,
+.stats,
+.catalog-container {
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 #recent-viewed-items {
