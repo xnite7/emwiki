@@ -4,9 +4,9 @@ class TradingHub {
         this.trades = [];
         this.myTrades = [];
         this.allItems = [];
-        // Browse-feed pagination (the API caps one request at 100 rows).
-        this.browseOffset = 0;
-        this.browseHasMore = false;
+        // Browse-feed pagination: numbered pages over the server's total count.
+        this.browsePage = 1;
+        this.browseTotal = 0;
         this.wishlist = [];          // item names on the signed-in user's wishlist
         this._wishlistSet = new Set(); // lowercased, for fast lookup while sorting
         this.filters = {
@@ -57,6 +57,11 @@ class TradingHub {
         this.notifications = [];
         this.unreadNotifications = 0;
         this.notifPollTimer = null;
+        this.autoRefreshTimer = null;
+        this.msgPollTimer = null;
+        // Change fingerprints so background polls only re-render on new data.
+        this._threadFingerprint = null;
+        this._convFingerprint = null;
         this.reviewState = { tradeId: null, rating: 0 };
         // Last seen unread counts, for firing an OS notification only on an
         // increase. null = not polled yet (so we never notify on first load).
@@ -95,6 +100,54 @@ class TradingHub {
             this.refreshBadges();
             this.startNotificationPolling();
         }
+
+        // Keep the visible tab's data fresh without manual reloads.
+        this.startAutoRefresh();
+    }
+
+    // ==================== AUTO-REFRESH ====================
+
+    // How often the visible feed re-fetches (browse / my-trades).
+    static FEED_REFRESH_MS = 30000;
+    // How often conversations + the open thread poll while the messages modal is open.
+    static MESSAGES_POLL_MS = 10000;
+
+    startAutoRefresh() {
+        if (this.autoRefreshTimer) clearInterval(this.autoRefreshTimer);
+        this.autoRefreshTimer = setInterval(() => this.refreshActivePanel(), TradingHub.FEED_REFRESH_MS);
+
+        // Catch up immediately when the user returns to the tab.
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState !== 'visible') return;
+            this.refreshActivePanel();
+            if (this.currentUser) this.refreshBadges();
+        });
+    }
+
+    refreshActivePanel() {
+        if (document.visibilityState !== 'visible') return;
+        // Only re-render when the data actually changed, so a background poll
+        // never yanks the feed out from under the user mid-scroll/click.
+        if (this.activeTab === 'browse') {
+            const before = this._browseFingerprint();
+            this.loadTrades(this.browsePage).then(() => {
+                if (this._browseFingerprint() !== before) this.renderTrades();
+            });
+        } else if (this.activeTab === 'my-trades' && this.currentUser) {
+            const before = this._myTradesFingerprint();
+            this.loadMyTrades().then(() => {
+                if (this._myTradesFingerprint() !== before) this.renderMyTrades();
+            });
+        }
+    }
+
+    _browseFingerprint() {
+        return this.browseTotal + ':' + this.trades.map(t => `${t.id}.${t.status}.${t.updated_at}`).join(',');
+    }
+
+    _myTradesFingerprint() {
+        const ids = (arr, key = 'status') => arr.map(x => `${x.id}.${x[key]}`).join(',');
+        return `${ids(this.myTrades)}|${ids(this.receivedOffers)}|${ids(this.sentOffers)}|${ids(this.completedTrades, 'reviewed_by_me')}`;
     }
 
     // Authorization header for authenticated requests (empty if logged out).
@@ -169,17 +222,16 @@ class TradingHub {
         };
     }
 
-    // Load a page of the browse feed. reset=true (default) starts over — used by
-    // init, tab switches and filter/search changes; reset=false appends the next
-    // page ("Load More"). The API caps a single request at 100 rows, so paging
-    // is the only way to see everything.
-    async loadTrades(reset = true) {
-        if (reset) this.browseOffset = 0;
+    // Load one page of the browse feed (1-based page number). The server
+    // returns the total row count for the current filters, which drives the
+    // numbered pagination bar.
+    async loadTrades(page = 1) {
+        this.browsePage = Math.max(1, page);
         try {
             const params = new URLSearchParams({
                 status: this.filters.status,
                 limit: String(TradingHub.BROWSE_PAGE_SIZE),
-                offset: String(this.browseOffset),
+                offset: String((this.browsePage - 1) * TradingHub.BROWSE_PAGE_SIZE),
                 ...(this.filters.search && { search: this.filters.search })
             });
 
@@ -187,24 +239,24 @@ class TradingHub {
             if (!response.ok) throw new Error('Failed to load trades');
 
             const data = await response.json();
-            const batch = (data.listings || []).map(l => this.mapListing(l));
-            this.trades = reset ? batch : [...this.trades, ...batch];
-            this.browseOffset += batch.length;
-            // A full page means there are probably more rows behind it.
-            this.browseHasMore = batch.length === TradingHub.BROWSE_PAGE_SIZE;
+            this.trades = (data.listings || []).map(l => this.mapListing(l));
+            this.browseTotal = Number.isFinite(data.total) ? data.total : this.trades.length;
         } catch (error) {
             console.error('Error loading trades:', error);
             this.showToast('Failed to load trades', 'error');
         }
     }
 
-    async loadMoreTrades() {
-        const btn = document.getElementById('loadMoreBtn');
-        if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
-        await this.loadTrades(false);
-        if (btn) { btn.disabled = false; btn.textContent = 'Load More'; }
+    browsePageCount() {
+        return Math.max(1, Math.ceil(this.browseTotal / TradingHub.BROWSE_PAGE_SIZE));
+    }
+
+    async goToPage(page) {
+        const target = Math.min(Math.max(1, page), this.browsePageCount());
+        await this.loadTrades(target);
         this.renderTrades();
-        this.updateStats();
+        // Put the top of the new page in view.
+        document.querySelector('.trading-tabs, #tradesFeed')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     async loadMyTrades() {
@@ -293,7 +345,11 @@ class TradingHub {
     }
 
     updateStats() {
-        const activeTrades = this.trades.filter(t => t.status === 'active').length;
+        // With paged results the server total is the real count for the current
+        // status filter; fall back to counting the page for other filters.
+        const activeTrades = this.filters.status === 'active'
+            ? this.browseTotal
+            : this.trades.filter(t => t.status === 'active').length;
         const completed = this.trades.filter(t => t.status === 'completed').length;
         const uniqueTraders = new Set(this.trades.map(t => t.user_id)).size;
 
@@ -336,8 +392,12 @@ class TradingHub {
             });
         }
 
-        // Browse feed pagination
-        document.getElementById('loadMoreBtn')?.addEventListener('click', () => this.loadMoreTrades());
+        // Browse feed pagination (numbered page buttons, rendered dynamically)
+        document.getElementById('paginationContainer')?.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-page]');
+            if (!btn || btn.disabled) return;
+            this.goToPage(parseInt(btn.dataset.page, 10));
+        });
 
         // Filters
         document.getElementById('filterStatus')?.addEventListener('change', (e) => {
@@ -486,7 +546,7 @@ class TradingHub {
         if (tab === 'browse') {
             document.getElementById('panelBrowse')?.classList.add('active');
             // Refetch so the feed isn't frozen at whatever loaded on page-open.
-            this.loadTrades().then(() => this.renderTrades());
+            this.loadTrades(this.browsePage).then(() => this.renderTrades());
         } else if (tab === 'my-trades') {
             document.getElementById('panelMyTrades')?.classList.add('active');
             if (!this.currentUser) {
@@ -914,10 +974,17 @@ class TradingHub {
             filtered = filtered.filter(t => t.status === this.filters.status);
         }
         if (this.filters.search) {
+            // Mirror the server's search: title, description, or any item name
+            // on either side of the trade.
             const q = this.filters.search.toLowerCase();
+            const itemMatch = (items) => (items || []).some(i =>
+                (i.item_name || i.game_name || '').toLowerCase().includes(q)
+            );
             filtered = filtered.filter(t =>
                 t.title?.toLowerCase().includes(q) ||
-                t.description?.toLowerCase().includes(q)
+                t.description?.toLowerCase().includes(q) ||
+                itemMatch(t.offering_items) ||
+                itemMatch(t.seeking_items)
             );
         }
 
@@ -939,11 +1006,9 @@ class TradingHub {
             filtered.sort((a, b) => b.created_at - a.created_at);
         }
 
-        // "Load More" is visible whenever the server may have another page —
-        // even alongside the empty state (client-side filters can hide a whole
-        // page while more rows exist behind it).
-        const loadMore = document.getElementById('loadMoreContainer');
-        if (loadMore) loadMore.style.display = this.browseHasMore ? '' : 'none';
+        // The pagination bar stays visible even alongside the empty state —
+        // other pages can still hold results.
+        this.renderPagination();
 
         if (filtered.length === 0) {
             feed.innerHTML = `
@@ -964,6 +1029,37 @@ class TradingHub {
         });
 
         this.updateStats();
+    }
+
+    // Numbered page buttons (‹ 1 … 4 [5] 6 … 12 ›): first/last always shown,
+    // ±1 around the current page, gaps collapsed to an ellipsis.
+    renderPagination() {
+        const container = document.getElementById('paginationContainer');
+        if (!container) return;
+        const pages = this.browsePageCount();
+        if (pages <= 1) {
+            container.innerHTML = '';
+            container.style.display = 'none';
+            return;
+        }
+        container.style.display = '';
+
+        const current = Math.min(this.browsePage, pages);
+        const wanted = new Set([1, pages, current - 1, current, current + 1]);
+        const parts = [];
+        let prev = 0;
+        for (let p = 1; p <= pages; p++) {
+            if (!wanted.has(p)) continue;
+            if (prev && p - prev > 1) parts.push('<span class="page-ellipsis">…</span>');
+            parts.push(`<button type="button" class="page-btn${p === current ? ' active' : ''}" data-page="${p}"${p === current ? ' aria-current="page"' : ''}>${p}</button>`);
+            prev = p;
+        }
+
+        container.innerHTML = `
+            <button type="button" class="page-btn page-nav" data-page="${current - 1}"${current <= 1 ? ' disabled' : ''} aria-label="Previous page">‹</button>
+            ${parts.join('')}
+            <button type="button" class="page-btn page-nav" data-page="${current + 1}"${current >= pages ? ' disabled' : ''} aria-label="Next page">›</button>
+        `;
     }
 
     createTradeCard(trade) {
@@ -1547,12 +1643,10 @@ class TradingHub {
     }
 
     openCustomItemForOffer() {
-        // Re-use the existing custom item modal but route its result into the offer state.
-        // The wizard's custom modal flow uses `this.currentCustomItemsKey` to know where to push.
-        // We set a sentinel value the existing handler honors via addOfferCustomItem().
-        this.currentCustomItemsKey = '__offer__';
-        const modal = document.getElementById('customItemModal');
-        if (modal) modal.classList.add('active');
+        // Re-use the shared custom item modal; the '__offer__' sentinel routes
+        // the result into the offer state (see addCustomItem). openCustomModal
+        // also resets the type toggle and clears stale field values.
+        this.openCustomModal('__offer__');
     }
 
     async submitOffer() {
@@ -1835,21 +1929,49 @@ class TradingHub {
     openMessagesModal() {
         document.getElementById('messagesModal')?.classList.add('active');
         this.loadConversations();
+        this.startMessagesPolling();
     }
 
     closeMessagesModal() {
         document.getElementById('messagesModal')?.classList.remove('active');
+        this.stopMessagesPolling();
+    }
+
+    // While the messages modal is open, poll for new messages so replies show
+    // up without reopening the modal.
+    startMessagesPolling() {
+        this.stopMessagesPolling();
+        this.msgPollTimer = setInterval(() => {
+            if (document.visibilityState !== 'visible') return;
+            this.loadConversations();
+            if (this.activeThread) this.loadThread({ silent: true });
+        }, TradingHub.MESSAGES_POLL_MS);
+    }
+
+    stopMessagesPolling() {
+        if (this.msgPollTimer) {
+            clearInterval(this.msgPollTimer);
+            this.msgPollTimer = null;
+        }
     }
 
     async loadConversations() {
         const list = document.getElementById('conversationsList');
         if (!list) return;
         try {
-            const response = await fetch(`${this.apiBase}/messages/conversations`, { headers: this.authHeaders() });
+            const response = await fetch(`${this.apiBase}/messages/conversations`, { headers: this.authHeaders(), cache: 'no-store' });
             if (!response.ok) throw new Error('Failed to load conversations');
             const data = await response.json();
             this.conversations = data.conversations || [];
-            this.renderConversations();
+            // Skip the re-render when nothing changed so background polls don't
+            // rebuild the list under the user's cursor.
+            const fp = JSON.stringify(this.conversations.map(c =>
+                [c.other_user?.user_id, c.listing_id, c.last_message_at, c.unread_count]
+            ));
+            if (fp !== this._convFingerprint) {
+                this._convFingerprint = fp;
+                this.renderConversations();
+            }
         } catch (error) {
             console.error('Failed to load conversations:', error);
             list.innerHTML = this.emptyState('Could not load messages', 'Please try again later.');
@@ -1903,7 +2025,10 @@ class TradingHub {
         this.loadThread();
     }
 
-    async loadThread() {
+    // Load (or silently re-poll) the active thread. `silent` skips the loading
+    // placeholder and only re-renders when new messages arrived, so the poll
+    // doesn't flicker the view or jump the scroll position.
+    async loadThread({ silent = false } = {}) {
         if (!this.activeThread) return;
         const empty = document.getElementById('threadEmpty');
         const active = document.getElementById('threadActive');
@@ -1914,20 +2039,27 @@ class TradingHub {
         if (empty) empty.style.display = 'none';
         active.style.display = '';
         if (header) header.textContent = this.activeThread.name;
-        messagesEl.innerHTML = '<div class="thread-loading">Loading…</div>';
+        if (!silent) messagesEl.innerHTML = '<div class="thread-loading">Loading…</div>';
 
         try {
             const params = new URLSearchParams({ with_user_id: this.activeThread.userId });
             if (this.activeThread.listingId) params.set('listing_id', this.activeThread.listingId);
-            const response = await fetch(`${this.apiBase}/messages?${params}`, { headers: this.authHeaders() });
+            const response = await fetch(`${this.apiBase}/messages?${params}`, { headers: this.authHeaders(), cache: 'no-store' });
             if (!response.ok) throw new Error('Failed to load messages');
             const data = await response.json();
-            this.renderThread(data.messages || []);
+            const messages = data.messages || [];
+
+            const last = messages[messages.length - 1];
+            const fp = `${this.activeThread.userId}:${this.activeThread.listingId}:${messages.length}:${last?.id ?? 0}`;
+            if (silent && fp === this._threadFingerprint) return;
+            this._threadFingerprint = fp;
+
+            this.renderThread(messages);
             // Server marks incoming messages read on fetch — refresh unread badges.
             this.refreshBadges();
         } catch (error) {
             console.error('Failed to load thread:', error);
-            messagesEl.innerHTML = '<div class="thread-loading">Could not load messages.</div>';
+            if (!silent) messagesEl.innerHTML = '<div class="thread-loading">Could not load messages.</div>';
         }
     }
 

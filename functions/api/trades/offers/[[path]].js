@@ -7,7 +7,10 @@ import {
     createNotification,
     updateUserStats,
     getUserWithStats,
-    safeJsonParse
+    safeJsonParse,
+    normalizeUserId,
+    userIdForms,
+    isSameUser
 } from '../_utils/helpers.js';
 
 // Handle GET requests
@@ -26,15 +29,17 @@ async function handleGet(request, env, path, user) {
         let query = 'SELECT o.*, l.title as listing_title FROM trade_offers o JOIN trade_listings l ON o.listing_id = l.id WHERE 1=1';
         const bindings = [];
 
+        // Match both the canonical and legacy ".0" id forms (see helpers).
+        const me = userIdForms(user.user_id);
         if (type === 'sent') {
-            query += ' AND o.from_user_id = ?';
-            bindings.push(user.user_id);
+            query += ' AND o.from_user_id IN (?, ?)';
+            bindings.push(...me);
         } else if (type === 'received') {
-            query += ' AND o.to_user_id = ?';
-            bindings.push(user.user_id);
+            query += ' AND o.to_user_id IN (?, ?)';
+            bindings.push(...me);
         } else {
-            query += ' AND (o.from_user_id = ? OR o.to_user_id = ?)';
-            bindings.push(user.user_id, user.user_id);
+            query += ' AND (o.from_user_id IN (?, ?) OR o.to_user_id IN (?, ?))';
+            bindings.push(...me, ...me);
         }
 
         if (status) {
@@ -53,21 +58,23 @@ async function handleGet(request, env, path, user) {
 
             return {
                 ...offer,
+                from_user_id: normalizeUserId(offer.from_user_id),
+                to_user_id: normalizeUserId(offer.to_user_id),
                 offered_items: safeJsonParse(offer.offered_items),
-                from_user: {
+                from_user: fromUser ? {
                     user_id: fromUser.user_id,
                     username: fromUser.username,
                     display_name: fromUser.display_name,
                     avatar_url: fromUser.avatar_url,
                     average_rating: fromUser.average_rating || 0
-                },
-                to_user: {
+                } : null,
+                to_user: toUser ? {
                     user_id: toUser.user_id,
                     username: toUser.username,
                     display_name: toUser.display_name,
                     avatar_url: toUser.avatar_url,
                     average_rating: toUser.average_rating || 0
-                }
+                } : null
             };
         }));
 
@@ -86,7 +93,7 @@ async function handleGet(request, env, path, user) {
         }
 
         // Check authorization - must be sender or receiver
-        if (offer.from_user_id !== user.user_id && offer.to_user_id !== user.user_id) {
+        if (!isSameUser(offer.from_user_id, user.user_id) && !isSameUser(offer.to_user_id, user.user_id)) {
             return errorResponse('Unauthorized to view this offer', 403);
         }
 
@@ -95,6 +102,8 @@ async function handleGet(request, env, path, user) {
 
         return successResponse({
             ...offer,
+            from_user_id: normalizeUserId(offer.from_user_id),
+            to_user_id: normalizeUserId(offer.to_user_id),
             offered_items: safeJsonParse(offer.offered_items),
             listing_items: safeJsonParse(offer.listing_items),
             from_user: {
@@ -146,7 +155,7 @@ async function handlePost(request, env, path, user) {
         }
 
         // Can't make offer on own listing
-        if (listing.user_id === user.user_id) {
+        if (isSameUser(listing.user_id, user.user_id)) {
             return errorResponse('Cannot make offer on your own listing', 400);
         }
 
@@ -164,7 +173,7 @@ async function handlePost(request, env, path, user) {
         ).bind(
             listing_id,
             user.user_id,
-            listing.user_id,
+            normalizeUserId(listing.user_id),
             JSON.stringify(offered_items),
             message || null,
             now,
@@ -202,7 +211,7 @@ async function handlePost(request, env, path, user) {
         }
 
         // Must be the listing owner
-        if (offer.to_user_id !== user.user_id) {
+        if (!isSameUser(offer.to_user_id, user.user_id)) {
             return errorResponse('Only the listing owner can accept offers', 403);
         }
 
@@ -237,8 +246,8 @@ async function handlePost(request, env, path, user) {
         ).bind(
             offer.listing_id,
             offerId,
-            offer.to_user_id,
-            offer.from_user_id,
+            normalizeUserId(offer.to_user_id),
+            normalizeUserId(offer.from_user_id),
             offer.listing_items,
             offer.offered_items,
             now
@@ -280,7 +289,7 @@ async function handlePost(request, env, path, user) {
         }
 
         // Must be the listing owner
-        if (offer.to_user_id !== user.user_id) {
+        if (!isSameUser(offer.to_user_id, user.user_id)) {
             return errorResponse('Only the listing owner can reject offers', 403);
         }
 
@@ -313,7 +322,7 @@ async function handlePost(request, env, path, user) {
         }
 
         // Must be the offer sender
-        if (offer.from_user_id !== user.user_id) {
+        if (!isSameUser(offer.from_user_id, user.user_id)) {
             return errorResponse('You can only cancel your own offers', 403);
         }
 

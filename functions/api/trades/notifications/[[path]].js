@@ -2,7 +2,9 @@ import {
     authenticateUser,
     isAuthorized,
     errorResponse,
-    successResponse
+    successResponse,
+    userIdForms,
+    isSameUser
 } from '../_utils/helpers.js';
 
 // Handle GET requests
@@ -19,8 +21,9 @@ async function handleGet(request, env, path, user) {
         const limit = Math.min(parseInt(url.searchParams.get('limit') || '50'), 100);
         const offset = parseInt(url.searchParams.get('offset') || '0');
 
-        let query = 'SELECT * FROM trade_notifications WHERE user_id = ?';
-        const bindings = [user.user_id];
+        // Match both the canonical and legacy ".0" id forms (see helpers).
+        let query = 'SELECT * FROM trade_notifications WHERE user_id IN (?, ?)';
+        const bindings = [...userIdForms(user.user_id)];
 
         if (unreadOnly) {
             query += ' AND read = 0';
@@ -37,8 +40,8 @@ async function handleGet(request, env, path, user) {
     // GET /api/trades/notifications/unread-count - Get unread count
     if (path === 'unread-count') {
         const result = await env.DBA.prepare(
-            'SELECT COUNT(*) as count FROM trade_notifications WHERE user_id = ? AND read = 0'
-        ).bind(user.user_id).first();
+            'SELECT COUNT(*) as count FROM trade_notifications WHERE user_id IN (?, ?) AND read = 0'
+        ).bind(...userIdForms(user.user_id)).first();
 
         return successResponse({ unread_count: result.count });
     }
@@ -55,7 +58,7 @@ async function handleGet(request, env, path, user) {
         }
 
         // Can only view own notifications
-        if (notification.user_id !== user.user_id) {
+        if (!isSameUser(notification.user_id, user.user_id)) {
             return errorResponse('Unauthorized to view this notification', 403);
         }
 
@@ -86,7 +89,7 @@ async function handlePost(request, env, path, user) {
         }
 
         // Can only mark own notifications as read
-        if (notification.user_id !== user.user_id) {
+        if (!isSameUser(notification.user_id, user.user_id)) {
             return errorResponse('Unauthorized', 403);
         }
 
@@ -100,8 +103,8 @@ async function handlePost(request, env, path, user) {
     // POST /api/trades/notifications/read-all - Mark all as read
     if (path === 'read-all') {
         await env.DBA.prepare(
-            'UPDATE trade_notifications SET read = 1 WHERE user_id = ? AND read = 0'
-        ).bind(user.user_id).run();
+            'UPDATE trade_notifications SET read = 1 WHERE user_id IN (?, ?) AND read = 0'
+        ).bind(...userIdForms(user.user_id)).run();
 
         return successResponse({ message: 'All notifications marked as read' });
     }
@@ -130,7 +133,7 @@ async function handleDelete(request, env, path, user) {
     }
 
     // Can only delete own notifications
-    if (notification.user_id !== user.user_id) {
+    if (!isSameUser(notification.user_id, user.user_id)) {
         return errorResponse('Unauthorized', 403);
     }
 

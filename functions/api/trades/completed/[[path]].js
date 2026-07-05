@@ -5,7 +5,9 @@ import {
     successResponse,
     getUserWithStats,
     parsePagination,
-    safeJsonParse
+    safeJsonParse,
+    userIdForms,
+    isSameUser
 } from '../_utils/helpers.js';
 
 // Handle GET requests
@@ -20,19 +22,21 @@ async function handleGet(request, env, path, user) {
     if (!path || path === '') {
         const { limit, offset } = parsePagination(url);
 
+        // Match both the canonical and legacy ".0" id forms (see helpers).
+        const me = userIdForms(user.user_id);
         const { results } = await env.DBA.prepare(`
             SELECT
                 ct.*,
                 (SELECT COUNT(*) FROM trade_reviews r
-                 WHERE r.trade_id = ct.id AND r.reviewer_id = ?) AS reviewed_by_me
+                 WHERE r.trade_id = ct.id AND r.reviewer_id IN (?, ?)) AS reviewed_by_me
             FROM completed_trades ct
-            WHERE ct.seller_id = ? OR ct.buyer_id = ?
+            WHERE ct.seller_id IN (?, ?) OR ct.buyer_id IN (?, ?)
             ORDER BY ct.completed_at DESC
             LIMIT ? OFFSET ?
-        `).bind(user.user_id, user.user_id, user.user_id, limit, offset).all();
+        `).bind(...me, ...me, ...me, limit, offset).all();
 
         const trades = await Promise.all((results || []).map(async (trade) => {
-            const isSeller = trade.seller_id === user.user_id;
+            const isSeller = isSameUser(trade.seller_id, user.user_id);
             const otherUserId = isSeller ? trade.buyer_id : trade.seller_id;
             const otherUser = await getUserWithStats(env, otherUserId);
 
@@ -71,17 +75,17 @@ async function handleGet(request, env, path, user) {
         }
 
         // Only participants can view
-        if (trade.seller_id !== user.user_id && trade.buyer_id !== user.user_id) {
+        if (!isSameUser(trade.seller_id, user.user_id) && !isSameUser(trade.buyer_id, user.user_id)) {
             return errorResponse('Unauthorized to view this trade', 403);
         }
 
-        const isSeller = trade.seller_id === user.user_id;
+        const isSeller = isSameUser(trade.seller_id, user.user_id);
         const otherUserId = isSeller ? trade.buyer_id : trade.seller_id;
         const otherUser = await getUserWithStats(env, otherUserId);
 
         const existingReview = await env.DBA.prepare(
-            'SELECT id FROM trade_reviews WHERE trade_id = ? AND reviewer_id = ?'
-        ).bind(tradeId, user.user_id).first();
+            'SELECT id FROM trade_reviews WHERE trade_id = ? AND reviewer_id IN (?, ?)'
+        ).bind(tradeId, ...userIdForms(user.user_id)).first();
 
         return successResponse({
             trade: {
