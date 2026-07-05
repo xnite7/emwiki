@@ -1,7 +1,7 @@
 /* Split out of the old js/script.js (see git history). Loaded via js/core/bridge.js. */
 import { Utils } from './utils.js';
 import { ItemModal } from '../components/item-modal.js';
-import { renderItemCard, addItemBadges } from '../components/item-card.js';
+import { renderItemCard, addItemBadges, fitItemName } from '../components/item-card.js';
 
 // ==================== BASE APP CLASS ====================
 class BaseApp {
@@ -904,6 +904,7 @@ class BaseApp {
                     <small class="item-name">${item.name}</small>
                     <div class="remove-wishlist">×</div>
                 `;
+                fitItemName(div.querySelector('.item-name'), item.name);
 
                 if (item.img) {
                     const img = document.createElement('img');
@@ -964,6 +965,7 @@ class BaseApp {
                 const div = document.createElement('div');
                 div.className = 'item';
                 div.innerHTML = `<small class="item-name" style="z-index:2;font-size:10px;margin-top:5px;">${item.name}</small>`;
+                fitItemName(div.querySelector('.item-name'), item.name, 10);
                 if (item.img) {
                     const img = document.createElement('img');
                     img.loading = 'lazy';

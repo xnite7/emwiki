@@ -51,6 +51,22 @@ function categoryBgClass(category) {
     return CATEGORY_BG_CLASS[String(category).toLowerCase()] || '';
 }
 
+// Card names sit above an absolutely-centered image, so a long name that wraps
+// to three-plus lines ends up covering the picture. Shrink the font of longer
+// names so they stay within the top strip instead of overlapping the artwork.
+// Short names (up to NAME_FIT_THRESHOLD chars) render at their normal size.
+const NAME_FIT_THRESHOLD = 14;
+const NAME_FIT_BASE_PX = 12.5;
+const NAME_FIT_MIN_PX = 8.5;
+
+export function fitItemName(nameEl, name, baseSize = NAME_FIT_BASE_PX) {
+    if (!nameEl) return;
+    const len = (name || '').length;
+    if (len <= NAME_FIT_THRESHOLD) return;
+    const size = Math.max(NAME_FIT_MIN_PX, baseSize * NAME_FIT_THRESHOLD / len);
+    nameEl.style.fontSize = `${Math.round(size * 10) / 10}px`;
+}
+
 /**
  * Build a catalog item card.
  * @param {object} item
@@ -75,6 +91,7 @@ export function renderItemCard(item, ctx = {}) {
     const name = document.createElement('small');
     name.className = 'item-name';
     name.textContent = item.name;
+    fitItemName(name, item.name);
     div.appendChild(name);
 
     // Image/SVG — native lazy-loaded <img> with fixed dimensions: avoids the

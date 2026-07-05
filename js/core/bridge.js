@@ -19,7 +19,7 @@ import { CountdownManager } from './countdown.js';
 import { Confetti } from './confetti.js';
 import { PopoverManager } from './popover-manager.js';
 import { api, ApiError } from './api.js';
-import { renderItemCard, addItemBadges, tradeItemHTML, itemVisualHTML } from '../components/item-card.js';
+import { renderItemCard, addItemBadges, tradeItemHTML, itemVisualHTML, fitItemName } from '../components/item-card.js';
 import { openSurface } from '../components/surface.js';
 
 // Globals first, so everything that runs later (inline page modules, classic
@@ -32,7 +32,7 @@ window.ItemModal = ItemModal;
 window.CountdownManager = CountdownManager;
 window.api = api;
 window.ApiError = ApiError;
-window.ItemCard = { renderItemCard, addItemBadges, tradeItemHTML, itemVisualHTML };
+window.ItemCard = { renderItemCard, addItemBadges, tradeItemHTML, itemVisualHTML, fitItemName };
 window.openSurface = openSurface;
 
 /* Page-agnostic global preferences (theme, price visibility, tax mode).

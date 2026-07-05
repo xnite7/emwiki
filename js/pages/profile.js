@@ -525,6 +525,7 @@
                 const div = document.createElement('div');
                 div.className = 'item';
                 div.innerHTML = `<small class="item-name">${this.escapeHtml(item.name)}</small>`;
+                window.ItemCard?.fitItemName(div.querySelector('.item-name'), item.name);
 
                 if (item.img) {
                     // Lazy, async-decoded <img> instead of a canvas drawImage — the canvas path forced
