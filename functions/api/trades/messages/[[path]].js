@@ -5,7 +5,10 @@ import {
     successResponse,
     validateFields,
     createNotification,
-    getUserWithStats
+    getUserWithStats,
+    normalizeUserId,
+    userIdForms,
+    isSameUser
 } from '../_utils/helpers.js';
 
 // Handle GET requests
@@ -22,8 +25,11 @@ async function handleGet(request, env, path, user) {
         const offerId = url.searchParams.get('offer_id');
         const withUserId = url.searchParams.get('with_user_id');
 
-        let query = 'SELECT * FROM trade_messages WHERE (from_user_id = ? OR to_user_id = ?)';
-        const bindings = [user.user_id, user.user_id];
+        // Legacy rows can store ids as "123.0" (see helpers.userIdForms), so
+        // every user-id match checks both encodings.
+        const me = userIdForms(user.user_id);
+        let query = 'SELECT * FROM trade_messages WHERE (from_user_id IN (?, ?) OR to_user_id IN (?, ?))';
+        const bindings = [...me, ...me];
 
         if (listingId) {
             query += ' AND listing_id = ?';
@@ -36,8 +42,9 @@ async function handleGet(request, env, path, user) {
         }
 
         if (withUserId) {
-            query += ' AND (from_user_id = ? OR to_user_id = ?)';
-            bindings.push(withUserId, withUserId);
+            const them = userIdForms(withUserId);
+            query += ' AND (from_user_id IN (?, ?) OR to_user_id IN (?, ?))';
+            bindings.push(...them, ...them);
         }
 
         query += ' ORDER BY created_at ASC';
@@ -51,25 +58,27 @@ async function handleGet(request, env, path, user) {
 
             return {
                 ...msg,
-                from_user: {
+                from_user_id: normalizeUserId(msg.from_user_id),
+                to_user_id: normalizeUserId(msg.to_user_id),
+                from_user: fromUser ? {
                     user_id: fromUser.user_id,
                     username: fromUser.username,
                     display_name: fromUser.display_name,
                     avatar_url: fromUser.avatar_url
-                },
-                to_user: {
+                } : null,
+                to_user: toUser ? {
                     user_id: toUser.user_id,
                     username: toUser.username,
                     display_name: toUser.display_name,
                     avatar_url: toUser.avatar_url
-                }
+                } : null
             };
         }));
 
         // Mark messages as read that were sent to this user
         if (messages.length > 0) {
             const messageIds = messages
-                .filter(m => m.to_user_id === user.user_id && !m.read)
+                .filter(m => isSameUser(m.to_user_id, user.user_id) && !m.read)
                 .map(m => m.id);
 
             if (messageIds.length > 0) {
@@ -86,30 +95,34 @@ async function handleGet(request, env, path, user) {
     // GET /api/trades/messages/unread - Get unread message count
     if (path === 'unread') {
         const result = await env.DBA.prepare(
-            'SELECT COUNT(*) as count FROM trade_messages WHERE to_user_id = ? AND read = 0'
-        ).bind(user.user_id).first();
+            'SELECT COUNT(*) as count FROM trade_messages WHERE to_user_id IN (?, ?) AND read = 0'
+        ).bind(...userIdForms(user.user_id)).first();
 
         return successResponse({ unread_count: result.count });
     }
 
     // GET /api/trades/messages/conversations - Get list of conversations
     if (path === 'conversations') {
-        // Get unique conversations with last message
+        // Get unique conversations with last message. The other party's id is
+        // normalized in SQL (user ids are digit strings, so the only '.0' a
+        // legacy value can contain is the float-artifact suffix) — otherwise
+        // "123" and "123.0" would split one conversation into two.
+        const me = userIdForms(user.user_id);
         const { results } = await env.DBA.prepare(`
             SELECT
-                CASE
-                    WHEN from_user_id = ? THEN to_user_id
+                REPLACE(CASE
+                    WHEN from_user_id IN (?, ?) THEN to_user_id
                     ELSE from_user_id
-                END as other_user_id,
+                END, '.0', '') as other_user_id,
                 listing_id,
-                offer_id,
+                MAX(offer_id) as offer_id,
                 MAX(created_at) as last_message_at,
-                COUNT(CASE WHEN to_user_id = ? AND read = 0 THEN 1 END) as unread_count
+                COUNT(CASE WHEN to_user_id IN (?, ?) AND read = 0 THEN 1 END) as unread_count
             FROM trade_messages
-            WHERE from_user_id = ? OR to_user_id = ?
-            GROUP BY other_user_id, listing_id, offer_id
+            WHERE from_user_id IN (?, ?) OR to_user_id IN (?, ?)
+            GROUP BY other_user_id, listing_id
             ORDER BY last_message_at DESC
-        `).bind(user.user_id, user.user_id, user.user_id, user.user_id).all();
+        `).bind(...me, ...me, ...me, ...me).all();
 
         // Get details for each conversation
         const conversations = await Promise.all(results.map(async (conv) => {
@@ -160,10 +173,11 @@ async function handlePost(request, env, path, user) {
             return errorResponse(error);
         }
 
-        const { to_user_id, message, listing_id, offer_id } = data;
+        const { message, listing_id, offer_id } = data;
+        const to_user_id = normalizeUserId(data.to_user_id);
 
         // Can't send message to self
-        if (to_user_id === user.user_id) {
+        if (isSameUser(to_user_id, user.user_id)) {
             return errorResponse('Cannot send message to yourself', 400);
         }
 
@@ -190,11 +204,12 @@ async function handlePost(request, env, path, user) {
             // Valid if: the sender owns the listing (replying to an interested party),
             // the sender is messaging the owner (asking about the listing before
             // offering), or either side already has an offer on it.
-            const isListingOwner = listing.user_id === user.user_id;
-            const messagingOwner = to_user_id === listing.user_id;
+            const isListingOwner = isSameUser(listing.user_id, user.user_id);
+            const messagingOwner = isSameUser(to_user_id, listing.user_id);
+            const me = userIdForms(user.user_id);
             const hasOffer = await env.DBA.prepare(
-                'SELECT id FROM trade_offers WHERE listing_id = ? AND (from_user_id = ? OR to_user_id = ?)'
-            ).bind(listing_id, user.user_id, user.user_id).first();
+                'SELECT id FROM trade_offers WHERE listing_id = ? AND (from_user_id IN (?, ?) OR to_user_id IN (?, ?))'
+            ).bind(listing_id, ...me, ...me).first();
 
             if (!isListingOwner && !messagingOwner && !hasOffer) {
                 return errorResponse('You are not involved in this listing', 403);
@@ -247,7 +262,7 @@ async function handlePost(request, env, path, user) {
         }
 
         // Must be the recipient
-        if (message.to_user_id !== user.user_id) {
+        if (!isSameUser(message.to_user_id, user.user_id)) {
             return errorResponse('You can only mark your own messages as read', 403);
         }
 

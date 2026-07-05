@@ -684,14 +684,20 @@ content: '';
     transform: translateY(-1px);
 }
 
-/* Load more */
-.load-more-container {
-    text-align: center;
+/* Numbered pagination */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
     padding: 1.5rem 0;
 }
 
-.btn-load-more {
-    padding: 0.65rem 2rem;
+.page-btn {
+    min-width: 38px;
+    height: 38px;
+    padding: 0 0.6rem;
     background: var(--bg-item);
     border: 1px solid var(--border-color);
     border-radius: 10px;
@@ -703,9 +709,27 @@ content: '';
     font-family: inherit;
 }
 
-.btn-load-more:hover {
+.page-btn:hover:not(:disabled):not(.active) {
     background: var(--bg-item-hover);
     border-color: var(--accent);
+}
+
+.page-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    cursor: default;
+}
+
+.page-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.page-ellipsis {
+    padding: 0 0.25rem;
+    opacity: 0.6;
+    user-select: none;
 }
 
 /* Skeleton loader */
@@ -1762,6 +1786,99 @@ content: '';
 
 .modal-inner {
     padding: 1.25rem;
+}
+
+/* Make Offer modal */
+#makeOfferModal .modal-compact {
+    max-width: 480px;
+}
+
+/* The header carries the listing title — keep long ones on one line. */
+#makeOfferModal .modal-header h3 {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.modal-inner .field {
+    margin-bottom: 1.25rem;
+}
+
+.modal-inner .field > label {
+    display: block;
+    font-size: 0.775rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    color: CanvasText;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.item-search-wrapper {
+    position: relative;
+    margin-bottom: 0.6rem;
+}
+
+.item-search-input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    background: var(--bg-item);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: CanvasText;
+    font-size: 0.875rem;
+    font-family: inherit;
+    transition: all 0.2s;
+    min-height: 40px;
+}
+
+.item-search-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* Results float over the modal content like the other search dropdowns. */
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    max-height: 260px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 8px 24px var(--shadow-color);
+}
+
+.search-results.active {
+    display: block;
+}
+
+.modal-inner .selected-items {
+    margin-bottom: 0.6rem;
+}
+
+.modal-inner textarea {
+    padding: 0.6rem 0.75rem;
+    background: var(--bg-item);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: CanvasText;
+    font-size: 0.875rem;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.modal-inner textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .type-toggle {

@@ -6,7 +6,10 @@ import {
     validateFields,
     createNotification,
     updateUserStats,
-    getUserWithStats
+    getUserWithStats,
+    normalizeUserId,
+    userIdForms,
+    isSameUser
 } from '../_utils/helpers.js';
 
 // Handle GET requests
@@ -29,14 +32,14 @@ async function handleGet(request, env, path) {
                 u.avatar_url as reviewer_avatar
             FROM trade_reviews r
             JOIN users u ON r.reviewer_id = u.user_id
-            WHERE r.reviewed_user_id = ?
+            WHERE r.reviewed_user_id IN (?, ?)
             ORDER BY r.created_at DESC
-        `).bind(userId).all();
+        `).bind(...userIdForms(userId)).all();
 
         // Get user stats
         const stats = await env.DBA.prepare(
-            'SELECT * FROM user_trade_stats WHERE user_id = ?'
-        ).bind(userId).first();
+            'SELECT * FROM user_trade_stats WHERE user_id IN (?, ?)'
+        ).bind(...userIdForms(userId)).first();
 
         return successResponse({
             reviews,
@@ -109,17 +112,19 @@ async function handlePost(request, env, path, user) {
         }
 
         // Verify user was part of the trade
-        if (trade.seller_id !== user.user_id && trade.buyer_id !== user.user_id) {
+        if (!isSameUser(trade.seller_id, user.user_id) && !isSameUser(trade.buyer_id, user.user_id)) {
             return errorResponse('You were not part of this trade', 403);
         }
 
         // Determine who is being reviewed
-        const reviewedUserId = trade.seller_id === user.user_id ? trade.buyer_id : trade.seller_id;
+        const reviewedUserId = normalizeUserId(
+            isSameUser(trade.seller_id, user.user_id) ? trade.buyer_id : trade.seller_id
+        );
 
         // Check if user already reviewed this trade
         const existingReview = await env.DBA.prepare(
-            'SELECT id FROM trade_reviews WHERE trade_id = ? AND reviewer_id = ?'
-        ).bind(trade_id, user.user_id).first();
+            'SELECT id FROM trade_reviews WHERE trade_id = ? AND reviewer_id IN (?, ?)'
+        ).bind(trade_id, ...userIdForms(user.user_id)).first();
 
         if (existingReview) {
             return errorResponse('You have already reviewed this trade', 400);
@@ -187,7 +192,7 @@ async function handlePut(request, env, path, user) {
     }
 
     // Can only edit own reviews
-    if (review.reviewer_id !== user.user_id) {
+    if (!isSameUser(review.reviewer_id, user.user_id)) {
         return errorResponse('You can only edit your own reviews', 403);
     }
 
@@ -250,7 +255,7 @@ async function handleDelete(request, env, path, user) {
     const roles = typeof user.roles === 'string' ? JSON.parse(user.roles) : user.roles;
     const isAdminOrMod = roles.includes('admin') || roles.includes('moderator');
 
-    if (review.reviewer_id !== user.user_id && !isAdminOrMod) {
+    if (!isSameUser(review.reviewer_id, user.user_id) && !isAdminOrMod) {
         return errorResponse('You can only delete your own reviews', 403);
     }
 

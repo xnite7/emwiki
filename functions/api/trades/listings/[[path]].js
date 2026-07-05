@@ -7,7 +7,10 @@ import {
     parsePagination,
     parseSort,
     getUserWithStats,
-    safeJsonParse
+    safeJsonParse,
+    normalizeUserId,
+    userIdForms,
+    isSameUser
 } from '../_utils/helpers.js';
 
 // Roles that unlock card themes (mirrors TradingHub.THEME_ROLES on the client).
@@ -40,6 +43,39 @@ async function handleGet(request, env, path) {
         const status = params.get('status') || 'active';
         const search = params.get('search');
 
+        // Shared WHERE clause for both the page query and the total count, so
+        // the client can render numbered pagination.
+        let where = ' WHERE 1=1';
+        const whereBindings = [];
+
+        // 'all' (or empty) means no status filter — otherwise the query would
+        // literally match `status = 'all'` and return nothing.
+        if (status && status !== 'all') {
+            where += ' AND tl.status = ?';
+            whereBindings.push(status);
+        }
+
+        if (category && category !== 'all') {
+            where += ' AND tl.category = ?';
+            whereBindings.push(category);
+        }
+
+        if (userId) {
+            // Match both the canonical id and the legacy ".0" float-artifact
+            // form so pre-cleanup rows still show up (see helpers.userIdForms).
+            where += ' AND tl.user_id IN (?, ?)';
+            whereBindings.push(...userIdForms(userId));
+        }
+
+        if (search) {
+            // Titles are auto-generated ("Trading X + 26 more"), so most item
+            // names never appear in them — search the item JSON too, where the
+            // stored item_name values live.
+            where += ' AND (tl.title LIKE ? OR tl.description LIKE ? OR tl.offering_items LIKE ? OR tl.seeking_items LIKE ?)';
+            const term = `%${search}%`;
+            whereBindings.push(term, term, term, term);
+        }
+
         let query = `
             SELECT
                 tl.*,
@@ -52,36 +88,15 @@ async function handleGet(request, env, path) {
             FROM trade_listings tl
             LEFT JOIN users u ON u.user_id = tl.user_id
             LEFT JOIN user_trade_stats uts ON uts.user_id = tl.user_id
-            WHERE 1=1
         `;
-        const bindings = [];
+        query += where + ` ORDER BY tl.${sortBy} ${sortOrder} LIMIT ? OFFSET ?`;
+        const bindings = [...whereBindings, limit, offset];
 
-        // 'all' (or empty) means no status filter — otherwise the query would
-        // literally match `status = 'all'` and return nothing.
-        if (status && status !== 'all') {
-            query += ' AND tl.status = ?';
-            bindings.push(status);
-        }
-
-        if (category && category !== 'all') {
-            query += ' AND tl.category = ?';
-            bindings.push(category);
-        }
-
-        if (userId) {
-            query += ' AND tl.user_id = ?';
-            bindings.push(userId);
-        }
-
-        if (search) {
-            query += ' AND (tl.title LIKE ? OR tl.description LIKE ?)';
-            bindings.push(`%${search}%`, `%${search}%`);
-        }
-
-        query += ` ORDER BY tl.${sortBy} ${sortOrder} LIMIT ? OFFSET ?`;
-        bindings.push(limit, offset);
-
-        const { results } = await env.DBA.prepare(query).bind(...bindings).all();
+        const [{ results }, countRow] = await Promise.all([
+            env.DBA.prepare(query).bind(...bindings).all(),
+            env.DBA.prepare(`SELECT COUNT(*) AS total FROM trade_listings tl${where}`)
+                .bind(...whereBindings).first()
+        ]);
 
         const listings = (results || []).map((row) => {
             const {
@@ -93,10 +108,11 @@ async function handleGet(request, env, path) {
 
             return {
                 ...listing,
+                user_id: normalizeUserId(listing.user_id),
                 offering_items: safeJsonParse(offering_items),
                 seeking_items: seeking_items ? safeJsonParse(seeking_items, null) : null,
                 user: {
-                    user_id: u_user_id,
+                    user_id: normalizeUserId(u_user_id),
                     username: u_username,
                     display_name: u_display_name,
                     avatar_url: u_avatar_url,
@@ -106,7 +122,7 @@ async function handleGet(request, env, path) {
             };
         });
 
-        return successResponse({ listings, limit, offset });
+        return successResponse({ listings, limit, offset, total: countRow?.total ?? listings.length });
     }
 
     // GET /api/trades/listings/:id - Get specific listing
@@ -135,6 +151,7 @@ async function handleGet(request, env, path) {
 
         return successResponse({
             ...listing,
+            user_id: normalizeUserId(listing.user_id),
             offering_items: safeJsonParse(listing.offering_items),
             seeking_items: listing.seeking_items ? safeJsonParse(listing.seeking_items, null) : null,
             views: listing.views + 1,
@@ -309,7 +326,7 @@ async function handlePut(request, env, path, user) {
         return errorResponse('Listing not found', 404);
     }
 
-    if (listing.user_id !== user.user_id) {
+    if (!isSameUser(listing.user_id, user.user_id)) {
         return errorResponse('You can only edit your own listings', 403);
     }
 
@@ -387,7 +404,7 @@ async function handleDelete(request, env, path, user) {
         return errorResponse('Listing not found', 404);
     }
 
-    if (listing.user_id !== user.user_id) {
+    if (!isSameUser(listing.user_id, user.user_id)) {
         return errorResponse('You can only delete your own listings', 403);
     }
 

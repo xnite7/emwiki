@@ -1,3 +1,29 @@
+// Canonical form of a user id: a plain digit string.
+// Historic rows (and any id that round-tripped through a D1 number bind) can
+// carry a float artifact ("137377499.0") because the trade tables store ids as
+// TEXT while `users.user_id` is INTEGER — D1 sends JS numbers as doubles, and
+// TEXT affinity stringifies them with the trailing ".0". Every id that gets
+// bound into a query or compared must go through here.
+export function normalizeUserId(id) {
+    if (id === null || id === undefined) return null;
+    return String(id).replace(/\.0+$/, '');
+}
+
+// The two forms a user id may take in legacy TEXT columns: clean ("123") and
+// float-artifact ("123.0"). Spread into `col IN (?, ?)` so reads keep working
+// on any rows written before the normalization fix / data cleanup.
+export function userIdForms(id) {
+    const clean = normalizeUserId(id);
+    return [clean, `${clean}.0`];
+}
+
+// True when two user ids refer to the same user, regardless of which historic
+// encoding (number, "123", "123.0") each side carries.
+export function isSameUser(a, b) {
+    if (a === null || a === undefined || b === null || b === undefined) return false;
+    return normalizeUserId(a) === normalizeUserId(b);
+}
+
 // Authenticate user from request.
 // Validates the opaque session token against the `sessions` table, matching the
 // scheme used by the rest of the site (see api/auth). The single JOIN to `users`
@@ -18,6 +44,7 @@ export async function authenticateUser(request, env) {
         WHERE s.token = ? AND s.expires_at > ?
     `).bind(token, Date.now()).first();
 
+    if (user) user.user_id = normalizeUserId(user.user_id);
     return user || null;
 }
 
@@ -70,26 +97,28 @@ export function validateFields(data, requiredFields) {
 export async function createNotification(env, userId, type, title, message, link = null) {
     await env.DBA.prepare(
         'INSERT INTO trade_notifications (user_id, type, title, message, link, created_at) VALUES (?, ?, ?, ?, ?, ?)'
-    ).bind(userId, type, title, message, link, Date.now()).run();
+    ).bind(normalizeUserId(userId), type, title, message, link, Date.now()).run();
 }
 
 // Update user trade stats
-export async function updateUserStats(env, userId) {
+export async function updateUserStats(env, rawUserId) {
+    const userId = normalizeUserId(rawUserId);
+    const forms = userIdForms(userId);
     const stats = await env.DBA.prepare(`
         SELECT
             COUNT(*) as total_trades,
-            SUM(CASE WHEN seller_id = ? OR buyer_id = ? THEN 1 ELSE 0 END) as successful_trades
+            COUNT(*) as successful_trades
         FROM completed_trades
-        WHERE seller_id = ? OR buyer_id = ?
-    `).bind(userId, userId, userId, userId).first();
+        WHERE seller_id IN (?, ?) OR buyer_id IN (?, ?)
+    `).bind(...forms, ...forms).first();
 
     const reviews = await env.DBA.prepare(`
         SELECT
             AVG(rating) as avg_rating,
             COUNT(*) as review_count
         FROM trade_reviews
-        WHERE reviewed_user_id = ?
-    `).bind(userId).first();
+        WHERE reviewed_user_id IN (?, ?)
+    `).bind(...forms).first();
 
     await env.DBA.prepare(`
         INSERT INTO user_trade_stats (user_id, total_trades, successful_trades, average_rating, total_reviews, last_trade_at)
@@ -111,7 +140,8 @@ export async function updateUserStats(env, userId) {
 }
 
 // Get user with stats
-export async function getUserWithStats(env, userId) {
+export async function getUserWithStats(env, rawUserId) {
+    const userId = normalizeUserId(rawUserId);
     const user = await env.DBA.prepare(`
         SELECT
             u.user_id,
@@ -131,6 +161,9 @@ export async function getUserWithStats(env, userId) {
 
     if (user) {
         user.roles = typeof user.roles === 'string' ? JSON.parse(user.roles) : user.roles;
+        // Hand ids back in canonical string form so they don't re-enter the
+        // float-artifact cycle when clients echo them into later requests.
+        user.user_id = normalizeUserId(user.user_id);
     }
 
     return user;
