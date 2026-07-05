@@ -9,18 +9,18 @@
    ========================================================================== */
 @layer reset, tokens, base, layout, components, pages, utilities;
 
-@import url("../css/fonts.css?v=5");
-@import url("../css/tokens.css?v=5") layer(tokens);
-@import url("../css/base.css?v=5") layer(base);
-@import url("../css/layout.css?v=5") layer(layout);
+@import url("../css/fonts.css?v=6");
+@import url("../css/tokens.css?v=6") layer(tokens);
+@import url("../css/base.css?v=6") layer(base);
+@import url("../css/layout.css?v=6") layer(layout);
 /* components.css stays unlayered on purpose: it must beat legacy page CSS
    (also unlayered) via specificity until those files are migrated. */
-@import url("../css/components.css?v=5");
+@import url("../css/components.css?v=6");
 
 /* Legacy (unlayered — wins over the layers above until migrated) */
-@import url("../css/auth.css?v=5");
-@import url("../css/modal.css?v=5");
-@import url("../css/chests.css?v=5");
+@import url("../css/auth.css?v=6");
+@import url("../css/modal.css?v=6");
+@import url("../css/chests.css?v=6");
 
 
 
