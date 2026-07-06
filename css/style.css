@@ -1890,6 +1890,7 @@ svg~.badge.retired {
 
 .badge.removed {
     font-variant: all-petite-caps;
+    z-index: 1;
         background: linear-gradient(45deg, black, transparent);
         width: 100%;
         bottom: -1px;
