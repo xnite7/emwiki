@@ -2,15 +2,15 @@
 <html lang="en">
 
 <head>
-        <!-- Google tag (gtag.js) -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-LJ02XLZ4KJ"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag() { dataLayer.push(arguments); }
-            gtag('js', new Date());
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LJ02XLZ4KJ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
 
-            gtag('config', 'G-LJ02XLZ4KJ');
-        </script>
+        gtag('config', 'G-LJ02XLZ4KJ');
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Trading Hub - Epic Catalogue</title>
@@ -29,9 +29,9 @@
     <link rel="stylesheet" href="./css/trading.css?v=2.2.2">
     <script src="./js/main/masonry.pkgd.min.js"></script>
     <style>
-		body {
-			min-height: 100vh;
-		}
+        body {
+            min-height: 100vh;
+        }
     </style>
 </head>
 
@@ -57,23 +57,38 @@
         <div class="trading-tabs">
             <div class="tabs-inner">
                 <button class="tab-btn active" data-tab="browse">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="fill: none;" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="fill: none;"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.3-4.3" />
+                    </svg>
                     <span>Browse</span>
                 </button>
                 <button class="tab-btn" data-tab="my-trades">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                    </svg>
                     <span>My Trades</span>
                     <span class="tab-badge" id="myTradesBadge" style="display:none">0</span>
                 </button>
                 <button class="tab-btn tab-create" data-tab="create">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14" />
+                        <path d="M5 12h14" />
+                    </svg>
                     <span>Create Trade</span>
                 </button>
 
                 <!-- Messages button (opens the messages modal, like the notifications bell) -->
                 <div class="notif-wrapper" id="msgWrapper">
                     <button class="notif-bell" id="msgBtn" aria-label="Messages">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
                         <span class="notif-count" id="messagesBadge" style="display:none">0</span>
                     </button>
                 </div>
@@ -81,7 +96,11 @@
                 <!-- Notifications bell -->
                 <div class="notif-wrapper" id="notifWrapper">
                     <button class="notif-bell" id="notifBellBtn" aria-label="Notifications">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+                        </svg>
                         <span class="notif-count" id="notifCount" style="display:none">0</span>
                     </button>
                     <div class="notif-dropdown" id="notifDropdown">
@@ -100,11 +119,17 @@
 
             <!-- ============ BROWSE PANEL ============ -->
             <div class="tab-panel active" id="panelBrowse">
-                    <!-- Search & Filter Bar -->
+                <!-- Search & Filter Bar -->
                 <div class="search-filter-bar">
                     <div class="search-wrapper">
-                        <svg class="search-icon" width="18" height="18"  style="fill: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                        <input type="text" class="search-input" id="searchInput" placeholder="Search trades..." autocomplete="off">
+                        <svg class="search-icon" width="18" height="18" style="fill: none;" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8" />
+                            <path d="m21 21-4.3-4.3" />
+                        </svg>
+                        <input type="text" class="search-input" id="searchInput" placeholder="Search trades..."
+                            autocomplete="off">
                     </div>
                     <div class="filter-controls">
                         <select class="filter-select" id="filterStatus">
@@ -112,19 +137,28 @@
                             <option value="all">All Status</option>
                             <option value="completed">Completed</option>
                         </select>
-                        <div class="sort-dropdown" id="sortDropdown"><!-- built by TradingHub.renderSortDropdown() --></div>
+                        <div class="sort-dropdown" id="sortDropdown"><!-- built by TradingHub.renderSortDropdown() -->
+                        </div>
                     </div>
                 </div>
 
                 <!-- Trades Feed -->
-                <div class="trades-feed" id="tradesFeed">
+                <div class="trades-feed" id="tradesFeed"
+                    data-masonry='{ "itemSelector": ".trade-card", "columnWidth": 280, "gutter": 10 }'>
                     <!-- Skeleton loaders shown during initial load -->
-                    <div class="trade-card skeleton"><div class="skeleton-inner"></div></div>
-                    <div class="trade-card skeleton"><div class="skeleton-inner"></div></div>
-                    <div class="trade-card skeleton"><div class="skeleton-inner"></div></div>
+                    <div class="trade-card skeleton">
+                        <div class="skeleton-inner"></div>
+                    </div>
+                    <div class="trade-card skeleton">
+                        <div class="skeleton-inner"></div>
+                    </div>
+                    <div class="trade-card skeleton">
+                        <div class="skeleton-inner"></div>
+                    </div>
                 </div>
 
-                <nav class="pagination-container" id="paginationContainer" style="display:none" aria-label="Trade pages"></nav>
+                <nav class="pagination-container" id="paginationContainer" style="display:none"
+                    aria-label="Trade pages"></nav>
             </div>
 
             <!-- ============ MY TRADES PANEL ============ -->
@@ -138,10 +172,16 @@
                         <button class="my-tab" data-mytab="blocked">Blocked</button>
                     </div>
                 </div>
-                <div class="my-trades-feed" id="myTradesFeed" data-masonry='{ "itemSelector": ".trade-card", "columnWidth": 200 }'>
+                <div class="my-trades-feed" id="myTradesFeed"
+                    data-masonry='{ "itemSelector": ".trade-card", "columnWidth": 280, "gutter": 10 }'>
                     <div class="empty-state">
                         <div class="empty-icon">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3"/><rect x="10" y="3" width="11" height="11" rx="2"/><path d="m14 7 2 2-2 2"/></svg>
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3" />
+                                <rect x="10" y="3" width="11" height="11" rx="2" />
+                                <path d="m14 7 2 2-2 2" />
+                            </svg>
                         </div>
                         <h3>No trades yet</h3>
                         <p>Create your first trade to get started!</p>
@@ -156,7 +196,8 @@
                 <div class="create-container">
                     <div class="create-header">
                         <h2>Create a Trade</h2>
-                        <p>Add what you're offering and what you want. Live values show how fair the trade is before you publish.</p>
+                        <p>Add what you're offering and what you want. Live values show how fair the trade is before you
+                            publish.</p>
                     </div>
 
                     <div class="calc-board create-board">
@@ -167,11 +208,16 @@
                                 <span class="calc-side-total" data-side-total="your">0</span>
                             </div>
                             <div class="calc-search-wrapper">
-                                <input type="text" class="calc-search-input" data-side-search="your" placeholder="Search items to add..." autocomplete="off">
+                                <input type="text" class="calc-search-input" data-side-search="your"
+                                    placeholder="Search items to add..." autocomplete="off">
                                 <div class="calc-search-results" data-side-results="your"></div>
                             </div>
                             <button type="button" class="calc-custom-btn" data-side-custom="your">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 5v14" />
+                                    <path d="M5 12h14" />
+                                </svg>
                                 Robux / Other
                             </button>
                             <div class="calc-items" data-side-items="your"></div>
@@ -192,7 +238,8 @@
                                 <span>You win</span>
                             </div>
                             <h1 class="calc-disclaimer">?</h1>
-                            <p>Values are community-estimated and weighted by item demand. Items marked &ldquo;no value&rdquo; (N/A) aren&rsquo;t
+                            <p>Values are community-estimated and weighted by item demand. Items marked &ldquo;no
+                                value&rdquo; (N/A) aren&rsquo;t
                                 counted. Use this as a guide, not a guarantee.</p>
                         </div>
 
@@ -203,11 +250,16 @@
                                 <span class="calc-side-total" data-side-total="their">0</span>
                             </div>
                             <div class="calc-search-wrapper">
-                                <input type="text" class="calc-search-input" data-side-search="their" placeholder="Search items to add..." autocomplete="off">
+                                <input type="text" class="calc-search-input" data-side-search="their"
+                                    placeholder="Search items to add..." autocomplete="off">
                                 <div class="calc-search-results" data-side-results="their"></div>
                             </div>
                             <button type="button" class="calc-custom-btn" data-side-custom="their">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 5v14" />
+                                    <path d="M5 12h14" />
+                                </svg>
                                 Robux / Other
                             </button>
                             <div class="calc-items" data-side-items="their"></div>
@@ -218,18 +270,25 @@
                     <div class="create-finalize">
                         <div class="form-group">
                             <label for="tradeDescription">Description <span class="optional-tag">optional</span></label>
-                            <textarea id="tradeDescription" placeholder="Any extra details about your trade..." rows="3" maxlength="500"></textarea>
+                            <textarea id="tradeDescription" placeholder="Any extra details about your trade..." rows="3"
+                                maxlength="500"></textarea>
                             <span class="char-count"><span id="charCount">0</span>/500</span>
                         </div>
                         <div class="form-group">
                             <label>Card theme</label>
-                            <span class="theme-lock-hint" id="themeLockHint" hidden>🔒 Card themes are a donator perk</span>
+                            <span class="theme-lock-hint" id="themeLockHint" hidden>🔒 Card themes are a donator
+                                perk</span>
                             <div class="theme-grid" id="themeSelector">
-                                <button class="theme-btn active" data-theme="default" type="button"><span class="theme-swatch swatch-default"></span>Default</button>
-                                <button class="theme-btn" data-theme="ocean" type="button"><span class="theme-swatch swatch-ocean"></span>Ocean</button>
-                                <button class="theme-btn" data-theme="sunset" type="button"><span class="theme-swatch swatch-sunset"></span>Sunset</button>
-                                <button class="theme-btn" data-theme="forest" type="button"><span class="theme-swatch swatch-forest"></span>Forest</button>
-                                <button class="theme-btn" data-theme="foody" type="button"><span class="theme-swatch swatch-foody"></span>Big Back</button>
+                                <button class="theme-btn active" data-theme="default" type="button"><span
+                                        class="theme-swatch swatch-default"></span>Default</button>
+                                <button class="theme-btn" data-theme="ocean" type="button"><span
+                                        class="theme-swatch swatch-ocean"></span>Ocean</button>
+                                <button class="theme-btn" data-theme="sunset" type="button"><span
+                                        class="theme-swatch swatch-sunset"></span>Sunset</button>
+                                <button class="theme-btn" data-theme="forest" type="button"><span
+                                        class="theme-swatch swatch-forest"></span>Forest</button>
+                                <button class="theme-btn" data-theme="foody" type="button"><span
+                                        class="theme-swatch swatch-foody"></span>Big Back</button>
                             </div>
                         </div>
                     </div>
@@ -237,7 +296,11 @@
                     <div class="create-actions">
                         <button class="calc-reset" type="button" id="calcResetBtn">Reset</button>
                         <button class="btn-publish" id="createListingBtn">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 19V5" />
+                                <path d="m5 12 7-7 7 7" />
+                            </svg>
                             Publish Trade
                         </button>
                     </div>
@@ -255,7 +318,11 @@
             <div class="modal-header">
                 <h3>Messages</h3>
                 <button class="close-btn" id="closeMessagesModal" type="button">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 12 12" />
+                    </svg>
                 </button>
             </div>
             <div class="messages-layout">
@@ -266,7 +333,10 @@
                 <div class="thread-pane" id="threadPane">
                     <div class="thread-empty" id="threadEmpty">
                         <div class="empty-icon">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                            </svg>
                         </div>
                         <h3>Select a conversation</h3>
                         <p>Your messages with other traders appear here.</p>
@@ -275,7 +345,8 @@
                         <div class="thread-header" id="threadHeader"></div>
                         <div class="thread-messages" id="threadMessages"></div>
                         <form class="thread-composer" id="threadComposer">
-                            <input type="text" id="threadInput" placeholder="Type a message..." autocomplete="off" maxlength="1000">
+                            <input type="text" id="threadInput" placeholder="Type a message..." autocomplete="off"
+                                maxlength="1000">
                             <button type="submit" class="btn-send-message" id="threadSendBtn">Send</button>
                         </form>
                     </div>
@@ -288,7 +359,11 @@
     <div class="modal-overlay" id="tradeDetailModal">
         <div class="modal-content modal-large">
             <button class="close-btn" id="closeDetailModal">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
+                </svg>
             </button>
             <div class="modal-body" id="tradeDetailBody">
                 <!-- Populated dynamically -->
@@ -302,22 +377,29 @@
             <div class="modal-header">
                 <h3>Make an Offer</h3>
                 <button class="close-btn" id="closeMakeOfferModal" type="button">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 12 12" />
+                    </svg>
                 </button>
             </div>
             <div class="modal-inner">
                 <div class="field">
                     <label>You're offering</label>
                     <div class="item-search-wrapper" style="position:relative">
-                        <input type="text" id="offerItemSearch" placeholder="Search items..." class="item-search-input" autocomplete="off">
+                        <input type="text" id="offerItemSearch" placeholder="Search items..." class="item-search-input"
+                            autocomplete="off">
                         <div class="search-results" id="offerSearchResults"></div>
                     </div>
                     <div class="selected-items" id="offerSelectedItems"></div>
-                    <button type="button" class="btn-custom-item" id="offerAddCustomBtn">+ Add Robux or other-game item</button>
+                    <button type="button" class="btn-custom-item" id="offerAddCustomBtn">+ Add Robux or other-game
+                        item</button>
                 </div>
                 <div class="field">
                     <label for="offerMessage">Message (optional)</label>
-                    <textarea id="offerMessage" placeholder="Add a note for the listing owner..." maxlength="500" rows="3" style="width:100%;resize:vertical"></textarea>
+                    <textarea id="offerMessage" placeholder="Add a note for the listing owner..." maxlength="500"
+                        rows="3" style="width:100%;resize:vertical"></textarea>
                 </div>
                 <div class="modal-footer">
                     <button class="btn-cancel" id="cancelOfferBtn" type="button">Cancel</button>
@@ -333,7 +415,11 @@
             <div class="modal-header">
                 <h3>Add Custom Item</h3>
                 <button class="close-btn" id="closeCustomModal">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 12 12" />
+                    </svg>
                 </button>
             </div>
             <div class="modal-inner">
@@ -343,7 +429,13 @@
                         Robux
                     </button>
                     <button class="type-btn" data-type="other" id="customTypeOther">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01"/><path d="M17 12h.01"/><path d="M7 12h.01"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="6" width="20" height="12" rx="2" />
+                            <path d="M12 12h.01" />
+                            <path d="M17 12h.01" />
+                            <path d="M7 12h.01" />
+                        </svg>
                         Other Game
                     </button>
                 </div>
@@ -375,7 +467,11 @@
             <div class="modal-header">
                 <h3>Leave a Review</h3>
                 <button class="close-btn" id="closeReviewModal" type="button">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 12 12" />
+                    </svg>
                 </button>
             </div>
             <div class="modal-inner">
@@ -392,7 +488,8 @@
                 </div>
                 <div class="field">
                     <label for="reviewComment">Comment (optional)</label>
-                    <textarea id="reviewComment" placeholder="Share details of your experience..." maxlength="500" rows="3" style="width:100%;resize:vertical"></textarea>
+                    <textarea id="reviewComment" placeholder="Share details of your experience..." maxlength="500"
+                        rows="3" style="width:100%;resize:vertical"></textarea>
                 </div>
                 <div class="modal-footer">
                     <button class="btn-cancel" id="cancelReviewBtn" type="button">Cancel</button>

@@ -174,7 +174,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    margin-bottom: 1.25rem;
+    margin-bottom: 2.25rem;
 }
 
 .search-wrapper {
@@ -370,17 +370,24 @@
     border-radius: 14px;
     overflow: hidden;
     transition: all 0.2s;
+    width: 278px;
+    margin-bottom:  15px;
     /* equal-height grid rows: pin actions to the bottom instead of leaving a
        dead gap when a neighbor card is taller */
     display: flex;
     flex-direction: column;
+    filter: blur(0);
 }
 
 .trade-card:hover {
     border-color: rgba(107, 119, 184, 0.4);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
+    filter:blur(0)
 }
+/*.trade-card:hover ~.trade-card,
+ .trade-card:has(~.trade-card:hover){
+    filter: blur(4px);
+}*/
 
 .trade-card-top {
     display: flex;
