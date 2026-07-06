@@ -271,11 +271,14 @@ img {
 
 /* Search - SIMPLER */
 .search-container {
+    display: flex;
     position: relative;
+    gap: 20px;
     backdrop-filter: blur(16px);
     max-width: 500px;
     margin: 0 auto 20px;
     z-index: 1;
+    align-items: center;
 }
 
 #search-bar {
@@ -449,6 +452,8 @@ img {
 /* Stats Dashboard Button */
 .stats-btn {
     font: 100 16px pacifico;
+        white-space: nowrap;
+        height: 41px;
         padding: 10px 20px;
         background: linear-gradient(180deg, #b6d9f1, #39a0e9, #3373ab);
         border: 1px solid var(--border-color);
@@ -1835,8 +1840,10 @@ footer {
 
 .badge.new {
     width: 50%;
+    border-radius: 0;
     height: auto;
     position: absolute;
+    padding: 0;
     top: 0;
     z-index: 4;
     left: 0;
