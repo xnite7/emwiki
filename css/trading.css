@@ -384,6 +384,10 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     filter:blur(0)
 }
+
+.my-trades-feed .trade-card{
+    width: unset;
+}
 /*.trade-card:hover ~.trade-card,
  .trade-card:has(~.trade-card:hover){
     filter: blur(4px);
