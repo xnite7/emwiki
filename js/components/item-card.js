@@ -233,7 +233,7 @@ export function itemVisualHTML(imgSrc, svg, name, className = '') {
  * variant 'detail'         → .detail-item in the trade detail modal.
  * opts.svg — catalog SVG markup for imageless items (titles).
  */
-export function tradeItemHTML(item, { variant = 'card', svg = null, category = null } = {}) {
+export function tradeItemHTML(item, { variant = 'card', svg = null, category = null, price = null } = {}) {
     const esc = Utils.escapeHtml;
     const qty = item.qty && item.qty > 1 ? `<span class="item-qty-badge">×${item.qty}</span>` : '';
 
@@ -256,11 +256,15 @@ export function tradeItemHTML(item, { variant = 'card', svg = null, category = n
     // Quantity sits in a corner badge on the thumbnail (always visible) rather
     // than inside the hover-only name, so ×N reads at a glance without hovering.
     const qtyCorner = item.qty && item.qty > 1 ? `<span class="trade-item-qty">×${item.qty}</span>` : '';
+    // The item's name and value ride on data attributes and surface through a
+    // single cursor-following tooltip (TradingHub.setupItemTooltip) instead of an
+    // inline label, so hovering any thumbnail names it at the pointer with its
+    // price underneath. The tooltip is pointer-only and stays off on touch/mobile.
+    const priceAttr = price ? ` data-item-price="${esc(price)}"` : '';
     return `
-        <div class="trade-item">
+        <div class="trade-item" data-item-name="${esc(item.item_name)}"${priceAttr}>
             ${itemVisualHTML(item.item_image, svg, item.item_name, imgClass)}
             ${qtyCorner}
-            <span class="trade-item-name">${esc(item.item_name)}</span>
         </div>
     `;
 }
