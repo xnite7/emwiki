@@ -240,7 +240,8 @@ class TradingHub {
             seeking_items: listing.seeking_items || [],
             created_at: listing.created_at,
             updated_at: listing.updated_at,
-            views: listing.views || 0,
+            like_count: listing.like_count || 0,
+            liked: !!listing.liked,
             user: listing.user
         };
     }
@@ -290,7 +291,8 @@ class TradingHub {
         await Promise.all([
             this.loadMyListings(),
             this.loadMyOffers(),
-            this.loadCompletedTrades()
+            this.loadCompletedTrades(),
+            this.loadBlocked()
         ]);
         this.updateMyTradesBadge();
     }
@@ -319,7 +321,8 @@ class TradingHub {
                 offering_items: listing.offering_items || [],
                 seeking_items: listing.seeking_items || [],
                 created_at: listing.created_at,
-                views: listing.views || 0,
+                like_count: listing.like_count || 0,
+                liked: !!listing.liked,
                 user: listing.user
             }));
         } catch (error) {
@@ -922,6 +925,12 @@ class TradingHub {
             label: 'Biggest Trade',
             // descending bars
             svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h5"/></svg>'
+        },
+        {
+            value: 'liked',
+            label: 'Most Liked',
+            // heart
+            svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>'
         }
     ];
 
@@ -1026,6 +1035,12 @@ class TradingHub {
             // Most items first, then newest.
             filtered.sort((a, b) =>
                 (this.tradeSize(b) - this.tradeSize(a)) ||
+                (b.created_at - a.created_at)
+            );
+        } else if (this.filters.sort === 'liked') {
+            // Most liked first, then newest.
+            filtered.sort((a, b) =>
+                ((b.like_count || 0) - (a.like_count || 0)) ||
                 (b.created_at - a.created_at)
             );
         } else {
@@ -1135,13 +1150,174 @@ class TradingHub {
             ${trade.description ? `<div class="trade-card-description">${this.esc(trade.description)}</div>` : ''}
             <div class="trade-card-actions">
                 <button class="btn-view-trade" data-id="${trade.id}">View Details</button>
+                ${this.likeButtonHTML(trade)}
+                ${this.isModerator() ? `<button class="btn-mod-delete" title="Remove listing (moderator)" data-id="${trade.id}">Remove</button>` : ''}
             </div>
         `;
 
         // Event listeners — Make Offer lives inside the detail view now.
         card.querySelector('.btn-view-trade')?.addEventListener('click', () => this.viewTrade(trade.id));
+        card.querySelector('.btn-like')?.addEventListener('click', (e) => this.toggleLike(trade.id, e.currentTarget));
+        card.querySelector('.btn-mod-delete')?.addEventListener('click', () => this.modDeleteListing(trade.id));
 
         return card;
+    }
+
+    // Heart button showing the current like count and the viewer's like state.
+    likeButtonHTML(trade) {
+        const liked = !!trade.liked;
+        const count = trade.like_count || 0;
+        return `
+            <button class="btn-like${liked ? ' liked' : ''}" data-id="${trade.id}" aria-pressed="${liked}" title="${liked ? 'Unlike' : 'Like'} this trade">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="${liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span class="like-count">${count}</span>
+            </button>`;
+    }
+
+    // Toggle the signed-in user's like on a listing and update the button in place.
+    async toggleLike(listingId, btnEl) {
+        if (!this.currentUser) {
+            this.showToast('Please sign in to like trades', 'warning');
+            return;
+        }
+        try {
+            const response = await fetch(`${this.apiBase}/listings/${listingId}/like`, {
+                method: 'POST',
+                headers: this.authHeaders({ 'Content-Type': 'application/json' })
+            });
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || `Failed to like (${response.status})`);
+            }
+            const { liked, like_count } = await response.json();
+
+            // Keep the in-memory trade objects in sync so re-renders don't revert.
+            [this.trades, this.myTrades].forEach(list => {
+                const t = list.find(x => x.id === listingId);
+                if (t) { t.liked = liked; t.like_count = like_count; }
+            });
+
+            if (btnEl) {
+                btnEl.classList.toggle('liked', liked);
+                btnEl.setAttribute('aria-pressed', String(liked));
+                const svg = btnEl.querySelector('svg');
+                if (svg) svg.setAttribute('fill', liked ? 'currentColor' : 'none');
+                const countEl = btnEl.querySelector('.like-count');
+                if (countEl) countEl.textContent = like_count;
+            }
+            // Refresh the detail modal's like button if it's showing this trade.
+            const detailBtn = document.querySelector(`#tradeDetailBody .btn-like[data-id="${listingId}"]`);
+            if (detailBtn && detailBtn !== btnEl) {
+                detailBtn.classList.toggle('liked', liked);
+                detailBtn.querySelector('svg')?.setAttribute('fill', liked ? 'currentColor' : 'none');
+                const c = detailBtn.querySelector('.like-count');
+                if (c) c.textContent = like_count;
+            }
+        } catch (error) {
+            console.error('Failed to toggle like:', error);
+            this.showToast(error.message || 'Failed to like trade', 'error');
+        }
+    }
+
+    // Moderator action: remove any listing outright.
+    async modDeleteListing(listingId) {
+        if (!this.isModerator()) return;
+        if (!confirm('Remove this listing as a moderator? This permanently deletes it and its offers.')) return;
+        try {
+            const response = await fetch(`${this.apiBase}/listings/${listingId}`, {
+                method: 'DELETE',
+                headers: this.authHeaders({ 'Content-Type': 'application/json' })
+            });
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || `Failed to remove listing (${response.status})`);
+            }
+            this.showToast('Listing removed', 'success');
+            this.closeDetailModal();
+            this.trades = this.trades.filter(t => t.id !== listingId);
+            await this.loadTrades(this.browsePage);
+            this.renderTrades();
+        } catch (error) {
+            console.error('Failed to remove listing:', error);
+            this.showToast(error.message || 'Failed to remove listing', 'error');
+        }
+    }
+
+    // Block a user so they can no longer send you offers or messages.
+    async blockUser(userId, name) {
+        if (!this.currentUser) {
+            this.showToast('Please sign in first', 'warning');
+            return;
+        }
+        if (!confirm(`Block ${name || 'this user'}? They will no longer be able to send you offers or messages.`)) return;
+        try {
+            const response = await fetch(`${this.apiBase}/blocks`, {
+                method: 'POST',
+                headers: this.authHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({ user_id: userId })
+            });
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || `Failed to block (${response.status})`);
+            }
+            this.showToast('User blocked', 'success');
+        } catch (error) {
+            console.error('Failed to block user:', error);
+            this.showToast(error.message || 'Failed to block user', 'error');
+        }
+    }
+
+    async unblockUser(userId) {
+        try {
+            const response = await fetch(`${this.apiBase}/blocks/${encodeURIComponent(userId)}`, {
+                method: 'DELETE',
+                headers: this.authHeaders({ 'Content-Type': 'application/json' })
+            });
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || `Failed to unblock (${response.status})`);
+            }
+            this.showToast('User unblocked', 'success');
+            await this.loadBlocked();
+            if (this.activeMyTab === 'blocked') this.renderMyTrades();
+        } catch (error) {
+            console.error('Failed to unblock user:', error);
+            this.showToast(error.message || 'Failed to unblock user', 'error');
+        }
+    }
+
+    // Moderator action: ban a player from the trading system.
+    async banUser(userId, name) {
+        if (!this.isModerator()) return;
+        const reason = prompt(`Ban ${name || 'this player'} from trading? Optionally enter a reason:`, '');
+        if (reason === null) return; // cancelled
+        try {
+            const response = await fetch(`${this.apiBase}/admin/ban`, {
+                method: 'POST',
+                headers: this.authHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({ user_id: userId, reason: reason || null })
+            });
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || `Failed to ban (${response.status})`);
+            }
+            this.showToast(`${name || 'Player'} banned from trading`, 'success');
+        } catch (error) {
+            console.error('Failed to ban user:', error);
+            this.showToast(error.message || 'Failed to ban user', 'error');
+        }
+    }
+
+    async loadBlocked() {
+        if (!this.currentUser) { this.blockedUsers = []; return; }
+        try {
+            const response = await fetch(`${this.apiBase}/blocks`, { headers: this.authHeaders(), cache: 'no-store' });
+            if (!response.ok) return;
+            const data = await response.json();
+            this.blockedUsers = data.blocked || [];
+        } catch (error) {
+            console.error('Failed to load blocked users:', error);
+        }
     }
 
     // A single cursor-following tooltip, shared by every trade item thumbnail,
@@ -1249,7 +1425,38 @@ class TradingHub {
             this.renderOffersList(feed, this.sentOffers, false);
         } else if (this.activeMyTab === 'history') {
             this.renderHistoryList(feed);
+        } else if (this.activeMyTab === 'blocked') {
+            this.renderBlockedList(feed);
         }
+    }
+
+    renderBlockedList(feed) {
+        const blocked = this.blockedUsers || [];
+        if (blocked.length === 0) {
+            feed.innerHTML = this.emptyState('No blocked users', 'Blocked users can\'t send you offers or messages. Block someone from a trade or message.');
+            return;
+        }
+        feed.innerHTML = '';
+        blocked.forEach(u => {
+            const card = document.createElement('div');
+            card.className = 'offer-card blocked-card';
+            const name = u.username || u.display_name || `User ${u.user_id}`;
+            card.innerHTML = `
+                <div class="offer-card-header">
+                    <div class="offer-card-info" style="display:flex;align-items:center;gap:10px">
+                        <img class="conv-avatar" src="${u.avatar_url || './imgs/placeholder.png'}" alt="${this.esc(name)}" onerror="this.src='./imgs/placeholder.png'">
+                        <div class="offer-card-title">${this.esc(name)}</div>
+                    </div>
+                </div>
+                <div class="offer-card-actions"></div>
+            `;
+            const unblockBtn = document.createElement('button');
+            unblockBtn.className = 'btn-secondary';
+            unblockBtn.textContent = 'Unblock';
+            unblockBtn.addEventListener('click', () => this.unblockUser(u.user_id));
+            card.querySelector('.offer-card-actions').appendChild(unblockBtn);
+            feed.appendChild(card);
+        });
     }
 
     emptyState(title, message) {
@@ -1354,6 +1561,15 @@ class TradingHub {
             msgBtn.textContent = 'Message';
             msgBtn.addEventListener('click', () => this.openThreadWith(party.user_id, partyName, offer.listing_id, offer.id));
             actions.appendChild(msgBtn);
+        }
+
+        // Received an unwanted offer? Block the sender so they can't send more.
+        if (isReceived && party?.user_id) {
+            const blockBtn = document.createElement('button');
+            blockBtn.className = 'btn-danger';
+            blockBtn.textContent = 'Block';
+            blockBtn.addEventListener('click', () => this.blockUser(party.user_id, partyName));
+            actions.appendChild(blockBtn);
         }
 
         if (actions.children.length === 0) actions.remove();
@@ -1514,7 +1730,7 @@ class TradingHub {
                 </div>
                 <div class="detail-meta">
                     <span>Posted ${timeAgo}</span>
-                    <span>${trade.views || 0} views</span>
+                    ${this.likeButtonHTML(trade)}
                     <span class="trade-status-badge ${trade.status}">${trade.status}</span>
                 </div>
                 <div class="detail-reviews" id="detailReviews"></div>
@@ -1523,6 +1739,11 @@ class TradingHub {
             <div class="detail-actions">
                 ${trade.status === 'active' ? `<button class="btn-make-offer" style="flex:1" data-id="${trade.id}">Make Offer</button>` : ''}
                 <button class="btn-secondary btn-message-trader">Message Trader</button>
+                <button class="btn-secondary btn-block-trader">Block</button>
+                ${this.isModerator() ? `
+                    <button class="btn-danger btn-mod-delete">Remove</button>
+                    <button class="btn-danger btn-mod-ban">Ban</button>
+                ` : ''}
             </div>` : ''}
         `;
 
@@ -1534,6 +1755,12 @@ class TradingHub {
             this.closeDetailModal();
             this.openThreadWith(trade.user_id, trade.user?.username || 'Trader', trade.id, null);
         });
+        body.querySelector('.btn-like')?.addEventListener('click', (e) => this.toggleLike(trade.id, e.currentTarget));
+        body.querySelector('.btn-block-trader')?.addEventListener('click', () => {
+            this.blockUser(trade.user_id, trade.user?.username);
+        });
+        body.querySelector('.btn-mod-delete')?.addEventListener('click', () => this.modDeleteListing(trade.id));
+        body.querySelector('.btn-mod-ban')?.addEventListener('click', () => this.banUser(trade.user_id, trade.user?.username));
 
         modal.classList.add('active');
 
@@ -1880,16 +2107,29 @@ class TradingHub {
     // Roles that unlock card themes. Everyone else gets 'default' only.
     static THEME_ROLES = ['donator', 'vip', 'moderator', 'mod', 'admin'];
 
-    // Does the signed-in user have a role that unlocks card themes?
-    canUseThemes() {
+    // Roles that can moderate the trading system (delete any listing, ban).
+    static MODERATOR_ROLES = ['admin', 'owner', 'moderator', 'mod'];
+
+    // Signed-in user's roles as a lowercased string array.
+    userRoles() {
         const raw = this.currentUser?.role ?? this.currentUser?.roles;
-        if (!raw) return false;
+        if (!raw) return [];
         let roles = raw;
         if (typeof roles === 'string') {
             try { roles = JSON.parse(roles); } catch { roles = [roles]; }
         }
-        if (!Array.isArray(roles)) return false;
-        return roles.some(r => TradingHub.THEME_ROLES.includes(String(r).toLowerCase()));
+        if (!Array.isArray(roles)) return [];
+        return roles.map(r => String(r).toLowerCase());
+    }
+
+    // Does the signed-in user have a role that unlocks card themes?
+    canUseThemes() {
+        return this.userRoles().some(r => TradingHub.THEME_ROLES.includes(r));
+    }
+
+    // Is the signed-in user an admin/moderator?
+    isModerator() {
+        return this.userRoles().some(r => TradingHub.MODERATOR_ROLES.includes(r));
     }
 
     // Lock the non-default theme buttons for users without a donator role, and
@@ -2136,7 +2376,18 @@ class TradingHub {
 
         if (empty) empty.style.display = 'none';
         active.style.display = '';
-        if (header) header.textContent = this.activeThread.name;
+        // Rebuild the header (name + Block action) only when the active thread
+        // changes, so background polls don't restack listeners.
+        if (header && header.dataset.userId !== String(this.activeThread.userId)) {
+            header.dataset.userId = String(this.activeThread.userId);
+            header.innerHTML = `
+                <span class="thread-header-name">${this.esc(this.activeThread.name)}</span>
+                <button class="thread-header-block btn-danger" type="button" title="Block this user">Block</button>
+            `;
+            header.querySelector('.thread-header-block')?.addEventListener('click', () => {
+                this.blockUser(this.activeThread.userId, this.activeThread.name);
+            });
+        }
         if (!silent) messagesEl.innerHTML = '<div class="thread-loading">Loading…</div>';
 
         try {

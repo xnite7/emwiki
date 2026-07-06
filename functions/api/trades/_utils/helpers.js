@@ -48,12 +48,50 @@ export async function authenticateUser(request, env) {
     return user || null;
 }
 
-// Check if user is authorized (authenticated and not banned)
+// Parse the raw `roles` value (JSON string, array, or single string) attached
+// to an authenticated user into a lowercased string array.
+export function parseRoles(user) {
+    let roles = user?.roles;
+    if (!roles) return [];
+    if (typeof roles === 'string') {
+        try { roles = JSON.parse(roles); } catch { roles = [roles]; }
+    }
+    if (!Array.isArray(roles)) return [];
+    return roles.map(r => String(r).toLowerCase());
+}
+
+// Roles that can moderate the trading system (delete any listing, ban players).
+const MODERATOR_ROLES = ['admin', 'owner', 'moderator', 'mod'];
+
+// True when the authenticated user holds an admin/moderator role.
+export function isModerator(user) {
+    if (!user) return false;
+    return parseRoles(user).some(r => MODERATOR_ROLES.includes(r));
+}
+
+// Check if user is authorized (authenticated and not a flagged scammer)
 export function isAuthorized(user) {
     if (!user) return false;
+    return !parseRoles(user).includes('scammer');
+}
 
-    const roles = typeof user.roles === 'string' ? JSON.parse(user.roles) : user.roles;
-    return !roles.includes('scammer');
+// True when `userId` has been banned from trading by an admin/mod.
+export async function isTradeBanned(env, userId) {
+    const row = await env.DBA.prepare(
+        'SELECT user_id FROM trade_bans WHERE user_id IN (?, ?)'
+    ).bind(...userIdForms(userId)).first();
+    return !!row;
+}
+
+// True when `ownerId` has blocked `otherId` (so `otherId` may not send them
+// offers or messages). Direction matters: only the blocker is protected.
+export async function isBlockedBy(env, ownerId, otherId) {
+    const ownerForms = userIdForms(ownerId);
+    const otherForms = userIdForms(otherId);
+    const row = await env.DBA.prepare(
+        'SELECT id FROM trade_blocks WHERE blocker_id IN (?, ?) AND blocked_id IN (?, ?)'
+    ).bind(...ownerForms, ...otherForms).first();
+    return !!row;
 }
 
 // Standard error response
