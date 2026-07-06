@@ -1071,6 +1071,11 @@ class TradingHub {
         });
 
         this.updateStats();
+        var msnry = new Masonry('.trades-feed', {
+            columnWidth: 280,
+            itemSelector: '.trade-card',
+            gutter: 10
+        });
     }
 
     // Numbered page buttons (‹ 1 … 4 [5] 6 … 12 ›): first/last always shown,
@@ -1492,6 +1497,12 @@ class TradingHub {
             }
             feed.appendChild(card);
         });
+        var msnry = new Masonry('.my-trades-feed', {
+            columnWidth: 280,
+            itemSelector: '.trade-card',
+            gutter: 10
+        });
+
     }
 
     renderOffersList(feed, offers, isReceived) {
