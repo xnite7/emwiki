@@ -151,7 +151,7 @@ class ItemModal {
                         <div class="modal-details"></div>
                         
                         <div class="modal-badges">
-                            <span class="badge-premium" style="display:none;">Premium</span>
+                            <span class="badge-premium" style="display:none;">Roblox Plus</span>
                             <span class="badge-typicalgroup" style="display:none;">Typical Games</span>
                             <span class="badge-retired" style="display:none;">Retired</span>
                             <span class="badge-removed" style="display:none;">Removed</span>

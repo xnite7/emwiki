@@ -817,7 +817,7 @@
                         <div class=form-group><label>RAP</label> <input type="text" id=item-price placeholder="Enter price e.g.(69)"autocomplete=off></div><div class=form-group><label>Description</label> <textarea id=item-from placeholder="Obtainment method/@author/season x/tip"rows=3>
                                     </textarea> <small>Separate multiple lines with Enter</small></div><div class=form-group><label>Price/Code/Rarity</label> <textarea id=item-rarity placeholder="Code, rarity, or shop price"rows=3></textarea> <small>Separate multiple lines with Enter</small></div></div><div class=step-content id=step-3><h3>Item Properties</h3><div class=properties-grid><label class=property-toggle>
                                     <input id=item-untradable type=checkbox checked> <span>Untradable</span></label> <label class=property-toggle><input id=item-new type=checkbox> <span>New</span></label> <label class=property-toggle><input id=item-weekly type=checkbox> <span>Weekly Shop</span></label> <label class=property-toggle><input id=item-weeklystar type=checkbox> <span>Star Shop</span></label> <label class=property-toggle>
-                                        <input id=item-retired type=checkbox> <span>Retired</span></label> <label class=property-toggle><input id=item-premium type=checkbox> <span>Premium</span></label></div><div class=item-preview><h4>Preview</h4>
+                                        <input id=item-retired type=checkbox> <span>Retired</span></label> <label class=property-toggle><input id=item-premium type=checkbox> <span>Roblox Plus</span></label></div><div class=item-preview><h4>Preview</h4>
                                             <div class=preview-card id=item-preview-card></div></div></div></div><div class=item-adder-footer><button class="small-btn ghost"id=item-adder-back style=display:none>Back</button> 
                                                 <button class=small-btn id=item-adder-next>Next</button> <button class="small-btn success"id=item-adder-add style=display:none>Add Item</button></div></div>`;
 
@@ -1223,7 +1223,7 @@
                 ${item.weekly ? '<span class="tag-pill" style="background:#3498db33;color:#3498db;border-color:#3498db;margin:2px;">Weekly</span>' : ''}
                 ${item.weeklystar ? '<span class="tag-pill" style="background:#f1c40f33;color:#f1c40f;border-color:#f1c40f;margin:2px;">Star</span>' : ''}
                 ${item.retired ? '<span class="tag-pill" style="background:#9b59b633;color:#9b59b6;border-color:#9b59b6;margin:2px;">Retired</span>' : ''}
-                ${item.premium ? '<span class="tag-pill" style="background:#e67e2233;color:#e67e22;border-color:#e67e22;margin:2px;">Premium</span>' : ''}
+                ${item.premium ? '<span class="tag-pill" style="background:#e67e2233;color:#e67e22;border-color:#e67e22;margin:2px;">Roblox Plus</span>' : ''}
                 ${!item.tradable ? '<span class="tag-pill" style="background:#e74c3c33;color:#e74c3c;border-color:#e74c3c;margin:2px;">Untradable</span>' : ''}
             </div>
         </div>
@@ -5111,7 +5111,7 @@
                 ['New', 'new'],
                 ['Retired', 'retired'],
                 ['Removed', 'removed'],
-                ['Premium', 'premium'],
+                ['Roblox Plus', 'premium'],
                 ['Tradable', 'tradable'],
                 ['Demand', 'demand'],
                 ['Icon', 'img'],
@@ -6825,7 +6825,7 @@
                     'new': (old, val) => val ? '✓ Marked as New' : '✗ Unmarked as New',
                     'retired': (old, val) => val ? '✓ Marked as Retired' : '✗ Unmarked as Retired',
                     'removed': (old, val) => val ? '✓ Marked as Removed' : '✗ Unmarked as Removed',
-                    'premium': (old, val) => val ? '✓ Marked as Premium' : '✗ Unmarked as Premium',
+                    'premium': (old, val) => val ? '✓ Marked as Plus' : '✗ Unmarked as Plus',
                     'tradable': (old, val) => !val ? '✓ Marked as Untradable' : '✗ Marked as Tradable',
                     'unstable': (old, val) => val ? '✓ Marked as Unstable' : '✗ Unmarked as Unstable',
                     'name': (old, val) => `Name: "${old}" → "${val}"`,
