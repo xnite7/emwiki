@@ -253,10 +253,14 @@ export function tradeItemHTML(item, { variant = 'card', svg = null, category = n
         `;
     }
     const imgClass = catClass ? `trade-item-img ${catClass}` : 'trade-item-img';
+    // Quantity sits in a corner badge on the thumbnail (always visible) rather
+    // than inside the hover-only name, so ×N reads at a glance without hovering.
+    const qtyCorner = item.qty && item.qty > 1 ? `<span class="trade-item-qty">×${item.qty}</span>` : '';
     return `
         <div class="trade-item">
             ${itemVisualHTML(item.item_image, svg, item.item_name, imgClass)}
-            <span class="trade-item-name">${esc(item.item_name)}${qty}</span>
+            ${qtyCorner}
+            <span class="trade-item-name">${esc(item.item_name)}</span>
         </div>
     `;
 }

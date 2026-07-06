@@ -584,6 +584,27 @@
     opacity: 1;
 }
 
+/* Always-visible "×N" quantity badge pinned to the lower-right of the thumbnail
+   (the inline badge inside .trade-item-name only shows on hover). */
+.trade-item-qty {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    min-width: 1.05rem;
+    padding: 0 0.24rem;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.78);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.28);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1.45;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+    z-index: 3;
+}
+
 /* Collapsed remainder chip ("+N") when a trade lists more items than a card shows */
 .trade-item-more {
     display: flex;
