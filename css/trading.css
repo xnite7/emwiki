@@ -603,19 +603,14 @@
 
 .light-theme .trade-item-tooltip .tooltip-name {
     color: #000;
-.trade-item-qty{
-        position: absolute;
-        translate: 19px 19px;
-        background: #6f6f6f1c;
-        backdrop-filter: blur(12px);
-        color: #e5e5e5;
-        padding: 0px 4px;
-        border-radius: 11px;
-        font: 800 13px buildersans;
+
 }
+
+
+
+
 .trade-item:hover .trade-item-name {
-    opacity: 1;
-}
+    opacity: 1;}
 
 /* Always-visible "×N" quantity badge pinned to the lower-right of the thumbnail. */
 .trade-item-qty {
