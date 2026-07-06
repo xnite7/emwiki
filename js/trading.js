@@ -85,6 +85,7 @@ class TradingHub {
 
     async init() {
         this.setupEventListeners();
+        this.setupItemTooltip();
         this.applyAuthState();
         this.renderSortDropdown();
         await Promise.all([
@@ -208,6 +209,21 @@ class TradingHub {
     categoryFor(name) {
         if (!name || !this.itemsByName) return null;
         return this.itemsByName.get(String(name).toLowerCase())?.category || null;
+    }
+
+    // Catalog value for an item name, formatted for the hover tooltip. Returns
+    // null when the item has no known/priced value (unrated, N/A, O/C, or 0) so
+    // the tooltip just shows the name.
+    priceFor(name) {
+        if (!name || !this.itemsByName) return null;
+        const raw = this.itemsByName.get(String(name).toLowerCase())?.price;
+        if (raw === null || raw === undefined) return null;
+        const s = String(raw).trim();
+        if (!s || s === '0') return null;
+        const upper = s.toUpperCase();
+        if (upper === 'N/A' || upper === 'O/C') return null;
+        const formatted = window.Utils.formatPrice(raw);
+        return formatted ? `${formatted} value` : null;
     }
 
     // API listing row → the trade shape the UI renders.
@@ -1128,11 +1144,75 @@ class TradingHub {
         return card;
     }
 
+    // A single cursor-following tooltip, shared by every trade item thumbnail,
+    // that names the hovered item and shows its value underneath. Set up once and
+    // driven by delegated pointer events so it works for cards rendered later.
+    //
+    // Pointer-only by design: touch/mobile devices have no cursor to anchor the
+    // tooltip to, so on `(hover: none)`/coarse pointers we skip setup entirely and
+    // the feature stays disabled — matching the requested mobile behaviour.
+    setupItemTooltip() {
+        if (this._itemTooltip) return;
+        if (!window.matchMedia || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+        const tip = document.createElement('div');
+        tip.className = 'trade-item-tooltip';
+        tip.setAttribute('role', 'tooltip');
+        tip.style.display = 'none';
+        document.body.appendChild(tip);
+        this._itemTooltip = tip;
+
+        let current = null;
+
+        const hide = () => {
+            current = null;
+            tip.style.display = 'none';
+        };
+
+        // Keep the tooltip beside the cursor and clamp it inside the viewport so
+        // it never gets clipped at the right/bottom edges.
+        const position = (e) => {
+            const pad = 14;
+            const rect = tip.getBoundingClientRect();
+            let x = e.clientX + pad;
+            let y = e.clientY + pad;
+            if (x + rect.width > window.innerWidth) x = e.clientX - pad - rect.width;
+            if (y + rect.height > window.innerHeight) y = e.clientY - pad - rect.height;
+            tip.style.left = `${Math.max(0, x)}px`;
+            tip.style.top = `${Math.max(0, y)}px`;
+        };
+
+        document.addEventListener('mouseover', (e) => {
+            const el = e.target.closest?.('.trade-item[data-item-name]');
+            if (!el || el === current) return;
+            current = el;
+            const name = el.getAttribute('data-item-name') || '';
+            const price = el.getAttribute('data-item-price') || '';
+            tip.innerHTML = `<span class="tooltip-name">${this.esc(name)}</span>`
+                + (price ? `<span class="tooltip-price">${this.esc(price)}</span>` : '');
+            tip.style.display = 'flex';
+            position(e);
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!current) return;
+            if (!e.target.closest?.('.trade-item[data-item-name]')) { hide(); return; }
+            position(e);
+        });
+
+        // Hide when the pointer leaves the thumbnail (or the page/scroll changes).
+        document.addEventListener('mouseout', (e) => {
+            if (current && !e.relatedTarget?.closest?.('.trade-item[data-item-name]')) hide();
+        });
+        window.addEventListener('scroll', hide, true);
+    }
+
     // Small "×N" badge for stacked items (only shown when qty > 1).
     renderTradeItem(item) {
         return window.ItemCard.tradeItemHTML(item, {
             svg: this.svgFor(item.item_name),
-            category: item.category || this.categoryFor(item.item_name)
+            category: item.category || this.categoryFor(item.item_name),
+            price: this.priceFor(item.item_name)
         });
     }
 
