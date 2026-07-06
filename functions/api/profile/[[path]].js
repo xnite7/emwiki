@@ -1,4 +1,5 @@
 // Profile API endpoints
+import { normalizeUserId, userIdForms, isSameUser, updateUserStats } from '../trades/_utils/helpers.js';
 
 async function handleGetProfile(request, env) {
     const url = new URL(request.url);
@@ -249,7 +250,9 @@ async function handlePostReview(request, env) {
     const url = new URL(request.url);
     const pathParts = url.pathname.split('/api/profile/').filter(Boolean);
     const pathSegments = pathParts[0].split('/');
-    const userId = pathSegments[0];
+    // Canonicalize the reviewed user id so it stores/compares consistently with
+    // the rest of the codebase (trade tables can carry a "123.0" float artifact).
+    const userId = normalizeUserId(pathSegments[0]);
 
     if (!userId) {
         return new Response(JSON.stringify({ error: 'User ID required' }), {
@@ -283,9 +286,11 @@ async function handlePostReview(request, env) {
         });
     }
 
-    // Get reviewer user from session (already joined above)
+    // Get reviewer user from session (already joined above).
+    // The SELECT s.*, u.* join returns user_id as a number; normalize it so the
+    // self-review check and the stored reviewer_id match the canonical form.
     const reviewer = {
-        user_id: session.user_id,
+        user_id: normalizeUserId(session.user_id),
         username: session.username,
         display_name: session.display_name,
         avatar_url: session.avatar_url,
@@ -327,17 +332,17 @@ async function handlePostReview(request, env) {
     }
 
     // Prevent self-review
-    if (reviewer.user_id === userId) {
+    if (isSameUser(reviewer.user_id, userId)) {
         return new Response(JSON.stringify({ error: 'You cannot review yourself' }), {
             status: 400,
             headers: { 'Content-Type': 'application/json' }
         });
     }
 
-    // Check if user being reviewed exists
+    // Check if user being reviewed exists (tolerate the legacy "123.0" form)
     const reviewedUser = await env.DBA.prepare(
-        'SELECT user_id FROM users WHERE user_id = ?'
-    ).bind(userId).first();
+        'SELECT user_id FROM users WHERE user_id IN (?, ?)'
+    ).bind(...userIdForms(userId)).first();
 
     if (!reviewedUser) {
         return new Response(JSON.stringify({ error: 'User not found' }), {
@@ -346,10 +351,11 @@ async function handlePostReview(request, env) {
         });
     }
 
-    // Check if reviewer has already reviewed this user (limit one review per user pair)
+    // Check if reviewer has already reviewed this user (limit one profile review
+    // per user pair). Match either historic id encoding on both sides.
     const existingReview = await env.DBA.prepare(
-        'SELECT id FROM trade_reviews WHERE reviewer_id = ? AND reviewed_user_id = ? AND trade_id IS NULL'
-    ).bind(reviewer.user_id, userId).first();
+        'SELECT id FROM trade_reviews WHERE reviewer_id IN (?, ?) AND reviewed_user_id IN (?, ?) AND trade_id IS NULL'
+    ).bind(...userIdForms(reviewer.user_id), ...userIdForms(userId)).first();
 
     if (existingReview) {
         return new Response(JSON.stringify({ error: 'You have already reviewed this user' }), {
@@ -375,7 +381,6 @@ async function handlePostReview(request, env) {
     ).run();
 
     // Update user stats
-    const { updateUserStats } = await import('../trades/_utils/helpers.js');
     await updateUserStats(env, userId);
 
     // Create notification
