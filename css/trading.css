@@ -2125,9 +2125,12 @@ content: '';
 
 .notif-dropdown {
     display: none;
-    position: absolute;
-    top: calc(100% + 0.5rem);
-    right: 0;
+    /* Fixed (not absolute) so the panel escapes the tab bar's `overflow-x: auto`
+       scroll container, which would otherwise clip it out of view. Its top/right
+       are set from the bell's position in toggleNotifDropdown(). */
+    position: fixed;
+    top: 3.25rem;
+    right: 0.5rem;
     width: 340px;
     max-width: 90vw;
     background: var(--bg-secondary);

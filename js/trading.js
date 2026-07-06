@@ -497,10 +497,14 @@ class TradingHub {
         });
         document.getElementById('notifMarkAllBtn')?.addEventListener('click', () => this.markAllNotificationsRead());
 
-        // Close notifications dropdown on outside click
+        // Close notifications dropdown on outside click. The dropdown is
+        // portaled to <body> when open, so check it separately from its wrapper.
         document.addEventListener('click', (e) => {
             const wrapper = document.getElementById('notifWrapper');
-            if (wrapper && !wrapper.contains(e.target)) this.closeNotifDropdown();
+            const dropdown = document.getElementById('notifDropdown');
+            const inWrapper = wrapper && wrapper.contains(e.target);
+            const inDropdown = dropdown && dropdown.contains(e.target);
+            if (!inWrapper && !inDropdown) this.closeNotifDropdown();
         });
 
         // Messages button opens the messages modal (like the notifications bell).
@@ -2240,7 +2244,25 @@ class TradingHub {
         const dropdown = document.getElementById('notifDropdown');
         if (!dropdown) return;
         const isOpen = dropdown.classList.toggle('open');
-        if (isOpen) this.loadNotifications();
+        if (isOpen) {
+            this.positionNotifDropdown();
+            this.loadNotifications();
+        }
+    }
+
+    // Anchor the position:fixed dropdown just below the bell, right-aligned.
+    // We portal it to <body> because the tab bar both scrolls (overflow) and
+    // uses backdrop-filter (which makes it a containing block for fixed
+    // descendants), either of which would otherwise clip the panel out of view.
+    positionNotifDropdown() {
+        const dropdown = document.getElementById('notifDropdown');
+        const bell = document.getElementById('notifBellBtn');
+        if (!dropdown || !bell) return;
+        if (dropdown.parentElement !== document.body) document.body.appendChild(dropdown);
+        const r = bell.getBoundingClientRect();
+        dropdown.style.top = `${r.bottom + 8}px`;
+        dropdown.style.right = `${Math.max(8, window.innerWidth - r.right)}px`;
+        dropdown.style.left = 'auto';
     }
 
     closeNotifDropdown() {
