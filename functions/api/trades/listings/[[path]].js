@@ -196,11 +196,11 @@ async function handlePost(request, env, path, user) {
         } = data;
 
         // Only allow known themes; anything else falls back to 'default'.
-        const allowedThemes = ['default', 'ocean', 'sunset', 'forest'];
-        let theme = allowedThemes.includes(data.theme) ? data.theme : 'default';
+        const allowedThemes = ['default', 'ocean', 'sunset', 'forest', 'foody'];
+        let theme = data.theme;
         // Non-default themes are a donator perk — enforce server-side so the
         // client-side lock can't just be bypassed.
-        if (theme !== 'default' && !userHasThemeRole(user)) {
+        if (!userHasThemeRole(user)) {
             theme = 'default';
         }
 

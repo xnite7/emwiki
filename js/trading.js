@@ -1913,7 +1913,7 @@ class TradingHub {
     selectTheme(theme) {
         // Gate non-default themes behind a donator role.
         if (theme !== 'default' && !this.canUseThemes()) {
-            this.showToast('Card themes are a donator perk — unlock them by supporting the wiki.', 'warning');
+            this.showToast('Card themes are a donator perk, unlock them by supporting the wiki.', 'warning');
             return;
         }
         this.createMeta.theme = theme;
