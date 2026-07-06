@@ -241,7 +241,7 @@ async function handleUpdateRole(request, env) {
 
     const { userId, role, action } = await request.json(); // action: 'add' or 'remove'
 
-    if (!['user', 'vip', 'moderator', 'admin'].includes(role)) {
+    if (!['user', 'vip', 'moderator', 'admin', 'donator'].includes(role)) {
         return new Response(JSON.stringify({ error: 'Invalid role' }), {
             status: 400,
             headers: { 'Content-Type': 'application/json' }
