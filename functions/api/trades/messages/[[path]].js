@@ -1,6 +1,8 @@
 import {
     authenticateUser,
     isAuthorized,
+    isTradeBanned,
+    isBlockedBy,
     errorResponse,
     successResponse,
     validateFields,
@@ -188,6 +190,16 @@ async function handlePost(request, env, path, user) {
 
         if (!recipient) {
             return errorResponse('Recipient not found', 404);
+        }
+
+        // Banned players cannot send messages.
+        if (await isTradeBanned(env, user.user_id)) {
+            return errorResponse('You are banned from trading', 403);
+        }
+
+        // The recipient may have blocked this user.
+        if (await isBlockedBy(env, to_user_id, user.user_id)) {
+            return errorResponse('You cannot message this user', 403);
         }
 
         // If listing_id is provided, verify the users are involved in the listing

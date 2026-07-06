@@ -1,6 +1,8 @@
 import {
     authenticateUser,
     isAuthorized,
+    isTradeBanned,
+    isBlockedBy,
     errorResponse,
     successResponse,
     validateFields,
@@ -157,6 +159,16 @@ async function handlePost(request, env, path, user) {
         // Can't make offer on own listing
         if (isSameUser(listing.user_id, user.user_id)) {
             return errorResponse('Cannot make offer on your own listing', 400);
+        }
+
+        // Banned players cannot make offers.
+        if (await isTradeBanned(env, user.user_id)) {
+            return errorResponse('You are banned from trading', 403);
+        }
+
+        // The listing owner may have blocked this user to stop their offers.
+        if (await isBlockedBy(env, listing.user_id, user.user_id)) {
+            return errorResponse('You cannot make an offer on this listing', 403);
         }
 
         // Validate offered_items is an array

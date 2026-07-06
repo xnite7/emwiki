@@ -1,6 +1,8 @@
 import {
     authenticateUser,
     isAuthorized,
+    isModerator,
+    isTradeBanned,
     errorResponse,
     successResponse,
     validateFields,
@@ -29,13 +31,15 @@ function userHasThemeRole(user) {
 }
 
 // Handle GET requests
-async function handleGet(request, env, path) {
+async function handleGet(request, env, path, user) {
     const url = new URL(request.url);
+    // The signed-in viewer, used to flag which listings they've already liked.
+    const viewerId = user ? normalizeUserId(user.user_id) : null;
 
     // GET /api/trades/listings - List all active listings
     if (!path || path === '') {
         const { limit, offset } = parsePagination(url);
-        const { sortBy, sortOrder } = parseSort(url, ['created_at', 'updated_at', 'views'], 'created_at', 'DESC');
+        const { sortBy, sortOrder } = parseSort(url, ['created_at', 'updated_at', 'likes'], 'created_at', 'DESC');
 
         const params = url.searchParams;
         const category = params.get('category');
@@ -76,6 +80,8 @@ async function handleGet(request, env, path) {
             whereBindings.push(term, term, term, term);
         }
 
+        // like_count is aggregated from trade_likes; `liked` flags whether the
+        // signed-in viewer has liked each listing (0 for logged-out visitors).
         let query = `
             SELECT
                 tl.*,
@@ -84,13 +90,18 @@ async function handleGet(request, env, path) {
                 u.display_name AS u_display_name,
                 u.avatar_url AS u_avatar_url,
                 uts.average_rating AS u_average_rating,
-                uts.total_trades AS u_total_trades
+                uts.total_trades AS u_total_trades,
+                (SELECT COUNT(*) FROM trade_likes lk WHERE lk.listing_id = tl.id) AS like_count,
+                (SELECT COUNT(*) FROM trade_likes lk WHERE lk.listing_id = tl.id AND lk.user_id IN (?, ?)) AS liked
             FROM trade_listings tl
             LEFT JOIN users u ON u.user_id = tl.user_id
             LEFT JOIN user_trade_stats uts ON uts.user_id = tl.user_id
         `;
-        query += where + ` ORDER BY tl.${sortBy} ${sortOrder} LIMIT ? OFFSET ?`;
-        const bindings = [...whereBindings, limit, offset];
+        // 'likes' sorts by the aggregated count; the rest are real columns.
+        const orderBy = sortBy === 'likes' ? 'like_count' : `tl.${sortBy}`;
+        query += where + ` ORDER BY ${orderBy} ${sortOrder} LIMIT ? OFFSET ?`;
+        const likeBindings = viewerId ? userIdForms(viewerId) : ['\0', '\0'];
+        const bindings = [...likeBindings, ...whereBindings, limit, offset];
 
         const [{ results }, countRow] = await Promise.all([
             env.DBA.prepare(query).bind(...bindings).all(),
@@ -103,6 +114,7 @@ async function handleGet(request, env, path) {
                 u_user_id, u_username, u_display_name, u_avatar_url,
                 u_average_rating, u_total_trades,
                 offering_items, seeking_items,
+                like_count, liked, views,
                 ...listing
             } = row;
 
@@ -111,6 +123,8 @@ async function handleGet(request, env, path) {
                 user_id: normalizeUserId(listing.user_id),
                 offering_items: safeJsonParse(offering_items),
                 seeking_items: seeking_items ? safeJsonParse(seeking_items, null) : null,
+                like_count: like_count || 0,
+                liked: !!liked,
                 user: {
                     user_id: normalizeUserId(u_user_id),
                     username: u_username,
@@ -136,34 +150,38 @@ async function handleGet(request, env, path) {
             return errorResponse('Listing not found', 404);
         }
 
-        // Increment view count
-        await env.DBA.prepare(
-            'UPDATE trade_listings SET views = views + 1 WHERE id = ?'
-        ).bind(listingId).run();
-
         // Get user info
-        const user = await getUserWithStats(env, listing.user_id);
+        const owner = await getUserWithStats(env, listing.user_id);
 
-        // Get offer count
-        const offerCount = await env.DBA.prepare(
-            'SELECT COUNT(*) as count FROM trade_offers WHERE listing_id = ?'
-        ).bind(listingId).first();
+        // Get offer count + like count, and whether the viewer has liked it.
+        const [offerCount, likeCount, likedRow] = await Promise.all([
+            env.DBA.prepare('SELECT COUNT(*) as count FROM trade_offers WHERE listing_id = ?')
+                .bind(listingId).first(),
+            env.DBA.prepare('SELECT COUNT(*) as count FROM trade_likes WHERE listing_id = ?')
+                .bind(listingId).first(),
+            viewerId
+                ? env.DBA.prepare('SELECT id FROM trade_likes WHERE listing_id = ? AND user_id IN (?, ?)')
+                    .bind(listingId, ...userIdForms(viewerId)).first()
+                : Promise.resolve(null)
+        ]);
 
+        const { views, ...listingRest } = listing;
         return successResponse({
-            ...listing,
+            ...listingRest,
             user_id: normalizeUserId(listing.user_id),
             offering_items: safeJsonParse(listing.offering_items),
             seeking_items: listing.seeking_items ? safeJsonParse(listing.seeking_items, null) : null,
-            views: listing.views + 1,
             offer_count: offerCount.count,
+            like_count: likeCount.count,
+            liked: !!likedRow,
             user: {
-                user_id: user.user_id,
-                username: user.username,
-                display_name: user.display_name,
-                avatar_url: user.avatar_url,
-                average_rating: user.average_rating || 0,
-                total_trades: user.total_trades || 0,
-                total_reviews: user.total_reviews || 0
+                user_id: owner.user_id,
+                username: owner.username,
+                display_name: owner.display_name,
+                avatar_url: owner.avatar_url,
+                average_rating: owner.average_rating || 0,
+                total_trades: owner.total_trades || 0,
+                total_reviews: owner.total_reviews || 0
             }
         });
     }
@@ -171,10 +189,60 @@ async function handleGet(request, env, path) {
     return errorResponse('Invalid request', 400);
 }
 
+// Toggle the signed-in user's like on a listing. Returns the new like count
+// and whether the user now likes it.
+async function handleLikeToggle(env, listingId, user) {
+    if (!listingId) {
+        return errorResponse('Listing ID required', 400);
+    }
+
+    const listing = await env.DBA.prepare(
+        'SELECT id FROM trade_listings WHERE id = ?'
+    ).bind(listingId).first();
+    if (!listing) {
+        return errorResponse('Listing not found', 404);
+    }
+
+    const userId = normalizeUserId(user.user_id);
+    const existing = await env.DBA.prepare(
+        'SELECT id FROM trade_likes WHERE listing_id = ? AND user_id IN (?, ?)'
+    ).bind(listingId, ...userIdForms(userId)).first();
+
+    let liked;
+    if (existing) {
+        await env.DBA.prepare('DELETE FROM trade_likes WHERE id = ?').bind(existing.id).run();
+        liked = false;
+    } else {
+        await env.DBA.prepare(
+            'INSERT INTO trade_likes (listing_id, user_id, created_at) VALUES (?, ?, ?)'
+        ).bind(listingId, userId, Date.now()).run();
+        liked = true;
+    }
+
+    const { count } = await env.DBA.prepare(
+        'SELECT COUNT(*) as count FROM trade_likes WHERE listing_id = ?'
+    ).bind(listingId).first();
+
+    return successResponse({ liked, like_count: count });
+}
+
 // Handle POST requests
 async function handlePost(request, env, path, user) {
     if (!user || !isAuthorized(user)) {
         return errorResponse('Unauthorized', 401);
+    }
+
+    // POST /api/trades/listings/:id/like - toggle a like on a listing
+    {
+        const parts = path.split('/');
+        if (parts[1] === 'like') {
+            return handleLikeToggle(env, parts[0], user);
+        }
+    }
+
+    // Banned players cannot create listings.
+    if (await isTradeBanned(env, user.user_id)) {
+        return errorResponse('You are banned from trading', 403);
     }
 
     // POST /api/trades/listings - Create new listing
@@ -404,8 +472,22 @@ async function handleDelete(request, env, path, user) {
         return errorResponse('Listing not found', 404);
     }
 
-    if (!isSameUser(listing.user_id, user.user_id)) {
+    const owner = isSameUser(listing.user_id, user.user_id);
+    const mod = isModerator(user);
+    if (!owner && !mod) {
         return errorResponse('You can only delete your own listings', 403);
+    }
+
+    // Moderators hard-delete the listing (and its dependent rows) so it is
+    // removed outright; owners keep the existing soft-delete (cancelled) so
+    // their trade history is preserved.
+    if (mod && !owner) {
+        await env.DBA.batch([
+            env.DBA.prepare('DELETE FROM trade_likes WHERE listing_id = ?').bind(listingId),
+            env.DBA.prepare('DELETE FROM trade_offers WHERE listing_id = ?').bind(listingId),
+            env.DBA.prepare('DELETE FROM trade_listings WHERE id = ?').bind(listingId)
+        ]);
+        return successResponse({ message: 'Listing removed by moderator' });
     }
 
     // Soft delete by setting status to cancelled
@@ -438,15 +520,14 @@ export async function onRequest(context) {
     }
 
     try {
-        let user = null;
-        if (request.method !== 'GET') {
-            user = await authenticateUser(request, env);
-        }
+        // Authenticate on every method: GET stays public, but a token (when
+        // present) lets the response flag which listings the viewer has liked.
+        const user = await authenticateUser(request, env);
 
         let response;
         switch (request.method) {
             case 'GET':
-                response = await handleGet(request, env, path);
+                response = await handleGet(request, env, path, user);
                 break;
             case 'POST':
                 response = await handlePost(request, env, path, user);

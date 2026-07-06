@@ -2909,3 +2909,86 @@ content: '';
         animation: none;
     }
 }
+
+/* ==================== Likes, block & moderation controls ==================== */
+
+/* Heart "like" button on trade cards and in the detail modal. */
+.btn-like {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-item-hover);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 38px;
+}
+
+.btn-like:hover {
+    border-color: #e0245e;
+    color: #e0245e;
+    transform: translateY(-1px);
+}
+
+.btn-like.liked {
+    border-color: #e0245e;
+    color: #e0245e;
+    background: color-mix(in srgb, #e0245e 12%, transparent);
+}
+
+.btn-like .like-count { font-variant-numeric: tabular-nums; }
+
+/* In the detail meta row the like button stays compact and pushes the status
+   badge to the right. */
+.detail-meta { align-items: center; }
+.detail-meta .btn-like { padding: 0.3rem 0.55rem; min-height: 30px; }
+.detail-meta .trade-status-badge { margin-left: auto; }
+
+/* Moderator "Remove" button on trade cards. */
+.btn-mod-delete {
+    padding: 0.5rem 0.7rem;
+    border: 1px solid #810000;
+    border-radius: 8px;
+    background: var(--danger-gradient);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 38px;
+}
+.btn-mod-delete:hover { filter: brightness(1.08) saturate(1.05); transform: translateY(-1px); }
+
+/* Thread header: name on the left, Block button on the right. */
+.thread-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+.thread-header-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.thread-header-block {
+    flex: 0 0 auto;
+    padding: 0.35rem 0.7rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    min-height: 30px;
+}
+
+/* Blocked users list (My Trades → Blocked). */
+.blocked-card .conv-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}

@@ -641,9 +641,38 @@ class Auth extends EventTarget {
         return `/api/roblox-proxy?mode=cdn-asset&hash=${hash}`;
     }
 
+    // Tear down a model previously rendered into `container` (cancel its RAF
+    // loop, stop observing it, drop the WebGL context and remove the canvas) so
+    // the same container can be re-rendered without leaking a context.
+    _disposeContainerModel(container) {
+        const model = container && container._model3D;
+        if (!model) return;
+        if (model.animationId) cancelAnimationFrame(model.animationId);
+        model.observer?.disconnect();
+        try { model.renderer?.dispose(); } catch (e) { /* ignore */ }
+        if (model.renderer?.domElement?.parentNode === container) {
+            container.removeChild(model.renderer.domElement);
+        }
+        container._model3D = null;
+        if (this._model3D === model) this._model3D = null;
+    }
+
+    // Render a spinning 3D Roblox avatar for `userId` into `container`.
+    // State is tracked per-container (on the element itself) rather than on a
+    // single shared instance field, so the auth modal and the profile page can
+    // each host their own model at the same time without clobbering one another.
     async render3DPlayerModel(userId, container) {
-        if (this._rendering3DModel) return;
-        this._rendering3DModel = true;
+        if (!userId || !container) {
+            console.error('Invalid userId or container:', userId, container);
+            if (container) container.style.display = 'none';
+            return;
+        }
+
+        // A render is already in flight (or done) for this container — don't
+        // start a second one on top of it.
+        if (container._model3DLoading) return;
+        container._model3DLoading = true;
+        this._disposeContainerModel(container);
         container.className = 'loadin';
 
         // Wait for Three.js to load
@@ -651,13 +680,7 @@ class Auth extends EventTarget {
         if (typeof THREE === 'undefined') {
             console.error('Three.js failed to load');
             container.style.display = '';
-            this._rendering3DModel = false;
-            return;
-        }
-
-        if (!userId || !container) {
-            console.error('Invalid userId or container:', userId, container);
-            if (container) container.style.display = 'none';
+            container._model3DLoading = false;
             return;
         }
 
@@ -666,7 +689,7 @@ class Auth extends EventTarget {
             if (!response.ok) {
                 console.error('Failed to load 3D model:', response.status);
                 container.style.display = '';
-                this._rendering3DModel = false;
+                container._model3DLoading = false;
                 return;
             }
             const metadata = await response.json();
@@ -759,8 +782,9 @@ class Auth extends EventTarget {
                 objLoader.load(this.getCdnUrl(objUrl), (object) => {
                     scene.add(object);
 
-                    // Store references for later animations
-                    this._model3D = {
+                    // Store references for later animations — on the container
+                    // itself so each container animates independently.
+                    const model = {
                         scene,
                         camera,
                         renderer,
@@ -769,30 +793,38 @@ class Auth extends EventTarget {
                         isVisible: true,
                         rotationSpeed: 0.01,
                         initialCameraPosition: { ...camera.position },
-                        aabb: aabb
+                        aabb: aabb,
+                        observer: null
                     };
+                    container._model3D = model;
+                    // The epic post-login animation only ever targets the auth
+                    // modal's container, so expose that one as this._model3D.
+                    if (container.id === 'player-model-container') {
+                        this._model3D = model;
+                    }
 
                     // Animation loop with visibility control
                     const animateModel = () => {
-                        if (!this._model3D.isVisible) return;
-                        this._model3D.object.rotation.y += this._model3D.rotationSpeed;
-                        this._model3D.renderer.render(this._model3D.scene, this._model3D.camera);
-                        this._model3D.animationId = requestAnimationFrame(animateModel);
+                        if (!model.isVisible) return;
+                        model.object.rotation.y += model.rotationSpeed;
+                        model.renderer.render(model.scene, model.camera);
+                        model.animationId = requestAnimationFrame(animateModel);
                     };
 
                     // Use Intersection Observer to pause animation when not visible
                     const observer = new IntersectionObserver((entries) => {
                         entries.forEach(entry => {
-                            this._model3D.isVisible = entry.isIntersecting;
-                            if (this._model3D.isVisible && !this._model3D.animationId) {
+                            model.isVisible = entry.isIntersecting;
+                            if (model.isVisible && !model.animationId) {
                                 animateModel();
-                            } else if (!this._model3D.isVisible && this._model3D.animationId) {
-                                cancelAnimationFrame(this._model3D.animationId);
-                                this._model3D.animationId = null;
+                            } else if (!model.isVisible && model.animationId) {
+                                cancelAnimationFrame(model.animationId);
+                                model.animationId = null;
                             }
                         });
                     }, { threshold: 0.1 });
 
+                    model.observer = observer;
                     observer.observe(container);
 
                     // Start animation
@@ -801,14 +833,14 @@ class Auth extends EventTarget {
                     // Show model immediately when loaded
                     container.className = 'active';
                     container.style.display = '';
-                    this._rendering3DModel = false;
+                    container._model3DLoading = false;
                 });
             });
         } catch (error) {
             console.error('Error rendering 3D model:', error);
             container.className = 'active';
             container.style.display = '';
-            this._rendering3DModel = false;
+            container._model3DLoading = false;
         }
     }
 

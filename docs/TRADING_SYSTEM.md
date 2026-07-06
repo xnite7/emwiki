@@ -34,7 +34,7 @@ The trading system allows users to:
 
 ### Database Schema
 
-The system uses 7 main tables:
+The system uses these main tables:
 
 1. **trade_listings** - Public trade listings
 2. **trade_offers** - Offers made on listings
@@ -43,10 +43,14 @@ The system uses 7 main tables:
 5. **trade_reviews** - Reputation system
 6. **user_trade_stats** - Aggregate statistics
 7. **trade_notifications** - In-app notifications
+8. **trade_blocks** - A user blocking another (stops offers/messages)
+9. **trade_bans** - Players banned from trading by an admin/mod
+10. **trade_likes** - Likes on trade listings (replaces the old view counter)
 
-See `migrations/023_create_trading_tables.sql` for the complete schema. The
-migration is idempotent (`CREATE TABLE IF NOT EXISTS`), so it is safe to run
-even if some tables were created previously.
+See `migrations/023_create_trading_tables.sql` for the base schema and
+`migrations/027_trade_blocks_bans_likes.sql` for the blocks/bans/likes tables.
+Both migrations are idempotent (`CREATE TABLE IF NOT EXISTS`), so they are safe
+to run even if some tables were created previously.
 
 ## Database Setup
 
@@ -84,7 +88,7 @@ List all trade listings
 - `search` - Search in title/description
 - `limit` - Results per page (default: 20, max: 100)
 - `offset` - Pagination offset
-- `sort` - Sort field (created_at, updated_at, views)
+- `sort` - Sort field (created_at, updated_at, likes)
 - `order` - Sort order (ASC, DESC)
 
 **Response:**
@@ -108,7 +112,8 @@ List all trade listings
       "seeking_items": [],
       "created_at": 1234567890000,
       "updated_at": 1234567890000,
-      "views": 15,
+      "like_count": 15,
+      "liked": false,
       "user": {
         "user_id": "123456",
         "username": "CoolTrader",
@@ -453,6 +458,53 @@ Mark all notifications as read
 Delete notification
 
 **Authentication Required:** Yes
+
+### Likes
+
+#### POST /api/trades/listings/:id/like
+Toggle the signed-in user's like on a listing.
+
+**Authentication Required:** Yes
+
+**Response:** `{ "liked": true, "like_count": 16 }`
+
+Listing responses (`GET /api/trades/listings` and `GET /api/trades/listings/:id`)
+include `like_count` (total) and `liked` (whether the current viewer liked it).
+Views are no longer tracked.
+
+### Blocks
+
+A block is directional: the blocker stops receiving offers and messages from the
+blocked user.
+
+#### GET /api/trades/blocks
+List the users the signed-in user has blocked.
+
+#### POST /api/trades/blocks
+Block a user. Body: `{ "user_id": "123" }`
+
+#### DELETE /api/trades/blocks/:userId
+Unblock a user.
+
+**Authentication Required:** Yes (all block endpoints)
+
+### Moderation (admin / mod only)
+
+Roles that moderate: `admin`, `owner`, `moderator`, `mod`.
+
+#### DELETE /api/trades/listings/:id
+Owners soft-cancel their own listing; moderators hard-delete any listing
+(also removing its likes and offers).
+
+#### POST /api/trades/admin/ban
+Ban a player from trading. Body: `{ "user_id": "123", "reason": "..." }`.
+Banned players cannot create listings, make offers, or send messages.
+
+#### DELETE /api/trades/admin/ban/:userId
+Lift a trading ban.
+
+#### GET /api/trades/admin/bans
+List banned players.
 
 ## Frontend Integration
 
