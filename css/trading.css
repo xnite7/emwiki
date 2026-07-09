@@ -465,6 +465,11 @@
     background: var(--danger);
 }*/
 
+
+.theme-sunset .trade-card-description{
+    color: var(--accent-contrast);
+}
+
 .trade-card-description {
     padding: 0 1rem 0.5rem;
     font-size: 0.8rem;
@@ -752,6 +757,11 @@ content: '';
 .btn-view-trade:hover {
     border-color: var(--accent);
     color: var(--accent);
+}
+
+.theme-sunset .btn-view-trade:hover{
+border-color: var(--gold);
+    color: var(--gold);
 }
 
 .btn-make-offer {
@@ -2876,6 +2886,7 @@ content: '';
     .calc-side[data-side="their"] { order: 3; }
     .create-finalize { grid-template-columns: 1fr; }
     .create-actions { flex-direction: column-reverse; align-items: stretch; }
+    .thread-pane {min-height: 49vh;max-height: 49vh;}
 }
 
 /* Keep the theme picker at 2 columns inside the narrow finalize column,
@@ -2939,6 +2950,9 @@ content: '';
     cursor: pointer;
     transition: all 0.2s;
     min-height: 38px;
+}
+.theme-sunset .btn-like{
+    color: var(--accent-contrast);
 }
 
 .btn-like:hover {
