@@ -361,6 +361,7 @@
     /* each card sizes to its own content — a long trade no longer stretches
        every other card in its row to match */
     align-items: start;
+    justify-items: center;
 }
 
 /* ---------- Trade Card ---------- */
@@ -2887,6 +2888,7 @@ border-color: var(--gold);
     .create-finalize { grid-template-columns: 1fr; }
     .create-actions { flex-direction: column-reverse; align-items: stretch; }
     .thread-pane {min-height: 49vh;max-height: 49vh;}
+    .trade-card{width: 346px;}
 }
 
 /* Keep the theme picker at 2 columns inside the narrow finalize column,
