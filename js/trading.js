@@ -1071,11 +1071,12 @@ class TradingHub {
         });
 
         this.updateStats();
+        if (!window.matchMedia('(max-width: 767.98px)').matches) {
         var msnry = new Masonry('.trades-feed', {
             columnWidth: 280,
             itemSelector: '.trade-card',
             gutter: 10
-        });
+        });}
     }
 
     // Numbered page buttons (‹ 1 … 4 [5] 6 … 12 ›): first/last always shown,
@@ -1497,12 +1498,14 @@ class TradingHub {
             }
             feed.appendChild(card);
         });
-        var msnry = new Masonry('.my-trades-feed', {
-            columnWidth: 280,
-            itemSelector: '.trade-card',
-            gutter: 10
-        });
-
+        // Masonry only on desktop; on mobile the feed uses a single-column flow layout.
+        if (!window.matchMedia('(max-width: 767.98px)').matches) {
+            new Masonry('.my-trades-feed', {
+                columnWidth: 280,
+                itemSelector: '.trade-card',
+                gutter: 10
+            });
+        }
     }
 
     renderOffersList(feed, offers, isReceived) {
