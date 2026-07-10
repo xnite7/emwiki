@@ -123,6 +123,7 @@ const Layout = {
 			<div class="footer-section">
 				<h4>Browse</h4>
 				<a href="/catalog">Catalog</a>
+				<a href="/value-tiers">Value Tiers (the “+”)</a>
 				<a href="/scammers">Scammers List</a>
 				<a href="/admin">Admin Portal</a>
 				<a href="/privacy-policy">Privacy Policy</a>

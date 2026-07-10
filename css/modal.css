@@ -297,6 +297,30 @@ body:has(.item-modal.active) {
     transform: translateX(-50%) scale(1);
 }
 
+/* Tier "+" / Owner's Choice tooltip on the modal price — same tap-to-reveal
+   pattern as the tax indicator (click toggles .show-tooltip), so it works on
+   touch where hover doesn't exist. Desktop hover reveals it too. */
+.modal-price h2.has-tier-tooltip {
+    position: relative;
+    cursor: help;
+}
+
+.tier-tooltip {
+    white-space: normal;
+    width: max-content;
+    max-width: 220px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.35;
+}
+
+.modal-price h2.has-tier-tooltip.show-tooltip .tier-tooltip,
+.modal-price h2.has-tier-tooltip:hover .tier-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
+
 /* Demand Rating Styles */
 .modal-demand {
     width: 100%;

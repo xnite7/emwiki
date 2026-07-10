@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LJ02XLZ4KJ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-LJ02XLZ4KJ');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>What does the + mean? - EM Wiki</title>
+    <meta name="description" content="How EM Wiki value tiers work — what the + after a value means, the full tier table, and O/C (Owner's Choice) explained.">
+    <meta property="og:title" content="What does the + mean? - EM Wiki">
+    <meta property="og:image" content="https://emwiki.com/imgs/QgWIUWf.png">
+    <meta property="og:description" content="How EM Wiki value tiers work — what the + after a value means, the full tier table, and O/C (Owner's Choice) explained.">
+    <link rel="icon" href="./imgs/favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="./imgs/app.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#0e1116">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="./css/style.css?v=2.2.2">
+    <link rel="stylesheet" href="./css/value-tiers.css">
+</head>
+
+<body>
+    <div id="site-header"></div>
+
+    <main class="tiers-page">
+        <h1>What does the “+” mean?</h1>
+        <p class="tiers-intro">
+            Item values on the wiki display as <strong>tiers</strong> — typical value bands like
+            <span style="white-space: nowrap;"><span class="tier-chip">20-25K+</span>.</span>
+            The trailing <strong>+</strong> means the range is the
+            <strong>average</strong>: an item can go higher in rare cases, so read it as
+            “20–25K <em>or more</em>,” not a hard cap.
+        </p>
+
+        <div class="tiers-card">
+            <h2>How tiers work</h2>
+            <p>Every item's tier is derived from its raw stored value — a value maps to the tier whose
+                range contains it. Only values of <strong>1K and above</strong> get a tier; anything under
+                1K shows its exact value with no “+”.</p>
+            <p>The top tier is open-ended: anything worth 100K or more lands in
+                <span class="tier-chip">100-130K+</span>, consistent with the “+” meaning it can exceed the
+                stated range.</p>
+        </div>
+
+        <div class="tiers-card">
+            <h2>Tier table</h2>
+            <div id="tier-legend"><!-- filled by ValueTiers.renderTierLegend() --></div>
+        </div>
+
+        <div class="tiers-card">
+            <h2>O/C — Owner's Choice</h2>
+            <p><span class="tier-chip tier-chip-oc">O/C</span> items have <strong>no fixed value</strong>:
+                the owner decides what they're worth in a trade. O/C is a separate flag, not a numeric
+                tier — an item marked O/C always displays “O/C” regardless of any stored value.</p>
+        </div>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script type="module" src="./js/core/bridge.js"></script>
+    <script type="module">
+        import { renderTierLegend } from './js/core/valueTiers.js';
+        document.getElementById('tier-legend').innerHTML = renderTierLegend();
+    </script>
+</body>
+
+</html>

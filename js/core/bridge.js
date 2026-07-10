@@ -21,6 +21,7 @@ import { PopoverManager } from './popover-manager.js';
 import { api, ApiError } from './api.js';
 import { renderItemCard, addItemBadges, tradeItemHTML, itemVisualHTML, fitItemName } from '../components/item-card.js';
 import { openSurface } from '../components/surface.js';
+import * as ValueTiers from './valueTiers.js';
 
 // Globals first, so everything that runs later (inline page modules, classic
 // page scripts, DOMContentLoaded handlers, onclick=) can resolve them.
@@ -34,6 +35,8 @@ window.api = api;
 window.ApiError = ApiError;
 window.ItemCard = { renderItemCard, addItemBadges, tradeItemHTML, itemVisualHTML, fitItemName };
 window.openSurface = openSurface;
+// Value-tier system (single source of truth for tier labels/tooltips/legend).
+window.ValueTiers = ValueTiers;
 
 /* Page-agnostic global preferences (theme, price visibility, tax mode).
    These live in the shared profile-dropdown (rendered by Auth) whose buttons

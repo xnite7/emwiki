@@ -1,0 +1,155 @@
+/* =============================================================================
+   value-tiers.css — styles for the tier legend/reference component rendered by
+   ValueTiers.renderTierLegend() (js/core/valueTiers.js) and the
+   "What does the + mean?" page (value-tiers.html).
+
+   Rides on the shared design tokens (css/tokens.css): glassy translucent
+   surfaces with soft inset clay shadows, matching the scammer/trading cards.
+   ========================================================================== */
+
+.tiers-page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: var(--space-5) var(--space-4) var(--space-8);
+    color: var(--text-1);
+}
+
+.tiers-page h1 {
+    font-family: var(--font-display);
+    font-size: var(--text-3xl);
+    text-align: center;
+    margin: var(--space-5) 0 var(--space-2);
+}
+
+.tiers-page .tiers-intro {
+    text-align: center;
+    color: var(--text-2);
+    font-size: var(--text-base);
+    line-height: 1.6;
+    margin: 0 auto var(--space-5);
+    max-width: 560px;
+}
+
+.tiers-page .tiers-intro strong {
+    color: var(--text-1);
+}
+
+/* Glassy clay card wrapping each section. */
+.tiers-card {
+    background: var(--bg-item);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    margin-bottom: var(--space-5);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.25), var(--shadow-2);
+}
+
+.tiers-card h2 {
+    font-size: var(--text-xl);
+    margin: 0 0 var(--space-3);
+}
+
+.tiers-card p {
+    color: var(--text-2);
+    line-height: 1.6;
+    margin: 0 0 var(--space-3);
+}
+
+.tiers-card p:last-child {
+    margin-bottom: 0;
+}
+
+/* ── Legend table (renderTierLegend output) ── */
+.tier-legend-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-base);
+}
+
+.tier-legend-table th {
+    text-align: left;
+    color: var(--text-3);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0 var(--space-3) var(--space-2);
+    border-bottom: 1px solid var(--border-1);
+}
+
+.tier-legend-table td {
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--border-1);
+}
+
+.tier-legend-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.tier-legend-table tbody tr {
+    transition: background var(--dur-1) var(--ease-out-quart);
+}
+
+.tier-legend-table tbody tr:hover {
+    background: var(--bg-item-hover);
+}
+
+.tier-range {
+    color: var(--text-2);
+    font-family: var(--font-num);
+}
+
+/* Tier chip — same pill language as the catalog's .item-price badge. */
+.tier-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font: 1000 12px var(--font-num);
+    color: #ffffff;
+    background: linear-gradient(to top, #000000, #00000040);
+    outline: 1px solid #00000091;
+    border-radius: var(--radius-pill);
+    padding: 3px 9px;
+    white-space: nowrap;
+}
+
+.tier-chip::before {
+    content: '';
+    background: url('data:image/svg+xml,%3Csvg%20style%3D%22width%3A%2013px%3B%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016.6%2018%22%3E%3Cpath%20d%3D%22M6.251%206.993v3.999h4.025V6.99Zm-.156-4.689c1.917-1.213%202.507-1.154%204.484.034l3.37%202.027c.648.43%201.255.949%201.157%202.077v4.444c.009%201.578-.127%202.032-1.065%202.656l-3.492%202.052c-2.118%201.195-2.219%201.353-4.55.001l-3.28-1.913c-.886-.562-1.373-1.115-1.315-2.45V6.733c-.025-1.63.458-1.874%201.242-2.405Zm.395%201.298c1.287-.804%201.855-1.088%203.612.034l2.777%201.641c.568.423.954.838.96%201.652v3.952c-.007.705-.271%201.405-.9%201.77l-2.813%201.684c-1.786.942-1.799%201.004-3.127.287l-3.22-1.835c-.658-.474-1.038-.651-1.006-2.009V7.131c.005-1.044.193-1.432.991-1.952ZM5.605.944C7.71-.331%208.871-.345%2011.011.985l4.062%202.444c.646.363%201.512%201.515%201.528%202.588v5.847c.003%201.055-.645%202.014-1.424%202.63l-4.178%202.501c-1.843%201.087-3.052%201.56-5.486.002l-3.928-2.348C.71%2014.043-.006%2013.267%200%2011.695V6.272c.033-1.551.668-2.233%201.498-2.899Z%22%20fill%3D%22%23fff%22%20fill-rule%3D%22evenodd%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E') no-repeat center center;
+    width: 12px;
+    height: 13px;
+    background-size: contain;
+}
+
+/* O/C chip: gold accent, no robux icon (it isn't a numeric value). */
+.tier-chip-oc {
+    color: var(--gold);
+    outline-color: var(--gold);
+}
+
+.tier-chip-oc::before {
+    display: none;
+}
+
+.tier-oc-row td {
+    border-top: 2px solid var(--border-2);
+}
+
+@media (max-width: 480px) {
+    .tiers-page {
+        padding-left: var(--space-3);
+        padding-right: var(--space-3);
+    }
+
+    .tiers-card {
+        padding: var(--space-4);
+    }
+
+    .tier-legend-table td,
+    .tier-legend-table th {
+        padding-left: var(--space-2);
+        padding-right: var(--space-2);
+    }
+}

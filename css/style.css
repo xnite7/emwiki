@@ -901,6 +901,12 @@ main {
     color: var(--danger);
 }
 
+/* Tier-labelled price on cards: help cursor hints the native title tooltip
+   ("+" = typical average range / O/C = Owner's Choice). */
+.item-price.has-tier-tooltip {
+    cursor: help;
+}
+
 .unstable-mark {
     margin-left: 2px;
     font-weight: bold;
