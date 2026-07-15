@@ -27,7 +27,9 @@
       "PowerShell(try { $r = Invoke-WebRequest -Uri \"https://thumbnails.roblox.com/v1/users/avatar-3d?userId=1\" -UseBasicParsing -Headers @{ \"User-Agent\" = \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/126.0 Safari/537.36\"; \"Accept\" = \"application/json\" }; $r.Content } catch { $_.Exception.Response.StatusCode.value__; $sr = New-Object System.IO.StreamReader\\($_.Exception.Response.GetResponseStream\\(\\)\\); $sr.ReadToEnd\\(\\) })",
       "mcp__fb057329-13af-49a3-bf4b-679b25beaa46__d1_databases_list",
       "mcp__fb057329-13af-49a3-bf4b-679b25beaa46__d1_database_query",
-      "Bash(npx wrangler *)"
+      "Bash(npx wrangler *)",
+      "Bash(curl -s \"http://localhost:8789/api/items?category=gears&limit=3&offset=0\")",
+      "Bash(curl -s \"http://localhost:8789/api/chests\")"
     ],
     "deny": [],
     "ask": []

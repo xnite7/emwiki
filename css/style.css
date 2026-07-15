@@ -715,7 +715,10 @@ main {
     background: var(--bg-item);
     padding: 6px;
     cursor: pointer;
-    transition: all 0.3s var(--ease-spring);
+    /* Only the properties hover/active actually animate — `all` made every style
+       recalc consider transitions on every card in the grid. */
+    transition: transform 0.3s var(--ease-spring), box-shadow 0.3s var(--ease-spring),
+        background 0.3s var(--ease-spring), filter 0.3s var(--ease-spring);
     position: relative;
     min-height: var(--item-size, 110px);
     min-width: var(--item-size, 110px);
@@ -729,15 +732,33 @@ main {
     justify-content: space-between;
     border-radius: 10px;
 
-    /* Skip layout/paint for off-screen cards while scrolling a large grid.
-       Cards are a fixed 110x110, so the placeholder size is exact (no jumps). 
+    /* Skip style/layout/paint for off-screen cards. This is what keeps the grid
+       fast as infinite scroll grows it to thousands of cards: rendering work stays
+       proportional to the viewport, not the total DOM. The placeholder tracks the
+       item-size slider via --item-size, so the scrollbar doesn't jump. */
     content-visibility: auto;
-    contain-intrinsic-size: 110px 110px;*/
+    contain-intrinsic-size: var(--item-size, 110px) var(--item-size, 110px);
 
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
         border-radius: 26px;
     }
+}
+
+/* content-visibility's paint containment clips anything poking outside the card.
+   Cards whose chrome overhangs the box opt back into normal rendering: the ⭐/❤
+   buttons sit half outside (hover-revealed, or always visible when active), and
+   these badges hang 1-4px over the edge. Everything else keeps the fast path. */
+.item:hover,
+.item:has(.wishlist-button.active),
+.item:has(.heart-button.red),
+.item:has(.remove-wishlist),
+.item:has(.badge.plus),
+.item:has(.badge.untradable),
+.item:has(.badge.staff),
+.item:has(.badge.retired),
+.item:has(.badge.removed) {
+    content-visibility: visible;
 }
 
 .item::before {

@@ -6,6 +6,13 @@
       "runtimeExecutable": "node",
       "runtimeArgs": ["C:/Program Files/nodejs/node_modules/npm/bin/npx-cli.js", "wrangler", "pages", "dev", ".", "--local", "--d1", "DBA=DBA", "--compatibility-date", "2026-01-23", "--port", "8788"],
       "port": 8788
+    },
+    {
+      "name": "emwiki-8789",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["C:/Program Files/nodejs/node_modules/npm/bin/npx-cli.js", "wrangler", "pages", "dev", ".", "--local", "--d1", "DBA=DBA", "--compatibility-date", "2026-01-23", "--port", "8789"],
+      "port": 8789,
+      "autoPort": false
     }
   ]
 }
