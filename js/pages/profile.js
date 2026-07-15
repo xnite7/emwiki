@@ -555,7 +555,15 @@
                 if (item.price && item.price !== 'N/A' && item.price !== '0') {
                     const priceDiv = document.createElement('div');
                     priceDiv.className = 'item-price';
-                    priceDiv.textContent = this.convertPrice ? this.convertPrice(this.formatPrice(item.price)) : item.price;
+                    // Inherited BaseApp.convertPrice routes through the tier
+                    // system (valueTiers.js), so wishlist prices show the same
+                    // tier labels + tooltip as the catalog.
+                    priceDiv.textContent = this.convertPrice(String(item.price));
+                    const tierTip = this.priceTooltip(String(item.price));
+                    if (tierTip) {
+                        priceDiv.title = tierTip;
+                        priceDiv.classList.add('has-tier-tooltip');
+                    }
                     div.appendChild(priceDiv);
                 } else if (item.price === '0') {
                     const priceDiv = document.createElement('div');
@@ -588,20 +596,9 @@
             }
         }
 
-        formatPrice(price) {
-            if (!price || price === 'N/A') return 'N/A';
-            return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        }
-
-        convertPrice(price) {
-            if (!price || price === 'N/A') return 'N/A';
-            // Convert to abbreviated format if needed (e.g., 1000 -> 1K)
-            const num = parseFloat(price.replace(/,/g, ''));
-            if (isNaN(num)) return price;
-            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-            return num.toString();
-        }
+        // NOTE: price formatting/conversion is inherited from BaseApp, which
+        // routes every value through the tier system (js/core/valueTiers.js).
+        // Do not re-implement convertPrice here — hand-rolled labels drift.
 
         renderReviews(reviews) {
             const container = document.getElementById('reviews-container');

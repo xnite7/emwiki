@@ -77,7 +77,7 @@ export function fitItemName(nameEl, name, baseSize = NAME_FIT_BASE_PX) {
  * @param {string}  [ctx.category]         item category (defaults item.category)
  */
 export function renderItemCard(item, ctx = {}) {
-    const { wishlist = [], favorites = [], convertPrice = (p) => p } = ctx;
+    const { wishlist = [], favorites = [], convertPrice = (p) => p, priceTooltip = () => null } = ctx;
 
     const div = document.createElement('div');
     div.className = 'item';
@@ -121,6 +121,15 @@ export function renderItemCard(item, ctx = {}) {
         mark.className = 'unstable-mark';
         mark.textContent = '!';
         price.appendChild(mark);
+    } else {
+        // Tier "+" / Owner's Choice explanation. Native title covers desktop
+        // hover and mobile long-press; the dotted underline hints it's tappable
+        // (tapping the card opens the modal, which has a tap-to-reveal tooltip).
+        const tip = priceTooltip(item.price);
+        if (tip) {
+            price.title = tip;
+            price.classList.add('has-tier-tooltip');
+        }
     }
 
     div.appendChild(price);

@@ -1,5 +1,6 @@
 /* Split out of the old js/script.js (see git history). Loaded via js/core/bridge.js. */
 import { Utils } from '../core/utils.js';
+import { tooltipForPrice } from '../core/valueTiers.js';
 
 // ==================== PRICE GRAPH ====================
 const PriceGraph = {
@@ -885,15 +886,19 @@ class ItemModal {
             }
         }
 
+        // Tier "+" / Owner's Choice explanation — same tap-to-reveal pattern as
+        // the tax indicator, so it works on touch where hover doesn't exist.
+        const tierTip = item.unstable ? null : tooltipForPrice(item.price, this.catalog.taxMode);
+
         this.elements.price.innerHTML = `
-            <h2${item.unstable ? ' class="unstable" title="Unstable value — recently added or returned to Gamenight, so its price is volatile."' : ''}>${convertedPrice}${item.unstable ? '<span class="unstable-mark">!</span>' : ''}</h2>
+            <h2${item.unstable ? ' class="unstable" title="Unstable value — recently added or returned to Gamenight, so its price is volatile."' : ''}${tierTip ? ' class="has-tier-tooltip" onclick="event.stopPropagation(); this.classList.toggle(\'show-tooltip\')"' : ''}>${convertedPrice}${item.unstable ? '<span class="unstable-mark">!</span>' : ''}${tierTip ? `<span class="tax-tooltip tier-tooltip">${tierTip}</span>` : ''}</h2>
 
             ${this.catalog.taxMode !== 'nt' ? `
                 <span class="modal-tax-indicator" onclick="event.stopPropagation(); this.classList.toggle('show-tooltip')">
                     ${currentTax.short}
                     <span class="tax-tooltip">${currentTax.full}</span>
                 </span>
-                
+
             ` : ''}
             ${item.demand !== undefined && item.demand > 0 ? `<div class="modal-demand ${item.demand === 1 ? 'bad-demand' : item.demand === 2 ? 'okay-demand' : item.demand === 3 ? 'good-demand' : item.demand === 4 ? 'great-demand' : 'amazing-demand'}"><div class="demand-stars">${stars.join('')}</div></div>` : ''}
         `;

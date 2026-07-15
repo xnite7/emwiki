@@ -239,9 +239,15 @@ function createNewItem(item, color, list, date) {
     newItem.appendChild(untradable);
   }
 
-  // Price element
+  // Price element — tier label from the shared value-tier system when the
+  // value maps to one (>= 1K or O/C); raw value otherwise.
   const price = document.createElement("p");
-  price.innerHTML = `<img src="https://i.imgur.com/iZGLVYo.png" draggable="false">${item.price || 0}`;
+  const tierLabel = window.ValueTiers?.tierLabelForPrice?.(item.price);
+  if (tierLabel) {
+    const tip = window.ValueTiers.tooltipForPrice(item.price);
+    if (tip) price.title = tip;
+  }
+  price.innerHTML = `<img src="https://i.imgur.com/iZGLVYo.png" draggable="false">${tierLabel || item.price || 0}`;
   newItem.appendChild(price);
 
   // From element (hidden)
