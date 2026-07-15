@@ -916,7 +916,7 @@ main {
 }
 
 /* Unstable value indicator: reddish price + "!" marker with a hover tooltip,
-   signalling a volatile value (new items / items returning to Gamenight). */
+   signalling a volatile value (new / returning to Gamenight / inflated). */
 .item-price.unstable,
 .modal-price h2.unstable {
     color: var(--danger);

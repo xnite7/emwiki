@@ -13,11 +13,11 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>What does the + mean? - EM Wiki</title>
-    <meta name="description" content="How EM Wiki value tiers work — what the + after a value means, the full tier table, and O/C (Owner's Choice) explained.">
-    <meta property="og:title" content="What does the + mean? - EM Wiki">
+    <title>What do the value symbols mean? - EM Wiki</title>
+    <meta name="description" content="How EM Wiki values work — flats vs. ranges, what the + after a value means, O/C (Owner's Choice), and the ! unstable-value marker explained.">
+    <meta property="og:title" content="What do the value symbols mean? - EM Wiki">
     <meta property="og:image" content="https://emwiki.com/imgs/QgWIUWf.png">
-    <meta property="og:description" content="How EM Wiki value tiers work — what the + after a value means, the full tier table, and O/C (Owner's Choice) explained.">
+    <meta property="og:description" content="How EM Wiki values work — flats vs. ranges, what the + after a value means, O/C (Owner's Choice), and the ! unstable-value marker explained.">
     <link rel="icon" href="./imgs/favicon.png" type="image/png">
     <link rel="apple-touch-icon" href="./imgs/app.png">
     <link rel="manifest" href="/site.webmanifest">
@@ -33,35 +33,32 @@
     <div id="site-header"></div>
 
     <main class="tiers-page">
-        <h1>What does the “+” mean?</h1>
+        <h1>What do the value symbols mean?</h1>
         <p class="tiers-intro">
-            Item values on the wiki display as <strong>tiers</strong> — typical value bands like
-            <span style="white-space: nowrap;"><span class="tier-chip">20-25K+</span>.</span>
-            The trailing <strong>+</strong> means the range is the
-            <strong>average</strong>: an item can go higher in rare cases, so read it as
-            “20–25K <em>or more</em>,” not a hard cap.
+            Every item shows its <strong>actual rated value</strong>. A
+            <strong>flat</strong> value like <span class="tier-chip">20k</span> means the item is worth
+            exactly that — it is <em>not</em> a range. Some items are rated as a real range
+            (<span class="tier-chip">20k-25k</span>), and a trailing <strong>+</strong> means the value
+            shown is a typical average the item can exceed.
         </p>
 
         <div class="tiers-card">
-            <h2>How tiers work</h2>
-            <p>Every item's tier is derived from its raw stored value — a value maps to the tier whose
-                range contains it. Only values of <strong>1K and above</strong> get a tier; anything under
-                1K shows its exact value with no “+”.</p>
-            <p>The top tier is open-ended: anything worth 100K or more lands in
-                <span class="tier-chip">100-130K+</span>, consistent with the “+” meaning it can exceed the
-                stated range.</p>
-        </div>
-
-        <div class="tiers-card">
-            <h2>Tier table</h2>
-            <div id="tier-legend"><!-- filled by ValueTiers.renderTierLegend() --></div>
+            <h2>Symbol reference</h2>
+            <div id="tier-legend"><!-- filled by ValueTiers.renderValueLegend() --></div>
         </div>
 
         <div class="tiers-card">
             <h2>O/C — Owner's Choice</h2>
             <p><span class="tier-chip tier-chip-oc">O/C</span> items have <strong>no fixed value</strong>:
-                the owner decides what they're worth in a trade. O/C is a separate flag, not a numeric
-                tier — an item marked O/C always displays “O/C” regardless of any stored value.</p>
+                the owner decides what they're worth in a trade. An item marked O/C always displays
+                “O/C” regardless of any stored value.</p>
+        </div>
+
+        <div class="tiers-card">
+            <h2>! — Unstable value</h2>
+            <p>A reddish value with a <strong>!</strong> marker means the price is
+                <strong>volatile</strong>: the item was recently added, recently returned to Gamenight,
+                or is inflated, so its value hasn't settled yet. Trade these with extra care.</p>
         </div>
     </main>
 
@@ -69,8 +66,8 @@
 
     <script type="module" src="./js/core/bridge.js"></script>
     <script type="module">
-        import { renderTierLegend } from './js/core/valueTiers.js';
-        document.getElementById('tier-legend').innerHTML = renderTierLegend();
+        import { renderValueLegend } from './js/core/valueTiers.js';
+        document.getElementById('tier-legend').innerHTML = renderValueLegend();
     </script>
 </body>
 

@@ -2,7 +2,7 @@
 import { Utils } from './utils.js';
 import { ItemModal } from '../components/item-modal.js';
 import { renderItemCard, addItemBadges, fitItemName } from '../components/item-card.js';
-import { tierLabelForPrice, tooltipForPrice } from './valueTiers.js';
+import { tooltipForPrice, UNSTABLE_TOOLTIP } from './valueTiers.js';
 
 // ==================== BASE APP CLASS ====================
 class BaseApp {
@@ -1021,8 +1021,6 @@ class BaseApp {
                 if (priceEl) {
                     priceEl.textContent = this.convertPrice(item.price);
                     if (!item.unstable) {
-                        // Tax can move an item across the tier floor, so refresh
-                        // the "+"/O-C tooltip to match the value now shown.
                         const tip = this.priceTooltip(item.price);
                         priceEl.classList.toggle('has-tier-tooltip', !!tip);
                         if (tip) priceEl.title = tip; else priceEl.removeAttribute('title');
@@ -1043,18 +1041,13 @@ class BaseApp {
     convertPrice(price) {
         if (!price || price.toLowerCase() === 'o/c') return price;
 
-        // Values >= 1000 display as a tier label derived from the raw stored
-        // value (single source of truth in valueTiers.js). Tax mode is applied
-        // to the value before the lookup so the tier tracks the tax the user is
-        // viewing. Anything below 1000 (or unparseable) falls through to the
-        // exact-value conversion below.
-        const tierLabel = tierLabelForPrice(price, this.taxMode);
-        if (tierLabel) return tierLabel;
-
-        // Below the tier floor: everything that reaches here is under 1000
-        // (values >= 1000 already returned a tier label above). Per the tier
-        // spec, sub-1000 values display the raw number with NO trailing "+".
-        const cleanStr = String(price).replace('+', '');
+        // Items show their ACTUAL stored value — flats stay flat (a 20K item
+        // is "20k", never a "20-25K" band), ranges are the rater-assigned
+        // range, and a trailing "+" is preserved (its meaning is explained by
+        // the valueTiers.js tooltip / legend page).
+        const str = String(price);
+        const hasPlus = str.includes('+');
+        const cleanStr = str.replace('+', '');
 
         const parseAndConvert = (priceStr) => {
             if (priceStr.includes('-')) {
@@ -1070,18 +1063,18 @@ class BaseApp {
             }
         };
 
-        return parseAndConvert(cleanStr);
+        return parseAndConvert(cleanStr) + (hasPlus ? '+' : '');
     }
 
-    // Tooltip text for a stored price under the active tax mode: explains the
-    // tier "+" for numeric tiers, "Owner's Choice" for O/C, null otherwise.
+    // Tooltip text for a stored price: explains the trailing "+" when the
+    // value has one, "Owner's Choice" for O/C, null otherwise.
     priceTooltip(price) {
         return tooltipForPrice(price, this.taxMode);
     }
 
     // Shared markup for an item's price chip (wishlist/list views). Renders the
-    // tier label via convertPrice and attaches the tier/O-C tooltip (or the
-    // unstable warning, which takes precedence) as a native title.
+    // value via convertPrice and attaches the "+"/O-C tooltip (or the unstable
+    // warning, which takes precedence) as a native title.
     itemPriceHTML(item) {
         if (item.price === '' || item.price == null) return '';
         const hidden = item.price == '0' ? 'opacity: 0; height: 16px;' : '';
@@ -1089,7 +1082,7 @@ class BaseApp {
         let title = '';
         if (item.unstable) {
             cls += ' unstable';
-            title = ' title="Unstable value — recently added or returned to Gamenight, so its price is volatile."';
+            title = ` title="${UNSTABLE_TOOLTIP}"`;
         } else {
             const tip = this.priceTooltip(item.price);
             if (tip) { cls += ' has-tier-tooltip'; title = ` title="${tip}"`; }

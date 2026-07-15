@@ -1,7 +1,7 @@
 /* =============================================================================
-   value-tiers.css — styles for the tier legend/reference component rendered by
-   ValueTiers.renderTierLegend() (js/core/valueTiers.js) and the
-   "What does the + mean?" page (value-tiers.html).
+   value-tiers.css — styles for the value-symbols legend rendered by
+   ValueTiers.renderValueLegend() (js/core/valueTiers.js) and the
+   "What do the value symbols mean?" page (value-tiers.html).
 
    Rides on the shared design tokens (css/tokens.css): glassy translucent
    surfaces with soft inset clay shadows, matching the scammer/trading cards.
@@ -61,7 +61,7 @@
     margin-bottom: 0;
 }
 
-/* ── Legend table (renderTierLegend output) ── */
+/* ── Legend table (renderValueLegend output) ── */
 .tier-legend-table {
     width: 100%;
     border-collapse: collapse;
@@ -133,8 +133,13 @@
     display: none;
 }
 
-.tier-oc-row td {
-    border-top: 2px solid var(--border-2);
+/* Unstable chip: reddish value + "!" marker, matching .item-price.unstable. */
+.tier-chip-unstable {
+    color: var(--danger);
+}
+
+.tier-chip-unstable .unstable-mark {
+    cursor: inherit;
 }
 
 @media (max-width: 480px) {

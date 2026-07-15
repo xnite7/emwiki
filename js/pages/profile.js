@@ -555,9 +555,8 @@
                 if (item.price && item.price !== 'N/A' && item.price !== '0') {
                     const priceDiv = document.createElement('div');
                     priceDiv.className = 'item-price';
-                    // Inherited BaseApp.convertPrice routes through the tier
-                    // system (valueTiers.js), so wishlist prices show the same
-                    // tier labels + tooltip as the catalog.
+                    // Inherited BaseApp.convertPrice, so wishlist prices show
+                    // the same actual values + "+"/O-C tooltip as the catalog.
                     priceDiv.textContent = this.convertPrice(String(item.price));
                     const tierTip = this.priceTooltip(String(item.price));
                     if (tierTip) {
@@ -596,9 +595,9 @@
             }
         }
 
-        // NOTE: price formatting/conversion is inherited from BaseApp, which
-        // routes every value through the tier system (js/core/valueTiers.js).
-        // Do not re-implement convertPrice here — hand-rolled labels drift.
+        // NOTE: price formatting/conversion is inherited from BaseApp so the
+        // whole site renders values identically. Do not re-implement
+        // convertPrice here — hand-rolled labels drift.
 
         renderReviews(reviews) {
             const container = document.getElementById('reviews-container');

@@ -12,6 +12,7 @@
    ========================================================================== */
 
 import { Utils } from '../core/utils.js';
+import { UNSTABLE_TOOLTIP } from '../core/valueTiers.js';
 
 // Wishlist ⭐ and heart ❤ button SVGs, parsed once and cloned per card
 // (cloneNode) instead of re-parsing the same markup ~100×/batch.
@@ -116,13 +117,13 @@ export function renderItemCard(item, ctx = {}) {
 
     if (item.unstable) {
         price.classList.add('unstable');
-        price.title = 'Unstable value — recently added or returned to Gamenight, so its price is volatile.';
+        price.title = UNSTABLE_TOOLTIP;
         const mark = document.createElement('span');
         mark.className = 'unstable-mark';
         mark.textContent = '!';
         price.appendChild(mark);
     } else {
-        // Tier "+" / Owner's Choice explanation. Native title covers desktop
+        // "+" / Owner's Choice explanation. Native title covers desktop
         // hover and mobile long-press; the dotted underline hints it's tappable
         // (tapping the card opens the modal, which has a tap-to-reveal tooltip).
         const tip = priceTooltip(item.price);

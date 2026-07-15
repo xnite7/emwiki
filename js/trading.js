@@ -211,10 +211,10 @@ class TradingHub {
         return this.itemsByName.get(String(name).toLowerCase())?.category || null;
     }
 
-    // Catalog value for an item name, formatted for the hover tooltip. Values
-    // >= 1K show their tier label and O/C shows as-is (window.ValueTiers is the
-    // single source of truth). Returns null when the item has no known/priced
-    // value (unrated, N/A, or 0) so the tooltip just shows the name.
+    // Catalog value for an item name, formatted for the hover tooltip — the
+    // actual stored value (O/C spelled out via valueTiers.js). Returns null
+    // when the item has no known/priced value (unrated, N/A, or 0) so the
+    // tooltip just shows the name.
     priceFor(name) {
         if (!name || !this.itemsByName) return null;
         const raw = this.itemsByName.get(String(name).toLowerCase())?.price;
@@ -222,12 +222,11 @@ class TradingHub {
         const s = String(raw).trim();
         if (!s || s === '0') return null;
         if (s.toUpperCase() === 'N/A') return null;
-        if (window.ValueTiers?.isOwnersChoice?.(s)) {
-            return `${window.ValueTiers.OWNERS_CHOICE_LABEL} — ${window.ValueTiers.OWNERS_CHOICE_TOOLTIP}`;
+        if (s.toUpperCase() === 'O/C') {
+            return window.ValueTiers
+                ? `${window.ValueTiers.OWNERS_CHOICE_LABEL} — ${window.ValueTiers.OWNERS_CHOICE_TOOLTIP}`
+                : null;
         }
-        if (s.toUpperCase() === 'O/C') return null; // ValueTiers missing (shouldn't happen)
-        const tierLabel = window.ValueTiers?.tierLabelForPrice?.(s);
-        if (tierLabel) return `${tierLabel} value`;
         const formatted = window.Utils.formatPrice(raw);
         return formatted ? `${formatted} value` : null;
     }
