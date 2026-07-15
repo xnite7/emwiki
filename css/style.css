@@ -3275,7 +3275,7 @@ letter-spacing: 2px;
     border-radius: 8px;
     padding: 10px 0px 0px;
     max-height: 37vh;
-    overflow-y: auto;
+    overflow-y: auto;overflow-x: hidden;
 }
 
 .wishlist-section::-webkit-scrollbar-track {
