@@ -258,10 +258,56 @@ body:has(.item-modal.active) {
     height: 0px;
     filter: opacity(0.5);
     z-index: 10;
-    pointer-events: none;
+    pointer-events: auto;
+    cursor: help;
+    position: relative;
+    width: fit-content;
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
+}
+
+.modal-quantity:hover {
+    filter: opacity(0.9);
+}
+
+/* Hover pill (mirrors the demand tooltip) explaining what the xN number means.
+   Main line + sub line come from data-tooltip / data-tooltip-sub. */
+.modal-quantity[data-tooltip]::before {
+    content: attr(data-tooltip) '\A' attr(data-tooltip-sub);
+    white-space: pre;
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 48px;
+    background: rgba(0, 0, 0, 0.92);
+    color: white;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.5;
+    text-align: left;
+    border-radius: 10px;
+    padding: 6px 11px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.2s allow-discrete;
+    z-index: 1000;
+
+    @supports (corner-shape: squircle) {
+        corner-shape: squircle;
+        border-radius: 18px;
+    }
+}
+
+.modal-quantity[data-tooltip]:hover::before {
+    display: block;
+    opacity: 1;
+
+    @starting-style {
+        opacity: 0;
+    }
 }
 
 .tax-tooltip {

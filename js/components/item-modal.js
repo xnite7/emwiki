@@ -531,61 +531,71 @@ class ItemModal {
 
         // Quantity (displayed on front, left bottom corner, tilted)
         // Can be static (string), dynamic (9+ digits badge ID for live count from Roblox), or 'group' for group member count
+        // A demand-style hover pill (data-tooltip / data-tooltip-sub, see modal.css)
+        // spells out what the number means — quantities only appear on items whose
+        // owner count is confirmed or live-tracked.
         if (item.quantity && item.quantity.trim() !== '' && this.elements.quantity) {
             const quantityValue = item.quantity.trim();
-            
+            const setTooltip = (main, sub) => {
+                this.elements.quantity.dataset.tooltip = main;
+                this.elements.quantity.dataset.tooltipSub = sub;
+            };
+
             // Check if quantity is a badge ID (9+ digits) for dynamic count
             if (Utils.isBadgeId(quantityValue)) {
                 // Show loading state
                 this.elements.quantity.textContent = 'x...';
                 this.elements.quantity.style.display = 'block';
-                this.elements.quantity.title = 'Loading badge count...';
-                
+                setTooltip('Loading badge count...', 'Live owner count from Roblox');
+
                 // Fetch badge data asynchronously
                 Utils.getBadgeData(quantityValue).then(badgeData => {
                     if (badgeData && badgeData.awardedCount !== undefined) {
-                        this.elements.quantity.textContent = 'x' + Utils.formatNumber(badgeData.awardedCount);
-                        this.elements.quantity.title = `${badgeData.name || 'Badge'}: ${Utils.formatNumber(badgeData.awardedCount)} awarded`;
+                        const count = Utils.formatNumber(badgeData.awardedCount);
+                        this.elements.quantity.textContent = 'x' + count;
+                        setTooltip(`${count} copies owned`, 'Live count from its Roblox badge');
                     } else {
                         // Badge fetch failed, hide quantity
                         this.elements.quantity.style.display = 'none';
-                        this.elements.quantity.title = '';
                     }
                 }).catch(() => {
                     // On error, hide quantity
                     this.elements.quantity.style.display = 'none';
-                    this.elements.quantity.title = '';
                 });
             } else if (quantityValue === 'group') {
                 // Show loading state
                 this.elements.quantity.textContent = 'x...';
                 this.elements.quantity.style.display = 'block';
-                this.elements.quantity.title = 'Loading group member count...';
-                
+                setTooltip('Loading group member count...', 'Live owner count from Roblox');
+
                 // Fetch group data asynchronously
                 Utils.getGroupData('2649054').then(groupData => {
                     if (groupData && groupData.memberCount !== undefined) {
-                        this.elements.quantity.textContent = 'x' + Utils.formatNumber(groupData.memberCount);
-                        this.elements.quantity.title = `${groupData.name || 'Group'}: ${Utils.formatNumber(groupData.memberCount)} members`;
+                        const count = Utils.formatNumber(groupData.memberCount);
+                        this.elements.quantity.textContent = 'x' + count;
+                        setTooltip(`${count} copies owned`, `Live member count of the ${groupData.name || 'Roblox'} group`);
                     } else {
                         // Group fetch failed, hide quantity
                         this.elements.quantity.style.display = 'none';
-                        this.elements.quantity.title = '';
                     }
                 }).catch(() => {
                     // On error, hide quantity
                     this.elements.quantity.style.display = 'none';
-                    this.elements.quantity.title = '';
                 });
             } else {
-                // Static quantity - display as-is
+                // Static quantity - a hand-confirmed total
                 this.elements.quantity.textContent = 'x' + quantityValue;
                 this.elements.quantity.style.display = 'block';
-                this.elements.quantity.title = '';
+                const count = parseInt(quantityValue.replace(/,/g, ''), 10);
+                const label = Number.isFinite(count)
+                    ? (count === 1 ? 'Only 1 copy exists' : `${Utils.formatNumber(count)} total copies exist`)
+                    : `${quantityValue} total copies exist`;
+                setTooltip(label, 'Only shown for confirmed owner counts');
             }
         } else if (this.elements.quantity) {
             this.elements.quantity.style.display = 'none';
-            this.elements.quantity.title = '';
+            delete this.elements.quantity.dataset.tooltip;
+            delete this.elements.quantity.dataset.tooltipSub;
         }
 
         this.elements.image.style.scale = 0;

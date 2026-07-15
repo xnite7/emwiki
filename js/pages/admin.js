@@ -6510,6 +6510,132 @@
         };
 
         // ============================
+        // Wiki Bulletin Manager (public homepage notes)
+        // ============================
+
+        const BulletinManager = {
+            notes: [],
+
+            init() {
+                const addBtn = DOM.get('bulletinAddBtn');
+                const input = DOM.get('bulletinInput');
+                if (!addBtn || !input) return;
+
+                addBtn.addEventListener('click', () => this.addNote());
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.addNote();
+                    }
+                });
+
+                this.load();
+            },
+
+            authHeaders() {
+                const token = Auth.authToken || localStorage.getItem('auth_token');
+                return {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                };
+            },
+
+            async load() {
+                try {
+                    const res = await fetch('/api/bulletin', { cache: 'reload' });
+                    if (!res.ok) throw new Error('Failed to fetch');
+                    const data = await res.json();
+                    this.notes = data.notes || [];
+                    this.render();
+                } catch (err) {
+                    ErrorHandler.showToast('Bulletin: failed to load', 'error');
+                }
+            },
+
+            // Escape, then allow **bold** and [text](url) markdown only
+            formatContent(text) {
+                return Utils.escapeHtml(text)
+                    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+                        '<a href="$2" target="_blank" rel="noopener">$1</a>')
+                    .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+            },
+
+            render() {
+                const container = DOM.get('bulletinArea');
+                container.innerHTML = '';
+
+                this.notes.forEach((note) => {
+                    const noteEl = Utils.createElement('div', { class: 'stickynote' });
+                    noteEl.appendChild(Utils.createElement('div', { class: 'pin' }));
+                    noteEl.appendChild(Utils.createElement('div', {
+                        class: 'note-content',
+                        innerHTML: this.formatContent(note.content)
+                    }));
+                    if (note.author) {
+                        noteEl.appendChild(Utils.createElement('div', {
+                            class: 'note-author',
+                            textContent: '@' + note.author
+                        }));
+                    }
+                    const delBtn = Utils.createElement('button', {
+                        class: 'bulletin-delete',
+                        title: 'Remove from homepage',
+                        textContent: '✕'
+                    });
+                    delBtn.addEventListener('click', () => this.deleteNote(note.id));
+                    noteEl.appendChild(delBtn);
+
+                    container.appendChild(noteEl);
+                });
+            },
+
+            async addNote() {
+                const input = DOM.get('bulletinInput');
+                const content = input.value.trim();
+                if (!content) {
+                    input.focus();
+                    return;
+                }
+
+                try {
+                    const res = await fetch('/api/bulletin', {
+                        method: 'POST',
+                        headers: this.authHeaders(),
+                        body: JSON.stringify({ content })
+                    });
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({}));
+                        throw new Error(err.error || 'Failed to add note');
+                    }
+                    input.value = '';
+                    await this.load();
+                    ErrorHandler.showToast('Bulletin note published', 'success');
+                } catch (err) {
+                    ErrorHandler.showToast(`Bulletin: ${err.message}`, 'error');
+                }
+            },
+
+            async deleteNote(id) {
+                if (!confirm('Remove this note from the homepage bulletin?')) return;
+
+                try {
+                    const res = await fetch(`/api/bulletin/${id}`, {
+                        method: 'DELETE',
+                        headers: this.authHeaders()
+                    });
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({}));
+                        throw new Error(err.error || 'Failed to delete note');
+                    }
+                    await this.load();
+                    ErrorHandler.showToast('Bulletin note removed', 'success');
+                } catch (err) {
+                    ErrorHandler.showToast(`Bulletin: ${err.message}`, 'error');
+                }
+            }
+        };
+
+        // ============================
         // Panels Manager (FIXED)
         // ============================
         const PanelsManager = {
@@ -6519,7 +6645,8 @@
                 { id: 'demand-review-section', name: 'Demand Review', sectionId: 'demand-review-section' },
                 { id: 'chest-management-section', name: 'Chest Management', sectionId: 'chest-management-section' },
                 { id: 'user-management-section', name: 'User Management', sectionId: 'user-management-section' },
-                { id: 'notes-section', name: 'Notes', sectionId: 'notes-section' }
+                { id: 'notes-section', name: 'Notes', sectionId: 'notes-section' },
+                { id: 'bulletin-section', name: 'Wiki Bulletin', sectionId: 'bulletin-section' }
             ],
 
             hiddenPanels: new Set(),
@@ -7607,6 +7734,7 @@
 
                 // Initialize components
                 NotesManager.init();
+                BulletinManager.init();
                 PanelsManager.init();
                 PublishManager.init();
                 UndoRedoManager.init();

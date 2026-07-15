@@ -48,7 +48,9 @@
                     gamenight: 0,
                     coinshop: 0,
                     unreleased: 0,
-                    code: 0
+                    code: 0,
+                    party: 0,
+                    premiumparty: 0
                 };
 
 
@@ -116,6 +118,8 @@
                     if (retiredItem) retiredItem.classList.remove('show-retired');
                     const weeklyItem = document.querySelector('.dropdown-item[data-filter="weekly"]');
                     if (weeklyItem) weeklyItem.classList.remove('show-weekly');
+                    const premiumPartyItem = document.querySelector('.dropdown-item[data-filter="premiumparty"]');
+                    if (premiumPartyItem) premiumPartyItem.classList.remove('show-premiumparty');
                 }
 
                 // Handle ?tags=tag1,tag2
@@ -212,6 +216,12 @@
                 const weeklyItem = document.querySelector('.dropdown-item[data-filter="weekly"]');
                 if (this.filters.tags.has('coinshop') && weeklyItem) {
                     weeklyItem.classList.add('show-weekly');
+                }
+
+                // Show/hide premium rewards filter based on party
+                const premiumPartyUrlItem = document.querySelector('.dropdown-item[data-filter="premiumparty"]');
+                if (this.filters.tags.has('party') && premiumPartyUrlItem) {
+                    premiumPartyUrlItem.classList.add('show-premiumparty');
                 }
 
                 // Enable/disable date sorting based on code/gamenight filters
@@ -1113,6 +1123,16 @@
                             this.filters.tags.add(tagName);
                         }
                     }
+                } else if (tagName === 'premiumparty') {
+                    // Premium Rewards can only be toggled if party is active
+                    if (this.filters.tags.has('party')) {
+                        tagElement.classList.toggle('selected');
+                        if (this.filters.tags.has(tagName)) {
+                            this.filters.tags.delete(tagName);
+                        } else {
+                            this.filters.tags.add(tagName);
+                        }
+                    }
                 } else {
                     // For all other tags - single select only
                     const wasSelected = this.filters.tags.has(tagName);
@@ -1166,6 +1186,16 @@
                         weeklyItem.classList.remove('show-weekly');
                         this.filters.tags.delete('weekly');
                         weeklyItem.classList.remove('selected');
+                    }
+
+                    // Show/hide premium rewards when party is selected
+                    const premiumPartyItem = document.querySelector('.dropdown-item[data-filter="premiumparty"]');
+                    if (tagName === 'party' && this.filters.tags.has('party')) {
+                        premiumPartyItem.classList.add('show-premiumparty');
+                    } else if (!this.filters.tags.has('party')) {
+                        premiumPartyItem.classList.remove('show-premiumparty');
+                        this.filters.tags.delete('premiumparty');
+                        premiumPartyItem.classList.remove('selected');
                     }
                 }
 
@@ -1240,6 +1270,13 @@
                     weeklyItem.classList.remove('selected');
                 }
 
+                // Hide premium rewards filter
+                const premiumPartyItem = document.querySelector('.dropdown-item[data-filter="premiumparty"]');
+                if (premiumPartyItem) {
+                    premiumPartyItem.classList.remove('show-premiumparty');
+                    premiumPartyItem.classList.remove('selected');
+                }
+
                 // Reset date sorting options to disabled
                 const dateOptions = document.querySelectorAll('[data-sort="date-desc"], [data-sort="date-asc"]');
                 dateOptions.forEach(option => {
@@ -1307,7 +1344,9 @@
                     'date-desc': 'Newest First',
                     'date-asc': 'Oldest First',
                     'rarity-desc': 'Rarity (Rarest First)',
-                    'color-asc': 'Color (Rainbow)'
+                    'color-asc': 'Color (Rainbow)',
+                    'copies-desc': 'Copies (High to Low)',
+                    'copies-asc': 'Copies (Low to High)'
                 };
                 document.getElementById('sort-label').textContent = labels[sortType] || labels['default'];
 
@@ -1322,6 +1361,12 @@
                 // page load. Items that already carry a stored `color` from the API are skipped.
                 if (sortType === 'color-asc' && !this._colorsExtracted) {
                     await this.extractAllColors();
+                }
+
+                // The copies sort needs live badge/group counts for items whose quantity
+                // is dynamic. Fetch them once on demand (results are cached by Utils).
+                if ((sortType === 'copies-desc' || sortType === 'copies-asc') && !this._ownerCountsFetched) {
+                    await this.fetchOwnerCounts();
                 }
 
                 this.applyFilters();
@@ -1469,6 +1514,8 @@
                     if (from.includes('code')) this.tagCounts.code++;
                     if (from.includes('weekly rotation')) this.tagCounts.weekly++;
                     if (from.includes('star shop')) this.tagCounts.weeklystar++;
+                    if (from.includes('epic party')) this.tagCounts.party++;
+                    if (from.includes('epic party reward (premium)')) this.tagCounts.premiumparty++;
                 });
 
                 // Update UI counts
@@ -1545,14 +1592,17 @@
                         }
                     }
 
-                    // Search filter (by name or alias)
+                    // Search filter (by name, alias, or description)
                     if (this.filters.search) {
                         const nameMatches = item.name.toLowerCase().includes(this.filters.search.toLowerCase());
-                        const aliasMatches = item.alias && typeof item.alias === 'string' && item.alias.trim() 
+                        const aliasMatches = item.alias && typeof item.alias === 'string' && item.alias.trim()
                             ? item.alias.toLowerCase().includes(this.filters.search.toLowerCase())
                             : false;
-                        
-                        if (!nameMatches && !aliasMatches) {
+                        const descMatches = item.from
+                            ? item.from.toLowerCase().replace(/<br>/g, ' ').includes(this.filters.search.toLowerCase())
+                            : false;
+
+                        if (!nameMatches && !aliasMatches && !descMatches) {
                             return false;
                         }
                     }
@@ -1586,6 +1636,12 @@
                                 break;
                             case 'weeklystar':
                                 if (!item.from.toLowerCase().includes('star shop')) return false;
+                                break;
+                            case 'party':
+                                if (!item.from.toLowerCase().includes('epic party')) return false;
+                                break;
+                            case 'premiumparty':
+                                if (!item.from.toLowerCase().includes('epic party reward (premium)')) return false;
                                 break;
                             case 'code':
                                 if (!item.from.toLowerCase().includes('code')) return false;
@@ -1639,6 +1695,15 @@
                 // Sort items (flikes now comes with items from API, no async needed)
                 this.sortItems();
 
+                // When searching, keep direct name/alias hits ahead of items that
+                // only matched through their description, so exact items surface first.
+                if (this.filters.search) {
+                    const q = this.filters.search;
+                    const direct = (i) => i.name.toLowerCase().includes(q) ||
+                        (typeof i.alias === 'string' && i.alias.toLowerCase().includes(q));
+                    this.filtered = [...this.filtered.filter(direct), ...this.filtered.filter(i => !direct(i))];
+                }
+
                 // Reset display
                 this.currentBatch = 0;
                 this.loading = false;
@@ -1678,6 +1743,52 @@
                 if (str.endsWith('m')) return parseFloat(str) * 1_000_000;
 
                 return parseFloat(str) || 0;
+            }
+
+            // An item's owner count is "known" when its quantity is a hand-confirmed
+            // number ("50", "10,659"), or a live Roblox badge/group count fetched by
+            // fetchOwnerCounts(). Everything else returns null and sorts last.
+            getOwnerCount(item) {
+                const q = typeof item.quantity === 'string' ? item.quantity.trim() : '';
+                if (!q) return null;
+                if (q === 'group' || Utils.isBadgeId(q)) {
+                    return Number.isFinite(item._liveOwnerCount) ? item._liveOwnerCount : null;
+                }
+                const n = parseInt(q.replace(/,/g, ''), 10);
+                return Number.isFinite(n) ? n : null;
+            }
+
+            // Resolve dynamic quantities (badge IDs / 'group') into numbers for the
+            // copies sort. Runs once, on demand, when the sort is first selected —
+            // Utils caches the underlying Roblox lookups in localStorage.
+            async fetchOwnerCounts() {
+                if (this._ownerCountsFetched) return;
+
+                const dynamicItems = this.allItems.filter(item => {
+                    const q = typeof item.quantity === 'string' ? item.quantity.trim() : '';
+                    return q === 'group' || Utils.isBadgeId(q);
+                });
+
+                await Promise.all(dynamicItems.map(async (item) => {
+                    const q = item.quantity.trim();
+                    try {
+                        if (q === 'group') {
+                            const groupData = await Utils.getGroupData('2649054');
+                            if (groupData && Number.isFinite(groupData.memberCount)) {
+                                item._liveOwnerCount = groupData.memberCount;
+                            }
+                        } else {
+                            const badgeData = await Utils.getBadgeData(q);
+                            if (badgeData && Number.isFinite(badgeData.awardedCount)) {
+                                item._liveOwnerCount = badgeData.awardedCount;
+                            }
+                        }
+                    } catch (e) {
+                        // Count stays unknown — the item simply sorts to the end.
+                    }
+                }));
+
+                this._ownerCountsFetched = true;
             }
 
             parseRarity(rarityString) {
@@ -2208,6 +2319,21 @@
                             return rarityA - rarityB;
                         });
                         break;
+
+                    case 'copies-desc':
+                    case 'copies-asc': {
+                        // Items without a known owner count always sort to the end.
+                        const dir = this.sortBy === 'copies-asc' ? 1 : -1;
+                        this.filtered.sort((a, b) => {
+                            const countA = this.getOwnerCount(a);
+                            const countB = this.getOwnerCount(b);
+                            if (countA === null && countB === null) return a.name.localeCompare(b.name);
+                            if (countA === null) return 1;
+                            if (countB === null) return -1;
+                            return (countA - countB) * dir;
+                        });
+                        break;
+                    }
 
                     case 'color-asc':
                         // Sort by color hue (rainbow order: red -> orange -> yellow -> green -> cyan -> blue -> purple -> pink)

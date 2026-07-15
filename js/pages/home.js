@@ -26,6 +26,7 @@
 				// Until then the link is non-interactive rather than showing a placeholder toast.
 
 				this.loadDonators();
+				this.loadBulletin();
 				this.populateGrids();
 				this.initializeSearch();
 				await this.modal.handleURLParams();
@@ -56,6 +57,32 @@
 					console.error('Failed to load homepage data:', error);
 					Utils.showToast('Error', 'Failed to load items', 'error');
 				}
+			}
+
+			async loadBulletin() {
+				const board = document.getElementById('bulletin-board');
+				if (!board) return;
+				try {
+					const res = await fetch('/api/bulletin');
+					if (!res.ok) throw new Error('Failed to fetch bulletin');
+					const data = await res.json();
+					board.innerHTML = (data.notes || []).map(note => `
+						<div class="bulletin-note">
+							<div class="pin"></div>
+							<div class="note-content">${this.formatBulletinText(note.content)}</div>
+						</div>`).join('');
+				} catch (error) {
+					// Board stays empty and the section hides itself via CSS
+					console.error('Failed to load bulletin:', error);
+				}
+			}
+
+			// Escape, then allow **bold** and [text](url) markdown only
+			formatBulletinText(text) {
+				return Utils.escapeHtml(text)
+					.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+						'<a href="$2" target="_blank" rel="noopener">$1</a>')
+					.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
 			}
 
 			setupEventListeners() {

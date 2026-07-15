@@ -76,6 +76,8 @@
                     <small class="dropdown-item disabled" data-sort="date-asc">Date (Oldest First)</small>
                     <small class="dropdown-item disabled" data-sort="rarity-desc" id="rarity-sort-option" style="display: none;">Rarity (Rarest First)</small>
                     <small class="dropdown-item" data-sort="color-asc">Color (Rainbow)</small>
+                    <small class="dropdown-item" data-sort="copies-desc">Copies (High to Low)</small>
+                    <small class="dropdown-item" data-sort="copies-asc">Copies (Low to High)</small>
                     
                 </div>
             </div>
@@ -197,6 +199,18 @@
                         <span class="icon code-icon"></span>
                         <small class="tag-label">Code</small>
                         <small class="tag-count" id="count-code">0</small>
+                    </div>
+
+                    <div class="dropdown-item" data-filter="party">
+                        <span class="icon party-icon"></span>
+                        <small class="tag-label">Epic Party</small>
+                        <small class="tag-count" id="count-party">0</small>
+                    </div>
+
+                    <div class="dropdown-item sub-filter" data-filter="premiumparty">
+                        <span class="icon premium-icon"></span>
+                        <small class="tag-label">Premium Rewards</small>
+                        <small class="tag-count" id="count-premiumparty">0</small>
                     </div>
 
                     <div class="submenu" onclick="catalog.toggleEvent()">
