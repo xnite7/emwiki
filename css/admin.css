@@ -4156,14 +4156,18 @@ body.dragging-panel {
 }
 
 /* ============================
-   SVG Title Builder
+   SVG Title Builder (embedded in Item Adder + quick editor)
    ============================ */
+
+.svgb-wrap {
+    margin-bottom: 12px;
+}
 
 .svgb-controls {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 10px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .svgb-controls label {
@@ -4184,58 +4188,9 @@ body.dragging-panel {
     cursor: pointer;
 }
 
-.svgb-preview-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--ghost);
-    border-radius: var(--radius-sm);
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 60px;
-}
-
-.svgb-preview-card svg {
-    max-width: 100%;
-    height: auto;
-}
-
-.svgb-problem-list {
-    max-height: 180px;
-    overflow-y: auto;
-    margin: 6px 0;
-}
-
-.svgb-problem-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 6px 10px;
-    margin: 2px 0;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    font-size: 13px;
-}
-
-.svgb-problem-row:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.svgb-problem-row-static {
-    cursor: default;
-}
-
-.svgb-problem-detail {
+.svgb-hint {
+    display: block;
     color: var(--muted);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 55%;
-}
-
-.svgb-problem-empty {
-    padding: 6px 10px;
-    color: var(--muted);
-    font-size: 13px;
+    font-size: 12px;
+    margin-bottom: 4px;
 }

@@ -954,11 +954,10 @@
                         }
                     };
 
-                    // Set default SVG template
-                    if (!svgInput.value) {
-                        const name = document.getElementById('item-name').value.trim() || 'Title';
-                        svgInput.value = `<svg width="230" height="100" viewBox="457.90625 471 84.751953125 39" xmlns="http://www.w3.org/2000/svg"><text x="500" y="500" xmlns="http://www.w3.org/2000/svg" text-anchor="middle" stroke="#545454" stroke-width="3" paint-order="stroke" stroke-miterlimit="3" fill="#cbcbcb" style="font: 700 27px Arimo;">${name}</text></svg>`;
-                        svgInput.oninput();
+                    // Mount the SVG title builder controls (generates the
+                    // default markup; replaces the old hardcoded template)
+                    if (window.SvgTitleBuilder) {
+                        SvgTitleBuilder.mountInItemAdder();
                     }
                 } else {
                     // Show image upload, hide SVG input
@@ -3556,8 +3555,14 @@
                     } else {
                         svgPreview.innerHTML = '<span style="color: #666;">Preview will appear here</span>';
                     }
-                    svgPreview.querySelector('svg').style.width = '-webkit-fill-available';
+                    const previewSvg = svgPreview.querySelector('svg');
+                    if (previewSvg) previewSvg.style.width = '-webkit-fill-available';
                 });
+
+                // Mount the SVG title builder controls above the textarea
+                if (window.SvgTitleBuilder) {
+                    SvgTitleBuilder.mountInQuickEditor(item);
+                }
 
                 // Apply button
                 document.getElementById('apply-svg-btn').addEventListener('click', () => {
@@ -6646,8 +6651,7 @@
                 { id: 'chest-management-section', name: 'Chest Management', sectionId: 'chest-management-section' },
                 { id: 'user-management-section', name: 'User Management', sectionId: 'user-management-section' },
                 { id: 'notes-section', name: 'Notes', sectionId: 'notes-section' },
-                { id: 'bulletin-section', name: 'Wiki Bulletin', sectionId: 'bulletin-section' },
-                { id: 'svg-builder-section', name: 'SVG Title Builder', sectionId: 'svg-builder-section' }
+                { id: 'bulletin-section', name: 'Wiki Bulletin', sectionId: 'bulletin-section' }
             ],
 
             hiddenPanels: new Set(),

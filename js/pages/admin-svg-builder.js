@@ -1,239 +1,46 @@
-// SVG Title Builder — admin tool for authoring catalog title SVGs.
-// Classic script (loads after admin.js, uses its globals: DOM, Utils, Auth).
-// Replaces raster-URL stopgaps in items.svg with proper inline <svg> markup
-// matching the existing hand-made ones (e.g. 8th Seasoneer).
+// SVG Title Builder — embeddable control panel for authoring catalog title SVGs.
+// Classic script (loads after admin.js). Not a standalone panel: it mounts
+// inside hosts that already have an SVG textarea + preview and keeps that
+// textarea as the source of truth:
+//   - Item Adder modal (step 2, when category "titles" is selected)
+//   - Quick editor for existing title items (setupSVGEditor)
+// Generated markup matches the existing hand-made title SVGs (measured tight
+// viewBox, gradient fill/stroke, paint-order:stroke — e.g. 8th Seasoneer).
 
 const SvgTitleBuilder = {
-    items: [],
-    fonts: [],
-    current: null,      // selected item (full record incl. updated_at)
-    manualMode: false,  // markup textarea hand-edited; controls stop regenerating
-    initialized: false,
-    _previewTimer: null,
+    _fontsPromise: null,
+    _instances: new WeakMap(), // host textarea -> instance state
 
-    async init() {
-        if (this.initialized) return;
-        this.initialized = true;
-
-        this.bindControls();
-        await Promise.all([this.loadItems(), this.loadFonts()]);
-        this.renderProblemReport();
-        this.renderSearchResults();
-    },
-
-    // ---------- data loading ----------
-
-    async loadItems() {
-        try {
-            const res = await fetch('/api/items?limit=2500');
-            const data = await res.json();
-            this.items = data.items || [];
-        } catch (e) {
-            console.error('SvgTitleBuilder: failed to load items', e);
-            this.items = [];
-        }
-    },
-
-    async loadFonts() {
-        // Fallbacks always offered even if fonts.css can't be parsed
-        const families = new Set(['Lobster', 'Arial', 'Verdana', 'Impact']);
-        try {
-            const res = await fetch('/css/fonts.css');
-            const css = await res.text();
-            for (const m of css.matchAll(/font-family:\s*['"]?([^;'"]+)['"]?\s*;/g)) {
-                families.add(m[1].trim());
-            }
-        } catch (e) {
-            console.warn('SvgTitleBuilder: could not parse fonts.css', e);
-        }
-        this.fonts = Array.from(families).sort();
-
-        const select = document.getElementById('svgb-font');
-        select.innerHTML = '';
-        for (const f of this.fonts) {
-            const opt = document.createElement('option');
-            opt.value = f;
-            opt.textContent = f;
-            opt.style.fontFamily = `'${f}'`;
-            if (f === 'Lobster') opt.selected = true;
-            select.appendChild(opt);
-        }
-    },
-
-    // ---------- problem report + picker ----------
-
-    isBrokenTitle(item) {
-        return item.category === 'titles' && item.svg && !item.svg.trim().startsWith('<svg');
-    },
-
-    renderProblemReport() {
-        const container = document.getElementById('svgb-problem-report');
-        const brokenTitles = this.items.filter(i => this.isBrokenTitle(i));
-        const noArt = this.items.filter(i => !i.img && !i.svg);
-
-        const esc = (s) => {
-            const d = document.createElement('div');
-            d.textContent = s;
-            return d.innerHTML;
-        };
-
-        const titleRows = brokenTitles.map(i =>
-            `<div class="svgb-problem-row" data-item-id="${i.id}" title="Click to load into the builder">
-                <span>${esc(i.name)}</span><span class="svgb-problem-detail">${esc((i.svg || '').slice(0, 60))}</span>
-            </div>`
-        ).join('') || '<div class="svgb-problem-empty">None 🎉</div>';
-
-        const noArtRows = noArt.map(i =>
-            `<div class="svgb-problem-row svgb-problem-row-static">
-                <span>${esc(i.name)}</span><span class="svgb-problem-detail">${esc(i.category || '')}</span>
-            </div>`
-        ).join('') || '<div class="svgb-problem-empty">None 🎉</div>';
-
-        container.innerHTML = `
-            <details open>
-                <summary style="cursor: pointer;">🏷️ Titles with raster graphics instead of SVG — <b>${brokenTitles.length}</b></summary>
-                <div class="svgb-problem-list">${titleRows}</div>
-            </details>
-            <details>
-                <summary style="cursor: pointer;">🖼️ Items with no icon or title graphic — <b>${noArt.length}</b> (fixed by the in-game icon sync)</summary>
-                <div class="svgb-problem-list">${noArtRows}</div>
-            </details>`;
-
-        container.querySelectorAll('.svgb-problem-row[data-item-id]').forEach(row => {
-            row.addEventListener('click', () => {
-                const item = this.items.find(i => i.id === Number(row.dataset.itemId));
-                if (item) this.selectItem(item);
-            });
-        });
-    },
-
-    renderSearchResults() {
-        const query = (document.getElementById('svgb-search-input').value || '').toLowerCase();
-        const problemOnly = document.getElementById('svgb-problem-only').checked;
-        const container = document.getElementById('svgb-search-results');
-
-        let matches = this.items.filter(i => i.name.toLowerCase().includes(query));
-        if (problemOnly) matches = matches.filter(i => this.isBrokenTitle(i));
-        matches = matches.slice(0, 50);
-
-        container.innerHTML = '';
-        for (const item of matches) {
-            const row = document.createElement('div');
-            row.className = 'svgb-problem-row';
-            row.innerHTML = `<span></span><span class="svgb-problem-detail"></span>`;
-            row.firstChild.textContent = item.name;
-            row.lastChild.textContent = item.category || '';
-            row.addEventListener('click', () => this.selectItem(item));
-            container.appendChild(row);
-        }
-        if (!matches.length) {
-            container.innerHTML = '<div class="svgb-problem-empty">No matches</div>';
-        }
-    },
-
-    // ---------- editor ----------
-
-    bindControls() {
-        document.getElementById('svgb-search-input').addEventListener('input', () => this.renderSearchResults());
-        document.getElementById('svgb-problem-only').addEventListener('change', () => this.renderSearchResults());
-
-        const controlIds = ['svgb-text', 'svgb-font', 'svgb-weight', 'svgb-size', 'svgb-fill1', 'svgb-fill2',
-            'svgb-stroke1', 'svgb-stroke2', 'svgb-strokew', 'svgb-spacing', 'svgb-skew'];
-        for (const id of controlIds) {
-            document.getElementById(id).addEventListener('input', () => {
-                for (const [rangeId, labelId] of [['svgb-size', 'svgb-size-value'], ['svgb-strokew', 'svgb-strokew-value'],
-                    ['svgb-spacing', 'svgb-spacing-value'], ['svgb-skew', 'svgb-skew-value']]) {
-                    document.getElementById(labelId).textContent = document.getElementById(rangeId).value;
+    loadFonts() {
+        if (!this._fontsPromise) {
+            this._fontsPromise = (async () => {
+                const families = new Set(['Arimo', 'Lobster', 'Arial', 'Verdana', 'Impact']);
+                try {
+                    const res = await fetch('/css/fonts.css');
+                    const css = await res.text();
+                    for (const m of css.matchAll(/font-family:\s*['"]?([^;'"]+)['"]?\s*;/g)) {
+                        families.add(m[1].trim());
+                    }
+                } catch (e) {
+                    console.warn('SvgTitleBuilder: could not parse fonts.css', e);
                 }
-                if (this.manualMode) return; // hand-edited markup wins until reset
-                this.schedulePreview();
-            });
+                return Array.from(families).sort();
+            })();
         }
-
-        document.getElementById('svgb-markup').addEventListener('input', () => {
-            this.manualMode = true;
-            document.getElementById('svgb-manual-flag').style.display = '';
-            this.renderPreview(document.getElementById('svgb-markup').value);
-        });
-
-        document.getElementById('svgb-reset').addEventListener('click', () => {
-            if (this.manualMode && !confirm('Discard manual markup edits and regenerate from the controls?')) return;
-            this.manualMode = false;
-            document.getElementById('svgb-manual-flag').style.display = 'none';
-            this.schedulePreview();
-        });
-
-        document.getElementById('svgb-save').addEventListener('click', () => this.save());
+        return this._fontsPromise;
     },
 
-    selectItem(item) {
-        this.current = item;
-        this.manualMode = false;
-        document.getElementById('svgb-manual-flag').style.display = 'none';
-        document.getElementById('svgb-editor').style.display = '';
-        document.getElementById('svgb-editing-name').textContent = `Editing: ${item.name} (${item.category || '?'}, id ${item.id})`;
-        document.getElementById('svgb-text').value = item.name;
-        this.setStatus('');
+    // ---------- SVG generation ----------
 
-        // If the item already has inline SVG, start in manual mode with it loaded
-        if (item.svg && item.svg.trim().startsWith('<svg')) {
-            this.manualMode = true;
-            document.getElementById('svgb-manual-flag').style.display = '';
-            document.getElementById('svgb-markup').value = item.svg;
-            this.renderPreview(item.svg);
-        } else {
-            this.schedulePreview();
-        }
-
-        document.getElementById('svgb-editor').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    },
-
-    readControls() {
-        const v = (id) => document.getElementById(id).value;
-        return {
-            text: v('svgb-text'),
-            font: v('svgb-font'),
-            weight: v('svgb-weight'),
-            size: Number(v('svgb-size')),
-            fill1: v('svgb-fill1'),
-            fill2: v('svgb-fill2'),
-            stroke1: v('svgb-stroke1'),
-            stroke2: v('svgb-stroke2'),
-            strokeWidth: Number(v('svgb-strokew')),
-            spacing: Number(v('svgb-spacing')),
-            skew: Number(v('svgb-skew')),
-        };
-    },
-
-    schedulePreview() {
-        clearTimeout(this._previewTimer);
-        this._previewTimer = setTimeout(async () => {
-            const markup = await this.buildSvg();
-            document.getElementById('svgb-markup').value = markup;
-            this.renderPreview(markup);
-        }, 150);
-    },
-
-    renderPreview(markup) {
-        // Replicates renderItemCard: svg injected via insertAdjacentHTML into the card
-        for (const id of ['svgb-preview', 'svgb-preview-small']) {
-            const box = document.getElementById(id);
-            box.innerHTML = '';
-            box.insertAdjacentHTML('beforeend', markup);
-        }
-    },
-
-    async buildSvg() {
-        const c = this.readControls();
-        const item = this.current || { id: 'x' };
+    async buildSvg(c, idHint) {
         const fontStyle = `font:${c.weight} ${c.size}px '${c.font}'`;
 
         try {
             await document.fonts.load(`${c.weight} ${c.size}px '${c.font}'`);
         } catch (e) { /* unknown font — measure with fallback */ }
 
-        // Measure the text at the canonical (500,500) anchor to get a tight viewBox,
-        // same technique as the existing hand-made title SVGs.
+        // Measure the text at the canonical (500,500) anchor to get a tight
+        // viewBox, same technique as the existing hand-made title SVGs.
         const ns = 'http://www.w3.org/2000/svg';
         const probe = document.createElementNS(ns, 'svg');
         probe.setAttribute('style', 'position:absolute; left:-9999px; top:-9999px;');
@@ -264,8 +71,9 @@ const SvgTitleBuilder = {
 
         // Per-item gradient ids: many title SVGs coexist inline on the catalog
         // page, so duplicate ids would cross-contaminate fills between items.
-        const fillId = `tg-${item.id}`;
-        const strokeId = `sg-${item.id}`;
+        const slug = String(idHint || c.text || 'x').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'x';
+        const fillId = `tg-${slug}`;
+        const strokeId = `sg-${slug}`;
 
         const defs = [];
         let fillAttr = c.fill1;
@@ -285,7 +93,6 @@ const SvgTitleBuilder = {
         const transform = c.skew ? ` transform="skewX(${-c.skew})" transform-origin="500 500"` : '';
         const spacingStyle = c.spacing ? `;letter-spacing:${c.spacing}px` : '';
 
-        // Escape the text content
         const escDiv = document.createElement('div');
         escDiv.textContent = c.text;
         const safeText = escDiv.innerHTML;
@@ -298,130 +105,198 @@ const SvgTitleBuilder = {
         return `<svg width="200" height="100" viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">${styleTag}${defsTag}<text x="500" y="500" text-anchor="middle"${strokeAttrs} fill="${fillAttr}" style="${fontStyle}${spacingStyle}"${transform}>${safeText}</text></svg>`;
     },
 
-    // ---------- saving ----------
+    // ---------- embeddable controls ----------
 
-    setStatus(msg, color) {
-        const el = document.getElementById('svgb-status');
-        el.textContent = msg;
-        el.style.color = color || '#999';
-    },
+    /**
+     * Mount the builder controls above a host SVG textarea.
+     *
+     * @param {object} opts
+     * @param {HTMLElement} opts.container   - element the controls are inserted into (at the top)
+     * @param {HTMLTextAreaElement} opts.textarea - host textarea holding the SVG markup
+     * @param {function(): string} opts.getName  - returns the item name (builder text default)
+     * @param {function(): string|number} [opts.getIdHint] - stable id for gradient ids (item id or name)
+     * @param {boolean} [opts.generateIfEmpty] - generate immediately when the textarea has no usable SVG
+     *
+     * Idempotent per textarea: calling again refreshes the text default and
+     * (when generateIfEmpty) regenerates stale auto-generated content.
+     */
+    async mount(opts) {
+        const { container, textarea, getName, getIdHint, generateIfEmpty } = opts;
+        if (!container || !textarea) return;
 
-    buildFullPayload(item, newSvg) {
-        // PUT /api/items/:id writes img/svg/price/from/price_code_rarity/credits/
-        // lore/alias/quantity/color WITHOUT COALESCE — a partial payload nulls
-        // them, so every field must be sent.
-        return {
-            name: item.name,
-            category: item.category,
-            img: item.img || null,
-            svg: newSvg,
-            price: item.price || null,
-            from: item.from || null,
-            price_code_rarity: item['price/code/rarity'] ?? item.price_code_rarity ?? null,
-            tradable: item.tradable !== false,
-            new: item.new === true,
-            weekly: item.weekly === true,
-            weeklystar: item.weeklystar === true,
-            retired: item.retired === true,
-            premium: item.premium === true,
-            removed: item.removed === true,
-            typicalgroup: item.typicalgroup === true,
-            unstable: item.unstable === true,
-            price_history: item.priceHistory || null,
-            demand: item.demand || 0,
-            credits: item.credits || null,
-            lore: item.lore || null,
-            alias: item.alias || null,
-            quantity: item.quantity || null,
-            color: item.color || null,
-            updated_at: item.updated_at ?? null,
-        };
-    },
-
-    async save() {
-        if (!this.current) return;
-        const item = this.current;
-        const markup = document.getElementById('svgb-markup').value.trim();
-
-        if (!markup.startsWith('<svg')) {
-            this.setStatus('Markup must start with <svg', '#e05555');
-            return;
-        }
-        if (item.svg && item.svg.trim().startsWith('<svg') && markup !== item.svg &&
-            !confirm(`"${item.name}" already has an inline SVG title. Overwrite it?`)) {
+        let inst = this._instances.get(textarea);
+        if (inst) {
+            inst.refresh();
             return;
         }
 
-        const authToken = (typeof Auth !== 'undefined' && Auth.authToken) || localStorage.getItem('auth_token');
-        this.setStatus('Saving...');
+        const fonts = await this.loadFonts();
+        // Defaults reproduce the previous hardcoded new-title template
+        // (grey Arimo 700 27px with dark stroke).
+        const wrap = document.createElement('div');
+        wrap.className = 'svgb-wrap';
+        wrap.innerHTML = `
+            <div class="svgb-controls">
+                <label>Text
+                    <input type="text" class="af-input" data-svgb="text">
+                </label>
+                <label>Font
+                    <select class="af-input" data-svgb="font"></select>
+                </label>
+                <label>Weight
+                    <select class="af-input" data-svgb="weight">
+                        <option value="100">100 (Thin)</option>
+                        <option value="300">300 (Light)</option>
+                        <option value="400">400 (Normal)</option>
+                        <option value="700" selected>700 (Bold)</option>
+                        <option value="900">900 (Black)</option>
+                    </select>
+                </label>
+                <label>Size <span data-svgb-label="size">27</span>px
+                    <input type="range" data-svgb="size" min="12" max="40" value="27">
+                </label>
+                <label>Fill top
+                    <input type="color" data-svgb="fill1" value="#cbcbcb">
+                </label>
+                <label>Fill bottom
+                    <input type="color" data-svgb="fill2" value="#cbcbcb">
+                </label>
+                <label>Stroke top
+                    <input type="color" data-svgb="stroke1" value="#545454">
+                </label>
+                <label>Stroke bottom
+                    <input type="color" data-svgb="stroke2" value="#545454">
+                </label>
+                <label>Stroke width <span data-svgb-label="strokeWidth">3</span>
+                    <input type="range" data-svgb="strokeWidth" min="0" max="8" value="3">
+                </label>
+                <label>Letter spacing <span data-svgb-label="spacing">0</span>px
+                    <input type="range" data-svgb="spacing" min="-3" max="10" value="0">
+                </label>
+                <label>Skew <span data-svgb-label="skew">0</span>&deg;
+                    <input type="range" data-svgb="skew" min="-20" max="20" value="0">
+                </label>
+            </div>
+            <small class="svgb-hint">Adjusting a control regenerates the SVG code below. Manual edits to the code stick until a control is touched.</small>`;
 
-        try {
-            const res = await fetch(`/api/items/${item.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${authToken}`,
-                },
-                body: JSON.stringify(this.buildFullPayload(item, markup)),
-            });
+        const fontSelect = wrap.querySelector('[data-svgb="font"]');
+        for (const f of fonts) {
+            const opt = document.createElement('option');
+            opt.value = f;
+            opt.textContent = f;
+            opt.style.fontFamily = `'${f}'`;
+            if (f === 'Arimo') opt.selected = true;
+            fontSelect.appendChild(opt);
+        }
 
-            if (res.status === 409) {
-                // Conflict: refresh our copy from the server's current state but
-                // keep the authored markup in the editor so nothing is lost.
-                const conflict = await res.json();
-                if (conflict.currentItem) {
-                    Object.assign(item, conflict.currentItem, { updated_at: conflict.serverUpdatedAt });
+        container.insertBefore(wrap, container.firstChild);
+
+        const q = (name) => wrap.querySelector(`[data-svgb="${name}"]`);
+        const read = () => ({
+            text: q('text').value,
+            font: q('font').value,
+            weight: q('weight').value,
+            size: Number(q('size').value),
+            fill1: q('fill1').value,
+            fill2: q('fill2').value,
+            stroke1: q('stroke1').value,
+            stroke2: q('stroke2').value,
+            strokeWidth: Number(q('strokeWidth').value),
+            spacing: Number(q('spacing').value),
+            skew: Number(q('skew').value),
+        });
+
+        inst = {
+            wrap,
+            lastGenerated: null,
+            textEdited: false,
+            timer: null,
+            regenerate: async () => {
+                for (const label of wrap.querySelectorAll('[data-svgb-label]')) {
+                    label.textContent = q(label.dataset.svgbLabel).value;
                 }
-                this.setStatus('⚠️ Item was modified by another admin — reloaded it. Check values, then Save again.', '#e0a030');
-                return;
-            }
-            if (!res.ok) {
-                const body = await res.text();
-                this.setStatus(`❌ Save failed (${res.status}): ${body.slice(0, 120)}`, '#e05555');
-                return;
-            }
+                const markup = await SvgTitleBuilder.buildSvg(read(), getIdHint ? getIdHint() : getName());
+                inst.lastGenerated = markup;
+                textarea.value = markup;
+                // Let the host update its own preview (both hosts wire
+                // oninput/addEventListener on their textarea).
+                textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                if (textarea.oninput) textarea.oninput();
+            },
+            scheduleRegenerate: () => {
+                clearTimeout(inst.timer);
+                inst.timer = setTimeout(() => inst.regenerate(), 150);
+            },
+            refresh: () => {
+                if (!inst.textEdited) {
+                    q('text').value = getName() || 'Title';
+                }
+                const value = textarea.value.trim();
+                const isStale = !value || !value.startsWith('<svg') || value === inst.lastGenerated;
+                if (generateIfEmpty && isStale) {
+                    inst.scheduleRegenerate();
+                }
+            },
+        };
+        this._instances.set(textarea, inst);
 
-            // Server bumped updated_at; refetch so the next save doesn't 409
-            item.svg = markup;
-            await this.refreshItem(item);
-            this.setStatus('✅ Saved', '#4caf50');
-            this.renderProblemReport();
-            this.renderSearchResults();
-        } catch (e) {
-            this.setStatus('❌ Save failed: ' + e.message, '#e05555');
+        q('text').addEventListener('input', () => { inst.textEdited = true; });
+        for (const el of wrap.querySelectorAll('[data-svgb]')) {
+            el.addEventListener('input', () => inst.scheduleRegenerate());
+        }
+
+        q('text').value = getName() || 'Title';
+        const value = textarea.value.trim();
+        if (generateIfEmpty && (!value || !value.startsWith('<svg'))) {
+            inst.scheduleRegenerate();
         }
     },
 
-    async refreshItem(item) {
-        try {
-            const res = await fetch(`/api/items/${encodeURIComponent(item.category)}/${encodeURIComponent(item.name)}`);
-            if (res.ok) {
-                const { item: fresh } = await res.json();
-                if (fresh && fresh.id === item.id) Object.assign(item, fresh);
+    // ---------- host-specific mounts ----------
+
+    // Item Adder modal, step 2 with category "titles" (called from toggleInputMode)
+    mountInItemAdder() {
+        const group = document.getElementById('svg-input-group');
+        const textarea = document.getElementById('item-svg-input');
+        const nameInput = document.getElementById('item-name');
+        if (!group || !textarea) return;
+
+        this.mount({
+            container: group,
+            textarea,
+            getName: () => (nameInput?.value || '').trim(),
+            generateIfEmpty: true,
+        }).then(() => {
+            // Mirror the name into the builder text until it's manually edited
+            if (nameInput && !nameInput.dataset.svgbMirror) {
+                nameInput.dataset.svgbMirror = '1';
+                nameInput.addEventListener('input', () => {
+                    const inst = this._instances.get(textarea);
+                    if (!inst || inst.textEdited) return;
+                    inst.wrap.querySelector('[data-svgb="text"]').value = nameInput.value.trim() || 'Title';
+                    inst.scheduleRegenerate();
+                });
             }
-        } catch (e) { /* non-fatal: next save may 409 and self-heal */ }
+        });
+    },
+
+    // Quick editor for an existing title item (called from setupSVGEditor).
+    // Never auto-generates: the item's current svg stays until a control is touched.
+    mountInQuickEditor(item) {
+        const container = document.getElementById('svg-editor');
+        const textarea = document.getElementById('svg-input');
+        if (!container || !textarea) return;
+
+        this.mount({
+            container,
+            textarea,
+            getName: () => item.name,
+            getIdHint: () => item.id || item.name,
+            generateIfEmpty: false,
+        });
     },
 };
 
-// Self-initialize when the section becomes visible (same pattern as DemandReview)
-(function initializeSvgTitleBuilder() {
-    const setup = () => {
-        const section = document.getElementById('svg-builder-section');
-        if (!section) return;
-
-        const observer = new MutationObserver(() => {
-            if (section.style.display !== 'none') SvgTitleBuilder.init();
-        });
-        observer.observe(section, { attributes: true, attributeFilter: ['style'] });
-
-        setTimeout(() => {
-            if (section.style.display !== 'none') SvgTitleBuilder.init();
-        }, 2000);
-    };
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', setup);
-    } else {
-        setup();
-    }
-})();
+// Top-level const in a classic script is NOT a window property; admin.js
+// feature-detects via window.SvgTitleBuilder, so export explicitly.
+window.SvgTitleBuilder = SvgTitleBuilder;
