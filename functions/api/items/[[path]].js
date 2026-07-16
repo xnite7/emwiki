@@ -1,5 +1,6 @@
 // API endpoints for items
 import { getRequestUser, isAdmin } from '../_utils/users.js';
+import { uploadImageToCloudflareImages } from '../_utils/images.js';
 
 function unauthorized(corsHeaders) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -111,6 +112,11 @@ export async function onRequest(context) {
         // POST /api/items/batch - Fetch multiple items by name
         if (request.method === 'POST' && path === 'batch') {
             return await batchGetItems(request, env, corsHeaders);
+        }
+
+        // POST /api/items/sync-icons - Fetch item icons from Roblox and store them (admin only)
+        if (request.method === 'POST' && path === 'sync-icons') {
+            return await syncIcons(request, env, corsHeaders);
         }
 
         // POST /api/items - Create new item (admin only)
@@ -571,6 +577,252 @@ async function listItems(request, env, corsHeaders) {
 }
 
 // Create new item (admin only)
+// Max entries per sync-icons request. Each entry can cost up to 7 fetch
+// subrequests (assetdelivery meta + CDN + inner meta + inner CDN + thumbnail
+// fallback meta + thumbnail CDN + CF Images upload); 6 * 7 = 42 stays under
+// the 50-subrequest Workers cap.
+const MAX_SYNC_ENTRIES = 6;
+
+const IMAGE_MAGIC_BYTES = [
+    { type: 'image/png', bytes: [0x89, 0x50, 0x4E, 0x47] },
+    { type: 'image/jpeg', bytes: [0xFF, 0xD8] },
+    { type: 'image/gif', bytes: [0x47, 0x49, 0x46, 0x38] },
+];
+
+function sniffImageType(bytes) {
+    const view = new Uint8Array(bytes);
+    for (const { type, bytes: magic } of IMAGE_MAGIC_BYTES) {
+        if (magic.every((b, i) => view[i] === b)) return type;
+    }
+    // WebP: RIFF....WEBP
+    if (view[0] === 0x52 && view[1] === 0x49 && view[2] === 0x46 && view[3] === 0x46 &&
+        view[8] === 0x57 && view[9] === 0x45 && view[10] === 0x42 && view[11] === 0x50) {
+        return 'image/webp';
+    }
+    return null;
+}
+
+/**
+ * Fallback: fetch a rendered thumbnail of the asset (420x420 PNG) via the
+ * public thumbnails API. Works anonymously for assets that assetdelivery
+ * refuses to serve without authentication.
+ */
+async function fetchRobloxThumbnail(assetId) {
+    const fail = (code, detail) => Object.assign(new Error(detail), { code });
+
+    const metaResp = await fetch(
+        `https://thumbnails.roblox.com/v1/assets?assetIds=${assetId}&size=420x420&format=Png`,
+        { headers: { 'Accept': 'application/json' } }
+    );
+    if (!metaResp.ok) {
+        throw fail('asset_unavailable', `thumbnails API returned HTTP ${metaResp.status} for asset ${assetId}`);
+    }
+    const meta = await metaResp.json();
+    const thumb = meta.data?.[0];
+    if (!thumb?.imageUrl || thumb.state === 'Blocked' || thumb.state === 'Error') {
+        throw fail('asset_unavailable', `asset ${assetId}: thumbnail state ${thumb?.state || 'unknown'}`);
+    }
+
+    const imgResp = await fetch(thumb.imageUrl);
+    if (!imgResp.ok) {
+        throw fail('asset_unavailable', `thumbnail CDN returned HTTP ${imgResp.status} for asset ${assetId}`);
+    }
+    const bytes = await imgResp.arrayBuffer();
+    const contentType = sniffImageType(bytes);
+    if (!contentType) {
+        throw fail('not_an_image', `asset ${assetId}: thumbnail content is not an image (state ${thumb.state})`);
+    }
+    return { bytes, contentType };
+}
+
+/**
+ * Fetch an image asset from Roblox assetdelivery.
+ * Handles Decal assets (Roblox XML wrapping the real image id) by following
+ * the inner id exactly once. Falls back to the public thumbnails API when
+ * assetdelivery requires authentication for the asset.
+ *
+ * @returns {Promise<{ bytes: ArrayBuffer, contentType: string }>}
+ * @throws {Error} with .code set to asset_unavailable | decal_parse_failed | not_an_image
+ */
+async function fetchRobloxImageAsset(assetId, depth = 0) {
+    const fail = (code, detail) => {
+        const err = new Error(detail);
+        err.code = code;
+        return err;
+    };
+
+    // Assets that assetdelivery refuses to serve anonymously (401) can still
+    // be fetched as a rendered thumbnail — good enough for catalog icons.
+    const thumbnailFallback = async (detail) => {
+        try {
+            return await fetchRobloxThumbnail(assetId);
+        } catch (thumbError) {
+            throw fail(thumbError.code || 'asset_unavailable', `${detail}; thumbnail fallback: ${thumbError.message}`);
+        }
+    };
+
+    const metaResp = await fetch(`https://assetdelivery.roblox.com/v2/assetId/${assetId}`, {
+        headers: { 'Accept': 'application/json' }
+    });
+    if (!metaResp.ok) {
+        return thumbnailFallback(`assetdelivery returned HTTP ${metaResp.status} for asset ${assetId}`);
+    }
+    const meta = await metaResp.json();
+    if (meta.errors?.length) {
+        return thumbnailFallback(`asset ${assetId}: ${meta.errors[0].message || 'error ' + meta.errors[0].code}`);
+    }
+    const location = meta.locations?.[0]?.location;
+    if (!location) {
+        return thumbnailFallback(`asset ${assetId}: no download location returned`);
+    }
+
+    const assetResp = await fetch(location);
+    if (!assetResp.ok) {
+        throw fail('asset_unavailable', `CDN returned HTTP ${assetResp.status} for asset ${assetId}`);
+    }
+    const bytes = await assetResp.arrayBuffer();
+
+    // Decal assets are Roblox XML documents referencing the actual image asset
+    const head = new TextDecoder('utf-8', { fatal: false })
+        .decode(bytes.slice(0, 512));
+    if (head.trimStart().startsWith('<roblox')) {
+        if (depth >= 1) {
+            throw fail('decal_parse_failed', `asset ${assetId}: nested Roblox XML beyond one level`);
+        }
+        const idMatch = head.match(/<url>[^<]*?[?&]id=(\d+)/i)
+            || new TextDecoder('utf-8', { fatal: false }).decode(bytes).match(/<url>[^<]*?[?&]id=(\d+)/i)
+            || new TextDecoder('utf-8', { fatal: false }).decode(bytes).match(/rbxassetid:\/\/(\d+)/i);
+        if (!idMatch) {
+            throw fail('decal_parse_failed', `asset ${assetId}: Roblox XML without an inner image id`);
+        }
+        return fetchRobloxImageAsset(Number(idMatch[1]), depth + 1);
+    }
+
+    const contentType = sniffImageType(bytes);
+    if (!contentType) {
+        throw fail('not_an_image', `asset ${assetId}: content is not a PNG/JPEG/GIF/WebP image`);
+    }
+
+    return { bytes, contentType };
+}
+
+// POST /api/items/sync-icons (admin only)
+// Body: { entries: [{ id?, name?, assetId, force? }], force?, dryRun? }
+async function syncIcons(request, env, corsHeaders) {
+    const auth = await requireAdmin(request, env, corsHeaders);
+    if (auth.error) return auth.error;
+
+    const jsonHeaders = { ...corsHeaders, 'Content-Type': 'application/json' };
+    const badRequest = (body) => new Response(JSON.stringify(body), { status: 400, headers: jsonHeaders });
+
+    let data;
+    try {
+        data = await request.json();
+    } catch (e) {
+        return badRequest({ error: 'Invalid JSON body' });
+    }
+
+    const { entries, force: globalForce = false, dryRun = false } = data || {};
+    if (!Array.isArray(entries) || entries.length === 0) {
+        return badRequest({ error: 'entries must be a non-empty array' });
+    }
+    if (entries.length > MAX_SYNC_ENTRIES) {
+        return badRequest({ error: `Too many entries (${entries.length})`, max: MAX_SYNC_ENTRIES });
+    }
+
+    const results = [];
+    const summary = { updated: 0, skipped: 0, errors: 0, dryRun: !!dryRun };
+
+    for (const entry of entries) {
+        const result = {
+            name: entry?.name ?? null,
+            id: entry?.id ?? null,
+            assetId: entry?.assetId ?? null
+        };
+        results.push(result);
+
+        try {
+            const assetId = Number(entry?.assetId);
+            if (!Number.isInteger(assetId) || assetId <= 0) {
+                throw Object.assign(new Error('assetId must be a positive integer'), { code: 'invalid_asset_id' });
+            }
+            const force = entry?.force !== undefined ? !!entry.force : !!globalForce;
+
+            // Resolve item by id (preferred) or unique name
+            let item;
+            if (entry?.id !== undefined && entry?.id !== null) {
+                item = await env.DBA.prepare(
+                    'SELECT id, name, img FROM items WHERE id = ?'
+                ).bind(entry.id).first();
+                if (!item) {
+                    throw Object.assign(new Error(`no item with id ${entry.id}`), { code: 'not_found' });
+                }
+            } else if (entry?.name) {
+                const { results: matches } = await env.DBA.prepare(
+                    'SELECT id, name, img FROM items WHERE name = ?'
+                ).bind(entry.name).all();
+                if (matches.length === 0) {
+                    throw Object.assign(new Error(`no item named "${entry.name}"`), { code: 'not_found' });
+                }
+                if (matches.length > 1) {
+                    throw Object.assign(
+                        new Error(`multiple items named "${entry.name}" (ids: ${matches.map(m => m.id).join(', ')}) — retry with an explicit id`),
+                        { code: 'ambiguous_name' }
+                    );
+                }
+                item = matches[0];
+            } else {
+                throw Object.assign(new Error('entry needs an id or a name'), { code: 'invalid_entry' });
+            }
+            result.id = item.id;
+            result.name = item.name;
+
+            if (item.img && !force) {
+                result.status = 'skipped_existing';
+                summary.skipped++;
+                continue;
+            }
+
+            const { bytes, contentType } = await fetchRobloxImageAsset(assetId);
+
+            if (dryRun) {
+                result.status = 'resolved';
+                result.contentType = contentType;
+                result.size = bytes.byteLength;
+                summary.updated++;
+                continue;
+            }
+
+            const ext = contentType.split('/')[1].replace('jpeg', 'jpg');
+            const file = new File([bytes], `item-${item.id}-${assetId}.${ext}`, { type: contentType });
+            const uploaded = await uploadImageToCloudflareImages(file, file.name, env);
+
+            // Re-check emptiness at write time so concurrent syncs can't clobber
+            // an icon that landed after our read (unless force is set).
+            const writeResult = await env.DBA.prepare(`
+                UPDATE items SET img = ?, updated_at = strftime('%s', 'now')
+                WHERE id = ? AND (? = 1 OR img IS NULL OR img = '')
+            `).bind(uploaded.url, item.id, force ? 1 : 0).run();
+
+            if (writeResult.meta.changes === 0) {
+                result.status = 'skipped_existing';
+                summary.skipped++;
+            } else {
+                result.status = 'updated';
+                result.img = uploaded.url;
+                summary.updated++;
+            }
+        } catch (error) {
+            result.status = 'error';
+            result.error = error.code || 'internal_error';
+            result.detail = error.message;
+            summary.errors++;
+        }
+    }
+
+    return new Response(JSON.stringify({ results, summary }), { headers: jsonHeaders });
+}
+
 async function createItem(request, env, corsHeaders) {
     const auth = await requireAdmin(request, env, corsHeaders);
     if (auth.error) return auth.error;

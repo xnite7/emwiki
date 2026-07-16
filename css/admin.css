@@ -4154,3 +4154,88 @@ body.dragging-panel {
     font-size: 13px;
     color: var(--muted);
 }
+
+/* ============================
+   SVG Title Builder
+   ============================ */
+
+.svgb-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.svgb-controls label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.svgb-controls input[type="color"] {
+    width: 100%;
+    height: 34px;
+    padding: 2px;
+    border: 1px solid var(--ghost);
+    border-radius: var(--radius-sm);
+    background: var(--shade);
+    cursor: pointer;
+}
+
+.svgb-preview-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--ghost);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60px;
+}
+
+.svgb-preview-card svg {
+    max-width: 100%;
+    height: auto;
+}
+
+.svgb-problem-list {
+    max-height: 180px;
+    overflow-y: auto;
+    margin: 6px 0;
+}
+
+.svgb-problem-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 10px;
+    margin: 2px 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.svgb-problem-row:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.svgb-problem-row-static {
+    cursor: default;
+}
+
+.svgb-problem-detail {
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 55%;
+}
+
+.svgb-problem-empty {
+    padding: 6px 10px;
+    color: var(--muted);
+    font-size: 13px;
+}

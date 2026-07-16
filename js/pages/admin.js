@@ -6646,7 +6646,8 @@
                 { id: 'chest-management-section', name: 'Chest Management', sectionId: 'chest-management-section' },
                 { id: 'user-management-section', name: 'User Management', sectionId: 'user-management-section' },
                 { id: 'notes-section', name: 'Notes', sectionId: 'notes-section' },
-                { id: 'bulletin-section', name: 'Wiki Bulletin', sectionId: 'bulletin-section' }
+                { id: 'bulletin-section', name: 'Wiki Bulletin', sectionId: 'bulletin-section' },
+                { id: 'svg-builder-section', name: 'SVG Title Builder', sectionId: 'svg-builder-section' }
             ],
 
             hiddenPanels: new Set(),
