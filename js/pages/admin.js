@@ -2442,6 +2442,9 @@
                     class: 'item-name',
                     textContent: item.name
                 });
+                // Names truncate to the card width when they can't be shrunk to fit,
+                // so keep the full one reachable on hover.
+                name.title = item.name;
 
                 const priceLabel = Utils.createElement('label', {
                     class: `price-label ${!state.filters.showPrices ? 'hidden' : ''}`,
@@ -2472,17 +2475,40 @@
                     QuickEditor.open(item);
                 });
 
-                // Auto-size font
-                requestAnimationFrame(() => {
-                    name.style.fontSize = '13px';
-                    let fontsize = 13;
-                    while (name.offsetWidth > card.offsetWidth - 18 && fontsize > 8) {
-                        fontsize -= 1;
-                        name.style.fontSize = `${fontsize}px`;
-                    }
-                });
+                UI.fitNameWhenVisible(card);
 
                 return card;
+            },
+
+            // Shrink an item name until it fits its card. The loop interleaves an
+            // offsetWidth read with a fontSize write, so every pass forces a
+            // synchronous layout — doing that for each card up front stalled the main
+            // thread across the whole catalog. Measuring also defeats the
+            // content-visibility skipping on .item-card (see admin.css), because
+            // querying geometry forces the skipped subtree to lay out anyway. So fit a
+            // card the first time it actually scrolls into view, then stop watching it.
+            _nameFitObserver: null,
+
+            fitNameWhenVisible(card) {
+                if (!this._nameFitObserver) {
+                    this._nameFitObserver = new IntersectionObserver((entries, observer) => {
+                        for (const entry of entries) {
+                            if (!entry.isIntersecting) continue;
+                            observer.unobserve(entry.target);
+
+                            const name = entry.target.querySelector('.item-name');
+                            if (!name) continue;
+
+                            let fontsize = 13;
+                            name.style.fontSize = '13px';
+                            while (name.offsetWidth > entry.target.offsetWidth - 18 && fontsize > 8) {
+                                fontsize -= 1;
+                                name.style.fontSize = `${fontsize}px`;
+                            }
+                        }
+                    }, { rootMargin: '200px' });
+                }
+                this._nameFitObserver.observe(card);
             },
 
             renderShops() {

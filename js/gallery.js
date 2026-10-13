@@ -423,14 +423,14 @@ class Gallery {
         const safeTitle = this.escapeHtml(item.title);
         const mediaElement = item.media_type === 'video'
             ? `<div class="gallery-item-media-wrapper">
-                   <img class="gallery-item-media" data-src="${item.thumbnail_url || item.media_url}" alt="${safeTitle}" loading="lazy" oncontextmenu="return false;">
+                   <img class="gallery-item-media" data-src="${item.thumbnail_url || item.media_url}" alt="${safeTitle}" loading="lazy" decoding="async" oncontextmenu="return false;">
                    <div class="gallery-item-play-icon">
                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                            <path d="M8 5v14l11-7z"/>
                        </svg>
                    </div>
                </div>`
-            : `<img class="gallery-item-media" data-src="${item.media_url}" alt="${safeTitle}" loading="lazy" oncontextmenu="return false;">`;
+            : `<img class="gallery-item-media" data-src="${item.media_url}" alt="${safeTitle}" loading="lazy" decoding="async" oncontextmenu="return false;">`;
 
         const likesCount = item.likes_count || 0;
         const profilePill = this.createProfilePill(item.username, item.avatar_url, item.role, item.user_id);

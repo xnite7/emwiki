@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>clip probe</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* Copy of the live .comment-item rules from forum.html, so this probe
+           renders the real thing. Left column keeps content-visibility, right
+           column opts out, so any clipping shows as a difference. */
+        body { background: #1a1a1a; margin: 0; padding: 20px; }
+        .cols { display: flex; gap: 30px; align-items: flex-start; }
+        .col { flex: 1; max-width: 520px; }
+        .col h2 { color: #fff; font: 700 15px system-ui; }
+
+        .comment-item {
+            background: #7b7b7b3d;
+            padding: 20px;
+            box-shadow: inset 0px 0px 6px 0px #6d6d6da8, 0px 0px 10px 0px #0000003d;
+            border-radius: 14px;
+            @supports (corner-shape: squircle) {
+                corner-shape: squircle;
+                border-radius: 100px;
+            }
+            margin-bottom: 14px;
+            content-visibility: auto;
+            contain-intrinsic-size: auto 120px;
+        }
+        .no-cv .comment-item { content-visibility: visible; contain-intrinsic-size: none; }
+
+        .comment-top { display: flex; gap: 8px; align-items: flex-start; }
+        .comment-avatar { width: 50px; height: 50px; border-radius: 36px; background: #c0392b; overflow: hidden; }
+        .comment-author-name { font: 700 18px system-ui; line-height: 1.1; padding-left: 6px; color: rgb(195 195 195); }
+        .comment-time { padding-right: 10px; margin-left: auto; font-size: 12.5px; color: #999; }
+        .comment-actions { float: right; display: flex; gap: 20px; padding-right: 14px; translate: 0px -21px; }
+        .comment-act-btn { background: #2d6cdf; color: #fff; border: 0; border-radius: 6px; padding: 4px 10px; }
+        .comment-body { font: 14px/1.25 system-ui; color: #eee; word-wrap: break-word; padding-left: 64px; margin-top: -23px; }
+    </style>
+</head>
+<body>
+    <div class="cols">
+        <div class="col with-cv">
+            <h2>content-visibility: auto</h2>
+            <div id="a"></div>
+        </div>
+        <div class="col no-cv">
+            <h2>control (visible)</h2>
+            <div id="b"></div>
+        </div>
+    </div>
+    <script>
+        const SHORT = 'ok';
+        const LONG = 'This is a longer comment body that wraps across a couple of lines so the card grows taller than its corner radius.';
+        function comment(body) {
+            return `<div class="comment-item">
+                <div class="comment-top">
+                    <div class="comment-avatar"></div>
+                    <span class="comment-author-name">SomeTrader</span>
+                    <span class="comment-time">2h ago</span>
+                </div>
+                <div class="comment-actions">
+                    <button class="comment-act-btn">Like</button>
+                    <button class="comment-act-btn">Reply</button>
+                </div>
+                <div class="comment-body">${body}</div>
+            </div>`;
+        }
+        const html = comment(SHORT) + comment(LONG) + comment(SHORT);
+        document.getElementById('a').innerHTML = html;
+        document.getElementById('b').innerHTML = html;
+        window.__cornerShape = CSS.supports('corner-shape', 'squircle');
+    </script>
+</body>
+</html>

@@ -146,6 +146,11 @@
     color: inherit;
     overflow: hidden;
     transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+
+    /* The user directory renders every result in one grid — off-screen cards skip
+       style/layout/paint so scrolling cost tracks the viewport, not the user count. */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 214px;
 }
 
 /* tier accent bar across the top */
@@ -643,6 +648,11 @@
     padding: 25px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     transition: transform 0.3s, box-shadow 0.3s;
+
+    /* Reviews render unpaginated, and each card carries its own backdrop-filter —
+       skipping the off-screen ones avoids compositing blur passes nobody can see. */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 150px;
 }
 
 .review-card:hover {

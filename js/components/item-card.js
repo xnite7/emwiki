@@ -226,13 +226,18 @@ export function addItemBadges(element, item) {
  */
 export function itemVisualHTML(imgSrc, svg, name, className = '') {
     const esc = Utils.escapeHtml;
+    // Lazy + async-decoded: a browse page is ~24 trades with a row of thumbnails
+    // each, so eager loading meant a couple hundred requests and as many
+    // main-thread decodes up front. The thumbnail box is a fixed size in CSS, so
+    // deferring the load can't shift layout (or confuse Masonry's measurements).
+    const loadAttrs = 'loading="lazy" decoding="async"';
     if (imgSrc) {
-        return `<img class="${className}" src="${imgSrc}" alt="${esc(name)}" onerror="this.src='./imgs/placeholder.png'">`;
+        return `<img class="${className}" src="${imgSrc}" alt="${esc(name)}" ${loadAttrs} onerror="this.src='./imgs/placeholder.png'">`;
     }
     if (svg) {
         return `<span class="${className} item-svg-thumb" role="img" aria-label="${esc(name)}">${svg}</span>`;
     }
-    return `<img class="${className}" src="./imgs/placeholder.png" alt="${esc(name)}">`;
+    return `<img class="${className}" src="./imgs/placeholder.png" alt="${esc(name)}" ${loadAttrs}>`;
 }
 
 /**

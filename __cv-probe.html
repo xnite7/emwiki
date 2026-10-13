@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>content-visibility probe</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/gallery.css">
+    <link rel="stylesheet" href="/css/profile.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="/css/trading.css">
+    <style>
+        /* the two pages whose card styles live inline get copies here for the probe */
+        .posts-probe .post-card { }
+    </style>
+</head>
+<body>
+    <div id="host"></div>
+    <script>
+        // Build N cards for each selector we touched, so we can read computed
+        // styles and count how many the engine actually skips off-screen.
+        const SPECS = [
+            { cls: 'item',             tag: 'div', wrap: 'catalog-grid' },
+            { cls: 'gallery-item',     tag: 'div', wrap: 'gallery-grid' },
+            { cls: 'user-card',        tag: 'a',   wrap: 'users-grid' },
+            { cls: 'review-card',      tag: 'div', wrap: '' },
+            { cls: 'item-card',        tag: 'div', wrap: '' },
+            { cls: 'trade-card',       tag: 'div', wrap: 'trades-feed' },
+        ];
+        const host = document.getElementById('host');
+        for (const spec of SPECS) {
+            const wrap = document.createElement('div');
+            wrap.className = spec.wrap;
+            wrap.dataset.probe = spec.cls;
+            for (let i = 0; i < 300; i++) {
+                const el = document.createElement(spec.tag);
+                el.className = spec.cls;
+                el.textContent = 'card ' + i;
+                wrap.appendChild(el);
+            }
+            host.appendChild(wrap);
+        }
+        window.__probe = () => SPECS.map(spec => {
+            const els = document.querySelectorAll('[data-probe="' + spec.cls + '"] > .' + spec.cls);
+            const cs = getComputedStyle(els[0]);
+            let skipped = 0;
+            els.forEach(el => { if (!el.checkVisibility({ contentVisibilityAuto: true })) skipped++; });
+            return {
+                selector: '.' + spec.cls,
+                total: els.length,
+                skippedOffscreen: skipped,
+                contentVisibility: cs.contentVisibility,
+                containIntrinsicSize: cs.containIntrinsicSize,
+                transitionProperty: cs.transitionProperty
+            };
+        });
+    </script>
+</body>
+</html>

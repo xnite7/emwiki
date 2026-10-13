@@ -1071,17 +1071,36 @@ class TradingHub {
         }
 
         feed.innerHTML = '';
+        // Build off-document, then attach once — appending card by card made the
+        // browser re-run layout against the live feed on every insert.
+        const fragment = document.createDocumentFragment();
         filtered.forEach(trade => {
-            feed.appendChild(this.createTradeCard(trade));
+            fragment.appendChild(this.createTradeCard(trade));
         });
+        feed.appendChild(fragment);
 
         this.updateStats();
-        if (!window.matchMedia('(max-width: 767.98px)').matches) {
-        var msnry = new Masonry('.trades-feed', {
+        this.layoutMasonry('.trades-feed');
+    }
+
+    // Masonry only on desktop; on mobile the feed uses a single-column flow layout.
+    // Each render used to construct a fresh Masonry over the same container without
+    // releasing the previous one, so every refresh left another instance behind with
+    // its own resize listener still firing layout on detached cards.
+    layoutMasonry(selector) {
+        if (!this._masonry) this._masonry = {};
+
+        this._masonry[selector]?.destroy();
+        this._masonry[selector] = null;
+
+        if (window.matchMedia('(max-width: 767.98px)').matches) return;
+        if (!document.querySelector(selector)) return;
+
+        this._masonry[selector] = new Masonry(selector, {
             columnWidth: 280,
             itemSelector: '.trade-card',
             gutter: 10
-        });}
+        });
     }
 
     // Numbered page buttons (‹ 1 … 4 [5] 6 … 12 ›): first/last always shown,
@@ -1126,7 +1145,7 @@ class TradingHub {
 
         card.innerHTML = `
             <div class="trade-card-top">
-                <img class="trader-avatar" src="${trade.user?.avatar_url || './imgs/placeholder.png'}" alt="${this.esc(trade.user?.username || 'Unknown')}" onerror="this.src='./imgs/placeholder.png'">
+                <img class="trader-avatar" src="${trade.user?.avatar_url || './imgs/placeholder.png'}" alt="${this.esc(trade.user?.username || 'Unknown')}" loading="lazy" decoding="async" onerror="this.src='./imgs/placeholder.png'">
                 <div class="trader-info">
                     <div class="trader-name">${this.esc(trade.user?.username || 'Unknown')}</div>
                     <div class="trader-meta">
@@ -1488,6 +1507,7 @@ class TradingHub {
             return;
         }
         feed.innerHTML = '';
+        const fragment = document.createDocumentFragment();
         this.myTrades.forEach(trade => {
             const card = this.createTradeCard(trade);
             // Owners can cancel their own active listings.
@@ -1501,16 +1521,10 @@ class TradingHub {
                     actions.appendChild(cancelBtn);
                 }
             }
-            feed.appendChild(card);
+            fragment.appendChild(card);
         });
-        // Masonry only on desktop; on mobile the feed uses a single-column flow layout.
-        if (!window.matchMedia('(max-width: 767.98px)').matches) {
-            new Masonry('.my-trades-feed', {
-                columnWidth: 280,
-                itemSelector: '.trade-card',
-                gutter: 10
-            });
-        }
+        feed.appendChild(fragment);
+        this.layoutMasonry('.my-trades-feed');
     }
 
     renderOffersList(feed, offers, isReceived) {

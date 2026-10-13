@@ -152,6 +152,8 @@
                     <img class="user-card-avatar"
                          src="${avatar}"
                          alt="${this.escapeHtml(user.display_name)}"
+                         loading="lazy"
+                         decoding="async"
                          onerror="this.src='https://emwiki.com/imgs/placeholder.png'">
                 </div>
                 <div class="user-card-identity">
@@ -344,14 +346,14 @@
 
                 const mediaElement = post.thumbnail_url !== null
                     ? `<div class="gallery-post-media-wrapper">
-                           <img class="gallery-post-media" src="${post.thumbnail_url}" alt="${this.escapeHtml(post.title)}" loading="lazy">
+                           <img class="gallery-post-media" src="${post.thumbnail_url}" alt="${this.escapeHtml(post.title)}" loading="lazy" decoding="async">
                            <div class="gallery-post-play-icon">
                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                    <path d="M8 5v14l11-7z"/>
                                </svg>
                            </div>
                        </div>`
-                    : `<img class="gallery-post-media" src="${post.media_url}" alt="${this.escapeHtml(post.title)}" loading="lazy">`;
+                    : `<img class="gallery-post-media" src="${post.media_url}" alt="${this.escapeHtml(post.title)}" loading="lazy" decoding="async">`;
 
                 const likesCount = post.likes_count || 0;
                 const views = post.views || 0;

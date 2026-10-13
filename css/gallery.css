@@ -157,8 +157,17 @@ small {
     border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
-    transition: all 0.3s ease;
+    /* Only the properties hover actually animates — `all` made every style recalc
+       weigh a transition on every card in the grid. */
+    transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
     opacity: 1;
+
+    /* Skip style/layout/paint for off-screen cards, so render work stays
+       proportional to the viewport rather than to the number of loaded posts.
+       `auto` in contain-intrinsic-size lets the browser remember each card's real
+       measured height once seen, so scrolling back up doesn't shift the page. */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 260px;
 
     @starting-style {
         opacity: 0;

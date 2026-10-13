@@ -164,9 +164,19 @@
 			border-radius: 14px;
 			padding: 18px;
 			cursor: pointer;
-			transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+			/* Only what hover actually animates — `all` made every style recalc
+			   weigh a transition on every card in the list. */
+			transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+				box-shadow 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+				border-color 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+				background 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 			position: relative;
 			overflow: hidden;
+
+			/* Off-screen cards skip style/layout/paint. `auto` remembers each card's
+			   real height once measured, so the scrollbar doesn't jump on scroll-back. */
+			content-visibility: auto;
+			contain-intrinsic-size: auto 132px;
 		}
 
 		.post-card::after {
@@ -871,6 +881,12 @@ display: flex;
 			}
 
 			margin-bottom: 14px;
+
+			/* Threads render every comment at once, so a busy post can be hundreds of
+			   nodes. Off-screen ones skip style/layout/paint; `auto` remembers the real
+			   height once measured so scroll position stays stable. */
+			content-visibility: auto;
+			contain-intrinsic-size: auto 120px;
 		}
 
 

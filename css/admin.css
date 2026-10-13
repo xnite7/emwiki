@@ -595,11 +595,30 @@ main {
     gap: 6px;
     height: 120px;
     width: 120px;
-    transition: all 0.1s ease;
+    /* Only what hover/active animate — `all` made every style recalc weigh a
+       transition on each of the hundreds of cards in the editor grid. */
+    transition: scale 0.1s ease, box-shadow 0.1s ease, outline-color 0.1s ease;
     scale: 1;
     cursor: grab;
     align-items: center;
     justify-content: center;
+
+    /* The editor grid holds the entire catalog at once. Off-screen cards skip
+       style/layout/paint — including their inline SVG artwork, which is the
+       expensive part. Fixed 120x120 box, so the placeholder size is exact. */
+    content-visibility: auto;
+    contain-intrinsic-size: 120px 120px;
+}
+
+/* Item names are `white-space: nowrap` and a long one is ~2x the 120px card, so it
+   used to spill across its neighbours. Painting each card in isolation (above)
+   would instead hard-cut it mid-glyph. This is only reached when the JS auto-fit
+   can't shrink the name to fit even at its 8px floor; the full name stays
+   available via the title tooltip. */
+.item-card .item-name {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .item-card:hover {

@@ -212,9 +212,10 @@
         block.innerHTML = `
     ${warningBadge}
     <div class="scammer-content">
-      <img class="scammer-img" src="${avatar}" 
-           alt="Avatar of @${robloxUser}" 
+      <img class="scammer-img" src="${avatar}"
+           alt="Avatar of @${robloxUser}"
            loading="lazy"
+           decoding="async"
            onerror="this.src='imgs/plr.jpg'" />
       <div class="scammer-info">
         <a href="https://www.roblox.com/users/${user_id}/profile" target="_blank" rel="noopener noreferrer">

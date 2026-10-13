@@ -678,7 +678,7 @@ class ForumV2 {
 
     avatarImg(avatarUrl, username) {
         if (avatarUrl) {
-            return `<img src="${this.escapeHtml(avatarUrl)}" alt="${this.escapeHtml(username || '')}" loading="lazy">`;
+            return `<img src="${this.escapeHtml(avatarUrl)}" alt="${this.escapeHtml(username || '')}" loading="lazy" decoding="async">`;
         }
         return (username || '?').charAt(0).toUpperCase();
     }

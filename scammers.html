@@ -124,8 +124,16 @@
         border: 2px solid var(--border-color);
         border-radius: 15px;
         padding: 20px;
-        transition: all 0.3s;
+        /* Only what hover animates — `all` made every style recalc weigh a
+           transition on every block in the list. */
+        transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
         box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.4);
+
+        /* The whole scammer list is rendered in one pass (no pagination), so
+           off-screen blocks skip style/layout/paint. `auto` remembers each block's
+           real height once measured, keeping the scrollbar stable. */
+        content-visibility: auto;
+        contain-intrinsic-size: auto 168px;
     }
 
 
