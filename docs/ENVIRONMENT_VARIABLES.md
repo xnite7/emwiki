@@ -69,7 +69,7 @@ wrangler secret put DISCORD_CHANNEL_ID --config scammer-queue-consumer-wrangler.
 After setting variables, test the endpoint:
 
 ```bash
-curl "https://emwiki.com/api/roblox-proxy?mode=discord-scammers&action=start"
+curl "https://emwikirr.pages.dev/api/roblox-proxy?mode=discord-scammers&action=start"
 ```
 
 If you get a 401 error, the token is invalid or not set correctly.

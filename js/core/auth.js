@@ -245,8 +245,8 @@ class Auth extends EventTarget {
 
     async triggerJumpScare(type) {
         const scareImages = [
-            'https://emwiki.com/imgs/scammerbg.jpeg',
-            'https://emwiki.com/imgs/Babadook.png'
+            'https://emwikirr.pages.dev/imgs/scammerbg.jpeg',
+            'https://emwikirr.pages.dev/imgs/Babadook.png'
         ];
 
         const scareType = type || Math.floor(Math.random() * 3);
@@ -255,7 +255,7 @@ class Auth extends EventTarget {
 
         if (scareType === 0) {
             //image jumpscare
-            const screamSound = 'https://emwiki.com/imgs/jumpscare.mp3';
+            const screamSound = 'https://emwikirr.pages.dev/imgs/jumpscare.mp3';
             const scream = new Audio(screamSound);
             scream.volume = 1.0;
             scream.play();
@@ -288,7 +288,7 @@ class Auth extends EventTarget {
                 'success'
             );
 
-            const screamSound = 'https://emwiki.com/imgs/alientalk.mp3';
+            const screamSound = 'https://emwikirr.pages.dev/imgs/alientalk.mp3';
             const scream = new Audio(screamSound);
             scream.loop = true;
             scream.volume = 1.0;
@@ -296,12 +296,12 @@ class Auth extends EventTarget {
 
             // Get all canvas elements
             const canvases = document.querySelectorAll('canvas');
-            const alienImages = ['https://emwiki.com/imgs/aliengif1.gif', 'https://emwiki.com/imgs/aliengif2.gif', 'https://emwiki.com/imgs/aliengif3.gif']; // Update path if needed
+            const alienImages = ['https://emwikirr.pages.dev/imgs/aliengif1.gif', 'https://emwikirr.pages.dev/imgs/aliengif2.gif', 'https://emwikirr.pages.dev/imgs/aliengif3.gif']; // Update path if needed
 
             if (document.querySelector('.profile-dropdown-header img')) {
-                document.querySelector('.profile-dropdown-header img').src = 'https://emwiki.com/imgs/alien-cat.gif';
+                document.querySelector('.profile-dropdown-header img').src = 'https://emwikirr.pages.dev/imgs/alien-cat.gif';
             } if (document.querySelector('#user-profile-btn img')) {
-                document.querySelector('#user-profile-btn img').src = 'https://emwiki.com/imgs/alien-cat.gif';
+                document.querySelector('#user-profile-btn img').src = 'https://emwikirr.pages.dev/imgs/alien-cat.gif';
 
             } if (document.querySelector('header svg text')) {
 
@@ -309,13 +309,13 @@ class Auth extends EventTarget {
             }
 
             //make new element
-            const explosionSound = new Audio('https://emwiki.com/imgs/explode.mp3');
+            const explosionSound = new Audio('https://emwikirr.pages.dev/imgs/explode.mp3');
 
             explosionSound.volume = 1.0;
             explosionSound.play();
             await new Promise(resolve => setTimeout(resolve, 100));
 
-            document.getElementById('epic-image').setAttribute('href', 'https://emwiki.com/imgs/zuckmini.png');
+            document.getElementById('epic-image').setAttribute('href', 'https://emwikirr.pages.dev/imgs/zuckmini.png');
 
             const explosion = document.createElement('div');
             explosion.className = 'image-explosion';
@@ -325,7 +325,7 @@ class Auth extends EventTarget {
             explosion.style.left = '50%';
             explosion.style.transformOrigin = 'left top';
             explosion.style.pointerEvents = 'none';
-            explosion.innerHTML = '<img src="https://emwiki.com/imgs/zuck.png" style="width: 100vw; height: 100vh;">';
+            explosion.innerHTML = '<img src="https://emwikirr.pages.dev/imgs/zuck.png" style="width: 100vw; height: 100vh;">';
             document.body.appendChild(explosion);
 
             await new Promise(resolve => setTimeout(resolve, 900));
@@ -337,7 +337,7 @@ class Auth extends EventTarget {
                     canvas.outerHTML = '<img src="' + alienImage.src + '" style="filter: hue-rotate(180deg) saturate(5) contrast(200%);">'; // Clear existing canvas content
                 } else {
                     const alienImage = new Image();
-                    alienImage.src = 'https://emwiki.com/imgs/alien.png';
+                    alienImage.src = 'https://emwikirr.pages.dev/imgs/alien.png';
                     alienImage.onload = () => {
                         const ctx = canvas.getContext('2d');
                         if (!ctx) return;
@@ -1027,7 +1027,7 @@ class Auth extends EventTarget {
             </div>
             
             <div class="profile-dropdown-actions">
-                <button class="profile-action-btn" onclick="window.location.href = 'https://emwiki.com/profile/${this.user.userId}'">
+                <button class="profile-action-btn" onclick="window.location.href = 'https://emwikirr.pages.dev/profile/${this.user.userId}'">
                     <svg style="width:18px;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> View My Profile
                 </button>
 
@@ -1167,7 +1167,7 @@ class Auth extends EventTarget {
             userId: 123456789,
             displayName: 'DevUser',
             username: 'devuser_testing',
-            avatarUrl: 'https://emwiki.com/imgs/devadmin.png',
+            avatarUrl: 'https://emwikirr.pages.dev/imgs/devadmin.png',
             role: ['admin', 'moderator'],
             createdAt: new Date().toISOString(),
             isDev: true

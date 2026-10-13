@@ -29,7 +29,7 @@ export async function onRequest(context) {
   // /profile?user=X or /profile.html?user=X -> /profile/X
   if ((url.pathname === "/profile" || url.pathname === "/profile.html") && url.searchParams.has("user")) {
     const userId = url.searchParams.get("user").replace(/\.0$/, ''); // Remove .0 suffix
-    return Response.redirect(`https://emwiki.com/profile/${userId}`, 301);
+    return Response.redirect(`https://emwikirr.pages.dev/profile/${userId}`, 301);
   }
 
   const item = url.searchParams.get("item");
@@ -37,7 +37,7 @@ export async function onRequest(context) {
   const isBot = userAgent.includes("discordbot") || userAgent.includes("bot");
 
   if (item && isBot) {
-    return Response.redirect(`https://emwiki.com/api/embed/${encodeURIComponent(item)}`, 302);
+    return Response.redirect(`https://emwikirr.pages.dev/api/embed/${encodeURIComponent(item)}`, 302);
   }
 
   return await context.next();

@@ -52,7 +52,7 @@ function normalizeImageUrl(imgPath) {
     
     // Return URL pointing to our image API endpoint
     // The endpoint will look up the Cloudflare Images URL from the database
-    return `https://emwiki.com/api/images/${normalized}`;
+    return `https://emwikirr.pages.dev/api/images/${normalized}`;
 }
 
 export async function onRequest(context) {

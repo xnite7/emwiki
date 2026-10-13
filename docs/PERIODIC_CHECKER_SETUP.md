@@ -192,7 +192,7 @@ Existing threads are updated by:
 ### Full Refresh
 
 For a complete refresh, use:
-- `https://emwiki.com/api/roblox-proxy?mode=discord-scammers&action=start`
+- `https://emwikirr.pages.dev/api/roblox-proxy?mode=discord-scammers&action=start`
 
 ## Summary
 

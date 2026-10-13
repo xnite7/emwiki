@@ -7,7 +7,7 @@
   X-Frame-Options: SAMEORIGIN
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
-  Content-Security-Policy-Report-Only: default-src 'self' https://emwiki.com; script-src 'self' https://emwiki.com https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://emwiki.com 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; frame-src https://iframe.videodelivery.net https://*.cloudflarestream.com; connect-src 'self' https://emwiki.com https://*.cloudflarestream.com https://videodelivery.net; font-src 'self' https://emwiki.com data:; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
+  Content-Security-Policy-Report-Only: default-src 'self' https://emwikirr.pages.dev; script-src 'self' https://emwikirr.pages.dev https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://emwikirr.pages.dev 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; frame-src https://iframe.videodelivery.net https://*.cloudflarestream.com; connect-src 'self' https://emwikirr.pages.dev https://*.cloudflarestream.com https://videodelivery.net; font-src 'self' https://emwikirr.pages.dev data:; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
 
 # /secure/page is stricter than the baseline.
 /secure/page

@@ -55,7 +55,7 @@ The queue consumer must be a **separate Worker** (not a Pages Function).
 ### Start a Job
 
 ```bash
-curl "https://emwiki.com/api/roblox-proxy?mode=discord-scammers&action=start"
+curl "https://emwikirr.pages.dev/api/roblox-proxy?mode=discord-scammers&action=start"
 ```
 
 Response:
@@ -72,7 +72,7 @@ Response:
 ### Check Job Status
 
 ```bash
-curl "https://emwiki.com/api/roblox-proxy?mode=discord-scammers&action=status&jobId=job_1234567890_abc123"
+curl "https://emwikirr.pages.dev/api/roblox-proxy?mode=discord-scammers&action=status&jobId=job_1234567890_abc123"
 ```
 
 ### How It Works

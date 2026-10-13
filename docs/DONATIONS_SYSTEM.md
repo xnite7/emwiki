@@ -220,7 +220,7 @@ cron = "0 * * * *"  # Every hour
 export default {
   async scheduled(event, env, ctx) {
     // Call your Pages Function endpoint
-    const response = await fetch('https://emwiki.com/api/donations?mode=fetch');
+    const response = await fetch('https://emwikirr.pages.dev/api/donations?mode=fetch');
     const result = await response.json();
     console.log('Donations fetch result:', result);
   }
@@ -238,13 +238,13 @@ You can manually trigger the scheduled fetch for testing:
 
 ```bash
 # Test the endpoint
-curl "https://emwiki.com/api/donations?mode=fetch"
+curl "https://emwikirr.pages.dev/api/donations?mode=fetch"
 
 # Test for a specific user
-curl "https://emwiki.com/api/donations?mode=fetch&userId=123456789"
+curl "https://emwikirr.pages.dev/api/donations?mode=fetch&userId=123456789"
 
 # Test with limit
-curl "https://emwiki.com/api/donations?mode=fetch&limit=10"
+curl "https://emwikirr.pages.dev/api/donations?mode=fetch&limit=10"
 ```
 
 ### Verifying the Cron Trigger
@@ -384,7 +384,7 @@ game:GetService("MarketplaceService").ProcessReceipt = function(receiptInfo)
     
     -- Send webhook to your API
     local httpService = game:GetService("HttpService")
-    local url = "https://emwiki.com/api/donations/webhook"
+    local url = "https://emwikirr.pages.dev/api/donations/webhook"
     
     local transactionData = {
         transactionType = "Sale",
@@ -425,14 +425,14 @@ View logs in Cloudflare Dashboard:
 
 Check donation leaderboard:
 ```bash
-curl "https://emwiki.com/api/donations?limit=10"
+curl "https://emwikirr.pages.dev/api/donations?limit=10"
 ```
 
 ### Manual Processing
 
 Process transactions for a specific user:
 ```bash
-curl "https://emwiki.com/api/donations?mode=fetch&userId=123456789"
+curl "https://emwikirr.pages.dev/api/donations?mode=fetch&userId=123456789"
 ```
 
 ## Rate Limiting
@@ -448,7 +448,7 @@ The scheduled fetch includes rate limiting:
 
 1. Check if the webhook endpoint is accessible:
    ```bash
-   curl -X POST "https://emwiki.com/api/donations/webhook" \
+   curl -X POST "https://emwikirr.pages.dev/api/donations/webhook" \
      -H "Content-Type: application/json" \
      -d '{"transactionType":"Sale",...}'
    ```
@@ -460,7 +460,7 @@ The scheduled fetch includes rate limiting:
 
 1. Verify cron trigger is configured in Cloudflare Dashboard
 2. Check cron expression: `0 * * * *` (every hour)
-3. Manually trigger to test: `curl "https://emwiki.com/api/donations?mode=fetch"`
+3. Manually trigger to test: `curl "https://emwikirr.pages.dev/api/donations?mode=fetch"`
 
 ### Duplicate Transactions
 

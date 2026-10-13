@@ -179,7 +179,7 @@ export function addItemBadges(element, item) {
     if (item.typicalgroup) {
         const badge = document.createElement('img');
         badge.className = 'badge typicalgroup';
-        badge.src = 'https://emwiki.com/imgs/tggroup.png';
+        badge.src = 'https://emwikirr.pages.dev/imgs/tggroup.png';
         badge.title = 'Typical Games Roblox Group';
         element.appendChild(badge);
     }
@@ -204,7 +204,7 @@ export function addItemBadges(element, item) {
 
     if (item.new) {
         const badge = document.createElement('img');
-        badge.src = 'https://emwiki.com/imgs/new.png';
+        badge.src = 'https://emwikirr.pages.dev/imgs/new.png';
         badge.className = 'badge new';
         element.appendChild(badge);
     }

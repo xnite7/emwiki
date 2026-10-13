@@ -1,7 +1,7 @@
 export async function onRequest(context) {
   const { params, request, env } = context;
   const item = params.item;
-  const base = 'https://emwiki.com'; // your site URL
+  const base = 'https://emwikirr.pages.dev'; // your site URL
 
   // Helper: simple bot detection
   function isBot(ua) {

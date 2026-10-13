@@ -99,7 +99,7 @@ const SvgTitleBuilder = {
 
         // Only pull in fonts.css when a non-system font is used
         const needsFontImport = !['arial', 'verdana', 'impact'].includes(c.font.toLowerCase());
-        const styleTag = needsFontImport ? '<style>@import url(https://emwiki.com/css/fonts.css);</style>' : '';
+        const styleTag = needsFontImport ? '<style>@import url(https://emwikirr.pages.dev/css/fonts.css);</style>' : '';
         const defsTag = defs.length ? `<defs>${defs.join('')}</defs>` : '';
 
         return `<svg width="200" height="100" viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">${styleTag}${defsTag}<text x="500" y="500" text-anchor="middle"${strokeAttrs} fill="${fillAttr}" style="${fontStyle}${spacingStyle}"${transform}>${safeText}</text></svg>`;

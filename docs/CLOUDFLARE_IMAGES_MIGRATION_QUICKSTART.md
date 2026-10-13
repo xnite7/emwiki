@@ -62,7 +62,7 @@ node scripts/update-db-image-urls.js --dry-run
 Check that images are loading:
 ```bash
 # Test image endpoint
-curl https://emwiki.com/api/images/items/gears/yY4PlAA.png
+curl https://emwikirr.pages.dev/api/images/items/gears/yY4PlAA.png
 
 # Should redirect to Cloudflare Images URL
 ```

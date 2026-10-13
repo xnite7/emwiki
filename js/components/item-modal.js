@@ -420,7 +420,7 @@ class ItemModal {
 
         this.elements.svg.addEventListener("click", () => {
             if (this.elements.svg.id === "wonkySvg") {
-                const wonkySound = new Audio('https://emwiki.com/imgs/boing.wav');
+                const wonkySound = new Audio('https://emwikirr.pages.dev/imgs/boing.wav');
                 wonkySound.volume = 1.0;
                 wonkySound.play();
             } else if (this.elements.svg.id === "alinz") {
@@ -724,17 +724,17 @@ class ItemModal {
 
         // Add icons for special currencies
         const icons = {
-            unobtainable: "https://emwiki.com/imgs/Red_x.png",
-            robux: "https://emwiki.com/imgs/cf8ZvY7.png",
-            coins: "https://emwiki.com/imgs/Coin.webp",
-            stars: "https://emwiki.com/imgs/WKeX5AS.png",
-            visors: "https://emwiki.com/imgs/7IoLZCN.png",
-            pumpkins: "https://emwiki.com/imgs/bHRBTrU.png",
-            eggs: "https://emwiki.com/imgs/qMxjgQy.png",
-            opals: "https://emwiki.com/imgs/wwMMAvr.png",
-            baubles: "https://emwiki.com/imgs/bauble.png",
-            tokens: "https://emwiki.com/imgs/Cy9r140.png",
-            candies: "https://emwiki.com/imgs/candy.png"
+            unobtainable: "https://emwikirr.pages.dev/imgs/Red_x.png",
+            robux: "https://emwikirr.pages.dev/imgs/cf8ZvY7.png",
+            coins: "https://emwikirr.pages.dev/imgs/Coin.webp",
+            stars: "https://emwikirr.pages.dev/imgs/WKeX5AS.png",
+            visors: "https://emwikirr.pages.dev/imgs/7IoLZCN.png",
+            pumpkins: "https://emwikirr.pages.dev/imgs/bHRBTrU.png",
+            eggs: "https://emwikirr.pages.dev/imgs/qMxjgQy.png",
+            opals: "https://emwikirr.pages.dev/imgs/wwMMAvr.png",
+            baubles: "https://emwikirr.pages.dev/imgs/bauble.png",
+            tokens: "https://emwikirr.pages.dev/imgs/Cy9r140.png",
+            candies: "https://emwikirr.pages.dev/imgs/candy.png"
         };
         const styles = {
             unobtainable: "filter: saturate(0) brightness(4.5);font-family: 'BuilderSans';color: #3d3d3d;",

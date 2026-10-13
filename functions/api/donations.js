@@ -456,7 +456,7 @@ export async function onRequest(context) {
             const userId = data.userId;
 
             // Fetch user profile from roblox-proxy
-            const res = await fetch(`https://emwiki.com/api/roblox-proxy?userId=${userId}&mode=lite`);
+            const res = await fetch(`https://emwikirr.pages.dev/api/roblox-proxy?userId=${userId}&mode=lite`);
             const profile = res.ok ? await res.json() : {};
 
             return {

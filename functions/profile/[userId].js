@@ -2,7 +2,7 @@
 export async function onRequest(context) {
   const { params, request, env } = context;
   const userId = params.userId;
-  const base = 'https://emwiki.com';
+  const base = 'https://emwikirr.pages.dev';
 
   // Helper: bot detection for Discord, Twitter, Facebook crawlers
   function isBot(ua) {
@@ -58,7 +58,7 @@ export async function onRequest(context) {
     // Sanitize data for HTML
     const displayName = escapeHtml(user.display_name || user.username);
     const username = escapeHtml(user.username);
-    const avatarUrl = user.avatar_url || 'https://emwiki.com/imgs/placeholder.png';
+    const avatarUrl = user.avatar_url || 'https://emwikirr.pages.dev/imgs/placeholder.png';
 
     // Build description with stats
     const totalTrades = stats?.total_trades || 0;

@@ -1,7 +1,7 @@
 # Redirect all .site traffic to .com
 # Note: Absolute URL redirects are not supported in Cloudflare Pages _redirects
 # Domain-level redirects should be configured in Cloudflare DNS/Page Rules instead
-# https://emwiki.site/* https://emwiki.com/:splat 301!
+# https://emwiki.site/* https://emwikirr.pages.dev/:splat 301!
 
 # Static rewrites (above splats for performance)
 /index.html     /index.html          200

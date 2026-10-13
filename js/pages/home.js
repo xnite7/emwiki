@@ -211,7 +211,7 @@
 						const div = document.createElement('div');
 						div.className = 'donator-item';
 						div.innerHTML = `
-							<img class="donator-avatar" src="${donator.avatar || 'https://emwiki.com/imgs/plr.jpg'}" alt="${donator.displayName}">
+							<img class="donator-avatar" src="${donator.avatar || 'https://emwikirr.pages.dev/imgs/plr.jpg'}" alt="${donator.displayName}">
 							<div class="donator-name">${donator.displayName}</div>
 							<div class="donator-amount">${Utils.formatPrice(donator.totalSpent)}</div>
 						`;

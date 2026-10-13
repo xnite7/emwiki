@@ -2,7 +2,7 @@
 export async function onRequest(context) {
   const { params, request, env } = context;
   const postId = params.id;
-  const base = 'https://emwiki.com';
+  const base = 'https://emwikirr.pages.dev';
 
   // Helper: bot detection for Discord, Twitter, Facebook crawlers
   function isBot(ua) {

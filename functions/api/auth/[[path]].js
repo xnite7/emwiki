@@ -1034,7 +1034,7 @@ async function handleOAuthAuthorize(request, env) {
 
 async function handleOAuthCallback(request, env) {
     const url = new URL(request.url);
-    const origin = url.origin; // Get the full origin (e.g., https://emwiki.com)
+    const origin = url.origin; // Get the full origin (e.g., https://emwikirr.pages.dev)
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state');
     const error = url.searchParams.get('error');

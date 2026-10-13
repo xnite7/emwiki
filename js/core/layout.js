@@ -85,7 +85,7 @@ const Layout = {
 
     return `<header>
 		<div id="christmaslights" style="display:none;position: absolute;left: 0;top: -45px;background: url(/imgs/titles/7a889a5ce371c6aa3a59862815826ee7.png);background-position: center;width: 100%;height: 40%;z-index: -1;"></div>
-		<a class="site-logo" href="https://emwiki.com">
+		<a class="site-logo" href="https://emwikirr.pages.dev">
 			<svg width="500" height="300" viewBox="451 471 100 39" xmlns="http://www.w3.org/2000/svg">
 				<defs>
 					<linearGradient id="eppp1" y1="1" x2="0">
@@ -97,12 +97,12 @@ const Layout = {
 						<stop offset="1" style="stop-color:#ff0" />
 					</linearGradient>
 				</defs>
-				<image id="cloud" x="461" y="459" href="https://emwiki.com/imgs/TWOKPhY.png" height="60" width="60" style="filter:opacity(.6)" />
+				<image id="cloud" x="461" y="459" href="https://emwikirr.pages.dev/imgs/TWOKPhY.png" height="60" width="60" style="filter:opacity(.6)" />
 				<text x="489" y="503" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke" stroke-linejoin="round" fill="url(#eppp1)" style="animation:floatAnim 12s ease-in-out infinite;font:200 46px Slapstick">EM</text>
-				<image id="epic-image" x="464" y="463" href="https://emwiki.com/imgs/epicfaces/kitta.png" height="60" width="60" style="scale:.48;transform:translate(846px,103px);rotate:20deg;transform-origin:center;animation:floatAnim2 15s ease-in-out 1s infinite alternate" />
-				<image id="cloud" x="495" y="477" href="https://emwiki.com/imgs/8UUB0Gt.png" height="60" width="60" style="filter:opacity(.86)" />
+				<image id="epic-image" x="464" y="463" href="https://emwikirr.pages.dev/imgs/epicfaces/kitta.png" height="60" width="60" style="scale:.48;transform:translate(846px,103px);rotate:20deg;transform-origin:center;animation:floatAnim2 15s ease-in-out 1s infinite alternate" />
+				<image id="cloud" x="495" y="477" href="https://emwikirr.pages.dev/imgs/8UUB0Gt.png" height="60" width="60" style="filter:opacity(.86)" />
 				<text x="516" y="514" text-anchor="middle" stroke="#000" stroke-width="2.3" paint-order="stroke" stroke-linejoin="round" fill="url(#eppp2)" style="animation:floatAnim 12s ease-in-out infinite;animation-delay:5.5s;font:200 16px Slapstick">wiki</text>
-				<image id="cloud" x="445" y="487" href="https://emwiki.com/imgs/oYKd3nJ.png" height="28" width="42" style="filter:opacity(.8)" />
+				<image id="cloud" x="445" y="487" href="https://emwikirr.pages.dev/imgs/oYKd3nJ.png" height="28" width="42" style="filter:opacity(.8)" />
 			</svg>
 		</a>
 		<nav class="nav-links" aria-label="Primary">

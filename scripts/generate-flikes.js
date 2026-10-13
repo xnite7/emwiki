@@ -19,7 +19,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const API_BASE = 'https://emwiki.com/api';
+const API_BASE = 'https://emwikirr.pages.dev/api';
 const ITEMS_PER_FILE = 500; // More items per file since we're using IDs (faster)
 
 // Random integer between min and max (inclusive)

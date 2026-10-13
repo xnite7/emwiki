@@ -1658,7 +1658,7 @@ export async function onRequestGet(context) {
           user_id: row.user_id,
           robloxDisplay: freshInfo?.displayName || row.roblox_display_name || null,
           robloxUser: freshInfo?.username || row.roblox_name || null,
-          avatar: freshAvatar || row.roblox_avatar || "https://emwiki.com/imgs/plr.jpg",
+          avatar: freshAvatar || row.roblox_avatar || "https://emwikirr.pages.dev/imgs/plr.jpg",
           discordDisplay: row.discord_display_name || null,
           discordId: row.discord_id || null,
           victims: row.victims || null,

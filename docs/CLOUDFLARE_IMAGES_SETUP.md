@@ -131,7 +131,7 @@ SELECT name, img FROM items WHERE img LIKE '%imagedelivery.net%' LIMIT 10;
 
 ```bash
 # Test image serving endpoint
-curl https://emwiki.com/api/images/items/gears/yY4PlAA.png
+curl https://emwikirr.pages.dev/api/images/items/gears/yY4PlAA.png
 
 # Should redirect to Cloudflare Images URL
 ```

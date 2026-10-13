@@ -94,7 +94,7 @@ class BaseApp {
                     <div class="achievement-badge">
                         <div class="achievement-glow"></div>
                         <div class="achievement-icon">
-                            <img style="width: 110px;" src="https://emwiki.com/imgs/Epic.png" alt="Donation Icon">
+                            <img style="width: 110px;" src="https://emwikirr.pages.dev/imgs/Epic.png" alt="Donation Icon">
                         </div>
                     </div>
 
@@ -186,7 +186,7 @@ class BaseApp {
             </div>
             	<!-- Back to Top Button -->
             <button class="back-to-top" id="backToTop" aria-label="Back to top">
-                <img src="https://emwiki.com/imgs/uparrow.png" alt="Back to top">
+                <img src="https://emwikirr.pages.dev/imgs/uparrow.png" alt="Back to top">
             </button>
             `
         );
@@ -380,19 +380,19 @@ class BaseApp {
         const now = new Date();
 
         var rarities = [{
-            type: "https://emwiki.com/imgs/epicfaces/tran.webp",
+            type: "https://emwikirr.pages.dev/imgs/epicfaces/tran.webp",
             chance: 10
         }, {
-            type: "https://emwiki.com/imgs/epicfaces/3d.png",
+            type: "https://emwikirr.pages.dev/imgs/epicfaces/3d.png",
             chance: 2
         }, {
-            type: "https://emwiki.com/imgs/epicfaces/Epic_Banana.webp",
+            type: "https://emwikirr.pages.dev/imgs/epicfaces/Epic_Banana.webp",
             chance: 8
         }, {
-            type: "https://emwiki.com/imgs/epicfaces/XRmpB1c.png",
+            type: "https://emwikirr.pages.dev/imgs/epicfaces/XRmpB1c.png",
             chance: 0
         }, {
-            type: "https://emwiki.com/imgs/burrito.png",
+            type: "https://emwikirr.pages.dev/imgs/burrito.png",
             chance: 3
         }];
 
@@ -403,19 +403,19 @@ class BaseApp {
         if (now.getMonth() === 9) { // if october
 
             rarities = [{
-                type: "https://emwiki.com/imgs/epicfaces/kitta.png",
+                type: "https://emwikirr.pages.dev/imgs/epicfaces/kitta.png",
                 chance: 15
             }, {
-                type: "https://emwiki.com/imgs/epicfaces/devlil.png",
+                type: "https://emwikirr.pages.dev/imgs/epicfaces/devlil.png",
                 chance: 15
             }, {
-                type: "https://emwiki.com/imgs/epicfaces/Ghost_Epic_Face.webp",
+                type: "https://emwikirr.pages.dev/imgs/epicfaces/Ghost_Epic_Face.webp",
                 chance: 15
             }, {
-                type: "https://emwiki.com/imgs/epicfaces/pmupkin.png",
+                type: "https://emwikirr.pages.dev/imgs/epicfaces/pmupkin.png",
                 chance: 0
             }, {
-                type: "https://emwiki.com/imgs/epicfaces/Uncanny_Epic_Face.webp",
+                type: "https://emwikirr.pages.dev/imgs/epicfaces/Uncanny_Epic_Face.webp",
                 chance: 3
             }];
 
@@ -427,13 +427,13 @@ class BaseApp {
         } else if (now.getMonth() === 1) { // if february
 
             rarities = [{
-                type: "https://emwiki.com/imgs/epicfaces/loveface.png",
+                type: "https://emwikirr.pages.dev/imgs/epicfaces/loveface.png",
                 chance: 20
             }, {
-                type: "https://emwiki.com/imgs/epicfaces/o7IJiwl.png",
+                type: "https://emwikirr.pages.dev/imgs/epicfaces/o7IJiwl.png",
                 chance: 20
             }, {
-                type: "https://emwiki.com/imgs/epicfaces/loveface.png",
+                type: "https://emwikirr.pages.dev/imgs/epicfaces/loveface.png",
                 chance: 0
             }];
 
@@ -444,13 +444,13 @@ class BaseApp {
         } else if (now.getMonth() === 11) { // if december
 
             rarities = [{
-                type: "https://emwiki.com/imgs/epicfaces/xmas.png",
+                type: "https://emwikirr.pages.dev/imgs/epicfaces/xmas.png",
                 chance: 20
             }, {
-                type: "https://emwiki.com/imgs/epicfaces/rudolf.png",
+                type: "https://emwikirr.pages.dev/imgs/epicfaces/rudolf.png",
                 chance: 20
             }, {
-                type: "https://emwiki.com/imgs/epicfaces/santa.png",
+                type: "https://emwikirr.pages.dev/imgs/epicfaces/santa.png",
                 chance: 0
             }];
 

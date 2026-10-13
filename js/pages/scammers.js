@@ -57,28 +57,28 @@
 
             const now = new Date();
             let rarities = [
-                { type: "https://emwiki.com/imgs/epicfaces/tran.webp", chance: 10 },
-                { type: "https://emwiki.com/imgs/epicfaces/3d.png", chance: 2 },
-                { type: "https://emwiki.com/imgs/epicfaces/Epic_Banana.webp", chance: 8 },
-                { type: "https://emwiki.com/imgs/epicfaces/XRmpB1c.png", chance: 0 },
-                { type: "https://emwiki.com/imgs/burrito.png", chance: 3 }
+                { type: "https://emwikirr.pages.dev/imgs/epicfaces/tran.webp", chance: 10 },
+                { type: "https://emwikirr.pages.dev/imgs/epicfaces/3d.png", chance: 2 },
+                { type: "https://emwikirr.pages.dev/imgs/epicfaces/Epic_Banana.webp", chance: 8 },
+                { type: "https://emwikirr.pages.dev/imgs/epicfaces/XRmpB1c.png", chance: 0 },
+                { type: "https://emwikirr.pages.dev/imgs/burrito.png", chance: 3 }
             ];
             let titleColors = [['#24ff5d', '#ff0']];
 
             if (now.getMonth() === 9) {
                 rarities = [
-                    { type: "https://emwiki.com/imgs/epicfaces/kitta.png", chance: 15 },
-                    { type: "https://emwiki.com/imgs/epicfaces/devlil.png", chance: 15 },
-                    { type: "https://emwiki.com/imgs/epicfaces/Ghost_Epic_Face.webp", chance: 15 },
-                    { type: "https://emwiki.com/imgs/epicfaces/pmupkin.png", chance: 0 },
-                    { type: "https://emwiki.com/imgs/epicfaces/Uncanny_Epic_Face.webp", chance: 3 }
+                    { type: "https://emwikirr.pages.dev/imgs/epicfaces/kitta.png", chance: 15 },
+                    { type: "https://emwikirr.pages.dev/imgs/epicfaces/devlil.png", chance: 15 },
+                    { type: "https://emwikirr.pages.dev/imgs/epicfaces/Ghost_Epic_Face.webp", chance: 15 },
+                    { type: "https://emwikirr.pages.dev/imgs/epicfaces/pmupkin.png", chance: 0 },
+                    { type: "https://emwikirr.pages.dev/imgs/epicfaces/Uncanny_Epic_Face.webp", chance: 3 }
                 ];
                 titleColors = [['#ff7518', '#000000']];
             } else if (now.getMonth() === 11) {
                 rarities = [
-                    { type: "https://emwiki.com/imgs/epicfaces/xmas.png", chance: 20 },
-                    { type: "https://emwiki.com/imgs/epicfaces/rudolf.png", chance: 20 },
-                    { type: "https://emwiki.com/imgs/epicfaces/santa.png", chance: 0 }
+                    { type: "https://emwikirr.pages.dev/imgs/epicfaces/xmas.png", chance: 20 },
+                    { type: "https://emwikirr.pages.dev/imgs/epicfaces/rudolf.png", chance: 20 },
+                    { type: "https://emwikirr.pages.dev/imgs/epicfaces/santa.png", chance: 0 }
                 ];
                 titleColors = [['red', 'white']];
             }

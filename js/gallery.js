@@ -1082,7 +1082,7 @@ class Gallery {
 
     async sharePost(postId) {
         // Use the embed URL for better Discord previews
-        const shareUrl = `https://emwiki.com/gallery/${postId}`;
+        const shareUrl = `https://emwikirr.pages.dev/gallery/${postId}`;
 
         try {
             // Try native Web Share API first (mobile friendly)

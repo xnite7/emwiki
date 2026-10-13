@@ -50,7 +50,7 @@ wrangler secret put DISCORD_CHANNEL_ID --config scammer-queue-consumer-wrangler.
 
 ```bash
 # Check job status
-curl "https://emwiki.com/api/roblox-proxy?mode=discord-scammers&action=status&jobId=YOUR_JOB_ID"
+curl "https://emwikirr.pages.dev/api/roblox-proxy?mode=discord-scammers&action=status&jobId=YOUR_JOB_ID"
 ```
 
 You should see `messages_processed` increasing as messages are processed.

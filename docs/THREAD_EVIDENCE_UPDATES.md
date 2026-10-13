@@ -43,13 +43,13 @@ You can also trigger updates manually:
 
 ```bash
 # Update all threads
-curl "https://emwiki.com/api/roblox-proxy?mode=update-thread-evidence"
+curl "https://emwikirr.pages.dev/api/roblox-proxy?mode=update-thread-evidence"
 
 # Update specific user's thread
-curl "https://emwiki.com/api/roblox-proxy?mode=update-thread-evidence&userId=123456789"
+curl "https://emwikirr.pages.dev/api/roblox-proxy?mode=update-thread-evidence&userId=123456789"
 
 # Process in batches
-curl "https://emwiki.com/api/roblox-proxy?mode=update-thread-evidence&limit=10&offset=0"
+curl "https://emwikirr.pages.dev/api/roblox-proxy?mode=update-thread-evidence&limit=10&offset=0"
 ```
 
 ## Migration
@@ -60,13 +60,13 @@ To download existing Discord images to R2:
 
 ```bash
 # Migrate all images (processes one entry at a time)
-curl "https://emwiki.com/api/roblox-proxy?mode=migrate-images-to-r2"
+curl "https://emwikirr.pages.dev/api/roblox-proxy?mode=migrate-images-to-r2"
 
 # Migrate specific user
-curl "https://emwiki.com/api/roblox-proxy?mode=migrate-images-to-r2&userId=123456789"
+curl "https://emwikirr.pages.dev/api/roblox-proxy?mode=migrate-images-to-r2&userId=123456789"
 
 # Process in batches
-curl "https://emwiki.com/api/roblox-proxy?mode=migrate-images-to-r2&limit=1&offset=0"
+curl "https://emwikirr.pages.dev/api/roblox-proxy?mode=migrate-images-to-r2&limit=1&offset=0"
 ```
 
 The migration processes entries one at a time to avoid Worker timeouts. You'll need to call it multiple times with increasing `offset` values until `has_more` is `false`.
@@ -97,7 +97,7 @@ Or via Cloudflare Dashboard:
 Check update status by calling the endpoint:
 
 ```bash
-curl "https://emwiki.com/api/roblox-proxy?mode=update-thread-evidence&limit=1"
+curl "https://emwikirr.pages.dev/api/roblox-proxy?mode=update-thread-evidence&limit=1"
 ```
 
 Response includes:
@@ -112,7 +112,7 @@ Response includes:
 
 1. Check if images were downloaded to R2:
    ```bash
-   curl "https://emwiki.com/api/roblox-proxy?mode=migrate-images-to-r2&userId=USER_ID"
+   curl "https://emwikirr.pages.dev/api/roblox-proxy?mode=migrate-images-to-r2&userId=USER_ID"
    ```
 
 2. Verify R2 bucket is accessible and `MY_BUCKET` env var is set

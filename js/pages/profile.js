@@ -143,7 +143,7 @@
             const ratingLabel = rating > 0 ? rating.toFixed(1) : '—';
             const avatar = (user.avatar_url && user.avatar_url !== 'x')
                 ? user.avatar_url
-                : 'https://emwiki.com/imgs/placeholder.png';
+                : 'https://emwikirr.pages.dev/imgs/placeholder.png';
             const star = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.5l2.6 5.27 5.82.85-4.21 4.1.99 5.79L12 17.77l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85z"/></svg>';
 
             card.innerHTML = `
@@ -154,7 +154,7 @@
                          alt="${this.escapeHtml(user.display_name)}"
                          loading="lazy"
                          decoding="async"
-                         onerror="this.src='https://emwiki.com/imgs/placeholder.png'">
+                         onerror="this.src='https://emwikirr.pages.dev/imgs/placeholder.png'">
                 </div>
                 <div class="user-card-identity">
                     <h3 class="user-card-name">${this.escapeHtml(user.display_name)}</h3>
@@ -237,7 +237,7 @@
         renderProfileHeader(user, donationData) {
             // Avatar
             const avatarImg = document.getElementById('profile-avatar');
-            avatarImg.src = user.avatarUrl || 'https://emwiki.com/imgs/placeholder.png';
+            avatarImg.src = user.avatarUrl || 'https://emwikirr.pages.dev/imgs/placeholder.png';
             avatarImg.alt = `${user.displayName}'s Avatar`;
 
             // Display name
